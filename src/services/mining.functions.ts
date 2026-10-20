@@ -32,7 +32,7 @@ import { executeContinuousCrawl } from "@/lib/mining/continuous-crawler.engine";
 import { parseFeed } from "@/lib/mining/rss-ingester.engine";
 import { fetchAllMarketIndicators } from "@/lib/mining/market-data-miner.engine";
 import { enrichCnpj } from "@/lib/mining/cnpj-enrichment.engine";
-import { extractDomain, isDomainInCooldown, setDomainCooldown, clearDomainCooldown } from "@/lib/mining/scraper-utils";
+import { extractDomain, isDomainInCooldown, setDomainCooldown, clearDomainCooldown, cleanHtmlText } from "@/lib/mining/scraper-utils";
 import type {
   MiningStats,
   CrawlQueueItem,
@@ -3171,11 +3171,15 @@ export const dispatchScheduledMiningJobFn = createServerFn({ method: "POST" })
 
             const sectionsToSave =
               editorialSections.length >= 2
-                ? editorialSections
+                ? editorialSections.map((s: any) => ({
+                    type: s.type || "paragraph",
+                    ...(s.heading ? { heading: cleanHtmlText(s.heading) } : {}),
+                    content: cleanHtmlText(s.content),
+                  }))
                 : rawMarkdown
                     .split(/\n\n+/)
                     .filter((p: string) => p.trim().length > 20)
-                    .map((p: string) => ({ type: "paragraph", content: p.trim() }));
+                    .map((p: string) => ({ type: "paragraph", content: cleanHtmlText(p.trim()) }));
 
             const { data: insertedNews, error: pubErr } = await supabase
               .from("news_articles")

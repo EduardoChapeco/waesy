@@ -30,6 +30,7 @@ export interface StoreCardDTO {
   avatar_url?: string;
   banner_url?: string;
   category?: string;
+  is_verified?: boolean;
   rating?: number;
   review_count?: number;
   distance_km?: number;
@@ -249,7 +250,7 @@ export const getMarketplaceFeed = createServerFn({ method: "GET" })
     // 1. Busca lojas ativas reais no Supabase, filtradas pelo nicho se aplicável
     let storesQuery = supabase
       .from("stores")
-      .select("id, name, slug, settings, logo_url")
+      .select("id, name, slug, settings, logo_url, is_verified")
       .limit(30);
 
     const { data: storesData, error: storeErr } = await storesQuery;
@@ -264,6 +265,7 @@ export const getMarketplaceFeed = createServerFn({ method: "GET" })
       avatar_url: s.logo_url || s.settings?.logoUrl || s.settings?.logo_url || undefined,
       banner_url: s.settings?.bannerUrl || undefined,
       category: s.settings?.type || s.settings?.segment || s.settings?.niche || undefined,
+      is_verified: s.is_verified === true || s.settings?.is_verified === true,
       rating: Number.isFinite(Number(s.settings?.rating)) ? Number(s.settings.rating) : undefined,
       review_count: Number.isFinite(Number(s.settings?.review_count))
         ? Number(s.settings.review_count)
@@ -509,7 +511,7 @@ export const getGlobalDealsPage = createServerFn({ method: "GET" })
     // 2. Busca lojas ativas
     const { data: storesData } = await supabase
       .from("stores")
-      .select("id, name, slug, settings, logo_url")
+      .select("id, name, slug, settings, logo_url, is_verified")
       .limit(50);
 
     const allDbStores: StoreCardDTO[] = (storesData || []).map((s: any) => ({
@@ -519,6 +521,7 @@ export const getGlobalDealsPage = createServerFn({ method: "GET" })
       avatar_url: s.logo_url || s.settings?.logoUrl || s.settings?.logo_url || undefined,
       banner_url: s.settings?.bannerUrl || undefined,
       category: s.settings?.type || s.settings?.segment || s.settings?.niche || undefined,
+      is_verified: s.is_verified === true || s.settings?.is_verified === true,
       rating: Number.isFinite(Number(s.settings?.rating)) ? Number(s.settings.rating) : undefined,
       review_count: Number.isFinite(Number(s.settings?.review_count))
         ? Number(s.settings.review_count)

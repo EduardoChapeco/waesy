@@ -339,3 +339,61 @@ O ecossistema da Página Inicial (`_store.index.tsx`) e o módulo de personaliza
   - Contadores de engajamento reais (curtidas e comentários).
   - CTA tátil primário obrigatório com piso mínimo de 44px (`min-h-11`).
 
+
+
+---
+
+## C.16 Arquitetura Bifurcada Congelada: Mobile Native App vs Desktop Native App System
+
+O ecossistema Waesy rejeita o paradigma clássico de "site responsivo fluido" que deforma, espreme ou oculta aleatoriamente elementos de interface conforme a viewport oscila. Dispositivos móveis e computadores de mesa exigem arquiteturas de frontend congeladas e dedicadas à sua física operacional:
+
+### 1. Mobile Native App Shell (Compact < 600px)
+- **Comportamento Nativo Compilado:** A interface mimetiza as convenções de design da Apple (iOS HIG) e Google (Android Material 3).
+- **Thumb Zone e Ancoragem Inferior:** Barras globais de navegação, seletores de filtros essenciais e botões de ação primária residem no terço inferior da tela móvel (`bottom-0` ou `sticky bottom-safe`), acessíveis sem esforço pelo polegar.
+- **Safe-Area Inset Defensivo:** Aplicação rigorosa de `pt-[max(1rem,env(safe-area-inset-top))]` no topo e `pb-[max(1rem,env(safe-area-inset-bottom))]` na base, impedindo que ilhas dinâmicas, entalhes ou barras de gestos sobreponham textos ou botões.
+- **Metamorfose de Diálogos:** Caixas de diálogo modais são terminantemente proibidas no mobile; convertem-se automaticamente em **Bottom Sheets / Gavetas Deslizantes de 100dvh** com detente inicial de 50% e fechamento por gesto descendente.
+- **Trilhos Horizontais Táteis:** Categorias, atalhos rápidos e filtros utilizam trilhos contínuos com física de mola (`overflow-x-auto snap-x mandatory no-scrollbar gap-2`), erradicando quebras de linha em blocos verticais inflados.
+- **Interação sem Hover:** Resposta visual tátil instantânea no toque (`active:scale-[0.985] active:opacity-85 transition-transform duration-100`) e proibição de dependência de hover para revelar ações essenciais.
+
+### 2. Desktop Native App System (Expanded >= 840px)
+- **Software Profissional Ancorado:** A interface inspira-se em softwares de alto padrão como Linear, Figma, Raycast e macOS Desktop.
+- **Split-View e Painéis Mestre-Detalhe:** Navegação por colunas densas, barra lateral fixa com agrupamento semântico (`sidebar-width-expanded: 280px`), atalhos globais de teclado (`Cmd+K` / `Ctrl+K`) e tabelas de dados empresariais com ordenação por coluna e tipografia monoespaçada (`tabular-nums`).
+- **Eliminação de Inflação Visual:** Proibição de controles ou botões com alturas desproporcionais que desperdiçam a densidade informacional do monitor.
+
+### 3. Proibição de Duplicação Híbrida no DOM
+- É proibido manter simultaneamente o layout de smartphone e o layout de computador renderizados no DOM e alternados apenas por classes utilitárias CSS (`block md:hidden` vs `hidden md:block`). A bifurcação deve ocorrer no nível de componente ou via o hook canônico `useWindowSizeClass()`, instanciando exclusivamente a casca viva correspondente ao dispositivo do usuário.
+
+---
+
+## C.17 Padrão Soberano de Squircles Grandes & Inteligência Tipográfica Anti-Truncate
+
+### 1. A Anatomia do Squircle Generoso
+- A assinatura geométrica soberana da plataforma é o **Squircle com Curvatura Contínua Apple HIG** (`squircle-card`, `rounded-3xl` / `rounded-2xl` / `rounded-card`).
+- Em cartões de vitrine, fichas técnicas, blocos de produtos e destaques, os cantos arredondados contidos eliminam as quinas duras de cards genéricos, oferecendo sensação tátil agradável e moderna.
+- Elevação flat pura: proibidas sombras decorativas difusas em superfícies de aplicação; o contraste e a delimitação decorrem de bordas sutis (`border border-border/60 hover:border-foreground/30`) e background sólido semitransparente.
+
+### 2. Inteligência Tipográfica Anti-Truncate (Zero Informação Cortada)
+- É terminantemente proibido o uso preguiçoso da classe CSS `truncate` ou reticências silenciosas (`...`) para mascarar títulos de anúncios, preços, condições de parcelamento, badges operacionais ou parâmetros chave de pacotes.
+- O Design System opera com acomodação inteligente:
+  1. **Quebra Natural de Linha:** O contêiner permite o avanço orgânico de texto em até 2 ou 3 linhas sem cortar palavras (`break-words text-wrap: balance / text-wrap: pretty whitespace-normal leading-tight`).
+  2. **Escala Proporcional:** A tipografia ajusta-se dinamicamente (ex: `text-base sm:text-lg font-bold`), reduzindo o espaçamento entre letras (`tracking-tight`) e garantindo leitura cristalina em qualquer largura de cartão.
+  3. **Padding Proporcional Compensado:** Em vez de colapsar o texto, o card adapta seu espaçamento interno (`p-4 sm:p-5`), preservando a hierarquia das pílulas semânticas.
+
+---
+
+## C.18 Engine TetrisGrid & BentoGrid com Empacotamento Denso e Zero Fallbacks
+
+A **Engine TetrisGrid** é a fundação modular de vitrines assimétricas, blocos de campanhas e mosaicos de produtos em telas médias e expandidas:
+1. **Empacotamento Denso Automático:** Consome `grid grid-flow-dense` com spans geométricos exatos em $X$ (`col-span-1` a `col-span-4`) e $Y$ (`row-span-1` a `row-span-2`), permitindo que blocos menores preencham lacunas de blocos maiores automaticamente.
+2. **Fechamento Retangular Perfeito:** Em composições de 3 itens (1 hero 2x2 + 2 secundários), os 2 secundários no desktop ocupam 2 colunas cada empilhados verticalmente, preenchendo 100% da área do retângulo sem vácuos ou buracos assimétricos.
+3. **Pillow Tiles com Squircle Suave:** Cada célula da grade adota a classe `squircle-card` / `rounded-2xl` com acabamento limpo e transições de hover suaves (`squircle-hover`, `duration-200`).
+4. **Erradicação Total de Fallbacks Sintéticos (B.8 e B.33):** Proibido injetar URLs de imagens de bancos externos (Unsplash, Pexels) como fallback padrão. Se o item não possui mídia configurada, a célula DEVE renderizar um layout tipográfico editorial com fundo neutro, ícone vetorial temático e texto de alto contraste.
+
+---
+
+## C.19 Protocolo Anti-Jank & Anti-Efeito Sanfona (Isomorfismo Geométrico e CLS Nulo)
+
+O "Efeito Sanfona" (Accordion Jank) — caracterizado pelo empurrão súbito de elementos verticais para baixo ou para cima durante o carregamento ou transição de abas — é rigorosamente proibido:
+1. **Travamento Geométrico Prévio:** Banners, imagens de capa, sliders e avatares DEVEM declarar sua proporção exata e altura mínima diretamente no CSS (`aspect-[4/3]`, `aspect-[28/9]`, `aspect-[16/9]`, `min-h-44 sm:min-h-72`), impedindo que o navegador repinte ou reorganize o layout quando a imagem chegar da rede. O Cumulative Layout Shift (CLS) DEVE ser matematicamente inferior a 0.01.
+2. **Skeletons Isomórficos 1:1:** O estado de carregamento de qualquer superfície deve espelhar com precisão micrométrica a geometria do componente final carregado (mesma altura de card, mesma pílula de categoria, mesma posição do botão de compra). Proibido substituir telas inteiras ou grades de produtos por um spinner de loading isolado girando no centro da tela.
+3. **Animações Contidas em Transform e Opacity:** Toda transição visual deve operar exclusivamente nas propriedades de GPU (`transform` e `opacity`), sem alterar `height`, `margin` ou `padding` que forçam recálculo de layout do documento inteiro.

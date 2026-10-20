@@ -66,7 +66,8 @@ export const getPublicDirectory = createServerFn({ method: "GET" })
     }
 
     if (data?.city && data.city !== "todos" && data.city !== "Todas" && data.city !== "Global" && data.city !== "all" && data.city !== "Todas as Cidades") {
-      query = query.ilike("city", `%${data.city.trim()}%`);
+      const c = data.city.trim();
+      query = query.or(`city.ilike.%${c}%,address.ilike.%${c}%`);
     }
 
     if (data?.search && data.search.trim()) {
@@ -119,8 +120,8 @@ export const getPublicDirectory = createServerFn({ method: "GET" })
             typeof row.working_hours === "string"
               ? row.working_hours
               : row.working_hours?.weekdays || null,
-          is_verified: !!row.is_verified,
-          rating: row.rating ? Number(row.rating) : 0,
+          is_verified: !!row.is_verified || !!row.stores?.is_verified || !!storeSettings.is_verified,
+          rating: Number(row.reviews_count || 0) > 0 && row.rating ? Number(row.rating) : 0,
           reviews_count: Number(row.reviews_count || 0),
           avatar_url: row.avatar_url || storeLogo,
           banner_url: row.banner_url || storeSettings.bannerUrl || null,

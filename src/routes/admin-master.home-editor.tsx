@@ -236,7 +236,7 @@ function AdminMasterHomeEditorPage() {
     setEditingItem(item);
     setItemTitle(item.title || "");
     setItemSubtitle(item.subtitle || "");
-    setItemImageUrl(item.image_url);
+    setItemImageUrl(item.image_url || "");
     setItemImageDesktopUrl(item.image_desktop_url || "");
     setItemImageMobileUrl(item.image_mobile_url || "");
     setItemBgColor(item.bg_color || "");
@@ -610,7 +610,7 @@ function AdminMasterHomeEditorPage() {
                     >
                       <div className="relative aspect-video w-full bg-muted/50 overflow-hidden">
                         <img
-                          src={item.image_url}
+                          src={item.image_url || undefined}
                           alt={item.title || ""}
                           className="size-full object-cover"
                         />

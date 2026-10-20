@@ -31,7 +31,7 @@ export const dsButtonVariants = cva(
   }
 );
 
-export interface ButtonProps
+export interface DSButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof dsButtonVariants> {
   isLoading?: boolean;
@@ -40,7 +40,7 @@ export interface ButtonProps
   rightIcon?: React.ReactNode;
 }
 
-export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+export const Button = React.forwardRef<HTMLButtonElement, DSButtonProps>(
   (
     {
       className,
@@ -88,7 +88,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 Button.displayName = "DSButton";
 
 export interface IconButtonProps
-  extends Omit<ButtonProps, "leftIcon" | "rightIcon" | "children"> {
+  extends Omit<DSButtonProps, "leftIcon" | "rightIcon" | "children"> {
   icon: React.ReactNode;
   "aria-label": string;
 }

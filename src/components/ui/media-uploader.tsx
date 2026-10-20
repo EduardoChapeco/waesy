@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import { UploadCloud, X, Loader2, Image as ImageIcon, Film, AlertCircle, Crop, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { uploadMediaUniversal } from "@/services/storage.functions";
+import { uploadMediaUniversal, ingestExternalMediaUrl } from "@/services/storage.functions";
 import { getBrowserClient } from "@/lib/supabase";
 import { toast } from "sonner";
 import { ImageCropperDialog } from "@/components/ui/image-cropper-dialog";
@@ -121,33 +121,53 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  onUploadComplete?.(newList);
  };
 
- const handleAddExternalUrl = (urlToApply?: string) => {
- const rawUrl = (urlToApply || externalUrl).trim();
- if (!rawUrl) return;
+ const handleAddExternalUrl = async (urlToApply?: string) => {
+  const rawUrl = (urlToApply || externalUrl).trim();
+  if (!rawUrl) return;
 
- if (!/^https?:\/\//i.test(rawUrl)) {
- toast.error("Insira uma URL válida iniciando com http:// ou https://");
- return;
- }
+  if (!/^https?:\/\//i.test(rawUrl)) {
+   toast.error("Insira uma URL válida iniciando com http:// ou https://");
+   return;
+  }
 
- if (mediaList.length >= maxFiles && maxFiles > 1) {
- toast.error(`Você pode adicionar no máximo ${maxFiles} itens.`);
- return;
- }
+  if (mediaList.length >= maxFiles && maxFiles > 1) {
+   toast.error(`Você pode adicionar no máximo ${maxFiles} itens.`);
+   return;
+  }
 
- const isVid = Boolean(rawUrl.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i));
- const newMediaItem: MediaData = {
- id: `media-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
- url: rawUrl,
- path: rawUrl,
- type: isVid ? "video" : "image",
- };
+  setUploading(true);
+  onUploadingStateChange?.(true);
+  setUploadProgress("Importando mídia por URL...");
 
- const updatedList: MediaData[] = maxFiles === 1 ? [newMediaItem] : [...mediaList, newMediaItem];
- notifyChange(updatedList);
- setExternalUrl("");
- setShowUrlInput(false);
- toast.success("Mídia vinculada por URL com sucesso!");
+  try {
+   const ingested = await ingestExternalMediaUrl({
+    data: {
+     externalUrl: rawUrl,
+     bucket,
+     folder,
+    },
+   });
+
+   const newMediaItem: MediaData = {
+    id: `media-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    url: ingested.url,
+    path: ingested.path,
+    type: ingested.type,
+   };
+
+   const updatedList: MediaData[] = maxFiles === 1 ? [newMediaItem] : [...mediaList, newMediaItem];
+   notifyChange(updatedList);
+   setExternalUrl("");
+   setShowUrlInput(false);
+   toast.success("Mídia importada e armazenada com sucesso!");
+  } catch (err: unknown) {
+   const msg = err instanceof Error ? err.message : "Falha ao importar mídia da URL externa.";
+   toast.error(msg);
+  } finally {
+   setUploading(false);
+   onUploadingStateChange?.(false);
+   setUploadProgress(null);
+  }
  };
 
  const handleFiles = async (files: File[]) => {

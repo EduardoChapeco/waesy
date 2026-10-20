@@ -135,7 +135,7 @@ export function LeadRow({
 /* 3. ActivityTimeline                                                        */
 /* -------------------------------------------------------------------------- */
 
-export interface TimelineItem {
+export interface CrmTimelineItem {
   id: string;
   title: string;
   description?: string;
@@ -144,7 +144,7 @@ export interface TimelineItem {
 }
 
 export interface ActivityTimelineProps {
-  items: TimelineItem[];
+  items: CrmTimelineItem[];
   className?: string;
 }
 

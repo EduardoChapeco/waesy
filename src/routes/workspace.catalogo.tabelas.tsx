@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { EmptyState } from "@/components/state/states";
 import { listPriceTables, createPriceTable, updatePriceTable, deletePriceTable, listPriceTableItems, upsertPriceTableItem, type PriceTableDTO, type PriceTableItemDTO } from "@/services/price-tables.functions";
 import { formatMoney } from "@/lib/money";
+import { useWindowSizeClass } from "@/hooks/use-mobile";
 
 export const Route = createFileRoute("/workspace/catalogo/tabelas")({
  head: () => ({ meta: [{ title: "Tabelas de Preços (B2B, Atacado, Varejo) | Workspace" }] }),
@@ -28,8 +29,195 @@ export const Route = createFileRoute("/workspace/catalogo/tabelas")({
  component: WorkspacePriceTablesPage,
 });
 
+interface PriceTableItemsViewProps {
+  filteredItems: PriceTableItemDTO[];
+  isLoadingItems: boolean;
+  onInlinePriceChange: (productId: string, newPriceCents: number) => void;
+  onSaveInlineItem: (item: PriceTableItemDTO) => Promise<void>;
+}
+
+function PriceTableItemsMobileView({
+  filteredItems,
+  isLoadingItems,
+  onInlinePriceChange,
+  onSaveInlineItem,
+}: PriceTableItemsViewProps) {
+  if (filteredItems.length === 0) {
+    return (
+      <div className="py-8 text-center text-sm text-muted-foreground">
+        {isLoadingItems
+          ? "Carregando catálogo de produtos..."
+          : "Nenhum produto encontrado."}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {filteredItems.map((item) => (
+        <div
+          key={item.product_id}
+          className="rounded-lg border border-border/50 bg-background p-4 space-y-3 shadow-2xs"
+        >
+          {/* Topo do Card: Imagem e Dados do Produto */}
+          <div className="flex items-start gap-3">
+            {item.product_image_url ? (
+              <img
+                src={item.product_image_url}
+                alt={item.product_name}
+                className="size-12 rounded-lg object-cover shrink-0 border border-border/40"
+              />
+            ) : (
+              <div className="size-12 rounded-lg bg-muted/60 flex items-center justify-center shrink-0 border border-border/40">
+                <Package className="size-6 text-muted-foreground/50" />
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <h3 className="font-bold text-base text-foreground leading-snug break-words text-wrap whitespace-normal">
+                {item.product_name}
+              </h3>
+              <div className="flex flex-wrap items-center gap-2 mt-1">
+                {item.product_sku && (
+                  <span className="text-xs text-muted-foreground font-mono">
+                    SKU: {item.product_sku}
+                  </span>
+                )}
+                <span className="text-xs text-muted-foreground">
+                  • Base: <strong className="font-mono text-foreground">{formatMoney(item.base_price_cents)}</strong>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Campo de Ajuste de Preço Touch (44px) */}
+          <div className="pt-2 border-t border-border/30 space-y-2">
+            <Label className="text-xs font-semibold text-muted-foreground">
+              Preço nesta Tabela (R$)
+            </Label>
+            <div className="flex items-center gap-2">
+              <CurrencyField
+                value={item.custom_price_cents}
+                onChange={(cents) => {
+                  onInlinePriceChange(item.product_id, cents ?? 0);
+                }}
+                onEnter={() => onSaveInlineItem(item)}
+                placeholder="0,00"
+                className="h-11 min-h-11 rounded-lg text-base font-mono font-bold flex-1 bg-card border-border/70"
+              />
+              <Button
+                type="button"
+                onClick={() => onSaveInlineItem(item)}
+                className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground shrink-0 cursor-pointer shadow-2xs"
+              >
+                <Save className="size-4" />
+                <span>Salvar</span>
+              </Button>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function PriceTableItemsDesktopView({
+  filteredItems,
+  isLoadingItems,
+  onInlinePriceChange,
+  onSaveInlineItem,
+}: PriceTableItemsViewProps) {
+  return (
+    <div className="rounded-lg border border-border/40 overflow-hidden">
+      <table className="w-full text-xs">
+        <thead className="bg-muted/40 text-muted-foreground font-semibold">
+          <tr>
+            <th className="py-3 px-3 text-left">Produto</th>
+            <th className="py-3 px-3 text-right">Preço Base</th>
+            <th className="py-3 px-3 text-right">Preço nesta Tabela</th>
+            <th className="py-3 px-3 text-center w-20">Ação</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-border/40">
+          {filteredItems.length === 0 ? (
+            <tr>
+              <td colSpan={4} className="py-8 text-center text-muted-foreground">
+                {isLoadingItems
+                  ? "Carregando catálogo de produtos..."
+                  : "Nenhum produto encontrado."}
+              </td>
+            </tr>
+          ) : (
+            filteredItems.map((item) => (
+              <tr key={item.product_id} className="hover:bg-muted/20 transition-colors">
+                <td className="py-3 px-3">
+                  <div className="flex items-center gap-3">
+                    {item.product_image_url ? (
+                      <img
+                        src={item.product_image_url}
+                        alt={item.product_name}
+                        className="size-8 rounded-lg object-cover shrink-0"
+                      />
+                    ) : (
+                      <div className="size-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                        <Package className="size-4 text-muted-foreground/50" />
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <span className="font-bold text-foreground block break-words text-wrap leading-tight whitespace-normal">
+                        {item.product_name}
+                      </span>
+                      {item.product_sku && (
+                        <span className="text-xs text-muted-foreground font-mono">
+                          SKU: {item.product_sku}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </td>
+
+                <td className="py-3 px-3 text-right font-mono text-muted-foreground">
+                  {formatMoney(item.base_price_cents)}
+                </td>
+
+                <td className="py-3 px-3 text-right">
+                  <div className="inline-flex items-center gap-2 justify-end w-36 ml-auto">
+                    <CurrencyField
+                      compact
+                      value={item.custom_price_cents}
+                      onChange={(cents) => {
+                        onInlinePriceChange(item.product_id, cents ?? 0);
+                      }}
+                      onEnter={() => onSaveInlineItem(item)}
+                      placeholder="0,00"
+                      className="text-right font-mono font-bold bg-background text-xs"
+                    />
+                  </div>
+                </td>
+
+                <td className="py-3 px-3 text-center">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onSaveInlineItem(item)}
+                    className="size-7 text-primary hover:bg-primary/10"
+                    title="Salvar Preço (Enter)"
+                  >
+                    <Save className="size-3.5" />
+                  </Button>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function WorkspacePriceTablesPage() {
  const { tables: initialTables } = ((Route.useLoaderData?.() as any) || {});
+ const { isCompact } = useWindowSizeClass();
+ const isMobile = isCompact;
  const [tables, setTables] = useState<PriceTableDTO[]>(initialTables || []);
  const [selectedTable, setSelectedTable] = useState<PriceTableDTO | null>(
  initialTables && initialTables.length > 0 ? initialTables[0] : null,
@@ -189,7 +377,7 @@ function WorkspacePriceTablesPage() {
  <div
  key={tbl.id}
  onClick={() => handleSelectTable(tbl)}
- className={`p-4 rounded-lg border transition-all cursor-pointer space-y-2 ${
+ className={`p-4 rounded-lg border transition-colors cursor-pointer space-y-2 ${
  isSelected
  ? "bg-card border-primary ring-2 ring-primary/10 shadow-xs"
  : "bg-card/60 border-border/60 hover:bg-card"
@@ -210,7 +398,7 @@ function WorkspacePriceTablesPage() {
  </div>
 
  {tbl.description && (
- <p className="text-xs text-muted-foreground line-clamp-1">{tbl.description}</p>
+ <p className="text-xs text-muted-foreground break-words text-wrap leading-tight">{tbl.description}</p>
  )}
 
  <div className="flex items-center justify-between pt-2 border-t border-border/40 text-xs">
@@ -293,168 +481,23 @@ function WorkspacePriceTablesPage() {
  />
  </div>
 
-              {/* ── LISTAGEM DE PRODUTOS DA TABELA: DUAL-VIEW MOBILE / DESKTOP ── */}
-              {/* Visualização Mobile: Cards Verticais Independentes (block md:hidden) */}
-              <div className="block md:hidden space-y-3">
-                {filteredItems.length === 0 ? (
-                  <div className="py-8 text-center text-sm text-muted-foreground">
-                    {isLoadingItems
-                      ? "Carregando catálogo de produtos..."
-                      : "Nenhum produto encontrado."}
-                  </div>
-                ) : (
-                  filteredItems.map((item) => (
-                    <div
-                      key={item.product_id}
-                      className="rounded-lg border border-border/50 bg-background p-4 space-y-3 shadow-2xs"
-                    >
-                      {/* Topo do Card: Imagem e Dados do Produto */}
-                      <div className="flex items-center gap-3">
-                        {item.product_image_url ? (
-                          <img
-                            src={item.product_image_url}
-                            alt={item.product_name}
-                            className="size-12 rounded-lg object-cover shrink-0 border border-border/40"
-                          />
-                        ) : (
-                          <div className="size-12 rounded-lg bg-muted/60 flex items-center justify-center shrink-0 border border-border/40">
-                            <Package className="size-6 text-muted-foreground/50" />
-                          </div>
-                        )}
-                        <div className="min-w-0 flex-1">
-                          <h3 className="font-bold text-base text-foreground leading-snug truncate">
-                            {item.product_name}
-                          </h3>
-                          <div className="flex items-center gap-2 mt-1">
-                            {item.product_sku && (
-                              <span className="text-xs text-muted-foreground font-mono">
-                                SKU: {item.product_sku}
-                              </span>
-                            )}
-                            <span className="text-xs text-muted-foreground">
-                              • Base: <strong className="font-mono text-foreground">{formatMoney(item.base_price_cents)}</strong>
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Campo de Ajuste de Preço Touch (44px) */}
-                      <div className="pt-2 border-t border-border/30 space-y-2">
-                        <Label className="text-xs font-semibold text-muted-foreground">
-                          Preço nesta Tabela (R$)
-                        </Label>
-                        <div className="flex items-center gap-2">
-                          <CurrencyField
-                            value={item.custom_price_cents}
-                            onChange={(cents) => {
-                              handleInlinePriceChange(item.product_id, cents ?? 0);
-                            }}
-                            onEnter={() => handleSaveInlineItem(item)}
-                            placeholder="0,00"
-                            className="h-11 rounded-lg text-base font-mono font-bold flex-1 bg-card border-border/70"
-                          />
-                          <Button
-                            type="button"
-                            onClick={() => handleSaveInlineItem(item)}
-                            className="h-11 px-4 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground shrink-0 cursor-pointer shadow-2xs"
-                          >
-                            <Save className="size-4" />
-                            <span>Salvar</span>
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {/* Visualização Desktop: Tabela de Produtos com Edição Inline (hidden md:block) */}
-              <div className="hidden md:block rounded-lg border border-border/40 overflow-hidden">
-                <table className="w-full text-xs">
-                  <thead className="bg-muted/40 text-muted-foreground font-semibold">
-                    <tr>
-                      <th className="py-3 px-3 text-left">Produto</th>
-                      <th className="py-3 px-3 text-right">Preço Base</th>
-                      <th className="py-3 px-3 text-right">Preço nesta Tabela</th>
-                      <th className="py-3 px-3 text-center w-20">Ação</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border/40">
-                    {filteredItems.length === 0 ? (
-                      <tr>
-                        <td colSpan={4} className="py-8 text-center text-muted-foreground">
-                          {isLoadingItems
-                            ? "Carregando catálogo de produtos..."
-                            : "Nenhum produto encontrado."}
-                        </td>
-                      </tr>
-                    ) : (
-                      filteredItems.map((item) => (
-                        <tr key={item.product_id} className="hover:bg-muted/20 transition-colors">
-                          <td className="py-3 px-3">
-                            <div className="flex items-center gap-3">
-                              {item.product_image_url ? (
-                                <img
-                                  src={item.product_image_url}
-                                  alt={item.product_name}
-                                  className="size-8 rounded-lg object-cover shrink-0"
-                                />
-                              ) : (
-                                <div className="size-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                                  <Package className="size-4 text-muted-foreground/50" />
-                                </div>
-                              )}
-                              <div className="min-w-0">
-                                <span className="font-bold text-foreground block truncate">
-                                  {item.product_name}
-                                </span>
-                                {item.product_sku && (
-                                  <span className="text-xs text-muted-foreground font-mono">
-                                    SKU: {item.product_sku}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </td>
-
-                          <td className="py-3 px-3 text-right font-mono text-muted-foreground">
-                            {formatMoney(item.base_price_cents)}
-                          </td>
-
-                          <td className="py-3 px-3 text-right">
-                            <div className="inline-flex items-center gap-2 justify-end w-36 ml-auto">
-                              <CurrencyField
-                                compact
-                                value={item.custom_price_cents}
-                                onChange={(cents) => {
-                                  handleInlinePriceChange(item.product_id, cents ?? 0);
-                                }}
-                                onEnter={() => handleSaveInlineItem(item)}
-                                placeholder="0,00"
-                                className="text-right font-mono font-bold bg-background text-xs"
-                              />
-                            </div>
-                          </td>
-
-                          <td className="py-3 px-3 text-center">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleSaveInlineItem(item)}
-                              className="size-7 text-primary hover:bg-primary/10"
-                              title="Salvar Preço (Enter)"
-                            >
-                              <Save className="size-3.5" />
-                            </Button>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
+              {isMobile ? (
+                <PriceTableItemsMobileView
+                  filteredItems={filteredItems}
+                  isLoadingItems={isLoadingItems}
+                  onInlinePriceChange={handleInlinePriceChange}
+                  onSaveInlineItem={handleSaveInlineItem}
+                />
+              ) : (
+                <PriceTableItemsDesktopView
+                  filteredItems={filteredItems}
+                  isLoadingItems={isLoadingItems}
+                  onInlinePriceChange={handleInlinePriceChange}
+                  onSaveInlineItem={handleSaveInlineItem}
+                />
+              )}
             </div>
- ) : (
+          ) : (
  <EmptyState
  title="Selecione uma Tabela"
  description="Gerencie regras comerciais personalizadas para B2B, atacado, representantes e clientes VIP."

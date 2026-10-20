@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Clock, Eye, ArrowRight, Share2, Newspaper, MapPin, CheckCircle2 } from "lucide-react";
+import { Clock, Eye, ArrowRight, Share2, MapPin, CheckCircle2 } from "lucide-react";
 import { type NewsArticleDTO } from "@/services/news.functions";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -49,8 +49,8 @@ export function NewsCard({
           className
         )}
       >
-        <div className="size-20 sm:size-24 rounded-lg overflow-hidden bg-muted shrink-0 relative aspect-square">
-          {article.cover_media_url ? (
+        {article.cover_media_url ? (
+          <div className="size-20 sm:size-24 rounded-lg overflow-hidden bg-muted shrink-0 relative aspect-square">
             <img
               src={article.cover_media_url}
               alt={article.title}
@@ -60,12 +60,8 @@ export function NewsCard({
                 (e.currentTarget as HTMLElement).style.display = "none";
               }}
             />
-          ) : (
-            <div className="size-full flex items-center justify-center bg-muted/40 text-muted-foreground">
-              <Newspaper className="size-6 opacity-30" />
-            </div>
-          )}
-        </div>
+          </div>
+        ) : null}
 
         <div className="flex-1 min-w-0 flex flex-col justify-between h-full py-1 space-y-1">
           <div className="space-y-1">
@@ -191,7 +187,7 @@ export function NewsCard({
     );
   }
 
-  // ── 3. MODO HERO: Manchete principal bipartida no desktop (7 colunas imagem, 5 texto) ──
+  // ── 3. MODO HERO: Manchete principal bipartida no desktop ──
   if (activeVariant === "hero") {
     return (
       <section
@@ -266,8 +262,7 @@ export function NewsCard({
     );
   }
 
-  // ── 4. MODO GRID (PADRÃO): Card Editorial Contido para Grades Multi-colunares ──
-  // ── 4. MODO GRID (PADRÃO): Card Limpo Estilo Post (Clean Post / Modern Social Editorial) ──
+  // ── 4. MODO GRID (PADRÃO): Card Editorial Limpo Estilo Post ──
   const categoryLabel = article.kicker || article.category;
 
   return (
@@ -278,7 +273,7 @@ export function NewsCard({
       )}
     >
       <div className="flex-1 flex flex-col">
-        {/* 1. Cabeçalho Minimalista em Linha Única (Post Style) */}
+        {/* 1. Cabeçalho Minimalista em Linha Única */}
         <div className="flex items-center justify-between gap-2 mb-3">
           <div className="flex items-center gap-2 min-w-0">
             <div className="size-8 rounded-full overflow-hidden bg-primary/10 text-primary border border-border/50 flex items-center justify-center shrink-0 font-bold text-xs">
@@ -321,7 +316,26 @@ export function NewsCard({
           </div>
         </div>
 
-        {/* 2. Mídia Fotográfica Estilo Post (Âncora Visual Central) */}
+        {/* 2. Manchete Editorial Limpa */}
+        <div className="space-y-2 mb-3">
+          <Link
+            to="/noticias/$slug"
+            params={{ slug: article.slug }}
+            className="block group-hover:text-primary transition-colors"
+          >
+            <h3 className="text-sm sm:text-base font-bold tracking-tight text-foreground leading-snug line-clamp-2 break-words text-wrap">
+              {article.title}
+            </h3>
+          </Link>
+
+          {article.subtitle && article.subtitle !== article.title && (
+            <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 break-words text-wrap">
+              {article.subtitle}
+            </p>
+          )}
+        </div>
+
+        {/* 3. Mídia Fotográfica (Renderizada apenas se houver imagem autêntica legítima) */}
         {article.cover_media_url && (
           <Link
             to="/noticias/$slug"
@@ -356,25 +370,6 @@ export function NewsCard({
             )}
           </Link>
         )}
-
-        {/* 3. Manchete Editorial Limpa sem Quebras Bruscas */}
-        <div className="space-y-2 mb-3 flex-1">
-          <Link
-            to="/noticias/$slug"
-            params={{ slug: article.slug }}
-            className="block group-hover:text-primary transition-colors"
-          >
-            <h3 className="text-sm sm:text-base font-bold tracking-tight text-foreground leading-snug line-clamp-2 break-words text-wrap">
-              {article.title}
-            </h3>
-          </Link>
-
-          {article.subtitle && article.subtitle !== article.title && (
-            <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 break-words text-wrap">
-              {article.subtitle}
-            </p>
-          )}
-        </div>
       </div>
 
       {/* 4. Rodapé Minimalista com Touch Target Canônico de 44px */}

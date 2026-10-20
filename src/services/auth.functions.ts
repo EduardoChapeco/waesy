@@ -513,12 +513,12 @@ export const signUpWithPassword = createServerFn({ method: "POST" })
 export const signOut = createServerFn({ method: "POST" }).handler(async () => {
   try {
    let request: Request | null = null;
-   try { request = getRequest(); } catch {}
+   try { request = getRequest(); } catch (err) { console.warn("[auth:signOut] getRequest error:", err); }
    let userId: string | null = null;
    try {
     const identity = await getServerIdentity();
     userId = identity.id || null;
-   } catch {}
+   } catch (err) { console.warn("[auth:signOut] getServerIdentity error:", err); }
 
    const supabase = await getSSRClient();
  const { error } = await supabase.auth.signOut();
@@ -1023,7 +1023,7 @@ export const revokeUserDevice = createServerFn({ method: "POST" })
 
  // Registra evento de revogação
  let request: Request | null = null;
- try { request = getRequest(); } catch {}
+ try { request = getRequest(); } catch (err) { console.warn("[auth:revokeUserDevice] getRequest error:", err); }
  await recordAuthAuditEvent({
  profileId: identity.id,
  eventType: "session_revoked",

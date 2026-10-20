@@ -1,4 +1,5 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { useWindowSizeClass } from "@/hooks/use-mobile";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { Plus, Wallet, ArrowLeft, Download, Search, ArrowDownLeft, ArrowUpRight, History, TrendingUp, AlertTriangle, FileSpreadsheet, CheckCircle2 } from "lucide-react";
@@ -70,6 +71,7 @@ const COMMON_PRESETS = [
 ];
 
 function CaixaLancamentosPage() {
+  const { isCompact: isMobile } = useWindowSizeClass();
   const { register } = (Route.useLoaderData() as any) || {};
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -481,8 +483,9 @@ function CaixaLancamentosPage() {
         />
       ) : (
         <>
-          {/* ── VISUALIZAÇÃO MOBILE: CARDS VERTICAIS (block md:hidden) ── */}
-          <div className="block md:hidden space-y-3">
+          {isMobile ? (
+            /* ── VISUALIZAÇÃO MOBILE: CARDS VERTICAIS ── */
+            <div className="space-y-3">
             {filteredEntries.map((entry: any) => {
               const isPositive = entry.amount_cents >= 0;
 
@@ -537,8 +540,9 @@ function CaixaLancamentosPage() {
             })}
           </div>
 
-          {/* ── VISUALIZAÇÃO DESKTOP: TABELA (hidden md:block) ── */}
-          <div className="hidden md:block bg-card rounded-lg border border-border/70 overflow-hidden shadow-2xs">
+          ) : (
+            /* ── VISUALIZAÇÃO DESKTOP: TABELA ── */
+            <div className="bg-card rounded-lg border border-border/70 overflow-hidden shadow-2xs">
             <Table>
               <TableHeader>
                 <TableRow className="border-border/60 hover:bg-transparent">
@@ -583,7 +587,8 @@ function CaixaLancamentosPage() {
                 ))}
               </TableBody>
             </Table>
-          </div>
+            </div>
+          )}
         </>
       )}
     </div>

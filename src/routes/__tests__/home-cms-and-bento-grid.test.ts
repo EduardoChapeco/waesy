@@ -60,14 +60,14 @@ describe("Homepage Nativa 3.0 & CMS Omni-Builder (DEC-220)", () => {
       expect(isHealthyImageUrl("/images/hero.webp")).toBe(true);
     });
 
-    it("deve resolver capa editorial temática caso a imagem original seja corrompida", () => {
+        it("deve retornar null para capa editorial honesta caso a imagem seja nula ou corrompida (Invariante B.8/B.33)", () => {
       const fallback0 = resolveHealthyCover(null, 0);
-      expect(fallback0).toBe(CANONICAL_EDITORIAL_FALLBACKS[0]);
+      expect(fallback0).toBeNull();
 
       const fallback1 = resolveHealthyCover(undefined, 1);
-      expect(fallback1).toBe(CANONICAL_EDITORIAL_FALLBACKS[1]);
+      expect(fallback1).toBeNull();
 
-      const validUrl = "https://images.unsplash.com/photo-custom";
+      const validUrl = "https://cdn.waesy.com.br/custom-photo.jpg";
       expect(resolveHealthyCover(validUrl, 0)).toBe(validUrl);
     });
   });
@@ -105,12 +105,14 @@ describe("Homepage Nativa 3.0 & CMS Omni-Builder (DEC-220)", () => {
       expect(bento?.aspect_ratio).toBe("16:9");
     });
 
-    it("todos os itens canônicos devem ter URLs de destino seguras e imagens preenchidas", () => {
+        it("todos os itens canônicos devem ter URLs de destino seguras e imagem nula ou válida sem estoque sintético", () => {
       CANONICAL_DEFAULT_HOME_SECTIONS.forEach((sec) => {
         sec.items.forEach((item) => {
-          expect(item.image_url).toBeTruthy();
           expect(item.target_url).toBeTruthy();
           expect(item.target_url.startsWith("/")).toBe(true);
+          if (item.image_url) {
+            expect(isHealthyImageUrl(item.image_url)).toBe(true);
+          }
         });
       });
     });
@@ -122,13 +124,13 @@ describe("Homepage Nativa 3.0 & CMS Omni-Builder (DEC-220)", () => {
         id: "post-101",
         title: "Festival Gastronômico no Parque Central",
         summary: "Mais de 20 restaurantes locais reunidos no fim de semana.",
-        coverUrl: resolveHealthyCover(null, 2),
+        coverUrl: "https://cdn.waesy.com.br/festival.jpg",
         category: "Gastronomia",
         publishedAt: new Date().toISOString(),
         targetUrl: "/feed?postId=post-101",
         authorName: "Prefeitura & Comércio",
         authorHandle: "@prefeiturachapeco",
-        authorAvatar: "https://images.unsplash.com/photo-avatar",
+        authorAvatar: "https://cdn.waesy.com.br/avatar.jpg",
         isVerified: true,
         likesCount: 42,
         commentsCount: 7,

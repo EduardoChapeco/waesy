@@ -49,7 +49,7 @@ export const setTenantContext = createServerFn({ method: "POST" })
       }
       try {
         await clearIdentityCache();
-      } catch {}
+      } catch (err) { console.warn("[identity] caught notice:", err); }
       return { success: true, store_id: null };
     }
 
@@ -116,7 +116,7 @@ export const setTenantContext = createServerFn({ method: "POST" })
 
     try {
       await clearIdentityCache();
-    } catch {}
+    } catch (err) { console.warn("[identity] caught notice:", err); }
 
     return { success: true, store_id, storeName: targetStore.name };
   });

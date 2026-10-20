@@ -11,7 +11,7 @@
 
 import crypto from "crypto";
 import { getServerClient } from "@/lib/supabase";
-import { extractContentMechanically, type MechanicalExtractionResult } from "./mechanical-extractor";
+import { extractContentMechanically, cleanHtmlText, type MechanicalExtractionResult } from "./mechanical-extractor";
 import { validateMechanicalCompleteness, generateTitleHash, isHealthyImageUrl } from "./integrity-gate";
 import { curateWithEditorialSquad } from "./editorial-squad";
 import { parseFeed } from "@/lib/mining/rss-ingester.engine";
@@ -240,7 +240,11 @@ export async function executeAutomatedNewsHarvest(
           slug,
           kicker: curatedArticle.kicker,
           subtitle: curatedArticle.subtitle,
-          content_sections: curatedArticle.mobile_sections,
+          content_sections: (curatedArticle.mobile_sections || []).map((s: any) => ({
+            type: s.type || "paragraph",
+            ...(s.heading ? { heading: cleanHtmlText(s.heading) } : {}),
+            content: cleanHtmlText(s.content),
+          })),
           cover_media_url: coverMediaUrl,
           cover_media_type: "image",
           category: curatedArticle.category,

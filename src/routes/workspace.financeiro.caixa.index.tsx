@@ -25,6 +25,7 @@ import { parseCurrencyInputToCents } from "@/lib/cash";
 import { formatDateTime } from "@/lib/datetime";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
+import { useWindowSizeClass } from "@/hooks/use-mobile";
 
 export const Route = createFileRoute("/workspace/financeiro/caixa/")({
   head: () => ({ meta: [{ title: "Fluxo de Caixa | Workspace Waesy" }] }),
@@ -101,6 +102,7 @@ const CAIXA_TOUR_SLIDES: TourSlide[] = [
 ];
 
 function CashRegisterManagerPage() {
+  const { isCompact: isMobile } = useWindowSizeClass();
   const [isTourOpen, setIsTourOpen] = useState(false);
   const loaderData = ((Route.useLoaderData?.() as any) || {});
   const { register, history } = loaderData;
@@ -787,8 +789,9 @@ function CashRegisterManagerPage() {
       </div>
     ) : (
       <>
-        {/* ── 1. Mobile List Layout para Histórico de Turnos ── */}
-        <div className="space-y-3 block md:hidden">
+        {isMobile ? (
+          /* ── 1. Mobile List Layout para Histórico de Turnos ── */
+          <div className="space-y-3">
           {history.map((turn: any) => {
             const diff =
               turn.final_balance_cents !== null && turn.expected_balance_cents !== null
@@ -855,8 +858,9 @@ function CashRegisterManagerPage() {
           })}
         </div>
 
-        {/* ── 2. Desktop High-Density Table Layout ── */}
-        <div className="hidden md:block bg-card border border-border/70 rounded-lg overflow-hidden shadow-2xs">
+        ) : (
+          /* ── 2. Desktop High-Density Table Layout ── */
+          <div className="bg-card border border-border/70 rounded-lg overflow-hidden shadow-2xs">
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/30">
@@ -934,7 +938,8 @@ function CashRegisterManagerPage() {
               })}
             </TableBody>
           </Table>
-        </div>
+          </div>
+        )}
       </>
     )}
   </TabsContent>

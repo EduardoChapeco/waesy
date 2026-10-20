@@ -8,7 +8,7 @@ import { formatRelativeTime } from "@/lib/datetime";
 import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
 import { FavoriteButton } from "@/components/common/favorite-button";
 import { MapLibreCanvas } from "@/components/mobility/maplibre-canvas";
-import { resolveClassifiedNiche, getClassifiedPrimaryCtaLabel, isClassifiedConversational, getClassifiedPaymentMethods, isNichePaymentApplicable } from "@/lib/classifieds/semantics";
+import { resolveClassifiedNiche, getClassifiedPrimaryCtaLabel, isClassifiedConversational, getClassifiedPaymentMethods, isNichePaymentApplicable, getNicheTabLabels } from "@/lib/classifieds/semantics";
 import { resolveClassifiedDetailedSpecs } from "@/lib/classifieds/canonical-specs-resolver";
 import { NicheSpecificationsDisplay } from "@/components/common/niche-specifications-display";
 import { LeadFormModal } from "@/components/leads/lead-form-modal";
@@ -148,18 +148,20 @@ export function ClassifiedDetailDesktop({
     );
   }, [niche, classified.attributes, attrs]);
 
+  const nicheTabLabels = useMemo(() => getNicheTabLabels(niche.id), [niche.id]);
+
   const tabs = useMemo(() => {
     const list: Array<{ id: "overview" | "media" | "seller"; label: string }> = [];
     list.push({
       id: "overview",
-      label: isTravelOrHospitality ? "Infos do pacote" : "Detalhes do Item",
+      label: isTravelOrHospitality ? "Infos do Pacote" : nicheTabLabels.overviewTab,
     });
     if (images.length > 1) {
-      list.push({ id: "media", label: "Fotos & Mídia" });
+      list.push({ id: "media", label: nicheTabLabels.mediaTab || "Fotos & Mídia" });
     }
-    list.push({ id: "seller", label: "Anunciante / Empresa" });
+    list.push({ id: "seller", label: nicheTabLabels.sellerTab || "Anunciante / Empresa" });
     return list;
-  }, [isTravelOrHospitality, images.length]);
+  }, [isTravelOrHospitality, nicheTabLabels, images.length]);
 
   const priceCents = Number(classified.price_cents || 0);
   const maxInstallments = Math.max(1, Number(attrs.max_installments) || 1);
@@ -252,7 +254,32 @@ export function ClassifiedDetailDesktop({
         action: () => onDownloadDigital?.(),
       };
     }
-    if (classified.category === "job") {
+    if (niche.id === "job" || classified.category === "job") {
+      return {
+        label: "Candidatar-se à Vaga",
+        action: () => {
+          if (onOpenApplyModal) onOpenApplyModal();
+          else if (cleanPhone) handleWhatsApp();
+        },
+      };
+    }
+    if (niche.id === "event" || classified.category === "event") {
+      return {
+        label: isAddingCart ? "Adicionando..." : "Garantir Ingresso",
+        action: handleAddClassifiedToCart,
+      };
+    }
+    if (niche.id === "agri") {
+      return {
+        label: "Agendar Vistoria",
+        action: () => {
+          if (cleanPhone) handleWhatsApp();
+          else if (onOpenProposalModal) onOpenProposalModal();
+          else handleStartNativeChat();
+        },
+      };
+    }
+    if (false) {
       return {
         label: "Candidatar-se à Vaga",
         action: () => {
@@ -518,12 +545,12 @@ export function ClassifiedDetailDesktop({
               <Badge variant="outline" className="text-xs font-bold text-primary border-primary/30 bg-primary/10">
                 {niche.shortLabel || niche.title}
               </Badge>
-              {classified.condition && (
+              {classified.condition && !["hospitality_stay", "real_estate_sale", "real_estate_rent", "service", "job", "event", "travel", "digital", "subscription", "business"].includes(niche.id) && (
                 <Badge variant="secondary" className="text-xs font-medium">
                   {classified.condition === "new" ? "Novo na Caixa" : classified.condition === "refurbished" ? "Revisado" : "Usado"}
                 </Badge>
               )}
-              {attrs.delivery_available && (
+              {attrs.delivery_available && niche.showDeliveryBadges && (
                 <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-md">
                   <Truck className="size-3.5" /> Envio Disponível
                 </span>
@@ -865,7 +892,7 @@ export function ClassifiedDetailDesktop({
 
 
           {/* Pagamentos & Financiamento */}
-          {(displayMode === "continuous_list" || activeTab === "overview") && (
+          {(displayMode === "continuous_list" || activeTab === "overview") && isPaymentAllowed && (acceptsPix || acceptsCard || acceptsBoleto || acceptsCarne || paymentMethodsList.length > 0) && (
             <div className="rounded-lg border border-border/60 bg-card p-5 space-y-4">
               <div className="flex items-center justify-between border-b border-border/40 pb-3">
                 <div className="flex items-center gap-2">
@@ -1285,7 +1312,7 @@ export function ClassifiedDetailDesktop({
                 </Button>
               )}
 
-              {onOpenProposalModal && !isDonation && (
+              {onOpenProposalModal && !isDonation && niche.id !== "job" && classified.category !== "job" && niche.id !== "event" && (
                 <Button
                   type="button"
                   variant="outline"

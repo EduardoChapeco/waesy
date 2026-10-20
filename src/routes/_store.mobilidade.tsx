@@ -11,6 +11,8 @@ import { formatMoney } from "@/lib/money";
 import { calculateMobilityQuote, createMobilityRequest, type MobilityServiceType, type MobilityRequestDTO, type MobilityQuoteEstimate } from "@/services/mobility.functions";
 import { MapLibreCanvas, type MapPoint } from "@/components/mobility/maplibre-canvas";
 import { ActionAuthGuardModal } from "@/components/common/action-auth-guard-modal";
+import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
+import { ModularSurfaceFeed } from "@/components/commerce/modular-surface-feed";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_store/mobilidade")({
@@ -27,11 +29,14 @@ export const Route = createFileRoute("/_store/mobilidade")({
   loader: async () => {
     try {
       const { getUserSession } = await import("@/services/auth.functions");
-      const session = await getUserSession().catch(() => null);
-      return { session };
+      const [session, surfaceFeed] = await Promise.all([
+        getUserSession().catch(() => null),
+        getModularSurfaceFeed({ data: { surfaceSlug: "mobilidade" } }).catch(() => ({ sections: [], allProducts: [] })),
+      ]);
+      return { session, surfaceFeed };
     } catch (err) {
       console.error("[loader:_store.mobilidade] Unhandled loader error:", err);
-      return { session: null };
+      return { session: null, surfaceFeed: { sections: [], allProducts: [] } };
     }
   },
   component: MobilityPage,
@@ -109,7 +114,7 @@ const PRESET_PLACES = [
 ];
 
 function MobilityPage() {
-  const { session } = (Route.useLoaderData?.() as any) || {};
+  const { session, surfaceFeed } = (Route.useLoaderData?.() as any) || {};
   const navigate = useNavigate();
   const [authGuardOpen, setAuthGuardOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<MobilityServiceType>("ride_car");
@@ -781,6 +786,13 @@ function MobilityPage() {
  Nova Corrida
  </Button>
  </div>
+ </div>
+ )}
+
+ {/* Destaques CMS Master (B.20 Bilateralidade) */}
+ {surfaceFeed?.sections && surfaceFeed.sections.length > 0 && (
+ <div className="pt-2 border-t border-border/40">
+ <ModularSurfaceFeed sections={surfaceFeed.sections} />
  </div>
  )}
  </div>

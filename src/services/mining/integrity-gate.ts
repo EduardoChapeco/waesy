@@ -187,16 +187,21 @@ export function validateMechanicalCompleteness(result: MechanicalExtractionResul
     };
   }
 
-  if (NON_NEWS_STUB_PATTERNS.some((pattern) => pattern.test(result.title))) {
-    return {
-      isValid: false,
-      reason: `Pauta identificada como grade de programação de TV ou índice de vídeo sem matéria escrita: "${result.title}".`,
-      qualityScore: 0,
-      wordCount: words,
-      paragraphCount: paragraphs,
-      hasCoverImage: !!result.coverImageUrl,
-      flags: ["LIVE_STREAM_OR_VIDEO_INDEX_STUB"],
-    };
+  const isStubPattern = NON_NEWS_STUB_PATTERNS.some((pattern) => pattern.test(result.title));
+  if (isStubPattern) {
+    const isHardStub = /assista à programação|acompanhe a programação|bom dia santa catarina|jornal do almoço|giro cidades|horóscopo|lotofácil|mega-sena/i.test(result.title);
+    const hasSubstantialArticleBody = words >= 120 && paragraphs >= 3;
+    if (isHardStub || !hasSubstantialArticleBody) {
+      return {
+        isValid: false,
+        reason: `Pauta identificada como grade de programação de TV ou índice de vídeo sem matéria escrita: "${result.title}".`,
+        qualityScore: 0,
+        wordCount: words,
+        paragraphCount: paragraphs,
+        hasCoverImage: !!result.coverImageUrl,
+        flags: ["LIVE_STREAM_OR_VIDEO_INDEX_STUB"],
+      };
+    }
   }
 
   // 2. Verificação de Bloqueio / Paywall / Desafio Anti-Bot

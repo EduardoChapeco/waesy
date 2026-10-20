@@ -1,4 +1,5 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { useWindowSizeClass } from "@/hooks/use-mobile";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { Plus, Search, CheckCircle2, Clock, AlertTriangle, FileSpreadsheet, Copy, Check, Calendar, Building2, Zap, Tag, Briefcase, Layers, Receipt, Trash2, TrendingDown, DollarSign, Landmark, ShieldCheck, XCircle } from "lucide-react";
@@ -43,6 +44,7 @@ const CATEGORY_LABELS: Record<ObligationCategory, { label: string; icon: any; co
 };
 
 function ContasPagarPage() {
+  const { isCompact: isMobile } = useWindowSizeClass();
   const router = useRouter();
   const loaderData = Route.useLoaderData() as { obligations: FinancialObligation[] };
   const [obligations, setObligations] = useState<FinancialObligation[]>(loaderData.obligations || []);
@@ -480,8 +482,9 @@ function ContasPagarPage() {
         />
       ) : (
         <>
-          {/* ── VISUALIZAÇÃO MOBILE: CARDS VERTICAIS ERGONÔMICOS (block md:hidden) ── */}
-          <div className="block md:hidden space-y-3">
+          {isMobile ? (
+            /* ── VISUALIZAÇÃO MOBILE: CARDS VERTICAIS ERGONÔMICOS ── */
+            <div className="space-y-3">
             {filteredObligations.map((ob) => {
               const catInfo = CATEGORY_LABELS[ob.category] || CATEGORY_LABELS.other;
               const CatIcon = catInfo.icon;
@@ -624,8 +627,9 @@ function ContasPagarPage() {
             })}
           </div>
 
-          {/* ── VISUALIZAÇÃO DESKTOP: TABELA TRADICIONAL (hidden md:block) ── */}
-          <div className="hidden md:block rounded-lg border border-border/70 bg-card overflow-hidden shadow-2xs">
+          ) : (
+            /* ── VISUALIZAÇÃO DESKTOP: TABELA TRADICIONAL ── */
+            <div className="rounded-lg border border-border/70 bg-card overflow-hidden shadow-2xs">
             <Table>
               <TableHeader>
                 <TableRow className="border-border/60 hover:bg-transparent">
@@ -767,7 +771,8 @@ function ContasPagarPage() {
                 })}
               </TableBody>
             </Table>
-          </div>
+            </div>
+          )}
         </>
       )}
 

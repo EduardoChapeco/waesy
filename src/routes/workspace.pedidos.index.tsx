@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { useWindowSizeClass } from "@/hooks/use-mobile";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { ShoppingBag, Search, MoreVertical, Eye, CheckCircle2, Truck, PackageCheck, XCircle, ReceiptText, Clock, Filter, Volume2, VolumeX, Printer, LayoutGrid, List, ChefHat, ArrowRight, Plane, Compass, FileText, Layers, Users, Calendar, MessageCircle, Store, Ticket, BadgeAlert, ArrowUpRight } from 'lucide-react';
@@ -84,6 +85,7 @@ function getStatusLabel(status: string, semantics?: any) {
 }
 
 function AdminOrdersPage() {
+  const { isCompact: isMobile } = useWindowSizeClass();
   const { orders: initialOrders = [], store = null } = ((Route.useLoaderData() as any) || {});
   const semantics = useMemo(() => getNicheSemantics(store), [store]);
   const router = useRouter();
@@ -1298,8 +1300,9 @@ function AdminOrdersPage() {
             </div>
           </div>
 
- {/* ── VISÃO MOBILE (< 600px): Cards estruturados de alta legibilidade com Sheet para detalhes ── */}
-        <div className="md:hidden space-y-3">
+        {isMobile ? (
+          /* ── VISÃO MOBILE (< 600px): Cards estruturados de alta legibilidade com Sheet para detalhes ── */
+          <div className="space-y-3">
           {filteredOrders.length === 0 ? (
             <div className="p-8 text-center text-xs text-muted-foreground bg-card rounded-xl border border-border/70">
               Nenhum registro encontrado para este filtro.
@@ -1445,9 +1448,9 @@ function AdminOrdersPage() {
             })
           )}
         </div>
-
-        {/* ── VISÃO DESKTOP (>= 840px): Tabela Analítica de Alta Densidade com Rolagem Interna Independente ── */}
-        <div className="hidden md:flex flex-col bg-card overflow-hidden rounded-xl border border-border/70 shadow-2xs flex-1 min-h-0">
+        ) : (
+          /* ── VISÃO DESKTOP (>= 840px): Tabela Analítica de Alta Densidade com Rolagem Interna Independente ── */
+          <div className="flex flex-col bg-card overflow-hidden rounded-xl border border-border/70 shadow-2xs flex-1 min-h-0">
           <div className="overflow-x-auto overflow-y-auto native-scroll flex-1 flex-1 min-h-0">
             <Table>
               <TableHeader>
@@ -1609,6 +1612,7 @@ function AdminOrdersPage() {
             </Table>
           </div>
         </div>
+        )}
       </div>
       ) : null}
 

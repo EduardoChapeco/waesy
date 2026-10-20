@@ -79,9 +79,16 @@ function enforceNonRepetitiveEditorialStructure(
 ): CuratedArticleOutput {
   const cleanTitle = cleanHtmlText(output.title);
   let cleanSubtitle = cleanHtmlText(output.subtitle);
+  const isForbiddenEditorialHeading = (text?: string | null): boolean => {
+    if (!text) return true;
+    const clean = text.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
+    return /contexto|apuracao|desdobramento|sintese|resumo|desenvolvimento|introducao|conclusao|fatos|detalhes|destaques|takeaways/i.test(clean);
+  };
+
   let sections = output.mobile_sections
     .map((s) => ({
-      heading: s.heading ? cleanHtmlText(s.heading) : undefined,
+      type: (s as any).type || "paragraph",
+      heading: s.heading && !isForbiddenEditorialHeading(s.heading) ? cleanHtmlText(s.heading) : undefined,
       content: cleanHtmlText(s.content),
     }))
     .filter(
@@ -98,8 +105,9 @@ function enforceNonRepetitiveEditorialStructure(
     } else if (fallbackParagraphs.length >= 3) {
       cleanSubtitle = fallbackParagraphs[0].slice(0, 240);
       sections = fallbackParagraphs.slice(1, 7).map((p) => ({
+        type: "paragraph" as const,
         heading: undefined,
-        content: p,
+        content: cleanHtmlText(p),
       }));
     }
   }
@@ -109,8 +117,9 @@ function enforceNonRepetitiveEditorialStructure(
     cleanSubtitle = fallbackParagraphs[0].slice(0, 240);
     if (sections.length > 0 && calculateTitleSimilarity(cleanSubtitle, sections[0].content) >= 0.65 && fallbackParagraphs.length >= 3) {
       sections = fallbackParagraphs.slice(1, 7).map((p) => ({
+        type: "paragraph" as const,
         heading: undefined,
-        content: p,
+        content: cleanHtmlText(p),
       }));
     }
   }
@@ -257,14 +266,10 @@ function generateDeterministicCuratedFallback(params: {
   const subtitle = paragraphs[0].slice(0, 260);
   const bodyParagraphs = paragraphs.slice(1, 8);
 
-  const sections = bodyParagraphs.map((content, idx) => ({
-    heading:
-      idx === 0
-        ? "Contexto e Apuração"
-        : idx === 2 && bodyParagraphs.length >= 4
-        ? "Desdobramentos"
-        : undefined,
-    content,
+  const sections = bodyParagraphs.map((content) => ({
+    type: "paragraph" as const,
+    heading: undefined,
+    content: cleanHtmlText(content),
   }));
 
   // Takeaways sintetizam pontos de parágrafos distintos (sem repetir literalmente o subtitle na íntegra)

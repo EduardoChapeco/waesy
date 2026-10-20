@@ -6,59 +6,40 @@ inputs:
   - Tela completa ou fluxo operacional
   - Requisitos de densidade de informação
 outputs:
-  - Bifurcação estrutural com os dois produtos (móvel nativo e desktop expandido)
-  - Layouts canônicos aplicados (Master-Detail, Bento, Bottom Sheet)
+  - Bifurcação estrutural com frontends congelados dedicados (Mobile Native App vs Desktop Native App)
+  - Zero duplicação de nós no DOM
+  - Layouts canônicos aplicados (Master-Detail, TetrisGrid, Bottom Sheet)
 ---
 
 # Objetivo
-Assegurar que dispositivos móveis recebam experiência nativa de alta ergonomia e que desktops tirem proveito da área expandida, eliminando layouts que apenas encolhem.
+Assegurar que dispositivos móveis recebam a experiência de um aplicativo nativo compilado de alta ergonomia e que desktops tirem proveito da área expandida como software de trabalho, eliminando definitivamente sites fluidos que espremem componentes ou quebram a hierarquia visual.
 
 # Procedimento Numerado
-1. Identificar se a rota é primariamente de consumo rápido (móvel) ou gestão densa (desktop).
-2. Adotar o layout canônico apropriado (Lista-Detalhe, Painel de Apoio ou Feed).
-3. No Compact (<600px):
-   - Proibir tabelas horizontais com scroll desajeitado; converter em cartões empilhados ou lista vertical estilo WhatsApp.
-   - Posicionar a ação primária e as abas principais na barra inferior fixa (zona do polegar).
-   - Utilizar Bottom Sheets de 100dvh para formulários e filtros auxiliares.
-4. No Expanded (>=840px):
-   - Renderizar barra lateral fixa ou trilho global à esquerda.
+1. Identificar se a rota opera como consumo rápido/descoberta (móvel) ou gestão densa/ERP (desktop).
+2. Adotar o layout canônico apropriado (Lista-Detalhe, Painel de Apoio, TetrisGrid ou Feed).
+3. **Bifurcação sem Duplicação no DOM:**
+   - Proibido renderizar árvores duplicadas ocultadas por `block md:hidden` e `hidden md:block`.
+   - Utilizar bifurcação em nível de componente ou via `useWindowSizeClass()`, instanciando uma única casca viva.
+4. **No Compact (<600px) — Mobile Native App Shell:**
+   - Proibir tabelas horizontais com scroll desajeitado; converter em cartões squircles empilhados com informações na íntegra.
+   - Posicionar a ação primária e as abas principais na barra inferior fixa (zona do polegar) em `z-30` com folga `pb-32 pb-safe`.
+   - Utilizar Bottom Sheets de 100dvh para formulários e filtros auxiliares com safe-area no entalhe superior.
+5. **No Expanded (>=840px) — Desktop Native App System:**
+   - Renderizar barra lateral fixa ou trilho global à esquerda (280px).
    - Utilizar Master-Detail de 2 colunas para listagem e edição concorrente.
-   - Aproveitar Bento Grid para KPIs e resumos operacionais.
+   - Aproveitar **TetrisGrid** com empacotamento denso (`grid-flow-dense`) para KPIs, campanhas e vitrines assimétricas sem buracos.
 
 # Regras Duras com Números
-- Proibido layout que apenas reduza o tamanho da fonte e colunas sem mudar de estrutura (DL-29).
-- Barra de navegação móvel com no máximo 5 destinos centrais (Apple HIG).
+- Proibido layout fluido que apenas reduza o tamanho da fonte e colunas sem mudar de estrutura (DL-29).
+- Proibido efeito sanfona (CLS $\ge 0.01$); containers com aspect-ratio fixo antes do carregamento.
+- Proibido truncamento (`truncate`, `...`) de informações essenciais em cards squircles; utilizar quebra orgânica e adaptação tipográfica proporcional.
 - Margens externas: 16px no Compact, 24px no Medium, 32px no Expanded.
-- Ponto de corte para troca de shell estrutural em 1024px (`lg:` no Tailwind).
+- Alvos de toque no mobile estritamente com piso de 44x44px (`h-11`).
 
 # Checklist de Verificação
-- [ ] A tela possui layout próprio para smartphone sem scroll horizontal não intencional?
-- [ ] O desktop aproveita a largura sem deixar espaços vazios gigantescos desnecessários?
-- [ ] A ação principal no mobile está ao alcance do polegar sem esforço?
-- [ ] Modais móveis abrem como sheets inferiores e no desktop como diálogos centralizados?
-
-# Anti-Padrões
-- Forçar uma tabela com 7 colunas a caber em uma tela de 390px cortando textos.
-- Colocar o botão de fechamento ou ação principal no canto superior em smartphones grandes.
-- Usar gavetas laterais deslizantes que cobrem 90% da tela no desktop em vez de split view.
-
-# Exemplos
-
-## Exemplo Bom
-```tsx
-<div className="flex flex-col lg:flex-row gap-6 h-full">
-  <aside className="hidden lg:block w-80 shrink-0 border-r border-border p-4">
-    {/* Lista Mestre Desktop */}
-  </aside>
-  <main className="flex-1 p-4 lg:p-6 overflow-y-auto">
-    {/* Detalhe / Conteúdo */}
-  </main>
-</div>
-```
-
-## Exemplo Ruim
-```tsx
-<div className="w-full overflow-x-scroll">
-  <table className="min-w-[1200px] text-xs">...</table>
-</div>
-```
+- [ ] A tela possui frontends congelados para cada dispositivo sem depender de fluidez contínua quebradiça?
+- [ ] A bifurcação ocorre sem duplicar elementos no DOM via classes utilitárias CSS?
+- [ ] O desktop aproveita a largura sem deixar espaços vazios desnecessários via TetrisGrid?
+- [ ] A ação principal no mobile está na Thumb Zone e alinhada ao piso de 44px?
+- [ ] Modais móveis abrem como sheets inferiores de 100dvh e no desktop como diálogos centralizados?
+- [ ] Cards squircles acomodam textos na íntegra sem reticências silenciosas?

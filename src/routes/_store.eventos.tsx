@@ -13,6 +13,8 @@ import { Badge } from "@/components/ui/badge";
 import { getPublicEvents } from "@/services/events.functions";
 import { listActiveBanners, type BannerDTO } from "@/services/banner.functions";
 import { listHotpages, type HotpageDTO } from "@/services/hotpage.functions";
+import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
+import { ModularSurfaceFeed } from "@/components/commerce/modular-surface-feed";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
@@ -88,13 +90,15 @@ export const Route = createFileRoute("/_store/eventos")({
   loader: async ({ location }) => {
     const activeCity = resolveActiveCity(location?.search);
     try {
-      const [banners, hotpages] = await Promise.all([
+      const [banners, hotpages, surfaceFeed] = await Promise.all([
         listActiveBanners({ data: { placement: "eventos", city: activeCity } }).catch(() => []),
         listHotpages({ data: { module: "eventos" } }).catch(() => []),
+        getModularSurfaceFeed({ data: { surfaceSlug: "eventos", city: activeCity } }).catch(() => ({ sections: [], allProducts: [] })),
       ]);
       return {
         banners: banners || [],
         hotpages: hotpages || [],
+        surfaceFeed: surfaceFeed || { sections: [], allProducts: [] },
         activeCity,
       };
     } catch (err) {
@@ -594,6 +598,13 @@ function EventosPage() {
             activeSlug={selectedCategory}
             onSelect={(slug) => setSelectedCategory(slug === selectedCategory ? "todos" : slug)}
           />
+        </section>
+      )}
+
+      {/* ── Seções Dinâmicas do CMS Master (B.20 Bilateralidade) ── */}
+      {loaderData?.surfaceFeed?.sections && loaderData.surfaceFeed.sections.length > 0 && (
+        <section aria-label="Destaques de Eventos CMS" className="w-full">
+          <ModularSurfaceFeed sections={loaderData.surfaceFeed.sections} />
         </section>
       )}
 

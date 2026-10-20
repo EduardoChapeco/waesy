@@ -16,7 +16,7 @@ import { harvestAndPersistPncpTenders } from "./pncp-harvester";
 import { harvestAndPersistRealEstate } from "./real-estate-harvester";
 import { harvestAndPersistAuctions } from "./auction-harvester";
 import { harvestAndPersistEvent } from "./event-harvester";
-import { extractContentMechanically } from "./mechanical-extractor";
+import { extractContentMechanically, cleanHtmlText } from "./mechanical-extractor";
 import { validateMechanicalCompleteness, isHealthyImageUrl, getFallbackThematicImage } from "./integrity-gate";
 import { curateWithEditorialSquad } from "./editorial-squad";
 import { parseFeed } from "@/lib/mining/rss-ingester.engine";
@@ -468,11 +468,15 @@ export async function executeCrawlQueueBatchDirect(
 
             const rawSections = editorial?.mobile_sections || [];
             const sections = rawSections.length >= 2
-              ? rawSections
+              ? rawSections.map((s: any) => ({
+                  type: s.type || "paragraph",
+                  ...(s.heading ? { heading: cleanHtmlText(s.heading) } : {}),
+                  content: cleanHtmlText(s.content),
+                }))
               : extraction.bodyMarkdown
                   .split(/\n\n+/)
                   .filter((p) => p.trim().length > 20)
-                  .map((p) => ({ type: "paragraph", content: p.trim() }));
+                  .map((p) => ({ type: "paragraph", content: cleanHtmlText(p.trim()) }));
 
             const tags = Array.from(new Set([
               editorial?.category || "cidade",

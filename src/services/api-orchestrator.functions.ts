@@ -489,7 +489,7 @@ export async function getAllActiveKeysForProvider(
           keys.push({ id: byokKeyId, rawKey: byokSecret });
         }
       }
-    } catch {}
+    } catch (err) { console.warn("[api-orchestrator] byokSecret lookup error:", err); }
   }
 
   // 2. Chaves cadastradas na api_key_pools do Admin Master (suporta N chaves simultâneas por provedor)
@@ -616,7 +616,7 @@ export async function recordKeyUsage(keyId: string): Promise<void> {
         daily_request_count: ((data as any)?.daily_request_count || 0) + 1,
       })
       .eq("id", keyId);
-  } catch {}
+  } catch (err) { console.warn("[api-orchestrator] updateKeyLastUsed error:", err); }
 }
 
 /**
@@ -1164,7 +1164,7 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
           } catch {
             const match = clean.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
             if (match) {
-              try { parsedJson = JSON.parse(match[0]); } catch {}
+              try { parsedJson = JSON.parse(match[0]); } catch (err) { console.warn("[api-orchestrator:openai] JSON parse fallback error:", err); }
             }
           }
         }
@@ -1274,7 +1274,7 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
           } catch {
             const match = clean.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
             if (match) {
-              try { parsedJson = JSON.parse(match[0]); } catch {}
+              try { parsedJson = JSON.parse(match[0]); } catch (err) { console.warn("[api-orchestrator:groq] JSON parse fallback error:", err); }
             }
           }
         }
@@ -1350,7 +1350,7 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
           } catch {
             const match = clean.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
             if (match) {
-              try { parsedJson = JSON.parse(match[0]); } catch {}
+              try { parsedJson = JSON.parse(match[0]); } catch (err) { console.warn("[api-orchestrator:gemini] JSON parse fallback error:", err); }
             }
           }
         }
@@ -1420,7 +1420,7 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
           } catch {
             const match = clean.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
             if (match) {
-              try { parsedJson = JSON.parse(match[0]); } catch {}
+              try { parsedJson = JSON.parse(match[0]); } catch (err) { console.warn("[api-orchestrator:openai_fallback] JSON parse fallback error:", err); }
             }
           }
         }
@@ -1492,7 +1492,7 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
           } catch {
             const match = clean.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
             if (match) {
-              try { parsedJson = JSON.parse(match[0]); } catch {}
+              try { parsedJson = JSON.parse(match[0]); } catch (err) { console.warn("[api-orchestrator:anthropic] JSON parse fallback error:", err); }
             }
           }
         }
@@ -1675,7 +1675,7 @@ export const importProductFromUrl = createServerFn({ method: "POST" })
                 }
               }
             }
-          } catch {}
+          } catch (err) { console.warn("[api-orchestrator] Schema.org microdata parse error:", err); }
         }
       } catch (e) {
         console.warn("[api-orchestrator] Extração mecânica Schema.org ignorada, prosseguindo com fallback de IA:", e);

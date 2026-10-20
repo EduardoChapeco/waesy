@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -6,15 +6,12 @@ import { Badge } from "@/components/ui/badge";
 export interface IFoodSquareCategoryButtonProps {
   id?: string;
   title?: string | null;
-  imageUrl: string;
+  imageUrl?: string | null;
   targetUrl?: string;
   showText?: boolean;
   badgeText?: string | null;
   className?: string;
 }
-
-const FALLBACK_CATEGORY_IMAGE =
-  "https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=400&q=80";
 
 export function IFoodSquareCategoryButton({
   id,
@@ -25,11 +22,9 @@ export function IFoodSquareCategoryButton({
   badgeText,
   className,
 }: IFoodSquareCategoryButtonProps) {
+  const [imageError, setImageError] = useState(false);
   const isShowTitle = showText && Boolean(title && title.trim().length > 0);
-  const safeSrc =
-    imageUrl && !imageUrl.includes("1511707171634-5f897ff02560")
-      ? imageUrl
-      : FALLBACK_CATEGORY_IMAGE;
+  const hasValidImage = Boolean(imageUrl && !imageError && !imageUrl.includes("1511707171634-5f897ff02560"));
 
   return (
     <Link
@@ -42,29 +37,31 @@ export function IFoodSquareCategoryButton({
       )}
       aria-label={title || "Categoria"}
     >
-      <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-muted/40 group-hover:bg-muted/70 transition-colors flex items-center justify-center border border-border/40">
+      <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-card group-hover:bg-muted/40 transition-colors flex items-center justify-center border border-border/50">
         {isShowTitle && badgeText && (
           <div className="absolute top-1 right-1 z-10 pointer-events-none">
             <Badge
               variant="default"
-              className="px-2 py-0 text-3xs font-black uppercase tracking-wider rounded-md shadow-none"
+              className="px-2 py-1 text-3xs font-black uppercase tracking-wider rounded-md shadow-none"
             >
               {badgeText}
             </Badge>
           </div>
         )}
-        <img
-          src={safeSrc}
-          alt=""
-          loading="lazy"
-          className="size-full object-cover group-hover:scale-105 transition-transform duration-200 motion-reduce:transition-none"
-          onError={(e) => {
-            const img = e.currentTarget as HTMLImageElement;
-            if (img.src !== FALLBACK_CATEGORY_IMAGE) {
-              img.src = FALLBACK_CATEGORY_IMAGE;
-            }
-          }}
-        />
+        {hasValidImage ? (
+          <img
+            src={imageUrl!}
+            alt=""
+            loading="lazy"
+            className="size-full object-cover group-hover:scale-105 transition-transform duration-200 motion-reduce:transition-none"
+            onError={() => setImageError(true)}
+          />
+        ) : (
+          /* Honest Initial / Vector Badge (Anti-Fake B.8/B.33) */
+          <div className="size-full flex items-center justify-center bg-muted/40 text-muted-foreground font-bold text-sm select-none">
+            {title ? title.slice(0, 2).toUpperCase() : "••"}
+          </div>
+        )}
       </div>
 
       {isShowTitle && (

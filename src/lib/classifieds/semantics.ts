@@ -7,7 +7,7 @@
  * 3. Cada nicho possui vocabulário, badges, fichas técnicas e CTAs contextuais dedicados.
  */
 
-import { Home, Building, Key, Car, Tag, Wrench, Tractor, Calendar, Clock, MapPin, CheckCircle2, ShieldCheck, Package, Truck, Layers, RefreshCw, CreditCard, QrCode, FileCheck, UserCheck, Lock, Plane, HeartHandshake, Utensils, Users, Banknote, Briefcase, Download, DownloadCloud, FileArchive, Gauge, Coins, TrendingUp, ShieldAlert, Star, Store, Flame, Apple, Bath, Fuel, Receipt, FileSpreadsheet, Landmark, Bus, Ship, Train, Building2 } from "lucide-react";
+import { Home, Building, Key, Car, Tag, Ticket, Wrench, Tractor, Calendar, Clock, MapPin, CheckCircle2, ShieldCheck, Package, Truck, Layers, RefreshCw, CreditCard, QrCode, FileCheck, UserCheck, Lock, Plane, HeartHandshake, Utensils, Users, Banknote, Briefcase, Download, DownloadCloud, FileArchive, Gauge, Coins, TrendingUp, ShieldAlert, Star, Store, Flame, Apple, Bath, Fuel, Receipt, FileSpreadsheet, Landmark, Bus, Ship, Train, Building2 } from "lucide-react";
 import { formatMoney } from "@/lib/money";
 import { getEducationLabel, getExperienceLabel, getRegimeLabel, getWorkplaceModelLabel } from "@/lib/classifieds/canonical-hiring";
 
@@ -28,7 +28,8 @@ export type ClassifiedNicheId =
   | "job" // Empregos, Vagas & Recrutamento
   | "pharmacy" // Farmácia, Beleza & Saúde
   | "market" // Mercado, Hortifruti & Açougue
-  | "business"; // Negócios, M&A, Pontos Comerciais & Empresas à Venda (meuBIZ / Quero Um Negócio)
+  | "business" // Negócios, M&A, Pontos Comerciais & Empresas à Venda (meuBIZ / Quero Um Negócio)
+  | "event"; // Eventos, Festivais, Shows & Workshops
 
 export interface ClassifiedNicheDefinition {
   id: ClassifiedNicheId;
@@ -258,6 +259,22 @@ export const NICHE_DEFINITIONS: Record<ClassifiedNicheId, ClassifiedNicheDefinit
     allowEscrowGuarantee: false,
   },
 
+  event: {
+    id: "event",
+    canonicalCategory: "sale",
+    dealType: "venda",
+    title: "Eventos & Shows",
+    shortLabel: "Eventos",
+    subtitle: "Festivais, workshops, congressos e shows",
+    icon: Ticket,
+    badge: "Evento",
+    priceSuffix: "",
+    primaryActionLabel: "Garantir Ingresso",
+    secondaryActionLabel: "Ver Programação",
+    showDeliveryBadges: false,
+    showTechnicalSpecs: true,
+    allowEscrowGuarantee: false,
+  },
   business: {
     id: "business",
     canonicalCategory: "sale",
@@ -345,6 +362,22 @@ export function resolveClassifiedNiche(classified: any): ClassifiedNicheDefiniti
     rawNiche === "job"
   ) {
     return NICHE_DEFINITIONS.job;
+  }
+
+  // 1.1 Eventos, Shows, Workshops e Festivais
+  if (
+    category === "event" ||
+    category === "evento" ||
+    category === "show" ||
+    category === "workshop" ||
+    rawNiche === "event" ||
+    rawNiche === "evento" ||
+    rawNiche === "show" ||
+    rawNiche === "workshop" ||
+    classified.attributes?.event_date ||
+    classified.attributes?.event_venue
+  ) {
+    return NICHE_DEFINITIONS.event;
   }
 
   // 2. Produto Digital / Download
@@ -1027,6 +1060,57 @@ export function getClassifiedFeatureCards(classified: any): ClassifiedFeatureCar
       });
     }
   }
+  // Nicho: Evento & Shows
+  else if (niche.id === "event") {
+    cards.push({
+      title: "Modalidade",
+      value: attrs.event_format === "online" ? "Evento Online" : "Presencial",
+      icon: Ticket,
+    });
+
+    if (attrs.event_date) {
+      cards.push({
+        title: "Data do Evento",
+        value: String(attrs.event_date),
+        icon: Calendar,
+      });
+    }
+
+    if (attrs.event_time) {
+      cards.push({
+        title: "Horário",
+        value: String(attrs.event_time),
+        icon: Clock,
+      });
+    }
+
+    const venue = attrs.event_venue || attrs.venue_name;
+    if (venue) {
+      cards.push({
+        title: "Local / Espaço",
+        value: String(venue),
+        icon: MapPin,
+      });
+    }
+
+    if (attrs.age_rating) {
+      cards.push({
+        title: "Classificação",
+        value: String(attrs.age_rating),
+        icon: ShieldCheck,
+      });
+    }
+
+    if (attrs.ticket_tier) {
+      cards.push({
+        title: "Lote / Setor",
+        value: String(attrs.ticket_tier),
+        icon: Tag,
+      });
+    }
+  }
+
+
 
   // Nicho: Vaga de Emprego
   else if (niche.id === "job") {
@@ -1879,6 +1963,24 @@ export function getClassifiedEditorialSpecs(classified: any): ClassifiedEditoria
   const niche = resolveClassifiedNiche(classified);
   const attrs = classified.attributes || {};
   const specs: ClassifiedEditorialSpec[] = [];
+  // Eventos
+  if (niche.id === "event") {
+    if (attrs.event_time) specs.push({ label: "Horário", value: String(attrs.event_time) });
+    if (attrs.age_rating) specs.push({ label: "Classificação", value: String(attrs.age_rating) });
+    if (attrs.ticket_tier) specs.push({ label: "Setor / Lote", value: String(attrs.ticket_tier) });
+    if (attrs.event_format) specs.push({ label: "Modalidade", value: attrs.event_format === "online" ? "Evento Online" : "Presencial" });
+    return specs;
+  }
+
+  // Agro
+  if (niche.id === "agri") {
+    if (attrs.power_cv) specs.push({ label: "Potência", value: `${attrs.power_cv} CV` });
+    if (attrs.implement_type) specs.push({ label: "Implemento", value: String(attrs.implement_type) });
+    if (attrs.cabin_type) specs.push({ label: "Cabine", value: attrs.cabin_type === "cabin" ? "Cabinado c/ Ar" : "Plataformado" });
+    return specs;
+  }
+
+
 
   // 1. Viagens
   if (niche.id === "travel" || classified.category === "travel" || classified.category === "viagem") {
@@ -2016,6 +2118,8 @@ export function getClassifiedPrimaryCtaLabel(classified: any): string {
   if (niche.id === "real_estate_sale") return "Agendar Visita ao Imóvel";
   if (niche.id === "real_estate_rent") return "Agendar Visita / Alugar";
   if (niche.id === "vehicle") return "Agendar Test-Drive";
+  if (niche.id === "event") return "Garantir Ingresso";
+  if (niche.id === "agri") return "Agendar Vistoria no Campo";
   if (niche.id === "job") return "Candidatar-se à Vaga";
   if (niche.id === "service") return "Solicitar Orçamento";
   if (niche.id === "equipment") return "Solicitar Locação";
@@ -2051,6 +2155,76 @@ export function getNicheDefaultInquiryConfig(nicheIdOrClassified: string | any, 
   const nicheKey = typeof nicheIdOrClassified === "string" 
     ? nicheIdOrClassified.toLowerCase() 
     : resolveClassifiedNiche(nicheIdOrClassified).id;
+  // Eventos & Shows
+  if (nicheKey === "event" || nicheKey === "evento" || nicheKey === "show") {
+    return {
+      title: "Reserva de Ingressos & Dúvidas",
+      subtitle: "Informe seus dados para tirar dúvidas sobre o evento, lotes ou ingressos em grupo.",
+      questions: [
+        {
+          id: "q1",
+          label: "Quantos ingressos você precisa?",
+          type: "select",
+          options: ["1 ingresso (Individual)", "2 ingressos (Par)", "3 a 5 ingressos", "Grupo grande (6 ou mais)"],
+          required: true,
+        },
+        {
+          id: "q2",
+          label: "Qual setor ou lote de preferência?",
+          type: "select",
+          options: ["Pista / Geral", "Área VIP / Frontstage", "Camarote / Mezanino", "Mesa / Reservado"],
+          required: false,
+        },
+        {
+          id: "q3",
+          label: "Dúvidas sobre o evento, acessibilidade ou camarotes",
+          type: "textarea",
+          placeholder: "Digite suas dúvidas sobre censura, horários, acesso...",
+          required: false,
+        },
+      ],
+    };
+  }
+
+  // Agro & Maquinário
+  if (nicheKey === "agri" || nicheKey === "agro" || nicheKey === "maquinario") {
+    return {
+      title: "Interesse no Maquinário / Equipamento Agro",
+      subtitle: "Preencha para agendar vistoria no campo ou solicitar proposta comercial.",
+      questions: [
+        {
+          id: "q1",
+          label: "Qual seu prazo para fechar negócio?",
+          type: "select",
+          options: ["Imediato / Início de safra", "Próximos 30 dias", "Planejamento futuro"],
+          required: true,
+        },
+        {
+          id: "q2",
+          label: "Forma de pagamento pretendida",
+          type: "select",
+          options: ["Recurso próprio / À vista", "Financiamento agro / Pronaf / Moderfrota", "Troca / Permuta com gado ou grãos", "Carta de consórcio contemplada"],
+          required: true,
+        },
+        {
+          id: "q3",
+          label: "Deseja agendar vistoria técnica na propriedade?",
+          type: "select",
+          options: ["Sim, vistoria presencial", "Prefiro receber vídeos do funcionamento primeiro", "Apenas tirar dúvidas"],
+          required: false,
+        },
+        {
+          id: "q4",
+          label: "Mensagem ou detalhes da proposta",
+          type: "textarea",
+          placeholder: "Descreva sua região, dúvida sobre o maquinário ou proposta...",
+          required: false,
+        },
+      ],
+    };
+  }
+
+
 
   // 1. Viagem / Turismo
   if (nicheKey === "travel" || nicheKey === "viagem" || nicheKey === "turismo") {
@@ -2454,4 +2628,166 @@ export function getNicheDefaultInquiryConfig(nicheIdOrClassified: string | any, 
     subtitle: "Responda algumas perguntas rápidas para receber atendimento ou proposta personalizada.",
     questions,
   };
+}
+
+export interface NicheTabLabels {
+  overviewTab: string;
+  specsTab: string;
+  mediaTab: string;
+  sellerTab: string;
+  actionTab: string;
+}
+
+export function getNicheTabLabels(nicheOrClassified: any): NicheTabLabels {
+  const nicheId = typeof nicheOrClassified === "string" 
+    ? nicheOrClassified 
+    : resolveClassifiedNiche(nicheOrClassified).id;
+
+  switch (nicheId) {
+    case "hospitality_stay":
+      return {
+        overviewTab: "Infos da Estadia",
+        specsTab: "Comodidades & Regras",
+        mediaTab: "Fotos & Ambientes",
+        sellerTab: "Anfitrião / Pousada",
+        actionTab: "Reservar Diárias",
+      };
+    case "real_estate_sale":
+      return {
+        overviewTab: "Detalhes do Imóvel",
+        specsTab: "Ficha do Imóvel",
+        mediaTab: "Fotos do Imóvel",
+        sellerTab: "Corretor / Imobiliária",
+        actionTab: "Agendar Visita",
+      };
+    case "real_estate_rent":
+      return {
+        overviewTab: "Detalhes da Locação",
+        specsTab: "Ficha de Locação",
+        mediaTab: "Fotos do Imóvel",
+        sellerTab: "Locador / Imobiliária",
+        actionTab: "Agendar Visita",
+      };
+    case "vehicle":
+      return {
+        overviewTab: "Detalhes do Veículo",
+        specsTab: "Ficha Técnica",
+        mediaTab: "Fotos & Laudo",
+        sellerTab: "Vendedor / Loja",
+        actionTab: "Agendar Test Drive",
+      };
+    case "agri":
+      return {
+        overviewTab: "Detalhes do Maquinário",
+        specsTab: "Ficha Técnica Agro",
+        mediaTab: "Fotos do Maquinário",
+        sellerTab: "Vendedor / Revenda Agro",
+        actionTab: "Agendar Vistoria",
+      };
+    case "service":
+      return {
+        overviewTab: "Detalhes do Serviço",
+        specsTab: "Escopo & Prazos",
+        mediaTab: "Portfólio / Fotos",
+        sellerTab: "Profissional / Prestador",
+        actionTab: "Solicitar Orçamento",
+      };
+    case "job":
+      return {
+        overviewTab: "Detalhes da Vaga",
+        specsTab: "Requisitos & Atividades",
+        mediaTab: "Fotos da Empresa",
+        sellerTab: "Sobre a Empresa",
+        actionTab: "Candidatar-se",
+      };
+    case "event":
+      return {
+        overviewTab: "Programação & Ingressos",
+        specsTab: "Informações do Evento",
+        mediaTab: "Fotos & Atrações",
+        sellerTab: "Organizador do Evento",
+        actionTab: "Garantir Ingresso",
+      };
+    case "business":
+      return {
+        overviewTab: "Sobre o Negócio",
+        specsTab: "Métricas & DRE",
+        mediaTab: "Fotos do Ponto",
+        sellerTab: "Sócio / Proprietário",
+        actionTab: "Tenho Interesse",
+      };
+    case "travel":
+      return {
+        overviewTab: "Infos do Pacote",
+        specsTab: "Roteiro & Inclusos",
+        mediaTab: "Fotos do Destino",
+        sellerTab: "Agência / Operadora",
+        actionTab: "Reservar Vagas",
+      };
+    case "equipment":
+      return {
+        overviewTab: "Detalhes da Locação",
+        specsTab: "Ficha do Equipamento",
+        mediaTab: "Fotos do Item",
+        sellerTab: "Locadora / Proprietário",
+        actionTab: "Reservar Equipamento",
+      };
+    case "donation":
+      return {
+        overviewTab: "Detalhes da Doação",
+        specsTab: "Informações do Item",
+        mediaTab: "Fotos do Item",
+        sellerTab: "Doador Solidário",
+        actionTab: "Solicitar Doação",
+      };
+    case "food":
+      return {
+        overviewTab: "Detalhes do Cardápio",
+        specsTab: "Ingredientes & Porções",
+        mediaTab: "Fotos do Prato",
+        sellerTab: "Cozinha / Estabelecimento",
+        actionTab: "Fazer Pedido",
+      };
+    case "pharmacy":
+      return {
+        overviewTab: "Especificações & Saúde",
+        specsTab: "Bula & Orientações",
+        mediaTab: "Fotos do Produto",
+        sellerTab: "Farmácia / Distribuidor",
+        actionTab: "Comprar",
+      };
+    case "digital":
+      return {
+        overviewTab: "Conteúdo Digital",
+        specsTab: "Requisitos & Arquivos",
+        mediaTab: "Prévia / Capturas",
+        sellerTab: "Autor / Criador",
+        actionTab: "Baixar Arquivo",
+      };
+    case "subscription":
+      return {
+        overviewTab: "Benefícios do Plano",
+        specsTab: "Recursos Inclusos",
+        mediaTab: "Fotos & Vantagens",
+        sellerTab: "Clube / Fornecedor",
+        actionTab: "Assinar Plano",
+      };
+    case "market":
+      return {
+        overviewTab: "Detalhes do Produto",
+        specsTab: "Ficha Nutricional & Origem",
+        mediaTab: "Fotos do Produto",
+        sellerTab: "Mercado / Estabelecimento",
+        actionTab: "Adicionar à Cesta",
+      };
+    case "goods":
+    default:
+      return {
+        overviewTab: "Detalhes do Item",
+        specsTab: "Especificações",
+        mediaTab: "Fotos do Produto",
+        sellerTab: "Anunciante",
+        actionTab: "Comprar",
+      };
+  }
 }

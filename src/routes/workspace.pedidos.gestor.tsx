@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { useWindowSizeClass } from "@/hooks/use-mobile";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
 import { getStoreSettings } from "@/services/store.functions";
 
@@ -47,6 +48,7 @@ function playOrderChime() {
 }
 
 function KDSPage() {
+  const { isCompact: isMobile } = useWindowSizeClass();
   const router = useRouter();
   const loaderData = (Route.useLoaderData() as any) || {};
   const initialOrders = loaderData.initialOrders || [];
@@ -577,8 +579,9 @@ function KDSPage() {
  </Badge>
  </div>
 
- {/* ── Visualização Móvel: Cards Verticais Ergonômicos (Apple HIG / Paradigma Clean) ── */}
- <div className="block md:hidden divide-y divide-border/60">
+ {isMobile ? (
+ /* ── Visualização Móvel: Cards Verticais Ergonômicos (Apple HIG / Paradigma Clean) ── */
+ <div className="divide-y divide-border/60">
  {orders.map((ord) => {
  const elapsed = Math.floor((Date.now() - new Date(ord.created_at).getTime()) / 60000);
  const isLate = elapsed > 30 && !["delivered", "completed", "cancelled"].includes(ord.status);
@@ -657,8 +660,9 @@ function KDSPage() {
  })}
  </div>
 
- {/* ── Visualização Desktop: Tabela Analítica de Alta Densidade ── */}
- <div className="hidden md:block">
+ ) : (
+ /* ── Visualização Desktop: Tabela Analítica de Alta Densidade ── */
+ <div>
  <Table>
  <TableHeader>
  <TableRow className="bg-muted/30">
@@ -746,6 +750,7 @@ function KDSPage() {
  </TableBody>
  </Table>
  </div>
+ )}
  </div>
 
  {/* Relatórios de Curva ABC & Canais do Turno (Diggy / Food Intelligence) */}

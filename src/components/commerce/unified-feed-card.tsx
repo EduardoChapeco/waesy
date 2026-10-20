@@ -194,7 +194,7 @@ export function UnifiedFeedCard({
             <img
               src={primaryMedia}
               alt={textContent ? textContent.slice(0, 60) : "Imagem da publicação"}
-              className="w-full h-auto max-h-[520px] object-cover"
+              className="w-full h-auto max-h-[560px] object-contain sm:object-cover mx-auto"
               loading="lazy"
             />
           </div>

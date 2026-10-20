@@ -12,6 +12,8 @@ import { DiscoveryControlBar, type FilterChipOption } from "@/components/commerc
 import { listActiveBanners } from "@/services/banner.functions";
 import { listHotpages } from "@/services/hotpage.functions";
 import { listPublicTourism } from "@/services/tourism.functions";
+import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
+import { ModularSurfaceFeed } from "@/components/commerce/modular-surface-feed";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { ContextualStoriesRail } from "@/components/stories/contextual-stories-rail";
 import { TravelQuoteModal } from "@/components/tourism/travel-quote-modal";
@@ -32,13 +34,14 @@ export const Route = createFileRoute("/_store/turismo/")({
   loader: async ({ location }) => {
     const activeCity = resolveActiveCity(location?.search);
     try {
-      const [banners, hotpages, tourismItems] = await Promise.all([
+      const [banners, hotpages, tourismItems, surfaceFeed] = await Promise.all([
         listActiveBanners({ data: { placement: "turismo", city: activeCity } }).catch(() => []),
         listHotpages({ data: { module: "turismo" } }).catch(() => []),
         listPublicTourism().catch(() => []),
+        getModularSurfaceFeed({ data: { surfaceSlug: "turismo", city: activeCity } }).catch(() => ({ sections: [], allProducts: [] })),
       ]);
 
-      return { banners, hotpages, tourismItems };
+      return { banners, hotpages, tourismItems, surfaceFeed };
     } catch (err) {
       console.error("[loader:_store.turismo.index] Unhandled error:", err);
       return { banners: [], hotpages: [], tourismItems: [] };
@@ -88,7 +91,7 @@ const REGIONAL_AIRPORTS = [
 ];
 
 function TourismMasterPage() {
-  const { banners = [], hotpages = [], tourismItems: initialItems = [] } = ((Route.useLoaderData() as any) || {});
+  const { banners = [], hotpages = [], tourismItems: initialItems = [], surfaceFeed = null } = ((Route.useLoaderData() as any) || {});
   const [selectedCategory, setSelectedCategory] = useState("todos");
   const [layoutMode, setLayoutMode] = useState<TourismLayoutMode>("cards");
   const [search, setSearch] = useState("");
@@ -228,6 +231,13 @@ function TourismMasterPage() {
           );
         })}
       </div>
+
+      {/* Seções Dinâmicas do CMS Master (B.20 Bilateralidade) */}
+      {surfaceFeed?.sections && surfaceFeed.sections.length > 0 && (
+        <section aria-label="Destaques de Turismo CMS" className="w-full">
+          <ModularSurfaceFeed sections={surfaceFeed.sections} />
+        </section>
+      )}
 
       {/* Grid de Destinos */}
       {isLoading ? (

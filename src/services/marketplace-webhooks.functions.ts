@@ -678,7 +678,7 @@ async function processIfoodEvent(resourceId?: string, payload: any = {}, storeId
           signal: AbortSignal.timeout(4000),
         }).catch(() => null);
       }
-    } catch {}
+    } catch (err) { console.warn("[marketplace-webhooks] ifood ack error:", err); }
   }
 
   const code = payload.code || payload.status;

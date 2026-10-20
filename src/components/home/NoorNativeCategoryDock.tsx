@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "@tanstack/react-router";
+import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { IFoodSquareCategoryButton } from "./IFoodSquareCategoryButton";
 import type { HomeSectionItemDTO } from "@/services/admin-home-cms.functions";
@@ -28,37 +29,7 @@ export function NoorNativeCategoryDock({
     >
       {items.map((item) => {
         if (variant === "compact_squircle") {
-          return (
-            <Link
-              key={item.id}
-              to={item.target_url as any}
-              className={cn(
-                "snap-start shrink-0 min-h-11 min-w-11 px-3 py-2 rounded-lg bg-muted/50 hover:bg-muted",
-                "flex items-center gap-2 active:scale-95 transition-transform duration-150",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-              )}
-            >
-              <img
-                src={item.image_url}
-                alt=""
-                loading="lazy"
-                className="size-7 object-contain"
-                onError={(e) => {
-                  const img = e.currentTarget as HTMLImageElement;
-                  const fallback =
-                    "https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=400&q=80";
-                  if (img.src !== fallback) {
-                    img.src = fallback;
-                  }
-                }}
-              />
-              {item.show_text && item.title && (
-                <span className="text-xs font-semibold text-foreground whitespace-nowrap">
-                  {item.title}
-                </span>
-              )}
-            </Link>
-          );
+          return <CompactCategoryPill key={item.id} item={item} />;
         }
 
         return (
@@ -75,5 +46,40 @@ export function NoorNativeCategoryDock({
         );
       })}
     </div>
+  );
+}
+
+function CompactCategoryPill({ item }: { item: HomeSectionItemDTO }) {
+  const [imageError, setImageError] = useState(false);
+  const hasValidImage = Boolean(item.image_url && !imageError);
+
+  return (
+    <Link
+      to={item.target_url as any}
+      className={cn(
+        "snap-start shrink-0 min-h-11 min-w-11 px-3 py-2 rounded-lg bg-card hover:bg-muted/50 border border-border/50",
+        "flex items-center gap-2 active:scale-95 transition-transform duration-150",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+      )}
+    >
+      {hasValidImage ? (
+        <img
+          src={item.image_url!}
+          alt=""
+          loading="lazy"
+          className="size-7 object-contain"
+          onError={() => setImageError(true)}
+        />
+      ) : (
+        <span className="size-7 rounded-md bg-primary/10 flex items-center justify-center text-primary shrink-0">
+          <Sparkles className="size-3.5" />
+        </span>
+      )}
+      {item.show_text && item.title && (
+        <span className="text-xs font-semibold text-foreground whitespace-nowrap">
+          {item.title}
+        </span>
+      )}
+    </Link>
   );
 }

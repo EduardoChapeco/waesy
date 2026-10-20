@@ -166,7 +166,7 @@ export const createGroupTour = createServerFn({ method: "POST" })
         if (userStore) {
           effectiveStoreId = userStore.id;
         }
-      } catch {}
+      } catch (err) { console.warn("[group-tours] userStore lookup error:", err); }
     }
 
     // Helper de conversão segura de data

@@ -13,8 +13,10 @@ import { logSystemError } from "@/lib/logger";
 import { getOpenStatus } from "@/lib/datetime";
 import {
   ExperienceNodeSchema,
+  ExperiencePageSchema,
   type ExperienceDocument,
   type ExperienceNode,
+  type ExperiencePage,
   type ExperienceType,
 } from "@/lib/builder-types";
 
@@ -2666,12 +2668,14 @@ export const saveBuilderNodes = createServerFn({ method: "POST" })
           id: newId,
           version_id: targetVersionId,
           parent_id: newParentId,
+          page_id: node.page_id || null,
           node_type: node.node_type,
           block_type: node.block_type,
           layout_variant: node.layout_variant || null,
           content: node.content || {},
           design_tokens: node.design_tokens || {},
           layout_rules: node.layout_rules || {},
+          animation_rules: node.animation_rules || {},
           responsive_overrides: node.responsive_overrides || {},
           data_bindings: node.data_bindings || {},
           action_bindings: node.action_bindings || {},
@@ -2770,12 +2774,14 @@ export const publishBuilderVersion = createServerFn({ method: "POST" })
           id: node.id,
           version_id: input.version_id,
           parent_id: node.parent_id || null,
+          page_id: node.page_id || null,
           node_type: node.node_type,
           block_type: node.block_type,
           layout_variant: node.layout_variant || null,
           content: node.content || {},
           design_tokens: node.design_tokens || {},
           layout_rules: node.layout_rules || {},
+          animation_rules: node.animation_rules || {},
           responsive_overrides: node.responsive_overrides || {},
           data_bindings: node.data_bindings || {},
           action_bindings: node.action_bindings || {},
@@ -3076,6 +3082,117 @@ export const deleteExperienceDocument = createServerFn({ method: "POST" })
     } catch (e: unknown) {
       console.error("[builder.functions] deleteExperienceDocument error:", e);
       throw new Error((e instanceof Error ? e.message : String(e)) || "Erro ao excluir documento.");
+    }
+  });
+
+// ---------------------------------------------------------------------------
+// Multi-page Support (experience_pages)
+// ---------------------------------------------------------------------------
+
+export const listExperiencePages = createServerFn({ method: "GET" })
+  .validator(z.object({ document_id: z.string().uuid() }))
+  .handler(async ({ data: { document_id } }): Promise<ExperiencePage[]> => {
+    try {
+      const db = getServerClient();
+      const { data, error } = await db
+        .from("experience_pages")
+        .select("*")
+        .eq("document_id", document_id)
+        .order("sort_order", { ascending: true });
+
+      if (error) throw error;
+      return (data || []) as ExperiencePage[];
+    } catch (e: unknown) {
+      console.error("[builder.functions] listExperiencePages error:", e);
+      return [];
+    }
+  });
+
+export const saveExperiencePage = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      document_id: z.string().uuid(),
+      page: ExperiencePageSchema,
+    }),
+  )
+  .handler(async ({ data: input }) => {
+    try {
+      const { getServerIdentity } = await import("@/lib/server-access");
+      const identity = await getServerIdentity();
+      if (!identity.id) throw new Error("Não autenticado.");
+
+      const db = getServerClient();
+
+      if (input.page.id) {
+        const { data, error } = await db
+          .from("experience_pages")
+          .update({
+            title: input.page.title,
+            path: input.page.path,
+            is_home: input.page.is_home,
+            seo_title: input.page.seo_title ?? null,
+            seo_description: input.page.seo_description ?? null,
+            seo_image_url: input.page.seo_image_url ?? null,
+            sort_order: input.page.sort_order,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", input.page.id)
+          .eq("document_id", input.document_id)
+          .select()
+          .single();
+
+        if (error) throw error;
+        return { status: "success" as const, page: data as ExperiencePage };
+      } else {
+        const { data, error } = await db
+          .from("experience_pages")
+          .insert({
+            document_id: input.document_id,
+            title: input.page.title,
+            path: input.page.path,
+            is_home: input.page.is_home,
+            seo_title: input.page.seo_title ?? null,
+            seo_description: input.page.seo_description ?? null,
+            seo_image_url: input.page.seo_image_url ?? null,
+            sort_order: input.page.sort_order,
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        return { status: "success" as const, page: data as ExperiencePage };
+      }
+    } catch (e: unknown) {
+      console.error("[builder.functions] saveExperiencePage error:", e);
+      throw new Error((e instanceof Error ? e.message : String(e)) || "Erro ao salvar página.");
+    }
+  });
+
+export const deleteExperiencePage = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string().uuid(),
+      document_id: z.string().uuid(),
+    }),
+  )
+  .handler(async ({ data: input }) => {
+    try {
+      const { getServerIdentity } = await import("@/lib/server-access");
+      const identity = await getServerIdentity();
+      if (!identity.id) throw new Error("Não autenticado.");
+
+      const db = getServerClient();
+      const { error } = await db
+        .from("experience_pages")
+        .delete()
+        .eq("id", input.id)
+        .eq("document_id", input.document_id);
+
+      if (error) throw error;
+      return { status: "success" as const };
+    } catch (e: unknown) {
+      console.error("[builder.functions] deleteExperiencePage error:", e);
+      throw new Error((e instanceof Error ? e.message : String(e)) || "Erro ao excluir página.");
     }
   });
 

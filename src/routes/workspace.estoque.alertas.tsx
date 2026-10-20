@@ -16,6 +16,7 @@ import { LoadingState } from "@/components/state/loading";
 import { getStockLevels, adjustStock } from "@/services/stock.functions";
 import { getWaitlistDemandCounts } from "@/services/waitlist.functions";
 import { playCashRegisterSound, playWarningAlert } from "@/lib/audio-chimes";
+import { useWindowSizeClass } from "@/hooks/use-mobile";
 
 export const Route = createFileRoute("/workspace/estoque/alertas")({
   head: () => ({ meta: [{ title: "Alertas de Estoque | Workspace Waesy" }] }),
@@ -32,10 +33,237 @@ export const Route = createFileRoute("/workspace/estoque/alertas")({
   component: StockAlertsPage,
 });
 
+interface StockAlertsViewProps {
+  filteredVariants: any[];
+  waitlistCounts: Record<string, number>;
+  adjustingId: string | null;
+  onQuickRefill: (variantId: string, qty: number) => Promise<void>;
+  onOpenCustomModal: (variant: any, defaultQty: number) => void;
+}
+
+function StockAlertsMobileView({
+  filteredVariants,
+  waitlistCounts,
+  adjustingId,
+  onQuickRefill,
+  onOpenCustomModal,
+}: StockAlertsViewProps) {
+  return (
+    <div className="space-y-3">
+      {filteredVariants.map((v: any) => {
+        const available = v.stock_on_hand || 0;
+        const waitingCount =
+          (waitlistCounts as any)[v.id] ||
+          (waitlistCounts as any)[v.product_id] ||
+          0;
+        const isItemAdjusting = adjustingId === v.id;
+
+        return (
+          <div
+            key={v.id}
+            className="rounded-lg border border-border/70 bg-card p-4 space-y-4 shadow-2xs"
+          >
+            {/* Topo do Card: SKU, Nível e Fila de Espera */}
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="font-mono text-xs font-semibold px-2 py-1 rounded-md bg-muted/60 text-foreground border border-border/40">
+                {v.sku || "Sem SKU"}
+              </span>
+
+              <div className="flex items-center gap-2">
+                {waitingCount > 0 && (
+                  <Badge variant="outline" className="gap-1 text-blue-600 border-blue-200 bg-blue-50/50 dark:bg-blue-950/30 font-bold text-xs px-2 py-1">
+                    <BellRing className="size-3" />
+                    <span>{waitingCount} na fila</span>
+                  </Badge>
+                )}
+
+                {available <= 0 ? (
+                  <Badge variant="destructive" className="gap-1 text-xs font-bold px-2 py-1">
+                    <Flame className="size-3" />
+                    Esgotado
+                  </Badge>
+                ) : (
+                  <Badge variant="secondary" className="gap-1 text-xs font-bold text-amber-700 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-300 px-2 py-1">
+                    <AlertTriangle className="size-3 text-amber-500" />
+                    Crítico
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            {/* Nome do Produto */}
+            <div>
+              <h3 className="font-bold text-base text-foreground leading-snug break-words text-wrap whitespace-normal">
+                {v.products?.title || "Produto sem título"}
+              </h3>
+            </div>
+
+            {/* Saldo em Mãos */}
+            <div className="flex items-baseline justify-between pt-2 border-t border-border/30">
+              <span className="text-xs font-medium text-muted-foreground">Saldo atual em mãos</span>
+              <span className={`text-xl font-mono font-black ${available <= 0 ? "text-destructive" : "text-amber-600 dark:text-amber-400"}`}>
+                {available}{" "}
+                <span className="text-xs font-normal text-muted-foreground">un.</span>
+              </span>
+            </div>
+
+            {/* Ações de Reposição Touch Ergonomic (44px) */}
+            <div className="flex items-center gap-2 pt-1">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => onQuickRefill(v.id, 5)}
+                disabled={isItemAdjusting}
+                className="h-11 min-h-11 flex-1 text-xs font-bold rounded-lg cursor-pointer"
+              >
+                +5 un
+              </Button>
+
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => onQuickRefill(v.id, 10)}
+                disabled={isItemAdjusting}
+                className="h-11 min-h-11 flex-1 text-xs font-bold rounded-lg cursor-pointer"
+              >
+                +10 un
+              </Button>
+
+              <Button
+                type="button"
+                size="sm"
+                variant="default"
+                onClick={() => {
+                  onOpenCustomModal(v, waitingCount > 0 ? waitingCount * 2 : 20);
+                }}
+                className="h-11 min-h-11 flex-2 text-xs font-bold rounded-lg gap-2 bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
+              >
+                <Plus className="size-3.5" />
+                <span>Repor</span>
+              </Button>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function StockAlertsDesktopView({
+  filteredVariants,
+  waitlistCounts,
+  adjustingId,
+  onQuickRefill,
+  onOpenCustomModal,
+}: StockAlertsViewProps) {
+  return (
+    <div className="rounded-lg border border-border/70 bg-card overflow-hidden shadow-2xs">
+      <Table>
+        <TableHeader>
+          <TableRow className="border-border/60 bg-muted/20">
+            <TableHead className="text-xs font-bold">Produto</TableHead>
+            <TableHead className="text-xs font-bold font-mono">SKU</TableHead>
+            <TableHead className="text-xs font-bold text-center">Saldo em Mãos</TableHead>
+            <TableHead className="text-xs font-bold text-center">Gravidade</TableHead>
+            <TableHead className="text-xs font-bold text-center">Fila de Espera</TableHead>
+            <TableHead className="text-xs font-bold text-right">Reposição Rápida</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {filteredVariants.map((v: any) => {
+            const available = v.stock_on_hand || 0;
+            const waitingCount =
+              (waitlistCounts as any)[v.id] ||
+              (waitlistCounts as any)[v.product_id] ||
+              0;
+            const isItemAdjusting = adjustingId === v.id;
+
+            return (
+              <TableRow key={v.id} className="border-border/40 hover:bg-muted/30 transition-colors">
+                <TableCell className="font-semibold text-xs text-foreground break-words text-wrap leading-tight whitespace-normal">
+                  {v.products?.title || "Produto sem título"}
+                </TableCell>
+                <TableCell className="font-mono text-xs text-muted-foreground">
+                  {v.sku || "—"}
+                </TableCell>
+                <TableCell className="text-center font-mono font-bold text-sm tabular-nums">
+                  <span className={available <= 0 ? "text-destructive" : "text-amber-600 dark:text-amber-400"}>
+                    {available} un
+                  </span>
+                </TableCell>
+                <TableCell className="text-center">
+                  {available <= 0 ? (
+                    <Badge variant="destructive" className="gap-1 text-xs font-bold">
+                      <Flame className="size-3" />
+                      Esgotado
+                    </Badge>
+                  ) : (
+                    <Badge variant="secondary" className="gap-1 text-xs font-bold text-amber-700 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-300">
+                      <AlertTriangle className="size-3 text-amber-500" />
+                      Crítico ({available} un)
+                    </Badge>
+                  )}
+                </TableCell>
+                <TableCell className="text-center">
+                  {waitingCount > 0 ? (
+                    <Badge variant="outline" className="gap-1 text-blue-600 border-blue-200 bg-blue-50/50 dark:bg-blue-950/30 font-bold text-xs">
+                      <BellRing className="size-3" />
+                      <span>{waitingCount} {waitingCount === 1 ? "cliente" : "clientes"}</span>
+                    </Badge>
+                  ) : (
+                    <span className="text-xs text-muted-foreground/60 font-mono">—</span>
+                  )}
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex items-center justify-end gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => onQuickRefill(v.id, 5)}
+                      disabled={isItemAdjusting}
+                      className="h-11 min-h-11 text-xs font-bold px-3 rounded-lg cursor-pointer"
+                    >
+                      +5
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => onQuickRefill(v.id, 10)}
+                      disabled={isItemAdjusting}
+                      className="h-11 min-h-11 text-xs font-bold px-3 rounded-lg cursor-pointer"
+                    >
+                      +10
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => {
+                        onOpenCustomModal(v, waitingCount > 0 ? waitingCount * 2 : 20);
+                      }}
+                      className="h-11 min-h-11 text-xs font-bold px-3 rounded-lg gap-1 cursor-pointer"
+                    >
+                      <Plus className="size-3" />
+                      Personalizado
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
 function StockAlertsPage() {
   const rawVariants = Route.useLoaderData();
   const variants = Array.isArray(rawVariants) ? rawVariants : [];
   const router = useRouter();
+  const { isCompact } = useWindowSizeClass();
+  const isMobile = isCompact;
 
   const [adjustingId, setAdjustingId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -352,208 +580,29 @@ function StockAlertsPage() {
           }
         />
       ) : (
-        <>
-          {/* ── VISUALIZAÇÃO MOBILE: CARDS VERTICAIS ERGONÔMICOS (block md:hidden) ── */}
-          <div className="block md:hidden space-y-3">
-            {filteredVariants.map((v: any) => {
-              const available = v.stock_on_hand || 0;
-              const waitingCount =
-                (waitlistCounts as any)[v.id] ||
-                (waitlistCounts as any)[v.product_id] ||
-                0;
-              const isItemAdjusting = adjustingId === v.id;
-
-              return (
-                <div
-                  key={v.id}
-                  className="rounded-lg border border-border/70 bg-card p-4 space-y-4 shadow-2xs"
-                >
-                  {/* Topo do Card: SKU, Nível e Fila de Espera */}
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="font-mono text-xs font-semibold px-2 py-1 rounded-md bg-muted/60 text-foreground border border-border/40">
-                      {v.sku || "Sem SKU"}
-                    </span>
-
-                    <div className="flex items-center gap-2">
-                      {waitingCount > 0 && (
-                        <Badge variant="outline" className="gap-1 text-blue-600 border-blue-200 bg-blue-50/50 dark:bg-blue-950/30 font-bold text-xs px-2 py-1">
-                          <BellRing className="size-3" />
-                          <span>{waitingCount} na fila</span>
-                        </Badge>
-                      )}
-
-                      {available <= 0 ? (
-                        <Badge variant="destructive" className="gap-1 text-xs font-bold px-2 py-1">
-                          <Flame className="size-3" />
-                          Esgotado
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary" className="gap-1 text-xs font-bold text-amber-700 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-300 px-2 py-1">
-                          <AlertTriangle className="size-3 text-amber-500" />
-                          Crítico
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Nome do Produto */}
-                  <div>
-                    <h3 className="font-bold text-base text-foreground leading-snug">
-                      {v.products?.title || "Produto sem título"}
-                    </h3>
-                  </div>
-
-                  {/* Saldo em Mãos */}
-                  <div className="flex items-baseline justify-between pt-2 border-t border-border/30">
-                    <span className="text-xs font-medium text-muted-foreground">Saldo atual em mãos</span>
-                    <span className={`text-xl font-mono font-black ${available <= 0 ? "text-destructive" : "text-amber-600 dark:text-amber-400"}`}>
-                      {available}{" "}
-                      <span className="text-xs font-normal text-muted-foreground">un.</span>
-                    </span>
-                  </div>
-
-                  {/* Ações de Reposição Touch Ergonomic (44px) */}
-                  <div className="flex items-center gap-2 pt-1">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleQuickRefill(v.id, 5)}
-                      disabled={isItemAdjusting}
-                      className="h-11 flex-1 text-xs font-bold rounded-lg cursor-pointer"
-                    >
-                      +5 un
-                    </Button>
-
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleQuickRefill(v.id, 10)}
-                      disabled={isItemAdjusting}
-                      className="h-11 flex-1 text-xs font-bold rounded-lg cursor-pointer"
-                    >
-                      +10 un
-                    </Button>
-
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="default"
-                      onClick={() => {
-                        setCustomModalItem(v);
-                        setCustomQuantity(waitingCount > 0 ? waitingCount * 2 : 20);
-                      }}
-                      className="h-11 flex-2 text-xs font-bold rounded-lg gap-2 bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
-                    >
-                      <Plus className="size-3.5" />
-                      <span>Repor</span>
-                    </Button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* ── VISUALIZAÇÃO DESKTOP: TABELA ANALÍTICA (hidden md:block) ── */}
-          <div className="hidden md:block rounded-lg border border-border/70 bg-card overflow-hidden shadow-2xs">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-border/60 bg-muted/20">
-                  <TableHead className="text-xs font-bold">Produto</TableHead>
-                  <TableHead className="text-xs font-bold font-mono">SKU</TableHead>
-                  <TableHead className="text-xs font-bold text-center">Saldo em Mãos</TableHead>
-                  <TableHead className="text-xs font-bold text-center">Gravidade</TableHead>
-                  <TableHead className="text-xs font-bold text-center">Fila de Espera</TableHead>
-                  <TableHead className="text-xs font-bold text-right">Reposição Rápida</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredVariants.map((v: any) => {
-                  const available = v.stock_on_hand || 0;
-                  const waitingCount =
-                    (waitlistCounts as any)[v.id] ||
-                    (waitlistCounts as any)[v.product_id] ||
-                    0;
-                  const isItemAdjusting = adjustingId === v.id;
-
-                  return (
-                    <TableRow key={v.id} className="border-border/40 hover:bg-muted/30 transition-colors">
-                      <TableCell className="font-semibold text-xs text-foreground">
-                        {v.products?.title || "Produto sem título"}
-                      </TableCell>
-                      <TableCell className="font-mono text-xs text-muted-foreground">
-                        {v.sku || "—"}
-                      </TableCell>
-                      <TableCell className="text-center font-mono font-bold text-sm">
-                        <span className={available <= 0 ? "text-destructive" : "text-amber-600"}>
-                          {available} un
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {available <= 0 ? (
-                          <Badge variant="destructive" className="gap-1 text-xs font-bold">
-                            <Flame className="size-3" />
-                            Esgotado
-                          </Badge>
-                        ) : (
-                          <Badge variant="secondary" className="gap-1 text-xs font-bold text-amber-700 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-300">
-                            <AlertTriangle className="size-3 text-amber-500" />
-                            Crítico ({available} un)
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {waitingCount > 0 ? (
-                          <Badge variant="outline" className="gap-1 text-blue-600 border-blue-200 bg-blue-50/50 dark:bg-blue-950/30 font-bold text-xs">
-                            <BellRing className="size-3" />
-                            <span>{waitingCount} {waitingCount === 1 ? "cliente" : "clientes"}</span>
-                          </Badge>
-                        ) : (
-                          <span className="text-xs text-muted-foreground/60 font-mono">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleQuickRefill(v.id, 5)}
-                            disabled={isItemAdjusting}
-                            className="h-8 text-xs font-bold px-2 rounded-lg cursor-pointer"
-                          >
-                            +5
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleQuickRefill(v.id, 10)}
-                            disabled={isItemAdjusting}
-                            className="h-8 text-xs font-bold px-2 rounded-lg cursor-pointer"
-                          >
-                            +10
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="default"
-                            onClick={() => {
-                              setCustomModalItem(v);
-                              setCustomQuantity(waitingCount > 0 ? waitingCount * 2 : 20);
-                            }}
-                            className="h-8 text-xs font-bold px-3 rounded-lg gap-1 cursor-pointer"
-                          >
-                            <Plus className="size-3" />
-                            Personalizado
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
-        </>
+        isMobile ? (
+        <StockAlertsMobileView
+          filteredVariants={filteredVariants}
+          waitlistCounts={waitlistCounts as any}
+          adjustingId={adjustingId}
+          onQuickRefill={handleQuickRefill}
+          onOpenCustomModal={(v, defaultQty) => {
+            setCustomModalItem(v);
+            setCustomQuantity(defaultQty);
+          }}
+        />
+      ) : (
+        <StockAlertsDesktopView
+          filteredVariants={filteredVariants}
+          waitlistCounts={waitlistCounts as any}
+          adjustingId={adjustingId}
+          onQuickRefill={handleQuickRefill}
+          onOpenCustomModal={(v, defaultQty) => {
+            setCustomModalItem(v);
+            setCustomQuantity(defaultQty);
+          }}
+        />
+      )
       )}
 
       {/* ── MODAL DE ENTRADA CUSTOMIZADA DE REPOSIÇÃO ── */}

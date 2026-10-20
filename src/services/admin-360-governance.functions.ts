@@ -801,7 +801,9 @@ export const recordFormSubmissionAudit = createServerFn({ method: "POST" })
     let req: Request | null = null;
     try {
       req = getRequest();
-    } catch {}
+    } catch (err) {
+      console.warn("[admin-360:logPublicFormSubmission] getRequest error:", err);
+    }
     const telemetry = req ? captureRequestTelemetry(req) : null;
 
     const clientIp = ip ?? telemetry?.ip ?? "127.0.0.1";
@@ -888,7 +890,9 @@ export const recordCartTelemetryEvent = createServerFn({ method: "POST" })
     let req: Request | null = null;
     try {
       req = getRequest();
-    } catch {}
+    } catch (err) {
+      console.warn("[admin-360:logUserCartTelemetry] getRequest error:", err);
+    }
     const telemetry = req ? captureRequestTelemetry(req) : null;
 
     const db = getServerClient();
@@ -1045,7 +1049,9 @@ export const recordStaffActionLog = createServerFn({ method: "POST" })
     let req: Request | null = null;
     try {
       req = getRequest();
-    } catch {}
+    } catch (err) {
+      console.warn("[admin-360:recordAuditLog] getRequest error:", err);
+    }
     const telemetry = req ? captureRequestTelemetry(req) : null;
 
     const { data: logEntry, error } = await db

@@ -407,19 +407,9 @@ export async function curateDirectoryListingRecord(
     discoveredAvatarUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
   }
 
-  // Fallback para Banner Thematico por Nicho se vazio
+  // B.8/B.33 Anti-Fake: Se não houver banner legítimo minerado do domínio oficial, mantém null para layout honesto
   if (!discoveredBannerUrl) {
-    const nicheBanners: Record<string, string> = {
-      imobiliaria: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1200&q=80",
-      leiloes: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1200&q=80",
-      restaurante: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80",
-      farmacia: "https://images.unsplash.com/photo-1586015555751-63bb77f4322a?auto=format&fit=crop&w=1200&q=80",
-      mercado: "https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=1200&q=80",
-      automotivo: "https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=1200&q=80",
-      servicos: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80",
-      geral: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1200&q=80",
-    };
-    discoveredBannerUrl = nicheBanners[listing.category] || nicheBanners.geral;
+    discoveredBannerUrl = null;
   }
 
   // 4. Normalização de Horários de Funcionamento (OSM opening_hours)

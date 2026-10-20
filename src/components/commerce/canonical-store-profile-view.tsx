@@ -26,6 +26,7 @@ import { MediaLightboxModal } from "@/components/community/media-lightbox-modal"
 import { normalizeWorkingHours, formatWeeklyScheduleSummary, WEEKDAYS_ORDER, resolveStoreDepartmentSchedules, type StoreDepartmentSchedule } from "@/lib/business-hours";
 import { getOpenStatus, formatDate } from "@/lib/datetime";
 import { formatMoney } from "@/lib/money";
+import { formatStoreCategory } from "@/lib/niches/niche-manifest";
 import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
 import { addToCart } from "@/services/cart.functions";
 import { requestDirectoryQuote, updateDirectoryListingFn } from "@/services/directory.functions";
@@ -714,145 +715,146 @@ function cleanAddressSegment(text: string): string {
         }}
       />
 
-      {/* ── 2. CABEÇALHO DO PERFIL: FOTO 1:1 AO LADO DA CAPA PANORÂMICA 21:9 HERO COM SCROLL INTERNO ── */}
-      {/* CONTRATO DE DESIGN CANÔNICO: FOTO 1:1 AO LADO DA CAPA 21:9 NA MESMA LINHA — PROIBIDO ALTERAR ESTA ESTRUTURA */}
-      <div className="rounded-lg bg-card border border-border/40 p-4 sm:p-6 space-y-4">
-        {/* Linha Superior Canônica: Foto 1:1 Squircle + Capa 21:9 com Scroll Interno de Banners ao Lado */}
-        <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 sm:gap-4 w-full">
-          {/* Lado Esquerdo: Foto da Empresa 1:1 + Capa Panorâmica 21:9 com Scroll Interno */}
-          <div className="flex flex-row items-center gap-3 sm:gap-4 flex-1 min-w-0">
-          {/* Foto da Empresa em Squircle 1:1 */}
-          <div className="relative group shrink-0">
-            <div className="size-20 sm:size-28 md:size-32 rounded-lg bg-card border-2 border-border/50 ring-1 ring-border/20 overflow-hidden flex items-center justify-center shadow-xs">
-              {logoUrl ? (
-                <img
-                  src={logoUrl}
-                  alt={store.name || store.business_name}
-                  className="size-full object-cover select-none"
-                />
-              ) : (
-                <span className="text-xl sm:text-3xl font-extrabold bg-muted text-foreground font-mono">
-                  {(store.name || store.business_name || "WD").slice(0, 2).toUpperCase()}
-                </span>
-              )}
-            </div>
-            {isOwner && (
+      {/* ── 2. CABEÇALHO DO PERFIL: CAPA PANORÂMICA 21:9 HERO DE LARGURA TOTAL ── */}
+      <div className="rounded-lg bg-card border border-border/40 overflow-hidden shadow-xs">
+        {/* Capa Panorâmica Canônica 21:9 (Respeita 100% o corte do upload sem achatamento) */}
+        <div className="relative w-full h-48 sm:h-60 md:h-72 bg-muted/20 overflow-hidden group border-b border-border/40">
+          <div
+            tabIndex={0}
+            aria-label="Galeria de banners da empresa"
+            className="size-full overflow-x-auto overflow-y-hidden no-scrollbar scroll-smooth flex items-center snap-x snap-mandatory"
+          >
+            {storeBannersList.length > 0 ? (
+              storeBannersList.map((banner, idx) => (
+                <div
+                  key={idx}
+                  className="size-full min-w-full overflow-hidden relative shrink-0 snap-center bg-muted/30"
+                >
+                  <img
+                    src={banner.imageUrl}
+                    alt={banner.title || "Capa da empresa"}
+                    className="size-full object-cover select-none"
+                  />
+                  {banner.link && (
+                    <a
+                      href={banner.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="absolute inset-0 z-10"
+                      aria-label="Abrir link do banner"
+                    />
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="size-full bg-gradient-to-r from-primary/10 via-muted/30 to-primary/10 flex items-center justify-center">
+                <Store className="size-12 text-primary/30" />
+              </div>
+            )}
+          </div>
+
+          {isOwner && (
+            <div className="absolute top-3 right-3 flex items-center gap-2 z-20">
               <button
                 type="button"
                 onClick={() => setIsEditCompanyModalOpen(true)}
-                className="absolute inset-0 bg-black/40 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-xs font-semibold gap-1 cursor-pointer"
-                title="Alterar Logo da Marca"
+                className="bg-background/90 hover:bg-background text-foreground backdrop-blur-md px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 cursor-pointer transition-colors h-11 min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                title="Alterar Capa (21:9)"
               >
-                <Camera className="size-4 sm:size-5" />
-                <span className="text-[10px]">Alterar</span>
+                <Camera className="size-4" />
+                <span className="hidden sm:inline">Capa</span>
               </button>
-            )}
-          </div>
-
-          {/* Capa Panorâmica Canônica 21:9 ao lado com Scroll Interno de Banners Promocionais */}
-          <div className="flex-1 min-w-0 h-20 sm:h-28 md:h-32 rounded-lg bg-muted/20 relative overflow-hidden flex items-center group border border-border/40">
-            <div 
-              tabIndex={0}
-              aria-label="Galeria de banners da empresa"
-              className="size-full overflow-x-auto overflow-y-hidden no-scrollbar scroll-smooth flex items-center snap-x snap-mandatory"
-            >
-              {storeBannersList.length > 0 ? (
-                storeBannersList.map((banner, idx) => (
-                  <div
-                    key={idx}
-                    className="size-full min-w-full rounded-lg overflow-hidden relative shrink-0 snap-center bg-muted/30"
-                  >
-                    <img
-                      src={banner.imageUrl}
-                      alt={banner.title || "Capa da empresa"}
-                      className="size-full object-cover select-none"
-                    />
-                    {banner.link && (
-                      <a
-                        href={banner.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="absolute inset-0 z-10"
-                        aria-label="Abrir link do banner"
-                      />
-                    )}
-                  </div>
-                ))
-              ) : (
-                <div className="size-full bg-gradient-to-r from-primary/10 via-muted/30 to-primary/10 flex items-center justify-center">
-                  <Store className="size-8 sm:size-12 text-primary/30" />
-                </div>
-              )}
+              <button
+                type="button"
+                onClick={() => setIsSectionsEditorOpen(true)}
+                className="bg-background/90 hover:bg-background text-foreground backdrop-blur-md px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 cursor-pointer transition-colors h-11 min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                title="Personalizar Vitrine"
+              >
+                <SlidersHorizontal className="size-4" />
+                <span className="hidden sm:inline">Vitrine</span>
+              </button>
             </div>
+          )}
+        </div>
 
-            {isOwner && (
-              <div className="absolute top-2 right-2 flex items-center gap-2 z-20">
+        {/* Bloco de Identidade: Avatar 1:1 Sobreposto + Stats + Nome + Selo */}
+        <div className="p-4 sm:p-6 pt-0 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-10 sm:-mt-14 relative z-10">
+            {/* Avatar da Marca em Squircle 1:1 */}
+            <div className="relative group shrink-0">
+              <div className="size-20 sm:size-28 md:size-32 rounded-lg bg-card border-4 border-background ring-1 ring-border/30 overflow-hidden flex items-center justify-center">
+                {logoUrl ? (
+                  <img
+                    src={logoUrl}
+                    alt={store.name || store.business_name}
+                    className="size-full object-cover select-none"
+                  />
+                ) : (
+                  <span className="text-xl sm:text-3xl font-extrabold bg-muted text-foreground font-mono">
+                    {(store.name || store.business_name || "WD").slice(0, 2).toUpperCase()}
+                  </span>
+                )}
+              </div>
+              {isOwner && (
                 <button
                   type="button"
                   onClick={() => setIsEditCompanyModalOpen(true)}
-                  className="bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 cursor-pointer transition-colors shadow-2xs h-11 min-h-11"
-                  title="Alterar Capa (21:9)"
+                  className="absolute inset-0 bg-background/60 text-foreground rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-xs font-semibold gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  title="Alterar Logo da Marca"
                 >
-                  <Camera className="size-4" />
-                  <span className="hidden sm:inline">Capa</span>
+                  <Camera className="size-4 sm:size-5" />
+                  <span className="text-xs">Alterar</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setIsSectionsEditorOpen(true)}
-                  className="bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 cursor-pointer transition-colors shadow-2xs h-11 min-h-11"
-                  title="Personalizar Vitrine"
-                >
-                  <SlidersHorizontal className="size-4" />
-                  <span className="hidden sm:inline">Vitrine</span>
-                </button>
-              </div>
-            )}
-          </div>
-          </div>
-          {/* Stats no Final (Seguidores, Seguindo, Curtidas) Nivelado na Mesma Linha */}
-          <div className="h-14 sm:h-20 md:h-28 lg:h-32 lg:min-w-60 shrink-0 bg-background/90 backdrop-blur-md rounded-lg border border-border/50 p-2 sm:p-4 flex flex-col justify-center">
-            <div className="grid grid-cols-3 gap-2 text-center w-full">
-              <div>
-                <p className="text-sm sm:text-base md:text-lg font-black text-foreground font-mono">
+              )}
+            </div>
+
+            {/* Stats no Topo (Seguidores, Seguindo, Curtidas) em Linha Compacta */}
+            <div className="bg-muted/30 sm:bg-background/90 backdrop-blur-md rounded-lg border border-border/50 p-2 sm:px-4 sm:py-2 flex items-center gap-4 sm:gap-6 shrink-0 self-start sm:self-auto">
+              <div className="text-center min-w-14">
+                <p className="text-sm sm:text-base font-black text-foreground font-mono">
                   {store.followers_count || store.followersCount || 0}
                 </p>
-                <p className="text-xs text-muted-foreground font-medium truncate">Seguidores</p>
+                <p className="text-xs text-muted-foreground font-medium">Seguidores</p>
               </div>
-              <div>
-                <p className="text-sm sm:text-base md:text-lg font-black text-foreground font-mono">
+              <div className="h-6 w-px bg-border/40" />
+              <div className="text-center min-w-14">
+                <p className="text-sm sm:text-base font-black text-foreground font-mono">
                   {store.following_count || store.followingCount || 0}
                 </p>
-                <p className="text-xs text-muted-foreground font-medium truncate">Seguindo</p>
+                <p className="text-xs text-muted-foreground font-medium">Seguindo</p>
               </div>
-              <div>
-                <p className="text-sm sm:text-base md:text-lg font-black text-foreground font-mono">
+              <div className="h-6 w-px bg-border/40" />
+              <div className="text-center min-w-14">
+                <p className="text-sm sm:text-base font-black text-foreground font-mono">
                   {store.likes_count || (Array.isArray(posts) ? posts.reduce((acc: number, p: any) => acc + (p.likes_count || p.likes || 0), 0) : 0)}
                 </p>
-                <p className="text-xs text-muted-foreground font-medium truncate">Curtidas</p>
+                <p className="text-xs text-muted-foreground font-medium">Curtidas</p>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Linha de Identidade Compacta, Tipografia Fluida & Avaliação Real reposicionada abaixo do Nome */}
-        <div className="pt-2 border-t border-border/30 flex flex-col gap-2">
-          <div className="flex flex-col gap-1">
-            <div className="inline-flex items-center flex-wrap gap-2">
-              <h1 className="text-xl md:text-2xl font-bold text-foreground tracking-tight text-balance line-clamp-2">
-                {store.name || store.business_name}
-              </h1>
-              <ShieldCheck className="size-4 text-primary fill-primary/20 shrink-0" />
-              {isOwner && (
-                <Badge variant="secondary" className="h-5 px-2 text-xs font-bold rounded-full border border-border/60 bg-muted/60 text-foreground gap-1 shrink-0">
-                  <Shield className="size-2.5 text-primary" />
-                  <span>Admin</span>
-                </Badge>
-              )}
-              {store.slug && (
-                <span className="text-xs font-medium text-muted-foreground font-mono">
-                  @{store.slug}
-                </span>
-              )}
+          {/* Nome da Empresa & Badges Oficiais */}
+          <div className="pt-2 border-t border-border/30 flex flex-col gap-2">
+            <div className="flex flex-col gap-1">
+              <div className="inline-flex items-center flex-wrap gap-2">
+                <h1 className="text-xl md:text-2xl font-bold text-foreground tracking-tight text-balance line-clamp-2">
+                  {store.name || store.business_name}
+                </h1>
+                {store.is_verified && (
+                  <ShieldCheck className="size-4 text-primary fill-primary/20 shrink-0" />
+                )}
+                {isOwner && (
+                  <Badge variant="secondary" className="h-5 px-2 text-xs font-bold rounded-full border border-border/60 bg-muted/60 text-foreground gap-1 shrink-0">
+                    <Shield className="size-2.5 text-primary" />
+                    <span>Admin</span>
+                  </Badge>
+                )}
+                {store.slug && (
+                  <span className="text-xs font-medium text-muted-foreground font-mono">
+                    @{store.slug}
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Nome da Empresa ➔ [★ 4.9 (120) • Nicho] — Avaliação 100% Dinâmica do BFF */}
@@ -875,7 +877,7 @@ function cleanAddressSegment(text: string): string {
               )}
               <span className="text-muted-foreground/40">•</span>
               <span className="font-semibold text-foreground/90">
-                {store.category || store.type || (isGastronomy ? "Gastronomia" : "Empresa")}
+                {formatStoreCategory(store.category || store.type || (isGastronomy ? "gastronomia" : "Comércio Local"))}
               </span>
               {store.is_verified && (
                 <>

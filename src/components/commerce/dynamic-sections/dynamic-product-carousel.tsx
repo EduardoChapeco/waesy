@@ -46,7 +46,7 @@ const DEFAULT_PACKAGES: TravelPackageItem[] = [
     id: "pkg_maceio",
     title: "Pacote para Maceió",
     destination: "Maceió, Alagoas",
-    coverImageUrl: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
+    
     durationText: "8 Dias / 7 Noites",
     inclusionText: "Hotel + Aéreo",
     travelDatesText: "sáb 28 nov - sáb 05 dez",
@@ -59,7 +59,7 @@ const DEFAULT_PACKAGES: TravelPackageItem[] = [
     id: "pkg_rio",
     title: "Pacote para Rio de Janeiro",
     destination: "Rio de Janeiro, RJ",
-    coverImageUrl: "https://images.unsplash.com/photo-1483450388369-9ed95738483c?auto=format&fit=crop&w=800&q=80",
+    
     durationText: "5 Dias / 4 Noites",
     inclusionText: "Hotel + Aéreo",
     travelDatesText: "qua 11 nov - dom 15 nov",
@@ -70,7 +70,7 @@ const DEFAULT_PACKAGES: TravelPackageItem[] = [
     id: "pkg_natal",
     title: "Pacote para Natal",
     destination: "Natal, Rio Grande do Norte",
-    coverImageUrl: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    
     durationText: "6 Dias / 5 Noites",
     inclusionText: "Hotel + Aéreo",
     travelDatesText: "sex 26 fev - qua 03 mar",
@@ -83,7 +83,7 @@ const DEFAULT_PACKAGES: TravelPackageItem[] = [
     id: "pkg_sp",
     title: "Pacote para São Paulo",
     destination: "São Paulo, SP",
-    coverImageUrl: "https://images.unsplash.com/photo-1578637387939-43c525550085?auto=format&fit=crop&w=800&q=80",
+    
     durationText: "4 Dias / 3 Noites",
     inclusionText: "Hotel + Aéreo",
     travelDatesText: "qui 30 dez - sáb 02 jan",

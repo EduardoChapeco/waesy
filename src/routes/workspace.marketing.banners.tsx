@@ -43,6 +43,8 @@ function WorkspaceStoreBannersPage() {
   const [subtitle, setSubtitle] = useState("");
   const [mediaType, setMediaType] = useState<"image" | "video" | "gif">("image");
   const [mediaUrl, setMediaUrl] = useState("");
+  const [mediaDesktopUrl, setMediaDesktopUrl] = useState("");
+  const [mediaMobileUrl, setMediaMobileUrl] = useState("");
   const [targetType, setTargetType] = useState<"product" | "category" | "external_url">("product");
   const [targetUrl, setTargetUrl] = useState("");
   const [badgeText, setBadgeText] = useState("Promoção");
@@ -65,6 +67,8 @@ function WorkspaceStoreBannersPage() {
     setTitle("");
     setSubtitle("");
     setMediaUrl("");
+    setMediaDesktopUrl("");
+    setMediaMobileUrl("");
     setMediaType("image");
     setTargetType("product");
     setTargetUrl("");
@@ -84,6 +88,8 @@ function WorkspaceStoreBannersPage() {
     setTitle(b.title || "");
     setSubtitle(b.subtitle || "");
     setMediaUrl(b.media_url);
+    setMediaDesktopUrl((b as any).media_desktop_url || "");
+    setMediaMobileUrl((b as any).media_mobile_url || "");
     setMediaType(b.media_type);
     setTargetType((b.target_type as any) || "product");
     setTargetUrl(b.target_url || "");
@@ -118,6 +124,8 @@ function WorkspaceStoreBannersPage() {
             title: title.trim(),
             subtitle: subtitle.trim() || null,
             media_url: mediaUrl,
+            media_desktop_url: mediaDesktopUrl.trim() || null,
+            media_mobile_url: mediaMobileUrl.trim() || null,
             media_type: mediaType,
             target_type: targetType,
             target_url: targetUrl.trim() || null,
@@ -139,6 +147,8 @@ function WorkspaceStoreBannersPage() {
             title: title.trim(),
             subtitle: subtitle.trim() || undefined,
             media_url: mediaUrl,
+            media_desktop_url: mediaDesktopUrl.trim() || undefined,
+            media_mobile_url: mediaMobileUrl.trim() || undefined,
             media_type: mediaType,
             target_type: targetType,
             target_url: targetUrl.trim() || undefined,
@@ -202,13 +212,26 @@ function WorkspaceStoreBannersPage() {
           <Button
             onClick={handleOpenCreate}
             size="sm"
-            className="h-9 px-4 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer"
+            className="h-11 sm:h-9 px-4 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <Plus className="size-3.5" />
             <span>Novo Banner</span>
           </Button>
         }
       />
+
+      {banners.length > 0 && (
+        <div className="relative max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+          <Input
+            type="search"
+            placeholder="Buscar banner por título..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 h-11 sm:h-9 text-xs rounded-lg bg-card"
+          />
+        </div>
+      )}
 
       {banners.length === 0 ? (
         <div className="py-12 text-center space-y-4 border border-dashed border-border/70 rounded-lg bg-card/40">
@@ -221,30 +244,71 @@ function WorkspaceStoreBannersPage() {
               Crie banners para destacar promoções, lançamentos ou categorias na vitrine da sua loja.
             </p>
           </div>
-          <Button onClick={handleOpenCreate} size="sm" variant="outline" className="rounded-lg text-xs font-bold h-9">
+          <Button
+            onClick={handleOpenCreate}
+            size="sm"
+            variant="outline"
+            className="rounded-lg text-xs font-bold h-11 sm:h-9 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
             <Plus className="size-3.5 mr-1" />
             Criar Primeiro Banner
           </Button>
         </div>
+      ) : filteredBanners.length === 0 ? (
+        <div className="py-12 text-center space-y-2 border border-dashed border-border/70 rounded-lg bg-card/40">
+          <h3 className="text-sm font-bold text-foreground">Nenhum banner encontrado</h3>
+          <p className="text-xs text-muted-foreground">
+            Nenhum resultado corresponde à busca &ldquo;{searchQuery}&rdquo;.
+          </p>
+        </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {banners.map((b) => (
+          {filteredBanners.map((b) => (
             <div
               key={b.id}
               className="bg-card rounded-lg border border-border/60 overflow-hidden flex flex-col justify-between group shadow-none"
             >
-              <div className="relative aspect-[2.35/1] sm:aspect-[2.6/1] bg-muted overflow-hidden">
-                <img
-                  src={b.media_url}
-                  alt=""
-                  aria-hidden="true"
-                  className="absolute inset-0 size-full object-cover blur-xl opacity-35 scale-110 pointer-events-none select-none"
-                />
-                <img
-                  src={b.media_url}
-                  alt={b.title}
-                  className="relative size-full object-contain sm:object-cover group-hover:scale-102 transition-transform duration-300 select-none"
-                />
+              <div className="relative aspect-video md:aspect-21/9 bg-muted overflow-hidden">
+                {b.media_type === "video" || b.media_url?.endsWith(".mp4") || b.media_url?.endsWith(".webm") ? (
+                  <video
+                    src={b.media_url}
+                    className="size-full object-cover"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                  />
+                ) : (
+                  <>
+                    <picture className="absolute inset-0 size-full select-none pointer-events-none">
+                      {b.media_mobile_url && (
+                        <source media="(max-width: 767px)" srcSet={b.media_mobile_url} />
+                      )}
+                      {b.media_desktop_url && (
+                        <source media="(min-width: 768px)" srcSet={b.media_desktop_url} />
+                      )}
+                      <img
+                        src={b.media_desktop_url || b.media_url}
+                        alt=""
+                        aria-hidden="true"
+                        className="size-full object-cover blur-xl opacity-35 scale-110 pointer-events-none select-none"
+                      />
+                    </picture>
+                    <picture className="relative size-full block">
+                      {b.media_mobile_url && (
+                        <source media="(max-width: 767px)" srcSet={b.media_mobile_url} />
+                      )}
+                      {b.media_desktop_url && (
+                        <source media="(min-width: 768px)" srcSet={b.media_desktop_url} />
+                      )}
+                      <img
+                        src={b.media_desktop_url || b.media_url}
+                        alt={b.title}
+                        className="relative size-full object-contain sm:object-cover group-hover:scale-105 transition-transform duration-300 select-none"
+                      />
+                    </picture>
+                  </>
+                )}
                 <div className="absolute top-2 right-2 flex items-center gap-2 z-10">
                   {b.city_filter && (
                     <Badge
@@ -265,9 +329,9 @@ function WorkspaceStoreBannersPage() {
               </div>
               <div className="p-4 space-y-3">
                 <div>
-                  <h3 className="font-bold text-sm text-foreground truncate">{b.title}</h3>
+                  <h3 className="font-bold text-sm text-foreground break-words text-wrap leading-tight">{b.title}</h3>
                   {b.target_url && (
-                    <p className="text-xs text-muted-foreground truncate font-mono mt-1">
+                    <p className="text-xs text-muted-foreground break-all font-mono mt-1">
                       Link: {b.target_url}
                     </p>
                   )}
@@ -343,17 +407,68 @@ function WorkspaceStoreBannersPage() {
             </p>
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-xs font-bold text-foreground">Mídia do Banner Panorâmico (21:9) *</Label>
-            <MediaUploader
-              value={mediaUrl ? [mediaUrl] : []}
-              onChange={(urls) => setMediaUrl(urls[0] || "")}
-              accept="all"
-              aspect={21 / 9}
-              enableCrop={true}
-              lockAspect={true}
-              maxFiles={1}
-            />
+          <div className="space-y-3 p-3 rounded-lg bg-muted/20 border border-border/50">
+            <div className="space-y-1">
+              <Label className="text-xs font-bold text-foreground">
+                Mídia Principal / Padrão (Imagem / Vídeo 21:9) *
+              </Label>
+              <MediaUploader
+                value={mediaUrl ? [mediaUrl] : []}
+                onChange={(urls) => {
+                  const url = urls[0] || "";
+                  setMediaUrl(url);
+                  const isVideo = url.endsWith(".mp4") || url.endsWith(".webm");
+                  setMediaType(isVideo ? "video" : "image");
+                }}
+                accept="all"
+                bucket="banners"
+                folder="destaques"
+                aspect={21 / 9}
+                enableCrop={true}
+                lockAspect={false}
+                maxFiles={1}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border/30">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-foreground/90">
+                  Mídia Desktop (Widescreen Fino 28:9)
+                </Label>
+                <MediaUploader
+                  value={mediaDesktopUrl ? [mediaDesktopUrl] : []}
+                  onChange={(urls) => setMediaDesktopUrl(urls[0] || "")}
+                  bucket="banners"
+                  folder="destaques/desktop"
+                  aspect={28 / 9}
+                  enableCrop={true}
+                  lockAspect={false}
+                  maxFiles={1}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Proporção fina para monitores, sem cortes laterais.
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-foreground/90">
+                  Mídia Mobile (Nativa App 16:9)
+                </Label>
+                <MediaUploader
+                  value={mediaMobileUrl ? [mediaMobileUrl] : []}
+                  onChange={(urls) => setMediaMobileUrl(urls[0] || "")}
+                  bucket="banners"
+                  folder="destaques/mobile"
+                  aspect={16 / 9}
+                  enableCrop={true}
+                  lockAspect={false}
+                  maxFiles={1}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Exibido em celulares no formato clássico.
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Seletor de Destino / Link Helper */}

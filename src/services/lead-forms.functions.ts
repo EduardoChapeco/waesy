@@ -178,7 +178,7 @@ export const getPublicLeadFormBySlug = createServerFn({ method: "GET" })
         .from("lead_forms")
         .update({ views_count: (formRow.views_count || 0) + 1 })
         .eq("id", formRow.id);
-    } catch {}
+    } catch (err) { console.warn("[lead-forms] update views_count error:", err); }
 
     // 3. Busca campos ordenados
     const { data: fieldsRows } = await supabase
@@ -220,7 +220,9 @@ export const submitPublicLeadForm = createServerFn({ method: "POST" })
     let req: Request | null = null;
     try {
       req = getRequest();
-    } catch {}
+    } catch (err) {
+      console.warn("[lead-forms:submitPublicLeadForm] getRequest error:", err);
+    }
 
     const telemetry = captureRequestTelemetry(req);
     const fingerprint = resolveDeviceFingerprint(data.deviceFingerprint, telemetry.ip, telemetry.userAgent);
@@ -372,7 +374,7 @@ export const submitPublicLeadForm = createServerFn({ method: "POST" })
           updated_at: new Date().toISOString(),
         })
         .eq("id", formRow.id);
-    } catch {}
+    } catch (err) { console.warn("[lead-forms] update submissions_count error:", err); }
 
     // 5. Prepara Ação Pós-Envio
     let whatsappUrl: string | null = null;
@@ -957,7 +959,9 @@ export const submitCivilInquiryLead = createServerFn({ method: "POST" })
     let req: Request | null = null;
     try {
       req = getRequest();
-    } catch {}
+    } catch (err) {
+      console.warn("[lead-forms:submitFastLeadClassified] getRequest error:", err);
+    }
 
     const telemetry = captureRequestTelemetry(req);
     const fingerprint = resolveDeviceFingerprint(data.deviceFingerprint, telemetry.ip, telemetry.userAgent);
@@ -1000,7 +1004,7 @@ export const submitCivilInquiryLead = createServerFn({ method: "POST" })
     try {
       const { data: authData } = await supabase.auth.getUser();
       if (authData?.user) profileId = authData.user.id;
-    } catch {}
+    } catch (err) { console.warn("[lead-forms:submitFastLeadClassified] getUser error:", err); }
 
     // 3. Registra na tabela de leads (lead_form_submissions) com Telemetria Completa
     let submissionId = crypto.randomUUID();

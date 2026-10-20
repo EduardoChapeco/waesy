@@ -3,7 +3,7 @@ import { useWindowSizeClass } from "@/hooks/use-mobile";
 import { DesktopShell } from "./desktop-shell";
 import { MobileShell } from "./mobile-shell";
 
-export interface AppShellProps {
+export interface DSAppShellProps {
   railSlot: React.ReactNode;
   masterPanelSlot?: React.ReactNode;
   children: React.ReactNode;
@@ -27,7 +27,7 @@ export function AppShell({
   bottomNavSlot,
   contextActionSlot,
   className,
-}: AppShellProps) {
+}: DSAppShellProps) {
   const { isExpanded } = useWindowSizeClass();
 
   if (isExpanded) {

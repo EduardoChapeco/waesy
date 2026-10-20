@@ -707,3 +707,144 @@ export const getSignedMediaDownloadUrl = createServerFn({ method: "POST" })
     if (error || !signed?.signedUrl) throw new Error(`Não foi possível gerar URL de download: ${error?.message || "URL ausente"}`);
     return { signedUrl: signed.signedUrl, expiresInSeconds: data.expiresInSeconds, bucket: data.bucket, path: data.path };
   });
+
+
+function assertSafeExternalMediaUrl(rawUrl: string): URL {
+  let parsed: URL;
+  try {
+    parsed = new URL(rawUrl);
+  } catch {
+    throw new Error("URL externa inválida.");
+  }
+  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+    throw new Error("Apenas URLs HTTP/HTTPS são permitidas para ingestão.");
+  }
+  const host = parsed.hostname.toLowerCase();
+  if (
+    host === "localhost" ||
+    host === "127.0.0.1" ||
+    host === "0.0.0.0" ||
+    host === "::1" ||
+    host === "[::1]" ||
+    host.endsWith(".local") ||
+    host.endsWith(".internal") ||
+    /^10\./.test(host) ||
+    /^192\.168\./.test(host) ||
+    /^169\.254\./.test(host) ||
+    /^172\.(1[6-9]|2\d|3[0-1])\./.test(host)
+  ) {
+    throw new Error("Host bloqueado por política de segurança (SSRF Protection).");
+  }
+  return parsed;
+}
+
+/**
+ * Ingestão segura server-side de mídia por URL externa:
+ * Realiza download validado no servidor (anti-SSRF, validação MIME e limite de 20MB)
+ * e persiste o binário diretamente no Supabase Storage.
+ */
+export const ingestExternalMediaUrl = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      externalUrl: z.string().url().min(8).max(2048),
+      bucket: z.string().default("post-media"),
+      folder: z.string().default("classifieds"),
+    }),
+  )
+  .handler(async ({ data: { externalUrl, bucket, folder } }) => {
+    assertAllowedBffBucket(bucket);
+    assertSafeFolder(folder);
+    const parsedUrl = assertSafeExternalMediaUrl(externalUrl);
+
+    const { getServerIdentity } = await import("@/lib/server-access");
+    const identity = await getServerIdentity();
+    if (!identity.id && !identity.store_id) {
+      throw new Error("Faça login para importar mídia por URL.");
+    }
+    enforceRateLimit(identity.id || identity.store_id || "guest", "media_upload");
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12000);
+    let response: Response;
+    try {
+      response = await fetch(parsedUrl.toString(), {
+        method: "GET",
+        redirect: "follow",
+        signal: controller.signal,
+        headers: {
+          Accept: "image/*,video/*,*/*;q=0.8",
+          "User-Agent": "WaesyMediaIngestor/1.0",
+        },
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    if (!response.ok) {
+      throw new Error(`Falha ao baixar mídia externa (HTTP ${response.status}).`);
+    }
+
+    const headerType = (response.headers.get("content-type") || "").split(";")[0].trim().toLowerCase();
+    const urlExtMatch = parsedUrl.pathname.match(/\.(jpg|jpeg|png|webp|gif|avif|mp4|webm|mov)$/i);
+    const inferredMime =
+      headerType && ALLOWED_MIME_TYPES.has(headerType)
+        ? headerType
+        : urlExtMatch
+          ? urlExtMatch[1].toLowerCase() === "mp4"
+            ? "video/mp4"
+            : urlExtMatch[1].toLowerCase() === "webm"
+              ? "video/webm"
+              : urlExtMatch[1].toLowerCase() === "mov"
+                ? "video/quicktime"
+                : urlExtMatch[1].toLowerCase() === "png"
+                  ? "image/png"
+                  : urlExtMatch[1].toLowerCase() === "webp"
+                    ? "image/webp"
+                    : urlExtMatch[1].toLowerCase() === "gif"
+                      ? "image/gif"
+                      : "image/jpeg"
+          : "image/jpeg";
+
+    validateMimeType(inferredMime);
+
+    const arrayBuffer = await response.arrayBuffer();
+    if (arrayBuffer.byteLength <= 0 || arrayBuffer.byteLength > MAX_INLINE_UPLOAD_BYTES) {
+      throw new Error("Mídia externa vazia ou acima do limite máximo de 20 MB.");
+    }
+
+    const buffer = Buffer.from(arrayBuffer);
+    const ext = extensionForMime(inferredMime);
+    const ownerPrefix = identity.store_id || identity.id;
+    const uniquePath = `${folder}/${ownerPrefix}/${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${ext}`;
+
+    const supabase = getServerClient();
+    let targetBucket = bucket;
+    const { error: uploadError } = await supabase.storage.from(targetBucket).upload(uniquePath, buffer, {
+      contentType: inferredMime,
+      upsert: true,
+    });
+
+    if (uploadError) {
+      const fallbackBucket = "cms-media";
+      const { error: fbErr } = await supabase.storage.from(fallbackBucket).upload(uniquePath, buffer, {
+        contentType: inferredMime,
+        upsert: true,
+      });
+      if (fbErr) {
+        throw new Error(`Erro ao persistir mídia importada no Storage: ${uploadError.message}`);
+      }
+      targetBucket = fallbackBucket;
+    }
+
+    const { data: publicUrlData } = supabase.storage.from(targetBucket).getPublicUrl(uniquePath);
+    const mediaType: "image" | "video" = inferredMime.startsWith("video/") ? "video" : "image";
+
+    return {
+      url: publicUrlData.publicUrl,
+      path: uniquePath,
+      bucket: targetBucket,
+      type: mediaType,
+      mimeType: inferredMime,
+      byteSize: buffer.byteLength,
+    };
+  });

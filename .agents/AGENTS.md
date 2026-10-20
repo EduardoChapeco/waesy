@@ -193,3 +193,33 @@ O agente deve interromper imediatamente o trabalho e devolver a decisão ao huma
 - Toda função BFF de criação de pedidos operacionais ou de concessão (`createSubpanelOrder`) DEVE obter e validar os preços unitários diretamente do banco de dados oficial (`event_store_products` / `event_subpanel_products`), sendo expressamente vedado calcular totais ou taxas de comissão confiando em preços enviados pelo cliente HTTP em pedidos de participantes civis (`mobile_attendee`). O cálculo de repasse da produtora (`concession_fee_cents`) e saldo líquido do parceiro deve ser executado de forma determinística e selada no servidor.
 
 
+
+
+## B.42 Invariante de Bifurcação Estrita: Mobile Native App vs. Desktop Native App System
+- É expressamente vedado o uso de sites responsivos fluidos tradicionais que encolhem, quebram ou espremem controles conforme a viewport se altera. Cada classe de dispositivo opera sob uma arquitetura de UI congelada e dedicada:
+  1. **Mobile Native App Shell (< 600px):** Comportamento idêntico a um aplicativo iOS/Android nativo compilado (Thumb Zone no terço inferior, safe-area defensiva com `env(safe-area-inset-top)` e `bottom-safe`, modais convertidos automaticamente em bottom sheets/drawers deslizantes de 100dvh, barras de ação flutuantes `z-30` com folga `pb-32 pb-safe`, menus de abas e atalhos em trilhos horizontais elásticos com snap scroll sem hover residual).
+  2. **Desktop Native App System (>= 840px):** Experiência densa e ancorada de software desktop/web moderno (Linear, macOS, Figma), com split-views, painéis laterais fixos e redimensionáveis, navegação por colunas e ausência de elementos mobile inflados.
+  3. **Proibição de Duplicação Híbrida no DOM:** É terminantemente proibido renderizar simultaneamente árvores DOM duplicadas de desktop e mobile ocultadas apenas por CSS (`block md:hidden` e `hidden md:block` duplicando nós pesados). A bifurcação deve ocorrer no nível de componente ou via `useWindowSizeClass()`, renderizando estritamente uma única casca viva por vez.
+
+## B.43 Invariante Anti-Jank & Anti-Efeito Sanfona (Zero CLS & Skeletons Isomórficos)
+- Todo elemento com carregamento assíncrono (mídias, banners, cards, listas, tabelas) DEVE possuir contêiner com dimensões e aspect-ratio rigorosamente fixados no CSS antes da chegada dos dados (`aspect-[4/3]`, `aspect-square`, `aspect-[28/9]`, `aspect-[16/9]`, `min-h-*`), garantindo Cumulative Layout Shift nulo (CLS < 0.01).
+- É terminantemente proibido o efeito sanfona (expansão ou colapso súbito de elementos verticais que empurram o conteúdo para baixo enquanto o usuário interage ou durante o carregamento).
+- Skeletons de carregamento DEVEM ser geometricamente isomórficos (proporção 1:1 exata) ao conteúdo final, eliminando a troca de altura entre o estado de skeleton e o estado populado. Proibido o uso de spinners avulsos soltos como estado de carregamento de páginas inteiras ou listas.
+
+## B.44 Invariante de Squircles Grandes & Inteligência Tipográfica Anti-Truncate
+- O padrão visual soberano da plataforma para cartões, vitrines, fichas técnicas e blocos de conteúdo é o **Squircle Generoso** com curvatura contínua Apple HIG (`squircle-card`, `rounded-3xl` / `rounded-2xl` / `rounded-card`).
+- **Inteligência Anti-Truncate:** Informações essenciais (títulos, preços, parcelamentos, metadados chave de nicho, especificações técnicas e badges operacionais) NÃO PODEM ser cortadas com `truncate` ou reticências silenciosas (`...`). O contêiner DEVE acomodar o texto na íntegra utilizando adaptação tipográfica proporcional, quebra orgânica de linha (`break-words text-wrap leading-tight whitespace-normal`) e padding compensado, garantindo legibilidade perfeita sem degradar a geometria squircle.
+
+## B.45 Invariante da Engine TetrisGrid & BentoGrid com Empacotamento Denso
+- Grades de destaque, vitrines assimétricas e blocos de campanhas DEVEM consumir a **Engine TetrisGrid** (`grid-flow-dense` com regras de fechamento retangular perfeito sem lacunas/buracos geométricos).
+- Em composições de 3 itens (1 hero 2x2 + 2 secundários), os secundários no breakpoint desktop devem ocupar exatamente 2 colunas cada empilhados verticalmente para completar 100% da largura da grade sem espaços vazios.
+- Todos os tiles da engine TetrisGrid devem utilizar cantos squircle amplos (`squircle-card` / `rounded-2xl`), estados interativos suaves (`squircle-hover`), links acessíveis com anel de foco teclado (`:focus-visible:ring-2`) e imagens tratadas honestamente sem fallbacks sintéticos de bancos externos (Unsplash/Pexels).
+
+## B.46 Invariante de Edição Cirúrgica (Diff-Only), Zero Código Morto e Proteção de Orçamento Cloudflare
+- É terminantemente proibido reescrever arquivos inteiros de centenas de linhas para alterações pontuais; toda intervenção deve ocorrer via diffs cirúrgicos localizados.
+- O repositório mantém tolerância zero a arquivos órfãos/zumbis (`check:deadcode` = 0), tipos duplicados fora da SSOT (`check:types-ssot` = 0), ciclos de dependência (`check:cycles` = 0) e estouro de orçamento gzip por rota (`check:route-budget` = PASS).
+
+## B.47 Invariante de Upload Universal em 4 Modos & Zero Interfaces Casca de Ovo
+- Todo componente de ingestão de mídia (`MediaUploader`) DEVE suportar nativamente os 4 modos reais de captura: (1) Arquivo local com compressão WebP client-side; (2) Colagem direta da área de transferência (`Ctrl+V` via `extractMediaFromClipboard`) com conversão automática para WebP; (3) Arrastar e soltar (Drag & Drop); (4) Ingestão de URL externa com download seguro pelo servidor (`ingestExternalMediaUrl`), proteção anti-SSRF, validação MIME e persistência real no Supabase Storage.
+- Toda tabela referenciada na camada BFF (`.from("...")`) DEVE possuir contrato físico correspondente em `supabase/migrations/` validado por `scripts/check-bff-table-contracts.mjs` (541/541 tabelas verificadas).
+

@@ -153,7 +153,7 @@ export function MetamorphicBannerSlider({
                   <source media="(min-width: 768px)" srcSet={item.image_desktop_url} />
                 )}
                 <img
-                  src={item.image_desktop_url || item.image_url}
+                  src={item.image_desktop_url || item.image_url || undefined}
                   alt={item.title || ""}
                   loading={idx === 0 ? "eager" : "lazy"}
                   decoding="async"

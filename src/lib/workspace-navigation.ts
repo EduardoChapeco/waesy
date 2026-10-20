@@ -265,6 +265,7 @@ const GROUP_TURISMO_BOARDING: NavGroup = {
     { path: "/workspace/turismo/embarques", label: "Gestão de Embarques", icon: Calendar },
     { path: "/workspace/clientes", label: "Lista de Passageiros", icon: Users },
     { path: "/workspace/turismo/vistos", label: "Vistos & Documentação", icon: Globe },
+    { path: "/workspace/turismo/documentos-ocr", label: "Documentos & OCR", icon: FileText },
   ],
 };
 

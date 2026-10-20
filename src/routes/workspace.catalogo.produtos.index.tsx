@@ -1,5 +1,6 @@
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useWindowSizeClass } from "@/hooks/use-mobile";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { Plus, Search, MoreVertical, Copy, Eye, Edit3, Archive, CheckCircle2, FileText, Trash2, Download, Package, Filter, Layers, Palette, Globe, ArrowUpRight } from "lucide-react";
@@ -219,6 +220,7 @@ function AdminProductsPage() {
   const [isClassifiedImportOpen, setIsClassifiedImportOpen] = useState(false);
   const [isTourOpen, setIsTourOpen] = useState(false);
   const navigate = useNavigate();
+  const { isCompact: isMobile } = useWindowSizeClass();
 
   const handleToggleActive = async (product: AdminProductRow, active: boolean) => {
     const newStatus: "published" | "draft" = active ? "published" : "draft";
@@ -588,10 +590,9 @@ function AdminProductsPage() {
  </Button>
  )}
  </div>
- ) : (
- <div>
- {/* VISÃO MOBILE: Lista Espaçosa de Cartões (Zero-Aperto & Tipografia Ampla) */}
- <div className="md:hidden space-y-3">
+ ) : isMobile ? (
+        <div className="space-y-3">
+          {/* VISÃO MOBILE: Lista Espaçosa de Cartões (Zero-Aperto & Tipografia Ampla) */}
  {filteredProducts.map((product) => {
  const cover = product.product_media?.[0]?.url;
  const isSelected = selectedIds.includes(product.id);
@@ -630,7 +631,7 @@ function AdminProductsPage() {
  <div className="flex items-start justify-between gap-2">
  <Link
  to={`/workspace/catalogo/produtos/${product.id}` as never}
- className="font-bold text-base text-foreground leading-snug line-clamp-2"
+ className="font-bold text-base text-foreground leading-snug break-words text-wrap leading-tight whitespace-normal block"
  >
  {product.title}
  </Link>
@@ -689,9 +690,9 @@ function AdminProductsPage() {
  );
  })}
  </div>
-
- {/* VISÃO DESKTOP: DataGrid / Tabela de Alta Densidade */}
- <div className="hidden md:flex flex-col rounded-xl overflow-hidden bg-card border border-border/70 shadow-2xs flex-1 min-h-0">
+              ) : (
+                <div className="flex flex-col rounded-xl overflow-hidden bg-card border border-border/70 shadow-2xs flex-1 min-h-0">
+                  {/* VISÃO DESKTOP: DataGrid / Tabela de Alta Densidade */}
             <div className="overflow-x-auto overflow-y-auto native-scroll flex-1 flex-1 min-h-0">
  <Table>
  <TableHeader>
@@ -746,7 +747,7 @@ function AdminProductsPage() {
  <div className="min-w-0 flex-1">
  <Link
  to={`/workspace/catalogo/produtos/${product.id}` as never}
- className="font-semibold text-sm text-foreground hover:underline truncate block"
+ className="font-semibold text-sm text-foreground hover:underline break-words text-wrap leading-tight whitespace-normal block"
  >
  {product.title}
  </Link>
@@ -822,10 +823,9 @@ function AdminProductsPage() {
  })}
  </TableBody>
  </Table>
- </div>
- </div>
- </div>
- )}
+                </div>
+              </div>
+            )}
  </>
  )}
 

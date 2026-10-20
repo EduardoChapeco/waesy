@@ -336,6 +336,7 @@ class BlockErrorBoundary extends React.Component<
 interface ExperienceRendererProps {
  nodes?: any[];
  document?: OmniPageDocument;
+ activePageId?: string | null;
  bindings?: any;
  transientData?: any;
  isEditing?: boolean;
@@ -346,14 +347,21 @@ interface ExperienceRendererProps {
 export function ExperienceRenderer({
  nodes,
  document,
+ activePageId,
  bindings,
  transientData,
  isEditing,
  selectedNodeId,
  onSelectNode,
 }: ExperienceRendererProps) {
- const renderNodes = document ? omniPageToExperienceNodes(document) : nodes;
- if (!renderNodes || renderNodes.length === 0) return null;
+ const rawNodes = document ? omniPageToExperienceNodes(document) : nodes;
+ if (!rawNodes || rawNodes.length === 0) return null;
+
+ const renderNodes = activePageId
+  ? rawNodes.filter((node) => !node.page_id || node.page_id === activePageId)
+  : rawNodes;
+
+ if (renderNodes.length === 0) return null;
  const rendered = (
  <>
  {renderNodes.map((node) => (
@@ -473,6 +481,11 @@ export function sanitizeNodeProps(rawNode: ExperienceNode): ExperienceNode {
   return {
     ...rawNode,
     content,
+    page_id: typeof (rawNode as any).page_id === "string" ? (rawNode as any).page_id : null,
+    animation_rules:
+      rawNode.animation_rules && typeof rawNode.animation_rules === "object"
+        ? rawNode.animation_rules
+        : {},
     design_tokens:
       rawNode.design_tokens && typeof rawNode.design_tokens === "object"
         ? rawNode.design_tokens

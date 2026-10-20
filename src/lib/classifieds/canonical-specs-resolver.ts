@@ -1,7 +1,7 @@
 /**
  * canonical-specs-resolver.ts — Motor Canônico de Resolução de Especificações de Classificados
  *
- * Mapeia e normaliza 100% dos atributos dos 15 nichos a partir de colunas dedicadas
+ * Mapeia e normaliza 100% dos atributos dos 16 nichos a partir de colunas dedicadas
  * e do JSONB `attributes`, resolvendo divergências de nomenclatura e sinônimos.
  *
  * Invariante B.37: Isolamento Semântico Estrito dos Nichos (Zero Vazamento Cruzado).
@@ -45,26 +45,39 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
 
   const titleLower = (classified.title || "").toLowerCase();
 
-  const isGrocery = Boolean(
-    classified.template_style === "convenience" ||
-    attrs.template_style === "conveniencia" ||
-    attrs.template_style === "convenience" ||
-    attrs.grocery_department ||
-    attrs.department ||
-    attrs.food_prep_time_minutes ||
-    rawCategory.includes("bebida") ||
-    rawCategory.includes("mercado") ||
-    rawCategory.includes("conveniencia") ||
-    rawCategory.includes("gastronomia") ||
-    rawCategory.includes("aliment") ||
-    rawCategory.includes("grocery") ||
-    classified.niche_id === "food" ||
-    classified.niche_id === "market" ||
-    classified.niche_id === "pharmacy" ||
-    (classified.title &&
-      /drink|whisky|whiskey|cerveja|refrigerante|energético|vinho|vodka|gin|suco|água mineral|conveniência|fardo|picanha|filé|costela|alcatra|queijo|presunto/i.test(
-        classified.title
-      ))
+  // ── Identificação MECE de Nichos com Isolamento Estrito (Invariante B.37) ──
+  const isEvent = Boolean(
+    rawCategory.includes("event") ||
+    rawCategory.includes("evento") ||
+    classified.niche_id === "event" ||
+    attrs.niche_id === "event" ||
+    classified.template_style === "event" ||
+    attrs.template_style === "event" ||
+    attrs.event_date ||
+    (Array.isArray(attrs.ticket_tiers) && attrs.ticket_tiers.length > 0) ||
+    (Array.isArray(attrs.schedule) && attrs.schedule.length > 0)
+  );
+
+  const isJobs = Boolean(
+    attrs.role ||
+    attrs.work_model ||
+    attrs.salary_range ||
+    rawCategory.includes("emprego") ||
+    rawCategory.includes("vaga") ||
+    rawCategory.includes("job") ||
+    classified.niche_id === "job" ||
+    attrs.niche_id === "job"
+  );
+
+  const isBusiness = Boolean(
+    attrs.business_type ||
+    attrs.monthly_revenue_cents ||
+    attrs.is_business_sale ||
+    rawCategory.includes("negocio") ||
+    rawCategory.includes("empresa") ||
+    rawCategory.includes("m&a") ||
+    classified.niche_id === "business" ||
+    attrs.niche_id === "business"
   );
 
   const isTravel = Boolean(
@@ -83,7 +96,7 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
     rawCategory.includes("pacote") ||
     rawCategory.includes("travel") ||
     classified.niche_id === "travel"
-  ) && !isGrocery;
+  ) && !isEvent && !isJobs && !isBusiness;
 
   const isHospitality = Boolean(
     rawCategory.includes("hosped") ||
@@ -91,7 +104,7 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
     classified.niche_id === "hospitality_stay" ||
     attrs.niche_id === "hospitality_stay" ||
     (classified.deal_type === "temporada" && rawCategory.includes("imove"))
-  ) && !isTravel && !isGrocery;
+  ) && !isTravel && !isEvent && !isJobs && !isBusiness;
 
   const isRealEstate = Boolean(
     classified.property_type ||
@@ -106,15 +119,33 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
     classified.niche_id === "real_estate" ||
     classified.niche_id === "real_estate_sale" ||
     classified.niche_id === "real_estate_rent"
-  ) && !isTravel && !isGrocery;
+  ) && !isTravel && !isHospitality && !isEvent && !isJobs && !isBusiness;
+
+  const isAgri = Boolean(
+    rawCategory.includes("agri") ||
+    rawCategory.includes("agro") ||
+    rawCategory.includes("trator") ||
+    rawCategory.includes("colheit") ||
+    classified.niche_id === "agri" ||
+    attrs.niche_id === "agri" ||
+    attrs.hours_used !== undefined ||
+    attrs.horimetro !== undefined ||
+    attrs.implement_type
+  ) && !isTravel && !isRealEstate && !isHospitality && !isEvent && !isJobs && !isBusiness;
+
+  const isPharmacy = Boolean(
+    rawCategory.includes("farmacia") ||
+    rawCategory.includes("pharmacy") ||
+    classified.niche_id === "pharmacy" ||
+    attrs.niche_id === "pharmacy" ||
+    attrs.retention_prescription !== undefined ||
+    attrs.prescription_type
+  ) && !isTravel && !isRealEstate && !isHospitality && !isEvent && !isJobs && !isBusiness;
 
   const isVehicle = Boolean(
     rawCategory.includes("veic") ||
-    rawCategory.includes("auto") ||
-    rawCategory.includes("carro") ||
-    rawCategory.includes("moto") ||
-    rawCategory.includes("caminhao") ||
-    rawCategory.includes("nautic") ||
+    rawCategory.includes("automotivo") ||
+    /\b(carro|moto|caminhao|caminhoes|nautic|embarcac)\b/i.test(rawCategory) ||
     classified.niche_id === "vehicle" ||
     attrs.niche_id === "vehicle" ||
     (attrs.mileage_km !== undefined && attrs.mileage_km !== null && attrs.mileage_km !== "") ||
@@ -123,7 +154,7 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
     attrs.license_plate_end ||
     attrs.renavam ||
     attrs.chassis
-  ) && !isTravel && !isGrocery && !isRealEstate && !isHospitality;
+  ) && !isTravel && !isRealEstate && !isHospitality && !isAgri && !isEvent && !isJobs && !isBusiness;
 
   const isEquipment = Boolean(
     attrs.equipment_period ||
@@ -133,7 +164,7 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
     rawCategory.includes("equipamento") ||
     rawCategory.includes("maquina") ||
     classified.niche_id === "equipment"
-  ) && !isTravel && !isVehicle && !isGrocery && !isRealEstate && !isHospitality;
+  ) && !isTravel && !isVehicle && !isRealEstate && !isHospitality && !isAgri && !isEvent && !isJobs && !isBusiness;
 
   const isServices = Boolean(
     attrs.modality ||
@@ -142,60 +173,92 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
     attrs.service_duration_minutes ||
     rawCategory.includes("servic") ||
     classified.niche_id === "service"
-  ) && !isTravel && !isRealEstate && !isHospitality && !isVehicle && !isGrocery;
-
-  const isJobs = Boolean(
-    attrs.role ||
-    attrs.work_model ||
-    attrs.salary_range ||
-    rawCategory.includes("emprego") ||
-    rawCategory.includes("vaga") ||
-    rawCategory.includes("job") ||
-    classified.niche_id === "job"
-  ) && !isGrocery;
-
-  const isBusiness = Boolean(
-    attrs.business_type ||
-    attrs.monthly_revenue_cents ||
-    rawCategory.includes("negocio") ||
-    rawCategory.includes("empresa") ||
-    rawCategory.includes("m&a") ||
-    classified.niche_id === "business"
-  ) && !isGrocery;
+  ) && !isTravel && !isRealEstate && !isHospitality && !isVehicle && !isAgri && !isEvent && !isJobs && !isBusiness;
 
   const isSubscription = Boolean(
     classified.pricing_model === "recurring" ||
     attrs.pricing_model === "recurring" ||
     rawCategory.includes("assinatura") ||
     classified.niche_id === "subscription"
-  ) && !isGrocery;
+  ) && !isJobs && !isBusiness && !isEvent;
 
   const isDonation = Boolean(
     attrs.is_donation ||
     classified.is_donation ||
     rawCategory.includes("doacao") ||
     classified.niche_id === "donation"
-  ) && !isGrocery;
+  ) && !isJobs && !isBusiness && !isEvent;
 
-  const isPhysicalGoods = !isTravel && !isRealEstate && !isHospitality && !isServices && !isJobs && !isSubscription && !isBusiness && !isDonation;
+  // Zero falso-positivo de grocery: se for qualquer outro nicho explícito, grocery é desativado!
+  const isExplicitNonGrocery = Boolean(
+    isEvent ||
+    isJobs ||
+    isBusiness ||
+    isTravel ||
+    isHospitality ||
+    isRealEstate ||
+    isAgri ||
+    isPharmacy ||
+    isVehicle ||
+    isEquipment ||
+    isServices ||
+    isSubscription ||
+    isDonation
+  );
 
-  // ── 1. CONDIÇÃO & GARANTIA (Exclusivo para bens duráveis) ──
+  const isGrocery = !isExplicitNonGrocery && Boolean(
+    classified.template_style === "convenience" ||
+    attrs.template_style === "conveniencia" ||
+    attrs.template_style === "convenience" ||
+    attrs.grocery_department ||
+    attrs.food_prep_time_minutes ||
+    rawCategory.includes("bebida") ||
+    rawCategory.includes("mercado") ||
+    rawCategory.includes("conveniencia") ||
+    rawCategory.includes("gastronomia") ||
+    rawCategory.includes("aliment") ||
+    rawCategory.includes("grocery") ||
+    classified.niche_id === "food" ||
+    classified.niche_id === "market" ||
+    (classified.title &&
+      /drink|whisky|whiskey|cerveja|refrigerante|energético|vinho|vodka|gin|suco|água mineral|conveniência|fardo|picanha|filé|costela|alcatra|queijo|presunto/i.test(
+        classified.title
+      ))
+  );
+
+  const isPhysicalGoods =
+    !isTravel &&
+    !isRealEstate &&
+    !isHospitality &&
+    !isServices &&
+    !isJobs &&
+    !isSubscription &&
+    !isBusiness &&
+    !isDonation &&
+    !isEvent &&
+    !isAgri &&
+    !isPharmacy &&
+    !isGrocery &&
+    !isVehicle &&
+    !isEquipment;
+
+  // ── 1. CONDIÇÃO & GARANTIA (Exclusivo para bens físicos e duráveis) ──
   const rawCondition = classified.condition || attrs.condition;
-  if (rawCondition && isPhysicalGoods && !isGrocery) {
+  if (rawCondition && (isPhysicalGoods || isVehicle || isEquipment) && !isGrocery) {
     let condLabel = "Usado";
-    if (rawCondition === "new") condLabel = "Novo na Caixa";
+    if (rawCondition === "new" || rawCondition === "novo") condLabel = "Novo na Caixa";
     else if (rawCondition === "refurbished") condLabel = "Revisado / Recondicionado";
     else if (rawCondition === "seminovo") condLabel = "Seminovo Impecável";
     list.push({ label: "Condição", value: condLabel, category: "technical", highlight: true });
   }
 
   const rawWarranty = attrs.service_warranty || attrs.warranty || classified.warranty;
-  if (rawWarranty && (isPhysicalGoods || isVehicle || isServices) && !isGrocery) {
+  if (rawWarranty && (isPhysicalGoods || isVehicle || isServices || isEquipment) && !isGrocery) {
     list.push({ label: "Garantia", value: String(rawWarranty), category: "commercial" });
   }
 
   // ── 2. VEÍCULOS (Estritamente para automóveis, motos e náutica) ──
-  if (isVehicle && !isTravel && !isGrocery) {
+  if (isVehicle && !isTravel && !isGrocery && !isAgri) {
     const brand = attrs.brand || classified.brand;
     const model = attrs.model || classified.model;
     const version = attrs.version || classified.version;
@@ -255,7 +318,7 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
     }
   }
 
-  // ── 3. IMÓVEIS & HOSPEDAGEM AVULSA (Estritamente para propriedades e temporada) ──
+  // ── 3. IMÓVEIS & HOSPEDAGEM (Estritamente para propriedades e temporada) ──
   if ((isRealEstate || isHospitality) && !isTravel && !isGrocery) {
     const propertyType = classified.property_type || attrs.property_type;
     const dealType = classified.deal_type || attrs.deal_type;
@@ -317,7 +380,7 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
   }
 
   // ── 3.5 EQUIPAMENTOS E MÁQUINAS ──
-  if (isEquipment && !isTravel && !isGrocery) {
+  if (isEquipment && !isTravel && !isGrocery && !isAgri) {
     const dealType = classified.deal_type || attrs.deal_type;
     if (dealType) {
       list.push({ label: "Finalidade", value: dealType === "aluguel" ? "Locação de Equipamento" : "Venda", category: "commercial" });
@@ -369,7 +432,7 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
   }
 
   // ── 5. DESAPEGO / ELETRÔNICOS / INFORMÁTICA / MÓVEIS / MODA / PRODUTO FÍSICO GERAL ──
-  if (isPhysicalGoods && !isGrocery && !isVehicle && !isEquipment) {
+  if (isPhysicalGoods && !isGrocery && !isVehicle && !isEquipment && !isAgri && !isPharmacy) {
     const brand = attrs.brand || classified.brand;
     const model = attrs.model || classified.model;
     const storage = attrs.storage;
@@ -604,8 +667,112 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
     if (downloadLimit) list.push({ label: "Limite de Downloads", value: `${downloadLimit} vezes`, category: "commercial" });
   }
 
-  // ── 10. LOGÍSTICA & ENVIO GERAL ──
-  // Estritamente para produtos físicos que exigem envio/retirada; Proibido em Turismo, Imóveis, Serviços, Empregos e Assinaturas
+  // ── 10. EVENTOS, SHOWS & INGRESSOS (Invariante B.37 & B.40) ──
+  if (isEvent) {
+    if (attrs.event_date) {
+      list.push({ label: "Data do Evento", value: String(attrs.event_date), category: "technical", highlight: true });
+    }
+    if (attrs.start_time) {
+      const timeStr = attrs.gates_open_time
+        ? `Portões às ${attrs.gates_open_time} / Início às ${attrs.start_time}`
+        : `Início às ${attrs.start_time}${attrs.end_time ? ` até ${attrs.end_time}` : ""}`;
+      list.push({ label: "Horário", value: timeStr, category: "logistics", highlight: true });
+    }
+    if (attrs.venue_name) {
+      list.push({ label: "Local / Espaço", value: String(attrs.venue_name), category: "logistics", highlight: true });
+    }
+    if (attrs.venue_address) {
+      list.push({ label: "Endereço", value: String(attrs.venue_address), category: "logistics" });
+    }
+    if (attrs.age_rating) {
+      list.push({ label: "Classificação Etária", value: String(attrs.age_rating), category: "technical" });
+    }
+    if (attrs.visibility === "online") {
+      list.push({ label: "Formato", value: "Transmissão 100% Online", category: "technical", highlight: true });
+    } else {
+      list.push({ label: "Formato", value: "Evento Presencial", category: "technical" });
+    }
+    if (Array.isArray(attrs.ticket_tiers) && attrs.ticket_tiers.length > 0) {
+      const tiersDesc = attrs.ticket_tiers.map((t: any) => t.name).join(", ");
+      list.push({ label: "Lotes de Ingressos", value: tiersDesc, category: "commercial" });
+    }
+    if (Array.isArray(attrs.speakers) && attrs.speakers.length > 0) {
+      const speakersNames = attrs.speakers.map((s: any) => s.name).join(", ");
+      list.push({ label: "Atrações / Palestrantes", value: speakersNames, category: "technical" });
+    }
+  }
+
+  // ── 11. AGRONEGÓCIO & MAQUINÁRIO PESADO ──
+  if (isAgri) {
+    const horimetro = attrs.horimetro ?? attrs.hours_used;
+    const traction = attrs.traction ?? attrs.tracao;
+    const yearFab = attrs.year_fab ?? attrs.year;
+    const implementType = attrs.implement_type ?? attrs.subniche;
+    const powerHp = attrs.power_hp ?? attrs.potencia;
+    const cabin = attrs.cabin;
+
+    list.push({ label: "Segmento", value: "Agronegócio & Maquinário", category: "technical", highlight: true });
+    if (horimetro !== undefined && horimetro !== null && horimetro !== "") {
+      const numH = Number(horimetro);
+      list.push({
+        label: "Horímetro",
+        value: !isNaN(numH) ? `${numH.toLocaleString("pt-BR")} Horas` : `${horimetro} Horas`,
+        category: "technical",
+        highlight: true,
+      });
+    }
+    if (traction) {
+      const trLabel = String(traction).includes("4x4") ? "Tração 4x4" : String(traction).includes("4x2") ? "Tração 4x2" : String(traction);
+      list.push({ label: "Tração", value: trLabel, category: "technical", highlight: true });
+    }
+    if (yearFab) {
+      list.push({ label: "Ano Fabricação", value: String(yearFab), category: "technical" });
+    }
+    if (implementType) {
+      list.push({ label: "Implemento / Tipo", value: String(implementType), category: "technical" });
+    }
+    if (powerHp) {
+      list.push({ label: "Potência", value: `${powerHp} CV`, category: "technical" });
+    }
+    if (cabin !== undefined) {
+      list.push({ label: "Cabine", value: cabin ? "Cabinado com Ar" : "Plataformado", category: "technical" });
+    }
+    if (attrs.cautelar_aprovada) {
+      list.push({ label: "Vistoria", value: "Vistoria no Campo Aprovada", category: "technical" });
+    }
+  }
+
+  // ── 12. FARMÁCIA, SAÚDE & BEM-ESTAR ──
+  if (isPharmacy) {
+    const subniche = attrs.subniche;
+    const retention = attrs.retention_prescription;
+    const prescriptType = attrs.prescription_type;
+    const manufacturer = attrs.manufacturer ?? attrs.brand;
+    const activeIng = attrs.active_ingredient;
+    const anvisa = attrs.anvisa_registry;
+
+    list.push({ label: "Classificação", value: subniche ? String(subniche) : "Saúde & Bem-Estar", category: "technical", highlight: true });
+    if (retention !== undefined || prescriptType) {
+      const rxLabel = retention || prescriptType === "especial"
+        ? "Exige Retenção de Receita Médica"
+        : prescriptType === "simples"
+        ? "Receita Médica Obrigatória"
+        : "Venda Livre (Sem Receita)";
+      list.push({ label: "Prescrição", value: rxLabel, category: "technical", highlight: true });
+    }
+    if (activeIng) {
+      list.push({ label: "Princípio Ativo", value: String(activeIng), category: "technical" });
+    }
+    if (manufacturer) {
+      list.push({ label: "Fabricante / Laboratório", value: String(manufacturer), category: "technical" });
+    }
+    if (anvisa) {
+      list.push({ label: "Registro Anvisa", value: String(anvisa), category: "technical" });
+    }
+  }
+
+  // ── 13. LOGÍSTICA & ENVIO GERAL ──
+  // Estritamente para produtos físicos que exigem envio/retirada; Proibido em Turismo, Imóveis, Serviços, Empregos, Assinaturas e Eventos
   const deliveryMode = classified.delivery_mode || attrs.delivery_mode;
   if (deliveryMode && (isPhysicalGoods || isGrocery)) {
     let delivLabel = "Retirada no Local";

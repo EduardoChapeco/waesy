@@ -54,7 +54,7 @@ async function getOrCreateCartId(
  try {
  const { resolveTenantStoreId } = await import("@/lib/tenant.server");
  storeId = await resolveTenantStoreId();
- } catch {}
+ } catch (err) { console.warn("[cart] caught notice:", err); }
  }
 
   if (!storeId) {
@@ -534,7 +534,7 @@ export const addToCart = createServerFn({ method: "POST" })
  try {
  const { resolveTenantStoreId } = await import("@/lib/tenant.server");
  storeId = await resolveTenantStoreId();
- } catch {}
+ } catch (err) { console.warn("[cart] caught notice:", err); }
 
  if (!storeId) {
  // Tenta resolver store_id diretamente do produto da variante

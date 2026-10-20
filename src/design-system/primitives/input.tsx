@@ -1,7 +1,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-export interface InputProps
+export interface DSInputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   helperText?: string;
@@ -10,7 +10,7 @@ export interface InputProps
   rightAddon?: React.ReactNode;
 }
 
-export const Input = React.forwardRef<HTMLInputElement, InputProps>(
+export const Input = React.forwardRef<HTMLInputElement, DSInputProps>(
   (
     {
       className,

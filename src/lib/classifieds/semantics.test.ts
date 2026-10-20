@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { resolveClassifiedNiche, getSemanticBadges, NICHE_DEFINITIONS } from "./semantics";
+import { resolveClassifiedNiche, getSemanticBadges, NICHE_DEFINITIONS, getClassifiedFeatureCards, getNicheTabLabels } from "./semantics";
 
 describe("Waesy Classifieds — Biblioteca Semântica & Taxonomia Modular de Nichos", () => {
   it("resolve corretamente o nicho de Viagem / Turismo para pacotes e resorts", () => {
@@ -144,5 +144,73 @@ describe("Waesy Classifieds — Biblioteca Semântica & Taxonomia Modular de Nic
     expect(niche.shortLabel).toBe("Doações");
     expect(niche.primaryActionLabel).toBe("Solicitar Doação");
     expect(niche.allowEscrowGuarantee).toBe(false);
+  });
+
+  it("resolve corretamente o nicho de Eventos & Shows e gera feature cards adequados", () => {
+    const classified = {
+      category: "event",
+      title: "Festival da Colheita & Gastronomia 2026",
+      price_cents: 12000,
+      attributes: {
+        niche: "evento",
+        event_date: "15/11/2026",
+        event_time: "19:00",
+        event_venue: "Arena Central Parque de Exposições",
+        age_rating: "16+",
+        ticket_tier: "VIP Frontstage",
+        event_format: "presencial",
+      },
+    };
+
+    const niche = resolveClassifiedNiche(classified);
+    expect(niche.id).toBe("event");
+    expect(niche.badge).toBe("Evento");
+    expect(niche.primaryActionLabel).toBe("Garantir Ingresso");
+
+    const cards = getClassifiedFeatureCards(classified);
+    expect(cards.some((c) => c.title === "Data do Evento" && c.value === "15/11/2026")).toBe(true);
+    expect(cards.some((c) => c.title === "Horário" && c.value === "19:00")).toBe(true);
+    expect(cards.some((c) => c.title === "Local / Espaço")).toBe(true);
+    expect(cards.some((c) => c.title === "Lote / Setor" && c.value === "VIP Frontstage")).toBe(true);
+  });
+
+  it("resolve corretamente o nicho de Agronegócio & Maquinário e gera feature cards", () => {
+    const classified = {
+      category: "agri",
+      title: "Trator John Deere 6110J 4x4 Cabinado",
+      price_cents: 32000000,
+      attributes: {
+        niche: "agro",
+        hours_used: 1850,
+        traction: "4x4",
+        year_fab: 2021,
+        power_cv: 110,
+        cabin_type: "cabin",
+      },
+    };
+
+    const niche = resolveClassifiedNiche(classified);
+    expect(niche.id).toBe("agri");
+    expect(niche.badge).toBe("Agro");
+
+    const cards = getClassifiedFeatureCards(classified);
+    expect(cards.some((c) => c.title === "Horímetro" && c.value.includes("1.850"))).toBe(true);
+    expect(cards.some((c) => c.title === "Tração" && c.value === "Tração 4x4")).toBe(true);
+  });
+
+  it("fornece rótulos de abas contextuais sem 'Detalhes do Item' genérico para cada nicho", () => {
+    expect(getNicheTabLabels("job").overviewTab).toBe("Detalhes da Vaga");
+    expect(getNicheTabLabels("job").sellerTab).toBe("Sobre a Empresa");
+
+    expect(getNicheTabLabels("real_estate_sale").overviewTab).toBe("Detalhes do Imóvel");
+    expect(getNicheTabLabels("vehicle").overviewTab).toBe("Detalhes do Veículo");
+    expect(getNicheTabLabels("service").overviewTab).toBe("Detalhes do Serviço");
+    expect(getNicheTabLabels("event").overviewTab).toBe("Programação & Ingressos");
+    expect(getNicheTabLabels("hospitality_stay").overviewTab).toBe("Infos da Estadia");
+    expect(getNicheTabLabels("travel").overviewTab).toBe("Infos do Pacote");
+    expect(getNicheTabLabels("agri").overviewTab).toBe("Detalhes do Maquinário");
+    expect(getNicheTabLabels("business").overviewTab).toBe("Sobre o Negócio");
+    expect(getNicheTabLabels("food").overviewTab).toBe("Detalhes do Cardápio");
+    expect(getNicheTabLabels("donation").overviewTab).toBe("Detalhes da Doação");
   });
 });

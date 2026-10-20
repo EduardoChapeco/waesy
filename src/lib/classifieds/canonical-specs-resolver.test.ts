@@ -267,6 +267,120 @@ describe("resolveClassifiedDetailedSpecs", () => {
     expect(labels).not.toContain("Quilometragem");
     expect(labels).not.toContain("Câmbio");
   });
+
+  it("garante que vaga de emprego com nome de alimento no título NÃO seja sequestrada como conveniência (Invariante B.37)", () => {
+    const jobAd = {
+      title: "Churrasqueiro Profissional Especialista em Picanha e Costela",
+      category: "job",
+      attributes: {
+        role: "Churrasqueiro",
+        work_model: "presencial",
+        regime: "clt",
+        salary_range: "R$ 3.000 a R$ 4.500",
+        min_education: "ensino_medio",
+        experience_level: "pleno",
+      },
+    };
+
+    const specs = resolveClassifiedDetailedSpecs(jobAd);
+    expect(specs).toEqual(
+      expect.arrayContaining([
+        { label: "Cargo", value: "Churrasqueiro", category: "hiring", highlight: true },
+        { label: "Remuneração", value: "R$ 3.000 a R$ 4.500", category: "hiring", highlight: true },
+      ])
+    );
+
+    const labels = specs.map((s) => s.label);
+    expect(labels).not.toContain("Bebida Alcoólica");
+    expect(labels).not.toContain("Departamento");
+    expect(labels).not.toContain("Volume / Peso");
+  });
+
+  it("resolve corretamente o nicho de Eventos e Shows sem vazar produtos físicos", () => {
+    const eventAd = {
+      title: "Festival de Inovação e Tecnologia 2026",
+      category: "event",
+      template_style: "event",
+      attributes: {
+        event_date: "24/10/2026",
+        start_time: "19:00",
+        gates_open_time: "17:30",
+        venue_name: "Centro de Convenções Regional",
+        venue_address: "Av. Brasil, 1500, Centro",
+        age_rating: "16 anos",
+        ticket_tiers: [{ name: "1º Lote Pista" }, { name: "VIP Open Bar" }],
+        speakers: [{ name: "Dra. Ana Silva" }, { name: "Carlos Mendes" }],
+      },
+    };
+
+    const specs = resolveClassifiedDetailedSpecs(eventAd);
+    expect(specs).toEqual(
+      expect.arrayContaining([
+        { label: "Data do Evento", value: "24/10/2026", category: "technical", highlight: true },
+        { label: "Horário", value: "Portões às 17:30 / Início às 19:00", category: "logistics", highlight: true },
+        { label: "Local / Espaço", value: "Centro de Convenções Regional", category: "logistics", highlight: true },
+        { label: "Endereço", value: "Av. Brasil, 1500, Centro", category: "logistics" },
+        { label: "Classificação Etária", value: "16 anos", category: "technical" },
+        { label: "Lotes de Ingressos", value: "1º Lote Pista, VIP Open Bar", category: "commercial" },
+        { label: "Atrações / Palestrantes", value: "Dra. Ana Silva, Carlos Mendes", category: "technical" },
+      ])
+    );
+
+    const labels = specs.map((s) => s.label);
+    expect(labels).not.toContain("Condição");
+    expect(labels).not.toContain("Logística");
+  });
+
+  it("resolve corretamente o nicho de Agronegócio com Horímetro e Tração", () => {
+    const agriAd = {
+      title: "Trator John Deere 6110J 4x4 Cabinado 2021",
+      category: "agri",
+      attributes: {
+        horimetro: 3450,
+        traction: "4x4",
+        year_fab: 2021,
+        power_hp: 110,
+        cabin: true,
+        cautelar_aprovada: true,
+      },
+    };
+
+    const specs = resolveClassifiedDetailedSpecs(agriAd);
+    expect(specs).toEqual(
+      expect.arrayContaining([
+        { label: "Segmento", value: "Agronegócio & Maquinário", category: "technical", highlight: true },
+        { label: "Horímetro", value: "3.450 Horas", category: "technical", highlight: true },
+        { label: "Tração", value: "Tração 4x4", category: "technical", highlight: true },
+        { label: "Ano Fabricação", value: "2021", category: "technical" },
+        { label: "Potência", value: "110 CV", category: "technical" },
+        { label: "Cabine", value: "Cabinado com Ar", category: "technical" },
+        { label: "Vistoria", value: "Vistoria no Campo Aprovada", category: "technical" },
+      ])
+    );
+  });
+
+  it("resolve farmácia com retenção de receita e princípio ativo", () => {
+    const pharmaAd = {
+      title: "Suplemento Vitamínico D3 50.000 UI",
+      category: "pharmacy",
+      attributes: {
+        subniche: "Vitaminas & Suplementos",
+        retention_prescription: false,
+        active_ingredient: "Colecalciferol 50.000 UI",
+        manufacturer: "Laboratório Pharma Brasil",
+        anvisa_registry: "MS 1.0234.0567",
+      },
+    };
+
+    const specs = resolveClassifiedDetailedSpecs(pharmaAd);
+    expect(specs).toEqual(
+      expect.arrayContaining([
+        { label: "Classificação", value: "Vitaminas & Suplementos", category: "technical", highlight: true },
+        { label: "Prescrição", value: "Venda Livre (Sem Receita)", category: "technical", highlight: true },
+        { label: "Princípio Ativo", value: "Colecalciferol 50.000 UI", category: "technical" },
+        { label: "Fabricante / Laboratório", value: "Laboratório Pharma Brasil", category: "technical" },
+        { label: "Registro Anvisa", value: "MS 1.0234.0567", category: "technical" },
+      ])
+    );
+  });
 });
-
-

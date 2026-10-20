@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { useWindowSizeClass } from "@/hooks/use-mobile";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
 import { Car, Bike, Plus, Truck, Ban, Clock, CheckCircle2, Loader2, MoreVertical, Sliders, Phone, DollarSign, Activity, ShieldCheck } from "lucide-react";
@@ -55,6 +56,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function CouriersListPage() {
+  const { isCompact: isMobile } = useWindowSizeClass();
   const { initialData } = ((Route.useLoaderData?.() as any) || {});
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -230,8 +232,9 @@ function CouriersListPage() {
               </Button>
             </div>
 
-            {/* ── Visualização Móvel: Cards Verticais Ergonômicos (Apple HIG / Paradigma Clean) ── */}
-            <div className="block md:hidden divide-y divide-border/60">
+            {isMobile ? (
+              /* ── Visualização Móvel: Cards Verticais Ergonômicos (Apple HIG / Paradigma Clean) ── */
+              <div className="divide-y divide-border/60">
               {filteredCouriers.map((courier: any) => {
                 const VehicleIcon = VEHICLE_ICONS[courier.vehicle_type] ?? Bike;
                 const isSuspended = courier.status === "suspended";
@@ -321,8 +324,9 @@ function CouriersListPage() {
               })}
             </div>
 
-            {/* ── Visualização Desktop: Tabela Analítica ── */}
-            <div className="hidden md:block">
+            ) : (
+              /* ── Visualização Desktop: Tabela Analítica ── */
+              <div>
               <table className="w-full text-sm text-left">
                 <thead className="bg-muted/10 text-xs text-muted-foreground uppercase tracking-wider">
                   <tr>
@@ -413,7 +417,8 @@ function CouriersListPage() {
                   })}
                 </tbody>
               </table>
-            </div>
+              </div>
+            )}
           </div>
         )}
 

@@ -266,7 +266,7 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
  // Futuro ideal: delegar essa agregação para uma RPC (Stored Procedure) no banco.
  let storesQuery = supabase
  .from("stores")
- .select("id, name, slug, description, settings, city")
+ .select("id, name, slug, description, settings, city, is_verified")
  .order("created_at", { ascending: false })
  .limit(storeId ? 1 : 100);
 
@@ -304,6 +304,7 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
  const allDbStores: StoreCardDTO[] = (storesRes.data || []).map((s: any) => {
  const settings = (s.settings as Record<string, any>) || {};
  const category = formatStoreCategory(settings.segment || settings.type || settings.niche || "Comércio Local");
+  const is_verified = s.is_verified === true || settings.is_verified === true;
  return {
  id: s.id,
  name: s.name,
@@ -311,6 +312,7 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
  avatar_url: settings.logoUrl || settings.logo_url || undefined,
  banner_url: settings.bannerUrl || settings.banner_url || undefined,
  category,
+    is_verified,
  rating: typeof settings.rating === "number" ? settings.rating : undefined,
 				review_count: typeof settings.review_count === "number" ? settings.review_count : undefined,
 				distance_km: typeof settings.distance_km === "number" ? settings.distance_km : undefined,
@@ -908,7 +910,7 @@ export const getProceduralInfiniteFeedPage = createServerFn({ method: "GET" })
       if (mode === 2) {
         let storesQuery: any = supabase
           .from("stores")
-          .select("id, name, slug, description, settings, created_at")
+          .select("id, name, slug, description, settings, is_verified, created_at")
           .order("created_at", { ascending: false })
           .limit(10);
 
@@ -925,7 +927,8 @@ export const getProceduralInfiniteFeedPage = createServerFn({ method: "GET" })
             slug: s.slug || `loja-${s.id.slice(0, 6)}`,
             avatar_url: settings.logoUrl || settings.logo_url || undefined,
             banner_url: settings.bannerUrl || settings.banner_url || undefined,
-            category: formatStoreCategory(settings.segment || settings.niche || "Comércio Local"),
+            category: formatStoreCategory(settings.segment || settings.niche || settings.category || "Comércio Local"),
+            is_verified: s.is_verified === true || settings.is_verified === true,
             rating: typeof s.rating === "number" ? s.rating : typeof settings.rating === "number" ? settings.rating : undefined,
             review_count: typeof s.review_count === "number" ? s.review_count : typeof settings.review_count === "number" ? settings.review_count : undefined,
             distance_km: typeof s.distance_km === "number" ? s.distance_km : undefined,

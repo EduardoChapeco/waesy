@@ -15,6 +15,7 @@ export function StoreCard({
   avatar_url,
   banner_url,
   category = "Comércio Local",
+  is_verified = false,
   rating,
   review_count,
   distance_km,
@@ -23,10 +24,13 @@ export function StoreCard({
   className,
 }: StoreCardProps) {
   const displayCategory = formatStoreCategory(category);
-  const hasRating = typeof rating === "number" && rating > 0;
+  const hasRating =
+    typeof rating === "number" &&
+    rating > 0 &&
+    typeof review_count === "number" &&
+    review_count > 0;
   const hasDistance = typeof distance_km === "number" && distance_km > 0;
   const hasDelivery = typeof delivery_time_min === "string" && delivery_time_min.trim().length > 0;
-  const hasAnyMetric = hasRating || hasDistance || hasDelivery;
 
   return (
     <Link
@@ -37,17 +41,20 @@ export function StoreCard({
         className,
       )}
     >
-      {/* ── Banner de Destaque Ampliado ─────────────────────── */}
-      <div className="relative h-36 sm:h-44 w-full bg-linear-to-r from-muted to-muted/80 overflow-hidden">
+      {/* ── Banner de Destaque Superior ─────────────────────── */}
+      <div className="relative h-36 w-full bg-linear-to-r from-muted to-muted/80 overflow-hidden shrink-0">
         {banner_url ? (
           <img
             src={banner_url}
-            alt={`Capa da loja ${name}`}
+            alt={`Capa da empresa ${name}`}
             className="size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
+            onError={(e) => {
+              (e.currentTarget as HTMLElement).style.display = "none";
+            }}
           />
         ) : (
           <div className="size-full bg-linear-to-br from-primary/20 via-primary/5 to-muted flex items-center justify-center">
-            <Store className="size-12 text-muted-foreground/30" />
+            <Store className="size-10 text-muted-foreground/30" />
           </div>
         )}
         <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-black/20" />
@@ -61,69 +68,81 @@ export function StoreCard({
                 : "bg-black/60 text-white/80 border border-white/20"
             }`}
           >
-            {is_open ? "● Aberto Agora" : "Fechado"}
+            {is_open ? "● Aberto" : "Fechado"}
           </span>
         </div>
       </div>
 
-      {/* ── Store Info & Large Avatar ───────────────────────── */}
-      <div className="p-5 pt-0 relative space-y-3">
-        {/* Floating Avatar 64px - 72px */}
-        <div className="size-16 sm:size-18 rounded-lg bg-background overflow-hidden -mt-8 sm:-mt-9 relative z-10 flex items-center justify-center border border-border/60">
+      {/* ── Informações da Empresa & Avatar ─────────────────── */}
+      <div className="p-4 pt-0 relative flex-1 flex flex-col justify-between space-y-2">
+        {/* Floating Avatar */}
+        <div className="size-16 rounded-lg bg-background overflow-hidden -mt-8 relative z-10 flex items-center justify-center border border-border/60 shadow-xs shrink-0">
           {avatar_url ? (
-            <img src={avatar_url} alt={name} className="size-full object-cover" />
+            <img
+              src={avatar_url}
+              alt={name}
+              className="size-full object-cover"
+              onError={(e) => {
+                (e.currentTarget as HTMLElement).style.display = "none";
+              }}
+            />
           ) : (
             <Store className="size-8 text-primary" />
           )}
         </div>
 
-        <div>
-          <div className="flex items-center gap-2">
-            <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors break-words text-wrap">
-              {name}
+        {/* Título & Categoria com Altura Padronizada */}
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 h-12">
+            <h3 className="text-sm sm:text-base font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug break-words text-wrap flex items-center">
+              <span>{name}</span>
             </h3>
-            <ShieldCheck className="size-4 text-primary shrink-0" />
+            {is_verified && (
+              <ShieldCheck className="size-4 text-primary fill-primary/20 shrink-0" />
+            )}
           </div>
-          <p className="text-xs text-muted-foreground break-words text-wrap mt-1">{displayCategory}</p>
+          <p className="text-xs text-muted-foreground truncate h-4">{displayCategory}</p>
         </div>
 
-        {/* Badges de Distância, Avaliação e Tempo (Apenas dados autênticos — Zero Fakes) */}
-        {hasAnyMetric ? (
-          <div className="flex items-center justify-between text-xs text-muted-foreground pt-3">
-            {hasRating ? (
-              <div className="flex items-center gap-1 font-bold text-foreground">
-                <Star className="size-4 fill-amber-400 text-amber-400" />
-                <span>{rating!.toFixed(1)}</span>
-                {review_count ? <span className="text-muted-foreground font-normal">({review_count})</span> : null}
-              </div>
-            ) : <div />}
+        {/* Métricas Autênticas (Zero Fakes — Invariante B.33) */}
+        <div className="h-6 flex items-center justify-between text-xs text-muted-foreground pt-1">
+          {hasRating ? (
+            <div className="flex items-center gap-1 font-bold text-foreground">
+              <Star className="size-3.5 fill-amber-400 text-amber-400" />
+              <span>{rating!.toFixed(1)}</span>
+              <span className="text-muted-foreground font-normal">({review_count})</span>
+            </div>
+          ) : is_verified ? (
+            <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium text-xs">
+              <ShieldCheck className="size-3.5" />
+              <span>Verificada</span>
+            </span>
+          ) : (
+            <span className="text-muted-foreground/60 text-xs font-mono">
+              Comércio Local
+            </span>
+          )}
 
-            {hasDistance ? (
+          <div className="flex items-center gap-2">
+            {hasDistance && (
               <div className="flex items-center gap-1">
                 <MapPin className="size-3 text-muted-foreground" />
                 <span>{distance_km!.toFixed(1)} km</span>
               </div>
-            ) : null}
+            )}
 
-            {hasDelivery ? (
+            {hasDelivery && (
               <div className="flex items-center gap-1 font-mono text-xs">
                 <Clock className="size-3 text-muted-foreground" />
                 <span>{delivery_time_min}</span>
               </div>
-            ) : null}
+            )}
           </div>
-        ) : (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground pt-3">
-            <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
-              <ShieldCheck className="size-3.5" />
-              <span>Empresa Verificada</span>
-            </span>
-          </div>
-        )}
+        </div>
 
-        {/* Botão Padronizado de Ação (Touch Target >= 44px) */}
-        <div className="pt-2 border-t border-border/40">
-          <div className="w-full h-11 min-h-11 rounded-lg font-bold text-xs bg-muted/60 hover:bg-muted text-foreground flex items-center justify-center gap-2 transition-colors duration-200 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        {/* Botão Canônico de Ação (Piso 44px — Invariante B.22) */}
+        <div className="pt-2 border-t border-border/40 mt-auto shrink-0">
+          <div className="w-full h-11 min-h-11 rounded-lg font-bold text-xs bg-muted/60 group-hover:bg-primary group-hover:text-primary-foreground text-foreground flex items-center justify-center gap-2 transition-colors duration-200 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
             <span>Ver Empresa</span>
             <ArrowRight className="size-4 shrink-0 group-hover:translate-x-1 transition-transform duration-200 motion-reduce:transition-none" />
           </div>

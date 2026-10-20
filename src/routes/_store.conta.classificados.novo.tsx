@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, useSearch, Link, redirect } from "@tansta
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Tag, Car, Home as HomeIcon, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Building2, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Wand2, Bot, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, Clock, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal, Store as StoreIcon, Star, Lock, ShieldAlert, FileSpreadsheet, Receipt, BookOpenCheck, Zap, Apple, Flame, Croissant, Milk, Wine, Palette, Ticket, Mic, Coffee, HelpCircle, Sparkles } from 'lucide-react';
+import { Tag, Car, Home as HomeIcon, Tractor, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Building2, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Wand2, Bot, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, Clock, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal, Store as StoreIcon, Star, Lock, ShieldAlert, FileSpreadsheet, Receipt, BookOpenCheck, Zap, Apple, Flame, Croissant, Milk, Wine, Palette, Ticket, Mic, Coffee, HelpCircle, Sparkles } from 'lucide-react';
 import { StoryHighlightUploader, type StoryHighlight } from "@/components/classifieds/story-highlight-uploader";
 import { ItineraryDayEditor, type ItineraryDay } from "@/components/classifieds/itinerary-day-editor";
 import { WeatherWidget } from "@/components/classifieds/weather-widget";
@@ -147,7 +147,8 @@ type ClassifiedNicheType =
   | "farmacia"
   | "mercado"
   | "negocio"
-  | "evento";
+  | "evento"
+  | "agro";
 
 interface NicheDefinition {
   id: ClassifiedNicheType;
@@ -315,6 +316,16 @@ const NICHE_CARDS: NicheDefinition[] = [
     gradient: "from-teal-500/15 via-emerald-500/10 to-transparent",
   },
   {
+    id: "agro",
+    canonicalCategory: "sale",
+    title: "Agronegócio",
+    subtitle: "Tratores, implementos e maquinário",
+    description: "Tratores agrícolas, colheitadeiras, implementos, maquinário pesado, insumos e produção rural.",
+    icon: Tractor,
+    badge: "Agro & Máquinas",
+    gradient: "from-emerald-600/15 via-green-600/10 to-transparent",
+  },
+  {
     id: "mercado",
     canonicalCategory: "sale",
     title: "Mercado",
@@ -439,6 +450,8 @@ function NovoClassificadoPage() {
         if (s === "equipment" || s === "equipamento" || s === "equipamentos") return "equipamento";
         if (s === "donation" || s === "doacao" || s === "doacoes") return "doacao";
         if (s === "job" || s === "vaga" || s === "vagas" || s === "emprego") return "vaga";
+        if (s === "agri" || s === "agro" || s === "maquinario") return "agro";
+        if (s === "pharmacy" || s === "farmacia") return "farmacia";
         if (s === "real_estate" || s === "imovel" || s === "imoveis") return "imovel";
         if (s === "vehicle" || s === "veiculo" || s === "veiculos") return "veiculo";
         if (s === "goods" || s === "desapego" || s === "produtos") return "desapego";
@@ -706,7 +719,7 @@ function CreateTypePicker({
   }, [searchFilter]);
 
   const businessNiches = useMemo(() => {
-    const ids = ["negocio", "assinatura", "gastronomia", "farmacia", "mercado"];
+    const ids = ["negocio", "assinatura", "gastronomia", "farmacia", "mercado", "agro"];
     if (!searchFilter.trim()) return NICHE_CARDS.filter(n => ids.includes(n.id));
     const q = searchFilter.toLowerCase();
     return NICHE_CARDS.filter(n => ids.includes(n.id) && (n.title.toLowerCase().includes(q) || n.subtitle.toLowerCase().includes(q) || n.description.toLowerCase().includes(q)));
@@ -1131,6 +1144,21 @@ function SpecializedClassifiedEditor({
  const [customHospAmenity, setCustomHospAmenity] = useState("");
  const [customReAmenity, setCustomReAmenity] = useState("");
  const [customVehicleOption, setCustomVehicleOption] = useState("");
+  // Estados para Nicho: Agro & Maquinário
+  const [agriHoursUsed, setAgriHoursUsed] = useState(initialData?.attributes?.hours_used || initialData?.attributes?.horimetro || "");
+  const [agriTraction, setAgriTraction] = useState(initialData?.attributes?.traction || initialData?.attributes?.tracao || "4x4");
+  const [agriImplementType, setAgriImplementType] = useState(initialData?.attributes?.implement_type || "Trator");
+  const [agriYearFab, setAgriYearFab] = useState(initialData?.attributes?.year_fab || "");
+  const [agriPowerCv, setAgriPowerCv] = useState(initialData?.attributes?.power_cv || "");
+  const [agriCabinType, setAgriCabinType] = useState(initialData?.attributes?.cabin_type || "cabin");
+
+  // Estados para Nicho: Farmácia & Saúde
+  const [pharmacySubNiche, setPharmacySubNiche] = useState(initialData?.attributes?.subniche || "Medicamento");
+  const [pharmacyRetentionPrescription, setPharmacyRetentionPrescription] = useState<boolean>(initialData?.attributes?.retention_prescription ?? false);
+  const [pharmacyActiveIngredient, setPharmacyActiveIngredient] = useState(initialData?.attributes?.active_ingredient || "");
+  const [pharmacyManufacturer, setPharmacyManufacturer] = useState(initialData?.attributes?.manufacturer || "");
+  const [pharmacyAnvisaRegistry, setPharmacyAnvisaRegistry] = useState(initialData?.attributes?.anvisa_registry || "");
+
  const [isSubmitting, setIsSubmitting] = useState(false);
  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
 
@@ -3034,6 +3062,23 @@ function SpecializedClassifiedEditor({
           original_price_cents: groceryOrderBumpOriginalPriceCents,
           badge_text: groceryOrderBumpBadge || "Oferta Relâmpago",
         } : undefined;
+      } else if (niche.id === "agro") {
+        attributes.niche = "agri";
+        attributes.hours_used = agriHoursUsed ? parseInt(agriHoursUsed) : undefined;
+        attributes.horimetro = agriHoursUsed ? parseInt(agriHoursUsed) : undefined;
+        attributes.traction = agriTraction;
+        attributes.tracao = agriTraction;
+        attributes.implement_type = agriImplementType;
+        attributes.year_fab = agriYearFab ? parseInt(agriYearFab) : undefined;
+        attributes.power_cv = agriPowerCv ? parseInt(agriPowerCv) : undefined;
+        attributes.cabin_type = agriCabinType;
+      } else if (niche.id === "farmacia") {
+        attributes.niche = "pharmacy";
+        attributes.subniche = pharmacySubNiche;
+        attributes.retention_prescription = pharmacyRetentionPrescription;
+        attributes.active_ingredient = pharmacyActiveIngredient;
+        attributes.manufacturer = pharmacyManufacturer;
+        attributes.anvisa_registry = pharmacyAnvisaRegistry;
       } else if (niche.id === "negocio") {
         attributes.niche = "business";
         attributes.is_business_sale = true;
@@ -3075,6 +3120,8 @@ function SpecializedClassifiedEditor({
       if (niche.id === "negocio") resolvedCategory = "business";
       if (niche.id === "gastronomia") resolvedCategory = "food";
       if (niche.id === "evento") resolvedCategory = "event";
+      if (niche.id === "agro") resolvedCategory = "sale";
+      if (niche.id === "farmacia") resolvedCategory = "sale";
 
       const res = await upsertClassified({
         data: {
@@ -8405,7 +8452,219 @@ function SpecializedClassifiedEditor({
                     )}
                   </div>
                 </div>
+              )}              {/* Agronegócio & Maquinário Pesado */}
+              {niche.id === "agro" && (
+                <div className="bg-card rounded-lg p-4 sm:p-5 space-y-5 border border-border/60">
+                  <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+                      <Tractor className="size-4 text-primary" />
+                      <span>Ficha Técnica do Maquinário</span>
+                    </div>
+                    <Badge variant="outline" className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10">
+                      Agronegócio
+                    </Badge>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label className="text-xs text-foreground font-semibold">Tipo de Maquinário / Equipamento *</Label>
+                      <Select value={agriImplementType} onValueChange={setAgriImplementType}>
+                        <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium focus-visible:ring-2 focus-visible:ring-primary">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Trator">Trator Agrícola</SelectItem>
+                          <SelectItem value="Colheitadeira">Colheitadeira</SelectItem>
+                          <SelectItem value="Plantadeira">Plantadeira / Semeadeira</SelectItem>
+                          <SelectItem value="Pulverizador">Pulverizador Autopropelido</SelectItem>
+                          <SelectItem value="Implemento">Implemento (Grade, Arado, Subsolador)</SelectItem>
+                          <SelectItem value="Caminhao_Agro">Caminhão / Reboque Graneleiro</SelectItem>
+                          <SelectItem value="Insumo">Insumos / Nutrição / Sementes</SelectItem>
+                          <SelectItem value="Outro_Agro">Outro Maquinário Agro</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-xs text-foreground font-semibold">Horímetro (Horas de Uso)</Label>
+                      <Input
+                        type="number"
+                        value={agriHoursUsed}
+                        onChange={(e) => setAgriHoursUsed(e.target.value)}
+                        placeholder="Ex: 1850"
+                        className="h-11 rounded-lg text-xs bg-background font-mono focus-visible:ring-2 focus-visible:ring-primary"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="space-y-2">
+                      <Label className="text-xs text-foreground font-semibold">Tração</Label>
+                      <Select value={agriTraction} onValueChange={setAgriTraction}>
+                        <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium focus-visible:ring-2 focus-visible:ring-primary">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="4x4">Tração 4x4 Integral</SelectItem>
+                          <SelectItem value="4x2">Tração 4x2</SelectItem>
+                          <SelectItem value="esteira">Esteiras de Borracha / Metal</SelectItem>
+                          <SelectItem value="articulado">Articulado</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-xs text-foreground font-semibold">Potência do Motor (CV)</Label>
+                      <Input
+                        type="number"
+                        value={agriPowerCv}
+                        onChange={(e) => setAgriPowerCv(e.target.value)}
+                        placeholder="Ex: 110"
+                        className="h-11 rounded-lg text-xs bg-background font-mono focus-visible:ring-2 focus-visible:ring-primary"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-xs text-foreground font-semibold">Ano de Fabricação</Label>
+                      <Input
+                        type="number"
+                        value={agriYearFab}
+                        onChange={(e) => setAgriYearFab(e.target.value)}
+                        placeholder="Ex: 2021"
+                        className="h-11 rounded-lg text-xs bg-background font-mono focus-visible:ring-2 focus-visible:ring-primary"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-xs text-foreground font-semibold">Tipo de Cabine</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setAgriCabinType("cabin")}
+                        className={cn(
+                          "h-11 px-3 rounded-lg text-xs font-semibold border flex items-center justify-center gap-2 cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary",
+                          agriCabinType === "cabin"
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-background border-border text-foreground hover:bg-muted"
+                        )}
+                      >
+                        Cabinado com Ar Condicionado
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAgriCabinType("open")}
+                        className={cn(
+                          "h-11 px-3 rounded-lg text-xs font-semibold border flex items-center justify-center gap-2 cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary",
+                          agriCabinType === "open"
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-background border-border text-foreground hover:bg-muted"
+                        )}
+                      >
+                        Plataformado / Aberto
+                      </button>
+                    </div>
+                  </div>
+                </div>
               )}
+
+              {/* Farmácia, Saúde & Bem-Estar */}
+              {niche.id === "farmacia" && (
+                <div className="bg-card rounded-lg p-4 sm:p-5 space-y-5 border border-border/60">
+                  <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+                      <StoreIcon className="size-4 text-primary" />
+                      <span>Ficha Técnica Farmacêutica</span>
+                    </div>
+                    <Badge variant="outline" className="text-xs font-semibold text-teal-600 dark:text-teal-400 border-teal-500/30 bg-teal-500/10">
+                      Saúde & Farmácia
+                    </Badge>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label className="text-xs text-foreground font-semibold">Linha / Segmento *</Label>
+                      <Select value={pharmacySubNiche} onValueChange={setPharmacySubNiche}>
+                        <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium focus-visible:ring-2 focus-visible:ring-primary">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Medicamento">Medicamento / Farmacêutico</SelectItem>
+                          <SelectItem value="Suplemento">Suplemento & Vitaminas</SelectItem>
+                          <SelectItem value="Dermocosmetico">Dermocosmético & Pele</SelectItem>
+                          <SelectItem value="Higiene_Cuidados">Higiene & Cuidados Pessoais</SelectItem>
+                          <SelectItem value="Ortopedia_Primeiros_Socorros">Ortopedia & Primeiros Socorros</SelectItem>
+                          <SelectItem value="Bebe_Infantil">Mamãe & Bebê</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-xs text-foreground font-semibold">Exigência de Receita Médica</Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setPharmacyRetentionPrescription(false)}
+                          className={cn(
+                            "h-11 px-3 rounded-lg text-xs font-semibold border flex items-center justify-center gap-2 cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary",
+                            !pharmacyRetentionPrescription
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "bg-background border-border text-foreground hover:bg-muted"
+                          )}
+                        >
+                          Venda Livre
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPharmacyRetentionPrescription(true)}
+                          className={cn(
+                            "h-11 px-3 rounded-lg text-xs font-semibold border flex items-center justify-center gap-2 cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary",
+                            pharmacyRetentionPrescription
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "bg-background border-border text-foreground hover:bg-muted"
+                          )}
+                        >
+                          Retenção de Receita
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label className="text-xs text-foreground font-semibold">Princípio Ativo / Composição</Label>
+                      <Input
+                        value={pharmacyActiveIngredient}
+                        onChange={(e) => setPharmacyActiveIngredient(e.target.value)}
+                        placeholder="Ex: Dipirona Monoidratada 500mg, Vitamina C"
+                        className="h-11 rounded-lg text-xs bg-background focus-visible:ring-2 focus-visible:ring-primary"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-xs text-foreground font-semibold">Laboratório / Fabricante</Label>
+                      <Input
+                        value={pharmacyManufacturer}
+                        onChange={(e) => setPharmacyManufacturer(e.target.value)}
+                        placeholder="Ex: EMS, Medley, Eurofarma, Cimed, Bayer"
+                        className="h-11 rounded-lg text-xs bg-background focus-visible:ring-2 focus-visible:ring-primary"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-xs text-foreground font-semibold">Registro Anvisa / MS</Label>
+                    <Input
+                      value={pharmacyAnvisaRegistry}
+                      onChange={(e) => setPharmacyAnvisaRegistry(e.target.value)}
+                      placeholder="Ex: MS 1.0235.0789.001-2"
+                      className="h-11 rounded-lg text-xs bg-background font-mono focus-visible:ring-2 focus-visible:ring-primary"
+                    />
+                  </div>
+                </div>
+              )}
+
+
 
               {/* Negócios */}
               {niche.id === "negocio" && (

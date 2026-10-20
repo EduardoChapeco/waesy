@@ -29,7 +29,7 @@ export interface HomeSectionItemDTO {
   section_id: string;
   title?: string | null;
   subtitle?: string | null;
-  image_url: string;
+  image_url?: string | null;
   image_mobile_url?: string | null;
   image_desktop_url?: string | null;
   target_url: string;
@@ -91,12 +91,7 @@ export interface NormalizedShowcasePost {
 }
 
 
-export const CANONICAL_EDITORIAL_FALLBACKS = [
-  "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=800&q=80",
-];
+export const CANONICAL_EDITORIAL_FALLBACKS: string[] = [];
 
 export function isHealthyImageUrl(url: unknown): boolean {
   if (typeof url !== "string") return false;
@@ -114,15 +109,15 @@ export function isHealthyImageUrl(url: unknown): boolean {
   return trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("/");
 }
 
-export function resolveHealthyCover(url: unknown, indexFallback = 0): string {
+export function resolveHealthyCover(url: unknown, _indexFallback = 0): string | null {
   if (isHealthyImageUrl(url)) {
-    return (url as string).trim();
+    const trimmed = (url as string).trim();
+    if (trimmed.includes("images.unsplash.com") || trimmed.includes("unsplash.com")) {
+      return null;
+    }
+    return trimmed;
   }
-  if (typeof url === "string" && url.includes("1511707171634-5f897ff02560")) {
-    return "https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=400&q=80";
-  }
-  const idx = Math.abs(indexFallback) % CANONICAL_EDITORIAL_FALLBACKS.length;
-  return CANONICAL_EDITORIAL_FALLBACKS[idx];
+  return null;
 }
 
 // ── Canônicos Padrão em Memória (Zero Downtime Fallback) ──
@@ -145,7 +140,7 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         section_id: "canonical-hero-banners",
         title: "Tudo para o seu dia a dia no Waesy",
         subtitle: "Comércio, serviços e entregas locais",
-        image_url: "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1200&q=80",
+        image_url: null,
         target_url: "/marketplace",
         show_text: false,
         grid_span_x: 2,
@@ -159,7 +154,7 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         section_id: "canonical-hero-banners",
         title: "Gastronomia & Restaurantes",
         subtitle: "Peça dos melhores estabelecimentos da região",
-        image_url: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80",
+        image_url: null,
         target_url: "/marketplace?category=gastronomia",
         show_text: false,
         grid_span_x: 2,
@@ -188,7 +183,7 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         section_id: "canonical-quick-categories",
         title: "Restaurantes",
         subtitle: null,
-        image_url: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=240&q=80",
+        image_url: null,
         target_url: "/marketplace?category=gastronomia",
         show_text: true,
         grid_span_x: 1,
@@ -202,7 +197,7 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         section_id: "canonical-quick-categories",
         title: "Mercados",
         subtitle: null,
-        image_url: "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=240&q=80",
+        image_url: null,
         target_url: "/marketplace?category=mercado",
         show_text: true,
         grid_span_x: 1,
@@ -216,7 +211,7 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         section_id: "canonical-quick-categories",
         title: "Farmácias",
         subtitle: null,
-        image_url: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=240&q=80",
+        image_url: null,
         target_url: "/diretorio?category=farmacia",
         show_text: true,
         grid_span_x: 1,
@@ -230,7 +225,7 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         section_id: "canonical-quick-categories",
         title: "Bebidas",
         subtitle: null,
-        image_url: "https://images.unsplash.com/photo-1527061011665-3652c757a4d4?auto=format&fit=crop&w=240&q=80",
+        image_url: null,
         target_url: "/marketplace?category=bebidas",
         show_text: true,
         grid_span_x: 1,
@@ -244,7 +239,7 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         section_id: "canonical-quick-categories",
         title: "Mobilidade",
         subtitle: null,
-        image_url: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=240&q=80",
+        image_url: null,
         target_url: "/mobilidade",
         show_text: true,
         grid_span_x: 1,
@@ -258,7 +253,7 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         section_id: "canonical-quick-categories",
         title: "Pet Shop",
         subtitle: null,
-        image_url: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=240&q=80",
+        image_url: null,
         target_url: "/marketplace?category=pet",
         show_text: true,
         grid_span_x: 1,
@@ -272,7 +267,7 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         section_id: "canonical-quick-categories",
         title: "Classificados",
         subtitle: null,
-        image_url: "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=240&q=80",
+        image_url: null,
         target_url: "/classificados",
         show_text: true,
         grid_span_x: 1,
@@ -286,7 +281,7 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         section_id: "canonical-quick-categories",
         title: "Lugares",
         subtitle: null,
-        image_url: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=240&q=80",
+        image_url: null,
         target_url: "/diretorio",
         show_text: true,
         grid_span_x: 1,
@@ -315,7 +310,7 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         section_id: "canonical-hotpages-grid",
         title: "Guia Gastronômico da Cidade",
         subtitle: "Roteiro dos melhores sabores",
-        image_url: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80",
+        image_url: null,
         target_url: "/gastronomia",
         show_text: false,
         grid_span_x: 2,
@@ -329,7 +324,7 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         section_id: "canonical-hotpages-grid",
         title: "Ofertas da Semana",
         subtitle: "Descontos imperdíveis",
-        image_url: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=600&q=80",
+        image_url: null,
         target_url: "/marketplace?has_discount=true",
         show_text: false,
         grid_span_x: 1,
@@ -343,7 +338,7 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         section_id: "canonical-hotpages-grid",
         title: "Serviços & Especialistas",
         subtitle: "Profissionais avaliados",
-        image_url: "https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=600&q=80",
+        image_url: null,
         target_url: "/servicos",
         show_text: false,
         grid_span_x: 1,
@@ -372,7 +367,7 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         section_id: "canonical-marketplace-categories",
         title: "Veículos e Autos",
         subtitle: null,
-        image_url: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=240&q=80",
+        image_url: null,
         target_url: "/classificados?category=veiculos",
         show_text: true,
         grid_span_x: 1,
@@ -386,7 +381,7 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         section_id: "canonical-marketplace-categories",
         title: "Imóveis & Aluguel",
         subtitle: null,
-        image_url: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=240&q=80",
+        image_url: null,
         target_url: "/classificados?category=imoveis",
         show_text: true,
         grid_span_x: 1,
@@ -400,7 +395,7 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         section_id: "canonical-marketplace-categories",
         title: "Eletrônicos & Celulares",
         subtitle: null,
-        image_url: "https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=400&q=80",
+        image_url: null,
         target_url: "/classificados?category=eletronicos",
         show_text: true,
         grid_span_x: 1,
@@ -414,7 +409,7 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         section_id: "canonical-marketplace-categories",
         title: "Moda & Acessórios",
         subtitle: null,
-        image_url: "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?auto=format&fit=crop&w=240&q=80",
+        image_url: null,
         target_url: "/marketplace?category=moda",
         show_text: true,
         grid_span_x: 1,
@@ -1062,7 +1057,7 @@ export const getUnifiedShowcasePosts = createServerFn({ method: "GET" })
             category: art.category,
             title: art.title,
           });
-          const validMedia = [cover];
+          const validMedia = cover ? [cover] : [];
           normalizedList.push({
             id: `article-${art.id}`,
             title: art.title,

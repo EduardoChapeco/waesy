@@ -2,6 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useState, useRef } from "react";
 import { Clock, Calendar, Share2, Quote, Newspaper, ChevronRight, Ticket, MapPin, Users, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { decodeHtmlEntities } from "@/lib/utils";
 import { getArticleDetail, type NewsArticleDTO, type SponsorDTO } from "@/services/news.functions";
 import { NewsSponsorBanner } from "@/components/news/news-sponsor-banner";
 import { NewsCommentsSection } from "@/components/news/news-comments-section";
@@ -11,8 +12,8 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/_store/noticias/$slug")({
   head: ({ loaderData }: any) => ({
     meta: [
-      { title: loaderData?.article ? `${loaderData.article.title} | Waesy Notícias` : "Notícia | Waesy" },
-      { name: "description", content: loaderData?.article?.subtitle || "Notícia local no Waesy." },
+      { title: loaderData?.article ? `${decodeHtmlEntities(loaderData.article.title)} | Waesy Notícias` : "Notícia | Waesy" },
+      { name: "description", content: decodeHtmlEntities(loaderData?.article?.subtitle) || "Notícia local no Waesy." },
     ],
   }),
   loader: async ({ params }) => {
@@ -43,25 +44,39 @@ const FORBIDDEN_HEADER_KEYWORDS = [
   "notícia", "noticia",
   "conclusão", "conclusao",
   "contexto",
+  "contexto e apuração", "contexto e apuracao",
+  "apuração", "apuracao",
+  "desdobramentos", "desdobramento",
   "análise", "analise",
   "panorama",
   "visão geral", "visao geral",
-  "fato", "fatos",
+  "fato", "fatos", "fatos principais",
   "detalhe", "detalhes",
   "lead", "subtítulo", "subtitulo",
+  "destaque", "destaques",
+  "takeaway", "takeaways", "key takeaways",
 ];
 
 function isForbiddenHeader(text?: string | null): boolean {
   if (!text) return true;
-  const clean = text.trim().toLowerCase();
+  const clean = text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .trim();
   if (clean.length < 3) return true;
-  return FORBIDDEN_HEADER_KEYWORDS.some(
-    (kw) =>
-      clean === kw ||
-      clean.startsWith(`${kw}:`) ||
-      clean.startsWith(`${kw} -`) ||
-      clean.endsWith(`: ${kw}`)
-  );
+  return FORBIDDEN_HEADER_KEYWORDS.some((kw) => {
+    const normKw = kw
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .toLowerCase();
+    return (
+      clean === normKw ||
+      clean.includes(normKw) ||
+      clean.startsWith(normKw) ||
+      clean.endsWith(normKw)
+    );
+  });
 }
 
 function NoticiaDetailPage() {
@@ -178,13 +193,13 @@ function NoticiaDetailPage() {
 
           {/* Headline Principal */}
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-foreground leading-snug">
-            {article.title}
+            {decodeHtmlEntities(article.title)}
           </h1>
 
           {/* Linha Fina (Dek) */}
           {article.subtitle && (
             <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-              {article.subtitle}
+              {decodeHtmlEntities(article.subtitle)}
             </p>
           )}
 
@@ -289,26 +304,33 @@ function NoticiaDetailPage() {
           {rawSections && rawSections.length > 0 ? (
             rawSections.map((section: any, idx: number) => {
               const showMidSponsor = idx === 2 && secondarySponsor;
-              const hasHeading = section.heading && !isForbiddenHeader(section.heading);
-              const isHeadingType = section.type === "heading" && !isForbiddenHeader(section.content);
+              const rawHeading = section.heading ? decodeHtmlEntities(section.heading).trim() : "";
+              const hasHeading = rawHeading.length > 0 && !isForbiddenHeader(rawHeading);
+              const isHeadingType = section.type === "heading" && section.content && !isForbiddenHeader(decodeHtmlEntities(section.content));
+              const isParagraph = (!section.type || section.type === "paragraph") && section.content && String(section.content).trim().length > 0;
+              const paragraphText = isParagraph ? decodeHtmlEntities(String(section.content)).trim() : "";
+
+              // Oculta blocos que não possuam conteúdo editorial visível real
+              const hasVisibleContent = hasHeading || isHeadingType || (isParagraph && paragraphText.length > 0) || section.type === "quote" || section.type === "gallery";
+              if (!hasVisibleContent) return null;
 
               return (
                 <div key={idx} className="space-y-4">
                   {hasHeading && (
                     <h2 className="text-xl sm:text-2xl font-bold text-foreground pt-4 tracking-tight">
-                      {String(section.heading)}
+                      {rawHeading}
                     </h2>
                   )}
 
                   {isHeadingType && (
                     <h2 className="text-xl sm:text-2xl font-bold text-foreground pt-4 tracking-tight">
-                      {String(section.content)}
+                      {decodeHtmlEntities(String(section.content))}
                     </h2>
                   )}
 
-                  {section.type === "paragraph" && (
+                  {isParagraph && paragraphText.length > 0 && (
                     <p className="leading-relaxed whitespace-pre-line text-foreground/90">
-                      {String(section.content)}
+                      {paragraphText}
                     </p>
                   )}
 
@@ -316,10 +338,10 @@ function NoticiaDetailPage() {
                     <blockquote className="my-6 p-5 rounded-lg bg-muted/30 border-l-4 border-primary text-foreground font-serif italic text-base sm:text-lg flex items-start gap-3">
                       <Quote className="size-6 text-primary shrink-0 opacity-40" />
                       <div>
-                        <p>{String(section.content)}</p>
+                        <p>{decodeHtmlEntities(String(section.content))}</p>
                         {section.caption && (
                           <cite className="block mt-2 text-xs font-sans font-bold text-muted-foreground not-italic">
-                            — {section.caption}
+                            — {decodeHtmlEntities(section.caption)}
                           </cite>
                         )}
                       </div>
@@ -354,7 +376,7 @@ function NoticiaDetailPage() {
                       ) : null}
                       {section.caption && (
                         <figcaption className="text-xs text-muted-foreground italic text-center font-sans">
-                          {section.caption}
+                          {decodeHtmlEntities(section.caption)}
                         </figcaption>
                       )}
                     </figure>
@@ -372,7 +394,7 @@ function NoticiaDetailPage() {
             })
           ) : (
             <p className="leading-relaxed">
-              {article.subtitle || "Matéria completa publicada no portal de notícias."}
+              {decodeHtmlEntities(article.subtitle) || "Matéria completa publicada no portal de notícias."}
             </p>
           )}
         </div>

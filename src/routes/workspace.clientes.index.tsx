@@ -1,4 +1,5 @@
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
+import { useWindowSizeClass } from "@/hooks/use-mobile";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
@@ -43,6 +44,7 @@ export const Route = createFileRoute("/workspace/clientes/")({
 });
 
 function CarteiraClientesPage() {
+  const { isCompact: isMobile } = useWindowSizeClass();
   const loaderData = Route.useLoaderData?.() as any;
   const customers = loaderData?.customers || [];
   const team = loaderData?.team || [];
@@ -314,8 +316,9 @@ function CarteiraClientesPage() {
         </div>
       ) : (
         <>
-          {/* ── 1. Mobile List Layout (Zero-Cramping, Large Text & 44px Controls) ── */}
-          <div className="block md:hidden bg-card border-y border-border/40 divide-y divide-border/30">
+          {isMobile ? (
+            /* ── 1. Mobile List Layout (Zero-Cramping, Large Text & 44px Controls) ── */
+            <div className="bg-card border-y border-border/40 divide-y divide-border/30">
             {filteredCustomers.map((c: any) => {
               const isCompany = c.kind === "company";
               const hasExpiredDocs = (c.docAlerts?.expired || 0) > 0;
@@ -486,8 +489,9 @@ function CarteiraClientesPage() {
             })}
           </div>
 
-          {/* ── 2. Desktop High-Density Table Layout ── */}
-          <div className="hidden md:block rounded-lg border border-border bg-card overflow-hidden shadow-2xs">
+          ) : (
+            /* ── 2. Desktop High-Density Table Layout ── */
+            <div className="rounded-lg border border-border bg-card overflow-hidden shadow-2xs">
             <Table>
               <TableHeader className="bg-muted/40">
                 <TableRow>
@@ -696,7 +700,8 @@ function CarteiraClientesPage() {
                 })}
               </TableBody>
             </Table>
-          </div>
+            </div>
+          )}
         </>
       )}
 

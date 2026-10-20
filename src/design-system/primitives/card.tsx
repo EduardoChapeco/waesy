@@ -169,7 +169,7 @@ export function EntityCard({
 /* 3. OfferCard                                                               */
 /* -------------------------------------------------------------------------- */
 
-export interface OfferCardProps {
+export interface DSOfferCardProps {
   title: string;
   price: string;
   originalPrice?: string;
@@ -193,7 +193,7 @@ export function OfferCard({
   onCtaClick,
   badgeText,
   className,
-}: OfferCardProps) {
+}: DSOfferCardProps) {
   const [imgError, setImgError] = React.useState(false);
 
   return (

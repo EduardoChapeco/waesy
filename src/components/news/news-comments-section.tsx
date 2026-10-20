@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MessageSquare, Heart, Send, Loader2, User, ShieldCheck } from "lucide-react";
+import { MessageSquare, Heart, Send, Loader2, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { listArticleComments, submitArticleComment, toggleArticleLike, getArticleLikeStatus, type NewsCommentDTO } from "@/services/news.functions";
 import { toast } from "sonner";
@@ -111,10 +111,7 @@ export function NewsCommentsSection({ articleId }: NewsCommentsSectionProps) {
  </span>
  </div>
 
- <div className="hidden sm:flex items-center gap-1 text-[10px] text-muted-foreground font-mono">
- <ShieldCheck className="size-3.5 text-emerald-500" />
- <span>Comentários de membros verificados</span>
- </div>
+ {/* Comentários restritos a membros civis verificados via autenticação Zero-Trust */}
  </div>
 
  {/* ── Formulário de Comentário ── */}

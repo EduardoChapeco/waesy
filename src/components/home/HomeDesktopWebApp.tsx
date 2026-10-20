@@ -182,7 +182,7 @@ export function HomeDesktopWebApp({
                             <source media="(min-width: 768px)" srcSet={it.image_desktop_url} />
                           )}
                           <img
-                            src={it.image_desktop_url || it.image_url}
+                            src={it.image_desktop_url || it.image_url || undefined}
                             alt=""
                             className="size-full object-cover"
                             loading="lazy"
@@ -225,7 +225,7 @@ export function HomeDesktopWebApp({
                           <source media="(min-width: 768px)" srcSet={it.image_desktop_url} />
                         )}
                         <img
-                          src={it.image_desktop_url || it.image_url}
+                          src={it.image_desktop_url || it.image_url || undefined}
                           alt=""
                           loading="lazy"
                           decoding="async"

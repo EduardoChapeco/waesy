@@ -28,7 +28,7 @@ export const dsBadgeVariants = cva(
   }
 );
 
-export interface BadgeProps
+export interface DSBadgeProps
   extends React.HTMLAttributes<HTMLSpanElement>,
     VariantProps<typeof dsBadgeVariants> {
   withDot?: boolean;
@@ -41,7 +41,7 @@ export function Badge({
   withDot = false,
   children,
   ...props
-}: BadgeProps) {
+}: DSBadgeProps) {
   const dotColorClasses: Record<string, string> = {
     neutral: "bg-muted-foreground",
     primary: "bg-primary",
@@ -67,13 +67,13 @@ export function Badge({
   );
 }
 
-export interface StatusBadgeProps {
+export interface DSStatusBadgeProps {
   status: "active" | "pending" | "completed" | "cancelled" | "danger" | "draft" | "review";
   label?: string;
   className?: string;
 }
 
-export function StatusBadge({ status, label, className }: StatusBadgeProps) {
+export function StatusBadge({ status, label, className }: DSStatusBadgeProps) {
   const statusConfig = {
     active: { variant: "success" as const, defaultLabel: "Ativo" },
     completed: { variant: "success" as const, defaultLabel: "Concluído" },

@@ -131,12 +131,14 @@ export const ExperienceNodeSchema = z.object({
  id: z.string().min(1),
  version_id: z.string().uuid().optional(),
  parent_id: z.string().nullable().optional(),
+ page_id: z.string().uuid().nullable().optional(),
  node_type: z.enum(["section", "container", "element", "composition"]),
  block_type: z.string(),
  layout_variant: z.string().nullable().optional(),
  content: z.record(z.unknown()).nullish().transform((v) => v ?? {}),
  design_tokens: z.record(z.unknown()).nullish().transform((v) => v ?? {}),
  layout_rules: z.record(z.unknown()).nullish().transform((v) => v ?? {}),
+ animation_rules: z.record(z.unknown()).nullish().transform((v) => v ?? {}),
  responsive_overrides: z.record(z.unknown()).nullish().transform((v) => v ?? {}),
  data_bindings: DataBindingSchema.nullish().transform((v) => v ?? {}),
  action_bindings: z.record(z.unknown()).nullish().transform((v) => v ?? {}),
@@ -145,10 +147,37 @@ export const ExperienceNodeSchema = z.object({
  children: z.array(z.unknown()).optional(),
 });
 
+export interface ExperiencePage {
+ id: string;
+ document_id: string;
+ title: string;
+ path: string;
+ is_home: boolean;
+ seo_title?: string | null;
+ seo_description?: string | null;
+ seo_image_url?: string | null;
+ sort_order: number;
+ created_at?: string;
+ updated_at?: string;
+}
+
+export const ExperiencePageSchema = z.object({
+ id: z.string().uuid().optional(),
+ document_id: z.string().uuid().optional(),
+ title: z.string().min(1),
+ path: z.string().min(1),
+ is_home: z.boolean().default(false),
+ seo_title: z.string().nullable().optional(),
+ seo_description: z.string().nullable().optional(),
+ seo_image_url: z.string().nullable().optional(),
+ sort_order: z.number().int().default(0),
+});
+
 export interface ExperienceNode {
  id: string;
  version_id?: string;
  parent_id?: string | null;
+ page_id?: string | null;
 
  node_type: NodeType;
  block_type: BlockType;
@@ -157,6 +186,7 @@ export interface ExperienceNode {
  content: Record<string, any>;
  design_tokens: Record<string, any>;
  layout_rules: Record<string, any>;
+ animation_rules?: Record<string, any>;
  responsive_overrides: Record<string, ResponsiveValue<any>>;
  data_bindings: DataBinding;
  action_bindings: Record<string, any>;
