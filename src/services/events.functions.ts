@@ -22,36 +22,48 @@ async function _listAdminEvents() {
   // Check if they are at least staff
   assertStoreAccess(identity, ["owner", "admin", "manager", "content", "seller"]);
 
-  const { data: events, error } = await supabase
-    .from("events")
-    .select("*")
-    .eq("store_id", identity.store_id)
-    .order("created_at", { ascending: false });
-
-  if (error) throw new Error(error.message);
-  if (!events || events.length === 0) return [];
-
-  const eventIds = events.map((e: any) => e.id);
-
-  // Agrega lotes/ingressos, pedidos de subpainéis e pontos operacionais para o Cockpit Master da Produtora
-  const [{ data: lots }, { data: subpanelOrders }, { data: subpanels }] = await Promise.all([
+  const [{ data: events, error }, { data: classifiedEvents }] = await Promise.all([
     supabase
-      .from("ticket_lots")
-      .select("event_id, price_cents, sold_count")
-      .in("event_id", eventIds)
-      .then((r) => r, () => ({ data: [] as any[] })),
+      .from("events")
+      .select("*")
+      .eq("store_id", identity.store_id)
+      .order("created_at", { ascending: false }),
     supabase
-      .from("event_subpanel_orders")
-      .select("event_id, total_cents, concession_fee_cents, status")
-      .in("event_id", eventIds)
-      .neq("status", "cancelled")
-      .then((r) => r, () => ({ data: [] as any[] })),
-    supabase
-      .from("event_subpanels")
-      .select("id, event_id, is_active")
-      .in("event_id", eventIds)
+      .from("classifieds")
+      .select("*")
+      .eq("store_id", identity.store_id)
+      .eq("category", "event")
+      .order("created_at", { ascending: false })
       .then((r) => r, () => ({ data: [] as any[] })),
   ]);
+
+  if (error) throw new Error(error.message);
+
+  const nativeEvents = events || [];
+  const eventIds = nativeEvents.map((e: any) => e.id);
+
+  // Agrega lotes/ingressos, pedidos de subpainéis e pontos operacionais para o Cockpit Master da Produtora
+  const [{ data: lots }, { data: subpanelOrders }, { data: subpanels }] =
+    eventIds.length > 0
+      ? await Promise.all([
+          supabase
+            .from("ticket_lots")
+            .select("event_id, price_cents, sold_count")
+            .in("event_id", eventIds)
+            .then((r) => r, () => ({ data: [] as any[] })),
+          supabase
+            .from("event_subpanel_orders")
+            .select("event_id, total_cents, concession_fee_cents, status")
+            .in("event_id", eventIds)
+            .neq("status", "cancelled")
+            .then((r) => r, () => ({ data: [] as any[] })),
+          supabase
+            .from("event_subpanels")
+            .select("id, event_id, is_active")
+            .in("event_id", eventIds)
+            .then((r) => r, () => ({ data: [] as any[] })),
+        ])
+      : [{ data: [] as any[] }, { data: [] as any[] }, { data: [] as any[] }];
 
   const lotsByEvent = new Map<string, { sold: number; revCents: number }>();
   for (const l of lots || []) {
@@ -78,13 +90,14 @@ async function _listAdminEvents() {
     }
   }
 
-  return events.map((ev: any) => {
+  const mappedNativeEvents = nativeEvents.map((ev: any) => {
     const lotStat = lotsByEvent.get(ev.id) || { sold: 0, revCents: 0 };
     const ordStat = ordersByEvent.get(ev.id) || { grossCents: 0, feeCents: 0, count: 0 };
     const spCount = subpanelsByEvent.get(ev.id) || 0;
 
     return {
       ...ev,
+      source_type: "workspace_event",
       tickets_sold: lotStat.sold,
       ticket_revenue_cents: lotStat.revCents,
       concession_gross_cents: ordStat.grossCents,
@@ -95,6 +108,55 @@ async function _listAdminEvents() {
       producer_net_revenue_cents: lotStat.revCents + ordStat.feeCents,
     };
   });
+
+  const mappedClassifiedEvents = (classifiedEvents || []).map((row: any) => {
+    const attrs = (row.attributes || {}) as Record<string, any>;
+    const tiers = Array.isArray(attrs.ticket_tiers) ? attrs.ticket_tiers : [];
+    const totalCapacity = tiers.reduce(
+      (acc: number, t: any) => acc + Number(t.capacity ?? t.quantity ?? 0),
+      0
+    );
+    const totalSold = tiers.reduce(
+      (acc: number, t: any) => acc + Number(t.sold_count ?? 0),
+      0
+    );
+    const totalRevCents = tiers.reduce((acc: number, t: any) => {
+      const priceCents =
+        typeof t.price_cents === "number" && (t.price_cents > 0 || !t.price)
+          ? t.price_cents
+          : Math.round(Number(t.price || 0) * 100);
+      return acc + Number(t.sold_count ?? 0) * priceCents;
+    }, 0);
+
+    return {
+      id: row.id,
+      store_id: row.store_id,
+      source_type: "classified",
+      title: row.title,
+      description: row.content || "",
+      event_date: attrs.event_date || row.created_at,
+      end_date: attrs.end_date || null,
+      location: attrs.venue_name || row.location_name || attrs.city || "",
+      city: attrs.city || "",
+      state: attrs.state || "",
+      cover_image:
+        attrs.banner_image_url || (Array.isArray(row.images) && row.images[0]) || null,
+      category: attrs.event_category || "shows",
+      status: row.status === "active" ? "published" : row.status || "draft",
+      capacity: totalCapacity || 100,
+      tickets_sold: totalSold,
+      ticket_revenue_cents: totalRevCents,
+      concession_gross_cents: 0,
+      concession_fee_cents: 0,
+      concession_orders_count: 0,
+      subpanels_count: 0,
+      total_ecosystem_revenue_cents: totalRevCents,
+      producer_net_revenue_cents: totalRevCents,
+      created_at: row.created_at,
+    };
+  });
+
+  return [...mappedNativeEvents, ...mappedClassifiedEvents];
 }
 
 export const listAdminEvents = createServerFn({ method: "GET" }).handler(_listAdminEvents);

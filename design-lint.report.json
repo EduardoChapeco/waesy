@@ -1,48 +1,48 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-21T15:40:53.657Z",
-  "inspectedFiles": 2241,
-  "totalViolations": 12306,
+  "timestamp": "2026-10-21T16:44:47.261Z",
+  "inspectedFiles": 2246,
+  "totalViolations": 12174,
   "summary": {
-    "totalViolations": 12306,
+    "totalViolations": 12174,
     "bySeverity": {
-      "P0": 1359,
-      "P1": 8350,
-      "P2": 1319,
-      "P3": 1278
+      "P0": 1357,
+      "P1": 8272,
+      "P2": 1277,
+      "P3": 1268
     },
     "byRule": {
-      "DL-18": 1151,
+      "DL-18": 1143,
       "DL-02": 3393,
-      "DL-14": 2022,
-      "DL-28": 280,
-      "DL-15": 1356,
-      "DL-07": 482,
-      "DL-27": 1012,
-      "DL-30": 266,
+      "DL-14": 2004,
+      "DL-28": 279,
+      "DL-15": 1354,
+      "DL-07": 477,
+      "DL-27": 1004,
+      "DL-30": 264,
       "DL-26": 85,
       "DL-01": 875,
-      "DL-29": 119,
-      "DL-05": 130,
+      "DL-29": 118,
+      "DL-05": 129,
       "DL-23": 355,
-      "DL-03": 437,
-      "DL-09": 141,
-      "DL-08": 107,
-      "DL-25": 25,
+      "DL-03": 387,
+      "DL-09": 114,
+      "DL-08": 103,
       "DL-24": 2,
       "DL-11": 22,
       "DL-12": 29,
       "DL-13": 11,
+      "DL-25": 20,
       "DL-06": 3,
       "DL-04": 3
     },
     "byModule": {
       "components/app": {
-        "total": 5584,
+        "total": 5468,
         "P0": 559,
-        "P1": 3787,
-        "P2": 691,
-        "P3": 547
+        "P1": 3720,
+        "P2": 649,
+        "P3": 540
       },
       "components/builder": {
         "total": 130,
@@ -108,18 +108,18 @@
         "P3": 6
       },
       "routes/workspace": {
-        "total": 2125,
+        "total": 2122,
         "P0": 424,
-        "P1": 1315,
+        "P1": 1314,
         "P2": 110,
-        "P3": 276
+        "P3": 274
       },
       "routes/store": {
-        "total": 1418,
-        "P0": 113,
-        "P1": 922,
+        "total": 1405,
+        "P0": 111,
+        "P1": 912,
         "P2": 175,
-        "P3": 208
+        "P3": 207
       },
       "services": {
         "total": 210,
@@ -144,7 +144,7 @@
       }
     },
     "filesWithViolations": 891,
-    "filesCount": 2241
+    "filesCount": 2246
   },
   "config": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",

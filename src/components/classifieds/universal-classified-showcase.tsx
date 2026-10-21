@@ -78,21 +78,17 @@ export function UniversalClassifiedShowcase(props: UniversalClassifiedShowcasePr
     [classified, attrs, normalizedNiche, resolvedTemplate]
   );
 
-  const isEventShowcase =
-    normalizedNiche === "evento" &&
-    (requestedTemplate === "event" ||
-      !requestedTemplate ||
-      Boolean(attrs.event_date) ||
-      (Array.isArray(attrs.schedule) && attrs.schedule.length > 0) ||
-      (Array.isArray(attrs.speakers) && attrs.speakers.length > 0) ||
-      (Array.isArray(attrs.ticket_tiers) && attrs.ticket_tiers.length > 0));
+  const isEventShowcase = normalizedNiche === "evento";
 
-  if (isEventShowcase && requestedTemplate !== "standard" && requestedTemplate !== "editorial") {
+  if (isEventShowcase) {
     return (
       <EventClassifiedShowcaseView
         classified={normalizedClassified}
         isOwner={props.isOwner}
         onEditClassified={props.onEdit}
+        previewViewport={props.previewViewport}
+        templateStyle={resolvedTemplate === "standard" ? "standard" : "editorial"}
+        displayMode={attrs.display_mode === "continuous_list" ? "continuous_list" : "tabs"}
       />
     );
   }

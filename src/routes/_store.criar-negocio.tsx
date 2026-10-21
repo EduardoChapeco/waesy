@@ -310,10 +310,10 @@ function CriarNegocioPage() {
  },
  });
 
- if (result?.storeId) {
-    setClientContextCookies({ context: "store", storeId: result.storeId });
-    await setTenantContext({ data: { store_id: result.storeId } }).catch(() => null);
-  }
+    if (result?.storeId) {
+      setClientContextCookies({ context: "store", storeId: result.storeId });
+      await setTenantContext({ data: { store_id: result.storeId } });
+    }
 
   toast.success(`Negócio "${result?.storeName || name}" cadastrado com sucesso! Redirecionando...`);
   window.location.href = result?.storeId ? `/workspace?storeId=${result.storeId}` : "/workspace";

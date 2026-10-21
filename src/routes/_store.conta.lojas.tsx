@@ -98,107 +98,107 @@ export default function ContaLojasPage() {
  const isCurrentActive = st.is_active_context;
  const isCurrentSwitching = switchingId === st.id;
 
- return (
- <Card
- key={st.id}
- className={`p-5 rounded-lg border transition-all flex flex-col justify-between relative overflow-hidden bg-card ${
- isCurrentActive
- ? "border-primary/50 ring-1 ring-primary/20"
- : "border-border hover:border-foreground/20"
- }`}
- >
- {isCurrentActive && (
- <div className="absolute top-3 right-3">
- <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[10px] font-bold px-2 py-1">
- ● Painel Ativo
- </Badge>
- </div>
- )}
+          return (
+            <Card
+              key={st.id}
+              className={`p-5 rounded-lg border transition-colors flex flex-col justify-between relative overflow-hidden bg-card ${
+                isCurrentActive
+                  ? "border-primary/50 ring-1 ring-primary/20"
+                  : "border-border hover:border-foreground/20"
+              }`}
+            >
+              {isCurrentActive && (
+                <div className="absolute top-3 right-3">
+                  <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-2xs font-bold px-2 py-1">
+                    Painel Ativo
+                  </Badge>
+                </div>
+              )}
 
- <div className="space-y-4">
- {/* Header do Card */}
- <div className="flex items-start gap-4 pr-20">
- <div className="size-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden shrink-0">
- {st.logo_url ? (
- <img
- src={st.logo_url}
- alt={st.name}
- className="size-full object-cover"
- />
- ) : (
- <Store className="size-6 text-muted-foreground" />
- )}
- </div>
- <div>
- <h3 className="font-bold text-sm text-foreground line-clamp-1">
- {st.name}
- </h3>
- <p className="text-xs text-muted-foreground font-mono">
- /{st.slug}
- </p>
- <div className="flex items-center gap-2 mt-1 text-[11px] text-muted-foreground">
- <MapPin className="size-3 text-muted-foreground shrink-0" />
- <span className="truncate">{st.city ? `${st.city} - ${st.state}` : "Brasil"}</span>
- </div>
- </div>
- </div>
+              <div className="space-y-4">
+                {/* Header do Card */}
+                <div className="flex items-start gap-4 pr-20">
+                  <div className="size-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden shrink-0">
+                    {st.logo_url ? (
+                      <img
+                        src={st.logo_url}
+                        alt={st.name}
+                        className="size-full object-cover"
+                      />
+                    ) : (
+                      <Store className="size-6 text-muted-foreground" />
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-sm text-foreground line-clamp-1">
+                      {st.name}
+                    </h3>
+                    <p className="text-xs text-muted-foreground font-mono">
+                      /{st.slug}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                      <MapPin className="size-3 text-muted-foreground shrink-0" />
+                      <span className="truncate">{st.city ? `${st.city} - ${st.state}` : "Brasil"}</span>
+                    </div>
+                  </div>
+                </div>
 
- {/* Informações Rápidas */}
- <div className="grid grid-cols-2 gap-2 py-3 border-y border-border/60 text-xs">
- <div>
- <span className="text-[10px] uppercase font-bold text-muted-foreground block">
- Função
- </span>
- <span className="font-semibold text-foreground flex items-center gap-1 capitalize">
- <ShieldCheck className="size-3 text-primary" />
- {st.role || "Proprietário"}
- </span>
- </div>
- <div>
- <span className="text-[10px] uppercase font-bold text-muted-foreground block">
- Produtos
- </span>
- <span className="font-semibold text-foreground">
- {st.product_count} cadastrados
- </span>
- </div>
- </div>
- </div>
+                {/* Informações Rápidas */}
+                <div className="grid grid-cols-2 gap-2 py-3 border-y border-border/60 text-xs">
+                  <div>
+                    <span className="text-2xs uppercase font-bold text-muted-foreground block">
+                      Função
+                    </span>
+                    <span className="font-semibold text-foreground flex items-center gap-1 capitalize">
+                      <ShieldCheck className="size-3 text-primary" />
+                      {st.role || "Proprietário"}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-2xs uppercase font-bold text-muted-foreground block">
+                      Produtos
+                    </span>
+                    <span className="font-semibold text-foreground">
+                      {st.product_count} cadastrados
+                    </span>
+                  </div>
+                </div>
+              </div>
 
- {/* Ações Inferiores */}
- <div className="pt-4 mt-2 flex items-center gap-2">
- <Button
- onClick={() => handleSelectStore(st.id, st.name)}
- disabled={isCurrentSwitching}
- variant={isCurrentActive ? "default" : "secondary"}
- className="flex-1 rounded-lg text-xs font-bold h-9 gap-2"
- >
- {isCurrentSwitching ? (
- "Carregando..."
- ) : (
- <>
- <span>Acessar Workspace</span>
- <ArrowRight className="size-3.5" />
- </>
- )}
- </Button>
+              {/* Ações Inferiores */}
+              <div className="pt-4 mt-2 flex items-center gap-2">
+                <Button
+                  onClick={() => handleSelectStore(st.id, st.name)}
+                  disabled={isCurrentSwitching}
+                  variant={isCurrentActive ? "default" : "secondary"}
+                  className="flex-1 rounded-lg text-xs font-bold h-11 min-h-11 sm:h-9 gap-2 cursor-pointer"
+                >
+                  {isCurrentSwitching ? (
+                    "Carregando..."
+                  ) : (
+                    <>
+                      <span>Acessar Workspace</span>
+                      <ArrowRight className="size-3.5" />
+                    </>
+                  )}
+                </Button>
 
- <Button
- asChild
- variant="outline"
- size="icon"
- className="size-9 rounded-lg shrink-0"
- title="Ver Vitrine Pública"
- >
- <Link to={`/destaques/${st.slug}` as any}>
- <ExternalLink className="size-4 text-muted-foreground" />
- </Link>
- </Button>
- </div>
- </Card>
- );
- })}
- </div>
+                <Button
+                  asChild
+                  variant="outline"
+                  size="icon"
+                  className="size-11 min-h-11 sm:size-9 rounded-lg shrink-0 cursor-pointer"
+                  title="Ver Vitrine Pública"
+                >
+                  <Link to={`/loja/${st.slug}` as any}>
+                    <ExternalLink className="size-4 text-muted-foreground" />
+                  </Link>
+                </Button>
+              </div>
+            </Card>
+          );
+        })}
+      </div>
  )}
  </div>
  );

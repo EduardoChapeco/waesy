@@ -693,40 +693,58 @@ export const getMyStoresList = createServerFn({ method: "GET" }).handler(async (
  return [];
  }
 
- // 2. Coletar IDs de lojas na tabela canônica workspace_members
- const storeIdsSet = new Set<string>();
- const roleByStoreId: Record<string, string> = {};
+  // 2. Coletar IDs de lojas na tabela canônica workspace_members e por context_profile_id
+  const storeIdsSet = new Set<string>();
+  const roleByStoreId: Record<string, string> = {};
 
- try {
- const { data: wmRows, error: wmErr } = await db
- .from("workspace_members")
- .select("store_id, role")
- .eq("profile_id", userId);
+  try {
+    const { data: wmRows, error: wmErr } = await db
+      .from("workspace_members")
+      .select("store_id, role")
+      .or(`profile_id.eq.${userId},user_id.eq.${userId}`);
 
- if (wmErr) {
- console.warn("[stores] Erro ao buscar workspace_members em getMyStoresList:", wmErr.message);
- }
+    if (wmErr) {
+      console.warn("[stores] Erro ao buscar workspace_members em getMyStoresList:", wmErr.message);
+    }
 
- (wmRows || []).forEach((m: any) => {
- if (m.store_id) {
- storeIdsSet.add(m.store_id);
- roleByStoreId[m.store_id] = m.role || "owner";
- }
- });
- } catch (memErr) {
- console.warn("[stores] Erro ao buscar memberships em getMyStoresList:", memErr);
- }
+    (wmRows || []).forEach((m: any) => {
+      if (m.store_id) {
+        storeIdsSet.add(m.store_id);
+        roleByStoreId[m.store_id] = m.role || "owner";
+      }
+    });
+  } catch (memErr) {
+    console.warn("[stores] Erro ao buscar memberships em getMyStoresList:", memErr);
+  }
 
- // Também inclui qualquer store_id presente nos memberships resolvidos pela identity
- (identity.memberships || []).forEach((m: any) => {
- if (m.store_id) {
- storeIdsSet.add(m.store_id);
- if (!roleByStoreId[m.store_id]) {
- roleByStoreId[m.store_id] = m.role || "owner";
- }
- }
- });
+  // Também inclui lojas criadas pelo perfil via context_profile_id
+  try {
+    const { data: directStores } = await db
+      .from("stores")
+      .select("id")
+      .eq("context_profile_id", userId);
 
+    (directStores || []).forEach((st: any) => {
+      if (st.id) {
+        storeIdsSet.add(st.id);
+        if (!roleByStoreId[st.id]) {
+          roleByStoreId[st.id] = "owner";
+        }
+      }
+    });
+  } catch (directErr) {
+    console.warn("[stores] Erro ao buscar context_profile_id em getMyStoresList:", directErr);
+  }
+
+  // Também inclui qualquer store_id presente nos memberships resolvidos pela identity
+  (identity.memberships || []).forEach((m: any) => {
+    if (m.store_id) {
+      storeIdsSet.add(m.store_id);
+      if (!roleByStoreId[m.store_id]) {
+        roleByStoreId[m.store_id] = m.role || "owner";
+      }
+    }
+  });
  // 3. Montar query de lojas
  let query = db
  .from("stores")

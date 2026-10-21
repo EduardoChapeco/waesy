@@ -455,7 +455,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
         // 1. Sincroniza cookies canônicos no cliente
         if (resolvedStoreId) {
           setClientContextCookies({ context: "store", storeId: resolvedStoreId });
-          await setTenantContext({ data: { store_id: resolvedStoreId } }).catch(() => null);
+          await setTenantContext({ data: { store_id: resolvedStoreId } });
         }
 
         // 2. Redirecionamento determinístico garantindo o tenant ativo

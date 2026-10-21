@@ -1,5 +1,22 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-297: Onboarding Atômico de Negócios, Zero Lojas Zumbis e Resiliência Bidirecional de Lojas (Eliminação de Rotas Fantasma e Saneamento de Design Tokens)
+- **Data:** 2026-10-21
+- **Contexto:** Auditoria de integridade da Microfase 2 (Onboarding, Criação de Lojas e Resolução de Tenant):
+  1. Vulnerabilidade de Lojas Zumbis: provisionBusiness e fastRegisterCompany inseriam registros na tabela stores sem vincular context_profile_id: userId e, ao falhar a inserção do membership de proprietário em workspace_members, engoliam a exceção com console.warn em vez de reverter as tabelas criadas, permitindo lojas órfãs sem proprietário no banco.
+  2. Rota Quebrada de Vitrine Pública: Os cards de loja em _store.conta.lojas.tsx e workspace.lojas.index.tsx apontavam o botão "Ver Vitrine Pública" para a rota inexistente /destaques/${st.slug}, em vez da rota canônica pública /loja/${st.slug}.
+  3. Mascaramento de Erro ao Ativar Tenant: Em _store.criar-negocio.tsx e fast-company-onboarding.tsx, a chamada pós-criação de setTenantContext operava com .catch(() => null).
+  4. Amnésia em getMyStoresList: A listagem de lojas só consultava workspace_members.profile_id, ignorando registros onde apenas user_id estivesse preenchido ou lojas criadas diretamente pelo perfil via context_profile_id.
+  5. Débito Visual e Tokens Arbitrários: Cards de loja utilizavam transition-all (DL-27), classes arbitrárias text-[10px] e text-[11px] (DL-02), alvos de toque móveis inferiores a 44px (DL-14) e min-w-[44px].
+- **Decisão:**
+  1. **Rollback Transacional & Vínculo Atômico em provisionBusiness e fastRegisterCompany:** Persistência obrigatória de context_profile_id: userId e is_active: true no payload de stores. Se o upsert em workspace_members como owner falhar, é executada exclusão imediata (rollback) em stores e organizations, lançando erro explícito para impedir lojas zumbis.
+  2. **Resiliência Máxima em getMyStoresList:** Coleta unificada de lojas por workspace_members (buscando por profile_id ou user_id) e por stores.context_profile_id, garantindo descoberta determinística de 100% dos negócios do usuário.
+  3. **Rotas Públicas Canônicas:** Redirecionamento de links de vitrine pública para /loja/${st.slug} em todos os cards de loja do cliente e do workspace.
+  4. **Erradicação de .catch(() => null):** Tratamento explícito de exceções no provisionamento e ativação de tenant na UI.
+  5. **Saneamento Estrito de Design Tokens (DL-02, DL-14, DL-27):** Substituição de transition-all por transition-colors, tokens text-2xs e text-xs, alvos de toque no piso >= 44px (h-11 min-h-11 sm:h-9 e size-11 sm:size-9) e min-w-11.
+- **Fundamentação:** AGENTS.md B.1 a B.12, B.8, B.22, B.26; Invariantes Anti-Fake e Zero-Trust; WCAG 2.2 AA.
+- **Consequências:** Zero lojas zumbis no banco de dados, descoberta 100% confiável de lojas do usuário, links de vitrine pública plenamente funcionais e conformidade total com o Design System.
+
 ## DEC-295: Auditoria Forense, Refatoração Sistêmica e Hardening do Template Engine, Niche Engine, Live Preview Bidirecional e Paridade Pública
 - **Data:** 2026-10-21
 - **Contexto:** Auditoria forense ponta a ponta (UI -> State -> Contract -> BFF -> Service -> DB -> Public Renderer) dos motores de templates, nichos, mockup/preview Desktop/Mobile e superfície pública:
@@ -4418,3 +4435,16 @@
   3. Criação dos componentes `BookingDossierModal` e `ManualAppointmentModal`, integrando a experiência completa tanto para o cliente em `_store.conta.agendamentos.tsx` quanto para o prestador em `workspace.agenda.index.tsx`.
   4. Implementação de suíte de testes automatizados `src/services/__tests__/booking-agenda-end-to-end.test.ts` cobrindo 100% dos requisitos em sintaxe EARS.
 - **Consequências**: Agenda consolidada como hub transacional canônico bidirecional, imutável contra deriva de catálogo, com fechamento de turno contra agendamentos esquecidos e suporte a remarcação atômica com liberação de slots.
+
+
+## DEC-296: Refatoração Completa do AI Writing Copilot — Superfície Editorial Bidirecional, Context Adapter de 16 Nichos, Fact Lock e Patch Seletivo Granular
+- **Data:** 2026-10-21
+- **ID da Decisão:** DEC-296
+- **Contexto:** A implementação anterior do Copilot em `_store.conta.classificados.novo.tsx` abria um popup `<Dialog>` central estreito (`max-w-3xl`) com 2 colunas espremidas (`md:grid-cols-2`) e áreas de leitura estáticas (`max-h-48 overflow-y-auto`), impossibilitando edição pré-aplicação, seleção de trecho, aplicação individual por campo e descartando silenciosamente `suggestedTags` ao aplicar.
+- **Decisão Adotada:**
+  1. Criada a engine canônica `src/lib/classifieds/ai-writing-copilot.ts` com `NICHE_COPILOT_ADAPTERS` para os 16 nichos, extração determinística de `LockedFacts`, validação numérica/factual (`validateCopilotOutputFacts`), sanitização contra superlativos inventados (`sanitizeSuggestedDraftAgainstFactLock`), substituição cirúrgica de trecho (`applySelectionReplacement`) e patch seletivo (`buildSelectivePatch`).
+  2. Criado `src/components/classifieds/ai-writing-copilot-sheet.tsx` reutilizando o primitivo `Sheet` (`side="right"` amplo no Desktop `>= 600px` e `side="bottom"` full-screen `h-dvh` no Mobile `< 600px`) com `WorkingDraft` editável, abas de variantes em linha única horizontal, histórico `Undo`/`Redo`, detecção de conflito e composer conversacional sticky.
+  3. Evoluída a Server Function `refineClassifiedWithAI` e `internalRefineClassifiedWithAI` em `src/services/classifieds.functions.ts` com verificação multi-tenant (`entityId`/`storeId`), delimitadores anti-injeção `<AD_FACTUAL_CONTEXT>` e validação pós-geração.
+  4. Documentados os 10 relatórios forenses em `docs/audits/AI_*` e validada a suíte `src/lib/classifieds/ai-writing-copilot.test.ts` (8/8 testes verdes).
+- **Fundamentação:** AGENTS.md B.1 a B.39, DESIGN.md, DESIGN-LINT.md (DL-01 a DL-30) e WCAG 2.2 AA.
+- **Consequências:** Zero truncamento editorial, aplicação seletiva real de título/descrição/síntese/tags, proteção determinística de números/fatos e paridade nativa Desktop e Mobile.

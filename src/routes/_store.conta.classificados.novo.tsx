@@ -7,6 +7,8 @@ import { StoryHighlightUploader, type StoryHighlight } from "@/components/classi
 import { ItineraryDayEditor, type ItineraryDay } from "@/components/classifieds/itinerary-day-editor";
 import { WeatherWidget } from "@/components/classifieds/weather-widget";
 import { EditorialShowcaseView } from "@/components/classifieds/editorial-showcase-view";
+import { AiWritingCopilotSheet } from "@/components/classifieds/ai-writing-copilot-sheet";
+import type { CopilotScope, CopilotWorkingDraft, EditorialFieldKey } from "@/lib/classifieds/ai-writing-copilot";
 import { UniversalClassifiedShowcase } from "@/components/classifieds/universal-classified-showcase";
 import { ConvenienceShowcaseView } from "@/components/classifieds/convenience-showcase-view";
 import {
@@ -1177,135 +1179,136 @@ function SpecializedClassifiedEditor({
  const [description, setDescription] = useState(
    initialData?.content || initialData?.description || ""
  );
-  const [isRefiningDescription, setIsRefiningDescription] = useState(false);
   const [copilotModalOpen, setCopilotModalOpen] = useState(false);
-  const [copilotSuggestions, setCopilotSuggestions] = useState<{
-    version1?: { title: string; description: string; badge: string };
-    version2?: { title: string; description: string; badge: string };
-    suggestedTags?: string[];
-  } | null>(null);
-  const [selectedCopilotVersion, setSelectedCopilotVersion] = useState<"version1" | "version2">("version1");
+  const [copilotInitialScope, setCopilotInitialScope] = useState<CopilotScope>("all_editorial_fields");
+  const [editorialTags, setEditorialTags] = useState<string[]>(() =>
+    Array.isArray(initialData?.attributes?.tags) ? initialData.attributes.tags : []
+  );
+  const [editorialSummary, setEditorialSummary] = useState<string>(() =>
+    typeof initialData?.attributes?.summary === "string"
+      ? initialData.attributes.summary
+      : Array.isArray(initialData?.attributes?.bio_bullets)
+        ? initialData.attributes.bio_bullets.join("\n")
+        : ""
+  );
 
   const buildCurrentNicheContext = () => {
     const ctx: Record<string, any> = {};
-    if (priceCents) ctx["preço"] = formatMoney(priceCents);
-    if (locationName) ctx["localização"] = locationName;
+    if (priceCents) ctx["price"] = formatMoney(priceCents);
+    if (locationName) ctx["location_name"] = locationName;
+    if (structuredLoc?.city) ctx["city"] = structuredLoc.city;
+    if (structuredLoc?.neighborhood) ctx["neighborhood"] = structuredLoc.neighborhood;
     if (niche.id === "veiculo") {
-      if (vehicleBrand) ctx["marca"] = vehicleBrand;
-      if (vehicleModel) ctx["modelo"] = vehicleModel;
-      if (vehicleVersion) ctx["versão"] = vehicleVersion;
-      if (vehicleYearModel) ctx["ano_modelo"] = vehicleYearModel;
-      if (vehicleYearFab) ctx["ano_fabricação"] = vehicleYearFab;
-      if (vehicleKm) ctx["quilometragem"] = `${vehicleKm} km`;
-      if (vehicleTransmission) ctx["câmbio"] = vehicleTransmission;
-      if (vehicleFuel) ctx["combustível"] = vehicleFuel;
-      if (vehicleColor) ctx["cor"] = vehicleColor;
-      if (vehicleFeatures?.length) ctx["opcionais"] = vehicleFeatures;
+      if (vehicleBrand) ctx["brand"] = vehicleBrand;
+      if (vehicleModel) ctx["model"] = vehicleModel;
+      if (vehicleVersion) ctx["version"] = vehicleVersion;
+      if (vehicleYearModel) ctx["year"] = vehicleYearModel;
+      if (vehicleYearFab) ctx["year_fab"] = vehicleYearFab;
+      if (vehicleKm) ctx["mileage"] = `${vehicleKm} km`;
+      if (vehicleTransmission) ctx["transmission"] = vehicleTransmission;
+      if (vehicleFuel) ctx["fuel"] = vehicleFuel;
+      if (vehicleColor) ctx["color"] = vehicleColor;
+      if (vehicleFeatures?.length) ctx["features"] = vehicleFeatures;
     } else if (niche.id === "imovel") {
-      ctx["tipo_negocio"] = reDealType === "aluguel" ? "Locação" : "Venda";
-      if (rePropertyType) ctx["tipo_imovel"] = rePropertyType;
-      if (reAreaSqm) ctx["área_útil"] = `${reAreaSqm} m²`;
-      if (reBedrooms) ctx["quartos"] = reBedrooms;
-      if (reSuites) ctx["suítes"] = reSuites;
-      if (reParking) ctx["vagas"] = reParking;
-      if (reCondoCents) ctx["condomínio"] = formatMoney(reCondoCents);
+      ctx["transaction_type"] = reDealType === "aluguel" ? "Locação" : "Venda";
+      if (rePropertyType) ctx["property_type"] = rePropertyType;
+      if (reAreaSqm) ctx["area_sqm"] = `${reAreaSqm}m²`;
+      if (reBedrooms) ctx["bedrooms"] = reBedrooms;
+      if (reSuites) ctx["suites"] = reSuites;
+      if (reParking) ctx["parking_spaces"] = reParking;
+      if (reCondoCents) ctx["condo_fee"] = formatMoney(reCondoCents);
       if (reIptuCents) ctx["iptu"] = formatMoney(reIptuCents);
-      if (reAmenities?.length) ctx["comodidades"] = reAmenities;
+      if (reAmenities?.length) ctx["amenities"] = reAmenities;
     } else if (niche.id === "viagem") {
-      if (travelDestinationCity) ctx["destino"] = travelDestinationCity;
-      if (travelDuration) ctx["duração"] = travelDuration;
-      if (travelMealPlan) ctx["regime"] = travelMealPlan;
-      if (travelGuests) ctx["capacidade_hóspedes"] = travelGuests;
-      if (travelTransportType) ctx["transporte"] = travelTransportType === "flight" ? "Aéreo" : travelTransportType === "bus" ? "Rodoviário" : travelTransportType;
-      if (travelDepartureCity) ctx["cidade_saída"] = travelDepartureCity;
-      if (travelStoryHighlights?.length) ctx["destaques"] = travelStoryHighlights.map((s) => s.title);
+      if (travelDestinationCity) ctx["destination"] = travelDestinationCity;
+      if (travelDuration) ctx["duration_days"] = travelDuration;
+      if (travelMealPlan) ctx["meal_plan"] = travelMealPlan;
+      if (travelGuests) ctx["guests"] = travelGuests;
+      if (travelTransportType) ctx["transport"] = travelTransportType === "flight" ? "Aéreo" : travelTransportType === "bus" ? "Rodoviário" : travelTransportType;
+      if (travelDepartureCity) ctx["departure_location"] = travelDepartureCity;
+      if (travelDepartureDate) ctx["departure_date"] = travelDepartureDate;
+      if (travelReturnDate) ctx["return_date"] = travelReturnDate;
+      if (travelStoryHighlights?.length) ctx["highlights"] = travelStoryHighlights.map((s) => s.title);
       if (travelItineraryDays?.length) {
-        ctx["roteiro_dias"] = travelItineraryDays.map((d) => `Dia ${d.day_number}: ${d.title}`).join("; ");
+        ctx["itinerary"] = travelItineraryDays.map((d) => `Dia ${d.day_number}: ${d.title}`).join("; ");
       }
     } else if (niche.id === "evento") {
-      if (eventDate) ctx["data_evento"] = eventDate;
-      if (eventStartTime) ctx["horario_inicio"] = eventStartTime;
-      if (eventVenueName) ctx["local_evento"] = eventVenueName;
-      if (eventSpeakers?.length) ctx["palestrantes"] = eventSpeakers.map((s) => s.name).join(", ");
-      if (eventTicketTiers?.length) ctx["lotes_ingressos"] = eventTicketTiers.map((t) => `${t.name}: ${formatMoney(t.price_cents)}`).join(", ");
+      if (eventDate) ctx["event_date"] = eventDate;
+      if (eventStartTime) ctx["start_time"] = eventStartTime;
+      if (eventVenueName) ctx["venue_name"] = eventVenueName;
+      if (eventSpeakers?.length) ctx["lineup"] = eventSpeakers.map((s) => s.name).join(", ");
+      if (eventTicketTiers?.length) ctx["ticket_tiers"] = eventTicketTiers.map((t) => `${t.name}: ${formatMoney(t.price_cents)}`).join(", ");
     } else if (niche.id === "hospedagem") {
-      if (hospPropertyType) ctx["tipo_espaço"] = hospPropertyType;
-      if (hospGuests) ctx["capacidade_hóspedes"] = hospGuests;
-      if (hospBedrooms) ctx["quartos"] = hospBedrooms;
+      if (hospPropertyType) ctx["property_type"] = hospPropertyType;
+      if (hospGuests) ctx["max_guests"] = hospGuests;
+      if (hospBedrooms) ctx["bedrooms"] = hospBedrooms;
       if (hospCheckinTime) ctx["check_in"] = hospCheckinTime;
       if (hospCheckoutTime) ctx["check_out"] = hospCheckoutTime;
-      if (hospCleaningFeeCents) ctx["taxa_limpeza"] = formatMoney(hospCleaningFeeCents);
-      if (hospAmenities?.length) ctx["comodidades"] = hospAmenities;
+      if (hospCleaningFeeCents) ctx["cleaning_fee"] = formatMoney(hospCleaningFeeCents);
+      if (hospAmenities?.length) ctx["amenities"] = hospAmenities;
     } else if (niche.id === "servico") {
-      if (serviceArea) ctx["área_atuação"] = serviceArea;
-      if (serviceModality) ctx["modalidade"] = serviceModality === "remoto" ? "Online / Remoto" : serviceModality === "domicilio" ? "A Domicílio" : "Presencial";
-      if (serviceDuration) ctx["duração_estimada"] = `${serviceDuration} minutos`;
-      if (serviceSpecialty) ctx["especialidade"] = serviceSpecialty;
-      if (serviceProfessionalCouncil) ctx["conselho_profissional"] = serviceProfessionalCouncil;
+      if (serviceArea) ctx["service_type"] = serviceArea;
+      if (serviceModality) ctx["attendance_mode"] = serviceModality === "remoto" ? "Online / Remoto" : serviceModality === "domicilio" ? "A Domicílio" : "Presencial";
+      if (serviceDuration) ctx["duration"] = `${serviceDuration} minutos`;
+      if (serviceSpecialty) ctx["specialty"] = serviceSpecialty;
+      if (serviceProfessionalCouncil) ctx["council"] = serviceProfessionalCouncil;
     } else if (niche.id === "vaga") {
-      if (jobRole) ctx["cargo"] = jobRole;
-      if (jobMinEducation) ctx["escolaridade"] = jobMinEducation;
-      if (jobExperienceLevel) ctx["experiência"] = jobExperienceLevel;
-      if (jobModel) ctx["modelo_trabalho"] = jobModel;
-      if (jobRegime) ctx["regime_contratação"] = jobRegime;
-      if (jobSalaryRange) ctx["salário"] = jobSalaryRange;
+      if (jobRole) ctx["job_role"] = jobRole;
+      if (jobMinEducation) ctx["education"] = jobMinEducation;
+      if (jobExperienceLevel) ctx["seniority"] = jobExperienceLevel;
+      if (jobModel) ctx["work_model"] = jobModel;
+      if (jobRegime) ctx["contract_type"] = jobRegime;
+      if (jobSalaryRange) ctx["salary_range"] = jobSalaryRange;
     } else if (niche.id === "desapego") {
-      if (itemCondition) ctx["condição"] = itemCondition;
-      if (phoneBrand) ctx["marca_aparelho"] = phoneBrand;
-      if (phoneModel) ctx["modelo_aparelho"] = phoneModel;
+      if (itemCondition) ctx["condition"] = itemCondition;
+      if (phoneBrand) ctx["brand"] = phoneBrand;
+      if (phoneModel) ctx["model"] = phoneModel;
+      if (itemWarranty) ctx["warranty"] = itemWarranty;
+    } else if (niche.id === "mercado" || niche.id === "gastronomia") {
+      if (convenienceBrand) ctx["brand"] = convenienceBrand;
+      if (convenienceVolume) ctx["portion_size"] = convenienceVolume;
+      if (convenienceTemp && convenienceTemp !== "none") ctx["beverage_temperature"] = convenienceTemp;
+      if (deliveryEstimateText) ctx["delivery_estimate"] = deliveryEstimateText;
+    } else if (niche.id === "assinatura") {
+      if (billingCycle) ctx["billing_cycle"] = billingCycle;
+      if (recurringFeatures?.length) ctx["included_items"] = recurringFeatures;
     }
     return ctx;
   };
 
-  const handleRefineDescriptionWithAI = async () => {
-    if (!title.trim() && !description.trim()) {
-      toast.error("Preencha ao menos o título ou um resumo da descrição para o Copilot refinar.");
-      return;
-    }
-    setIsRefiningDescription(true);
-    toast.loading("Copilot analisando especificações e formulando opções...", { id: "copilot-refine" });
-    try {
-      const res = await refineClassifiedWithAI({
-        data: {
-          title: title.trim(),
-          description: description.trim(),
-          niche: niche.id,
-          attributes: buildCurrentNicheContext(),
-        },
-      });
-      if (res.success && (res.version1 || res.version2)) {
-        setCopilotSuggestions({
-          version1: res.version1,
-          version2: res.version2,
-          suggestedTags: res.suggestedTags,
-        });
-        setSelectedCopilotVersion("version1");
-        setCopilotModalOpen(true);
-        toast.success("Opções de anúncio geradas com sucesso!", { id: "copilot-refine" });
-      } else if (res.success && res.title) {
-        setTitle(res.title);
-        if (res.description) setDescription(res.description);
-        toast.success("Título e descrição aprimorados com sucesso!", { id: "copilot-refine" });
-      } else {
-        toast.error(res.message || "Não foi possível aprimorar no momento.", { id: "copilot-refine" });
-      }
-    } catch (err: any) {
-      toast.error(err?.message || "Erro ao conectar com o Copilot.", { id: "copilot-refine" });
-    } finally {
-      setIsRefiningDescription(false);
-    }
+  const handleOpenCopilot = (targetScope: CopilotScope = "all_editorial_fields") => {
+    setCopilotInitialScope(targetScope);
+    setCopilotModalOpen(true);
   };
 
-  const handleApplyCopilotVersion = (versionKey: "version1" | "version2") => {
-    const chosen = copilotSuggestions?.[versionKey];
-    if (chosen) {
-      if (chosen.title) setTitle(chosen.title);
-      if (chosen.description) setDescription(chosen.description);
-      setCopilotModalOpen(false);
-      toast.success(`${chosen.badge} aplicada com sucesso ao anúncio!`);
+  const handleApplyCopilotDraft = (
+    patched: CopilotWorkingDraft,
+    appliedFields: EditorialFieldKey[]
+  ) => {
+    if (appliedFields.includes("title") && patched.title.trim()) {
+      setTitle(patched.title.trim());
     }
+    if (appliedFields.includes("description") && patched.description.trim()) {
+      setDescription(patched.description.trim());
+    }
+    if (appliedFields.includes("summary")) {
+      setEditorialSummary(patched.summary.trim());
+      if (niche.id === "viagem" && patched.summary.trim()) {
+        const bullets = patched.summary
+          .split(/\r?\n/)
+          .map((line) => line.replace(/^[•\-*]\s*/, "").trim())
+          .filter(Boolean);
+        if (bullets.length > 0) {
+          setTravelBioBullets(bullets);
+        }
+      }
+    }
+    if (appliedFields.includes("tags")) {
+      setEditorialTags(patched.tags);
+    }
+    toast.success("Alterações do Copilot aplicadas ao anúncio.");
   };
- const [aiInstructions, setAiInstructions] = useState("");
+const [aiInstructions, setAiInstructions] = useState("");
  const [aiAgentEnabled, setAiAgentEnabled] = useState<boolean>(
    initialData?.ai_agent_enabled ?? false
  );
@@ -2344,6 +2347,34 @@ function SpecializedClassifiedEditor({
   const [eventHostRole, setEventHostRole] = useState<string>(
     initialData?.attributes?.host_role || "Organizador Principal"
   );
+  const [eventHostEntityType, setEventHostEntityType] = useState<"ORGANIZATION" | "PERSON">(
+    initialData?.attributes?.host_entity_type === "PERSON" ? "PERSON" : "ORGANIZATION"
+  );
+  const [eventTimezone, setEventTimezone] = useState<string>(
+    initialData?.attributes?.timezone || "America/Sao_Paulo"
+  );
+  const [eventOrganizers, setEventOrganizers] = useState<
+    Array<{
+      id: string;
+      name: string;
+      role: "ORGANIZER" | "CO_ORGANIZER" | "REALIZER" | "SUPPORTER";
+      entity_type: "ORGANIZATION" | "PERSON";
+      avatar_url?: string;
+    }>
+  >(Array.isArray(initialData?.attributes?.organizers) ? initialData.attributes.organizers : []);
+  const [eventAccessPoints, setEventAccessPoints] = useState<
+    Array<{
+      id: string;
+      label: string;
+      type: "main_venue" | "accreditation" | "parking" | "vip_entrance" | "pcd_access" | "other";
+      address?: string;
+      instructions?: string;
+    }>
+  >(
+    Array.isArray(initialData?.attributes?.access_points)
+      ? initialData.attributes.access_points
+      : []
+  );
   const [eventPwaEnabled, setEventPwaEnabled] = useState<boolean>(
     initialData?.attributes?.pwa_enabled ?? false
   );
@@ -2808,6 +2839,8 @@ function SpecializedClassifiedEditor({
         max_installments: acceptsCard ? Number(maxInstallments) || 1 : (acceptsCarne ? Number(maxCarneInstallments) || 1 : (acceptsBoletoInstallments ? Number(maxBoletoInstallments) || 1 : 1)),
         free_shipping_local: niche.id === "desapego" ? freeShippingLocal : false,
         template_style: templateStyle,
+        tags: editorialTags.length > 0 ? editorialTags : undefined,
+        summary: editorialSummary.trim() || undefined,
         display_mode: displayMode,
         inquiry_config: {
           enabled: civilInquiryEnabled,
@@ -2913,6 +2946,7 @@ function SpecializedClassifiedEditor({
         attributes.is_donation = true;
       } else if (niche.id === "evento") {
         attributes.niche = "evento";
+        attributes.timezone = eventTimezone || "America/Sao_Paulo";
         attributes.event_date = eventDate;
         attributes.end_date = eventEndDate || undefined;
         attributes.start_time = eventStartTime;
@@ -2926,6 +2960,7 @@ function SpecializedClassifiedEditor({
         attributes.visibility = eventVisibility;
         attributes.video_url = eventVideoUrl || undefined;
         attributes.banner_image_url = eventBannerUrl || undefined;
+        attributes.gallery_images = images;
         attributes.story_url = eventStoryUrl.trim() || undefined;
         attributes.story_auto_open = eventStoryAutoOpen;
         attributes.pwa_enabled = eventPwaEnabled;
@@ -2933,9 +2968,34 @@ function SpecializedClassifiedEditor({
         attributes.host_avatar_url = eventHostAvatarUrl.trim() || undefined;
         attributes.host_phone = eventHostPhone.trim() || whatsapp.trim() || undefined;
         attributes.host_role = eventHostRole.trim() || undefined;
-        attributes.ticket_tiers = eventTicketTiers;
-        attributes.schedule = eventSchedule;
-        attributes.speakers = eventSpeakers;
+        attributes.host_entity_type = eventHostEntityType;
+        attributes.organizers = eventOrganizers;
+        attributes.access_points = eventAccessPoints;
+        attributes.ticket_tiers = eventTicketTiers.map((t: any) => {
+          const resolvedCents =
+            typeof t.price_cents === "number" && (t.price_cents > 0 || !t.price)
+              ? t.price_cents
+              : Math.round((Number(t.price) || 0) * 100);
+          return {
+            ...t,
+            price_cents: resolvedCents,
+            price: resolvedCents / 100,
+            external_url: t.purchase_url || t.external_url || undefined,
+            purchase_url: t.purchase_url || t.external_url || undefined,
+          };
+        });
+        attributes.schedule = eventSchedule.map((item: any) => ({
+          ...item,
+          stage_or_room: item.stage || item.stage_or_room || undefined,
+          stage: item.stage || item.stage_or_room || undefined,
+        }));
+        attributes.speakers = eventSpeakers.map((sp: any) => ({
+          ...sp,
+          photo_url: sp.avatar_url || sp.photo_url || undefined,
+          avatar_url: sp.avatar_url || sp.photo_url || undefined,
+          social_link: sp.social_url || sp.social_link || undefined,
+          social_url: sp.social_url || sp.social_link || undefined,
+        }));
         attributes.sponsors = eventSponsors;
         attributes.surveys = eventSurveys;
         attributes.policies = {
@@ -3622,6 +3682,11 @@ function SpecializedClassifiedEditor({
         host_avatar_url: eventHostAvatarUrl,
         host_phone: eventHostPhone,
         host_role: eventHostRole,
+        host_entity_type: eventHostEntityType,
+        timezone: eventTimezone,
+        organizers: eventOrganizers,
+        access_points: eventAccessPoints,
+        gallery_images: images,
         pwa_enabled: eventPwaEnabled,
         inquiry_config: {
           enabled: civilInquiryEnabled,
@@ -4392,7 +4457,19 @@ function SpecializedClassifiedEditor({
               </div>
 
             <div className="space-y-2">
-              <Label className="text-xs text-foreground font-medium">Título do Anúncio *</Label>
+              <div className="flex items-center justify-between gap-2">
+                <Label className="text-xs text-foreground font-medium">Título do Anúncio *</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleOpenCopilot("title")}
+                  className="h-11 min-h-11 px-3 text-xs font-semibold text-primary hover:text-primary hover:bg-primary/10 gap-2 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <Sparkles className="size-4" />
+                  <span>Sugerir título</span>
+                </Button>
+              </div>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -4414,40 +4491,40 @@ function SpecializedClassifiedEditor({
             </div>
 
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <Label className="text-xs text-foreground font-medium">Descrição Completa *</Label>
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  disabled={isRefiningDescription}
-                  onClick={handleRefineDescriptionWithAI}
-                  className="h-11 min-h-11 px-3 text-xs font-semibold text-primary hover:text-primary hover:bg-primary/10 gap-1.5 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  onClick={() => handleOpenCopilot("all_editorial_fields")}
+                  className="h-11 min-h-11 px-3 text-xs font-semibold text-primary hover:text-primary hover:bg-primary/10 gap-2 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
-                  {isRefiningDescription ? (
-                    <>
-                      <Loader2 className="size-3.5 animate-spin" />
-                      <span>Copilot pensando...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Wand2 className="size-3.5" />
-                      <span>Refinar com Copilot</span>
-                    </>
-                  )}
+                  <Wand2 className="size-4" />
+                  <span>Refinar com Copilot</span>
                 </Button>
               </div>
               <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                rows={4}
+                rows={5}
                 placeholder={
                   niche.id === "hospedagem"
                     ? "Descreva a atmosfera do espaço, comodidades, localização, distâncias de pontos turísticos e regras de convivência..."
                     : "Descreva todos os detalhes, histórico, diferenciais e informações importantes..."
                 }
-                className="rounded-lg text-xs bg-background resize-none leading-relaxed"
+                className="rounded-lg text-xs bg-background resize-y leading-relaxed"
               />
+              {editorialTags.length > 0 && (
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <span className="text-xs font-medium text-muted-foreground">Tags ativas:</span>
+                  {editorialTags.map((t) => (
+                    <Badge key={t} variant="secondary" className="text-xs">
+                      #{t}
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Motor de Precificação Dinâmica & Avisos */}
@@ -6084,25 +6161,55 @@ function SpecializedClassifiedEditor({
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="event-host-avatar" className="text-xs font-medium text-foreground">
-                        Foto / Avatar do Anfitrião
-                      </Label>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <Label htmlFor="event-host-avatar" className="text-xs font-medium text-foreground">
+                          Logo da Entidade ou Foto do Anfitrião
+                        </Label>
+                        <div className="flex items-center gap-1 bg-muted p-1 rounded-md">
+                          <button
+                            type="button"
+                            onClick={() => setEventHostEntityType("ORGANIZATION")}
+                            className={`px-2 py-1 rounded text-xs font-semibold cursor-pointer ${
+                              eventHostEntityType === "ORGANIZATION"
+                                ? "bg-background text-foreground shadow-xs"
+                                : "text-muted-foreground"
+                            }`}
+                          >
+                            Logo (Retangular)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEventHostEntityType("PERSON")}
+                            className={`px-2 py-1 rounded text-xs font-semibold cursor-pointer ${
+                              eventHostEntityType === "PERSON"
+                                ? "bg-background text-foreground shadow-xs"
+                                : "text-muted-foreground"
+                            }`}
+                          >
+                            Pessoa (Circular)
+                          </button>
+                        </div>
+                      </div>
                       <MediaUploader
                         value={eventHostAvatarUrl ? [eventHostAvatarUrl] : []}
                         onChange={(urls) => setEventHostAvatarUrl(urls[0] || "")}
                         bucket="post-media"
                         folder="avatar"
                         maxFiles={1}
-                        aspect={1}
-                        cropShape="round"
+                        aspect={eventHostEntityType === "PERSON" ? 1 : 16 / 9}
+                        cropShape={eventHostEntityType === "PERSON" ? "round" : "rect"}
                         accept="image"
                         showExternalUrlOption={true}
-                        label="Foto do Anfitrião (Upload, Ctrl+V ou URL)"
+                        label={
+                          eventHostEntityType === "PERSON"
+                            ? "Foto do Anfitrião (Upload, Ctrl+V ou URL)"
+                            : "Logo da Organização / Entidade (Upload, Ctrl+V ou URL)"
+                        }
                       />
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-host-phone" className="text-xs font-medium text-foreground">
                         WhatsApp de Contato Direto
                       </Label>
@@ -6249,12 +6356,17 @@ function SpecializedClassifiedEditor({
                                 min="0"
                                 value={tier.price || ""}
                                 onChange={(e) => {
+                                  const parsed = parseFloat(e.target.value) || 0;
                                   const updated = [...eventTicketTiers];
-                                  updated[idx] = { ...updated[idx], price: parseFloat(e.target.value) || 0 };
+                                  updated[idx] = {
+                                    ...updated[idx],
+                                    price: parsed,
+                                    price_cents: Math.round(parsed * 100),
+                                  } as any;
                                   setEventTicketTiers(updated);
                                 }}
-                                placeholder="0.00"
-                                className="h-10 text-xs bg-background"
+                                placeholder="0.00 (0 = GRÁTIS)"
+                                className="h-11 text-xs bg-background"
                               />
                             </div>
                             <div className="space-y-1">
@@ -6267,13 +6379,13 @@ function SpecializedClassifiedEditor({
                                   setEventTicketTiers(updated);
                                 }}
                               >
-                                <SelectTrigger className="h-10 text-xs bg-background">
+                                <SelectTrigger className="h-11 text-xs bg-background">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="available">Disponível</SelectItem>
                                   <SelectItem value="sold_out">Esgotado</SelectItem>
-                                  <SelectItem value="coming_soon">Em Breve</SelectItem>
+                                  <SelectItem value="coming_soon">Agendado / Em Breve</SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>
@@ -6282,27 +6394,35 @@ function SpecializedClassifiedEditor({
                             <div className="space-y-1">
                               <Label className="text-xs text-muted-foreground">Link de Compra Externa (Opcional)</Label>
                               <Input
-                                value={tier.purchase_url || ""}
+                                value={tier.purchase_url || (tier as any).external_url || ""}
                                 onChange={(e) => {
                                   const updated = [...eventTicketTiers];
-                                  updated[idx] = { ...updated[idx], purchase_url: e.target.value };
+                                  updated[idx] = {
+                                    ...updated[idx],
+                                    purchase_url: e.target.value,
+                                    external_url: e.target.value,
+                                  } as any;
                                   setEventTicketTiers(updated);
                                 }}
                                 placeholder="https://sympla.com.br/... ou https://..."
-                                className="h-10 text-xs bg-background"
+                                className="h-11 text-xs bg-background"
                               />
                             </div>
                             <div className="space-y-1">
-                              <Label className="text-xs text-muted-foreground">Benefícios / Descrição</Label>
+                              <Label className="text-xs text-muted-foreground">Regra de Elegibilidade / Benefícios</Label>
                               <Input
                                 value={tier.description || ""}
                                 onChange={(e) => {
                                   const updated = [...eventTicketTiers];
-                                  updated[idx] = { ...updated[idx], description: e.target.value };
+                                  updated[idx] = {
+                                    ...updated[idx],
+                                    description: e.target.value,
+                                    eligibility_rule: e.target.value,
+                                  } as any;
                                   setEventTicketTiers(updated);
                                 }}
-                                placeholder="Ex: Acesso total + kit de boas-vindas"
-                                className="h-10 text-xs bg-background"
+                                placeholder="Ex: Exclusivo para associados ACIC / Acesso total"
+                                className="h-11 text-xs bg-background"
                               />
                             </div>
                           </div>
@@ -6397,45 +6517,62 @@ function SpecializedClassifiedEditor({
                             <div className="space-y-1 sm:col-span-1">
                               <Label className="text-xs text-muted-foreground">Palco / Sala</Label>
                               <Input
-                                value={item.stage || ""}
+                                value={item.stage || (item as any).stage_or_room || ""}
                                 onChange={(e) => {
                                   const updated = [...eventSchedule];
-                                  updated[idx] = { ...updated[idx], stage: e.target.value };
+                                  updated[idx] = {
+                                    ...updated[idx],
+                                    stage: e.target.value,
+                                    stage_or_room: e.target.value,
+                                  } as any;
                                   setEventSchedule(updated);
                                 }}
                                 placeholder="Ex: Auditório Principal"
-                                className="h-10 text-xs bg-background"
+                                className="h-11 text-xs bg-background"
                               />
                             </div>
                           </div>
-                          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-                            <div className="flex-1 w-full space-y-1">
-                              <Label className="text-xs text-muted-foreground">Palestrante / Descrição</Label>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                              <Label className="text-xs text-muted-foreground">Palestrante Vinculado (Opcional)</Label>
                               <Input
-                                value={item.speaker_name || item.description || ""}
+                                value={item.speaker_name || ""}
                                 onChange={(e) => {
                                   const updated = [...eventSchedule];
-                                  updated[idx] = { ...updated[idx], speaker_name: e.target.value, description: e.target.value };
+                                  updated[idx] = { ...updated[idx], speaker_name: e.target.value };
                                   setEventSchedule(updated);
                                 }}
-                                placeholder="Ex: Palestrante: Ana Silva | Tema: Inovação e Inteligência Artificial"
-                                className="h-10 text-xs bg-background"
+                                placeholder="Ex: Dra. Mariana Costa"
+                                className="h-11 text-xs bg-background"
                               />
                             </div>
-                            <div className="flex items-center gap-2 pt-4 sm:pt-0 shrink-0">
-                              <Switch
-                                id={`break-switch-${idx}`}
-                                checked={item.is_break || false}
-                                onCheckedChange={(val) => {
+                            <div className="space-y-1">
+                              <Label className="text-xs text-muted-foreground">Descrição da Atividade (Opcional)</Label>
+                              <Input
+                                value={item.description || ""}
+                                onChange={(e) => {
                                   const updated = [...eventSchedule];
-                                  updated[idx] = { ...updated[idx], is_break: val };
+                                  updated[idx] = { ...updated[idx], description: e.target.value };
                                   setEventSchedule(updated);
                                 }}
+                                placeholder="Ex: Painel sobre Inovação e Inteligência Artificial"
+                                className="h-11 text-xs bg-background"
                               />
-                              <Label htmlFor={`break-switch-${idx}`} className="text-xs text-muted-foreground cursor-pointer">
-                                Intervalo / Café
-                              </Label>
                             </div>
+                          </div>
+                          <div className="flex items-center justify-end gap-2">
+                            <Switch
+                              id={`break-switch-${idx}`}
+                              checked={item.is_break || false}
+                              onCheckedChange={(val) => {
+                                const updated = [...eventSchedule];
+                                updated[idx] = { ...updated[idx], is_break: val };
+                                setEventSchedule(updated);
+                              }}
+                            />
+                            <Label htmlFor={`break-switch-${idx}`} className="text-xs text-muted-foreground cursor-pointer">
+                              Intervalo / Café
+                            </Label>
                           </div>
                         </div>
                       ))}
@@ -6534,29 +6671,44 @@ function SpecializedClassifiedEditor({
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div className="space-y-1">
-                              <Label className="text-xs text-muted-foreground">URL da Foto (Avatar)</Label>
-                              <Input
-                                value={speaker.avatar_url || ""}
-                                onChange={(e) => {
+                              <Label className="text-xs text-muted-foreground">Foto do Palestrante (Upload, Ctrl+V ou URL)</Label>
+                              <MediaUploader
+                                value={speaker.avatar_url ? [speaker.avatar_url] : []}
+                                onChange={(urls) => {
+                                  const url = urls[0] || "";
                                   const updated = [...eventSpeakers];
-                                  updated[idx] = { ...updated[idx], avatar_url: e.target.value };
+                                  updated[idx] = {
+                                    ...updated[idx],
+                                    avatar_url: url,
+                                    photo_url: url,
+                                  } as any;
                                   setEventSpeakers(updated);
                                 }}
-                                placeholder="https://..."
-                                className="h-10 text-xs bg-background"
+                                bucket="post-media"
+                                folder="avatar"
+                                maxFiles={1}
+                                aspect={1}
+                                cropShape="rect"
+                                accept="image"
+                                showExternalUrlOption={true}
+                                label="Foto do Palestrante (Upload, Ctrl+V ou URL)"
                               />
                             </div>
                             <div className="space-y-1">
                               <Label className="text-xs text-muted-foreground">LinkedIn / Rede Social</Label>
                               <Input
-                                value={speaker.social_url || ""}
+                                value={speaker.social_url || (speaker as any).social_link || ""}
                                 onChange={(e) => {
                                   const updated = [...eventSpeakers];
-                                  updated[idx] = { ...updated[idx], social_url: e.target.value };
+                                  updated[idx] = {
+                                    ...updated[idx],
+                                    social_url: e.target.value,
+                                    social_link: e.target.value,
+                                  } as any;
                                   setEventSpeakers(updated);
                                 }}
                                 placeholder="https://linkedin.com/in/..."
-                                className="h-10 text-xs bg-background"
+                                className="h-11 text-xs bg-background"
                               />
                             </div>
                           </div>
@@ -6675,16 +6827,23 @@ function SpecializedClassifiedEditor({
                             </div>
                           </div>
                           <div className="space-y-1">
-                            <Label className="text-xs text-muted-foreground">URL da Logomarca</Label>
-                            <Input
-                              value={sponsor.logo_url || ""}
-                              onChange={(e) => {
-                                  const updated = [...eventSponsors];
-                                  updated[idx] = { ...updated[idx], logo_url: e.target.value };
-                                  setEventSponsors(updated);
+                            <Label className="text-xs text-muted-foreground">Logomarca (Upload, Ctrl+V ou URL)</Label>
+                            <MediaUploader
+                              value={sponsor.logo_url ? [sponsor.logo_url] : []}
+                              onChange={(urls) => {
+                                const url = urls[0] || "";
+                                const updated = [...eventSponsors];
+                                updated[idx] = { ...updated[idx], logo_url: url };
+                                setEventSponsors(updated);
                               }}
-                              placeholder="https://... (PNG ou SVG transparente)"
-                              className="h-10 text-xs bg-background"
+                              bucket="post-media"
+                              folder="sponsors"
+                              maxFiles={1}
+                              aspect={16 / 9}
+                              cropShape="rect"
+                              accept="image"
+                              showExternalUrlOption={true}
+                              label="Logomarca do Patrocinador (Upload, Ctrl+V ou URL)"
                             />
                           </div>
                         </div>
@@ -11417,148 +11576,25 @@ function SpecializedClassifiedEditor({
  </main>
  </div>
       )}
-      {/* Modal de Comparação e Escolha do Copilot */}
-      <Dialog open={copilotModalOpen} onOpenChange={setCopilotModalOpen}>
-        <DialogContent className="max-w-3xl rounded-lg bg-card border border-border/60 p-0 overflow-hidden shadow-2xl">
-          <DialogHeader className="p-4 sm:p-5 border-b border-border/40 bg-muted/20">
-            <div className="flex items-center gap-2">
-              <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                <Wand2 className="size-4" />
-              </div>
-              <div>
-                <DialogTitle className="text-sm sm:text-base font-bold text-foreground">
-                  Refinamento com Copilot
-                </DialogTitle>
-                <DialogDescription className="text-xs text-muted-foreground">
-                  O Copilot analisou as especificações do nicho e redigiu 2 abordagens de alta conversão. Escolha a que melhor se adapta à sua estratégia:
-                </DialogDescription>
-              </div>
-            </div>
-          </DialogHeader>
-
-          <div className="p-4 sm:p-5 space-y-4 max-h-[70vh] overflow-y-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Opção 1: Comercial & Direta */}
-              {copilotSuggestions?.version1 && (
-                <div
-                  onClick={() => setSelectedCopilotVersion("version1")}
-                  className={cn(
-                    "p-4 rounded-lg border text-left transition-colors cursor-pointer space-y-3",
-                    selectedCopilotVersion === "version1"
-                      ? "border-primary bg-primary/5 ring-2 ring-primary/30"
-                      : "border-border/60 bg-muted/10 hover:border-border hover:bg-muted/20"
-                  )}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <Badge variant="outline" className="text-xs font-bold text-primary border-primary/30 bg-primary/10">
-                      {copilotSuggestions.version1.badge || "Opção 1 · Comercial"}
-                    </Badge>
-                    <div className={cn(
-                      "size-5 rounded-full border flex items-center justify-center transition-colors",
-                      selectedCopilotVersion === "version1"
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border"
-                    )}>
-                      {selectedCopilotVersion === "version1" && <Check className="size-3 stroke-3" />}
-                    </div>
-                  </div>
-
-                  <div>
-                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Título Sugerido</span>
-                    <h4 className="text-sm font-bold text-foreground mt-0.5 leading-snug">
-                      {copilotSuggestions.version1.title}
-                    </h4>
-                  </div>
-
-                  <div>
-                    <span className="text-xs uppercase font-semibold text-muted-foreground block mb-1">Descrição Comercial</span>
-                    <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed whitespace-pre-line bg-background/60 p-3 rounded-md border border-border/40 max-h-48 overflow-y-auto">
-                      {copilotSuggestions.version1.description}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Opção 2: Storytelling & Detalhada */}
-              {copilotSuggestions?.version2 && (
-                <div
-                  onClick={() => setSelectedCopilotVersion("version2")}
-                  className={cn(
-                    "p-4 rounded-lg border text-left transition-colors cursor-pointer space-y-3",
-                    selectedCopilotVersion === "version2"
-                      ? "border-primary bg-primary/5 ring-2 ring-primary/30"
-                      : "border-border/60 bg-muted/10 hover:border-border hover:bg-muted/20"
-                  )}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <Badge variant="outline" className="text-xs font-bold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10">
-                      {copilotSuggestions.version2.badge || "Opção 2 · Storytelling"}
-                    </Badge>
-                    <div className={cn(
-                      "size-5 rounded-full border flex items-center justify-center transition-colors",
-                      selectedCopilotVersion === "version2"
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border"
-                    )}>
-                      {selectedCopilotVersion === "version2" && <Check className="size-3 stroke-3" />}
-                    </div>
-                  </div>
-
-                  <div>
-                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Título Sugerido</span>
-                    <h4 className="text-sm font-bold text-foreground mt-0.5 leading-snug">
-                      {copilotSuggestions.version2.title}
-                    </h4>
-                  </div>
-
-                  <div>
-                    <span className="text-xs uppercase font-semibold text-muted-foreground block mb-1">Descrição com Storytelling</span>
-                    <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed whitespace-pre-line bg-background/60 p-3 rounded-md border border-border/40 max-h-48 overflow-y-auto">
-                      {copilotSuggestions.version2.description}
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Tags Sugeridas */}
-            {copilotSuggestions?.suggestedTags && copilotSuggestions.suggestedTags.length > 0 && (
-              <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-1.5">
-                <span className="text-xs uppercase font-semibold text-muted-foreground block">
-                  Palavras-chave de Descoberta Sugeridas
-                </span>
-                <div className="flex flex-wrap gap-1.5">
-                  {copilotSuggestions.suggestedTags.map((tag, idx) => (
-                    <Badge key={idx} variant="secondary" className="text-xs font-mono">
-                      #{tag}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <DialogFooter className="p-4 sm:p-5 border-t border-border/40 bg-muted/10 flex items-center justify-between gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setCopilotModalOpen(false)}
-              className="h-11 px-4 text-xs font-semibold rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              Manter Texto Atual
-            </Button>
-
-            <Button
-              type="button"
-              onClick={() => handleApplyCopilotVersion(selectedCopilotVersion)}
-              className="h-11 px-6 text-xs font-bold rounded-lg bg-primary text-primary-foreground gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-98"
-            >
-              <Check className="size-4" />
-              <span>Aplicar {selectedCopilotVersion === "version1" ? "Opção 1 (Comercial)" : "Opção 2 (Storytelling)"}</span>
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Superfície Editorial Bidirecional do Copilot de Conteúdo */}
+      <AiWritingCopilotSheet
+        open={copilotModalOpen}
+        onOpenChange={setCopilotModalOpen}
+        initialScope={copilotInitialScope}
+        entityId={editId}
+        storeId={selectedStoreId && selectedStoreId !== "civil" ? selectedStoreId : undefined}
+        niche={niche.id}
+        categoryName={niche.title}
+        title={title}
+        description={description}
+        summary={editorialSummary}
+        tags={editorialTags}
+        price={priceCents ? formatMoney(priceCents) : undefined}
+        city={structuredLoc?.city}
+        neighborhood={structuredLoc?.neighborhood}
+        attributes={buildCurrentNicheContext()}
+        onApplyDraft={handleApplyCopilotDraft}
+      />
  </div>
  );
 }

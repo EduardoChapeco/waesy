@@ -634,42 +634,49 @@ export const provisionBusiness = createServerFn({ method: "POST" })
  },
  };
 
- // 3. Criar Loja com colunas canônicas seguras
- const storePayload: Record<string, any> = {
- organization_id: org.id,
- name: data.name,
- slug: orgSlug,
- cnpj: data.document || null,
- city: data.city || null,
- state: data.state || null,
- address: data.address || (data.street ? `${data.street}, ${data.number || "S/N"}` : null),
- phone: data.phone || null,
- email: data.email || null,
- logo_url: data.logoUrl || null,
- banner_url: data.bannerUrl || null,
- settings,
- };
+  // 3. Criar Loja com colunas canônicas seguras
+  const storePayload: Record<string, any> = {
+    organization_id: org.id,
+    name: data.name,
+    slug: orgSlug,
+    cnpj: data.document || null,
+    city: data.city || null,
+    state: data.state || null,
+    address: data.address || (data.street ? `${data.street}, ${data.number || "S/N"}` : null),
+    phone: data.phone || null,
+    email: data.email || null,
+    logo_url: data.logoUrl || null,
+    banner_url: data.bannerUrl || null,
+    settings,
+    context_profile_id: userId,
+    is_active: true,
+  };
 
- const { data: store, error: storeError } = await db
- .from("stores")
- .insert(storePayload)
- .select("id")
- .single();
- if (storeError) throw new Error("Erro ao criar loja: " + storeError.message);
+  const { data: store, error: storeError } = await db
+    .from("stores")
+    .insert(storePayload)
+    .select("id")
+    .single();
+  if (storeError) {
+    await db.from("organizations").delete().eq("id", org.id);
+    throw new Error("Erro ao criar loja: " + storeError.message);
+  }
 
- // 4. Vincular Usuário como Owner no workspace_members e store_members
- try {
- await db.from("workspace_members").upsert(
- {
- profile_id: userId,
- store_id: store.id,
- role: "owner",
- },
- { onConflict: "profile_id,store_id" }
- );
- } catch (memberError: any) {
- console.warn("[onboarding] Aviso ao vincular workspace_members:", memberError?.message);
- }
+  // 4. Vincular Usuário como Owner no workspace_members (com Rollback Atômico)
+  const { error: memberError } = await db.from("workspace_members").upsert(
+    {
+      profile_id: userId,
+      store_id: store.id,
+      role: "owner",
+      is_active: true,
+    },
+    { onConflict: "profile_id,store_id" }
+  );
+  if (memberError) {
+    await db.from("stores").delete().eq("id", store.id);
+    await db.from("organizations").delete().eq("id", org.id);
+    throw new Error("A loja não foi ativada porque o vínculo seguro do proprietário falhou: " + memberError.message);
+  }
 
  // 4.1 Atualizar o role do profile para owner
  try {

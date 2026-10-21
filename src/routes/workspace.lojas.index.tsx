@@ -160,7 +160,7 @@ export default function WorkspaceLojasPage() {
  />
  </div>
 
- <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto no-scrollbar">
+ <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto no-scrollbar tab-list" role="tablist">
  <Button
  variant={selectedType === "all" ? "default" : "outline"}
  size="sm"
@@ -212,7 +212,7 @@ export default function WorkspaceLojasPage() {
  return (
  <Card
  key={st.id}
- className={`rounded-lg shadow-xs border transition-all flex flex-col justify-between overflow-hidden bg-card group ${
+ className={`rounded-lg shadow-xs border transition-colors flex flex-col justify-between overflow-hidden bg-card group ${
  isCurrentActive
  ? "border-primary/60 ring-2 ring-primary/20"
  : "border-border hover:border-foreground/20 hover:shadow-xs"
@@ -352,10 +352,10 @@ export default function WorkspaceLojasPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-11 min-w-[44px] min-h-11 rounded-lg shrink-0"
+ className="size-11 min-w-11 min-h-11 rounded-lg shrink-0 cursor-pointer"
  title="Abrir Vitrine Pública da Loja"
  >
- <Link to={`/destaques/${st.slug}` as any} target="_blank">
+ <Link to={`/loja/${st.slug}` as any} target="_blank">
  <ExternalLink className="size-4 text-muted-foreground" />
  </Link>
  </Button>
