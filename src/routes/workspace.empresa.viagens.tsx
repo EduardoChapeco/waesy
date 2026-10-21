@@ -37,7 +37,13 @@ import {
   createTravelProject,
   saveTravelerProfile,
   saveCompanyTravelPolicy,
+  listTravelerDocuments,
+  saveTravelerDocument,
+  listCorporateMembers,
+  saveCorporateMember,
+  createApprovalRequest,
 } from "@/services/corporate-travel.functions";
+import type { TravelerDocumentDTO, CorporateTravelMemberDTO } from "@/types/corporate-travel";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
@@ -58,7 +64,7 @@ export const Route = createFileRoute("/workspace/empresa/viagens")({
   component: CompanyCorporateTravelPage,
 });
 
-type TabType = "aprovacoes" | "viagens" | "projetos" | "viajantes" | "politica" | "financeiro";
+type TabType = "aprovacoes" | "viagens" | "projetos" | "viajantes" | "membros" | "politica" | "financeiro";
 
 export default function CompanyCorporateTravelPage() {
   const { currentStore } = useWorkspaceStore();
@@ -142,7 +148,151 @@ export default function CompanyCorporateTravelPage() {
     enabled: Boolean(companyId && account),
   });
 
-  // 8. Créditos Aéreos da Empresa
+  // 7b. Membros da Conta Corporativa
+  const { data: members = [], refetch: refetchMembers, isLoading: isMembersLoading } = useQuery<CorporateTravelMemberDTO[]>({
+    queryKey: ["company-members", account?.id],
+    queryFn: () => (account?.id ? listCorporateMembers({ data: { accountId: account.id } }) : Promise.resolve([])),
+    enabled: Boolean(account?.id),
+  });
+
+  // Modal: Documentos do Viajante
+  const [selectedTravelerDocs, setSelectedTravelerDocs] = useState<any | null>(null);
+  const [travelerDocsOpen, setTravelerDocsOpen] = useState(false);
+  const [isSavingDoc, setIsSavingDoc] = useState(false);
+  const [docForm, setDocForm] = useState({
+    docType: "passport" as "passport" | "rg" | "cnh" | "visa" | "authorization" | "corporate_letter" | "vaccine" | "other",
+    title: "",
+    fileUrl: "",
+    docNumber: "",
+    issuingCountry: "BRA",
+    expiryDate: "",
+  });
+
+  const { data: travelerDocuments = [], refetch: refetchTravelerDocs, isLoading: isDocsLoading } = useQuery<TravelerDocumentDTO[]>({
+    queryKey: ["traveler-documents", selectedTravelerDocs?.id],
+    queryFn: () => (selectedTravelerDocs?.id ? listTravelerDocuments({ data: { travelerId: selectedTravelerDocs.id } }) : Promise.resolve([])),
+    enabled: Boolean(selectedTravelerDocs?.id && travelerDocsOpen),
+  });
+
+  const handleOpenTravelerDocs = (traveler: any) => {
+    setSelectedTravelerDocs(traveler);
+    setTravelerDocsOpen(true);
+  };
+
+  const handleSaveDocument = async () => {
+    if (!selectedTravelerDocs?.id || !docForm.title.trim() || !docForm.fileUrl.trim()) {
+      toast.error("Informe título e URL do documento.");
+      return;
+    }
+    setIsSavingDoc(true);
+    try {
+      await saveTravelerDocument({
+        data: {
+          travelerId: selectedTravelerDocs.id,
+          docType: docForm.docType,
+          title: docForm.title.trim(),
+          fileUrl: docForm.fileUrl.trim(),
+          docNumber: docForm.docNumber.trim() || null,
+          issuingCountry: docForm.issuingCountry || null,
+          expiryDate: docForm.expiryDate || null,
+        },
+      });
+      toast.success("Documento anexado com sucesso!");
+      setDocForm({
+        docType: "passport",
+        title: "",
+        fileUrl: "",
+        docNumber: "",
+        issuingCountry: "BRA",
+        expiryDate: "",
+      });
+      refetchTravelerDocs();
+    } catch (err: any) {
+      toast.error("Erro ao salvar documento: " + (err?.message || "falha na operação"));
+    } finally {
+      setIsSavingDoc(false);
+    }
+  };
+
+  // Modal: Cadastrar Membro Corporativo
+  const [createMemberOpen, setCreateMemberOpen] = useState(false);
+  const [isSubmittingMember, setIsSubmittingMember] = useState(false);
+  const [memberForm, setMemberForm] = useState({
+    profileId: "",
+    role: "TRAVELER" as "TRAVEL_ADMIN" | "TRAVEL_MANAGER" | "TRAVEL_BOOKER" | "TRAVELER" | "APPROVER",
+    department: "",
+    costCenter: "",
+  });
+
+  const handleSaveMember = async () => {
+    if (!account?.id || !memberForm.profileId.trim()) {
+      toast.error("Informe o ID de perfil do colaborador.");
+      return;
+    }
+    setIsSubmittingMember(true);
+    try {
+      await saveCorporateMember({
+        data: {
+          accountId: account.id,
+          profileId: memberForm.profileId.trim(),
+          role: memberForm.role,
+          department: memberForm.department.trim() || null,
+          costCenter: memberForm.costCenter.trim() || null,
+        },
+      });
+      toast.success("Membro vinculado à conta corporativa!");
+      setCreateMemberOpen(false);
+      setMemberForm({
+        profileId: "",
+        role: "TRAVELER",
+        department: "",
+        costCenter: "",
+      });
+      refetchMembers();
+    } catch (err: any) {
+      toast.error("Erro ao vincular membro: " + (err?.message || "falha na operação"));
+    } finally {
+      setIsSubmittingMember(false);
+    }
+  };
+
+  // Modal: Criar Solicitação de Viagem Rápida
+  const [createApprovalOpen, setCreateApprovalOpen] = useState(false);
+  const [isSubmittingApproval, setIsSubmittingApproval] = useState(false);
+  const [approvalRequestForm, setApprovalRequestForm] = useState({
+    justification: "",
+    totalAmount: 1200,
+    projectId: "",
+  });
+
+  const handleCreateApproval = async () => {
+    if (!companyId || !agencyId) {
+      toast.error("Vínculo corporativo ativo necessário.");
+      return;
+    }
+    setIsSubmittingApproval(true);
+    try {
+      await createApprovalRequest({
+        data: {
+          companyId,
+          agencyId,
+          projectId: approvalRequestForm.projectId || null,
+          totalAmountCents: Math.round(approvalRequestForm.totalAmount * 100),
+          justification: approvalRequestForm.justification.trim() || "Viagem corporativa de negócios",
+        },
+      });
+      toast.success("Solicitação de viagem criada para aprovação!");
+      setCreateApprovalOpen(false);
+      setApprovalRequestForm({ justification: "", totalAmount: 1200, projectId: "" });
+      refetchApprovals();
+    } catch (err: any) {
+      toast.error("Erro ao criar solicitação: " + (err?.message || "falha na operação"));
+    } finally {
+      setIsSubmittingApproval(false);
+    }
+  };
+
+    // 8. Créditos Aéreos da Empresa
   const { data: airCredits = [] } = useQuery<any[]>({
     queryKey: ["company-air-credits", companyId],
     queryFn: () => listCompanyAirCredits({ data: { companyId } }) as any,
@@ -447,7 +597,7 @@ export default function CompanyCorporateTravelPage() {
         </div>
 
         {/* Régua de Navegação Horizontal Contínua (B.39) */}
-        <div className="flex flex-nowrap items-center gap-2 overflow-x-auto no-scrollbar border-b border-border pb-2">
+        <div className="flex flex-nowrap items-center gap-2 overflow-x-auto no-scrollbar border-b border-border pb-2 tab-list" role="tablist">
           {[
             { id: "aprovacoes", label: `Aprovações (${pendingApprovals.length})`, icon: Clock },
             { id: "viagens", label: `Viagens (${trips.length})`, icon: Plane },

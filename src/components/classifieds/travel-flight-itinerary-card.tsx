@@ -13,6 +13,7 @@ import {
   Info,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { getAirportByIata } from "@/lib/data/airports-catalog";
 
 export interface FlightLegItem {
   from_iata: string;
@@ -88,7 +89,7 @@ const KNOWN_AIRPORT_NAMES: Record<string, { city: string; name: string }> = {
 
 function resolveAirportMeta(iata: string, fallbackCity?: string, fallbackName?: string) {
   const code = (iata || "").trim().toUpperCase();
-  const known = KNOWN_AIRPORT_NAMES[code];
+  const known = KNOWN_AIRPORT_NAMES[code] || getAirportByIata(code);
   return {
     code: code || "AER",
     city: fallbackCity || known?.city || code,

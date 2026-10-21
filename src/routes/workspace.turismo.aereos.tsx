@@ -84,7 +84,8 @@ export default function FlightsPage() {
     setOriginIata(clean);
     const airport = GLOBAL_AIRPORTS_CATALOG.find((a) => a.iata_code === clean);
     if (airport) {
-      setOriginCity(`${airport.city} (${airport.state_province})`);
+      const loc = airport.country_code === "BR" ? (airport.state_province || "BR") : airport.country;
+      setOriginCity(`${airport.city} (${loc})`);
     }
   };
 
@@ -93,7 +94,8 @@ export default function FlightsPage() {
     setDestinationIata(clean);
     const airport = GLOBAL_AIRPORTS_CATALOG.find((a) => a.iata_code === clean);
     if (airport) {
-      setDestinationCity(`${airport.city} (${airport.state_province})`);
+      const loc = airport.country_code === "BR" ? (airport.state_province || "BR") : airport.country;
+      setDestinationCity(`${airport.city} (${loc})`);
     }
   };
 

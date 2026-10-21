@@ -6,12 +6,15 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { GLOBAL_AIRPORTS_CATALOG, AirportRecord } from "@/lib/data/airports-catalog";
+import {
+  type AirportRecord,
+  searchAirportsCatalog,
+} from "@/lib/data/airports-catalog";
 
 const searchAirportsSchema = z.object({
   query: z.string().optional().default(""),
   country: z.string().optional(),
-  limit: z.number().optional().default(20),
+  limit: z.number().optional().default(30),
 });
 
 export const searchGlobalAirports = createServerFn({ method: "GET" })
@@ -36,7 +39,9 @@ export const searchGlobalAirports = createServerFn({ method: "GET" })
         if (cleanQuery.length <= 4) {
           dbQuery = dbQuery.or(`iata_code.ilike.%${cleanQuery}%,city.ilike.%${cleanQuery}%`);
         } else {
-          dbQuery = dbQuery.or(`city.ilike.%${cleanQuery}%,name.ilike.%${cleanQuery}%,state_province.ilike.%${cleanQuery}%`);
+          dbQuery = dbQuery.or(
+            `city.ilike.%${cleanQuery}%,name.ilike.%${cleanQuery}%,state_province.ilike.%${cleanQuery}%`
+          );
         }
       }
 
@@ -52,28 +57,11 @@ export const searchGlobalAirports = createServerFn({ method: "GET" })
       // Fallback gracioso in-memory
     }
 
-    // Fallback in-memory catalog
-    let filtered = GLOBAL_AIRPORTS_CATALOG;
-
-    if (country) {
-      filtered = filtered.filter((a) =>
-        a.country.toLowerCase().includes(country.toLowerCase())
-      );
-    }
-
-    if (cleanQuery) {
-      filtered = filtered.filter((a) => {
-        const iataMatch = a.iata_code.toLowerCase().includes(cleanQuery);
-        const icaoMatch = a.icao_code.toLowerCase().includes(cleanQuery);
-        const cityMatch = a.city.toLowerCase().includes(cleanQuery);
-        const nameMatch = a.name.toLowerCase().includes(cleanQuery);
-        const stateMatch = a.state_province?.toLowerCase().includes(cleanQuery);
-        return iataMatch || icaoMatch || cityMatch || nameMatch || stateMatch;
-      });
-    }
+    // Fallback unificado in-memory catalog
+    const results = searchAirportsCatalog(cleanQuery, { country, limit });
 
     return {
-      airports: filtered.slice(0, limit),
+      airports: results,
       source: "memory_catalog" as const,
     };
   });

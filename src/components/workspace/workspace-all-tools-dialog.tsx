@@ -1,10 +1,10 @@
-import { useState, useMemo } from "react";
+﻿import { useState, useMemo } from "react";
 import { Link, useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { CampaignDraftCard } from "@/components/adtech/campaign-draft-card";
 import { orchestrateCampaignIntent } from "@/services/mcp-orchestrator.functions";
 import type { DynamicRenderableBlock } from "@/types/ad-tech-mcp";
-import { Search, Briefcase, X, Package, Tags, Boxes, ClipboardList, ShoppingBag, Store, Truck, Users, Sliders, Calendar, MessageSquare, Flame, Newspaper, DollarSign, Ticket, BarChart3, Building2, ExternalLink, ShieldCheck, Zap, ArrowRight, Settings, HelpCircle, FileSpreadsheet, Globe, Coins, Scale, Receipt, Eye, Megaphone, Share2, Star, Bell, Plane, Bus, FileText, ChefHat, Armchair, UtensilsCrossed, CreditCard, Percent, Layers, Award, Target, CheckCircle2, Mic, MicOff, Send, Loader2, Heart, Trophy, Clock, Gift, RefreshCcw, AlertTriangle, ShoppingCart, Link2, Wrench } from "lucide-react";
+import { Search, Briefcase, X, Package, Tags, Boxes, ClipboardList, ShoppingBag, Store, Truck, Users, Sliders, Calendar, MessageSquare, Flame, Newspaper, DollarSign, Ticket, BarChart3, Building2, ExternalLink, ShieldCheck, Zap, ArrowRight, Settings, HelpCircle, FileSpreadsheet, Globe, Coins, Scale, Receipt, Eye, Megaphone, Share2, Star, Bell, Plane, Bus, FileText, ChefHat, Armchair, UtensilsCrossed, CreditCard, Percent, Layers, Award, Target, CheckCircle2, Mic, MicOff, Send, Loader2, Heart, Trophy, Clock, Gift, RefreshCcw, AlertTriangle, ShoppingCart, Link2, Wrench, Sparkles } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -303,6 +303,7 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
     description: "Cotações, estúdio de lâminas, contratos com assinatura digital, excursões e frota",
     tools: [
       { title: "Central de Cotações", path: "/workspace/turismo/cotacoes", icon: Plane },
+      { title: "Radar Comercial & Oportunidades", path: "/workspace/turismo/oportunidades", icon: Sparkles },
       { title: "Lâminas Studio", path: "/workspace/turismo/propostas", icon: FileSpreadsheet },
       { title: "Pacotes e Roteiros", path: "/workspace/turismo/viagens", icon: Plane },
       { title: "Embarques & Check-in", path: "/workspace/turismo/embarques", icon: Bus },
@@ -772,3 +773,5 @@ export function WorkspaceAllToolsDialog({
  </Dialog>
  );
 }
+
+

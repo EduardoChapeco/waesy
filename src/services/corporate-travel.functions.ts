@@ -1049,3 +1049,371 @@ export const listCompanyAirCredits = createServerFn({ method: "GET" })
     }));
   });
 
+
+
+// ─── 11. Contratos Corporativos (corporate_contracts - Cluster 1) ─────────────
+
+export const listCorporateContracts = createServerFn({ method: "GET" })
+  .validator(z.object({ companyId: z.string().uuid().optional(), agencyId: z.string().uuid().optional() }))
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    let q = supabase.from("corporate_contracts").select("*").order("created_at", { ascending: false });
+    if (data.companyId) q = q.eq("company_id", data.companyId);
+    if (data.agencyId) q = q.eq("agency_id", data.agencyId);
+    const { data: rows, error } = await q.limit(50);
+    if (error) {
+      console.warn("[listCorporateContracts] Falha ao listar contratos:", error.message);
+      return [];
+    }
+    return rows || [];
+  });
+
+export const saveCorporateContract = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string().uuid().optional(),
+      companyId: z.string().uuid(),
+      agencyId: z.string().uuid(),
+      contractNumber: z.string().min(1),
+      title: z.string().min(1),
+      status: z.enum(["draft", "active", "suspended", "expired", "terminated"]).default("active"),
+      billingTermsDays: z.number().int().min(0).default(30),
+      agencyFeePercent: z.number().min(0).default(0),
+      slaNotes: z.string().optional().nullable(),
+      startsAt: z.string().optional(),
+      endsAt: z.string().optional().nullable(),
+      documentUrl: z.string().optional().nullable(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const payload = {
+      company_id: data.companyId,
+      agency_id: data.agencyId,
+      contract_number: data.contractNumber,
+      title: data.title,
+      status: data.status,
+      billing_terms_days: data.billingTermsDays,
+      agency_fee_percent: data.agencyFeePercent,
+      sla_notes: data.slaNotes,
+      starts_at: data.startsAt || new Date().toISOString(),
+      ends_at: data.endsAt,
+      document_url: data.documentUrl,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (data.id) {
+      const { data: updated, error } = await supabase
+        .from("corporate_contracts")
+        .update(payload)
+        .eq("id", data.id)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao atualizar contrato: " + error.message);
+      return updated;
+    } else {
+      const { data: inserted, error } = await supabase
+        .from("corporate_contracts")
+        .insert(payload)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao criar contrato: " + error.message);
+      return inserted;
+    }
+  });
+
+// ─── 12. Linhas de Crédito Rotativo B2B (corporate_credit_lines - Cluster 1) ──
+
+export const getCorporateCreditLine = createServerFn({ method: "GET" })
+  .validator(z.object({ companyId: z.string().uuid(), agencyId: z.string().uuid().optional() }))
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    let q = supabase.from("corporate_credit_lines").select("*").eq("company_id", data.companyId);
+    if (data.agencyId) q = q.eq("agency_id", data.agencyId);
+    const { data: row, error } = await q.maybeSingle();
+    if (error) {
+      console.warn("[getCorporateCreditLine] Erro:", error.message);
+      return null;
+    }
+    return row;
+  });
+
+export const saveCorporateCreditLine = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string().uuid().optional(),
+      companyId: z.string().uuid(),
+      agencyId: z.string().uuid(),
+      creditLimitCents: z.number().int().min(0),
+      availableLimitCents: z.number().int().min(0),
+      reservedLimitCents: z.number().int().min(0).default(0),
+      paymentTermsDays: z.enum(["15", "30", "45", "60", "90"]).transform(Number),
+      billingCycle: z.enum(["weekly", "biweekly", "monthly"]).default("monthly"),
+      status: z.enum(["active", "suspended", "under_review"]).default("active"),
+      notes: z.string().optional().nullable(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const payload = {
+      company_id: data.companyId,
+      agency_id: data.agencyId,
+      credit_limit_cents: data.creditLimitCents,
+      available_limit_cents: data.availableLimitCents,
+      reserved_limit_cents: data.reservedLimitCents,
+      payment_terms_days: data.paymentTermsDays,
+      billing_cycle: data.billingCycle,
+      status: data.status,
+      notes: data.notes,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (data.id) {
+      const { data: updated, error } = await supabase
+        .from("corporate_credit_lines")
+        .update(payload)
+        .eq("id", data.id)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao atualizar linha de crédito: " + error.message);
+      return updated;
+    } else {
+      const { data: inserted, error } = await supabase
+        .from("corporate_credit_lines")
+        .insert(payload)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao criar linha de crédito: " + error.message);
+      return inserted;
+    }
+  });
+
+// ─── 13. Orçamentos por Centro de Custo (corporate_travel_budgets - Cluster 1) 
+
+export const listCorporateTravelBudgets = createServerFn({ method: "GET" })
+  .validator(z.object({ companyId: z.string().uuid(), fiscalYear: z.number().int().optional() }))
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    let q = supabase.from("corporate_travel_budgets").select("*").eq("company_id", data.companyId);
+    if (data.fiscalYear) q = q.eq("fiscal_year", data.fiscalYear);
+    const { data: rows, error } = await q.order("fiscal_year", { ascending: false });
+    if (error) {
+      console.warn("[listCorporateTravelBudgets] Erro:", error.message);
+      return [];
+    }
+    return rows || [];
+  });
+
+export const saveCorporateTravelBudget = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string().uuid().optional(),
+      companyId: z.string().uuid(),
+      fiscalYear: z.number().int().min(2020),
+      month: z.number().int().min(1).max(12).optional().nullable(),
+      department: z.string().optional().nullable(),
+      costCenter: z.string().optional().nullable(),
+      budgetCents: z.number().int().min(0),
+      spentCents: z.number().int().min(0).default(0),
+      committedCents: z.number().int().min(0).default(0),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const payload = {
+      company_id: data.companyId,
+      fiscal_year: data.fiscalYear,
+      month: data.month,
+      department: data.department,
+      cost_center: data.costCenter,
+      budget_cents: data.budgetCents,
+      spent_cents: data.spentCents,
+      committed_cents: data.committedCents,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (data.id) {
+      const { data: updated, error } = await supabase
+        .from("corporate_travel_budgets")
+        .update(payload)
+        .eq("id", data.id)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao atualizar orçamento: " + error.message);
+      return updated;
+    } else {
+      const { data: inserted, error } = await supabase
+        .from("corporate_travel_budgets")
+        .insert(payload)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao criar orçamento: " + error.message);
+      return inserted;
+    }
+  });
+
+// ─── 14. Adiantamentos de Viagem (corporate_travel_advances - Cluster 1) ───────
+
+export const listCorporateTravelAdvances = createServerFn({ method: "GET" })
+  .validator(z.object({ companyId: z.string().uuid(), travelerId: z.string().uuid().optional() }))
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    let q = supabase.from("corporate_travel_advances").select("*").eq("company_id", data.companyId);
+    if (data.travelerId) q = q.eq("traveler_id", data.travelerId);
+    const { data: rows, error } = await q.order("created_at", { ascending: false });
+    if (error) {
+      console.warn("[listCorporateTravelAdvances] Erro:", error.message);
+      return [];
+    }
+    return rows || [];
+  });
+
+export const requestCorporateTravelAdvance = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      companyId: z.string().uuid(),
+      travelerId: z.string().uuid(),
+      tripId: z.string().uuid().optional().nullable(),
+      requestedAmountCents: z.number().int().positive(),
+      purpose: z.string().min(1),
+      pixKey: z.string().optional().nullable(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const { data: inserted, error } = await supabase
+      .from("corporate_travel_advances")
+      .insert({
+        company_id: data.companyId,
+        traveler_id: data.travelerId,
+        trip_id: data.tripId,
+        requested_amount_cents: data.requestedAmountCents,
+        purpose: data.purpose,
+        pix_key: data.pixKey,
+        status: "pending",
+      })
+      .select()
+      .single();
+
+    if (error) throw new Error("Erro ao solicitar adiantamento: " + error.message);
+    return inserted;
+  });
+
+export const updateCorporateTravelAdvanceStatus = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string().uuid(),
+      status: z.enum(["pending", "approved", "paid", "reconciled", "rejected"]),
+      approvedAmountCents: z.number().int().optional(),
+      receiptUrl: z.string().optional().nullable(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    const payload: any = {
+      status: data.status,
+      approved_by: identity.id,
+      updated_at: new Date().toISOString(),
+    };
+    if (data.approvedAmountCents !== undefined) payload.approved_amount_cents = data.approvedAmountCents;
+    if (data.receiptUrl !== undefined) payload.receipt_url = data.receiptUrl;
+    if (data.status === "paid") payload.paid_at = new Date().toISOString();
+
+    const { data: updated, error } = await supabase
+      .from("corporate_travel_advances")
+      .update(payload)
+      .eq("id", data.id)
+      .select()
+      .single();
+
+    if (error) throw new Error("Erro ao atualizar status do adiantamento: " + error.message);
+    return updated;
+  });
+
+// ─── 15. Prestação de Contas e Despesas (corporate_travel_expenses - Cluster 1) 
+
+export const listCorporateTravelExpenses = createServerFn({ method: "GET" })
+  .validator(z.object({ companyId: z.string().uuid(), travelerId: z.string().uuid().optional() }))
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    let q = supabase.from("corporate_travel_expenses").select("*").eq("company_id", data.companyId);
+    if (data.travelerId) q = q.eq("traveler_id", data.travelerId);
+    const { data: rows, error } = await q.order("expense_date", { ascending: false });
+    if (error) {
+      console.warn("[listCorporateTravelExpenses] Erro:", error.message);
+      return [];
+    }
+    return rows || [];
+  });
+
+export const saveCorporateTravelExpense = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string().uuid().optional(),
+      companyId: z.string().uuid(),
+      travelerId: z.string().uuid(),
+      tripId: z.string().uuid().optional().nullable(),
+      advanceId: z.string().uuid().optional().nullable(),
+      category: z.enum(["meal", "transport", "hotel_extras", "fuel", "toll", "parking", "other"]),
+      amountCents: z.number().int().positive(),
+      expenseDate: z.string().optional(),
+      merchantName: z.string().optional().nullable(),
+      notes: z.string().optional().nullable(),
+      receiptUrl: z.string().optional().nullable(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const payload = {
+      company_id: data.companyId,
+      traveler_id: data.travelerId,
+      trip_id: data.tripId,
+      advance_id: data.advanceId,
+      category: data.category,
+      amount_cents: data.amountCents,
+      expense_date: data.expenseDate || new Date().toISOString().split("T")[0],
+      merchant_name: data.merchantName,
+      notes: data.notes,
+      receipt_url: data.receiptUrl,
+      status: "submitted",
+      updated_at: new Date().toISOString(),
+    };
+
+    if (data.id) {
+      const { data: updated, error } = await supabase
+        .from("corporate_travel_expenses")
+        .update(payload)
+        .eq("id", data.id)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao atualizar despesa: " + error.message);
+      return updated;
+    } else {
+      const { data: inserted, error } = await supabase
+        .from("corporate_travel_expenses")
+        .insert(payload)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao criar despesa: " + error.message);
+      return inserted;
+    }
+  });
+
+// ─── 16. Itens de Fatura Corporativa (corporate_invoice_items - Cluster 1) ────
+
+export const listCorporateInvoiceItems = createServerFn({ method: "GET" })
+  .validator(z.object({ invoiceId: z.string().uuid() }))
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const { data: rows, error } = await supabase
+      .from("corporate_invoice_items")
+      .select("*")
+      .eq("invoice_id", data.invoiceId)
+      .order("created_at", { ascending: true });
+    if (error) {
+      console.warn("[listCorporateInvoiceItems] Erro:", error.message);
+      return [];
+    }
+    return rows || [];
+  });

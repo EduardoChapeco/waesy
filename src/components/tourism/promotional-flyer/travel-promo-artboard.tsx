@@ -1,11 +1,12 @@
 /**
- * travel-promo-artboard.tsx — Motor de Canvas e Renderização de Templates Sociais
- * Padrão Story 9:16 / Feed 4:5 / Quadrado 1:1 | Suporte a Centenas de Templates por Nicho
+ * travel-promo-artboard.tsx — Motor de Canvas e Renderização de Templates Sociais & StoryDocument (1080×1920)
+ * Padrão Story 9:16 / Feed 4:5 / Quadrado 1:1 | Suporte ao Liquid Glass Engine e Edição Estruturada
  */
 
 import React, { useMemo } from "react";
 import { getSocialTemplateById } from "@/components/social-templates";
 import type { SocialAspectRatio } from "@/components/social-templates/types";
+import type { GlassMaterial } from "@/lib/travel/liquid-glass-engine";
 
 export type PromoAspectRatio = SocialAspectRatio;
 
@@ -19,14 +20,30 @@ export interface TravelPromoData {
   maxInstallments?: number;
   installmentCents?: number | null;
   pricingMode?: "per_person" | "total_package" | "unit" | "monthly";
+  priceBasisLabel?: string;
+  occupancySummaryLabel?: string;
   backgroundImageUrl: string;
   paymentMethodsLabel?: string;
   aspectRatio?: PromoAspectRatio;
-  themeGradient?: "ocean_blue" | "sunset_amber" | "emerald_nature" | "midnight_luxury" | "caribbean_turquoise" | "nordic_snow";
+  themeGradient?:
+    | "ocean_blue"
+    | "sunset_amber"
+    | "emerald_nature"
+    | "midnight_luxury"
+    | "caribbean_turquoise"
+    | "nordic_snow";
   promoBadge?: string;
   storeName?: string;
   templateId?: string;
   ctaLabel?: string;
+  glassMaterial?: Partial<GlassMaterial>;
+  titleFontSizeOverride?: number;
+  titleOffsetX?: number;
+  titleOffsetY?: number;
+  priceCardOffsetX?: number;
+  priceCardOffsetY?: number;
+  priceCardScale?: number;
+  photoObjectPositionY?: number;
 }
 
 interface TravelPromoArtboardProps {
@@ -46,7 +63,6 @@ export function TravelPromoArtboard({
 }: TravelPromoArtboardProps) {
   const { aspectRatio = "9:16", templateId = "travel_editorial" } = data;
 
-  // Dimensões base canônicas de exportação em alta resolução (renderizadas no DOM para html2canvas)
   const dimensions = useMemo(() => {
     switch (aspectRatio) {
       case "4:5":
@@ -59,7 +75,6 @@ export function TravelPromoArtboard({
     }
   }, [aspectRatio]);
 
-  // Recupera o componente do template selecionado no registro modular
   const templateDefinition = useMemo(() => {
     return getSocialTemplateById(templateId);
   }, [templateId]);
@@ -79,6 +94,8 @@ export function TravelPromoArtboard({
         maxInstallments: data.maxInstallments,
         installmentCents: data.installmentCents,
         pricingMode: data.pricingMode,
+        priceBasisLabel: data.priceBasisLabel,
+        occupancySummaryLabel: data.occupancySummaryLabel,
         paymentMethodsLabel: data.paymentMethodsLabel,
         backgroundImageUrl: data.backgroundImageUrl,
         aspectRatio,
@@ -86,6 +103,14 @@ export function TravelPromoArtboard({
         promoBadge: data.promoBadge,
         storeName: data.storeName,
         ctaLabel: data.ctaLabel,
+        glassMaterial: data.glassMaterial,
+        titleFontSizeOverride: data.titleFontSizeOverride,
+        titleOffsetX: data.titleOffsetX,
+        titleOffsetY: data.titleOffsetY,
+        priceCardOffsetX: data.priceCardOffsetX,
+        priceCardOffsetY: data.priceCardOffsetY,
+        priceCardScale: data.priceCardScale,
+        photoObjectPositionY: data.photoObjectPositionY,
       }}
     />
   );
@@ -99,13 +124,14 @@ export function TravelPromoArtboard({
         height: `${dimensions.height}px`,
         transform: scale !== 1 ? `scale(${scale})` : undefined,
         transformOrigin: "top left",
+        backgroundColor: "rgb(10, 25, 47)",
       }}
-      className={`relative overflow-hidden bg-[#0a192f] text-white select-none ${className}`}
+      className={`relative overflow-hidden text-white select-none ${className}`}
     >
       {isAnimated ? (
         <div
           key={`${templateId}-${aspectRatio}`}
-          className="w-full h-full transition-all duration-300 ease-out animate-in fade-in zoom-in-95"
+          className="w-full h-full transition-transform duration-300 ease-out animate-in fade-in zoom-in-95"
         >
           {content}
         </div>

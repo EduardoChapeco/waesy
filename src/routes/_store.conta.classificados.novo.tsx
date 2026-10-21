@@ -21,8 +21,10 @@ import {
 } from "@/components/classifieds/event-classified-showcase-view";
 import { uploadClassifiedMedia, uploadClassifiedDocument } from "@/lib/classifieds/upload-classified-media";
 import { CANONICAL_AIRPORTS, CANONICAL_AIRLINES, CANONICAL_TRANSPORT_TYPES, CANONICAL_BUS_CATEGORIES, CANONICAL_GUIDE_SERVICES, CANONICAL_TRANSFER_VEHICLES, DEPARTURE_STATUS_CONFIG, airportLabel, type DepartureOption, type DepartureStatus } from "@/lib/classifieds/canonical-airports";
+import { AirportCombobox } from "@/components/ui/airport-combobox";
 import { cn } from "@/lib/utils";
 import { ClassifiedTemplateStyle, ClassifiedDisplayMode, CivilInquiryQuestion, CivilInquiryConfig } from "@/types/unified-ad-engine";
+import { TravelPromoFlyerModal } from "@/components/tourism/promotional-flyer/travel-promo-flyer-modal";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -1724,6 +1726,81 @@ const [aiInstructions, setAiInstructions] = useState("");
       next[target] = temp;
       return next;
     });
+  };
+
+    // ── Estúdio Excelência Tour (Story 9:16 + Liquid Glass + WhatsApp Intake) ──
+  const [travelStudioOpen, setTravelStudioOpen] = useState(false);
+
+  const handleApplyExtractedTravelOffer = (offer: {
+    title: string;
+    destinationCity: string;
+    datesText: string;
+    hotelName?: string;
+    mealPlan?: string;
+    inclusions: string[];
+    priceCents: number | null;
+    installments: number;
+    adults: number;
+    children: number;
+  }) => {
+    if (offer.title?.trim()) {
+      setTitle(offer.title.trim());
+    }
+    if (offer.destinationCity?.trim()) {
+      setTravelDestinationCity(offer.destinationCity.trim());
+    }
+    if (offer.datesText?.trim()) {
+      setTravelDates(offer.datesText.trim());
+    }
+    if (offer.mealPlan?.trim()) {
+      setTravelMealPlan(offer.mealPlan.trim());
+    }
+    if (offer.priceCents && offer.priceCents > 0) {
+      setPriceCents(offer.priceCents);
+    }
+    if (offer.installments && offer.installments > 0) {
+      setMaxInstallments(offer.installments);
+    }
+    if (offer.adults) {
+      setTravelAdultsCount(offer.adults);
+    }
+    if (offer.children !== undefined) {
+      setTravelChildrenCount(offer.children);
+    }
+    if (offer.inclusions && offer.inclusions.length > 0) {
+      setTravelBioBullets(offer.inclusions.filter(Boolean));
+    }
+    if (offer.hotelName?.trim()) {
+      setTravelLodgings((prev) => {
+        if (prev.length > 0) {
+          return prev.map((l, idx) =>
+            idx === 0
+              ? {
+                  ...l,
+                  name: offer.hotelName!.trim(),
+                  regime: offer.mealPlan?.trim() || l.regime,
+                  city: offer.destinationCity?.trim() || l.city,
+                }
+              : l
+          );
+        }
+        return [
+          {
+            id: crypto.randomUUID(),
+            name: offer.hotelName!.trim(),
+            type: "hotel",
+            stars: 4,
+            city: offer.destinationCity?.trim() || travelDestinationCity || "",
+            regime: offer.mealPlan?.trim() || travelMealPlan || "Café da Manhã",
+            amenities: [],
+            photos: [],
+            checkin_time: "14:00",
+            checkout_time: "11:00",
+          },
+        ];
+      });
+    }
+    toast.success("Dados estruturados da cotação sincronizados com o anúncio!");
   };
 
   // Specialized: Aluguel de Equipamentos
@@ -4786,11 +4863,21 @@ const [aiInstructions, setAiInstructions] = useState("");
             {niche.id === "viagem" && (
               <div className="bg-card rounded-lg p-4 sm:p-5 space-y-6 border border-border/60">
                 {/* Header */}
-                <div className="flex items-center justify-between pb-3 border-b border-border/40">
+                <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border/40 w-full">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
-                    <Key className="size-4 text-primary shrink-0" />
+                    <Plane className="size-4 text-primary shrink-0" />
                     <span>2. Detalhes da Viagem</span>
                   </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setTravelStudioOpen(true)}
+                    className="h-11 min-h-11 px-4 text-xs font-semibold gap-2 border-primary/40 text-primary hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <Sparkles className="size-4 shrink-0 text-primary" />
+                    <span>Estúdio Excelência (Story 9:16 + WhatsApp)</span>
+                  </Button>
                 </div>
 
                 {/* 2.0 — Modo de Visibilidade & Orçamento Privado (Link Direto) */}
@@ -4998,30 +5085,20 @@ const [aiInstructions, setAiInstructions] = useState("");
                       </p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div className="space-y-2">
-                          <Label className="text-xs font-medium">Aeroporto de Saída (IATA)</Label>
-                          <Select value={travelDepartureIATA} onValueChange={setTravelDepartureIATA}>
-                            <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
-                              <SelectValue placeholder="XAP — Chapecó, SC" />
-                            </SelectTrigger>
-                            <SelectContent className="max-h-72">
-                              {CANONICAL_AIRPORTS.map((a) => (
-                                <SelectItem key={a.iata} value={a.iata}>{airportLabel(a)}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <AirportCombobox
+                            label="Aeroporto de Saída (IATA)"
+                            value={travelDepartureIATA}
+                            onChange={(iata) => setTravelDepartureIATA(iata)}
+                            placeholder="Buscar saída (ex: XAP, GRU)..."
+                          />
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-xs font-medium">Aeroporto de Chegada (IATA)</Label>
-                          <Select value={travelArrivalIATA} onValueChange={setTravelArrivalIATA}>
-                            <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
-                              <SelectValue placeholder="FOR — Fortaleza, CE" />
-                            </SelectTrigger>
-                            <SelectContent className="max-h-72">
-                              {CANONICAL_AIRPORTS.map((a) => (
-                                <SelectItem key={a.iata} value={a.iata}>{airportLabel(a)}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <AirportCombobox
+                            label="Aeroporto de Chegada (IATA)"
+                            value={travelArrivalIATA}
+                            onChange={(iata) => setTravelArrivalIATA(iata)}
+                            placeholder="Buscar chegada (ex: FOR, MIA)..."
+                          />
                         </div>
                         <div className="space-y-2">
                           <Label className="text-xs font-medium">Companhia Aérea</Label>
@@ -5236,30 +5313,20 @@ const [aiInstructions, setAiInstructions] = useState("");
                         </p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <div className="space-y-2">
-                            <Label className="text-xs font-medium">Aeroporto de Origem</Label>
-                            <Select value={travelComboFromIATA} onValueChange={setTravelComboFromIATA}>
-                              <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
-                                <SelectValue placeholder="XAP — Chapecó" />
-                              </SelectTrigger>
-                              <SelectContent className="max-h-72">
-                                {CANONICAL_AIRPORTS.map((a) => (
-                                  <SelectItem key={a.iata} value={a.iata}>{airportLabel(a)}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <AirportCombobox
+                              label="Aeroporto de Origem"
+                              value={travelComboFromIATA}
+                              onChange={(iata) => setTravelComboFromIATA(iata)}
+                              placeholder="Buscar origem (ex: XAP, CWB)..."
+                            />
                           </div>
                           <div className="space-y-2">
-                            <Label className="text-xs font-medium">Aeroporto de Desembarque (Gateway)</Label>
-                            <Select value={travelComboToIATA} onValueChange={setTravelComboToIATA}>
-                              <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
-                                <SelectValue placeholder="FOR — Fortaleza" />
-                              </SelectTrigger>
-                              <SelectContent className="max-h-72">
-                                {CANONICAL_AIRPORTS.map((a) => (
-                                  <SelectItem key={a.iata} value={a.iata}>{airportLabel(a)}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <AirportCombobox
+                              label="Aeroporto de Desembarque (Gateway)"
+                              value={travelComboToIATA}
+                              onChange={(iata) => setTravelComboToIATA(iata)}
+                              placeholder="Buscar gateway (ex: FOR, CUN)..."
+                            />
                           </div>
                           <div className="space-y-2">
                             <Label className="text-xs font-medium">Companhia Aérea</Label>
@@ -6914,7 +6981,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                           </div>
                           <div className="space-y-2">
                             <Label className="text-xs text-muted-foreground">Opções de Resposta</Label>
-                            {survey.options.map((opt, optIdx) => (
+                            {survey.options.map((opt: string, optIdx: number) => (
                               <div key={optIdx} className="flex items-center gap-2">
                                 <Input
                                   value={opt}
@@ -6935,7 +7002,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                                     size="sm"
                                     onClick={() => {
                                       const updated = [...eventSurveys];
-                                      const opts = updated[idx].options.filter((_, i) => i !== optIdx);
+                                      const opts = updated[idx].options.filter((_: string, i: number) => i !== optIdx);
                                       updated[idx] = { ...updated[idx], options: opts };
                                       setEventSurveys(updated);
                                     }}
@@ -11595,6 +11662,27 @@ const [aiInstructions, setAiInstructions] = useState("");
         attributes={buildCurrentNicheContext()}
         onApplyDraft={handleApplyCopilotDraft}
       />
+      {/* Estúdio Excelência Tour (Story 9:16 + Liquid Glass + WhatsApp Intake) */}
+      {niche.id === "viagem" && (
+        <TravelPromoFlyerModal
+          open={travelStudioOpen}
+          onOpenChange={setTravelStudioOpen}
+          niche={niche.id}
+          destinationTitle={title}
+          destinationCity={travelDestinationCity}
+          datesText={travelDates}
+          inclusions={travelBioBullets.filter((b) => b && b.trim())}
+          priceCents={priceCents ?? null}
+          installments={maxInstallments}
+          backgroundImageUrl={images[0] || null}
+          storeName={selectedStoreId ? undefined : "Excelência Tour"}
+          onAttachToClassified={(imageUrl) => {
+            setImages((prev) => [imageUrl, ...prev]);
+            toast.success("Story 9:16 exportado e adicionado à galeria de fotos!");
+          }}
+          onApplyExtractedOffer={handleApplyExtractedTravelOffer}
+        />
+      )}
  </div>
  );
 }

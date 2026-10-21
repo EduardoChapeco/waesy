@@ -792,3 +792,133 @@ export const buyServicePackageDirect = createServerFn({ method: "POST" })
       expires_at: expiresAt.toISOString(),
     };
   });
+
+
+// ============================================================
+// COMISSÕES & RECORRÊNCIAS DE PACOTES (Cluster 4: service_package_commissions & service_package_recurrences)
+// ============================================================
+
+export const listPackageCommissions = createServerFn({ method: "GET" })
+  .validator(z.object({ packageId: z.string().uuid() }))
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const { data: rows, error } = await supabase
+      .from("service_package_commissions")
+      .select("*")
+      .eq("package_id", data.packageId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.warn("[listPackageCommissions] Erro:", error.message);
+      return [];
+    }
+    return rows || [];
+  });
+
+export const savePackageCommission = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string().uuid().optional(),
+      packageId: z.string().uuid(),
+      professionalId: z.string().uuid(),
+      commissionPercent: z.number().min(0).max(100).default(0),
+      commissionFixedCents: z.number().int().min(0).default(0),
+      status: z.enum(["active", "inactive"]).default("active"),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const payload = {
+      package_id: data.packageId,
+      professional_id: data.professionalId,
+      commission_percent: data.commissionPercent,
+      commission_fixed_cents: data.commissionFixedCents,
+      status: data.status,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (data.id) {
+      const { data: updated, error } = await supabase
+        .from("service_package_commissions")
+        .update(payload)
+        .eq("id", data.id)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao atualizar comissão: " + error.message);
+      return updated;
+    } else {
+      const { data: inserted, error } = await supabase
+        .from("service_package_commissions")
+        .insert(payload)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao salvar comissão: " + error.message);
+      return inserted;
+    }
+  });
+
+export const listPackageRecurrences = createServerFn({ method: "GET" })
+  .validator(z.object({ storeId: z.string().uuid().optional(), packageId: z.string().uuid().optional() }))
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    let q = supabase.from("service_package_recurrences").select("*");
+    if (data.storeId) q = q.eq("store_id", data.storeId);
+    if (data.packageId) q = q.eq("package_id", data.packageId);
+
+    const { data: rows, error } = await q.order("next_billing_date", { ascending: true });
+    if (error) {
+      console.warn("[listPackageRecurrences] Erro:", error.message);
+      return [];
+    }
+    return rows || [];
+  });
+
+export const savePackageRecurrence = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string().uuid().optional(),
+      customerPassId: z.string().uuid(),
+      packageId: z.string().uuid(),
+      customerId: z.string().uuid(),
+      storeId: z.string().uuid(),
+      billingInterval: z.enum(["weekly", "biweekly", "monthly", "quarterly", "yearly"]).default("monthly"),
+      autoRenew: z.boolean().default(true),
+      nextBillingDate: z.string(),
+      status: z.enum(["active", "paused", "cancelled"]).default("active"),
+      paymentMethod: z.string().default("pix"),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const payload = {
+      customer_pass_id: data.customerPassId,
+      package_id: data.packageId,
+      customer_id: data.customerId,
+      store_id: data.storeId,
+      billing_interval: data.billingInterval,
+      auto_renew: data.autoRenew,
+      next_billing_date: data.nextBillingDate,
+      status: data.status,
+      payment_method: data.paymentMethod,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (data.id) {
+      const { data: updated, error } = await supabase
+        .from("service_package_recurrences")
+        .update(payload)
+        .eq("id", data.id)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao atualizar recorrência: " + error.message);
+      return updated;
+    } else {
+      const { data: inserted, error } = await supabase
+        .from("service_package_recurrences")
+        .insert(payload)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao salvar recorrência: " + error.message);
+      return inserted;
+    }
+  });

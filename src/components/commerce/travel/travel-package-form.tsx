@@ -74,6 +74,7 @@ import {
 } from "@/lib/classifieds/canonical-airports";
 import { uploadClassifiedMedia } from "@/lib/classifieds/upload-classified-media";
 import { formatMoney } from "@/lib/money";
+import { AirportCombobox } from "@/components/ui/airport-combobox";
 import { cn } from "@/lib/utils";
 
 export interface TravelPackageFormProps {
@@ -844,13 +845,11 @@ export function TravelPackageForm({
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs font-medium text-foreground">Aeroporto de Chegada / IATA</Label>
-                <Input
+                <AirportCombobox
+                  label="Aeroporto de Chegada / IATA Gateway"
                   value={destination.iata_gateway || ""}
-                  onChange={(e) => updateDestination("iata_gateway", e.target.value.toUpperCase())}
-                  placeholder="Ex: BPS, POA, PUJ"
-                  className="h-11 rounded-lg text-xs bg-background font-mono uppercase"
-                  maxLength={4}
+                  onChange={(val) => updateDestination("iata_gateway", val)}
+                  placeholder="Buscar aeroporto de chegada..."
                 />
               </div>
             </div>
@@ -1471,47 +1470,27 @@ export function TravelPackageForm({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <Label className="text-xs font-medium text-foreground">Aeroporto de Origem (IATA)</Label>
-                    <Select
+                    <AirportCombobox
+                      label="Aeroporto de Origem (IATA)"
                       value={flightDetails.origin_airport || flightDetails.departure_iata || ""}
-                      onValueChange={(val) => {
+                      onChange={(val) => {
                         updateFlightDetails("origin_airport", val);
                         updateFlightDetails("departure_iata", val);
                       }}
-                    >
-                      <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
-                        <SelectValue placeholder="Selecione o aeroporto de saída..." />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-72">
-                        {CANONICAL_AIRPORTS.map((a) => (
-                          <SelectItem key={a.iata} value={a.iata}>
-                            {airportLabel(a)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      placeholder="Buscar aeroporto de saída..."
+                    />
                   </div>
 
                   <div className="space-y-1">
-                    <Label className="text-xs font-medium text-foreground">Aeroporto de Destino (IATA)</Label>
-                    <Select
+                    <AirportCombobox
+                      label="Aeroporto de Destino (IATA)"
                       value={flightDetails.destination_iata || destination.iata_gateway || ""}
-                      onValueChange={(val) => {
+                      onChange={(val) => {
                         updateFlightDetails("destination_iata", val);
                         updateDestination("iata_gateway", val);
                       }}
-                    >
-                      <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
-                        <SelectValue placeholder="Selecione o aeroporto de chegada..." />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-72">
-                        {CANONICAL_AIRPORTS.map((a) => (
-                          <SelectItem key={a.iata} value={a.iata}>
-                            {airportLabel(a)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      placeholder="Buscar aeroporto de chegada..."
+                    />
                   </div>
 
                   <div className="space-y-1">

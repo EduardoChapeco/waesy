@@ -366,6 +366,7 @@ import { Route as WorkspaceTurismoEmbarquesRouteImport } from './routes/workspac
 import { Route as WorkspaceTurismoFornecedoresRouteImport } from './routes/workspace.turismo.fornecedores'
 import { Route as WorkspaceTurismoHoteisRouteImport } from './routes/workspace.turismo.hoteis'
 import { Route as WorkspaceTurismoIncidentesRouteImport } from './routes/workspace.turismo.incidentes'
+import { Route as WorkspaceTurismoOportunidadesRouteImport } from './routes/workspace.turismo.oportunidades'
 import { Route as WorkspaceTurismoRadarRouteImport } from './routes/workspace.turismo.radar'
 import { Route as WorkspaceTurismoReacomodacaoRouteImport } from './routes/workspace.turismo.reacomodacao'
 import { Route as WorkspaceTurismoVistosRouteImport } from './routes/workspace.turismo.vistos'
@@ -2296,6 +2297,12 @@ const WorkspaceTurismoIncidentesRoute =
     path: '/turismo/incidentes',
     getParentRoute: () => WorkspaceRoute,
   } as any)
+const WorkspaceTurismoOportunidadesRoute =
+  WorkspaceTurismoOportunidadesRouteImport.update({
+    id: '/turismo/oportunidades',
+    path: '/turismo/oportunidades',
+    getParentRoute: () => WorkspaceRoute,
+  } as any)
 const WorkspaceTurismoRadarRoute = WorkspaceTurismoRadarRouteImport.update({
   id: '/turismo/radar',
   path: '/turismo/radar',
@@ -2954,6 +2961,7 @@ export interface FileRoutesByFullPath {
   '/workspace/turismo/fornecedores': typeof WorkspaceTurismoFornecedoresRoute
   '/workspace/turismo/hoteis': typeof WorkspaceTurismoHoteisRoute
   '/workspace/turismo/incidentes': typeof WorkspaceTurismoIncidentesRoute
+  '/workspace/turismo/oportunidades': typeof WorkspaceTurismoOportunidadesRoute
   '/workspace/turismo/radar': typeof WorkspaceTurismoRadarRoute
   '/workspace/turismo/reacomodacao': typeof WorkspaceTurismoReacomodacaoRoute
   '/workspace/turismo/vistos': typeof WorkspaceTurismoVistosRoute
@@ -3361,6 +3369,7 @@ export interface FileRoutesByTo {
   '/workspace/turismo/fornecedores': typeof WorkspaceTurismoFornecedoresRoute
   '/workspace/turismo/hoteis': typeof WorkspaceTurismoHoteisRoute
   '/workspace/turismo/incidentes': typeof WorkspaceTurismoIncidentesRoute
+  '/workspace/turismo/oportunidades': typeof WorkspaceTurismoOportunidadesRoute
   '/workspace/turismo/radar': typeof WorkspaceTurismoRadarRoute
   '/workspace/turismo/reacomodacao': typeof WorkspaceTurismoReacomodacaoRoute
   '/workspace/turismo/vistos': typeof WorkspaceTurismoVistosRoute
@@ -3779,6 +3788,7 @@ export interface FileRoutesById {
   '/workspace/turismo/fornecedores': typeof WorkspaceTurismoFornecedoresRoute
   '/workspace/turismo/hoteis': typeof WorkspaceTurismoHoteisRoute
   '/workspace/turismo/incidentes': typeof WorkspaceTurismoIncidentesRoute
+  '/workspace/turismo/oportunidades': typeof WorkspaceTurismoOportunidadesRoute
   '/workspace/turismo/radar': typeof WorkspaceTurismoRadarRoute
   '/workspace/turismo/reacomodacao': typeof WorkspaceTurismoReacomodacaoRoute
   '/workspace/turismo/vistos': typeof WorkspaceTurismoVistosRoute
@@ -4197,6 +4207,7 @@ export interface FileRouteTypes {
     | '/workspace/turismo/fornecedores'
     | '/workspace/turismo/hoteis'
     | '/workspace/turismo/incidentes'
+    | '/workspace/turismo/oportunidades'
     | '/workspace/turismo/radar'
     | '/workspace/turismo/reacomodacao'
     | '/workspace/turismo/vistos'
@@ -4604,6 +4615,7 @@ export interface FileRouteTypes {
     | '/workspace/turismo/fornecedores'
     | '/workspace/turismo/hoteis'
     | '/workspace/turismo/incidentes'
+    | '/workspace/turismo/oportunidades'
     | '/workspace/turismo/radar'
     | '/workspace/turismo/reacomodacao'
     | '/workspace/turismo/vistos'
@@ -5021,6 +5033,7 @@ export interface FileRouteTypes {
     | '/workspace/turismo/fornecedores'
     | '/workspace/turismo/hoteis'
     | '/workspace/turismo/incidentes'
+    | '/workspace/turismo/oportunidades'
     | '/workspace/turismo/radar'
     | '/workspace/turismo/reacomodacao'
     | '/workspace/turismo/vistos'
@@ -7668,6 +7681,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceTurismoIncidentesRouteImport
       parentRoute: typeof WorkspaceRoute
     }
+    '/workspace/turismo/oportunidades': {
+      id: '/workspace/turismo/oportunidades'
+      path: '/turismo/oportunidades'
+      fullPath: '/workspace/turismo/oportunidades'
+      preLoaderRoute: typeof WorkspaceTurismoOportunidadesRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
     '/workspace/turismo/radar': {
       id: '/workspace/turismo/radar'
       path: '/turismo/radar'
@@ -8748,6 +8768,7 @@ interface WorkspaceRouteChildren {
   WorkspaceTurismoFornecedoresRoute: typeof WorkspaceTurismoFornecedoresRoute
   WorkspaceTurismoHoteisRoute: typeof WorkspaceTurismoHoteisRoute
   WorkspaceTurismoIncidentesRoute: typeof WorkspaceTurismoIncidentesRoute
+  WorkspaceTurismoOportunidadesRoute: typeof WorkspaceTurismoOportunidadesRoute
   WorkspaceTurismoRadarRoute: typeof WorkspaceTurismoRadarRoute
   WorkspaceTurismoReacomodacaoRoute: typeof WorkspaceTurismoReacomodacaoRoute
   WorkspaceTurismoVistosRoute: typeof WorkspaceTurismoVistosRoute
@@ -8931,6 +8952,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceTurismoFornecedoresRoute: WorkspaceTurismoFornecedoresRoute,
   WorkspaceTurismoHoteisRoute: WorkspaceTurismoHoteisRoute,
   WorkspaceTurismoIncidentesRoute: WorkspaceTurismoIncidentesRoute,
+  WorkspaceTurismoOportunidadesRoute: WorkspaceTurismoOportunidadesRoute,
   WorkspaceTurismoRadarRoute: WorkspaceTurismoRadarRoute,
   WorkspaceTurismoReacomodacaoRoute: WorkspaceTurismoReacomodacaoRoute,
   WorkspaceTurismoVistosRoute: WorkspaceTurismoVistosRoute,
@@ -9063,13 +9085,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

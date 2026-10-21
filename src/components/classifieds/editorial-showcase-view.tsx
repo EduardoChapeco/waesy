@@ -25,6 +25,7 @@ import { TravelPromoFlyerModal } from "@/components/tourism/promotional-flyer/tr
 import { TravelFlightItineraryCard } from "./travel-flight-itinerary-card";
 import { NicheSpecificationsDisplay } from "@/components/common/niche-specifications-display";
 import { resolveClassifiedDetailedSpecs } from "@/lib/classifieds/canonical-specs-resolver";
+import { evaluateOfferLifecycleState } from "@/lib/travel/excelencia-offer-engine";
 
 
 export interface EditorialShowcaseViewProps {
@@ -153,6 +154,7 @@ export function EditorialShowcaseView({
   const isTravel = nicheId === "travel" || nicheId.includes("viag") || nicheId.includes("tour") || classified?.category === "travel";
   const isHospitality = nicheId === "hospitality_stay" || nicheId.includes("hosped") || nicheId.includes("temporada");
   const featureList = React.useMemo(() => resolveClassifiedDetailedSpecs(classified), [classified]);
+  const offerLifecycle = React.useMemo(() => evaluateOfferLifecycleState({ status: classified?.status === "archived" ? "archived" : undefined, expiresAt: attrs?.offer_expires_at || attrs?.expires_at || classified?.expires_at || null }), [classified?.status, classified?.expires_at, attrs?.offer_expires_at, attrs?.expires_at]);
 
   // Inclusões dinâmicas para o flyer promocional
   const travelPromoInclusions = React.useMemo(() => {
@@ -763,6 +765,17 @@ export function EditorialShowcaseView({
       </div>
 
       <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 pt-0 sm:pt-4 space-y-4 animate-in fade-in duration-200">
+        {isTravel && offerLifecycle.isExpired && offerLifecycle.publicBannerMessage && (
+          <div role="status" className="mx-3 sm:mx-0 p-4 rounded-lg border border-amber-500/40 bg-amber-500/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="space-y-1">
+              <p className="text-xs sm:text-sm font-bold text-foreground">Oferta expirada — consulte valor atualizado</p>
+              <p className="text-xs text-muted-foreground">{offerLifecycle.publicBannerMessage}</p>
+            </div>
+            <Button type="button" onClick={handleWhatsAppDirect} className="h-11 min-h-11 px-4 rounded-lg bg-primary text-primary-foreground text-xs font-bold shrink-0 cursor-pointer focus-visible:ring-2">
+              {offerLifecycle.ctaLabel}
+            </Button>
+          </div>
+        )}
 
         {/* ── Desktop Contextual Header / Breadcrumbs (Apenas Desktop) ── */}
         <div className={cn(isForcedMobile ? "hidden" : isForcedDesktop ? "flex" : "hidden md:flex", "items-center justify-between py-2 border-b border-border/40")}>
@@ -3144,6 +3157,7 @@ export function EditorialShowcaseView({
         installments={maxInstallments}
         backgroundImageUrl={images[0]}
         storeName={classified.stores?.name || classified.store_name || "Waesy Turismo"}
+        publicOfferUrl={typeof window !== "undefined" ? window.location.href : undefined}
       />
 
       {/* ── Modal Universal de Captura de Leads / Landing ── */}

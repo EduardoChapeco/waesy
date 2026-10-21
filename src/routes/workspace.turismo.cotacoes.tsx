@@ -1,4 +1,4 @@
-import { Tag, Plane } from "lucide-react";
+﻿import { Tag, Plane, Sparkles } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -315,6 +315,7 @@ export default function AgencyQuotesPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            <Button type="button" variant="outline" size="sm" onClick={() => navigate({ to: "/workspace/turismo/oportunidades" })} className="h-11 min-h-11 px-4 gap-2 text-xs font-semibold border-primary/30 text-primary hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-ring"><Sparkles className="size-4 text-primary" /><span>Radar Comercial & Oportunidades</span></Button>
             <input
               type="file"
               id="quote-ocr-file-input"
@@ -1188,3 +1189,4 @@ export default function AgencyQuotesPage() {
     </NicheOperationalGuard>
   );
 }
+

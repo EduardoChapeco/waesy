@@ -157,6 +157,12 @@ export interface EventPollNormalized {
   total_votes: number;
 }
 
+export type EventTicketTier = EventTicketTierNormalized;
+export type EventScheduleItem = EventScheduleItemNormalized;
+export type EventSpeaker = EventSpeakerNormalized;
+export type EventSponsor = EventPartnerNormalized;
+export type EventSurvey = EventPollNormalized;
+
 export type EventAccessPointType =
   | "main_venue"
   | "accreditation"
@@ -1109,7 +1115,7 @@ export function normalizeEventDomain(
               }
               return null;
             })
-            .filter((o): o is EventPollOptionNormalized => Boolean(o && o.text))
+            .filter((o: any): o is EventPollOptionNormalized => Boolean(o && o.text))
         : [];
       const totalVotes = options.reduce((acc, o) => acc + o.votes, 0);
       const pollLifecycle = resolveEffectivePollState(

@@ -29,7 +29,10 @@ import {
   updateCorporateAccount,
   requestCompanyAgencyLink,
   updateAgencyCorporateCapability,
+  recordAirTicketCredit,
+  listTravelerTicketCredits,
 } from "@/services/corporate-travel.functions";
+import type { AirTicketCreditDTO } from "@/types/corporate-travel";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -39,7 +42,7 @@ export const Route = createFileRoute("/workspace/turismo/corporativo")({
   component: AgencyCorporateCockpitPage,
 });
 
-type TabType = "contas" | "pendencias" | "faturamento" | "conciliacao";
+type TabType = "contas" | "pendencias" | "faturamento" | "conciliacao" | "creditos";
 
 export default function AgencyCorporateCockpitPage() {
   const { currentStore } = useWorkspaceStore();
@@ -117,6 +120,81 @@ export default function AgencyCorporateCockpitPage() {
       toast.error("Erro ao vincular empresa: " + (err?.message || "Falha desconhecida"));
     } finally {
       setIsLinking(false);
+    }
+  };
+
+  // ── ESTADOS DE CRÉDITOS AÉREOS (EMD) ──
+  const [createCreditOpen, setCreateCreditOpen] = useState(false);
+  const [isSubmittingCredit, setIsSubmittingCredit] = useState(false);
+  const [creditForm, setCreditForm] = useState({
+    travelerId: "",
+    airline: "LATAM",
+    originalPnr: "",
+    originalTicketNumber: "",
+    originalAmount: 850,
+    expiresAt: "",
+  });
+
+  const [lookupTravelerId, setLookupTravelerId] = useState("");
+  const [searchedCredits, setSearchedCredits] = useState<AirTicketCreditDTO[]>([]);
+  const [isSearchingCredits, setIsSearchingCredits] = useState(false);
+
+  const handleSearchCredits = async () => {
+    if (!lookupTravelerId.trim()) {
+      toast.error("Informe o UUID do passageiro para consultar créditos.");
+      return;
+    }
+    setIsSearchingCredits(true);
+    try {
+      const res = await listTravelerTicketCredits({ data: { travelerId: lookupTravelerId.trim() } });
+      setSearchedCredits(res || []);
+      if (!res || res.length === 0) {
+        toast.info("Nenhum crédito ativo localizado para este passageiro.");
+      }
+    } catch (err: any) {
+      toast.error("Erro ao consultar créditos: " + (err?.message || "falha"));
+    } finally {
+      setIsSearchingCredits(false);
+    }
+  };
+
+  const handleRecordCredit = async () => {
+    if (!agencyId || !creditForm.travelerId.trim() || !creditForm.originalPnr.trim() || !creditForm.originalTicketNumber.trim()) {
+      toast.error("Preencha todos os campos obrigatórios (Passageiro, PNR e Bilhete).");
+      return;
+    }
+    setIsSubmittingCredit(true);
+    try {
+      const validFrom = new Date().toISOString();
+      const expiresAt = creditForm.expiresAt || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+      await recordAirTicketCredit({
+        data: {
+          agencyId,
+          travelerId: creditForm.travelerId.trim(),
+          airline: creditForm.airline,
+          originalPnr: creditForm.originalPnr.trim().toUpperCase(),
+          originalTicketNumber: creditForm.originalTicketNumber.trim(),
+          originalAmountCents: Math.round(creditForm.originalAmount * 100),
+          validFrom,
+          expiresAt,
+          transferable: false,
+          fareRuleSnapshot: { recorded_by_agency: agencyId, note: "EMD de cancelamento gerado no painel" },
+        },
+      });
+      toast.success("Crédito aéreo (EMD) registrado com sucesso no cofre corporativo!");
+      setCreateCreditOpen(false);
+      setCreditForm({
+        travelerId: "",
+        airline: "LATAM",
+        originalPnr: "",
+        originalTicketNumber: "",
+        originalAmount: 850,
+        expiresAt: "",
+      });
+    } catch (err: any) {
+      toast.error("Erro ao registrar crédito: " + (err?.message || "falha"));
+    } finally {
+      setIsSubmittingCredit(false);
     }
   };
 
@@ -215,7 +293,7 @@ export default function AgencyCorporateCockpitPage() {
         </div>
 
         {/* Régua de Navegação Horizontal Contínua (B.39) */}
-        <div className="flex flex-nowrap items-center gap-2 overflow-x-auto no-scrollbar border-b border-border pb-2">
+        <div className="flex flex-nowrap items-center gap-2 overflow-x-auto no-scrollbar border-b border-border pb-2 tab-list" role="tablist">
           {[
             { id: "contas", label: `Empresas Clientes (${accounts.length})`, icon: Building2 },
             { id: "pendencias", label: "Fila 'Precisa de Você'", icon: AlertTriangle },

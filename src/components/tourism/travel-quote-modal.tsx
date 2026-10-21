@@ -193,7 +193,7 @@ export function TravelQuoteModal({
 
  {showOriginSearch && (
  <div className=" rounded-lg bg-card p-2 space-y-1 max-h-40 overflow-y-auto no-scrollbar">
- {filteredAirports.slice(0, 5).map((a) => (
+ {filteredAirports.slice(0, 15).map((a) => (
  <button
  key={a.iata}
  type="button"
@@ -244,7 +244,7 @@ export function TravelQuoteModal({
 
  {showDestSearch && (
  <div className=" rounded-lg bg-card p-2 space-y-1 max-h-40 overflow-y-auto no-scrollbar">
- {filteredAirports.slice(0, 5).map((a) => (
+ {filteredAirports.slice(0, 15).map((a) => (
  <button
  key={a.iata}
  type="button"

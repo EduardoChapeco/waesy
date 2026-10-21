@@ -64,6 +64,62 @@ import {
   verifyClassifiedTicketByCode,
 } from "@/services/classifieds-events.functions";
 
+export interface EventTicketTier {
+  id: string;
+  name: string;
+  price_cents?: number;
+  price?: number;
+  external_url?: string;
+  purchase_url?: string;
+  batch?: string;
+  description?: string;
+  status?: "available" | "active" | "sold_out" | "coming_soon";
+  included_items?: string[];
+}
+
+export interface EventScheduleItem {
+  id: string;
+  time: string;
+  end_time?: string;
+  stage_or_room?: string;
+  stage?: string;
+  title: string;
+  description?: string;
+  speaker_name?: string;
+  speaker_role?: string;
+  speaker_photo?: string;
+  is_break?: boolean;
+}
+
+export interface EventSpeaker {
+  id: string;
+  name: string;
+  role: string;
+  photo_url?: string;
+  avatar_url?: string;
+  company?: string;
+  bio?: string;
+  social_link?: string;
+  social_url?: string;
+}
+
+export interface EventSponsor {
+  id: string;
+  name: string;
+  tier: "master" | "ouro" | "prata" | "apoio";
+  logo_url?: string;
+  website_url?: string;
+}
+
+export interface EventSurvey {
+  id: string;
+  question: string;
+  options: string[];
+  allow_anonymous?: boolean;
+  is_active?: boolean;
+  active?: boolean;
+}
+
 export interface EventClassifiedShowcaseViewProps {
   classified: any;
   isOwner?: boolean;

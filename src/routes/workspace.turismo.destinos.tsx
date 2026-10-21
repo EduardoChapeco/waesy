@@ -20,6 +20,7 @@ import { uploadStoreMedia } from "@/services/storage.functions";
 import { listDestinations, createDestination, updateDestination, deleteDestination, type DestinationDTO, type DestinationSection, type DestinationAttraction, type DestinationCatalogReview } from "@/services/travel-catalog.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
+import { AirportCombobox } from "@/components/ui/airport-combobox";
 import { CANONICAL_DESTINATIONS, BRAZIL_STATES, MAJOR_IATA_AIRPORTS, TOURISM_TAGS_PRESETS, getDestinationsByState, findAirportByIata, searchCanonicalDestinations, type CanonicalDestination } from "@/lib/destinations-catalog";
 
 export const Route = createFileRoute("/workspace/turismo/destinos")({
@@ -992,22 +993,12 @@ export default function WorkspaceDestinationsPage() {
  </div>
 
  <div className="space-y-1">
- <Label className="text-xs font-bold flex items-center justify-between">
- <span>Aeroporto IATA Principal</span>
- <span className="text-xs text-muted-foreground font-mono">Ex: NVT, POA</span>
- </Label>
- <select
+ <AirportCombobox
+ label="Aeroporto IATA Principal"
  value={iataGateway}
- onChange={(e) => setIataGateway(e.target.value)}
- className="w-full h-10 rounded-lg bg-background border border-border px-3 text-xs font-mono uppercase"
- >
- <option value="">Sem aeroporto fixo</option>
- {MAJOR_IATA_AIRPORTS.map((a) => (
- <option key={a.code} value={a.code}>
- {a.code} — {a.city} ({a.uf})
- </option>
- ))}
- </select>
+ onChange={(iata) => setIataGateway(iata)}
+ placeholder="Buscar aeroporto gateway..."
+ />
  </div>
  </div>
 

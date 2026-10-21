@@ -1984,6 +1984,9 @@ export const reorderCustomerOrder = createServerFn({ method: "POST" })
 
 // Re-exports canônicos de gestão do Workspace para compatibilidade (EARS-DRY-01)
 export {
+  listOrdersFn,
+  getOrderDetailFn,
+  updateOrderStatusFn,
   listOrdersFn as listWorkspaceOrders,
   getOrderDetailFn as getWorkspaceOrderDetail,
   updateOrderStatusFn as updateWorkspaceOrderStatus,

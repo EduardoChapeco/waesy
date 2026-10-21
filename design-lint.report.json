@@ -1,33 +1,33 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-21T16:44:47.261Z",
-  "inspectedFiles": 2246,
-  "totalViolations": 12174,
+  "timestamp": "2026-10-21T19:05:49.318Z",
+  "inspectedFiles": 2265,
+  "totalViolations": 12067,
   "summary": {
-    "totalViolations": 12174,
+    "totalViolations": 12067,
     "bySeverity": {
-      "P0": 1357,
-      "P1": 8272,
-      "P2": 1277,
-      "P3": 1268
+      "P0": 1347,
+      "P1": 8202,
+      "P2": 1267,
+      "P3": 1251
     },
     "byRule": {
-      "DL-18": 1143,
-      "DL-02": 3393,
-      "DL-14": 2004,
+      "DL-18": 1140,
+      "DL-02": 3348,
+      "DL-14": 1995,
       "DL-28": 279,
-      "DL-15": 1354,
-      "DL-07": 477,
-      "DL-27": 1004,
-      "DL-30": 264,
+      "DL-15": 1344,
+      "DL-07": 469,
+      "DL-27": 989,
+      "DL-30": 262,
       "DL-26": 85,
-      "DL-01": 875,
+      "DL-01": 864,
       "DL-29": 118,
-      "DL-05": 129,
+      "DL-05": 130,
       "DL-23": 355,
-      "DL-03": 387,
+      "DL-03": 384,
       "DL-09": 114,
-      "DL-08": 103,
+      "DL-08": 101,
       "DL-24": 2,
       "DL-11": 22,
       "DL-12": 29,
@@ -38,10 +38,10 @@
     },
     "byModule": {
       "components/app": {
-        "total": 5468,
+        "total": 5431,
         "P0": 559,
-        "P1": 3720,
-        "P2": 649,
+        "P1": 3691,
+        "P2": 641,
         "P3": 540
       },
       "components/builder": {
@@ -59,11 +59,11 @@
         "P3": 5
       },
       "components/tourism": {
-        "total": 1034,
-        "P0": 76,
-        "P1": 769,
-        "P2": 129,
-        "P3": 60
+        "total": 966,
+        "P0": 64,
+        "P1": 730,
+        "P2": 127,
+        "P3": 45
       },
       "components/ui": {
         "total": 310,
@@ -108,16 +108,16 @@
         "P3": 6
       },
       "routes/workspace": {
-        "total": 2122,
+        "total": 2120,
         "P0": 424,
         "P1": 1314,
         "P2": 110,
-        "P3": 274
+        "P3": 272
       },
       "routes/store": {
         "total": 1405,
-        "P0": 111,
-        "P1": 912,
+        "P0": 113,
+        "P1": 910,
         "P2": 175,
         "P3": 207
       },
@@ -144,7 +144,7 @@
       }
     },
     "filesWithViolations": 891,
-    "filesCount": 2246
+    "filesCount": 2265
   },
   "config": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -322,6 +322,38 @@
         "reason": "Paletas de temas e templates de canvas para sites do OmniPage Builder",
         "date": "2026-10-18",
         "expiry": "2027-12-31",
+        "approvedBy": "design-system-architect"
+      },
+      {
+        "id": "DL-01",
+        "file": "src/lib/travel/excelencia-offer-engine.ts",
+        "reason": "Motor gerador de arte gráfica e renderização canvas de ofertas de turismo",
+        "date": "2026-10-21",
+        "expiry": "2028-12-31",
+        "approvedBy": "design-system-architect"
+      },
+      {
+        "id": "DL-01",
+        "file": "src/lib/travel/liquid-glass-engine.ts",
+        "reason": "Motor de renderização gráfica e física óptica de liquid glass para cartões",
+        "date": "2026-10-21",
+        "expiry": "2028-12-31",
+        "approvedBy": "design-system-architect"
+      },
+      {
+        "id": "DL-01",
+        "file": "src/components/social-templates/TravelTemplateEditorial.tsx",
+        "reason": "Gerador de templates visuais de stories e flyers de marketing com gradientes fotográficos",
+        "date": "2026-10-21",
+        "expiry": "2028-12-31",
+        "approvedBy": "design-system-architect"
+      },
+      {
+        "id": "DL-01",
+        "file": "src/components/tourism/promotional-flyer/travel-promo-artboard.tsx",
+        "reason": "Artboard de composição visual de encartes de turismo",
+        "date": "2026-10-21",
+        "expiry": "2028-12-31",
         "approvedBy": "design-system-architect"
       },
       {

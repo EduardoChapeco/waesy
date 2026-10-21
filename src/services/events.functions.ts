@@ -2900,3 +2900,133 @@ export const getSurveyAnalytics = createServerFn({ method: "GET" })
       fieldSummaries,
     };
   });
+
+
+// ============================================================
+// LOTES DE INGRESSOS E AFILIADOS (Cluster 3: event_ticket_batches & event_ticket_affiliates)
+// ============================================================
+
+export const listEventTicketBatches = createServerFn({ method: "GET" })
+  .validator(z.object({ eventId: z.string().uuid() }))
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const { data: rows, error } = await supabase
+      .from("event_ticket_batches")
+      .select("*")
+      .eq("event_id", data.eventId)
+      .order("created_at", { ascending: true });
+
+    if (error) {
+      console.warn("[listEventTicketBatches] Erro:", error.message);
+      return [];
+    }
+    return rows || [];
+  });
+
+export const saveEventTicketBatch = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string().uuid().optional(),
+      eventId: z.string().uuid(),
+      batchName: z.string().min(1),
+      priceCents: z.number().int().min(0),
+      quantityAvailable: z.number().int().min(0),
+      quantitySold: z.number().int().min(0).default(0),
+      startDate: z.string().optional().nullable(),
+      endDate: z.string().optional().nullable(),
+      isActive: z.boolean().default(true),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const payload = {
+      event_id: data.eventId,
+      batch_name: data.batchName,
+      price_cents: data.priceCents,
+      quantity_available: data.quantityAvailable,
+      quantity_sold: data.quantitySold,
+      start_date: data.startDate,
+      end_date: data.endDate,
+      is_active: data.isActive,
+    };
+
+    if (data.id) {
+      const { data: updated, error } = await supabase
+        .from("event_ticket_batches")
+        .update(payload)
+        .eq("id", data.id)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao atualizar lote de ingressos: " + error.message);
+      return updated;
+    } else {
+      const { data: inserted, error } = await supabase
+        .from("event_ticket_batches")
+        .insert(payload)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao criar lote de ingressos: " + error.message);
+      return inserted;
+    }
+  });
+
+export const listEventTicketAffiliates = createServerFn({ method: "GET" })
+  .validator(z.object({ eventId: z.string().uuid() }))
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const { data: rows, error } = await supabase
+      .from("event_ticket_affiliates")
+      .select("*")
+      .eq("event_id", data.eventId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.warn("[listEventTicketAffiliates] Erro:", error.message);
+      return [];
+    }
+    return rows || [];
+  });
+
+export const saveEventTicketAffiliate = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string().uuid().optional(),
+      eventId: z.string().uuid(),
+      promoterProfileId: z.string().uuid(),
+      code: z.string().min(2).max(50),
+      commissionPercent: z.number().min(0).max(100).default(5.0),
+      commissionFixedCents: z.number().int().min(0).default(0),
+      isActive: z.boolean().default(true),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const payload = {
+      event_id: data.eventId,
+      promoter_profile_id: data.promoterProfileId,
+      code: data.code.trim().toUpperCase(),
+      commission_percent: data.commissionPercent,
+      commission_fixed_cents: data.commissionFixedCents,
+      is_active: data.isActive,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (data.id) {
+      const { data: updated, error } = await supabase
+        .from("event_ticket_affiliates")
+        .update(payload)
+        .eq("id", data.id)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao atualizar afiliado: " + error.message);
+      return updated;
+    } else {
+      const { data: inserted, error } = await supabase
+        .from("event_ticket_affiliates")
+        .insert(payload)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao cadastrar afiliado: " + error.message);
+      return inserted;
+    }
+  });
