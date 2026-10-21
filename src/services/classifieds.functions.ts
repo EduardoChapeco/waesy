@@ -742,15 +742,22 @@ export const updateClassifiedStatus = createServerFn({ method: "POST" })
       throw new Error("Você não tem permissão para alterar o estado deste anúncio.");
     }
 
+    const updatePayload: Record<string, any> = {
+      status,
+      updated_at: new Date().toISOString(),
+      ...(status === "active"
+        ? { expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() }
+        : {}),
+    };
+
+    if (status === "completed") {
+      updatePayload.is_boosted = false;
+      updatePayload.boosted_until = null;
+    }
+
     const { data: updated, error: updateErr } = await supabase
       .from("classifieds")
-      .update({
-        status,
-        updated_at: new Date().toISOString(),
-        ...(status === "active"
-          ? { expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() }
-          : {}),
-      })
+      .update(updatePayload)
       .eq("id", id)
       .select()
       .single();
@@ -758,6 +765,30 @@ export const updateClassifiedStatus = createServerFn({ method: "POST" })
     if (updateErr) {
       console.error("[classifieds] updateClassifiedStatus error:", updateErr);
       throw new Error("Erro ao atualizar o status do anúncio.");
+    }
+
+    try {
+      if (status === "completed") {
+        await supabase.from("classified_analytics_events").insert({
+          classified_id: id,
+          event_type: "conversion",
+          surface: "direct",
+          session_hash: "status_update",
+          user_id: identity.id,
+          metadata: { conversion_type: "marked_sold_by_user", reason: reason || null },
+        });
+      } else {
+        await supabase.from("classified_analytics_events").insert({
+          classified_id: id,
+          event_type: "status_change",
+          surface: "direct",
+          session_hash: "status_update",
+          user_id: identity.id,
+          metadata: { new_status: status, reason: reason || null },
+        });
+      }
+    } catch {
+      // Ignora erro de telemetria
     }
 
     return { success: true, classified: updated };
@@ -1984,12 +2015,17 @@ export const getBoostPaymentStatus = createServerFn({ method: "GET" }).handler(a
   // Determina provider ativo (Asaas tem prioridade por ser brasileiro/PIX nativo)
   const activeProvider = hasAsaas ? "asaas" : hasStripe ? "stripe" : null;
 
+  const identity = await getIdentity().catch(() => null);
+  const isAdmin = identity?.role === "admin" || identity?.role === "master";
+
   return {
     available: !!activeProvider,
     provider: activeProvider as "asaas" | "stripe" | null,
     message: activeProvider
       ? `Gateway ${activeProvider === "asaas" ? "Asaas (PIX/Boleto/Cartão)" : "Stripe"} configurado e ativo.`
-      : "Nenhum gateway de pagamento configurado. Configure em /admin-master/integracoes.",
+      : isAdmin
+      ? "Nenhum gateway de pagamento configurado na plataforma. Configure em /admin-master/integracoes."
+      : "O impulsionamento pago está sendo preparado para a sua região. No momento, todos os anúncios contam com distribuição orgânica completa e destaque por relevância.",
   };
 });
 

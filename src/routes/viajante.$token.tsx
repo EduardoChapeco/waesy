@@ -94,7 +94,7 @@ function PublicTravelerFormPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-slate-950 text-slate-50 flex flex-col items-center justify-center p-4 selection:bg-primary selection:text-primary-foreground font-sans">
+    <div className="min-h-dvh bg-slate-950 text-slate-50 flex flex-col items-center justify-center p-4 selection:bg-primary selection:text-primary-foreground font-sans">
       <div className="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-lg p-6 sm:p-8 shadow-xs space-y-6">
         {/* Header com Identidade da Agência */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-4">
@@ -103,7 +103,7 @@ function PublicTravelerFormPage() {
               <img
                 src={context.agencyLogo}
                 alt={context.agencyName}
-                className="h-8 max-w-[120px] object-contain rounded-md"
+                className="h-8 max-w-32 object-contain rounded-md"
               />
             ) : (
               <div className="size-9 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
@@ -111,7 +111,7 @@ function PublicTravelerFormPage() {
               </div>
             )}
             <div>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-sky-400 font-bold block">
+              <span className="text-xs font-mono uppercase tracking-widest text-sky-400 font-bold block">
                 {context?.agencyName || 'Agência Credenciada'}
               </span>
               <p className="text-xs text-slate-300 font-medium truncate max-w-72">
@@ -119,7 +119,7 @@ function PublicTravelerFormPage() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-bold text-emerald-400">
+          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-bold text-emerald-400">
             <ShieldCheck className="size-3" />
             <span>Link Seguro</span>
           </div>
@@ -135,7 +135,7 @@ function PublicTravelerFormPage() {
               Obrigado, <strong className="text-white">{fullName}</strong>! Seus dados e documentos foram recebidos e vinculados com segurança pela agência <strong className="text-white">{context?.agencyName}</strong> para emissão de passagens, voucher e seguro viagem.
             </p>
             <div className="pt-2">
-              <span className="px-3 py-1 rounded-full bg-slate-800 text-[10px] font-mono text-slate-400">
+              <span className="px-3 py-1 rounded-full bg-slate-800 text-xs font-mono text-slate-400">
                 Token: {token}
               </span>
             </div>

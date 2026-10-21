@@ -370,7 +370,7 @@ export default function TurismoRadarPage() {
               variant="outline"
               size="default"
               onClick={handleSeedCanonical}
-              className="h-11 sm:h-9 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer"
+              className="h-11 sm:h-11 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer"
             >
               <TrendingUp className="size-3.5 text-amber-500" />
               <span>Semear Destinos Recomendados</span>
@@ -378,7 +378,7 @@ export default function TurismoRadarPage() {
             <Button
               size="default"
               onClick={() => setIsAddDestOpen(true)}
-              className="h-11 sm:h-9 px-5 rounded-lg text-xs font-bold gap-2 cursor-pointer "
+              className="h-11 sm:h-11 px-5 rounded-lg text-xs font-bold gap-2 cursor-pointer "
             >
               <Plus className="size-3.5" />
               <span>Novo Destino</span>
@@ -512,7 +512,7 @@ export default function TurismoRadarPage() {
                           e.stopPropagation();
                           navigate({ to: '/workspace/turismo/destinos' });
                         }}
-                        className="flex-1 rounded-lg text-xs font-semibold h-11 sm:h-9 cursor-pointer"
+                        className="flex-1 rounded-lg text-xs font-semibold h-11 sm:h-11 cursor-pointer"
                       >
                         <Eye className="size-3.5 mr-1" />
                         CMS do Destino
@@ -526,7 +526,7 @@ export default function TurismoRadarPage() {
                             to: '/workspace/turismo/cotacoes',
                           });
                         }}
-                        className="flex-1 rounded-lg text-xs font-bold h-11 sm:h-9 bg-primary text-primary-foreground cursor-pointer "
+                        className="flex-1 rounded-lg text-xs font-bold h-11 sm:h-11 bg-primary text-primary-foreground cursor-pointer "
                       >
                         <Plane className="size-3.5 mr-1" />
                         Criar Cotação
@@ -702,7 +702,7 @@ export default function TurismoRadarPage() {
                 value={formHighlights}
                 onChange={(e) => setFormHighlights(e.target.value)}
                 placeholder="Ex: Centro histórico, Piscinas naturais, Museus..."
-                className="rounded-lg min-h-[80px]"
+                className="rounded-lg min-h-20"
               />
             </div>
 
@@ -721,13 +721,13 @@ export default function TurismoRadarPage() {
           </div>
 
           <SheetFooter className="p-4 border-t border-border bg-card/60 flex items-center justify-end gap-2 shrink-0">
-            <Button variant="outline" onClick={() => setIsAddDestOpen(false)} className="h-11 sm:h-9 px-4 rounded-lg text-xs font-semibold cursor-pointer">
+            <Button variant="outline" onClick={() => setIsAddDestOpen(false)} className="h-11 sm:h-11 px-4 rounded-lg text-xs font-semibold cursor-pointer">
               Cancelar
             </Button>
             <Button
               onClick={() => createDestMutation.mutate()}
               disabled={createDestMutation.isPending || !formDestination.trim()}
-              className="h-11 sm:h-9 px-5 rounded-lg text-xs font-bold cursor-pointer "
+              className="h-11 sm:h-11 px-5 rounded-lg text-xs font-bold cursor-pointer "
             >
               {createDestMutation.isPending ? 'Salvando...' : 'Salvar no Radar'}
             </Button>
@@ -812,19 +812,19 @@ export default function TurismoRadarPage() {
                 value={alertDescription}
                 onChange={(e) => setAlertDescription(e.target.value)}
                 placeholder="Descreva a orientação aos consultores para aviso aos passageiros..."
-                className="rounded-lg min-h-[100px]"
+                className="rounded-lg min-h-24"
               />
             </div>
           </div>
 
           <SheetFooter className="p-4 border-t border-border bg-card/60 flex items-center justify-end gap-2 shrink-0">
-            <Button variant="outline" onClick={() => setIsAddAlertOpen(false)} className="h-11 sm:h-9 px-4 rounded-lg text-xs font-semibold cursor-pointer">
+            <Button variant="outline" onClick={() => setIsAddAlertOpen(false)} className="h-11 sm:h-11 px-4 rounded-lg text-xs font-semibold cursor-pointer">
               Cancelar
             </Button>
             <Button
               onClick={() => createAlertMutation.mutate()}
               disabled={createAlertMutation.isPending || !alertDestName.trim() || !alertTitle.trim()}
-              className="h-11 sm:h-9 px-5 rounded-lg text-xs font-bold cursor-pointer "
+              className="h-11 sm:h-11 px-5 rounded-lg text-xs font-bold cursor-pointer "
             >
               {createAlertMutation.isPending ? 'Salvando...' : 'Publicar Alerta'}
             </Button>

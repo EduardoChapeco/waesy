@@ -780,7 +780,7 @@ function WorkspaceHotelsPage() {
  </p>
  </div>
  <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
- <Button onClick={handleOpenCreate} size="default" className="h-11 sm:h-9 px-5 rounded-lg font-bold bg-primary text-primary-foreground cursor-pointer shadow-xs">
+ <Button onClick={handleOpenCreate} size="default" className="h-11 sm:h-11 px-5 rounded-lg font-bold bg-primary text-primary-foreground cursor-pointer shadow-xs">
  <Plus className="size-4 mr-2" />
  Cadastrar Hotel do Zero
  </Button>
@@ -791,7 +791,7 @@ function WorkspaceHotelsPage() {
  }}
  size="default"
  variant="outline"
- className="h-11 sm:h-9 px-5 rounded-lg font-medium cursor-pointer"
+ className="h-11 sm:h-11 px-5 rounded-lg font-medium cursor-pointer"
  >
  <Zap className="size-4 mr-2 text-amber-500" />
  Importar Nannai Muro Alto (Preset Completo)
@@ -1381,7 +1381,7 @@ function WorkspaceHotelsPage() {
  onChange={handleSelectGlobalHotel}
  disabled={createMut.isPending || updateMut.isPending}
  />
- <p className="text-[11px] text-muted-foreground">Selecione um registro verificado para evitar duplicatas. A criação e fusão de registros canônicos permanece sob governança Master.</p>
+ <p className="text-xs text-muted-foreground">Selecione um registro verificado para evitar duplicatas. A criação e fusão de registros canônicos permanece sob governança Master.</p>
  </div>
  <div className="space-y-2">
  <Label className="font-semibold text-foreground">Nome do Hotel / Resort *</Label>
@@ -1615,7 +1615,7 @@ function WorkspaceHotelsPage() {
  placeholder="Cole a URL direta da imagem (HTTPS) ou envie abaixo..."
  className="h-9 rounded-lg text-xs bg-background flex-1"
  />
- <Button type="button" size="sm" variant="outline" onClick={handleAddPhoto} className="rounded-lg h-9">
+ <Button type="button"  variant="outline" onClick={handleAddPhoto} className="rounded-lg h-11 min-h-11 px-3 text-xs">
  + Adicionar URL
  </Button>
  </div>
@@ -1650,9 +1650,9 @@ function WorkspaceHotelsPage() {
  </div>
  <Button
  type="button"
- size="sm"
+ 
  onClick={handleAddRoomCategory}
- className="rounded-lg font-semibold gap-2 h-8 bg-primary text-primary-foreground"
+ className="rounded-lg font-semibold gap-2 h-8 bg-primary text-primary-foreground h-11 min-h-11 px-3 text-xs"
  >
  <Plus className="size-3.5" />
  <span>Adicionar Quarto</span>
@@ -1666,7 +1666,7 @@ function WorkspaceHotelsPage() {
  <p className="text-muted-foreground text-xs text-muted-foreground/75 max-w-sm mx-auto">
  Adicione quartos (ex: Bangalô Master, Apartamento Luxo, Suíte Família) com suas capacidades e comodidades.
  </p>
- <Button type="button" size="sm" variant="outline" onClick={handleAddRoomCategory} className="rounded-lg mt-2">
+ <Button type="button"  variant="outline" onClick={handleAddRoomCategory} className="rounded-lg mt-2 h-11 min-h-11 px-3 text-xs">
  + Criar Primeira Categoria
  </Button>
  </div>
@@ -1849,7 +1849,7 @@ function WorkspaceHotelsPage() {
  placeholder="Culinária (Ex: Frutos do Mar)..."
  className="h-9 rounded-lg text-xs bg-background w-36"
  />
- <Button type="button" size="sm" variant="outline" onClick={handleAddRestaurant} className="rounded-lg h-9">
+ <Button type="button"  variant="outline" onClick={handleAddRestaurant} className="rounded-lg h-11 min-h-11 px-3 text-xs">
  + Adicionar
  </Button>
  </div>
@@ -2039,7 +2039,7 @@ function WorkspaceHotelsPage() {
  }
  }}
  placeholder="Adicionar bullet persuasivo (Ex: Piscinas naturais com bar molhado)..."
- className="h-11 sm:h-9 rounded-lg text-xs bg-background flex-1"
+ className="h-11 sm:h-11 rounded-lg text-xs bg-background flex-1"
  />
  <Button
  type="button"
@@ -2053,7 +2053,7 @@ function WorkspaceHotelsPage() {
  setNewBullet("");
  }
  }}
- className="h-11 sm:h-9 px-4 rounded-lg text-xs font-semibold cursor-pointer shrink-0"
+ className="h-11 sm:h-11 px-4 rounded-lg text-xs font-semibold cursor-pointer shrink-0"
  >
  + Adicionar
  </Button>
@@ -2067,7 +2067,7 @@ function WorkspaceHotelsPage() {
  type="button"
  variant="outline"
  onClick={() => setIsSheetOpen(false)}
- className="h-11 sm:h-9 px-4 rounded-lg font-semibold cursor-pointer"
+ className="h-11 sm:h-11 px-4 rounded-lg font-semibold cursor-pointer"
  >
  Cancelar
  </Button>

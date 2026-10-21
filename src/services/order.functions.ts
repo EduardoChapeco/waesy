@@ -407,7 +407,7 @@ export const listCustomerOrders = createServerFn({ method: "GET" }).handler(asyn
 
  return (data || []).map((order: any) => ({
       ...order,
-      store_name: order.stores?.name || null,
+      store_name: (order.stores as any)?.name || (Array.isArray(order.stores) ? (order.stores as any)[0]?.name : null),
       store_slug: order.stores?.slug || null,
       store_logo_url: order.stores?.logo_url || null,
  order_items:
@@ -460,7 +460,7 @@ export const getCustomerOrder = createServerFn({ method: "GET" })
  return {
       ...order,
       store: order.stores || null,
-      store_name: order.stores?.name || null,
+      store_name: (order.stores as any)?.name || (Array.isArray(order.stores) ? (order.stores as any)[0]?.name : null),
       order_items:
  order.order_items?.map((item: any) => ({
  ...item,
@@ -1849,16 +1849,20 @@ export const cancelCustomerOrder = createServerFn({ method: "POST" })
       }
 
       // Registra evento de telemetria
-      await db.from("order_events").insert({
-        order_id: order.id,
-        store_id: order.store_id,
-        event_type: "customer_cancelled",
-        from_status: order.status,
-        to_status: "cancelled",
-        actor_type: "customer",
-        actor_id: user.id,
-        note: cancelReason,
-      }).catch(() => {});
+      try {
+        await db.from("order_events").insert({
+          order_id: order.id,
+          store_id: order.store_id,
+          event_type: "customer_cancelled",
+          from_status: order.status,
+          to_status: "cancelled",
+          actor_type: "customer",
+          actor_id: user.id,
+          note: cancelReason,
+        });
+      } catch {
+        // Evento de telemetria não bloqueante
+      }
 
       return { success: true, message: "Pedido cancelado com sucesso." };
     } catch (e: unknown) {

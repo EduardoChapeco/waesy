@@ -28,6 +28,7 @@ import { UnifiedProposalWorkspace } from "@/components/tourism/unified-proposal-
 import { TravelAiImporterBanner } from "@/components/tourism/promotional-flyer/travel-ai-importer-banner";
 import { ingestTravelDocument } from "@/services/travel-canonical-pipeline.functions";
 import { formatDate } from "@/lib/datetime";
+import { cn } from "@/lib/utils";
 import { formatMoney } from "@/lib/money";
 
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
@@ -290,7 +291,7 @@ export default function AgencyQuotesPage() {
             <button
               type="button"
               onClick={() => setViewMode("kanban")}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+              className={`flex items-center gap-2 px-3 py-2 h-11 min-h-11 rounded-lg text-xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 viewMode === "kanban"
                   ? "bg-background text-foreground shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -302,7 +303,7 @@ export default function AgencyQuotesPage() {
             <button
               type="button"
               onClick={() => setViewMode("grid")}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+              className={`flex items-center gap-2 px-3 py-2 h-11 min-h-11 rounded-lg text-xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 viewMode === "grid"
                   ? "bg-background text-foreground shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -355,10 +356,10 @@ export default function AgencyQuotesPage() {
             <Button
               type="button"
               variant="outline"
-              size="sm"
+
               disabled={isOcrLoading}
               onClick={() => document.getElementById("quote-ocr-file-input")?.click()}
-              className="h-8 rounded-lg text-xs font-bold gap-2 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20 cursor-pointer"
+              className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
             >
               <FileText size={14} />
               <span>{isOcrLoading ? "Lendo..." : " Importar Operadora (OCR)"}</span>
@@ -380,9 +381,9 @@ export default function AgencyQuotesPage() {
             </p>
             <Button
               type="button"
-              size="sm"
+
               onClick={() => setIsNewSheetOpen(true)}
-              className="rounded-lg text-xs font-bold bg-primary text-primary-foreground gap-2"
+              className="rounded-lg h-11 min-h-11 px-4 text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
             >
               <Plus size={16} weight="bold" />
               <span>Cadastrar Primeira Cotação</span>
@@ -392,24 +393,23 @@ export default function AgencyQuotesPage() {
           /* Visualização de Funil Kanban por Estágios */
           <div className="flex gap-4 overflow-x-auto pb-4 min-h-96 no-scrollbar">
             {[
-              { id: "new", title: "Novas Solicitações", icon: Clock, color: "#3b82f6" },
-              { id: "analyzing", title: "Em Análise e Cotação", icon: ChatCircleDots, color: "#f59e0b" },
-              { id: "quoted", title: "Proposta Enviada", icon: FileText, color: "#8b5cf6" },
-              { id: "won", title: "Fechadas / Ganhas", icon: CheckCircle, color: "#10b981" },
-              { id: "lost", title: "Perdidas", icon: Trash, color: "#f43f5e" },
+              { id: "new", title: "Novas Solicitações", icon: Clock, borderClass: "border-t-primary", textClass: "text-primary" },
+              { id: "analyzing", title: "Em Análise e Cotação", icon: ChatCircleDots, borderClass: "border-t-amber-500", textClass: "text-amber-500" },
+              { id: "quoted", title: "Proposta Enviada", icon: FileText, borderClass: "border-t-purple-500", textClass: "text-purple-500" },
+              { id: "won", title: "Fechadas / Ganhas", icon: CheckCircle, borderClass: "border-t-emerald-500", textClass: "text-emerald-500" },
+              { id: "lost", title: "Perdidas", icon: Trash, borderClass: "border-t-destructive", textClass: "text-destructive" },
             ].map((col) => {
               const colQuotes = filteredQuotes.filter((q: any) => q.status === col.id);
               const ColIcon = col.icon;
               return (
                 <div
                   key={col.id}
-                  className="flex-none w-80 bg-muted/20 border border-border/70 rounded-lg flex flex-col shadow-2xs"
-                  style={{ borderTop: `3px solid ${col.color}` }}
+                  className={cn("flex-none w-80 bg-muted/20 border border-border/70 border-t-4 rounded-lg flex flex-col shadow-2xs", col.borderClass)}
                 >
                   {/* Cabeçalho da Coluna */}
                   <div className="px-4 py-3 border-b border-border/50 flex items-center justify-between shrink-0 bg-card/60 rounded-t-lg">
                     <div className="flex items-center gap-2">
-                      <ColIcon size={16} style={{ color: col.color }} weight="bold" />
+                      <ColIcon size={16} className={col.textClass} weight="bold" />
                       <h3 className="text-xs font-bold text-foreground">{col.title}</h3>
                     </div>
                     <Badge variant="outline" className="font-mono text-xs h-5 px-2">
@@ -432,7 +432,7 @@ export default function AgencyQuotesPage() {
                         return (
                           <Card
                             key={q.id}
-                            className="p-4 rounded-lg border border-border/70 bg-card space-y-3 hover:border-primary/50 transition-all shadow-none flex flex-col justify-between"
+                            className="p-4 rounded-lg border border-border/70 bg-card space-y-3 hover:border-primary/50 transition-colors shadow-none flex flex-col justify-between"
                           >
                             <div className="space-y-2">
                               <div className="flex items-center justify-between gap-1">
@@ -489,7 +489,7 @@ export default function AgencyQuotesPage() {
                                       };
                                       quickMoveStageMutation.mutate({ id: q.id, nextStatus: prev[col.id] || "new" });
                                     }}
-                                    className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer"
+                                    className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer size-11 min-h-11 min-w-11 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                   >
                                     <CaretLeft size={13} weight="bold" />
                                   </button>
@@ -506,7 +506,7 @@ export default function AgencyQuotesPage() {
                                       };
                                       quickMoveStageMutation.mutate({ id: q.id, nextStatus: next[col.id] || "won" });
                                     }}
-                                    className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer"
+                                    className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer size-11 min-h-11 min-w-11 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                   >
                                     <CaretRight size={13} weight="bold" />
                                   </button>
@@ -527,20 +527,20 @@ export default function AgencyQuotesPage() {
                                 )}
                                 <Button
                                   type="button"
-                                  size="sm"
+                    
                                   variant="ghost"
                                   onClick={() => createProposalMutation.mutate(q)}
-                                  className="h-10 sm:h-7 px-3 sm:px-2 text-xs sm:text-xs text-muted-foreground/75 rounded-lg sm:rounded-lg font-bold text-primary hover:bg-primary/10"
+                                  className="h-11 min-h-11 px-3 text-xs rounded-lg font-bold text-primary hover:bg-primary/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
                                   title="Criar Proposta no Studio"
                                 >
                                   Lâmina
                                 </Button>
                                 <Button
                                   type="button"
-                                  size="sm"
+                    
                                   variant="outline"
                                   onClick={() => openManageModal(q)}
-                                  className="h-10 sm:h-7 px-3 sm:px-2 text-xs sm:text-xs text-muted-foreground/75 rounded-lg sm:rounded-lg font-bold gap-1 cursor-pointer"
+                                  className="h-11 min-h-11 px-3 text-xs rounded-lg font-bold gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
                                 >
                                   Gerenciar
                                 </Button>
@@ -599,7 +599,7 @@ export default function AgencyQuotesPage() {
  return (
  <Card
  key={q.id}
- className="p-5 rounded-lg border border-border/60 bg-card space-y-4 hover:border-primary/40 transition-all flex flex-col justify-between shadow-none"
+ className="p-5 rounded-lg border border-border/60 bg-card space-y-4 hover:border-primary/40 transition-colors flex flex-col justify-between shadow-none"
  >
  <div className="space-y-3">
  {/* Top Header do Card */}
@@ -699,10 +699,10 @@ export default function AgencyQuotesPage() {
                     <div className="flex items-center gap-2 w-full sm:w-auto">
                       <Button
                         type="button"
-                        size="sm"
+          
                         variant="outline"
                         onClick={() => openManageModal(q)}
-                        className="flex-1 sm:flex-none rounded-lg font-bold text-xs h-11 sm:h-8 px-4 sm:px-3 border-border gap-1 cursor-pointer"
+                        className="flex-1 sm:flex-none rounded-lg font-bold text-xs h-11 min-h-11 px-4 border-border gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
                       >
                         <PencilSimple size={13} weight="bold" />
                         <span>Gerenciar</span>
@@ -710,11 +710,11 @@ export default function AgencyQuotesPage() {
 
                       <Button
                         type="button"
-                        size="sm"
+          
                         variant="outline"
                         disabled={createProposalMutation.isPending}
                         onClick={() => createProposalMutation.mutate(q)}
-                        className="flex-1 sm:flex-none rounded-lg font-bold text-xs h-11 sm:h-8 px-4 sm:px-3 border-border gap-1 cursor-pointer text-primary"
+                        className="flex-1 sm:flex-none rounded-lg font-bold text-xs h-11 min-h-11 px-4 border-border gap-1 cursor-pointer text-primary focus-visible:ring-2 focus-visible:ring-primary"
                       >
                         <FileText size={13} weight="bold" />
                         <span>Criar Lâmina</span>
@@ -723,8 +723,8 @@ export default function AgencyQuotesPage() {
 
                     <Button
                       asChild
-                      size="sm"
-                      className="w-full sm:w-auto rounded-lg font-bold text-xs h-11 sm:h-8 px-4 sm:px-3 bg-primary hover:bg-primary/90 text-primary-foreground gap-2 cursor-pointer"
+        
+                      className="w-full sm:w-auto rounded-lg font-bold text-xs h-11 min-h-11 px-4 bg-primary hover:bg-primary/90 text-primary-foreground gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       <a
                         href={`https://wa.me/55${cleanWhatsapp}?text=${waMessage}`}
@@ -776,8 +776,8 @@ export default function AgencyQuotesPage() {
          {managingQuote?.contact_whatsapp && (
            <Button
              variant="outline"
-             size="sm"
-             className="h-9 px-3 gap-2 text-xs text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 rounded-lg"
+
+             className="h-11 min-h-11 px-4 gap-2 text-xs text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 rounded-lg focus-visible:ring-2 focus-visible:ring-emerald-500 cursor-pointer"
              asChild
            >
              <a
@@ -835,7 +835,7 @@ export default function AgencyQuotesPage() {
              </div>
              <Button
                type="button"
-               size="sm"
+ 
                variant="outline"
                onClick={() => setIsFlightSimulatorOpen((prev) => !prev)}
                className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
@@ -927,7 +927,7 @@ export default function AgencyQuotesPage() {
                      <Button
                        asChild
                        variant="outline"
-                       size="sm"
+         
                        className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold shrink-0"
                      >
                        <Link to="/workspace/configuracoes/integracoes">Configurar InfoTravel</Link>
@@ -984,7 +984,7 @@ export default function AgencyQuotesPage() {
                    const cleanPhone = (managingQuote.contact_whatsapp || "").replace(/\D/g, "");
                    window.open(`https://wa.me/55${cleanPhone}?text=${encodeURIComponent(`Olá ${managingQuote.contact_name}! Sou da agência de turismo no Waesy. Recebi sua solicitação para ${managingQuote.destination_city} e preparei opções personalizadas!`)}`, "_blank");
                  }}
-                 className="p-1 rounded-md text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
+                 className="h-11 min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-md text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                  title="Abrir WhatsApp do Cliente"
                >
                  <WhatsappLogo size={16} weight="fill" />
@@ -1065,7 +1065,7 @@ export default function AgencyQuotesPage() {
              },
            });
          }}
-         className="text-destructive text-xs rounded-lg h-10 hover:bg-destructive/10 cursor-pointer"
+         className="text-destructive text-xs rounded-lg h-11 min-h-11 hover:bg-destructive/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-destructive"
        >
          <Trash size={14} className="mr-1" />
          <span>Excluir Cotação</span>
@@ -1077,7 +1077,7 @@ export default function AgencyQuotesPage() {
            variant="outline"
            size="sm"
            onClick={() => setManagingQuote(null)}
-           className="rounded-lg text-xs h-10 px-4 cursor-pointer"
+           className="rounded-lg text-xs h-11 min-h-11 px-4 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
          >
            Cancelar
          </Button>
@@ -1086,7 +1086,7 @@ export default function AgencyQuotesPage() {
            size="sm"
            disabled={updateQuoteMutation.isPending}
            onClick={() => updateQuoteMutation.mutate()}
-           className="rounded-lg text-xs h-10 px-5 font-bold bg-primary text-primary-foreground cursor-pointer"
+           className="rounded-lg text-xs h-11 min-h-11 px-5 font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
          >
            {updateQuoteMutation.isPending ? "Salvando..." : "Salvar Alterações"}
          </Button>

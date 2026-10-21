@@ -49,33 +49,20 @@ export const generateText = createServerFn({ method: "POST" })
     const generatedText = response.result.text;
     const estimatedTokens = response.metadata.usage.totalTokens || Math.max(50, Math.ceil((input.prompt.length + generatedText.length) / 4));
 
-    // 2. Decremento de saldo na carteira da loja para compatibilidade com billing histórico
-    if (identity.store_id) {
+    // 2. Faturamento canônico via motor central $WZ (com proteção contra WZ de loja)
+    if (identity.id) {
       try {
-        const { data: store } = await supabase
-          .from("stores")
-          .select("id, settings")
-          .eq("id", identity.store_id)
-          .single();
-
-        if (store) {
-          const settings = store.settings || {};
-          const wallet = settings.token_wallet || {
-            balance: 50_000,
-            lifetime_purchased: 50_000,
-            lifetime_consumed: 0,
-          };
-          const newBalance = Math.max(0, (wallet.balance || 0) - estimatedTokens);
-          wallet.balance = newBalance;
-          wallet.lifetime_consumed = (wallet.lifetime_consumed || 0) + estimatedTokens;
-
-          await supabase
-            .from("stores")
-            .update({ settings: { ...settings, token_wallet: wallet } })
-            .eq("id", identity.store_id);
-        }
-      } catch (e) {
-        console.error("[ai-functions] Erro ao debitar carteira de tokens da loja:", e);
+        const { chargeAiUsageWz } = await import("@/services/wz-engine.functions");
+        await chargeAiUsageWz({
+          data: {
+            operation: "short_chat_turn",
+            inputTokens: input.prompt.length,
+            outputTokens: generatedText.length,
+            metadata: { provider: response.metadata.provider, store_id: identity.store_id || null },
+          },
+        });
+      } catch (billingErr) {
+        console.warn("[ai-functions] Billing $WZ log:", billingErr);
       }
     }
 

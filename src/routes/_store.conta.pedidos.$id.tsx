@@ -634,13 +634,13 @@ function CustomerOrderDetailPage() {
               className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 cursor-pointer border-border/70 hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-primary"
             >
               <Link
-                to="/u/suporte"
+                to={"/u/suporte" as any}
                 search={{
                   orderId: order.id,
                   orderNumber: order.order_number || order.public_token,
                   totalCents: order.total_cents,
                   storeId: order.store_id || "",
-                }}
+                } as any}
               >
                 <HelpCircle className="size-4 text-muted-foreground" />
                 <span>Ajuda com este Pedido</span>
@@ -755,14 +755,27 @@ function CustomerOrderDetailPage() {
           )}
 
           {["paid", "processing", "completed"].includes(order.status) && (
-            <div className="flex items-start gap-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-900 dark:text-emerald-200 text-xs p-4 rounded-lg">
-              <Info className="size-4 shrink-0 mt-1 text-emerald-600 dark:text-emerald-400" />
-              <div>
-                <p className="font-bold">Pagamento Confirmado</p>
-                <p className="mt-1 opacity-90">
-                  Seu pagamento foi confirmado! O pedido está sendo preparado.
-                </p>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-900 dark:text-emerald-200 text-xs p-4 rounded-lg">
+              <div className="flex items-start gap-3">
+                <Info className="size-4 shrink-0 mt-1 text-emerald-600 dark:text-emerald-400" />
+                <div>
+                  <p className="font-bold">Pagamento Confirmado</p>
+                  <p className="mt-1 opacity-90">
+                    Seu pagamento foi confirmado! O pedido está sendo preparado.
+                  </p>
+                </div>
               </div>
+
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg shrink-0 border-emerald-500/30 text-emerald-900 dark:text-emerald-100 hover:bg-emerald-500/20 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+              >
+                <Link to="/conta/pagamentos">
+                  <span>Ver Pagamento</span>
+                </Link>
+              </Button>
             </div>
           )}
 

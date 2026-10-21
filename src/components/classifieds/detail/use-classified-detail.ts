@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { formatMoney } from "@/lib/money";
 import { createDealProposal, getClassifiedBookedDates } from "@/services/deals.functions";
 import { getDigitalDownloadSignedUrl, trackClassifiedView } from "@/services/classifieds.functions";
+import { recordClassifiedTelemetry } from "@/services/classifieds-analytics.functions";
 import { resolveClassifiedNiche } from "@/lib/classifieds/semantics";
 import type { DepartureOption } from "@/lib/classifieds/canonical-airports";
 
@@ -71,12 +72,51 @@ export function useClassifiedDetail({
 
     try {
       const storageKey = `waesy_viewed_ad_${targetId}`;
-      if (sessionStorage.getItem(storageKey)) return;
-      sessionStorage.setItem(storageKey, "1");
+      if (!sessionStorage.getItem(storageKey)) {
+        sessionStorage.setItem(storageKey, "1");
+        
+        // Detecta origem via query params e referrer
+        const params = new URLSearchParams(window.location.search);
+        const surfaceParam = params.get("source") || params.get("utm_source");
+        const shareId = params.get("share_id") || params.get("ref") || undefined;
+        let surface: any = "direct";
+        if (surfaceParam && ["search", "feed", "category", "map", "recommendation", "similar", "share_link"].includes(surfaceParam)) {
+          surface = surfaceParam;
+        } else if (document.referrer.includes("/busca")) {
+          surface = "search";
+        } else if (document.referrer.includes("/feed")) {
+          surface = "feed";
+        }
 
-      trackClassifiedView({ data: { adId: targetId } }).catch((err) => {
-        console.debug("[telemetry] Telemetria de visualização:", err);
-      });
+        recordClassifiedTelemetry({
+          data: {
+            classifiedId: targetId,
+            eventType: "view",
+            surface,
+            shareId,
+            deviceType: window.innerWidth < 640 ? "mobile" : "desktop",
+          },
+        }).catch(() => {});
+
+        trackClassifiedView({ data: { adId: targetId } }).catch((err) => {
+          console.debug("[telemetry] Telemetria de visualização:", err);
+        });
+      }
+
+      // Heartbeat antifraude de permanência ativa (a cada 15 segundos se a aba estiver visível)
+      const heartbeatInterval = setInterval(() => {
+        if (document.visibilityState === "visible") {
+          recordClassifiedTelemetry({
+            data: {
+              classifiedId: targetId,
+              eventType: "duration",
+              durationSeconds: 15,
+            },
+          }).catch(() => {});
+        }
+      }, 15000);
+
+      return () => clearInterval(heartbeatInterval);
     } catch {}
   }, [classified?.id]);
 

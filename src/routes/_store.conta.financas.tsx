@@ -1,35 +1,90 @@
 /**
- * _store.conta.financas.tsx — Gestão Financeira Pessoal (Plataforma Waesy)
- * Controle de despesas, receitas, saldo, distribuição por categorias e comprovantes com foto.
- * Paradigma Apple HIG & Clean Design, alvos de 44px, fonte Inter e RLS estrito (auth.uid() = profile_id).
+ * _store.conta.financas.tsx — Gestão Financeira Canônica, Ledger e Extrato Unificado (Plataforma Waesy)
+ * 
+ * Normativa: SPEC-FINANCAS-LEDGER-CARTEIRA-UNIFICADA, AGENTS.md B.8, B.14, B.22, B.25, B.26
+ * 4 Pilares: [ Visão Geral ] [ Extrato ] [ Planejamento ] [ Conta ]
+ * Separação dos Três Livros: Pessoal, Ledger Econômico Waesy e Dinheiro Movimentável (R$)
+ * Design: Apple HIG & Clean Design, alvos táteis de 44px (h-11), rounded-lg, zero emojis, WCAG AA.
  */
 
 import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useTransition, useMemo } from "react";
-import { ArrowUpRight, ArrowDownLeft, Wallet, Calendar, Receipt, Plus, Trash2, Image as ImageIcon, Eye, X, ChevronLeft, ChevronRight, CreditCard, Search, CheckCircle2, SlidersHorizontal, ArrowLeft, Utensils, Car, Home, HeartPulse, GraduationCap, Palmtree, ShoppingBag, Briefcase, TrendingUp, Landmark, ScanLine, Lock, Coins, Shield, Activity, ExternalLink } from "lucide-react";
+import {
+  ArrowUpRight,
+  ArrowDownLeft,
+  Wallet,
+  Calendar,
+  Receipt,
+  Plus,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  CheckCircle2,
+  Coins,
+  Shield,
+  Activity,
+  ExternalLink,
+  RefreshCw,
+  Upload,
+  Copy,
+  FileText,
+  ArrowLeftRight,
+} from "lucide-react";
+
 import { getUserTokenWallet } from "@/services/tokens.functions";
-import { getPersonalFinanceSummary, listPersonalFinanceEntries, listPersonalFinanceCategories, createPersonalFinanceEntry, deletePersonalFinanceEntry, analyzeReceiptWithAI, type PersonalFinanceSummaryDTO, type PersonalFinancialEntryDTO, type PersonalFinancialCategoryDTO, type OcrReceiptResult } from "@/services/personal-finance.functions";
+import {
+  getPersonalFinanceSummary,
+  listPersonalFinanceEntries,
+  listPersonalFinanceCategories,
+  createPersonalFinanceEntry,
+  analyzeReceiptWithAI,
+  importOfxStatement,
+  type PersonalFinanceSummaryDTO,
+  type PersonalFinancialEntryDTO,
+  type PersonalFinancialCategoryDTO,
+} from "@/services/personal-finance.functions";
+import {
+  getMyWalletBalance,
+  transferP2P,
+  depositPixToWallet,
+  getReceiptDetails,
+  type WalletBalanceDTO,
+  type FinancialReceiptDTO,
+} from "@/services/financial-ledger.functions";
+import {
+  listUnifiedFinancialFeed,
+  type UnifiedFinancialEventDTO,
+} from "@/services/financial-event-bus.service";
+
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatCents, cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 
 export const Route = createFileRoute("/_store/conta/financas")({
-  head: () => ({ meta: [{ title: "Finanças | Waesy" }] }),
+  head: () => ({ meta: [{ title: "Finanças e Carteira | Waesy" }] }),
   loader: async () => {
-    try {
     const now = new Date();
     const currentMonth = now.getMonth() + 1;
     const currentYear = now.getFullYear();
 
     try {
-      const [summary, entries, categories, tokenWallet] = await Promise.all([
-        getPersonalFinanceSummary({ data: { month: currentMonth, year: currentYear } }),
-        listPersonalFinanceEntries({ data: { month: currentMonth, year: currentYear } }),
-        listPersonalFinanceCategories(),
+      const [summary, entries, categories, tokenWallet, walletBalance, unifiedFeed] = await Promise.all([
+        getPersonalFinanceSummary({ data: { month: currentMonth, year: currentYear } }).catch(() => ({
+          totalIncomeCents: 0,
+          totalExpenseCents: 0,
+          balanceCents: 0,
+          entriesCount: 0,
+          month: currentMonth,
+          year: currentYear,
+          byCategory: [],
+          dailyTrend: [],
+        })),
+        listPersonalFinanceEntries({ data: { month: currentMonth, year: currentYear } }).catch(() => []),
+        listPersonalFinanceCategories().catch(() => []),
         getUserTokenWallet().catch(() => ({
           balance: 0,
           balance_pending_maturity: 0,
@@ -37,18 +92,28 @@ export const Route = createFileRoute("/_store/conta/financas")({
           zero_transfer_policy_active: true,
           transactions: [],
         })),
+        getMyWalletBalance().catch(() => ({
+          availableCents: 0,
+          heldCents: 0,
+          currency: "BRL",
+          isAccountActive: true,
+          securityLevel: "ZERO_TRUST_CIVIL",
+        })),
+        listUnifiedFinancialFeed({ data: { month: currentMonth, year: currentYear, limit: 50 } }).catch(() => []),
       ]);
 
       return {
-        initialSummary: summary,
-        initialEntries: entries,
-        categories,
+        initialSummary: summary as PersonalFinanceSummaryDTO,
+        initialEntries: entries as PersonalFinancialEntryDTO[],
+        categories: categories as PersonalFinancialCategoryDTO[],
         tokenWallet,
+        walletBalance: walletBalance as WalletBalanceDTO,
+        unifiedFeed: unifiedFeed as UnifiedFinancialEventDTO[],
         currentMonth,
         currentYear,
       };
-    } catch (err: any) {
-      console.warn("[financas.route] Loader fallback:", err);
+    } catch (err) {
+      console.error("[loader:_store.conta.financas] Falha no loader:", err);
       return {
         initialSummary: {
           totalIncomeCents: 0,
@@ -62,20 +127,12 @@ export const Route = createFileRoute("/_store/conta/financas")({
         } as PersonalFinanceSummaryDTO,
         initialEntries: [] as PersonalFinancialEntryDTO[],
         categories: [] as PersonalFinancialCategoryDTO[],
-        tokenWallet: {
-          balance: 0,
-          balance_pending_maturity: 0,
-          security_level: "MILITARY_ZERO_TRUST",
-          zero_transfer_policy_active: true,
-          transactions: [],
-        },
+        tokenWallet: { balance: 0, balance_pending_maturity: 0, security_level: "CIVIL", transactions: [] },
+        walletBalance: { availableCents: 0, heldCents: 0, currency: "BRL", isAccountActive: false, securityLevel: "FALLBACK" },
+        unifiedFeed: [] as UnifiedFinancialEventDTO[],
         currentMonth,
         currentYear,
       };
-    }
-    } catch (err) {
-      console.error("[loader:_store.conta.financas] Unhandled loader error:", err);
-      return { initialSummary: null, initialEntries: null, categories: null, tokenWallet: null, currentMonth: null, currentYear: null };
     }
   },
   component: PersonalFinancePage,
@@ -96,53 +153,46 @@ const MONTH_NAMES = [
   "Dezembro",
 ];
 
-// Helper para renderizar ícone dinâmico da categoria
-function getCategoryIcon(iconName: string) {
-  switch (iconName?.toLowerCase()) {
-    case "utensils":
-      return <Utensils className="h-4 w-4" />;
-    case "car":
-      return <Car className="h-4 w-4" />;
-    case "home":
-      return <Home className="h-4 w-4" />;
-    case "heartpulse":
-      return <HeartPulse className="h-4 w-4" />;
-    case "graduationcap":
-      return <GraduationCap className="h-4 w-4" />;
-    case "palmtree":
-      return <Palmtree className="h-4 w-4" />;
-    case "shoppingbag":
-      return <ShoppingBag className="h-4 w-4" />;
-    case "briefcase":
-      return <Briefcase className="h-4 w-4" />;
-    case "trendingup":
-      return <TrendingUp className="h-4 w-4" />;
-    case "landmark":
-      return <Landmark className="h-4 w-4" />;
-    default:
-      return <Receipt className="h-4 w-4" />;
-  }
-}
+type PillarTab = "overview" | "feed" | "planning" | "account";
 
 function PersonalFinancePage() {
-  const router = useRouter();
-  const { initialSummary, initialEntries, categories, tokenWallet, currentMonth, currentYear } = ((Route.useLoaderData?.() as any) || {});
+  const {
+    initialSummary,
+    categories,
+    tokenWallet,
+    walletBalance,
+    unifiedFeed,
+    currentMonth,
+    currentYear,
+  } = (Route.useLoaderData?.() as any) || {};
 
-  const [month, setMonth] = useState(currentMonth);
-  const [year, setYear] = useState(currentYear);
+  // Estado dos 4 Pilares
+  const [activePillar, setActivePillar] = useState<PillarTab>("overview");
+
+  // Período
+  const [month, setMonth] = useState(currentMonth || new Date().getMonth() + 1);
+  const [year, setYear] = useState(currentYear || new Date().getFullYear());
   const [summary, setSummary] = useState<PersonalFinanceSummaryDTO>(initialSummary);
-  const [entries, setEntries] = useState<PersonalFinancialEntryDTO[]>(initialEntries);
+  const [feed, setFeed] = useState<UnifiedFinancialEventDTO[]>(unifiedFeed || []);
+  const [wallet, setWallet] = useState<WalletBalanceDTO>(walletBalance);
   const [isLoadingPeriod, setIsLoadingPeriod] = useState(false);
 
-  // Filtros
-  const [activeTab, setActiveTab] = useState<"all" | "expense" | "income">("all");
+  // Filtros do Extrato
+  const [feedFilterDomain, setFeedFilterDomain] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Drawer / Modal de Criação de Lançamento
+  // Modais & Drawers
   const [isNewEntryOpen, setIsNewEntryOpen] = useState(false);
+  const [isTransferOpen, setIsTransferOpen] = useState(false);
+  const [isDepositOpen, setIsDepositOpen] = useState(false);
+  const [isOfxModalOpen, setIsOfxModalOpen] = useState(false);
+  const [selectedEventDetail, setSelectedEventDetail] = useState<UnifiedFinancialEventDTO | null>(null);
+  const [activeReceipt, setActiveReceipt] = useState<FinancialReceiptDTO | null>(null);
+
+  // Estados de Transição e Formulários
   const [isSubmitting, startTransition] = useTransition();
 
-  // Form State
+  // Novo Lançamento Form
   const [entryType, setEntryType] = useState<"expense" | "income">("expense");
   const [amountStr, setAmountStr] = useState("");
   const [description, setDescription] = useState("");
@@ -153,55 +203,55 @@ function PersonalFinancePage() {
   >("pix");
   const [receiptUrl, setReceiptUrl] = useState<string>("");
   const [notes, setNotes] = useState("");
-
-  // Modal de Zoom do Recibo / Comprovante
-  const [viewingReceiptUrl, setViewingReceiptUrl] = useState<string | null>(null);
-
-  // OCR State
   const [isAnalyzingOcr, setIsAnalyzingOcr] = useState(false);
-  const [ocrResult, setOcrResult] = useState<OcrReceiptResult | null>(null);
 
-  // Recalcula dados ao trocar de mês/ano
+  // Formulário P2P
+  const [transferRecipientId, setTransferRecipientId] = useState("");
+  const [transferAmountStr, setTransferAmountStr] = useState("");
+  const [transferDesc, setTransferDesc] = useState("");
+
+  // Formulário Depósito Pix
+  const [depositAmountStr, setDepositAmountStr] = useState("50,00");
+
+  // Formulário OFX
+  const [ofxContentInput, setOfxContentInput] = useState("");
+  const [isImportingOfx, setIsImportingOfx] = useState(false);
+
+  // Recarrega período
   const handlePeriodChange = async (newMonth: number, newYear: number) => {
     setMonth(newMonth);
     setYear(newYear);
     setIsLoadingPeriod(true);
 
     try {
-      const [newSummary, newEntries] = await Promise.all([
+      const [newSummary, newFeed, newWallet] = await Promise.all([
         getPersonalFinanceSummary({ data: { month: newMonth, year: newYear } }),
-        listPersonalFinanceEntries({ data: { month: newMonth, year: newYear } }),
+        listUnifiedFinancialFeed({ data: { month: newMonth, year: newYear, limit: 100 } }),
+        getMyWalletBalance(),
       ]);
       setSummary(newSummary);
-      setEntries(newEntries);
-    } catch (err: any) {
-      toast.error("Erro ao carregar dados do período.");
+      setFeed(newFeed);
+      setWallet(newWallet);
+    } catch {
+      toast.error("Erro ao sincronizar dados do período.");
     } finally {
       setIsLoadingPeriod(false);
     }
   };
 
   const handlePrevMonth = () => {
-    if (month === 1) {
-      handlePeriodChange(12, year - 1);
-    } else {
-      handlePeriodChange(month - 1, year);
-    }
+    if (month === 1) handlePeriodChange(12, year - 1);
+    else handlePeriodChange(month - 1, year);
   };
 
   const handleNextMonth = () => {
-    if (month === 12) {
-      handlePeriodChange(1, year + 1);
-    } else {
-      handlePeriodChange(month + 1, year);
-    }
+    if (month === 12) handlePeriodChange(1, year + 1);
+    else handlePeriodChange(month + 1, year);
   };
 
-  // Submissão de novo lançamento
+  // Submissão de Lançamento Manual (Livro Pessoal)
   const handleCreateEntry = (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Sanitiza e valida valor
     const cleanAmount = amountStr.replace(/\./g, "").replace(",", ".");
     const parsedAmount = parseFloat(cleanAmount);
 
@@ -209,7 +259,6 @@ function PersonalFinancePage() {
       toast.error("Informe um valor válido maior que zero.");
       return;
     }
-
     if (!description.trim()) {
       toast.error("Informe uma descrição para o lançamento.");
       return;
@@ -232,533 +281,1192 @@ function PersonalFinancePage() {
           },
         });
 
-        toast.success(
-          entryType === "expense"
-            ? "Despesa registrada com sucesso!"
-            : "Receita registrada com sucesso!"
-        );
-
-        // Limpa formulário
+        toast.success(entryType === "expense" ? "Despesa registrada." : "Receita registrada.");
         setAmountStr("");
         setDescription("");
         setSelectedCategoryId("");
         setReceiptUrl("");
         setNotes("");
-        setOcrResult(null);
         setIsNewEntryOpen(false);
-
-        // Recarrega período
         handlePeriodChange(month, year);
       } catch (err: any) {
-        toast.error(err.message || "Falha ao salvar lançamento.");
+        toast.error(err.message || "Falha ao registrar lançamento.");
       }
     });
   };
 
-  // Exclusão de lançamento
-  const handleDeleteEntry = async (id: string) => {
+  // Submissão de Transferência P2P (Ledger Movimentável)
+  const handleExecuteP2P = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanAmount = transferAmountStr.replace(/\./g, "").replace(",", ".");
+    const parsedAmount = parseFloat(cleanAmount);
+
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      toast.error("Informe um valor de transferência válido.");
+      return;
+    }
+    if (!transferRecipientId.trim()) {
+      toast.error("Informe o ID de perfil do destinatário.");
+      return;
+    }
+
+    const amountCents = Math.round(parsedAmount * 100);
+
+    startTransition(async () => {
+      try {
+        const result = await transferP2P({
+          data: {
+            recipientProfileId: transferRecipientId.trim(),
+            amountCents,
+            description: transferDesc.trim() || "Transferência Waesy",
+          },
+        });
+
+        toast.success("Transferência realizada com sucesso!");
+        setActiveReceipt(result.receipt);
+        setIsTransferOpen(false);
+        setTransferAmountStr("");
+        setTransferRecipientId("");
+        setTransferDesc("");
+        handlePeriodChange(month, year);
+      } catch (err: any) {
+        toast.error(err.message || "Falha na transferência.");
+      }
+    });
+  };
+
+  // Submissão de Depósito Pix (Ledger Movimentável)
+  const handleExecuteDeposit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanAmount = depositAmountStr.replace(/\./g, "").replace(",", ".");
+    const parsedAmount = parseFloat(cleanAmount);
+
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      toast.error("Informe um valor válido para recarga.");
+      return;
+    }
+
+    const amountCents = Math.round(parsedAmount * 100);
+
+    startTransition(async () => {
+      try {
+        const result = await depositPixToWallet({
+          data: { amountCents },
+        });
+
+        toast.success("Saldo creditado na carteira!");
+        setActiveReceipt(result.receipt);
+        setIsDepositOpen(false);
+        handlePeriodChange(month, year);
+      } catch (err: any) {
+        toast.error(err.message || "Falha ao adicionar saldo.");
+      }
+    });
+  };
+
+  // Submissão de Importação OFX (Livro Pessoal)
+  const handleImportOfx = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ofxContentInput.trim()) {
+      toast.error("Cole o conteúdo do arquivo OFX para importar.");
+      return;
+    }
+
+    setIsImportingOfx(true);
     try {
-      await deletePersonalFinanceEntry({ data: { id } });
-      toast.success("Lançamento excluído.");
+      const res = await importOfxStatement({
+        data: { ofxContent: ofxContentInput.trim(), institutionName: "Extrato Bancário" },
+      });
+
+      toast.success(
+        `${res.importedCount} lançamentos importados (${res.skippedDuplicatesCount} duplicatas ignoradas).`
+      );
+      setIsOfxModalOpen(false);
+      setOfxContentInput("");
       handlePeriodChange(month, year);
     } catch (err: any) {
-      toast.error("Erro ao excluir lançamento.");
+      toast.error(err.message || "Erro ao processar arquivo OFX.");
+    } finally {
+      setIsImportingOfx(false);
     }
   };
 
-  // Filtragem de lançamentos na interface
-  const filteredEntries = useMemo(() => {
-    return entries.filter((item) => {
-      if (activeTab !== "all" && item.type !== activeTab) return false;
+  // Abertura de comprovante por ID
+  const handleOpenReceiptById = async (receiptId: string) => {
+    try {
+      const rec = await getReceiptDetails({ data: { idOrCode: receiptId } });
+      if (rec) {
+        setActiveReceipt(rec);
+      } else {
+        toast.error("Comprovante não encontrado.");
+      }
+    } catch {
+      toast.error("Erro ao carregar comprovante.");
+    }
+  };
+
+  // Filtragem do Feed Unificado
+  const filteredFeed = useMemo(() => {
+    return feed.filter((item) => {
+      if (feedFilterDomain !== "ALL" && item.sourceDomain !== feedFilterDomain) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const descMatch = item.description.toLowerCase().includes(q);
-        const catMatch = item.category?.name.toLowerCase().includes(q);
-        if (!descMatch && !catMatch) return false;
+        const partyMatch = item.counterpartyName?.toLowerCase().includes(q);
+        const catMatch = item.categoryName?.toLowerCase().includes(q);
+        if (!descMatch && !partyMatch && !catMatch) return false;
       }
       return true;
     });
-  }, [entries, activeTab, searchQuery]);
+  }, [feed, feedFilterDomain, searchQuery]);
 
-  // Agrupamento por dia
-  const groupedByDay = useMemo(() => {
-    const groups: Record<string, PersonalFinancialEntryDTO[]> = {};
-    for (const item of filteredEntries) {
-      if (!groups[item.entryDate]) groups[item.entryDate] = [];
-      groups[item.entryDate].push(item);
-    }
-    return Object.entries(groups).sort(([a], [b]) => b.localeCompare(a));
-  }, [filteredEntries]);
-
-  // Categorias filtradas pelo tipo no drawer
+  // Categorias deduplicadas para o tipo ativo no modal
   const availableCategories = useMemo(() => {
-    return categories.filter(
-      (c: any) => c.type === entryType || c.type === "both"
-    );
+    return categories.filter((c: any) => c.type === entryType || c.type === "both");
   }, [categories, entryType]);
 
+  const headerRightAction = (
+    <Button
+      onClick={() => setIsNewEntryOpen(true)}
+      className="rounded-lg h-11 min-h-11 px-3 text-xs font-semibold gap-2 bg-foreground text-background shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+    >
+      <Plus className="size-5" />
+      <span>Lançar</span>
+    </Button>
+  );
+
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0">
-      {/* ── 1. Clean Minimalist Header ── */}
-      <NativeMobileHeader title="Finanças" fallbackHref="/conta" mobileOnly rightActions={<Button size="sm" onClick={() => setIsNewEntryOpen(true)} className="rounded-lg h-11 min-h-11 px-3 text-xs font-semibold gap-1 bg-foreground text-background shrink-0 focus-visible:ring-2 focus-visible:ring-primary"><Plus className="size-4" /><span>Lançar</span></Button>} />
+    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-24 px-3 sm:px-4 md:px-0">
+      {/* ── 1. Top Bar Canônica ── */}
+      <NativeMobileHeader
+        title="Finanças"
+        fallbackHref="/conta"
+        mobileOnly
+        rightActions={headerRightAction}
+      />
+
       <div className="hidden sm:flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
         <div className="flex items-center gap-3">
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-            Finanças
+            Finanças e Carteira
           </h1>
+          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+            <Shield className="size-5" />
+            Zero-Trust
+          </span>
         </div>
 
-        <Button
-          size="sm"
-          onClick={() => setIsNewEntryOpen(true)}
-          className="rounded-lg h-11 min-h-11 px-4 text-xs font-semibold gap-2 bg-foreground text-background hover:bg-foreground/90 shrink-0 shadow-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
-        >
-          <Plus className="size-4" />
-          <span>Lançar</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setIsTransferOpen(true)}
+            className="rounded-lg h-11 min-h-11 px-4 text-xs font-semibold gap-2 border-border/80 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+          >
+            <ArrowLeftRight className="size-5" />
+            <span>Transferir</span>
+          </Button>
+          <Button
+            onClick={() => setIsNewEntryOpen(true)}
+            className="rounded-lg h-11 min-h-11 px-4 text-xs font-semibold gap-2 bg-foreground text-background hover:bg-foreground/90 shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+          >
+            <Plus className="size-5" />
+            <span>Novo Lançamento</span>
+          </Button>
+        </div>
       </div>
 
-        {/* Seletor de Período (Mês / Ano) */}
-        <div className="flex items-center justify-between bg-card border border-border/60 rounded-lg p-2 sm:p-3 shadow-xs">
-          <button
-            type="button"
-            onClick={handlePrevMonth}
-            disabled={isLoadingPeriod}
-            className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
-            aria-label="Mês Anterior"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
+      {/* ── 2. Seletor dos 4 Pilares Canônicos ── */}
+      <div className="flex items-center gap-2 p-1 rounded-lg bg-muted/60 border border-border/40">
+        <button
+          type="button"
+          onClick={() => setActivePillar("overview")}
+          className={cn(
+            "h-11 min-h-11 px-4 rounded-lg text-xs sm:text-sm font-semibold transition-colors shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+            activePillar === "overview"
+              ? "bg-card text-foreground shadow-xs"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          Visão Geral
+        </button>
+        <button
+          type="button"
+          onClick={() => setActivePillar("feed")}
+          className={cn(
+            "h-11 min-h-11 px-4 rounded-lg text-xs sm:text-sm font-semibold transition-colors shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+            activePillar === "feed"
+              ? "bg-card text-foreground shadow-xs"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          Extrato ({feed.length})
+        </button>
+        <button
+          type="button"
+          onClick={() => setActivePillar("planning")}
+          className={cn(
+            "h-11 min-h-11 px-4 rounded-lg text-xs sm:text-sm font-semibold transition-colors shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+            activePillar === "planning"
+              ? "bg-card text-foreground shadow-xs"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          Planejamento
+        </button>
+        <button
+          type="button"
+          onClick={() => setActivePillar("account")}
+          className={cn(
+            "h-11 min-h-11 px-4 rounded-lg text-xs sm:text-sm font-semibold transition-colors shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+            activePillar === "account"
+              ? "bg-card text-foreground shadow-xs"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          Conta R$
+        </button>
+      </div>
 
-          <div className="flex items-center gap-2 font-medium text-sm sm:text-base">
-            <Calendar className="h-4 w-4 text-primary" />
-            <span>
-              {MONTH_NAMES[month - 1]} de {year}
-            </span>
-          </div>
+      {/* ── 3. Seletor de Período Mensal ── */}
+      <div className="flex items-center justify-between bg-card border border-border/60 rounded-lg p-2 sm:p-3 shadow-xs">
+        <button
+          type="button"
+          onClick={handlePrevMonth}
+          disabled={isLoadingPeriod}
+          className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+          aria-label="Mês Anterior"
+        >
+          <ChevronLeft className="size-5" />
+        </button>
 
-          <button
-            type="button"
-            onClick={handleNextMonth}
-            disabled={isLoadingPeriod}
-            className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
-            aria-label="Próximo Mês"
-          >
-            <ChevronRight className="h-5 w-5" />
-          </button>
+        <div className="flex items-center gap-2 font-medium text-sm sm:text-base">
+          <Calendar className="size-5 text-primary" />
+          <span>
+            {MONTH_NAMES[month - 1]} de {year}
+          </span>
+          {isLoadingPeriod && <RefreshCw className="size-5 animate-spin text-muted-foreground" />}
         </div>
 
-        {/* Cards de Métricas Principais (Apple HIG) */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-          {/* Saldo Líquido */}
-          <div className="bg-card border border-border/60 rounded-lg p-4 sm:p-5 shadow-xs flex flex-col justify-between">
-            <div className="flex items-center justify-between text-muted-foreground mb-2">
-              <span className="text-xs uppercase tracking-wider font-semibold">
-                Saldo
-              </span>
-              <Wallet className="h-4 w-4" />
+        <button
+          type="button"
+          onClick={handleNextMonth}
+          disabled={isLoadingPeriod}
+          className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+          aria-label="Próximo Mês"
+        >
+          <ChevronRight className="size-5" />
+        </button>
+      </div>
+
+      {/* ══════════════════════════════════════════════════════════════ */}
+      {/* PILAR 1: VISÃO GERAL */}
+      {/* ══════════════════════════════════════════════════════════════ */}
+      {activePillar === "overview" && (
+        <div className="space-y-4 sm:space-y-6">
+          {/* Métricas Principais */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            {/* Saldo Carteira R$ Movimentável */}
+            <div className="bg-card border border-border/60 rounded-lg p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-muted-foreground mb-2">
+                <span className="text-xs uppercase tracking-wider font-semibold">
+                  Saldo Carteira Waesy
+                </span>
+                <Wallet className="size-5" />
+              </div>
+              <div className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground font-mono">
+                {formatCents(wallet?.availableCents || 0)}
+              </div>
+              <div className="flex items-center justify-between text-xs text-muted-foreground mt-2">
+                <span>Disponível para uso</span>
+                <Button
+                  variant="ghost"
+                  onClick={() => setIsDepositOpen(true)}
+                  className="h-11 min-h-11 px-3 text-xs font-semibold text-primary hover:bg-primary/10 rounded-lg focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                >
+                  Recarregar
+                </Button>
+              </div>
             </div>
-            <div
-              className={cn(
-                "text-2xl sm:text-3xl font-bold tracking-tight",
-                summary.balanceCents > 0
-                  ? "text-emerald-600 dark:text-emerald-400"
-                  : summary.balanceCents < 0
-                  ? "text-rose-600 dark:text-rose-400"
-                  : "text-foreground"
-              )}
+
+            {/* Total de Receitas (Livro Pessoal) */}
+            <div className="bg-card border border-border/60 rounded-lg p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-muted-foreground mb-2">
+                <span className="text-xs uppercase tracking-wider font-semibold">
+                  Receitas Pessoais
+                </span>
+                <div className="size-6 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                  <ArrowDownLeft className="size-5" />
+                </div>
+              </div>
+              <div className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
+                {formatCents(summary.totalIncomeCents)}
+              </div>
+              <div className="text-xs text-muted-foreground mt-2">Entradas do mês selecionado</div>
+            </div>
+
+            {/* Total de Despesas (Livro Pessoal) */}
+            <div className="bg-card border border-border/60 rounded-lg p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-muted-foreground mb-2">
+                <span className="text-xs uppercase tracking-wider font-semibold">
+                  Despesas Pessoais
+                </span>
+                <div className="size-6 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+                  <ArrowUpRight className="size-5" />
+                </div>
+              </div>
+              <div className="text-2xl sm:text-3xl font-bold tracking-tight text-rose-600 dark:text-rose-400">
+                {formatCents(summary.totalExpenseCents)}
+              </div>
+              <div className="text-xs text-muted-foreground mt-2">Saídas do mês selecionado</div>
+            </div>
+          </div>
+
+          {/* Card Secundário: Recompensas $WZ (Isolado de R$) */}
+          <div className="bg-card border border-border/60 rounded-lg p-4 sm:p-5 shadow-xs space-y-3">
+            <div className="flex items-center justify-between pb-3 border-b border-border/40">
+              <div className="flex items-center gap-3">
+                <div className="size-9 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                  <Coins className="size-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-sm font-semibold tracking-tight text-foreground">
+                      Recompensas $WZ e Benefícios
+                    </h2>
+                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                      Utilidade Interna
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Saldo para descontos em produtos e serviços parceiros (unidade $WZ).
+                  </p>
+                </div>
+              </div>
+
+              <Button
+                asChild
+                variant="outline"
+                className="rounded-lg h-11 min-h-11 px-4 text-xs font-semibold border-border/80 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+              >
+                <Link to="/conta/tokens">
+                  <span>Ver Detalhes</span>
+                  <ExternalLink className="size-5 ml-1 text-muted-foreground" />
+                </Link>
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="p-3 rounded-lg bg-muted/40 border border-border/40 space-y-2">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">
+                  $WZ Disponíveis
+                </span>
+                <div className="text-xl font-bold tracking-tight text-foreground font-mono">
+                  {Number(tokenWallet?.balance || 0).toLocaleString()} $WZ
+                </div>
+              </div>
+              <div className="p-3 rounded-lg bg-muted/40 border border-border/40 space-y-2">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">
+                  $WZ em Liberação Gradual
+                </span>
+                <div className="text-xl font-bold tracking-tight text-amber-600 dark:text-amber-400 font-mono">
+                  {Number(tokenWallet?.balance_pending_maturity || 0).toLocaleString()} $WZ
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Últimas Movimentações no Ecossistema */}
+          <div className="bg-card border border-border/60 rounded-lg p-4 sm:p-5 shadow-xs space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold tracking-tight text-foreground">
+                Últimas Movimentações
+              </h2>
+              <button
+                type="button"
+                onClick={() => setActivePillar("feed")}
+                className="h-11 min-h-11 px-3 inline-flex items-center text-xs text-primary font-semibold hover:underline cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-lg"
+              >
+                Ver Extrato Completo
+              </button>
+            </div>
+
+            {feed.length === 0 ? (
+              <div className="py-8 text-center text-muted-foreground text-xs">
+                Nenhuma movimentação registrada neste período.
+              </div>
+            ) : (
+              <div className="divide-y divide-border/40">
+                {feed.slice(0, 5).map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setSelectedEventDetail(item)}
+                    className="w-full text-left flex items-center justify-between py-3 hover:bg-muted/20 px-2 rounded-lg transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                        {item.direction === "INCOMING" ? (
+                          <ArrowDownLeft className="size-5" />
+                        ) : (
+                          <ArrowUpRight className="size-5" />
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-sm font-semibold text-foreground truncate">
+                          {item.description}
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span>{item.sourceDomain}</span>
+                          <span>•</span>
+                          <span>{new Date(item.occurredAt).toLocaleDateString("pt-BR")}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="text-right shrink-0">
+                      <span
+                        className={cn(
+                          "text-sm font-semibold",
+                          item.direction === "INCOMING"
+                            ? "text-emerald-600 dark:text-emerald-400"
+                            : "text-foreground"
+                        )}
+                      >
+                        {item.direction === "INCOMING" ? "+" : "-"} {formatCents(item.amountCents)}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════ */}
+      {/* PILAR 2: EXTRATO UNIFICADO BANCÁRIO */}
+      {/* ══════════════════════════════════════════════════════════════ */}
+      {activePillar === "feed" && (
+        <div className="space-y-4">
+          {/* Filtros e Busca */}
+          <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+            <div className="flex items-center gap-2 bg-muted/60 p-1 rounded-lg border border-border/40">
+              {[
+                { label: "Todos", value: "ALL" },
+                { label: "Carteira", value: "WALLET" },
+                { label: "Pedidos", value: "ORDERS" },
+                { label: "Mobilidade", value: "MOBILITY" },
+                { label: "Ingressos", value: "TICKETS" },
+              ].map((tab) => (
+                <button
+                  key={tab.value}
+                  type="button"
+                  onClick={() => setFeedFilterDomain(tab.value)}
+                  className={cn(
+                    "h-11 min-h-11 px-3 rounded-lg text-xs font-semibold transition-colors shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+                    feedFilterDomain === tab.value
+                      ? "bg-card text-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="relative flex-1 sm:max-w-xs">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Buscar no extrato..."
+                className="h-11 rounded-lg pl-10 text-xs sm:text-sm bg-card border-border/60"
+              />
+            </div>
+          </div>
+
+          {/* Lista de Transações */}
+          {filteredFeed.length === 0 ? (
+            <div className="bg-card border border-border/60 rounded-lg p-8 sm:p-12 text-center space-y-3 shadow-xs">
+              <div className="size-12 rounded-lg bg-muted flex items-center justify-center mx-auto text-muted-foreground">
+                <Receipt className="size-6" />
+              </div>
+              <h3 className="font-semibold text-base text-foreground">
+                Nenhuma transação encontrada
+              </h3>
+              <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                Não há registros com os filtros aplicados para este período.
+              </p>
+            </div>
+          ) : (
+            <div className="bg-card border border-border/60 rounded-lg divide-y divide-border/40 shadow-xs overflow-hidden">
+              {filteredFeed.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setSelectedEventDetail(item)}
+                  className="w-full text-left flex items-center justify-between p-4 hover:bg-muted/30 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                >
+                  <div className="flex items-center gap-3 min-w-0 pr-2">
+                    <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 shadow-2xs">
+                      {item.direction === "INCOMING" ? (
+                        <ArrowDownLeft className="size-5" />
+                      ) : (
+                        <ArrowUpRight className="size-5" />
+                      )}
+                    </div>
+
+                    <div className="min-w-0">
+                      <div className="font-semibold text-sm text-foreground truncate">
+                        {item.description}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                        <span className="font-medium text-foreground/80">{item.sourceDomain}</span>
+                        <span>•</span>
+                        <span>{new Date(item.occurredAt).toLocaleDateString("pt-BR")}</span>
+                        {item.counterpartyName && (
+                          <>
+                            <span>•</span>
+                            <span className="truncate">{item.counterpartyName}</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span
+                      className={cn(
+                        "text-sm sm:text-base font-semibold font-mono",
+                        item.direction === "INCOMING"
+                          ? "text-emerald-600 dark:text-emerald-400"
+                          : "text-foreground"
+                      )}
+                    >
+                      {item.direction === "INCOMING" ? "+" : "-"} {formatCents(item.amountCents)}
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════ */}
+      {/* PILAR 3: PLANEJAMENTO & CATEGORIAS */}
+      {/* ══════════════════════════════════════════════════════════════ */}
+      {activePillar === "planning" && (
+        <div className="space-y-4 sm:space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-base font-semibold tracking-tight text-foreground">
+                Orçamento e Categorias
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                Acompanhe o consumo mensal por área e importe extratos OFX.
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => setIsOfxModalOpen(true)}
+              className="rounded-lg h-11 min-h-11 px-4 text-xs font-semibold gap-2 border-border/80 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
             >
-              {formatCents(summary.balanceCents)}
-            </div>
-            <div className="text-xs text-muted-foreground mt-2">
-              {summary.entriesCount} lançamento{summary.entriesCount !== 1 ? "s" : ""}
-            </div>
+              <Upload className="size-5" />
+              <span>Importar OFX</span>
+            </Button>
           </div>
 
-          {/* Total de Receitas */}
-          <div className="bg-card border border-border/60 rounded-lg p-4 sm:p-5 shadow-xs flex flex-col justify-between">
-            <div className="flex items-center justify-between text-muted-foreground mb-2">
-              <span className="text-xs uppercase tracking-wider font-semibold">Receitas</span>
-              <div className="h-6 w-6 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                <ArrowDownLeft className="size-4" />
-              </div>
-            </div>
-            <div className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
-              {formatCents(summary.totalIncomeCents)}
-            </div>
-            <div className="text-xs text-muted-foreground mt-2">Entradas do mês</div>
-          </div>
+          {/* Distribuição por Categoria */}
+          <div className="bg-card border border-border/60 rounded-lg p-4 sm:p-5 shadow-xs space-y-4">
+            <h3 className="text-sm font-semibold tracking-tight text-foreground">
+              Despesas por Categoria ({summary.byCategory.length})
+            </h3>
 
-          {/* Total de Despesas */}
-          <div className="bg-card border border-border/60 rounded-lg p-4 sm:p-5 shadow-xs flex flex-col justify-between">
-            <div className="flex items-center justify-between text-muted-foreground mb-2">
-              <span className="text-xs uppercase tracking-wider font-semibold">Despesas</span>
-              <div className="h-6 w-6 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center">
-                <ArrowUpRight className="size-4" />
+            {summary.byCategory.length === 0 ? (
+              <p className="text-xs text-muted-foreground py-4 text-center">
+                Nenhuma despesa categorizada para este mês.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {summary.byCategory.map((cat) => (
+                  <div key={cat.categoryId || cat.name} className="space-y-1">
+                    <div className="flex items-center justify-between text-xs sm:text-sm">
+                      <div className="flex items-center gap-2">
+                        <div className="size-3 rounded-full shrink-0 bg-primary" />
+                        <span className="font-semibold text-foreground">{cat.name}</span>
+                        <span className="text-muted-foreground">({cat.count})</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">{cat.percentage}%</span>
+                        <span className="font-semibold text-foreground">
+                          {formatCents(cat.totalCents)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-opacity duration-300 bg-primary motion-reduce:transition-none"
+                        style={{
+                          width: `${Math.min(100, Math.max(3, cat.percentage))}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
-            <div className="text-2xl sm:text-3xl font-bold tracking-tight text-rose-600 dark:text-rose-400">
-              {formatCents(summary.totalExpenseCents)}
-            </div>
-            <div className="text-xs text-muted-foreground mt-2">Saídas do mês</div>
+            )}
           </div>
         </div>
+      )}
 
-        {/* Card de Governança Militar: Carteira de Tokens & Fidelidade */}
-        <div className="bg-card border border-border/70 rounded-lg p-4 sm:p-5 shadow-xs space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/50">
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-                <Coins className="h-5 w-5" />
-              </div>
+      {/* ══════════════════════════════════════════════════════════════ */}
+      {/* PILAR 4: CONTA R$ MOVIMENTÁVEL */}
+      {/* ══════════════════════════════════════════════════════════════ */}
+      {activePillar === "account" && (
+        <div className="space-y-4 sm:space-y-6">
+          <div className="bg-card border border-border/60 rounded-lg p-5 sm:p-6 shadow-xs space-y-4">
+            <div className="flex items-center justify-between pb-4 border-b border-border/40">
               <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-sm font-semibold tracking-tight text-foreground">
-                    Tokens e Fidelidade
-                  </h2>
-                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                    <Shield className="h-2.5 w-2.5" /> Protegido
+                <span className="text-xs uppercase tracking-wider font-semibold text-muted-foreground block">
+                  Carteira Digital Waesy
+                </span>
+                <div className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground font-mono mt-1">
+                  {formatCents(wallet?.availableCents || 0)}
+                </div>
+              </div>
+
+              <div className="flex flex-col items-end gap-1">
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                  <CheckCircle2 className="size-5" />
+                  Conta Ativa
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  Partidas Dobradas • Append-Only
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              <Button
+                onClick={() => setIsDepositOpen(true)}
+                className="rounded-lg h-11 min-h-11 px-4 text-xs font-semibold gap-2 bg-foreground text-background hover:bg-foreground/90 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+              >
+                <Plus className="size-5" />
+                <span>Adicionar Saldo (Pix)</span>
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setIsTransferOpen(true)}
+                className="rounded-lg h-11 min-h-11 px-4 text-xs font-semibold gap-2 border-border/80 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+              >
+                <ArrowLeftRight className="size-5" />
+                <span>Transferir P2P Waesy</span>
+              </Button>
+            </div>
+          </div>
+
+          <div className="bg-card border border-border/60 rounded-lg p-4 sm:p-5 shadow-xs space-y-2">
+            <h3 className="text-sm font-semibold tracking-tight text-foreground">
+              Garantias e Segurança da Conta
+            </h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              O saldo da sua conta é mantido em custódia estrita com segregação patrimonial. Todas as
+              transferências geram comprovantes criptográficos invioláveis com assinatura HMAC-SHA256.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL: DETALHES DO EVENTO / COMPROVANTE (BIDIRECIONAL) ── */}
+      {selectedEventDetail && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 motion-reduce:transition-none">
+          <button
+            type="button"
+            aria-label="Fechar modal"
+            onClick={() => setSelectedEventDetail(null)}
+            className="fixed inset-0 bg-background/80 backdrop-blur-xs cursor-default focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+          />
+          <div
+            className="relative z-10 bg-card border border-border/80 w-full sm:max-w-lg rounded-t-lg sm:rounded-lg p-5 sm:p-6 shadow-xs max-h-screen overflow-y-auto space-y-4"
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="flex items-center justify-between border-b border-border/40 pb-3">
+              <h3 className="text-base font-semibold tracking-tight text-foreground">
+                Detalhes do Lançamento
+              </h3>
+              <button
+                type="button"
+                onClick={() => setSelectedEventDetail(null)}
+                className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div className="text-center py-2">
+                <span
+                  className={cn(
+                    "text-3xl font-bold font-mono tracking-tight",
+                    selectedEventDetail.direction === "INCOMING"
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-foreground"
+                  )}
+                >
+                  {selectedEventDetail.direction === "INCOMING" ? "+" : "-"}{" "}
+                  {formatCents(selectedEventDetail.amountCents)}
+                </span>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {selectedEventDetail.description}
+                </p>
+              </div>
+
+              <div className="bg-muted/40 rounded-lg p-3 space-y-2 text-xs border border-border/40">
+                <div className="flex justify-between py-1 border-b border-border/30">
+                  <span className="text-muted-foreground">Domínio:</span>
+                  <span className="font-semibold text-foreground">
+                    {selectedEventDetail.sourceDomain}
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Extrato e saldo de utilidade regional
-                </p>
+                <div className="flex justify-between py-1 border-b border-border/30">
+                  <span className="text-muted-foreground">Data e Hora:</span>
+                  <span className="font-semibold text-foreground">
+                    {new Date(selectedEventDetail.occurredAt).toLocaleString("pt-BR")}
+                  </span>
+                </div>
+                {selectedEventDetail.counterpartyName && (
+                  <div className="flex justify-between py-1 border-b border-border/30">
+                    <span className="text-muted-foreground">Contraparte:</span>
+                    <span className="font-semibold text-foreground">
+                      {selectedEventDetail.counterpartyName}
+                    </span>
+                  </div>
+                )}
+                <div className="flex justify-between py-1">
+                  <span className="text-muted-foreground">Status:</span>
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                    {selectedEventDetail.status}
+                  </span>
+                </div>
+              </div>
+
+              {/* Ações Bidirecionais */}
+              <div className="space-y-2 pt-2">
+                {selectedEventDetail.referenceUrl && (
+                  <Button
+                    asChild
+                    className="w-full rounded-lg h-11 min-h-11 text-xs font-semibold gap-2 bg-foreground text-background hover:bg-foreground/90 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                  >
+                    <Link to={selectedEventDetail.referenceUrl as any}>
+                      <span>Acessar Entidade de Origem</span>
+                      <ExternalLink className="size-5" />
+                    </Link>
+                  </Button>
+                )}
+
+                {selectedEventDetail.receiptId && (
+                  <Button
+                    variant="outline"
+                    onClick={() => handleOpenReceiptById(selectedEventDetail.receiptId!)}
+                    className="w-full rounded-lg h-11 min-h-11 text-xs font-semibold gap-2 border-border/80 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                  >
+                    <FileText className="size-5" />
+                    <span>Ver Comprovante Oficial</span>
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL: COMPROVANTE OFICIAL VERIFICÁVEL COM HMAC ── */}
+      {activeReceipt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 motion-reduce:transition-none">
+          <button
+            type="button"
+            aria-label="Fechar comprovante"
+            onClick={() => setActiveReceipt(null)}
+            className="fixed inset-0 bg-background/80 backdrop-blur-xs cursor-default focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+          />
+          <div
+            className="relative z-10 bg-card border border-border/80 max-w-md w-full rounded-lg p-5 sm:p-6 shadow-xs space-y-4"
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="flex items-center justify-between border-b border-border/40 pb-3">
+              <div>
+                <h3 className="text-sm font-bold text-foreground">Comprovante de Transação</h3>
+                <span className="text-xs text-muted-foreground">{activeReceipt.emitterName}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveReceipt(null)}
+                className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+
+            <div className="text-center py-2 border-b border-border/30">
+              <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+                Valor Transferido
+              </span>
+              <div className="text-3xl font-bold font-mono text-foreground mt-1">
+                {formatCents(activeReceipt.amountCents)}
+              </div>
+            </div>
+
+            <div className="space-y-2 text-xs">
+              <div className="flex justify-between py-1">
+                <span className="text-muted-foreground">Código de Autenticação:</span>
+                <span className="font-mono font-semibold text-foreground">
+                  {activeReceipt.authenticationCode}
+                </span>
+              </div>
+              <div className="flex justify-between py-1">
+                <span className="text-muted-foreground">Pagador:</span>
+                <span className="font-semibold text-foreground">{activeReceipt.payerName}</span>
+              </div>
+              <div className="flex justify-between py-1">
+                <span className="text-muted-foreground">Recebedor:</span>
+                <span className="font-semibold text-foreground">{activeReceipt.payeeName}</span>
+              </div>
+              <div className="flex justify-between py-1">
+                <span className="text-muted-foreground">Data e Horário:</span>
+                <span className="font-semibold text-foreground">
+                  {new Date(activeReceipt.issuedAt).toLocaleString("pt-BR")}
+                </span>
+              </div>
+            </div>
+
+            <div className="p-3 bg-muted/40 rounded-lg border border-border/40 space-y-1">
+              <div className="flex items-center gap-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                <Shield className="size-5" />
+                <span>Assinatura Digital HMAC-SHA256</span>
+              </div>
+              <div className="text-xs font-mono text-muted-foreground break-all">
+                {activeReceipt.hmacSignature.slice(0, 32)}...
               </div>
             </div>
 
             <Button
-              asChild
               variant="outline"
-              size="sm"
-              className="rounded-lg text-xs font-semibold h-8 gap-2 self-start sm:self-auto border-border/80"
+              onClick={() => {
+                navigator.clipboard?.writeText(activeReceipt.authenticationCode);
+                toast.success("Código copiado!");
+              }}
+              className="w-full rounded-lg h-11 min-h-11 text-xs font-semibold gap-2 border-border/80 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
             >
-              <Link to="/conta/tokens">
-                <span>Extrato</span>
-                <ExternalLink className="h-3 w-3 text-muted-foreground" />
-              </Link>
+              <Copy className="size-5" />
+              <span>Copiar Código de Autenticação</span>
             </Button>
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="p-4 rounded-lg bg-muted/30 border border-border/40 space-y-1">
-              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">
-                Saldo Disponível
-              </span>
-              <div className="text-xl sm:text-2xl font-bold tracking-tight text-foreground font-mono">
-                {Number(tokenWallet?.balance || 0).toLocaleString()}{" "}
-                <span className="text-xs font-normal text-muted-foreground">Tokens</span>
-              </div>
-              <p className="text-[10px] text-muted-foreground">
-                Para desconto em compras, produtos e serviços parceiros credenciados.
-              </p>
-            </div>
-
-            <div className="p-4 rounded-lg bg-muted/30 border border-border/40 space-y-1">
-              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">
-                Tokens em Liberação
-              </span>
-              <div className="text-xl sm:text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 font-mono">
-                {Number(tokenWallet?.balance_pending_maturity || 0).toLocaleString()}{" "}
-                <span className="text-xs font-normal text-muted-foreground">Tokens</span>
-              </div>
-              <p className="text-[10px] text-muted-foreground">
-                Bônus de indicação e recompensas em processo de liberação gradual.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/20 px-3 py-2 rounded-lg border border-border/30">
-            <Lock className="size-4 shrink-0 text-primary" />
-            <span>
-              <strong>Proteção da Carteira:</strong> Seus tokens são vinculados ao seu CPF com rastreabilidade e proteção.
-            </span>
-          </div>
         </div>
+      )}
 
-        {/* Distribuição por Categoria (se houver despesas) */}
-        {summary.byCategory.length > 0 && (
-          <div className="bg-card border border-border/60 rounded-lg p-4 sm:p-5 shadow-xs space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold tracking-tight text-foreground">
-                Distribuição
-              </h2>
-              <span className="text-xs text-muted-foreground">
-                {summary.byCategory.length} categoria{summary.byCategory.length !== 1 ? "s" : ""}
-              </span>
-            </div>
-
-            <div className="space-y-3">
-              {summary.byCategory.slice(0, 5).map((cat) => (
-                <div key={cat.categoryId || cat.name} className="space-y-1">
-                  <div className="flex items-center justify-between text-xs sm:text-sm">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="h-2.5 w-2.5 rounded-full"
-                        style={{ backgroundColor: cat.color || "#6366f1" }}
-                      />
-                      <span className="font-medium text-foreground">{cat.name}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground">{cat.percentage}%</span>
-                      <span className="font-medium text-foreground">
-                        {formatCents(cat.totalCents)}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all duration-500"
-                      style={{
-                        width: `${Math.min(100, Math.max(3, cat.percentage))}%`,
-                        backgroundColor: cat.color || "#6366f1",
-                      }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Barra de Filtros Rápidos & Busca */}
-        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
-          <div className="inline-flex bg-muted/60 p-1 rounded-lg border border-border/40 self-start overflow-x-auto no-scrollbar max-w-full">
-            <button
-              type="button"
-              onClick={() => setActiveTab("all")}
-              className={cn(
-                "h-9 px-4 rounded-lg text-xs font-medium transition-all",
-                activeTab === "all"
-                  ? "bg-card text-foreground shadow-xs"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Todos ({entries.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("expense")}
-              className={cn(
-                "h-9 px-4 rounded-lg text-xs font-medium transition-all",
-                activeTab === "expense"
-                  ? "bg-card text-rose-600 dark:text-rose-400 shadow-xs"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Despesas
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("income")}
-              className={cn(
-                "h-9 px-4 rounded-lg text-xs font-medium transition-all",
-                activeTab === "income"
-                  ? "bg-card text-emerald-600 dark:text-emerald-400 shadow-xs"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Receitas
-            </button>
-          </div>
-
-          <div className="relative flex-1 sm:max-w-xs">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar lançamento..."
-              className="h-10 pl-9 rounded-lg text-xs sm:text-sm bg-card border-border/60"
-            />
-          </div>
-        </div>
-
-        {/* Timeline de Lançamentos Agrupados */}
-        <div className="space-y-4">
-          {filteredEntries.length === 0 ? (
-            <div className="bg-card border border-border/60 rounded-lg p-8 sm:p-12 text-center space-y-3 shadow-xs">
-              <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center mx-auto text-muted-foreground">
-                <Receipt className="h-6 w-6" />
-              </div>
-              <h3 className="font-semibold text-base text-foreground">
-                Nenhum lançamento neste período
-              </h3>
-              <p className="text-xs sm:text-sm text-muted-foreground max-w-sm mx-auto">
-                Registre suas despesas, compras no mercado ou receitas para acompanhar seu saldo
-                em tempo real.
-              </p>
-              <Button
-                onClick={() => setIsNewEntryOpen(true)}
-                variant="outline"
-                className="h-11 px-5 rounded-lg border-border/80 hover:bg-muted font-medium"
-              >
-                Adicionar Lançamento
-              </Button>
-            </div>
-          ) : (
-            groupedByDay.map(([dateStr, dayEntries]) => {
-              const [y, m, d] = dateStr.split("-");
-              const formattedDate = `${d} de ${MONTH_NAMES[parseInt(m) - 1]}`;
-
-              return (
-                <div key={dateStr} className="space-y-2">
-                  <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1">
-                    {formattedDate}
-                  </div>
-
-                  <div className="bg-card border border-border/60 rounded-lg overflow-hidden shadow-xs divide-y divide-border/40">
-                    {dayEntries.map((entry) => {
-                      const isExpense = entry.type === "expense";
-                      const catColor = entry.category?.color || (isExpense ? "#f43f5e" : "#10b981");
-
-                      return (
-                        <div
-                          key={entry.id}
-                          className="flex items-center justify-between p-4 sm:p-4 hover:bg-muted/30 transition-colors"
-                        >
-                          {/* Esquerda: Ícone & Detalhes */}
-                          <div className="flex items-center gap-3 min-w-0 pr-2">
-                            <div
-                              className="h-10 w-10 shrink-0 rounded-lg flex items-center justify-center text-white shadow-2xs"
-                              style={{ backgroundColor: catColor }}
-                            >
-                              {getCategoryIcon(entry.category?.icon || "Receipt")}
-                            </div>
-
-                            <div className="min-w-0">
-                              <div className="font-medium text-sm text-foreground truncate">
-                                {entry.description}
-                              </div>
-                              <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                                <span>{entry.category?.name || (isExpense ? "Despesa" : "Receita")}</span>
-                                <span>•</span>
-                                <span className="capitalize">{entry.paymentMethod}</span>
-                                {entry.receiptUrl && (
-                                  <>
-                                    <span>•</span>
-                                    <button
-                                      type="button"
-                                      onClick={() => setViewingReceiptUrl(entry.receiptUrl)}
-                                      className="inline-flex items-center gap-1 text-primary hover:underline font-medium"
-                                    >
-                                      <ImageIcon className="h-3 w-3" />
-                                      <span>Comprovante</span>
-                                    </button>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Direita: Valor & Ação de Excluir */}
-                          <div className="flex items-center gap-3 shrink-0">
-                            <span
-                              className={cn(
-                                "text-sm sm:text-base font-semibold",
-                                isExpense
-                                  ? "text-foreground"
-                                  : "text-emerald-600 dark:text-emerald-400"
-                              )}
-                            >
-                              {isExpense ? "-" : "+"} {formatCents(entry.amountCents)}
-                            </span>
-
-                            {entry.isLocked ? (
-                              <div
-                                className="h-9 w-9 inline-flex items-center justify-center rounded-lg text-muted-foreground/40 cursor-not-allowed"
-                                title={`Lançamento imutável — originado de ${entry.referenceType || "sistema"}`}
-                              >
-                                <Lock className="h-4 w-4" />
-                              </div>
-                            ) : (
-                              <CrudActionsMenu
-                                entityName="Lançamento"
-                                onDelete={() => handleDeleteEntry(entry.id)}
-                                deleteConfirmTitle={`Excluir lançamento "${entry.description}"?`}
-                                deleteConfirmDescription={`Deseja realmente remover o lançamento de ${formatCents(entry.amountCents)}? O saldo mensal será recalculado.`}
-                              />
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-
-      {/* MODAL / DRAWER: NOVO LANÇAMENTO (3-Touch UX) */}
-      {isNewEntryOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-xs p-0 sm:p-4 animate-in fade-in duration-200">
+      {/* ── MODAL: TRANSFERÊNCIA P2P ── */}
+      {isTransferOpen && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 motion-reduce:transition-none">
+          <button
+            type="button"
+            aria-label="Fechar transferência"
+            onClick={() => setIsTransferOpen(false)}
+            className="fixed inset-0 bg-background/80 backdrop-blur-xs cursor-default focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+          />
           <div
-            className="bg-card border border-border/80 w-full sm:max-w-lg rounded-t-[28px] sm:rounded-lg p-5 sm:p-6 shadow-xs max-h-[90vh] overflow-y-auto space-y-5"
+            className="relative z-10 bg-card border border-border/80 w-full sm:max-w-md rounded-t-lg sm:rounded-lg p-5 sm:p-6 shadow-xs space-y-4"
             role="dialog"
             aria-modal="true"
           >
-            {/* Header do Drawer */}
             <div className="flex items-center justify-between border-b border-border/40 pb-3">
-              <h2 className="text-lg font-semibold tracking-tight">Novo Lançamento</h2>
+              <h3 className="text-base font-semibold tracking-tight text-foreground">
+                Transferência P2P Waesy
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsTransferOpen(false)}
+                className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleExecuteP2P} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  ID do Destinatário (UUID)
+                </label>
+                <Input
+                  type="text"
+                  placeholder="ID de perfil do usuário..."
+                  value={transferRecipientId}
+                  onChange={(e) => setTransferRecipientId(e.target.value)}
+                  required
+                  className="h-11 rounded-lg bg-card border-border/80 text-xs font-mono"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Valor (R$)
+                </label>
+                <Input
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="0,00"
+                  value={transferAmountStr}
+                  onChange={(e) => setTransferAmountStr(e.target.value)}
+                  required
+                  className="h-11 rounded-lg bg-card border-border/80 text-lg font-bold"
+                />
+                <span className="text-xs text-muted-foreground block">
+                  Disponível em carteira: {formatCents(wallet?.availableCents || 0)}
+                </span>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Descrição / Motivo
+                </label>
+                <Input
+                  type="text"
+                  placeholder="Ex: Divisão de almoço, pagamento..."
+                  value={transferDesc}
+                  onChange={(e) => setTransferDesc(e.target.value)}
+                  className="h-11 rounded-lg bg-card border-border/80 text-xs"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsTransferOpen(false)}
+                  className="h-11 min-h-11 px-5 rounded-lg border-border/80 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="h-11 min-h-11 px-6 rounded-lg bg-primary text-primary-foreground text-xs font-semibold shadow-xs focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                >
+                  {isSubmitting ? "Transferindo..." : "Confirmar Transferência"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL: DEPÓSITO PIX EM CARTEIRA ── */}
+      {isDepositOpen && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 motion-reduce:transition-none">
+          <button
+            type="button"
+            aria-label="Fechar depósito"
+            onClick={() => setIsDepositOpen(false)}
+            className="fixed inset-0 bg-background/80 backdrop-blur-xs cursor-default focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+          />
+          <div
+            className="relative z-10 bg-card border border-border/80 w-full sm:max-w-md rounded-t-lg sm:rounded-lg p-5 sm:p-6 shadow-xs space-y-4"
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="flex items-center justify-between border-b border-border/40 pb-3">
+              <h3 className="text-base font-semibold tracking-tight text-foreground">
+                Recarga de Saldo via Pix
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsDepositOpen(false)}
+                className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleExecuteDeposit} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Valor a Recarregar (R$)
+                </label>
+                <Input
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="50,00"
+                  value={depositAmountStr}
+                  onChange={(e) => setDepositAmountStr(e.target.value)}
+                  required
+                  className="h-11 rounded-lg bg-card border-border/80 text-lg font-bold"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsDepositOpen(false)}
+                  className="h-11 min-h-11 px-5 rounded-lg border-border/80 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="h-11 min-h-11 px-6 rounded-lg bg-primary text-primary-foreground text-xs font-semibold shadow-xs focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                >
+                  {isSubmitting ? "Creditando..." : "Confirmar Recarga"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL: IMPORTAÇÃO DE EXTRATO OFX ── */}
+      {isOfxModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 motion-reduce:transition-none">
+          <button
+            type="button"
+            aria-label="Fechar importação"
+            onClick={() => setIsOfxModalOpen(false)}
+            className="fixed inset-0 bg-background/80 backdrop-blur-xs cursor-default focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+          />
+          <div
+            className="relative z-10 bg-card border border-border/80 w-full max-w-lg rounded-lg p-5 sm:p-6 shadow-xs space-y-4"
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="flex items-center justify-between border-b border-border/40 pb-3">
+              <h3 className="text-base font-semibold tracking-tight text-foreground">
+                Importar Extrato Bancário (OFX)
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsOfxModalOpen(false)}
+                className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleImportOfx} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Conteúdo do Arquivo OFX
+                </label>
+                <textarea
+                  rows={8}
+                  placeholder="Cole aqui o conteúdo textual do seu arquivo .ofx baixado do banco..."
+                  value={ofxContentInput}
+                  onChange={(e) => setOfxContentInput(e.target.value)}
+                  className="w-full p-3 rounded-lg bg-card border border-border/80 text-xs font-mono focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                  required
+                />
+                <span className="text-xs text-muted-foreground block">
+                  As transações são inseridas exclusivamente no seu Livro Financeiro Pessoal com
+                  deduplicação automática por FITID.
+                </span>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsOfxModalOpen(false)}
+                  className="h-11 min-h-11 px-5 rounded-lg border-border/80 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isImportingOfx}
+                  className="h-11 min-h-11 px-6 rounded-lg bg-primary text-primary-foreground text-xs font-semibold shadow-xs focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                >
+                  {isImportingOfx ? "Importando..." : "Importar Transações"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL: NOVO LANÇAMENTO PESSOAL (COM OCR) ── */}
+      {isNewEntryOpen && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 motion-reduce:transition-none">
+          <button
+            type="button"
+            aria-label="Fechar lançamento"
+            onClick={() => setIsNewEntryOpen(false)}
+            className="fixed inset-0 bg-background/80 backdrop-blur-xs cursor-default focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+          />
+          <div
+            className="relative z-10 bg-card border border-border/80 w-full sm:max-w-lg rounded-t-lg sm:rounded-lg p-5 sm:p-6 shadow-xs max-h-screen overflow-y-auto space-y-4"
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="flex items-center justify-between border-b border-border/40 pb-3">
+              <h3 className="text-base font-semibold tracking-tight text-foreground">
+                Novo Lançamento Pessoal
+              </h3>
               <button
                 type="button"
                 onClick={() => setIsNewEntryOpen(false)}
-                className="h-9 w-9 inline-flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
               >
-                <X className="h-5 w-5" />
+                <X className="size-5" />
               </button>
             </div>
 
             <form onSubmit={handleCreateEntry} className="space-y-4">
-              {/* Toggle Tipo: Despesa / Receita */}
+              {/* Toggle Despesa / Receita */}
               <div className="grid grid-cols-2 gap-2 bg-muted/60 p-1 rounded-lg border border-border/40">
                 <button
                   type="button"
                   onClick={() => setEntryType("expense")}
                   className={cn(
-                    "h-10 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2",
+                    "h-11 min-h-11 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                     entryType === "expense"
-                      ? "bg-rose-600 text-white shadow-xs"
+                      ? "bg-rose-600 text-primary-foreground shadow-xs"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
-                  <ArrowUpRight className="h-4 w-4" />
+                  <ArrowUpRight className="size-5" />
                   <span>Despesa</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setEntryType("income")}
                   className={cn(
-                    "h-10 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2",
+                    "h-11 min-h-11 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                     entryType === "income"
-                      ? "bg-emerald-600 text-white shadow-xs"
+                      ? "bg-emerald-600 text-primary-foreground shadow-xs"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
-                  <ArrowDownLeft className="h-4 w-4" />
+                  <ArrowDownLeft className="size-5" />
                   <span>Receita</span>
                 </button>
               </div>
 
-              {/* Valor Monetário */}
+              {/* Valor */}
               <div className="space-y-2">
                 <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Valor (R$)
                 </label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold text-lg">
-                    R$
-                  </span>
-                  <Input
-                    type="text"
-                    inputMode="decimal"
-                    placeholder="0,00"
-                    value={amountStr}
-                    onChange={(e) => setAmountStr(e.target.value)}
-                    required
-                    autoFocus
-                    className="h-12 pl-11 text-xl font-bold rounded-lg bg-card border-border/80"
-                  />
-                </div>
+                <Input
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="0,00"
+                  value={amountStr}
+                  onChange={(e) => setAmountStr(e.target.value)}
+                  required
+                  className="h-11 rounded-lg bg-card border-border/80 text-xl font-bold"
+                />
               </div>
 
               {/* Descrição */}
@@ -768,11 +1476,11 @@ function PersonalFinancePage() {
                 </label>
                 <Input
                   type="text"
-                  placeholder="Ex: Almoço de domingo, Mercado, Salário..."
+                  placeholder="Ex: Almoço, Supermercado, Salário..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   required
-                  className="h-11 rounded-lg bg-card border-border/80"
+                  className="h-11 rounded-lg bg-card border-border/80 text-xs"
                 />
               </div>
 
@@ -788,23 +1496,20 @@ function PersonalFinancePage() {
                       type="button"
                       onClick={() => setSelectedCategoryId(cat.id)}
                       className={cn(
-                        "h-10 px-2 rounded-lg text-xs font-medium flex items-center gap-2 transition-all text-left truncate",
+                        "h-11 min-h-11 px-3 rounded-lg text-xs font-medium flex items-center gap-2 transition-colors text-left truncate cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                         selectedCategoryId === cat.id
                           ? "bg-primary text-primary-foreground font-semibold shadow-2xs"
                           : "bg-card text-foreground hover:bg-muted border border-border/40"
                       )}
                     >
-                      <div
-                        className="h-3 w-3 shrink-0 rounded-full"
-                        style={{ backgroundColor: cat.color }}
-                      />
+                      <div className="size-3 shrink-0 rounded-full bg-primary" />
                       <span className="truncate">{cat.name}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Data & Método de Pagamento */}
+              {/* Data & Forma de Pagamento */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -815,171 +1520,100 @@ function PersonalFinancePage() {
                     value={entryDate}
                     onChange={(e) => setEntryDate(e.target.value)}
                     required
-                    className="h-11 rounded-lg bg-card border-border/80"
+                    className="h-11 rounded-lg bg-card border-border/80 text-xs"
                   />
                 </div>
 
                 <div className="space-y-2">
                   <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Forma de Pagamento
+                    Pagamento
                   </label>
                   <select
                     value={paymentMethod}
                     onChange={(e) => setPaymentMethod(e.target.value as any)}
-                    className="w-full h-11 px-3 rounded-lg bg-card border border-border/80 text-sm font-medium text-foreground"
+                    className="w-full h-11 px-3 rounded-lg bg-card border border-border/80 text-xs font-medium text-foreground focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                   >
                     <option value="pix">Pix</option>
                     <option value="credit_card">Cartão de Crédito</option>
                     <option value="debit_card">Cartão de Débito</option>
                     <option value="cash">Dinheiro em Espécie</option>
-                    <option value="transfer">Transferência Bancária</option>
-                    <option value="boleto">Boleto Bancário</option>
+                    <option value="transfer">Transferência</option>
+                    <option value="boleto">Boleto</option>
                     <option value="other">Outro</option>
                   </select>
                 </div>
               </div>
 
-              {/* Comprovante / Foto do Recibo */}
+              {/* Comprovante / OCR */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Foto do Comprovante
+                    Comprovante / Recibo
                   </label>
                   {receiptUrl && (
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
                       disabled={isAnalyzingOcr}
                       onClick={async () => {
                         setIsAnalyzingOcr(true);
                         try {
-                          const result = await analyzeReceiptWithAI({ data: { imageUrl: receiptUrl } });
-                          setOcrResult(result);
+                          const result = await analyzeReceiptWithAI({
+                            data: { imageUrl: receiptUrl },
+                          });
                           if (result.amountCents) {
-                            const r = result.amountCents / 100;
-                            setAmountStr(r.toFixed(2).replace(".", ","));
+                            setAmountStr((result.amountCents / 100).toFixed(2).replace(".", ","));
                           }
                           if (result.description) setDescription(result.description);
                           if (result.entryDate) setEntryDate(result.entryDate);
-                          toast.success(
-                            `OCR concluído com confiança ${result.confidence === "high" ? "alta ✓" : result.confidence === "medium" ? "média" : "baixa — revise os dados"}`
-                          );
+                          toast.success("OCR processado com sucesso!");
                         } catch (err: any) {
-                          toast.error(err.message || "Falha no OCR. Tente novamente.");
+                          toast.error(err.message || "Falha no OCR.");
                         } finally {
                           setIsAnalyzingOcr(false);
                         }
                       }}
-                      className="inline-flex items-center gap-2 h-7 px-3 rounded-lg text-xs font-semibold bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold text-primary hover:bg-primary/20 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                     >
                       {isAnalyzingOcr ? (
-                        <><Activity className="h-3 w-3 animate-pulse" /> Analisando...</>
+                        <>
+                          <Activity className="size-5 animate-spin" />
+                          <span>Lendo...</span>
+                        </>
                       ) : (
-                        <><ScanLine className="h-3 w-3" /> Analisar com IA</>
+                        <span>Analisar com IA</span>
                       )}
-                    </button>
+                    </Button>
                   )}
                 </div>
                 <ImageUpload
                   value={receiptUrl}
                   onChange={(url) => setReceiptUrl(url)}
-                  onRemove={() => { setReceiptUrl(""); setOcrResult(null); }}
+                  onRemove={() => setReceiptUrl("")}
                   bucket="receipts"
                   variant="minimal"
-                  helperText="Anexe a foto da nota fiscal ou recibo — a IA preenche os campos automaticamente"
-                />
-                {/* Resultado do OCR */}
-                {ocrResult && (
-                  <div className="mt-2 p-3 rounded-lg bg-emerald-500/8 border border-emerald-500/20 space-y-1">
-                    <div className="flex items-center gap-2 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
-                      <Activity className="h-3 w-3" />
-                      OCR Concluído — {ocrResult.confidence === "high" ? "Alta confiança" : ocrResult.confidence === "medium" ? "Média confiança" : "Baixa confiança — revise"}
-                    </div>
-                    {ocrResult.establishmentName && (
-                      <div className="text-xs text-muted-foreground">
-                        <span className="font-medium">Estabelecimento:</span> {ocrResult.establishmentName}
-                      </div>
-                    )}
-                    {ocrResult.cnpj && (
-                      <div className="text-xs text-muted-foreground">
-                        <span className="font-medium">CNPJ:</span> {ocrResult.cnpj}
-                      </div>
-                    )}
-                    {ocrResult.suggestedCategory && (
-                      <div className="text-xs text-muted-foreground">
-                        <span className="font-medium">Categoria sugerida:</span> {ocrResult.suggestedCategory}
-                      </div>
-                    )}
-                    {ocrResult.rawText && (
-                      <div className="text-xs text-muted-foreground/70 italic line-clamp-2">{ocrResult.rawText}</div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Observações */}
-              <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Notas / Observações (Opcional)
-                </label>
-                <Input
-                  type="text"
-                  placeholder="Detalhes adicionais..."
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  className="h-11 rounded-lg bg-card border-border/80"
+                  helperText="Anexe foto do comprovante para preenchimento por IA"
                 />
               </div>
 
-              {/* Botões de Ação */}
-              <div className="pt-2 flex items-center justify-end gap-3">
+              <div className="flex items-center justify-end gap-3 pt-2">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setIsNewEntryOpen(false)}
-                  className="h-11 px-5 rounded-lg border-border/80"
+                  className="h-11 min-h-11 px-5 rounded-lg border-border/80 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                 >
                   Cancelar
                 </Button>
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="h-11 px-6 rounded-lg bg-primary text-primary-foreground font-semibold shadow-sm hover:opacity-90"
+                  className="h-11 min-h-11 px-6 rounded-lg bg-primary text-primary-foreground text-xs font-semibold shadow-xs focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                 >
                   {isSubmitting ? "Salvando..." : "Salvar Lançamento"}
                 </Button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL DE ZOOM DO COMPROVANTE */}
-      {viewingReceiptUrl && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xs p-4 animate-in fade-in duration-200"
-          onClick={() => setViewingReceiptUrl(null)}
-        >
-          <div
-            className="relative max-w-2xl w-full bg-card rounded-lg overflow-hidden shadow-xs p-2"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between p-2 border-b border-border/40">
-              <span className="font-semibold text-sm">Visualização do Comprovante</span>
-              <button
-                type="button"
-                onClick={() => setViewingReceiptUrl(null)}
-                className="h-8 w-8 inline-flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            <div className="p-2 flex items-center justify-center max-h-[80vh] overflow-auto">
-              <img
-                src={viewingReceiptUrl}
-                alt="Comprovante de pagamento"
-                className="max-h-[70vh] w-auto object-contain rounded-lg"
-              />
-            </div>
           </div>
         </div>
       )}

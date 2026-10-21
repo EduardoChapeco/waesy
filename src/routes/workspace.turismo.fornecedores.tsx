@@ -133,7 +133,7 @@ function WorkspaceSuppliersPage() {
  <Building2 className="size-8 text-muted-foreground mx-auto" />
  <p className="text-xs font-bold text-foreground">Nenhum fornecedor encontrado</p>
  <p className="text-xs text-muted-foreground">Cadastre operadoras e DMCs para vincular às propostas e cotações da agência.</p>
- <Button type="button" onClick={() => setWizardOpen(true)} size="sm" className="rounded-lg">
+ <Button type="button" onClick={() => setWizardOpen(true)} className="rounded-lg h-11 min-h-11 px-4">
  Cadastrar Primeiro Fornecedor
  </Button>
  </div>

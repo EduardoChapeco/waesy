@@ -729,7 +729,8 @@ export function CheckoutPage() {
  ? Math.min(appliedGiftCard.balanceCents, preGiftTotalCents)
  : 0;
 
- const finalTotalCents = Math.max(0, preGiftTotalCents - giftCardDeductionCents);
+ const wzDeductionCents = (useWzBalance && wzAvailability?.usableReferenceBrlCents) ? Math.min(wzAvailability.usableReferenceBrlCents, Math.max(0, preGiftTotalCents - giftCardDeductionCents)) : 0;
+ const finalTotalCents = Math.max(0, preGiftTotalCents - giftCardDeductionCents - wzDeductionCents);
  const installmentOptions = calculateInstallmentOptions(finalTotalCents);
  const activeInstallmentOption = installmentOptions.find((o) => o.number === selectedInstallment);
  const checkoutTotalCents =

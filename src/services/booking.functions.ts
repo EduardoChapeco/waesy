@@ -1175,11 +1175,15 @@ export const rescheduleAppointment = createServerFn({ method: "POST" })
       // 6. Liberar o slot anterior
       const oldStart = new Date(appt.scheduled_at);
       const oldEnd = new Date(oldStart.getTime() + duration * 60000);
-      await db.rpc("release_resource_slot", {
-        p_resource_id: appt.resource_id || appt.service_id,
-        p_start_at: oldStart.toISOString(),
-        p_end_at: oldEnd.toISOString(),
-      }).catch(() => {});
+      try {
+        await db.rpc("release_resource_slot", {
+          p_resource_id: appt.resource_id || appt.service_id,
+          p_start_at: oldStart.toISOString(),
+          p_end_at: oldEnd.toISOString(),
+        });
+      } catch {
+        // Ignora se procedure opcional não existir
+      }
 
       // 7. Atualizar o agendamento com rastreabilidade
       const currentCount = appt.reschedule_count || 0;
@@ -1207,14 +1211,18 @@ export const rescheduleAppointment = createServerFn({ method: "POST" })
 
       // 8. Se houver passe, registrar no ledger
       if (appt.pass_id) {
-        await db.from("service_pass_ledger").insert({
-          pass_id: appt.pass_id,
-          appointment_id: appt.id,
-          movement_type: "session_booked",
-          credits_delta: 0,
-          balance_after: 0,
-          reason: `Remarcação para ${new Date(input.new_scheduled_at).toLocaleString("pt-BR")}`,
-        }).catch(() => {});
+        try {
+          await db.from("service_pass_ledger").insert({
+            pass_id: appt.pass_id,
+            appointment_id: appt.id,
+            movement_type: "session_booked",
+            credits_delta: 0,
+            balance_after: 0,
+            reason: `Remarcação para ${new Date(input.new_scheduled_at).toLocaleString("pt-BR")}`,
+          });
+        } catch {
+          // Auditoria não bloqueante
+        }
       }
 
       return { success: true, data: updatedAppt };

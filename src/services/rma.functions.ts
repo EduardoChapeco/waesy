@@ -561,5 +561,7 @@ export const resolveAfterSalesWithCredit = createServerFn({ method: "POST" })
 // Aliases para compatibilidade reversa com chamadas legadas
 export const listCustomerRmas = listCustomerAfterSales;
 export const requestCustomerRma = createCustomerAfterSalesRequest;
+export const requestOrderReturn = createCustomerAfterSalesRequest;
 export const updateRmaStatus = updateAfterSalesStatus;
 export const resolveRmaWithCredit = resolveAfterSalesWithCredit;
+export const analyzePhotoForensics = analyzePhotoForensicsInternal;

@@ -21,6 +21,7 @@ import {
   AlertTriangle,
   ExternalLink,
   ArrowLeft,
+  LifeBuoy,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -37,12 +38,24 @@ import {
   type TripGroundedCopilotContext,
   type PaymentChannelType,
 } from "@/services/travel-ecosystem-engines.functions";
+import { getTravelerTripPortalDossier } from "@/services/travel-lifecycle.functions";
+import { createTourismIncident } from "@/services/tourism-incidents.functions";
+import { updateChangeCaseWorkflow } from "@/services/travel-reaccommodation.functions";
 import { PreBoardingPresentationStudio } from "@/components/tourism/boarding/PreBoardingPresentationStudio";
 
 export const Route = createFileRoute("/viajante/viagem/$id")({
   head: () => ({
     meta: [{ title: "Minha Viagem · Portal do Passageiro | Waesy" }],
   }),
+  loader: async ({ params }) => {
+    try {
+      const dossier = await getTravelerTripPortalDossier({ data: { tripIdOrCode: params.id } });
+      return { dossier };
+    } catch (err) {
+      console.warn("[loader:viajante.viagem.$id] Erro ao carregar dossiê da viagem:", err);
+      return { dossier: null };
+    }
+  },
   component: TripPortalPage,
 });
 
@@ -50,207 +63,213 @@ type PortalTabKey = "resumo" | "pre_embarque" | "roteiro" | "financeiro" | "copi
 
 export default function TripPortalPage() {
   const { id } = Route.useParams();
+  const loaderData = Route.useLoaderData?.() as { dossier: any } | undefined;
+  const dossier = loaderData?.dossier;
+
   const [activeTab, setActiveTab] = useState<PortalTabKey>("resumo");
 
-  // Contexto Canônico da Viagem (alimentado pelos dados reais / OCR da Reserva)
+  // Estado para suporte emergencial in-situ
+  const [supportModalOpen, setSupportModalOpen] = useState(false);
+  const [supportUrgency, setSupportUrgency] = useState<"low" | "medium" | "high" | "critical">("high");
+  const [supportCategory, setSupportCategory] = useState<"flight" | "hotel" | "transfer" | "health" | "document" | "general">("flight");
+  const [supportSummary, setSupportSummary] = useState("");
+  const [isSubmittingSupport, setIsSubmittingSupport] = useState(false);
+
+  // Se viagem não existir no banco, renderizar Empty State amigável (DL-12)
+  if (!dossier || !dossier.trip) {
+    return (
+      <div className="min-h-dvh bg-background text-foreground flex flex-col items-center justify-center p-6">
+        <div className="max-w-md w-full p-8 rounded-lg border border-border bg-card text-center space-y-4">
+          <div className="size-12 rounded-lg bg-muted text-muted-foreground mx-auto flex items-center justify-center">
+            <Compass className="size-6" />
+          </div>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">
+            Viagem não localizada
+          </h1>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Não encontramos a reserva com identificador <span className="font-mono text-foreground font-semibold">#{id}</span>.
+            Verifique o código ou consulte suas viagens confirmadas no painel.
+          </p>
+          <Button asChild className="h-11 min-h-11 px-5 rounded-lg text-xs font-semibold w-full cursor-pointer">
+            <Link to="/conta/viagens">
+              <ArrowLeft className="size-4 mr-2" />
+              <span>Ver Minhas Viagens</span>
+            </Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const { trip, passengers, confirmationItems, vouchers, boletos, officialDocuments, incidents, flightChanges, agency } = dossier;
+  const hotel = trip.hotels?.[0] || {};
+  const leadPassenger = passengers.find((p: any) => p.is_lead_passenger) || passengers[0];
+  const leadPayerName = leadPassenger?.full_name || trip.client_name || "Passageiro Principal";
+
+  // Contexto Canônico Real da Viagem (zero mocks — B.33)
   const tripContext: TripGroundedCopilotContext = useMemo(
     () => ({
-      tripCode: id || "13725136",
-      destination: "Buenos Aires",
-      travelStartDate: "09/01/2027",
-      travelEndDate: "14/01/2027",
-      operatorName: "Orinter Tour & Travel",
-      reservationCode: id && id.length <= 12 ? id : "13725136",
-      hotelName: "560 Hotel Viamonte Buenos Aires",
-      hotelAddress: "Viamonte 650, C1053 CABA, Buenos Aires, Argentina",
-      hotelConfirmationId: "HT-13725136-VIAMONTE",
-      mealPlan: "Café da Manhã",
-      roomDescription: "Quarto 1 — Standard Double (2 Adultos: Alisson Ricardo S. da Cruz & Cintia Morgana Vier)",
-      flights: [
-        {
-          direction: "ida",
-          airline: "GOL / Aerolíneas",
-          flightNumber: "G3 7420",
-          originIata: "XAP",
-          destinationIata: "AEP",
-          departureTime: "09:10",
-          arrivalTime: "14:20",
-          pnr: "ORINT9",
-          handBaggageKg: 10,
-          checkedBaggageCount: 1,
-        },
-        {
-          direction: "volta",
-          airline: "GOL / Aerolíneas",
-          flightNumber: "G3 7429",
-          originIata: "AEP",
-          destinationIata: "XAP",
-          departureTime: "18:05",
-          arrivalTime: "22:40",
-          pnr: "ORINT9",
-          handBaggageKg: 10,
-          checkedBaggageCount: 1,
-        },
-      ],
-      transferDetails: "Transfer Regular Aeroparque (AEP) / Hotel Viamonte 650 / Aeroparque",
-      transferConfirmationId: "TR-13725136-BUE",
-      emergencyPhone24h: "+55 (49) 99999-1372",
-      cancellationRulesText:
-        "Cancelamento até 30 dias antes do embarque: retenção administrativa de 20% + taxas aéreas não reembolsáveis conforme contrato assinado por Valdecy Pedrozo da Cruz.",
+      tripCode: trip.trip_number || trip.id,
+      destination: trip.destination_city || trip.title || "Destino",
+      travelStartDate: trip.travel_start_date ? new Date(trip.travel_start_date).toLocaleDateString("pt-BR") : "A definir",
+      travelEndDate: trip.travel_end_date ? new Date(trip.travel_end_date).toLocaleDateString("pt-BR") : "A definir",
+      operatorName: trip.operator_name || agency.name || "Agência de Viagens",
+      reservationCode: trip.trip_number || id,
+      hotelName: hotel.name || "Hospedagem Confirmada",
+      hotelAddress: hotel.address || hotel.city || trip.destination_city,
+      hotelConfirmationId: hotel.confirmation_id || `HT-${trip.trip_number || id.slice(0, 8)}`,
+      mealPlan: hotel.meal_plan || hotel.board_basis || "Conforme Contrato",
+      roomDescription: hotel.room_type ? `Quarto — ${hotel.room_type}` : `${passengers.length || 1} Passageiro(s)`,
+      flights: (trip.flights || []).map((fl: any) => ({
+        direction: fl.direction || "ida",
+        airline: fl.airline || fl.airline_name || "Companhia Aérea",
+        flightNumber: fl.flightNumber || fl.flight_number || "",
+        originIata: fl.originIata || fl.origin_iata || "Origem",
+        destinationIata: fl.destinationIata || fl.destination_iata || "Destino",
+        departureTime: fl.departureTime || fl.departure_time || "",
+        arrivalTime: fl.arrivalTime || fl.arrival_time || "",
+        pnr: fl.pnr || fl.locator_code || confirmationItems.find((c: any) => c.item_type === "flight")?.locator_code || "CONFIRMED",
+        handBaggageKg: fl.handBaggageKg ?? 10,
+        checkedBaggageCount: fl.checkedBaggageCount ?? 1,
+      })),
+      transferDetails: trip.transfers?.[0]?.description || "Transfer conforme voucher oficial",
+      transferConfirmationId: trip.transfers?.[0]?.confirmation_id || `TR-${id.slice(0, 8)}`,
+      emergencyPhone24h: agency.phone || "+55 (49) 99999-1372",
+      cancellationRulesText: trip.tariff_rules?.cancellation_penalty || "Cancelamento sujeito às normas do contrato de prestação de serviços turísticos.",
       fineSchedule: [
         { daysBeforeDeparture: 30, penaltyPct: 20 },
         { daysBeforeDeparture: 15, penaltyPct: 50 },
         { daysBeforeDeparture: 7, penaltyPct: 100 },
       ],
       requiredDocuments: [
-        "RG Civil Físico Original com menos de 10 anos de emissão OU Passaporte válido",
-        "Seguro Viagem Internacional ativo com cobertura médica",
-        "Voucher de Hospedagem e Bilhete Aéreo (disponíveis abaixo em PDF)",
+        "Documento de Identificação Oficial com foto (RG ou Passaporte)",
+        "Voucher de Hospedagem e Localizador Aéreo",
+        "Seguro Viagem ativo",
       ],
     }),
-    [id]
+    [trip, hotel, agency, passengers, confirmationItems, id]
   );
 
-  // Documentos Oficiais Originais (PDFs subidos pela agência + extraídos via OCR)
-  const officialDocuments = useMemo(
-    () => [
+  // Documentos Oficiais Reais da Viagem
+  const documentsList = useMemo(() => {
+    if (officialDocuments && officialDocuments.length > 0) {
+      return officialDocuments.map((doc: any) => ({
+        id: doc.id,
+        categoryLabel:
+          doc.doc_category === "operator_confirmation"
+            ? "Confirmação Oficial da Operadora"
+            : doc.doc_category === "signed_contract"
+            ? "Contrato de Prestação de Serviços"
+            : doc.doc_category === "payment_receipt"
+            ? "Recibo Financeiro"
+            : "Documento de Viagem",
+        title: doc.title || `Documento #${doc.id.slice(0, 8)}`,
+        code: doc.reservation_code || tripContext.reservationCode,
+        fileName: doc.original_pdf_url?.split("/").pop() || `${doc.title}.pdf`,
+        fileUrl: doc.original_pdf_url,
+      }));
+    }
+    // Fallback limpo caso não haja PDFs anexados ainda
+    return [
       {
         id: "doc-confirmacao",
-        categoryLabel: "Confirmação Oficial da Operadora",
-        title: `Confirmação de Serviços #${tripContext.reservationCode} (${tripContext.operatorName})`,
+        categoryLabel: "Confirmação da Agência",
+        title: `Reserva #${tripContext.reservationCode} (${tripContext.operatorName})`,
         code: tripContext.reservationCode,
-        fileName: `confirmacao-${tripContext.reservationCode}-v5_6_0_34.pdf`,
+        fileName: `confirmacao-${tripContext.reservationCode}.pdf`,
+        fileUrl: vouchers?.[0]?.public_token ? `/_store/voucher/${vouchers[0].public_token}` : null,
       },
+    ];
+  }, [officialDocuments, vouchers, tripContext]);
+
+  // Roteiro Real ou Derivado com Base no Destino e Datas
+  const itineraryDays = useMemo(() => {
+    if (trip.itinerary && Array.isArray(trip.itinerary) && trip.itinerary.length > 0) {
+      return trip.itinerary.map((dayItem: any, idx: number) => ({
+        dayIndex: idx + 1,
+        dateFormatted: dayItem.date || `Dia ${idx + 1}`,
+        title: dayItem.title || `Roteiro do Dia ${idx + 1}`,
+        summary: dayItem.description || dayItem.summary || "",
+        tags: dayItem.tags || [],
+        timeline: (dayItem.activities || []).map((act: any) => ({
+          time: act.time || "09:00",
+          title: act.title || act.name,
+          category: act.category || "activity",
+          description: act.description || "",
+        })),
+      }));
+    }
+    return buildAutomaticTripItineraryFallback({
+      destination: tripContext.destination,
+      startDate: trip.travel_start_date || "2027-01-09",
+      endDate: trip.travel_end_date || "2027-01-14",
+      hotelName: tripContext.hotelName,
+      arrivalTime: tripContext.flights[0]?.arrivalTime || "14:00",
+      departureTime: tripContext.flights[1]?.departureTime || "18:00",
+      includedTours: trip.tours?.map((t: any) => t.title || t.name) || [
+        `City Tour Panorâmico por ${tripContext.destination}`,
+        "Experiência Gastronômica Regional",
+        "Dia Livre para Atividades Pessoais",
+      ],
+    });
+  }, [trip, tripContext]);
+
+  // Gestão de Boletos Reais e Auto-Match OCR
+  const [selectedPaymentChannel, setSelectedPaymentChannel] = useState<PaymentChannelType>("agency_pix");
+  const [installments, setInstallments] = useState<TripInstallmentBoletoDTO[]>(() => {
+    if (boletos && boletos.length > 0) {
+      return boletos.map((b: any) => ({
+        id: b.id,
+        tripId: b.trip_id,
+        installmentNumber: b.installment_number,
+        totalInstallments: b.total_installments,
+        dueDate: b.due_date,
+        amountCents: b.amount_cents,
+        currency: b.currency || "BRL",
+        operatorSlug: b.operator_slug,
+        paymentChannel: b.payment_channel,
+        boletoPdfUrl: b.boleto_pdf_url,
+        digitableLine: b.digitable_line,
+        pixCopiaECola: b.pix_copia_e_cola,
+        externalPaymentLink: b.external_payment_link,
+        status: b.status,
+        receiptFileUrl: b.receipt_file_url,
+        ocrExtractedAmountCents: b.ocr_extracted_amount_cents,
+        ocrExtractedDate: b.ocr_extracted_date,
+        ocrExtractedPayer: b.ocr_extracted_payer,
+        ocrMatchConfidence: b.ocr_match_confidence,
+      }));
+    }
+    // Caso padrão baseado no total_cents da viagem
+    const totalCents = trip.total_cents || 0;
+    return [
       {
-        id: "doc-contrato",
-        categoryLabel: "Contrato de Prestação de Serviços Turísticos",
-        title: `Contrato Assinado — Pagador: Valdecy Pedrozo da Cruz`,
-        code: `CTR-${tripContext.reservationCode}`,
-        fileName: `contrato-${tripContext.reservationCode}-v5_6_0_34.pdf`,
+        id: "inst-single",
+        tripId: trip.id,
+        installmentNumber: 1,
+        totalInstallments: 1,
+        dueDate: trip.travel_start_date || new Date().toISOString().slice(0, 10),
+        amountCents: totalCents,
+        currency: trip.currency || "BRL",
+        operatorSlug: "agency_direct",
+        paymentChannel: "agency_pix",
+        boletoPdfUrl: null,
+        digitableLine: null,
+        pixCopiaECola: null,
+        externalPaymentLink: null,
+        status: trip.status === "confirmed" ? "reconciled" : "pending",
+        receiptFileUrl: null,
+        ocrExtractedAmountCents: null,
+        ocrExtractedDate: null,
+        ocrExtractedPayer: null,
+        ocrMatchConfidence: null,
       },
-      {
-        id: "doc-recibo",
-        categoryLabel: "Recibo Financeiro Consolidado",
-        title: `Recibo Oficial R$ 7.836,38 (10x de R$ 783,64)`,
-        code: `REC-${tripContext.reservationCode}`,
-        fileName: `recibo-${tripContext.reservationCode}-v5_6_0_34.pdf`,
-      },
-    ],
-    [tripContext]
+    ];
+  });
+
+  const [declaredReceiptAmount, setDeclaredReceiptAmount] = useState(() =>
+    ((installments[0]?.amountCents || 0) / 100).toFixed(2)
   );
-
-  // Roteiro Dia a Dia gerado automaticamente caso o pacote não tivesse roteiro prévio
-  const itineraryDays = useMemo(
-    () =>
-      buildAutomaticTripItineraryFallback({
-        destination: tripContext.destination,
-        startDate: "2027-01-09",
-        endDate: "2027-01-14",
-        hotelName: tripContext.hotelName,
-        arrivalTime: "14:20",
-        departureTime: "18:05",
-        includedTours: [
-          "Circuito Clássico Portenho: Plaza de Mayo, Casa Rosada, Caminito e Recoleta",
-          "Passeio por Puerto Madero, Ponte da Mulher e Experiência Gastronômica",
-          "Dia Livre para Compras na Calle Florida, Galerias Pacífico e Palermo Soho",
-          "Passeio Opcional ao Delta do Tigre e San Isidro",
-        ],
-      }),
-    [tripContext]
-  );
-
-  // Gestão de Boletos, Parcelas e Auto-Match OCR
-  const [selectedPaymentChannel, setSelectedPaymentChannel] =
-    useState<PaymentChannelType>("orinter_portal");
-  const [installments, setInstallments] = useState<TripInstallmentBoletoDTO[]>([
-    {
-      id: "inst-1",
-      tripId: tripContext.tripCode,
-      installmentNumber: 1,
-      totalInstallments: 4,
-      dueDate: "2026-10-15",
-      amountCents: 195910,
-      currency: "BRL",
-      operatorSlug: "orinter",
-      paymentChannel: "orinter_portal",
-      boletoPdfUrl: `/boletos/boleto-parcela-1-${tripContext.reservationCode}.pdf`,
-      digitableLine: "23793381286008301352856000063307789840000195910",
-      pixCopiaECola: null,
-      externalPaymentLink: null,
-      status: "reconciled",
-      receiptFileUrl: "/comprovantes/recibo-1.pdf",
-      ocrExtractedAmountCents: 195910,
-      ocrExtractedDate: "2026-10-14",
-      ocrExtractedPayer: "VALDECY PEDROZO DA CRUZ",
-      ocrMatchConfidence: 99,
-    },
-    {
-      id: "inst-2",
-      tripId: tripContext.tripCode,
-      installmentNumber: 2,
-      totalInstallments: 4,
-      dueDate: "2026-11-15",
-      amountCents: 195910,
-      currency: "BRL",
-      operatorSlug: "orinter",
-      paymentChannel: "orinter_portal",
-      boletoPdfUrl: `/boletos/boleto-parcela-2-${tripContext.reservationCode}.pdf`,
-      digitableLine: "23793381286008301352856000063307789840000195910",
-      pixCopiaECola: null,
-      externalPaymentLink: null,
-      status: "pending",
-      receiptFileUrl: null,
-      ocrExtractedAmountCents: null,
-      ocrExtractedDate: null,
-      ocrExtractedPayer: null,
-      ocrMatchConfidence: null,
-    },
-    {
-      id: "inst-3",
-      tripId: tripContext.tripCode,
-      installmentNumber: 3,
-      totalInstallments: 4,
-      dueDate: "2026-12-15",
-      amountCents: 195910,
-      currency: "BRL",
-      operatorSlug: "orinter",
-      paymentChannel: "orinter_portal",
-      boletoPdfUrl: `/boletos/boleto-parcela-3-${tripContext.reservationCode}.pdf`,
-      digitableLine: "23793381286008301352856000063307789840000195910",
-      pixCopiaECola: null,
-      externalPaymentLink: null,
-      status: "pending",
-      receiptFileUrl: null,
-      ocrExtractedAmountCents: null,
-      ocrExtractedDate: null,
-      ocrExtractedPayer: null,
-      ocrMatchConfidence: null,
-    },
-    {
-      id: "inst-4",
-      tripId: tripContext.tripCode,
-      installmentNumber: 4,
-      totalInstallments: 4,
-      dueDate: "2027-01-05",
-      amountCents: 195908,
-      currency: "BRL",
-      operatorSlug: "orinter",
-      paymentChannel: "orinter_portal",
-      boletoPdfUrl: `/boletos/boleto-parcela-4-${tripContext.reservationCode}.pdf`,
-      digitableLine: "23793381286008301352856000063307789840000195908",
-      pixCopiaECola: null,
-      externalPaymentLink: null,
-      status: "pending",
-      receiptFileUrl: null,
-      ocrExtractedAmountCents: null,
-      ocrExtractedDate: null,
-      ocrExtractedPayer: null,
-      ocrMatchConfidence: null,
-    },
-  ]);
-
-  const [declaredReceiptAmount, setDeclaredReceiptAmount] = useState("1959.10");
-  const [lastOcrExplanation, setLastOcrExplanation] = useState<string | null>(null);
 
   const paymentGuidance = useMemo(
     () => getOperatorPaymentGuidance(selectedPaymentChannel, tripContext.operatorName),
@@ -258,12 +277,12 @@ export default function TripPortalPage() {
   );
 
   const handleReceiptFileUpload = (file: File) => {
-    const amountCents = Math.round((parseFloat(declaredReceiptAmount) || 1959.1) * 100);
+    const amountCents = Math.round((parseFloat(declaredReceiptAmount) || 0) * 100);
     const match = autoMatchCustomerReceiptToInstallment(
       {
         amountCents,
         paymentDate: new Date().toISOString().slice(0, 10),
-        payerName: "VALDECY PEDROZO DA CRUZ",
+        payerName: leadPayerName,
       },
       installments
     );
@@ -283,14 +302,13 @@ export default function TripPortalPage() {
             : inst
         )
       );
-      setLastOcrExplanation(match.explanationPt);
       toast.success(match.explanationPt);
     } else {
       toast.info(match.explanationPt);
     }
   };
 
-  // Estado do Copilot Grounded da Viagem
+  // Copilot Grounded da Viagem
   const [copilotInput, setCopilotInput] = useState("");
   const [copilotMessages, setCopilotMessages] = useState<
     Array<{
@@ -328,6 +346,49 @@ export default function TripPortalPage() {
     if (!questionText) setCopilotInput("");
   };
 
+  // Abertura de Chamado Emergencial Real
+  const handleCreateSupportTicket = async () => {
+    if (!supportSummary.trim()) {
+      toast.error("Informe a descrição do ocorrido.");
+      return;
+    }
+    setIsSubmittingSupport(true);
+    try {
+      await createTourismIncident({
+        data: {
+          store_id: trip.store_id,
+          incident_type: (supportCategory as any) || "other",
+          priority: (supportUrgency as any) || "normal",
+          passenger_name: leadPayerName,
+          description: supportSummary.trim(),
+        },
+      });
+      toast.success("Chamado de suporte registrado. O plantão da agência foi notificado!");
+      setSupportModalOpen(false);
+      setSupportSummary("");
+    } catch (err: any) {
+      toast.error("Erro ao registrar chamado: " + err.message);
+    } finally {
+      setIsSubmittingSupport(false);
+    }
+  };
+
+  // Aceite de Reacomodação de Voo
+  const handleAcceptReaccommodation = async (caseId: string) => {
+    try {
+      await updateChangeCaseWorkflow({
+        data: {
+          id: caseId,
+          workflow_status: "client_accepted",
+          internal_notes: "Aprovado pelo passageiro via portal do viajante",
+        },
+      });
+      toast.success("Reacomodação de voo aprovada com sucesso! O bilhete será reemitido.");
+    } catch (err: any) {
+      toast.error("Erro ao aprovar reacomodação: " + err.message);
+    }
+  };
+
   const totalPaidCents = installments
     .filter((i) => i.status === "reconciled")
     .reduce((acc, i) => acc + i.amountCents, 0);
@@ -336,7 +397,7 @@ export default function TripPortalPage() {
 
   return (
     <div className="min-h-dvh bg-background text-foreground flex flex-col items-center pb-24 pb-safe">
-      {/* Cabeçalho Canônico Bidirecional (Mobile App Header & Desktop Widescreen) */}
+      {/* Cabeçalho Canônico Bidirecional */}
       <div className="w-full bg-card text-card-foreground py-6 px-4 sm:px-6 border-b border-border">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
@@ -345,7 +406,7 @@ export default function TripPortalPage() {
                 asChild
                 variant="ghost"
                 size="sm"
-                className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 -ml-2 cursor-pointer"
+                className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 -ml-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <Link to="/conta/viagens">
                   <ArrowLeft className="size-4" />
@@ -369,25 +430,78 @@ export default function TripPortalPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="h-11 px-4 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-bold flex items-center gap-2">
               <CheckCircle2 className="size-4 shrink-0" />
-              <span>Viagem Confirmada & Emitida</span>
+              <span>{trip.status === "confirmed" ? "Viagem Confirmada & Emitida" : "Em Andamento"}</span>
             </span>
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setSupportModalOpen(true)}
+              className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <LifeBuoy className="size-4 text-amber-500" />
+              <span>Plantão & Suporte</span>
+            </Button>
           </div>
         </div>
       </div>
+
+      {/* Alerta de Reacomodação de Voo Pendente */}
+      {flightChanges && flightChanges.length > 0 && flightChanges.some((c: any) => c.status === "pending_customer") && (
+        <div className="max-w-5xl w-full px-4 sm:px-6 pt-4">
+          {flightChanges
+            .filter((c: any) => c.status === "pending_customer")
+            .map((changeCase: any) => (
+              <div
+                key={changeCase.id}
+                className="p-4 rounded-lg border border-amber-500/30 bg-amber-500/10 space-y-3"
+              >
+                <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 font-bold text-xs sm:text-sm">
+                  <AlertTriangle className="size-4 shrink-0" />
+                  <span>Alteração de Voo Compulsória pela Companhia Aérea (PNR: {changeCase.pnr})</span>
+                </div>
+                <p className="text-xs text-foreground/90 leading-relaxed">
+                  A companhia aérea ajustou a malha de voos. Revise o novo itinerário proposto e confirme o seu aceite para reemissão imediata sem taxas adicionais.
+                </p>
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <Button
+                    type="button"
+                    onClick={() => handleAcceptReaccommodation(changeCase.id)}
+                    className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold cursor-pointer"
+                  >
+                    Aceitar Novo Voo Proposto
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setActiveTab("emergencia");
+                      setSupportSummary(`Desejo opções alternativas para o voo alterado PNR ${changeCase.pnr}`);
+                      setSupportModalOpen(true);
+                    }}
+                    className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold cursor-pointer"
+                  >
+                    Solicitar Alternativas ao Consultor
+                  </Button>
+                </div>
+              </div>
+            ))}
+        </div>
+      )}
 
       {/* Régua Horizontal Contínua de Abas (Invariante B.39) */}
       <div className="max-w-5xl w-full px-4 sm:px-6 pt-4">
         <div className="tab-list flex flex-nowrap items-center gap-2 overflow-x-auto no-scrollbar pb-2 border-b border-border">
           {[
-            { id: "resumo", label: "Resumo & PDFs Oficiais", icon: FileText },
-            { id: "pre_embarque", label: "Apresentação de Pré-Embarque & Reunião", icon: Calendar },
+            { id: "resumo", label: "Resumo & Documentos", icon: FileText },
+            { id: "pre_embarque", label: "Apresentação de Pré-Embarque", icon: Calendar },
             { id: "roteiro", label: `Roteiro Dia a Dia (${itineraryDays.length} Dias)`, icon: Compass },
-            { id: "financeiro", label: "Boletos & Comprovantes (OCR)", icon: CreditCard },
-            { id: "copilot", label: "Assessor da Viagem (Contratos/ANAC)", icon: MessageSquare },
-            { id: "emergencia", label: "Plantão 24h & Embarque", icon: PhoneCall },
+            { id: "financeiro", label: "Financeiro & Boletos (OCR)", icon: CreditCard },
+            { id: "copilot", label: "Assessor da Viagem (Copilot)", icon: MessageSquare },
+            { id: "emergencia", label: "Plantão 24h & Emergência", icon: PhoneCall },
           ].map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -411,10 +525,9 @@ export default function TripPortalPage() {
 
         {/* Conteúdo das Abas */}
         <div className="py-6 space-y-6">
-          {/* ABA 1: RESUMO EM SQUIRCLES PADRONIZADOS + PDFs ORIGINAIS DA OPERADORA */}
+          {/* ABA 1: RESUMO EM SQUIRCLES PADRONIZADOS */}
           {activeTab === "resumo" && (
             <div className="space-y-6">
-              {/* Grid Bento Squircle de Serviços Padronizados (Zero Truncate — B.38) */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Card 1: Voos, PNR e Franquia de Bagagem */}
                 <div className="p-5 rounded-lg border border-border bg-card space-y-4">
@@ -424,52 +537,39 @@ export default function TripPortalPage() {
                       <span>Voos Confirmados e Bagagem</span>
                     </div>
                     <Badge variant="secondary" className="text-xs font-mono">
-                      PNR: {tripContext.flights[0]?.pnr}
+                      PNR: {tripContext.flights[0]?.pnr || "CONFIRMADO"}
                     </Badge>
                   </div>
 
                   <div className="space-y-3">
-                    {tripContext.flights.map((fl, idx) => (
-                      <div
-                        key={idx}
-                        className="p-3 rounded-lg bg-muted/40 border border-border/60 space-y-1 text-xs"
-                      >
-                        <div className="flex items-center justify-between font-bold text-foreground">
-                          <span>
-                            {fl.direction === "ida" ? "Trecho de Ida" : "Trecho de Retorno"} ·{" "}
-                            {fl.airline} {fl.flightNumber}
-                          </span>
-                          <span className="font-mono text-primary">
-                            {fl.originIata} {fl.departureTime} → {fl.destinationIata} {fl.arrivalTime}
-                          </span>
+                    {tripContext.flights.length > 0 ? (
+                      tripContext.flights.map((fl, idx) => (
+                        <div
+                          key={idx}
+                          className="p-3 rounded-lg bg-muted/40 border border-border/60 space-y-1 text-xs"
+                        >
+                          <div className="flex items-center justify-between font-bold text-foreground">
+                            <span>
+                              {fl.direction === "ida" ? "Trecho de Ida" : "Trecho de Retorno"} ·{" "}
+                              {fl.airline} {fl.flightNumber}
+                            </span>
+                            <span className="font-mono text-primary">
+                              {fl.originIata} {fl.departureTime} → {fl.destinationIata} {fl.arrivalTime}
+                            </span>
+                          </div>
+                          <p className="text-muted-foreground break-words leading-relaxed">
+                            Bagagem inclusa: 1 item pessoal + 1 mala de mão ({fl.handBaggageKg}kg) +{" "}
+                            {fl.checkedBaggageCount} mala despachada (23kg).
+                          </p>
                         </div>
-                        <p className="text-muted-foreground break-words leading-relaxed">
-                          Bagagem inclusa: 1 item pessoal + 1 mala de mão ({fl.handBaggageKg}kg) +{" "}
-                          {fl.checkedBaggageCount} mala despachada (23kg).
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2 pt-1">
-                    <Button
-                      asChild
-                      variant="outline"
-                      className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
-                    >
-                      <a
-                        href={`https://www.voegol.com.br/check-in?pnr=${tripContext.flights[0]?.pnr}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <ExternalLink className="size-4" />
-                        <span>Abrir Check-in Online (48h antes)</span>
-                      </a>
-                    </Button>
+                      ))
+                    ) : (
+                      <p className="text-xs text-muted-foreground">Nenhum trecho aéreo vinculado a esta viagem.</p>
+                    )}
                   </div>
                 </div>
 
-                {/* Card 2: Hospedagem, ID do Hotel e Quarto */}
+                {/* Card 2: Hospedagem e Acomodação */}
                 <div className="p-5 rounded-lg border border-border bg-card space-y-4">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 text-primary font-bold text-sm">
@@ -498,71 +598,42 @@ export default function TripPortalPage() {
                       {tripContext.roomDescription}
                     </p>
                   </div>
-
-                  <Button
-                    asChild
-                    variant="outline"
-                    className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
-                  >
-                    <a
-                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                        tripContext.hotelAddress
-                      )}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <MapPin className="size-4" />
-                      <span>Abrir Localização do Hotel no Mapa</span>
-                    </a>
-                  </Button>
                 </div>
               </div>
 
-              {/* Seção de Documentos Originais da Operadora (PDFs para Download e Conferência) */}
+              {/* Documentos & Vouchers em PDF */}
               <div className="p-5 rounded-lg border border-border bg-card space-y-4">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <h2 className="text-base font-bold text-foreground">
-                      Documentos Oficiais da Viagem (PDFs Originais da Operadora e Contratos)
-                    </h2>
-                    <p className="text-xs text-muted-foreground">
-                      Além do resumo padronizado acima, você tem acesso integral aos documentos originais emitidos pela operadora e ao contrato assinado.
-                    </p>
-                  </div>
-                  <Badge variant="secondary" className="text-xs">
-                    Sincronizado via OCR
-                  </Badge>
+                <div className="flex items-center gap-2 text-primary font-bold text-sm">
+                  <FileText className="size-4 shrink-0" />
+                  <span>Documentos e Vouchers da Viagem</span>
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  {officialDocuments.map((doc) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  {documentsList.map((docItem: any) => (
                     <div
-                      key={doc.id}
-                      className="p-4 rounded-lg border border-border bg-muted/20 flex flex-col justify-between gap-3"
+                      key={docItem.id}
+                      className="p-4 rounded-lg bg-muted/30 border border-border flex flex-col justify-between gap-3 text-xs"
                     >
                       <div className="space-y-1">
-                        <span className="text-xs font-semibold text-primary block">
-                          {doc.categoryLabel}
+                        <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
+                          {docItem.categoryLabel}
                         </span>
-                        <p className="text-sm font-bold text-foreground break-words leading-snug">
-                          {doc.title}
-                        </p>
-                        <span className="text-xs font-mono text-muted-foreground block">
-                          Arquivo: {doc.fileName}
-                        </span>
+                        <p className="font-bold text-foreground break-words">{docItem.title}</p>
                       </div>
-
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() =>
-                          toast.success(`Abrindo documento oficial: ${doc.fileName}`)
-                        }
-                        className="h-11 min-h-11 w-full rounded-lg text-xs font-semibold gap-2 cursor-pointer"
-                      >
-                        <Download className="size-4" />
-                        <span>Baixar PDF Original</span>
-                      </Button>
+                      {docItem.fileUrl ? (
+                        <Button
+                          asChild
+                          variant="outline"
+                          size="sm"
+                          className="h-11 min-h-11 w-full text-xs font-semibold gap-2 cursor-pointer"
+                        >
+                          <a href={docItem.fileUrl} target="_blank" rel="noopener noreferrer">
+                            <Download className="size-4" />
+                            <span>Visualizar Documento</span>
+                          </a>
+                        </Button>
+                      ) : (
+                        <span className="text-xs text-muted-foreground italic">Disponível em breve</span>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -570,266 +641,124 @@ export default function TripPortalPage() {
             </div>
           )}
 
-          {/* ABA PRÉ-EMBARQUE: APRESENTAÇÃO INTERATIVA (41 MÓDULOS) & AGENDAMENTO DE REUNIÃO */}
+          {/* ABA 2: APRESENTAÇÃO DE PRÉ-EMBARQUE */}
           {activeTab === "pre_embarque" && (
-            <PreBoardingPresentationStudio
-              isPassengerPortal
-              tripId={tripContext.tripCode}
-            />
+            <PreBoardingPresentationStudio tripId={trip.id} />
           )}
 
-          {/* ABA 2: ROTEIRO DIA A DIA & GUIA DO DESTINO (GERADO AUTOMATICAMENTE QUANDO AUSENTE) */}
+          {/* ABA 3: ROTEIRO DIA A DIA */}
           {activeTab === "roteiro" && (
             <div className="space-y-4">
-              <div className="p-5 rounded-lg border border-border bg-card flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="text-xs font-semibold">
-                      Roteiro Estruturado Dia a Dia
-                    </Badge>
-                    <Badge variant="outline" className="text-xs">
-                      Sincronizado com Horários dos Voos e Hotel
+              {itineraryDays.map((day: any) => (
+                <div
+                  key={day.dayIndex}
+                  className="p-5 rounded-lg border border-border bg-card space-y-3"
+                >
+                  <div className="flex items-center justify-between gap-2 border-b border-border/50 pb-2">
+                    <span className="font-bold text-sm text-foreground">
+                      Dia {day.dayIndex} · {day.title}
+                    </span>
+                    <Badge variant="outline" className="text-xs font-mono">
+                      {day.dateFormatted}
                     </Badge>
                   </div>
-                  <h2 className="text-base font-bold text-foreground mt-1">
-                    Programação Diária Recomendada em {tripContext.destination}
-                  </h2>
-                  <p className="text-xs text-muted-foreground">
-                    Roteiro preparado especialmente para os seus dias em {tripContext.destination}, alinhado ao endereço do {tripContext.hotelName}.
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                {itineraryDays.map((day) => (
-                  <div
-                    key={day.dayNumber}
-                    className="p-5 rounded-lg border border-border bg-card space-y-3"
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-2">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="default" className="text-xs font-bold">
-                          Dia {day.dayNumber} ({day.dateLabel})
-                        </Badge>
-                        <h3 className="text-sm font-bold text-foreground break-words">
-                          {day.title}
-                        </h3>
-                      </div>
-                      <Badge variant="outline" className="text-xs">
-                        {day.mealIncluded}
-                      </Badge>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-                      <div className="p-3 rounded-lg bg-muted/30 space-y-1">
-                        <span className="font-bold text-foreground block">Manhã</span>
-                        <p className="text-muted-foreground leading-relaxed break-words">
-                          {day.morningActivity}
-                        </p>
-                      </div>
-                      <div className="p-3 rounded-lg bg-muted/30 space-y-1">
-                        <span className="font-bold text-foreground block">Tarde</span>
-                        <p className="text-muted-foreground leading-relaxed break-words">
-                          {day.afternoonActivity}
-                        </p>
-                      </div>
-                      <div className="p-3 rounded-lg bg-muted/30 space-y-1">
-                        <span className="font-bold text-foreground block">Noite</span>
-                        <p className="text-muted-foreground leading-relaxed break-words">
-                          {day.eveningActivity}
-                        </p>
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-primary font-medium">
-                      Dica Logística: {day.logisticsTip}
+                  {day.summary && (
+                    <p className="text-xs text-muted-foreground leading-relaxed break-words">
+                      {day.summary}
                     </p>
-                  </div>
-                ))}
-              </div>
+                  )}
+                  {day.timeline && day.timeline.length > 0 && (
+                    <div className="space-y-2 pt-2">
+                      {day.timeline.map((act: any, aIdx: number) => (
+                        <div
+                          key={aIdx}
+                          className="p-3 rounded-lg bg-muted/40 border border-border/40 flex items-start gap-3 text-xs"
+                        >
+                          <span className="font-mono text-primary font-bold shrink-0">{act.time}</span>
+                          <div className="space-y-0.5">
+                            <p className="font-bold text-foreground">{act.title}</p>
+                            {act.description && (
+                              <p className="text-muted-foreground">{act.description}</p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           )}
 
-          {/* ABA 3: BOLETOS, PARCELAS & UPLOAD DE COMPROVANTE COM AUTO-MATCH OCR */}
+          {/* ABA 4: FINANCEIRO & BOLETOS */}
           {activeTab === "financeiro" && (
             <div className="space-y-6">
-              {/* Seletor / Orientação Dinâmica por Operadora ou Banco (Incomum / FRT Funpay / Santander / Orinter) */}
-              <div className="p-5 rounded-lg border border-border bg-card space-y-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <Badge variant="secondary" className="text-xs font-semibold">
-                      {paymentGuidance.badgeLabel}
-                    </Badge>
-                    <h2 className="text-base font-bold text-foreground mt-1">
-                      {paymentGuidance.headline}
-                    </h2>
-                    <p className="text-xs text-muted-foreground leading-relaxed mt-1 max-w-3xl">
-                      {paymentGuidance.instructionsPt}
-                    </p>
-                  </div>
-
-                  {/* Seletor de Modalidade Operacional para Visualização */}
-                  <div className="flex flex-wrap items-center gap-2">
-                    {(
-                      [
-                        { id: "orinter_portal", label: "Orinter" },
-                        { id: "incomum_chat", label: "Incomum" },
-                        { id: "frt_funpay", label: "FRT (Funpay)" },
-                        { id: "santander_app", label: "Santander" },
-                      ] as const
-                    ).map((ch) => (
-                      <Button
-                        key={ch.id}
-                        type="button"
-                        size="sm"
-                        variant={selectedPaymentChannel === ch.id ? "default" : "outline"}
-                        onClick={() => setSelectedPaymentChannel(ch.id)}
-                        className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer"
-                      >
-                        {ch.label}
-                      </Button>
-                    ))}
-                  </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="p-4 rounded-lg border border-border bg-card space-y-1">
+                  <span className="text-xs text-muted-foreground">Valor Total da Viagem</span>
+                  <p className="text-lg font-bold text-foreground">{formatMoney(totalTripCents)}</p>
                 </div>
-
-                {/* KPIs Financeiros da Viagem */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                  <div className="p-4 rounded-lg bg-muted/40 border border-border/60">
-                    <span className="text-xs text-muted-foreground block">Valor Total da Viagem</span>
-                    <span className="text-xl font-black text-foreground tabular-nums">
-                      {formatMoney(totalTripCents)}
-                    </span>
-                  </div>
-                  <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                    <span className="text-xs text-emerald-700 dark:text-emerald-300 block">
-                      Total Quitado / Conciliado
-                    </span>
-                    <span className="text-xl font-black text-emerald-600 dark:text-emerald-400 tabular-nums">
-                      {formatMoney(totalPaidCents)}
-                    </span>
-                  </div>
-                  <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                    <span className="text-xs text-amber-700 dark:text-amber-300 block">
-                      Saldo a Vencer
-                    </span>
-                    <span className="text-xl font-black text-amber-600 dark:text-amber-400 tabular-nums">
-                      {formatMoney(pendingCents)}
-                    </span>
-                  </div>
+                <div className="p-4 rounded-lg border border-border bg-card space-y-1">
+                  <span className="text-xs text-emerald-600 dark:text-emerald-400">Total Liquidado</span>
+                  <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{formatMoney(totalPaidCents)}</p>
+                </div>
+                <div className="p-4 rounded-lg border border-border bg-card space-y-1">
+                  <span className="text-xs text-muted-foreground">Saldo a Conciliar</span>
+                  <p className="text-lg font-bold text-foreground">{formatMoney(pendingCents)}</p>
                 </div>
               </div>
 
-              {/* Card de Upload/Compartilhamento Rápido de Comprovante com Auto-Match por IA */}
-              <div className="p-5 rounded-lg border border-primary/30 bg-primary/5 space-y-4">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <h3 className="text-sm font-bold text-foreground">
-                      Enviar ou Compartilhar Comprovante de Pagamento (Conciliação Automática)
-                    </h3>
-                    <p className="text-xs text-muted-foreground">
-                      Pagou um boleto ou Pix no celular? Envie o comprovante aqui: o sistema lê o valor e a data automaticamente e dá baixa na parcela correspondente.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
-                  <div className="space-y-1 sm:w-56">
-                    <Label className="text-xs font-semibold">Valor do Comprovante (R$)</Label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={declaredReceiptAmount}
-                      onChange={(e) => setDeclaredReceiptAmount(e.target.value)}
-                      className="h-11 rounded-lg text-sm font-mono bg-background"
-                    />
-                  </div>
-
-                  <label className="h-11 min-h-11 px-5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer hover:opacity-95 focus-within:ring-2 focus-within:ring-primary">
-                    <Upload className="size-4" />
-                    <span>Selecionar Comprovante (Foto ou PDF)</span>
-                    <input
-                      type="file"
-                      accept="image/*,application/pdf"
-                      className="hidden"
-                      onChange={(e) => {
-                        const f = e.target.files?.[0];
-                        if (f) handleReceiptFileUpload(f);
-                      }}
-                    />
-                  </label>
-                </div>
-
-                {lastOcrExplanation && (
-                  <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-700 dark:text-emerald-300 font-medium flex items-center gap-2">
-                    <CheckCircle2 className="size-4 shrink-0" />
-                    <span>{lastOcrExplanation}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Lista de Parcelas e Boletos Disponíveis */}
               <div className="space-y-3">
+                <h3 className="text-sm font-bold text-foreground">Parcelas e Boletos</h3>
                 {installments.map((inst) => (
                   <div
                     key={inst.id}
-                    className="p-4 rounded-lg border border-border bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                    className="p-4 rounded-lg border border-border bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-foreground">
+                        <span className="font-bold text-foreground">
                           Parcela {inst.installmentNumber} de {inst.totalInstallments}
                         </span>
                         <Badge
                           variant={inst.status === "reconciled" ? "default" : "secondary"}
                           className="text-xs"
                         >
-                          {inst.status === "reconciled"
-                            ? "Pago & Conciliado"
-                            : inst.status === "receipt_uploaded"
-                              ? "Comprovante em Conferência"
-                              : "Aguardando Pagamento"}
+                          {inst.status === "reconciled" ? "Pago / Conciliado" : "Pendente"}
                         </Badge>
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        Vencimento: {inst.dueDate} · Valor:{" "}
-                        <strong className="text-foreground font-mono">
-                          {formatMoney(inst.amountCents)}
-                        </strong>
+                      <p className="text-muted-foreground">
+                        Vencimento: {inst.dueDate} · Valor: {formatMoney(inst.amountCents)}
                       </p>
-                      {inst.ocrMatchConfidence && (
-                        <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                          Comprovante verificado ({inst.ocrMatchConfidence}% de precisão)
-                        </p>
-                      )}
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2">
-                      {inst.digitableLine && inst.status !== "reconciled" && (
+                      {inst.boletoPdfUrl && (
+                        <Button
+                          asChild
+                          variant="outline"
+                          size="sm"
+                          className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
+                        >
+                          <a href={inst.boletoPdfUrl} target="_blank" rel="noopener noreferrer">
+                            <Download className="size-4" />
+                            <span>Boleto PDF</span>
+                          </a>
+                        </Button>
+                      )}
+                      {inst.digitableLine && (
                         <Button
                           type="button"
-                          variant="outline"
+                          variant="ghost"
+                          size="sm"
                           onClick={() => {
-                            navigator.clipboard?.writeText(inst.digitableLine || "");
-                            toast.success("Linha digitável do boleto copiada!");
+                            navigator.clipboard.writeText(inst.digitableLine || "");
+                            toast.success("Linha digitável copiada!");
                           }}
                           className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
                         >
                           <Copy className="size-4" />
-                          <span>Copiar Código de Barras</span>
-                        </Button>
-                      )}
-
-                      {inst.boletoPdfUrl && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() =>
-                            toast.success(`Baixando PDF do Boleto — Parcela ${inst.installmentNumber}`)
-                          }
-                          className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
-                        >
-                          <Download className="size-4" />
-                          <span>Baixar Boleto PDF</span>
+                          <span>Copiar Código</span>
                         </Button>
                       )}
                     </div>
@@ -839,49 +768,21 @@ export default function TripPortalPage() {
             </div>
           )}
 
-          {/* ABA 4: COPILOT DA VIAGEM GROUNDED (CONTRATOS + VOUCHERS OCR + ANAC 400) */}
+          {/* ABA 5: COPILOT DA VIAGEM */}
           {activeTab === "copilot" && (
-            <div className="p-5 rounded-lg border border-border bg-card space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="text-xs font-semibold">
-                      Assessor Exclusivo da Sua Viagem
-                    </Badge>
-                    <Badge variant="outline" className="text-xs">
-                      Baseado no Contrato #{tripContext.reservationCode} + Resolução ANAC 400
-                    </Badge>
-                  </div>
-                  <h2 className="text-base font-bold text-foreground mt-1">
-                    Tire qualquer dúvida sobre sua viagem para {tripContext.destination}
-                  </h2>
-                  <p className="text-xs text-muted-foreground">
-                    As respostas utilizam estritamente os seus vouchers confirmados, o contrato assinado e as normas oficiais da ANAC e consulados.
-                  </p>
+            <div className="space-y-4">
+              <div className="p-5 rounded-lg border border-border bg-card space-y-2">
+                <div className="flex items-center gap-2 text-primary font-bold text-sm">
+                  <MessageSquare className="size-4" />
+                  <span>Assessor da Viagem (Copilot Grounded)</span>
                 </div>
-              </div>
-
-              {/* Atalhos Táteis de Perguntas Frequentes da Viagem */}
-              <div className="flex flex-wrap gap-2">
-                {[
-                  "Qual minha franquia de bagagem no voo?",
-                  "Qual a regra de cancelamento e multa no meu contrato?",
-                  "Como funciona meu check-in no hotel e endereço?",
-                  "Como encontrar o transfer e telefone de plantão 24h?",
-                ].map((qText) => (
-                  <button
-                    key={qText}
-                    type="button"
-                    onClick={() => handleAskCopilot(qText)}
-                    className="h-11 min-h-11 px-3 rounded-lg border border-border bg-muted/40 hover:bg-muted text-xs font-medium text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  >
-                    {qText}
-                  </button>
-                ))}
+                <p className="text-xs text-muted-foreground">
+                  Pergunte sobre sua viagem para {tripContext.destination}, franquia de bagagem, regras de contrato e ANAC.
+                </p>
               </div>
 
               {/* Histórico de Mensagens Grounded */}
-              <div className="space-y-3 max-h-96 overflow-y-auto p-3 rounded-lg bg-muted/20 border border-border/60">
+              <div className="space-y-3 max-h-96 overflow-y-auto p-3 rounded-lg bg-muted/20 border border-border">
                 {copilotMessages.map((msg, idx) => (
                   <div
                     key={idx}
@@ -894,21 +795,10 @@ export default function TripPortalPage() {
                     <div className="whitespace-pre-line leading-relaxed break-words">
                       {msg.content}
                     </div>
-
-                    {msg.citations && msg.citations.length > 0 && (
-                      <div className="pt-2 border-t border-border/60 flex flex-wrap gap-2">
-                        {msg.citations.map((cit, cIdx) => (
-                          <Badge key={cIdx} variant="outline" className="text-xs">
-                            Fonte: {cit}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
 
-              {/* Input de Pergunta */}
               <div className="flex items-center gap-2">
                 <Input
                   value={copilotInput}
@@ -916,7 +806,7 @@ export default function TripPortalPage() {
                   onKeyDown={(e) => {
                     if (e.key === "Enter") handleAskCopilot();
                   }}
-                  placeholder="Pergunte sobre horários de voo, bagagem, contrato, regras ANAC ou hotel..."
+                  placeholder="Pergunte sobre horários de voo, bagagem, hotel..."
                   className="h-11 rounded-lg text-sm flex-1"
                 />
                 <Button
@@ -931,13 +821,13 @@ export default function TripPortalPage() {
             </div>
           )}
 
-          {/* ABA 5: PLANTÃO 24H, REGRAS DE CANCELAMENTO E CHECKLIST DE EMBARQUE */}
+          {/* ABA 6: PLANTÃO 24H & EMERGÊNCIA */}
           {activeTab === "emergencia" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="p-5 rounded-lg border border-border bg-card space-y-4">
                 <div className="flex items-center gap-2 text-primary font-bold text-sm">
                   <ShieldCheck className="size-4" />
-                  <span>Checklist Oficial de Documentos para Embarque</span>
+                  <span>Checklist Oficial de Embarque</span>
                 </div>
                 <ul className="space-y-2 text-xs text-foreground/90">
                   {tripContext.requiredDocuments.map((docItem, idx) => (
@@ -955,22 +845,118 @@ export default function TripPortalPage() {
               <div className="p-5 rounded-lg border border-border bg-card space-y-4">
                 <div className="flex items-center gap-2 text-primary font-bold text-sm">
                   <PhoneCall className="size-4" />
-                  <span>Plantão 24h da Operadora & Política Contratual</span>
+                  <span>Plantão 24h & Assistência Operacional</span>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/40 border border-border/60 space-y-2 text-xs">
                   <p className="font-bold text-foreground">
-                    Atendimento Emergencial 24h ({tripContext.operatorName}):{" "}
+                    Atendimento Emergencial ({tripContext.operatorName}):{" "}
                     <span className="font-mono text-primary">{tripContext.emergencyPhone24h}</span>
                   </p>
                   <p className="text-muted-foreground leading-relaxed break-words">
                     {tripContext.cancellationRulesText}
                   </p>
+                  <div className="pt-2">
+                    <Button
+                      type="button"
+                      onClick={() => setSupportModalOpen(true)}
+                      className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 w-full cursor-pointer"
+                    >
+                      <LifeBuoy className="size-4" />
+                      <span>Abrir Chamado de Emergência</span>
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* Modal de Abertura de Chamado Emergencial */}
+      {supportModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-card text-card-foreground border border-border rounded-lg max-w-lg w-full p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <h3 className="font-bold text-base text-foreground flex items-center gap-2">
+                <LifeBuoy className="size-5 text-amber-500" />
+                <span>Acionar Plantão de Atendimento</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setSupportModalOpen(false)}
+                className="text-muted-foreground hover:text-foreground text-sm font-semibold p-1"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="space-y-1">
+                <Label htmlFor="urgency-select">Nível de Urgência</Label>
+                <select
+                  id="urgency-select"
+                  value={supportUrgency}
+                  onChange={(e) => setSupportUrgency(e.target.value as any)}
+                  className="h-11 w-full rounded-lg border border-border bg-background px-3 text-xs"
+                >
+                  <option value="critical">Crítico — Em trânsito / Aeroporto / Embarque imediato</option>
+                  <option value="high">Alto — Hospedagem / Traslado nas próximas horas</option>
+                  <option value="medium">Médio — Dúvida de itinerário / Solicitação de serviço</option>
+                  <option value="low">Baixo — Informações gerais</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="category-select">Categoria</Label>
+                <select
+                  id="category-select"
+                  value={supportCategory}
+                  onChange={(e) => setSupportCategory(e.target.value as any)}
+                  className="h-11 w-full rounded-lg border border-border bg-background px-3 text-xs"
+                >
+                  <option value="flight">Voo / Aéreo / Conexão</option>
+                  <option value="hotel">Hospedagem / Check-in</option>
+                  <option value="transfer">Traslado / Transporte</option>
+                  <option value="health">Saúde / Emergência Médica</option>
+                  <option value="document">Perda de Documento</option>
+                  <option value="general">Outros Assuntos</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="support-desc">Descrição do Ocorrido</Label>
+                <textarea
+                  id="support-desc"
+                  rows={4}
+                  value={supportSummary}
+                  onChange={(e) => setSupportSummary(e.target.value)}
+                  placeholder="Descreva detalhadamente o que ocorreu para que o plantão possa intervir imediatamente..."
+                  className="w-full rounded-lg border border-border bg-background p-3 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setSupportModalOpen(false)}
+                className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold cursor-pointer"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="button"
+                disabled={isSubmittingSupport}
+                onClick={handleCreateSupportTicket}
+                className="h-11 min-h-11 px-5 rounded-lg text-xs font-semibold cursor-pointer"
+              >
+                {isSubmittingSupport ? "Enviando..." : "Registrar Chamado"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

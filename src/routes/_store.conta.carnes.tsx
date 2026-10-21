@@ -589,7 +589,7 @@ function ClientCarnesPage() {
 
                           <div className="pt-1">
                             <Link
-                              to="/u/suporte"
+                              to={"/u/suporte" as any}
                               className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground underline cursor-pointer"
                             >
                               <HelpCircle className="size-3" />

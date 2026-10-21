@@ -2,6 +2,7 @@ import { forwardRef } from "react";
 import { Plane, Building2, Car, Shield, Phone, Users, Calendar, MapPin, QrCode, Compass, Luggage, Clock, Ticket, FileCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/money";
+import { generateQrCodeDataUri } from "@/lib/qr-code";
 
 export interface VoucherData {
  id: string;
@@ -83,7 +84,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
     const tripNumber = tripNumProp || trip?.trip_code || trip?.title || "";
     const origin = typeof window !== "undefined" ? window.location.origin : "https://usewaesy.pages.dev";
     const publicUrl = `${origin}/voucher/${voucher?.public_token || ""}`;
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=8&data=${encodeURIComponent(publicUrl)}`;
+    const qrUrl = generateQrCodeDataUri(publicUrl);
 
  return (
  <div
@@ -99,7 +100,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  <img
  src={agency.logo_url}
  alt={agency.name}
- className="h-12 w-auto max-w-[140px] object-contain brightness-0 invert"
+ className="h-12 w-auto max-w-36 object-contain brightness-0 invert"
  crossOrigin="anonymous"
  />
  ) : (
@@ -398,10 +399,10 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  alt="QR Code de Validação"
  className="size-16 rounded-lg object-contain bg-white p-1 border border-neutral-200"
  />
- <div className="text-[9px] font-mono text-neutral-500 space-y-1">
+ <div className="text-2xs font-mono text-neutral-500 space-y-1">
  <span className="font-bold text-neutral-900 block uppercase">Autenticidade</span>
  <span>Token: {voucher?.public_token ? `${voucher.public_token.substring(0, 10)}...` : "—"}</span>
- <span className="block text-[8px] text-neutral-400">Escaneie para validar</span>
+ <span className="block text-2xs text-neutral-400">Escaneie para validar</span>
  </div>
  </div>
  </div>

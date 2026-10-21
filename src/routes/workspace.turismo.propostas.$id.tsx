@@ -155,7 +155,7 @@ function WorkspaceProposalStudioPage() {
  return (
  <div className="h-dvh w-screen flex flex-col items-center justify-center bg-background space-y-4">
  <h2 className="text-sm font-bold text-foreground">Proposta não encontrada</h2>
- <Button asChild size="sm" variant="outline" className="rounded-lg">
+ <Button asChild  variant="outline" className="rounded-lg h-11 min-h-11 px-3 text-xs">
  <Link to="/workspace/turismo/cotacoes">Voltar para Cotações</Link>
  </Button>
  </div>

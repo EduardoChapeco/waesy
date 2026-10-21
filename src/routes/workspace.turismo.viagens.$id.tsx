@@ -285,7 +285,7 @@ function WorkspaceTripDetailPage() {
             A reserva solicitada não existe ou ainda não foi confirmada.
           </p>
         </div>
-        <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-bold">
+        <Button asChild  variant="outline" className="rounded-lg text-xs font-bold h-11 min-h-11 px-3 text-xs">
           <Link to="/workspace/turismo/viagens">Voltar para Viagens e Reservas</Link>
         </Button>
       </div>
@@ -485,7 +485,7 @@ function WorkspaceTripDetailPage() {
                 window.open(`https://wa.me/55${rawPhone}?text=${msg}`, "_blank");
                 toast.success("Abrindo WhatsApp com Kit de Viagem...");
               }}
-              className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-9 px-4 sm:px-3 bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer shadow-xs"
+              className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-11 px-4 sm:px-3 bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer shadow-xs"
             >
               <WhatsappLogo size={16} weight="fill" />
               <span>Disparar Kit WhatsApp</span>
@@ -1222,7 +1222,7 @@ function WorkspaceTripDetailPage() {
             </div>
 
             {contractPublicUrl && (
-              <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-bold gap-2 h-11 px-3">
+              <Button asChild variant="outline" className="rounded-lg text-xs font-bold gap-2 h-11 px-3">
                 <a href={contractPublicUrl} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="size-3.5" />
                   <span>Página de Assinatura</span>
@@ -1258,7 +1258,7 @@ function WorkspaceTripDetailPage() {
                   {aggregate.contract.package_summary}
                 </p>
                 <div className="pt-2 flex items-center gap-2">
-                  <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-bold">
+                  <Button asChild  variant="outline" className="rounded-lg text-xs font-bold h-11 min-h-11 px-3 text-xs">
                     <Link to="/workspace/turismo/contratos">Abrir Central de Contratos</Link>
                   </Button>
                 </div>
@@ -1268,7 +1268,7 @@ function WorkspaceTripDetailPage() {
             <div className="py-8 text-center text-xs text-muted-foreground space-y-2">
               <FileCheck2 className="size-8 mx-auto text-muted-foreground/50" />
               <p>Nenhum contrato digital foi gerado automaticamente.</p>
-              <Button asChild size="sm" className="rounded-lg text-xs font-bold">
+              <Button asChild  className="rounded-lg text-xs font-bold h-11 min-h-11 px-3 text-xs">
                 <Link to="/workspace/turismo/contratos">Emitir Novo Contrato</Link>
               </Button>
             </div>
@@ -1459,7 +1459,7 @@ function WorkspaceTripDetailPage() {
                     className="h-9 text-xs rounded-lg flex-1 font-mono"
                   />
                   {financialExternalUrl && (
-                    <Button asChild size="sm" variant="outline" className="h-11 rounded-lg px-3 shrink-0">
+                    <Button asChild variant="outline" className="h-11 rounded-lg px-3 shrink-0">
                       <a href={financialExternalUrl} target="_blank" rel="noopener noreferrer">
                         <ExternalLink className="size-3.5" />
                       </a>

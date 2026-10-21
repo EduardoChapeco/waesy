@@ -549,7 +549,7 @@ export default function ReaccommodationPage() {
                   placeholder="Ex: Passageiro está no aeroporto de Guarulhos após cancelamento do voo LA3214 por manutenção. Cia não ofereceu voucher de alimentação..."
                   value={passengerNotes}
                   onChange={(e) => setPassengerNotes(e.target.value)}
-                  className="min-h-[85px] rounded-lg text-xs"
+                  className="min-h-20 rounded-lg text-xs"
                 />
               </div>
 

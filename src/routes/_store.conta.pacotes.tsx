@@ -34,7 +34,7 @@ import { getAvailableSlots } from "@/services/booking.functions";
 import { EmptyState } from "@/components/state/states";
 import { PageSkeleton } from "@/components/state/loading";
 import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
-import { useWindowSizeClass } from "@/lib/use-window-size-class";
+import { useWindowSizeClass } from "@/hooks/use-mobile";
 import { formatMoney } from "@/lib/money";
 
 export const Route = createFileRoute("/_store/conta/pacotes")({
@@ -216,7 +216,7 @@ function CustomerPassesPage() {
           <div className="text-xl sm:text-2xl font-black text-foreground mt-1">
             {kpis.activePassesCount}
           </div>
-          <span className="text-xs text-muted-foreground block mt-0.5">Em utilização</span>
+          <span className="text-xs text-muted-foreground block mt-1">Em utilização</span>
         </div>
 
         <div className="p-3 sm:p-4 rounded-xl bg-card border border-border/60">
@@ -224,7 +224,7 @@ function CustomerPassesPage() {
           <div className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
             {kpis.availableCreditsTotal}
           </div>
-          <span className="text-xs text-muted-foreground block mt-0.5">Prontos para agendar</span>
+          <span className="text-xs text-muted-foreground block mt-1">Prontos para agendar</span>
         </div>
 
         <div className="p-3 sm:p-4 rounded-xl bg-card border border-border/60">
@@ -232,7 +232,7 @@ function CustomerPassesPage() {
           <div className="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">
             {kpis.reservedCreditsTotal}
           </div>
-          <span className="text-xs text-muted-foreground block mt-0.5">Na grade futura</span>
+          <span className="text-xs text-muted-foreground block mt-1">Na grade futura</span>
         </div>
 
         <div className="p-3 sm:p-4 rounded-xl bg-card border border-border/60">
@@ -240,7 +240,7 @@ function CustomerPassesPage() {
           <div className="text-xl sm:text-2xl font-black text-foreground mt-1">
             {kpis.completedCreditsTotal}
           </div>
-          <span className="text-xs text-muted-foreground block mt-0.5">Presenças validadas</span>
+          <span className="text-xs text-muted-foreground block mt-1">Presenças validadas</span>
         </div>
       </div>
 
@@ -327,14 +327,14 @@ function CustomerPassesPage() {
                         <h4 className="text-xs sm:text-sm font-bold text-foreground break-words text-wrap leading-tight">
                           {store?.name || "Estabelecimento Parceiro"}
                         </h4>
-                        <span className="text-xs text-muted-foreground font-mono break-words text-wrap block mt-0.5">
+                        <span className="text-xs text-muted-foreground font-mono break-words text-wrap block mt-1">
                           {title}
                         </span>
                       </div>
                     </div>
 
                     <Badge
-                      className={`text-xs font-mono px-2.5 py-1 rounded-md shrink-0 ${
+                      className={`text-xs font-mono px-3 py-1 rounded-md shrink-0 ${
                         pass.status === "active" && !isExpired
                           ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
                           : "bg-muted text-muted-foreground"
@@ -388,20 +388,20 @@ function CustomerPassesPage() {
                     <Progress value={progressPercent} className="h-2 rounded-full" />
 
                     <div className="grid grid-cols-3 gap-2 pt-1 text-center font-mono text-xs">
-                      <div className="p-1.5 rounded-md bg-card/60 border border-border/40">
-                        <span className="text-muted-foreground block text-[10px] uppercase font-bold">Livres</span>
+                      <div className="p-2 rounded-md bg-card/60 border border-border/40">
+                        <span className="text-muted-foreground block text-2xs uppercase font-bold">Livres</span>
                         <span className="font-black text-emerald-600 dark:text-emerald-400 text-xs">
                           {pass.available_credits}
                         </span>
                       </div>
-                      <div className="p-1.5 rounded-md bg-card/60 border border-border/40">
-                        <span className="text-muted-foreground block text-[10px] uppercase font-bold">Reservadas</span>
+                      <div className="p-2 rounded-md bg-card/60 border border-border/40">
+                        <span className="text-muted-foreground block text-2xs uppercase font-bold">Reservadas</span>
                         <span className="font-black text-amber-600 dark:text-amber-400 text-xs">
                           {pass.reserved_credits}
                         </span>
                       </div>
-                      <div className="p-1.5 rounded-md bg-card/60 border border-border/40">
-                        <span className="text-muted-foreground block text-[10px] uppercase font-bold">Realizadas</span>
+                      <div className="p-2 rounded-md bg-card/60 border border-border/40">
+                        <span className="text-muted-foreground block text-2xs uppercase font-bold">Realizadas</span>
                         <span className="font-black text-foreground text-xs">
                           {pass.completed_credits}
                         </span>
@@ -421,20 +421,20 @@ function CustomerPassesPage() {
                   {/* Seção de Próximas Aulas Agendadas com Cancelamento Tempestivo (EARS-05) */}
                   {pass.upcoming_appointments.length > 0 && (
                     <div className="p-3 rounded-xl bg-card border border-border/60 space-y-2">
-                      <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                      <span className="text-xs font-bold text-foreground flex items-center gap-2">
                         <Calendar size={14} className="text-primary" /> Próximas Aulas Agendadas
                       </span>
                       <div className="space-y-2">
                         {pass.upcoming_appointments.map((appt) => (
                           <div
                             key={appt.id}
-                            className="p-2.5 rounded-lg bg-muted/40 border border-border/40 flex items-center justify-between gap-2 text-xs"
+                            className="p-3 rounded-lg bg-muted/40 border border-border/40 flex items-center justify-between gap-2 text-xs"
                           >
                             <div className="min-w-0 flex-1">
                               <span className="font-semibold text-foreground block">
                                 {format(new Date(appt.scheduled_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                               </span>
-                              <span className="text-[11px] text-muted-foreground font-mono">
+                              <span className="text-2xs text-muted-foreground font-mono">
                                 Sessão #{appt.session_number || "1"} • Confirmada
                               </span>
                             </div>
@@ -497,12 +497,12 @@ function CustomerPassesPage() {
                       aria-label="Suporte sobre este pacote"
                     >
                       <Link
-                        to="/u/suporte"
+                        to={"/u/suporte" as any}
                         search={{
                           motivo: "pacote",
                           pass_id: pass.id,
                           loja: store?.name || "",
-                        }}
+                        } as any}
                       >
                         <HelpCircle size={16} />
                       </Link>
@@ -524,13 +524,13 @@ function CustomerPassesPage() {
                           {pass.service_pass_ledger.map((log) => (
                             <div
                               key={log.id}
-                              className="flex items-center justify-between text-xs py-1.5 border-b border-border/20 last:border-0"
+                              className="flex items-center justify-between text-xs py-2 border-b border-border/20 last:border-0"
                             >
                               <div className="min-w-0 flex-1 pr-2">
                                 <p className="font-medium text-foreground break-words text-wrap leading-tight">
                                   {log.reason || "Movimentação de créditos"}
                                 </p>
-                                <span className="text-[11px] text-muted-foreground font-mono">
+                                <span className="text-2xs text-muted-foreground font-mono">
                                   {format(new Date(log.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}
                                 </span>
                               </div>
@@ -573,7 +573,7 @@ function CustomerPassesPage() {
                   <p className="font-bold text-foreground break-words text-wrap leading-tight">
                     {selectedPass.package_snapshot?.title || selectedPass.service_packages?.title}
                   </p>
-                  <span className="text-muted-foreground text-xs break-words text-wrap block mt-0.5">
+                  <span className="text-muted-foreground text-xs break-words text-wrap block mt-1">
                     {selectedPass.stores?.name}
                   </span>
                 </div>
@@ -701,7 +701,7 @@ function CustomerPassesPage() {
                   cancelAppointmentMutation.mutate(cancelModalAppointment.id);
                 }
               }}
-              className="h-11 min-h-11 rounded-lg text-xs font-bold bg-rose-600 text-white hover:bg-rose-700 focus-visible:ring-2 focus-visible:ring-rose-500 cursor-pointer"
+              className="h-11 min-h-11 rounded-lg text-xs font-bold bg-rose-600 text-primary-foreground hover:bg-rose-700 focus-visible:ring-2 focus-visible:ring-rose-500 cursor-pointer"
             >
               {cancelAppointmentMutation.isPending ? "Cancelando..." : "Confirmar Cancelamento"}
             </Button>

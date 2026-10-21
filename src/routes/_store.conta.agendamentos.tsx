@@ -12,6 +12,7 @@ import { getUserSession } from "@/services/auth.functions";
 import { listCustomerAppointments, cancelCustomerAppointment } from "@/services/booking.functions";
 import { DigitalCompanionCard, type CompanionCardSectionItem, type CompanionRuleItem, type CompanionContactItem } from "@/components/documents/digital-companion-card";
 import { cn } from "@/lib/utils";
+import { BookingDossierModal } from "@/components/booking/booking-dossier-modal";
 
 export const Route = createFileRoute("/_store/conta/agendamentos")({
  head: () => ({

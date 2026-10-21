@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Compass,
   MapPin,
@@ -20,6 +20,8 @@ import {
   Sparkle,
   ArrowUpRight,
   Storefront,
+  WarningCircle,
+  ArrowRight,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
@@ -27,9 +29,11 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { listCustomerTrips, type TourismBookingDTO } from "@/services/tourism.functions";
 import { listCustomerAgencyTrips, listCustomerTravelDossierFn } from "@/services/travel-lifecycle.functions";
+import { generateQrCodeDataUri } from "@/lib/qr-code";
 import { formatMoney } from "@/lib/money";
 import { toast } from "sonner";
 import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_store/conta/viagens")({
   head: () => ({
@@ -37,33 +41,58 @@ export const Route = createFileRoute("/_store/conta/viagens")({
       { title: "Minhas Viagens | Waesy" },
       {
         name: "description",
-        content: "Consulte suas viagens, vouchers de embarque, propostas, cotações e contratos de qualquer agência.",
+        content: "Consulte suas viagens, vouchers de embarque, propostas, cotações e contratos de qualquer agência credenciada.",
       },
     ],
   }),
   loader: async () => {
     try {
-      const [trips, agencyTrips, dossier] = await Promise.all([
-        listCustomerTrips().catch(() => []),
-        listCustomerAgencyTrips().catch(() => []),
-        listCustomerTravelDossierFn().catch(() => ({ proposals: [], quotes: [], contracts: [] })),
+      const [tripsRes, agencyTripsRes, dossierRes] = await Promise.allSettled([
+        listCustomerTrips(),
+        listCustomerAgencyTrips(),
+        listCustomerTravelDossierFn(),
       ]);
+
+      const trips = tripsRes.status === "fulfilled" ? tripsRes.value : [];
+      const agencyTrips = agencyTripsRes.status === "fulfilled" ? agencyTripsRes.value : [];
+      const dossier =
+        dossierRes.status === "fulfilled"
+          ? dossierRes.value
+          : { proposals: [], quotes: [], contracts: [] };
+
+      const hasPartialError =
+        tripsRes.status === "rejected" ||
+        agencyTripsRes.status === "rejected" ||
+        dossierRes.status === "rejected";
+
       return {
         trips: trips || [],
         agencyTrips: agencyTrips || [],
         proposals: dossier?.proposals || [],
         quotes: dossier?.quotes || [],
         contracts: dossier?.contracts || [],
+        hasError: hasPartialError,
+        errorMessage: hasPartialError
+          ? "Algumas viagens ou documentos não puderam ser sincronizados em tempo real."
+          : null,
       };
-    } catch (err) {
+    } catch (err: any) {
       console.error("[loader:_store.conta.viagens] Unhandled error:", err);
-      return { trips: [], agencyTrips: [], proposals: [], quotes: [], contracts: [] };
+      return {
+        trips: [],
+        agencyTrips: [],
+        proposals: [],
+        quotes: [],
+        contracts: [],
+        hasError: true,
+        errorMessage: err?.message || "Falha ao carregar suas viagens.",
+      };
     }
   },
   component: CustomerTripsPage,
 });
 
-type ActiveTravelSection = "all" | "trips" | "proposals" | "contracts" | "experiences";
+type ActiveTravelSection = "all" | "trips" | "confirmed" | "proposals" | "contracts" | "experiences";
 
 function CustomerTripsPage() {
   const {
@@ -72,7 +101,10 @@ function CustomerTripsPage() {
     proposals = [],
     quotes = [],
     contracts = [],
+    hasError = false,
+    errorMessage = null,
   } = ((Route.useLoaderData?.() as any) || {});
+
   const [selectedBooking, setSelectedBooking] = useState<TourismBookingDTO | null>(null);
   const [isVoucherOpen, setIsVoucherOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<ActiveTravelSection>("all");
@@ -95,15 +127,84 @@ function CustomerTripsPage() {
     }
   };
 
-  const totalBookingsCount = (trips?.length || 0) + (agencyTrips?.length || 0);
-  const totalProposalsAndQuotesCount = (proposals?.length || 0) + (quotes?.length || 0);
-  const totalContractsCount = contracts?.length || 0;
-  const hasAnyItem =
-    totalBookingsCount > 0 || totalProposalsAndQuotesCount > 0 || totalContractsCount > 0;
+  // QR Code soberano offline sem dependência externa
+  const qrCodeDataUri = useMemo(() => {
+    return selectedBooking?.voucher_code ? generateQrCodeDataUri(selectedBooking.voucher_code) : "";
+  }, [selectedBooking?.voucher_code]);
 
-  const confirmedCount =
-    (trips?.filter((t: any) => t.status === "confirmed").length || 0) +
-    (agencyTrips?.filter((t: any) => t.status === "confirmed").length || 0);
+  // Contadores Semânticos Rigorosos (Item 10 & 11)
+  const activeAgencyTrips = useMemo(() => {
+    return agencyTrips.filter(
+      (t: any) => t.status !== "cancelled" && t.status !== "refunded" && t.status !== "archived"
+    );
+  }, [agencyTrips]);
+
+  const activeExperiences = useMemo(() => {
+    return trips.filter(
+      (t: any) => t.status !== "cancelled" && t.status !== "refunded" && t.status !== "archived"
+    );
+  }, [trips]);
+
+  const activeReservationsCount = activeAgencyTrips.length + activeExperiences.length;
+
+  const confirmedAgencyTrips = useMemo(() => {
+    return agencyTrips.filter((t: any) => t.status === "confirmed");
+  }, [agencyTrips]);
+
+  const confirmedExperiences = useMemo(() => {
+    return trips.filter((t: any) => t.status === "confirmed");
+  }, [trips]);
+
+  const confirmedCount = confirmedAgencyTrips.length + confirmedExperiences.length;
+
+  const activeProposals = useMemo(() => {
+    return proposals.filter(
+      (p: any) => p.status !== "cancelled" && p.status !== "rejected" && p.status !== "expired"
+    );
+  }, [proposals]);
+
+  const activeQuotes = useMemo(() => {
+    return quotes.filter((q: any) => q.status !== "lost" && q.status !== "cancelled");
+  }, [quotes]);
+
+  const totalProposalsAndQuotesCount = activeProposals.length + activeQuotes.length;
+
+  const validContracts = useMemo(() => {
+    return contracts.filter((c: any) => c.status !== "cancelled");
+  }, [contracts]);
+
+  const totalContractsCount = validContracts.length;
+
+  const hasAnyItem =
+    activeReservationsCount > 0 || totalProposalsAndQuotesCount > 0 || totalContractsCount > 0;
+
+  // Filtragem Consistente por Aba
+  const displayAgencyTrips = useMemo(() => {
+    if (activeTab === "confirmed") return confirmedAgencyTrips;
+    if (activeTab === "trips" || activeTab === "all") return activeAgencyTrips;
+    return [];
+  }, [activeTab, confirmedAgencyTrips, activeAgencyTrips]);
+
+  const displayExperiences = useMemo(() => {
+    if (activeTab === "confirmed") return confirmedExperiences;
+    if (activeTab === "experiences" || activeTab === "all") return activeExperiences;
+    return [];
+  }, [activeTab, confirmedExperiences, activeExperiences]);
+
+  const displayProposals = useMemo(() => {
+    if (activeTab === "proposals" || activeTab === "all") return activeProposals;
+    return [];
+  }, [activeTab, activeProposals]);
+
+  const displayQuotes = useMemo(() => {
+    if (activeTab === "proposals" || activeTab === "all") return activeQuotes;
+    return [];
+  }, [activeTab, activeQuotes]);
+
+  const displayContracts = useMemo(() => {
+    if (activeTab === "contracts" || activeTab === "all") return validContracts;
+    return [];
+  }, [activeTab, validContracts]);
 
   return (
     <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-safe pb-32 px-0 sm:px-4 md:px-0">
@@ -115,7 +216,6 @@ function CustomerTripsPage() {
         rightAction={
           <Button
             asChild
-            size="sm"
             variant="outline"
             className="rounded-lg text-xs font-semibold h-11 min-h-11 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
           >
@@ -132,14 +232,13 @@ function CustomerTripsPage() {
           </h1>
           {hasAnyItem && (
             <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-1 rounded-lg">
-              {totalBookingsCount + totalProposalsAndQuotesCount}
+              {activeReservationsCount + totalProposalsAndQuotesCount}
             </Badge>
           )}
         </div>
 
         <Button
           asChild
-          size="sm"
           variant="outline"
           className="rounded-lg text-xs font-semibold h-11 min-h-11 px-4 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
         >
@@ -150,39 +249,94 @@ function CustomerTripsPage() {
         </Button>
       </div>
 
-      {/* ── 2. Summary KPI Cards (Multi-Agência) ── */}
+      {/* ── 1B. Alerta de Erro Não-Bloqueante (Item 106) ── */}
+      {hasError && (
+        <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20 flex items-center justify-between gap-3 text-xs text-destructive">
+          <div className="flex items-center gap-2">
+            <WarningCircle size={18} weight="bold" className="shrink-0" />
+            <span>{errorMessage || "Alguns dados não puderam ser sincronizados em tempo real."}</span>
+          </div>
+          <Button
+            variant="outline"
+            className="h-11 min-h-11 px-3 text-xs font-semibold border-destructive/30 hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-destructive"
+            onClick={() => {
+              if (typeof window !== "undefined") window.location.reload();
+            }}
+          >
+            Recarregar
+          </Button>
+        </div>
+      )}
+
+      {/* ── 2. KPI Cards Interativos (Item 10 & 11) ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="p-4 rounded-lg bg-card border border-border/60">
+        <button
+          type="button"
+          onClick={() => setActiveTab("trips")}
+          className={cn(
+            "p-4 rounded-lg bg-card border text-left transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+            activeTab === "trips"
+              ? "border-primary ring-1 ring-primary"
+              : "border-border/60 hover:border-foreground/30"
+          )}
+        >
           <div className="flex items-center gap-2 text-muted-foreground text-xs font-bold">
             <Ticket size={16} weight="bold" className="text-primary shrink-0" />
             <span className="truncate">Reservas Ativas</span>
           </div>
-          <p className="text-2xl font-black text-foreground mt-2">{totalBookingsCount}</p>
-        </div>
+          <p className="text-2xl font-black text-foreground mt-2">{activeReservationsCount}</p>
+        </button>
 
-        <div className="p-4 rounded-lg bg-card border border-border/60">
+        <button
+          type="button"
+          onClick={() => setActiveTab("confirmed")}
+          className={cn(
+            "p-4 rounded-lg bg-card border text-left transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+            activeTab === "confirmed"
+              ? "border-primary ring-1 ring-primary"
+              : "border-border/60 hover:border-foreground/30"
+          )}
+        >
           <div className="flex items-center gap-2 text-muted-foreground text-xs font-bold">
             <CheckCircle size={16} weight="bold" className="text-primary shrink-0" />
             <span className="truncate">Confirmadas</span>
           </div>
           <p className="text-2xl font-black text-foreground mt-2">{confirmedCount}</p>
-        </div>
+        </button>
 
-        <div className="p-4 rounded-lg bg-card border border-border/60">
+        <button
+          type="button"
+          onClick={() => setActiveTab("proposals")}
+          className={cn(
+            "p-4 rounded-lg bg-card border text-left transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+            activeTab === "proposals"
+              ? "border-primary ring-1 ring-primary"
+              : "border-border/60 hover:border-foreground/30"
+          )}
+        >
           <div className="flex items-center gap-2 text-muted-foreground text-xs font-bold">
             <Sparkle size={16} weight="bold" className="text-primary shrink-0" />
             <span className="truncate">Propostas & Cotações</span>
           </div>
           <p className="text-2xl font-black text-foreground mt-2">{totalProposalsAndQuotesCount}</p>
-        </div>
+        </button>
 
-        <div className="p-4 rounded-lg bg-card border border-border/60">
+        <button
+          type="button"
+          onClick={() => setActiveTab("contracts")}
+          className={cn(
+            "p-4 rounded-lg bg-card border text-left transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+            activeTab === "contracts"
+              ? "border-primary ring-1 ring-primary"
+              : "border-border/60 hover:border-foreground/30"
+          )}
+        >
           <div className="flex items-center gap-2 text-muted-foreground text-xs font-bold">
             <FileText size={16} weight="bold" className="text-primary shrink-0" />
             <span className="truncate">Contratos</span>
           </div>
           <p className="text-2xl font-black text-foreground mt-2">{totalContractsCount}</p>
-        </div>
+        </button>
       </div>
 
       {/* ── 2B. Régua de Abas Horizontal Contínua (Invariante B.39) ── */}
@@ -199,7 +353,7 @@ function CustomerTripsPage() {
           >
             Visão Completa
           </button>
-          {agencyTrips.length > 0 && (
+          {activeAgencyTrips.length > 0 && (
             <button
               type="button"
               onClick={() => setActiveTab("trips")}
@@ -209,7 +363,20 @@ function CustomerTripsPage() {
                   : "bg-card text-muted-foreground border border-border/60 hover:text-foreground"
               }`}
             >
-              Pacotes e Embarque ({agencyTrips.length})
+              Pacotes e Roteiros ({activeAgencyTrips.length})
+            </button>
+          )}
+          {confirmedCount > 0 && (
+            <button
+              type="button"
+              onClick={() => setActiveTab("confirmed")}
+              className={`h-11 min-h-11 px-4 rounded-lg text-xs font-bold whitespace-nowrap shrink-0 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                activeTab === "confirmed"
+                  ? "bg-foreground text-background"
+                  : "bg-card text-muted-foreground border border-border/60 hover:text-foreground"
+              }`}
+            >
+              Confirmadas ({confirmedCount})
             </button>
           )}
           {totalProposalsAndQuotesCount > 0 && (
@@ -238,7 +405,7 @@ function CustomerTripsPage() {
               Contratos ({totalContractsCount})
             </button>
           )}
-          {trips.length > 0 && (
+          {activeExperiences.length > 0 && (
             <button
               type="button"
               onClick={() => setActiveTab("experiences")}
@@ -248,27 +415,29 @@ function CustomerTripsPage() {
                   : "bg-card text-muted-foreground border border-border/60 hover:text-foreground"
               }`}
             >
-              Passeios ({trips.length})
+              Passeios ({activeExperiences.length})
             </button>
           )}
         </div>
       )}
 
       {/* ── 3. Pacotes & Viagens Multi-Agência com Vouchers Oficiais ── */}
-      {(activeTab === "all" || activeTab === "trips") && agencyTrips.length > 0 && (
+      {displayAgencyTrips.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
               <Airplane size={18} weight="bold" className="text-primary" />
-              <span>Pacotes e Roteiros Emitidos</span>
+              <span>
+                {activeTab === "confirmed" ? "Pacotes Confirmados" : "Pacotes e Roteiros Emitidos"}
+              </span>
             </h2>
             <span className="text-xs text-muted-foreground font-medium">
-              {agencyTrips.length} viagem(ns) vinculada(s)
+              {displayAgencyTrips.length} viagem(ns)
             </span>
           </div>
 
           <div className="space-y-3">
-            {agencyTrips.map((agencyTrip: any) => {
+            {displayAgencyTrips.map((agencyTrip: any) => {
               const mainVoucher = agencyTrip.tourism_vouchers?.[0];
               const voucherUrl = mainVoucher ? `/voucher/${mainVoucher.public_token}` : null;
               const hasFlights = Array.isArray(agencyTrip.flights) && agencyTrip.flights.length > 0;
@@ -281,7 +450,7 @@ function CustomerTripsPage() {
               return (
                 <div
                   key={agencyTrip.id}
-                  className="p-4 sm:p-6 rounded-lg bg-card border border-border/70 flex flex-col md:flex-row gap-4 sm:gap-5 items-start md:items-center justify-between hover:border-foreground/20 transition-all"
+                  className="p-4 sm:p-6 rounded-lg bg-card border border-border/70 flex flex-col md:flex-row gap-4 sm:gap-5 items-start md:items-center justify-between hover:border-foreground/20 transition-colors"
                 >
                   <div className="space-y-3 flex-1 min-w-0 w-full">
                     {/* Linha de Badges: Agência Emissora + Número + Status + Voucher */}
@@ -324,10 +493,11 @@ function CustomerTripsPage() {
                       {hasFlights && (
                         <div className="flex items-center gap-2 font-medium min-w-0">
                           <Airplane size={14} className="text-primary shrink-0" />
-                          <span className="truncate">
-                            {agencyTrip.flights[0].origin || agencyTrip.flights[0].origin_iata} ➔{" "}
-                            {agencyTrip.flights[0].destination || agencyTrip.flights[0].destination_iata} (
-                            {agencyTrip.flights[0].airline || agencyTrip.flights[0].airline_name || "Voo"})
+                          <span className="truncate flex items-center gap-1">
+                            <span>{agencyTrip.flights[0].origin || agencyTrip.flights[0].origin_iata}</span>
+                            <ArrowRight size={12} className="shrink-0" />
+                            <span>{agencyTrip.flights[0].destination || agencyTrip.flights[0].destination_iata}</span>
+                            <span>({agencyTrip.flights[0].airline || agencyTrip.flights[0].airline_name || "Voo"})</span>
                           </span>
                         </div>
                       )}
@@ -382,7 +552,7 @@ function CustomerTripsPage() {
                     >
                       <Link to="/viajante/viagem/$id" params={{ id: String(agencyTrip.id) }}>
                         <Compass size={16} weight="bold" />
-                        <span>Portal da Viagem & Boletos</span>
+                        <span>Dossiê da Viagem & Boletos</span>
                       </Link>
                     </Button>
                     {voucherUrl ? (
@@ -393,7 +563,7 @@ function CustomerTripsPage() {
                       >
                         <a href={voucherUrl} target="_blank" rel="noopener noreferrer">
                           <QrCode size={16} weight="bold" />
-                          <span>Voucher de Embarque</span>
+                          <span>Voucher Oficial</span>
                         </a>
                       </Button>
                     ) : (
@@ -439,7 +609,7 @@ function CustomerTripsPage() {
       )}
 
       {/* ── 3B. Propostas Interativas & Cotações em Andamento (Multi-Agência) ── */}
-      {(activeTab === "all" || activeTab === "proposals") && totalProposalsAndQuotesCount > 0 && (
+      {(displayProposals.length > 0 || displayQuotes.length > 0) && (
         <div className="space-y-3 pt-2">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
@@ -447,12 +617,12 @@ function CustomerTripsPage() {
               <span>Propostas e Cotações de Viagem</span>
             </h2>
             <span className="text-xs text-muted-foreground font-medium">
-              {totalProposalsAndQuotesCount} atendimento(s)
+              {displayProposals.length + displayQuotes.length} atendimento(s)
             </span>
           </div>
 
           <div className="space-y-3">
-            {proposals.map((prop: any) => {
+            {displayProposals.map((prop: any) => {
               const totalCents =
                 Number(prop.pricing?.total_price_cents || prop.pricing?.total_cents || 0);
               const isAccepted = prop.acceptance_status === "accepted" || prop.status === "approved";
@@ -460,7 +630,7 @@ function CustomerTripsPage() {
               return (
                 <div
                   key={prop.id}
-                  className="p-4 sm:p-6 rounded-lg bg-card border border-border/70 flex flex-col md:flex-row gap-4 sm:gap-5 items-start md:items-center justify-between hover:border-foreground/20 transition-all"
+                  className="p-4 sm:p-6 rounded-lg bg-card border border-border/70 flex flex-col md:flex-row gap-4 sm:gap-5 items-start md:items-center justify-between hover:border-foreground/20 transition-colors"
                 >
                   <div className="space-y-2 flex-1 min-w-0 w-full">
                     <div className="flex flex-wrap items-center gap-2">
@@ -537,7 +707,7 @@ function CustomerTripsPage() {
               );
             })}
 
-            {quotes.map((q: any) => (
+            {displayQuotes.map((q: any) => (
               <div
                 key={q.id}
                 className="p-4 sm:p-5 rounded-lg bg-card border border-border/60 flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between"
@@ -556,8 +726,10 @@ function CustomerTripsPage() {
                           : "Em Elaboração pela Agência"}
                     </Badge>
                   </div>
-                  <h3 className="text-sm sm:text-base font-bold text-foreground break-words">
-                    {q.origin_city} ➔ {q.destination_city}
+                  <h3 className="text-sm sm:text-base font-bold text-foreground break-words flex items-center gap-2">
+                    <span>{q.origin_city}</span>
+                    <ArrowRight size={14} className="shrink-0" />
+                    <span>{q.destination_city}</span>
                   </h3>
                   <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
                     {(q.departure_date || q.return_date) && (
@@ -589,7 +761,7 @@ function CustomerTripsPage() {
       )}
 
       {/* ── 3C. Contratos Jurídicos & Assinatura Digital (Multi-Agência) ── */}
-      {(activeTab === "all" || activeTab === "contracts") && totalContractsCount > 0 && (
+      {displayContracts.length > 0 && (
         <div className="space-y-3 pt-2">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
@@ -597,17 +769,17 @@ function CustomerTripsPage() {
               <span>Contratos de Viagem</span>
             </h2>
             <span className="text-xs text-muted-foreground font-medium">
-              {totalContractsCount} documento(s)
+              {displayContracts.length} documento(s)
             </span>
           </div>
 
           <div className="space-y-3">
-            {contracts.map((contract: any) => {
+            {displayContracts.map((contract: any) => {
               const isSigned = contract.status === "signed" || Boolean(contract.signed_at);
               return (
                 <div
                   key={contract.id}
-                  className="p-4 sm:p-6 rounded-lg bg-card border border-border/70 flex flex-col md:flex-row gap-4 sm:gap-5 items-start md:items-center justify-between hover:border-foreground/20 transition-all"
+                  className="p-4 sm:p-6 rounded-lg bg-card border border-border/70 flex flex-col md:flex-row gap-4 sm:gap-5 items-start md:items-center justify-between hover:border-foreground/20 transition-colors"
                 >
                   <div className="space-y-2 flex-1 min-w-0 w-full">
                     <div className="flex flex-wrap items-center gap-2">
@@ -625,7 +797,7 @@ function CustomerTripsPage() {
                             : "text-xs font-bold bg-muted text-foreground"
                         }
                       >
-                        ● {isSigned ? "Assinado Digitalmente" : "Aguardando Assinatura"}
+                        ● {isSigned ? "Assinado Digitalmente" : "Aguardando Sua Assinatura"}
                       </Badge>
                     </div>
 
@@ -653,7 +825,7 @@ function CustomerTripsPage() {
                         variant={isSigned ? "outline" : "default"}
                         className="flex-1 md:flex-initial rounded-lg font-bold text-xs gap-2 h-11 min-h-11 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
                       >
-                        <Link to="/viajante/$token" params={{ token: String(contract.public_token) }}>
+                        <Link to="/contrato/$token" params={{ token: String(contract.public_token) }}>
                           <FileText size={16} weight="bold" />
                           <span>{isSigned ? "Ver Contrato Assinado" : "Assinar Contrato"}</span>
                         </Link>
@@ -668,32 +840,14 @@ function CustomerTripsPage() {
       )}
 
       {/* ── 4. Lista de Passeios do Marketplace ── */}
-      {!hasAnyItem ? (
-        <div className="text-center py-12 sm:py-16 px-4 rounded-lg bg-card space-y-4 border border-border/70">
-          <div className="size-16 rounded-lg bg-muted text-muted-foreground flex items-center justify-center mx-auto">
-            <Compass size={32} weight="bold" className="text-primary" />
-          </div>
-          <div className="space-y-1">
-            <h3 className="text-base font-bold text-foreground">Nenhuma viagem reservada ainda</h3>
-            <p className="text-xs text-muted-foreground max-w-md mx-auto">
-              Suas reservas, vouchers de embarque, propostas e contratos de qualquer agência credenciada aparecem automaticamente aqui.
-            </p>
-          </div>
-          <Button asChild className="rounded-lg font-bold text-xs h-11 min-h-11 px-6 bg-foreground text-background">
-            <Link to="/turismo">
-              <Compass size={16} weight="bold" className="mr-2" />
-              <span>Explorar Roteiros</span>
-            </Link>
-          </Button>
-        </div>
-      ) : (activeTab === "all" || activeTab === "experiences") && trips.length > 0 ? (
+      {displayExperiences.length > 0 && (
         <div className="space-y-3 pt-2">
           <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
             <Compass size={18} weight="bold" className="text-primary" />
             <span>Passeios e Experiências</span>
           </h2>
           <div className="space-y-3">
-            {trips.map((booking: any) => {
+            {displayExperiences.map((booking: any) => {
               const exp = booking.experience;
               const formattedDate = booking.desired_date
                 ? new Date(booking.desired_date).toLocaleDateString("pt-BR", {
@@ -708,7 +862,7 @@ function CustomerTripsPage() {
               return (
                 <div
                   key={booking.id}
-                  className="p-4 sm:p-6 rounded-lg bg-card flex flex-col md:flex-row gap-4 sm:gap-5 items-start md:items-center justify-between hover:border-foreground/20 transition-all border border-border/70"
+                  className="p-4 sm:p-6 rounded-lg bg-card flex flex-col md:flex-row gap-4 sm:gap-5 items-start md:items-center justify-between hover:border-foreground/20 transition-colors border border-border/70"
                 >
                   <div className="flex gap-4 items-start min-w-0 flex-1">
                     {exp?.image_url ? (
@@ -760,23 +914,16 @@ function CustomerTripsPage() {
                           </span>
                         )}
                       </div>
-
-                      {exp?.location && (
-                        <p className="text-xs text-muted-foreground flex items-center gap-1 truncate">
-                          <MapPin size={12} weight="bold" className="shrink-0" />
-                          <span className="truncate">{exp.location}</span>
-                        </p>
-                      )}
                     </div>
                   </div>
 
                   <div className="flex flex-row md:flex-col gap-2 w-full md:w-auto shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-border">
                     <Button
                       onClick={() => handleOpenVoucher(booking)}
-                      className="flex-1 md:flex-initial rounded-lg font-bold text-xs gap-2 h-11 min-h-11 bg-foreground text-background focus-visible:ring-2 focus-visible:ring-primary"
+                      className="flex-1 md:flex-initial rounded-lg font-bold text-xs gap-2 h-11 min-h-11 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       <QrCode size={16} weight="bold" />
-                      <span>Voucher Digital</span>
+                      <span>Ver Voucher</span>
                     </Button>
 
                     {cleanWhatsapp && (
@@ -786,17 +933,17 @@ function CustomerTripsPage() {
                         onClick={() =>
                           trackAndOpenWhatsApp({
                             phone: cleanWhatsapp,
-                            storeId: (exp as any)?.store_id || null,
+                            storeId: exp?.store_id || null,
                             entityType: "tourism",
-                            entityId: exp?.id || null,
-                            entityTitle: exp?.title || "Experiência Turística",
+                            entityId: booking.id,
+                            entityTitle: exp?.title,
                             niche: "turismo",
-                            customMessage: `Olá! Tenho uma reserva confirmada com o voucher *${booking.voucher_code}* para *${exp?.title}*. Queria confirmar os detalhes.`,
+                            customMessage: `Olá! Sou ${booking.customer_name} e estou entrando em contato sobre a reserva *${booking.voucher_code}* (${exp?.title}).`,
                           })
                         }
                         className="flex-1 md:flex-initial rounded-lg font-bold text-xs gap-2 h-11 min-h-11 border-border cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
                       >
-                        <WhatsappLogo size={16} weight="bold" className="text-foreground" />
+                        <WhatsappLogo size={16} weight="bold" className="text-primary" />
                         <span>Falar com Guia</span>
                       </Button>
                     )}
@@ -806,9 +953,75 @@ function CustomerTripsPage() {
             })}
           </div>
         </div>
-      ) : null}
+      )}
 
-      {/* ── Modal Canônico de Voucher Digital ── */}
+      {/* ── 5. Empty States Semânticos e Contextuais (Item 107) ── */}
+      {!hasAnyItem ? (
+        <div className="text-center py-12 sm:py-16 px-4 rounded-lg bg-card space-y-4 border border-border/70">
+          <div className="size-16 rounded-lg bg-muted text-muted-foreground flex items-center justify-center mx-auto">
+            <Compass size={32} weight="bold" className="text-primary" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-base font-bold text-foreground">Nenhuma viagem reservada ainda</h3>
+            <p className="text-xs text-muted-foreground max-w-md mx-auto">
+              Suas reservas, vouchers de embarque, propostas e contratos de qualquer agência credenciada aparecem automaticamente aqui.
+            </p>
+          </div>
+          <Button asChild className="rounded-lg font-bold text-xs h-11 min-h-11 px-6 bg-primary text-primary-foreground focus-visible:ring-2 focus-visible:ring-primary">
+            <Link to="/turismo">
+              <Compass size={16} weight="bold" className="mr-2" />
+              <span>Explorar Roteiros e Destinos</span>
+            </Link>
+          </Button>
+        </div>
+      ) : (
+        /* Empty state específico quando a aba ativa não tem itens mas outras têm */
+        ((activeTab === "trips" && displayAgencyTrips.length === 0) ||
+          (activeTab === "confirmed" && confirmedCount === 0) ||
+          (activeTab === "proposals" && displayProposals.length === 0 && displayQuotes.length === 0) ||
+          (activeTab === "contracts" && displayContracts.length === 0) ||
+          (activeTab === "experiences" && displayExperiences.length === 0)) && (
+          <div className="p-8 text-center rounded-lg bg-card border border-dashed border-border/70 space-y-3">
+            <p className="text-sm font-semibold text-foreground">
+              {activeTab === "confirmed"
+                ? "Nenhuma viagem com confirmação final no momento."
+                : activeTab === "trips"
+                ? "Nenhum pacote fechado no momento."
+                : activeTab === "proposals"
+                ? "Nenhuma proposta ou cotação ativa no momento."
+                : activeTab === "contracts"
+                ? "Nenhum contrato disponível no momento."
+                : "Nenhum passeio agendado no momento."}
+            </p>
+            {totalProposalsAndQuotesCount > 0 && activeTab !== "proposals" && (
+              <p className="text-xs text-muted-foreground">
+                Você possui {totalProposalsAndQuotesCount} proposta(s) e cotação(ões) prontas para revisão.
+              </p>
+            )}
+            <div className="flex justify-center gap-2 pt-1">
+              <Button
+                variant="outline"
+                className="h-11 min-h-11 px-4 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary"
+                onClick={() => setActiveTab("all")}
+              >
+                Ver Todas as Viagens
+              </Button>
+              {totalProposalsAndQuotesCount > 0 && activeTab !== "proposals" && (
+                <Button
+                  variant="default"
+                  className="h-11 min-h-11 px-4 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary"
+                  onClick={() => setActiveTab("proposals")}
+                >
+                  Ver Minhas Propostas
+                  <ArrowRight size={14} className="ml-1" />
+                </Button>
+              )}
+            </div>
+          </div>
+        )
+      )}
+
+      {/* ── Modal Canônico de Voucher Digital com QR Offline (Item 39) ── */}
       <Dialog open={isVoucherOpen} onOpenChange={setIsVoucherOpen}>
         <DialogContent className="sm:max-w-lg sm:rounded-lg p-5 sm:p-8 bg-card border-border">
           {selectedBooking && (
@@ -816,7 +1029,7 @@ function CustomerTripsPage() {
               {/* Header do Voucher */}
               <div className="text-center pb-2 space-y-2">
                 <Badge variant="outline" className="text-xs font-mono font-bold px-3 py-1 bg-muted">
-                  Voucher Digital
+                  Voucher Digital Oficial
                 </Badge>
                 <h2 className="text-lg sm:text-xl font-bold text-foreground">
                   {selectedBooking.experience?.title || "Experiência Turística"}
@@ -829,16 +1042,22 @@ function CustomerTripsPage() {
                 </div>
               </div>
 
-              {/* QR Code de Validação de Embarque */}
+              {/* QR Code Soberano Offline (UQR Vetorial SVG) */}
               <div className="flex flex-col items-center justify-center p-4 bg-card rounded-lg border border-border/40">
-                <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=8&data=${encodeURIComponent(selectedBooking.voucher_code)}`}
-                  alt={`QR Code ${selectedBooking.voucher_code}`}
-                  className="size-36 object-contain"
-                  loading="lazy"
-                />
+                {qrCodeDataUri ? (
+                  <img
+                    src={qrCodeDataUri}
+                    alt={`QR Code ${selectedBooking.voucher_code}`}
+                    className="size-36 object-contain"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="size-36 bg-muted flex items-center justify-center font-mono text-xs">
+                    {selectedBooking.voucher_code}
+                  </div>
+                )}
                 <span className="text-xs font-mono font-bold text-foreground mt-2 uppercase tracking-wider">
-                  Apresente ao Guia / Embarque
+                  Apresente ao Guia / Embarque (Offline)
                 </span>
               </div>
 
@@ -897,7 +1116,7 @@ function CustomerTripsPage() {
                 <Button
                   onClick={handlePrint}
                   variant="outline"
-                  className="flex-1 rounded-lg font-bold text-xs gap-2 h-11 min-h-11 focus-visible:ring-2 focus-visible:ring-primary"
+                  className="flex-1 rounded-lg font-bold text-xs gap-2 h-11 min-h-11 focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
                 >
                   <Printer size={16} weight="bold" />
                   <span>Imprimir Voucher</span>
@@ -905,7 +1124,7 @@ function CustomerTripsPage() {
 
                 <Button
                   onClick={() => handleShare(selectedBooking.voucher_code)}
-                  className="flex-1 rounded-lg font-bold text-xs gap-2 h-11 min-h-11 bg-foreground text-background focus-visible:ring-2 focus-visible:ring-primary"
+                  className="flex-1 rounded-lg font-bold text-xs gap-2 h-11 min-h-11 bg-primary text-primary-foreground focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
                 >
                   <ShareNetwork size={16} weight="bold" />
                   <span>Copiar Código</span>
@@ -918,4 +1137,3 @@ function CustomerTripsPage() {
     </div>
   );
 }
-

@@ -440,11 +440,11 @@ export function BookingDossierModal({
                     className="h-10 text-xs font-semibold rounded-lg text-muted-foreground"
                   >
                     <Link
-                      to="/u/suporte"
+                      to={"/u/suporte" as any}
                       search={{
                         assunto: `Dúvida sobre Agendamento #${appointment.id.slice(0, 6).toUpperCase()}`,
                         contexto: `Agendamento: ${serviceTitle} em ${storeName} para ${dateObj.toLocaleDateString("pt-BR")}`,
-                      }}
+                      } as any}
                     >
                       <HelpCircle className="size-3.5 mr-1" />
                       Suporte

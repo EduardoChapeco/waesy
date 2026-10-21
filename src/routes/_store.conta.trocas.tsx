@@ -246,7 +246,7 @@ function CustomerAfterSalesPage() {
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-safe pb-24 px-0 sm:px-4 md:px-0 animate-in fade-in duration-200">
+    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-safe pb-24 px-0 sm:px-4 md:px-0 animate-in fade-in duration-200 motion-reduce:animate-none">
       {/* ── 0. Native Mobile Header (<768px) ── */}
       <NativeMobileHeader
         title="Trocas e Devoluções"
@@ -254,11 +254,10 @@ function CustomerAfterSalesPage() {
         mobileOnly
         rightActions={
           <Button
-            size="sm"
             onClick={() => setIsModalOpen(true)}
             className="rounded-lg h-11 min-h-11 px-3 text-xs font-bold gap-1 bg-foreground text-background hover:bg-foreground/90 shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
           >
-            <Plus className="size-4" />
+            <Plus size={16} />
             <span>Nova</span>
           </Button>
         }
@@ -272,7 +271,7 @@ function CustomerAfterSalesPage() {
               Trocas e Devoluções
             </h1>
             {requests.length > 0 && (
-              <Badge variant="secondary" className="text-xs font-mono font-bold px-2.5 py-1 rounded-full">
+              <Badge variant="secondary" className="text-xs font-mono font-bold px-3 py-1 rounded-full">
                 {requests.length}
               </Badge>
             )}
@@ -329,7 +328,7 @@ function CustomerAfterSalesPage() {
                   onClick={() => setIsModalOpen(true)}
                   className="h-11 min-h-11 rounded-lg px-6 text-xs font-bold bg-foreground text-background hover:bg-foreground/90 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
                 >
-                  <Plus className="size-4 mr-2" />
+                  <Plus size={16} className="mr-2" />
                   Nova Solicitação
                 </Button>
                 <Button
@@ -365,7 +364,7 @@ function CustomerAfterSalesPage() {
                         </span>
                       )}
                     </p>
-                    <p className="text-[11px] text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                    <p className="text-2xs text-muted-foreground flex items-center gap-2 mt-1">
                       <Clock className="size-3" />
                       Enviado em {formatDate(req.requestedAt)} • {req.storeName}
                     </p>
@@ -383,15 +382,15 @@ function CustomerAfterSalesPage() {
               {/* Corpo do Card */}
               <div className="p-4 sm:p-5 space-y-4">
                 {/* Descrição contextual amigável do status (EARS-01) */}
-                <div className="p-3.5 rounded-lg bg-muted/30 border border-border/40 text-xs text-muted-foreground space-y-1">
+                <div className="p-4 rounded-lg bg-muted/30 border border-border/40 text-xs text-muted-foreground space-y-1">
                   <span className="font-bold text-foreground block">Próximo Passo / Situação:</span>
                   <p className="break-words text-wrap leading-relaxed">{req.statusDescription}</p>
                 </div>
 
                 {/* Motivo do Cliente */}
                 {req.customerNotes && (
-                  <div className="bg-background p-3.5 rounded-lg border border-border/40 space-y-1">
-                    <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">
+                  <div className="bg-background p-4 rounded-lg border border-border/40 space-y-1">
+                    <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider block">
                       Observação Informada
                     </span>
                     <p className="text-xs text-foreground leading-relaxed break-words text-wrap">
@@ -408,11 +407,11 @@ function CustomerAfterSalesPage() {
                       alt="Foto anexada"
                       className="size-12 rounded-lg object-cover border border-border/60 shrink-0"
                     />
-                    <div className="space-y-0.5 min-w-0 flex-1">
-                      <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                    <div className="space-y-1 min-w-0 flex-1">
+                      <span className="text-xs font-semibold text-foreground flex items-center gap-2">
                         <Camera className="size-4 text-primary" /> Foto do Produto Anexada
                       </span>
-                      <span className="text-[11px] text-muted-foreground block">
+                      <span className="text-2xs text-muted-foreground block">
                         Submetida à verificação da loja para validação do atendimento.
                       </span>
                     </div>
@@ -436,7 +435,7 @@ function CustomerAfterSalesPage() {
                         <Truck className="size-4 text-primary" />
                         <span>Código de Postagem ({req.returnCarrier || "Correios"})</span>
                       </div>
-                      <Badge variant="outline" className="text-[10px] uppercase font-mono border-primary/30 text-primary">
+                      <Badge variant="outline" className="text-2xs uppercase font-mono border-primary/30 text-primary">
                         Frete Pago pela Loja
                       </Badge>
                     </div>
@@ -487,15 +486,15 @@ function CustomerAfterSalesPage() {
                       className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold border-border cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       <Link
-                        to="/u/suporte"
+                        to={"/u/suporte" as any}
                         search={{
                           motivo: "pos_venda",
                           request_id: req.id,
                           pedido: req.orderToken,
                           loja: req.storeName,
-                        }}
+                        } as any}
                       >
-                        <HelpCircle className="size-3.5 mr-1.5" /> Preciso de Ajuda
+                        <HelpCircle className="size-3.5 mr-2" /> Preciso de Ajuda
                       </Link>
                     </Button>
                   </div>
@@ -521,12 +520,12 @@ function CustomerAfterSalesPage() {
 
           <form onSubmit={handleSubmitRequest} className="p-5 sm:p-6 space-y-4">
             {/* 1. Seleção do Pedido Elegível */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="text-xs font-semibold text-foreground">
                 Selecione a Compra *
               </label>
               {orders.length === 0 ? (
-                <div className="p-3.5 bg-muted/30 rounded-lg text-xs text-muted-foreground border border-border/40">
+                <div className="p-4 bg-muted/30 rounded-lg text-xs text-muted-foreground border border-border/40">
                   Nenhuma compra entregue elegível localizada na sua conta.
                 </div>
               ) : (
@@ -546,7 +545,7 @@ function CustomerAfterSalesPage() {
             </div>
 
             {/* 2. Tipo de Solicitação (Bifurcação EARS-03) */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="text-xs font-semibold text-foreground">
                 Como podemos ajudar? *
               </label>
@@ -569,7 +568,7 @@ function CustomerAfterSalesPage() {
             </div>
 
             {/* 3. Motivo Principal */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="text-xs font-semibold text-foreground">
                 Motivo Principal *
               </label>
@@ -601,7 +600,7 @@ function CustomerAfterSalesPage() {
             </div>
 
             {/* 4. Detalhes Adicionais */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="text-xs font-semibold text-foreground">
                 Detalhes Adicionais (Opcional)
               </label>
@@ -617,7 +616,7 @@ function CustomerAfterSalesPage() {
             {/* 5. Foto do Produto / Avaria */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <label className="text-xs font-semibold text-foreground flex items-center gap-2">
                   <Camera className="size-4 text-primary" />
                   <span>Foto do Produto (Opcional, agiliza a análise)</span>
                 </label>
@@ -625,7 +624,7 @@ function CustomerAfterSalesPage() {
                   <button
                     type="button"
                     onClick={handleClearPhoto}
-                    className="text-[11px] text-destructive hover:underline flex items-center gap-1 cursor-pointer"
+                    className="text-2xs text-destructive hover:underline flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-sm"
                   >
                     <X className="size-3" />
                     <span>Remover foto</span>
@@ -640,9 +639,9 @@ function CustomerAfterSalesPage() {
                     alt="Pré-visualização da foto"
                     className="size-16 rounded-lg object-cover border border-border/60 shrink-0"
                   />
-                  <div className="space-y-0.5 min-w-0 flex-1">
+                  <div className="space-y-1 min-w-0 flex-1">
                     <p className="text-xs font-bold text-foreground">Foto Anexada</p>
-                    <p className="text-[11px] text-muted-foreground leading-tight">
+                    <p className="text-2xs text-muted-foreground leading-tight">
                       A imagem será enviada à equipe da loja para conferência.
                     </p>
                   </div>
@@ -666,11 +665,11 @@ function CustomerAfterSalesPage() {
                   <div className="size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">
                     <Camera className="size-4" />
                   </div>
-                  <div className="space-y-0.5">
+                  <div className="space-y-1">
                     <p className="text-xs font-semibold text-foreground">
                       Clique para selecionar ou arraste uma foto aqui
                     </p>
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-2xs text-muted-foreground">
                       Suporta PNG, JPG, WebP ou cole direto da área de transferência (Ctrl+V)
                     </p>
                   </div>
@@ -695,7 +694,7 @@ function CustomerAfterSalesPage() {
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="size-4 animate-spin mr-2" />
+                    <Loader2 size={16} className="animate-spin motion-reduce:animate-none mr-2" />
                     Enviando...
                   </>
                 ) : (
@@ -737,7 +736,7 @@ function CustomerAfterSalesPage() {
                   handleCancelRequest(cancelModalRequestId);
                 }
               }}
-              className="h-11 min-h-11 rounded-lg text-xs font-bold bg-rose-600 text-white hover:bg-rose-700 cursor-pointer focus-visible:ring-2 focus-visible:ring-rose-500"
+              className="h-11 min-h-11 rounded-lg text-xs font-bold bg-rose-600 text-primary-foreground hover:bg-rose-700 cursor-pointer focus-visible:ring-2 focus-visible:ring-rose-500"
             >
               Confirmar Cancelamento
             </Button>

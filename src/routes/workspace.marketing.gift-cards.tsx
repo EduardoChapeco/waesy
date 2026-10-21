@@ -5,43 +5,33 @@ import { PageHeader } from "@/components/commerce/page-header";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CurrencyField } from "@/components/ui/currency-field";
 import { SheetPage } from "@/components/ui/sheet-page";
 import { EmptyState } from "@/components/state/states";
-import { listGiftCards, createGiftCard, cancelGiftCard } from "@/services/giftcard.functions";
-import { formatMoney } from "@/lib/money";
-import { formatDate } from "@/lib/datetime";
-import { Search, Plus, Gift, CheckCircle, XCircle, Copy, ExternalLink, QrCode } from "lucide-react";
+import {
+  listMerchantGiftCards,
+  createGiftCardOrder,
+  confirmGiftCardPayment,
+  cancelGiftCard,
+  createMerchantGiftCardProduct,
+} from "@/services/giftcard.functions";
+import { formatWz, brlCentsToWz, wzToBrlCentsReference } from "@/lib/wz-quote-engine";
+import { Search, Plus, Gift, CheckCircle, XCircle, Copy, ExternalLink, ShieldCheck, AlertTriangle } from "lucide-react";
 
 export const Route = createFileRoute("/workspace/marketing/gift-cards")({
   head: () => ({ meta: [{ title: "Vale-Presentes | Workspace Waesy" }] }),
   loader: async () => {
     try {
-      return { giftCards: await listGiftCards() };
+      const data = await listMerchantGiftCards();
+      return { data };
     } catch (err) {
-      console.error("[loader:workspace.marketing.gift-cards] Unhandled loader error:", err);
-      return { giftCards: null };
+      console.error("[loader:workspace.marketing.gift-cards] Unhandled error:", err);
+      return { data: { cards: [], stats: { totalSoldWz: 0, totalRedeemedWz: 0, activeCount: 0 } } };
     }
   },
   component: GiftCardsDashboardPage,
 });
-
-function translateStatus(status: string) {
-  if (status === "active") return "Ativo";
-  if (status === "exhausted") return "Exaurido";
-  if (status === "cancelled") return "Cancelado";
-  return status;
-}
-
-function getStatusBadge(status: string): "success" | "secondary" | "destructive" {
-  if (status === "active") return "success";
-  if (status === "exhausted") return "secondary";
-  if (status === "cancelled") return "destructive";
-  return "secondary";
-}
 
 function NewGiftCardDrawer({
   isOpen,
@@ -53,29 +43,50 @@ function NewGiftCardDrawer({
   onCreated: () => void;
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [balanceCents, setBalanceCents] = useState<number | undefined>(10000);
-  const [email, setEmail] = useState("");
+  const [wzAmount, setWzAmount] = useState<number>(500000);
+  const [recipientName, setRecipientName] = useState("");
+  const [recipientEmail, setRecipientEmail] = useState("");
+  const [personalMessage, setPersonalMessage] = useState("");
+  const [fundingMode, setFundingMode] = useState<"PURCHASED" | "MERCHANT_FUNDED">("MERCHANT_FUNDED");
 
   const handleCreate = async () => {
-    const valCents = balanceCents || 0;
-    if (valCents < 100) {
-      toast.error("O valor mínimo é R$ 1,00");
+    if (wzAmount < 10000) {
+      toast.error("O valor mínimo é 10.000 $WZ");
+      return;
+    }
+    if (!recipientName.trim()) {
+      toast.error("Informe o nome do destinatário");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const res = await createGiftCard({
+      // 1. Criar ordem do vale
+      const res = await createGiftCardOrder({
         data: {
-          initialBalanceCents: valCents,
-          recipientEmail: email || undefined,
+          amountWz: wzAmount,
+          recipientName: recipientName.trim(),
+          recipientEmail: recipientEmail.trim() || undefined,
+          senderName: "Administração da Loja",
+          personalMessage: personalMessage.trim() || undefined,
+          recipientBindingType: "BEARER",
+          cardDesignId: "classic_gold",
         },
       });
-      toast.success(`Vale-Presente gerado com sucesso! Código: ${res.code}`, { duration: 8000 });
+
+      // 2. Se for cortesia da loja ou emissão direta aprovada, confirma ativação
+      await confirmGiftCardPayment({
+        data: {
+          giftCardId: res.gift_card_id,
+          paymentId: `admin_issuance_${Date.now()}`,
+        },
+      });
+
+      toast.success(`Vale-Presente de ${formatWz(wzAmount)} ativado com sucesso!`, { duration: 6000 });
       onCreated();
       onClose();
     } catch (e: any) {
-      toast.error(e.message || "Erro ao gerar vale-presente");
+      toast.error(e.message || "Erro ao emitir vale-presente");
     } finally {
       setIsSubmitting(false);
     }
@@ -85,32 +96,66 @@ function NewGiftCardDrawer({
     <SheetPage
       open={isOpen}
       onOpenChange={(val) => !val && onClose()}
-      title="Gerar Vale-Presente (Avulso)"
-      description="Crie um cartão presente para campanhas promocionais, cortesias ou vendas corporativas."
+      title="Emitir Vale-Presente em $WZ"
+      description="Crie um cartão presente para campanhas de fidelidade, incentivo ou cortesia comercial."
       size="wide"
       footer={
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={onClose} disabled={isSubmitting} className="rounded-lg text-xs font-semibold">
+          <Button variant="outline" onClick={onClose} disabled={isSubmitting} className="rounded-lg text-xs font-semibold h-11 min-h-11 px-4 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none">
             Cancelar
           </Button>
           <Button
-            className="rounded-lg text-xs font-bold bg-primary text-primary-foreground"
+            className="rounded-lg text-xs font-bold bg-primary text-primary-foreground h-11 min-h-11 px-5 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
             onClick={handleCreate}
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Gerando..." : "Gerar e Ativar Código"}
+            {isSubmitting ? "Emitindo no Ledger..." : "Emitir e Ativar Vale"}
           </Button>
         </div>
       }
     >
-      <div className="py-2 space-y-4">
+      <div className="py-2 space-y-4 text-xs">
+        {/* Aviso de Isolamento Econômico Obrigatório */}
+        <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-start gap-2 text-amber-600 dark:text-amber-400">
+          <AlertTriangle className="size-4 shrink-0 mt-1" />
+          <p className="leading-tight">
+            <strong>Invariante de Financiamento:</strong> Este vale é restrito a compras nesta loja. Vales de cortesia não geram recebíveis em dinheiro nem obrigações de repasse por parte da Waesy.
+          </p>
+        </div>
+
         <div className="space-y-2">
-          <Label className="text-xs font-bold">Valor do Cartão (R$)</Label>
-          <CurrencyField
-            value={balanceCents}
-            onChange={setBalanceCents}
-            placeholder="0,00"
-            className="font-mono font-bold text-lg h-11 rounded-lg"
+          <Label className="text-xs font-bold">Valor do Vale ($WZ)</Label>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {[100000, 250000, 500000, 1000000].map((val) => (
+              <button
+                key={val}
+                type="button"
+                onClick={() => setWzAmount(val)}
+                className={`h-11 min-h-11 rounded-lg border text-xs font-mono font-bold transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${
+                  wzAmount === val ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border hover:bg-muted"
+                }`}
+              >
+                {formatWz(val)}
+              </button>
+            ))}
+          </div>
+          <Input
+            type="number"
+            value={wzAmount}
+            onChange={(e) => setWzAmount(Number(e.target.value))}
+            min={10000}
+            step={10000}
+            className="h-11 font-mono font-bold text-sm rounded-lg"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-xs font-bold">Nome do Destinatário</Label>
+          <Input
+            placeholder="Nome do cliente ou parceiro"
+            value={recipientName}
+            onChange={(e) => setRecipientName(e.target.value)}
+            className="h-11 rounded-lg text-xs"
           />
         </div>
 
@@ -119,13 +164,20 @@ function NewGiftCardDrawer({
           <Input
             type="email"
             placeholder="cliente@exemplo.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="h-10 rounded-lg text-xs"
+            value={recipientEmail}
+            onChange={(e) => setRecipientEmail(e.target.value)}
+            className="h-11 rounded-lg text-xs"
           />
-          <p className="text-xs text-muted-foreground">
-            Se preenchido, o código e link de resgate serão enviados automaticamente.
-          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-xs font-bold">Mensagem Afetuosa Personalizada</Label>
+          <Input
+            placeholder="Ex: Um presente especial para você aproveitar em nossa loja!"
+            value={personalMessage}
+            onChange={(e) => setPersonalMessage(e.target.value)}
+            className="h-11 rounded-lg text-xs"
+          />
         </div>
       </div>
     </SheetPage>
@@ -133,150 +185,204 @@ function NewGiftCardDrawer({
 }
 
 function GiftCardsDashboardPage() {
-  const loaderData = Route.useLoaderData();
-  const giftCards = loaderData?.giftCards || [];
+  const loaderData = (Route.useLoaderData?.() as any) || {};
+  const data = loaderData.data || { cards: [], stats: { totalSoldWz: 0, totalRedeemedWz: 0, activeCount: 0 } };
+  const cards = data.cards || [];
+  const stats = data.stats || {};
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [processingId, setProcessingId] = useState<string | null>(null);
 
-  const filteredCards = giftCards.filter((card: any) => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterSource, setFilterSource] = useState<"ALL" | "PURCHASED" | "MERCHANT_FUNDED">("ALL");
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  const filteredCards = cards.filter((card: any) => {
+    if (filterSource !== "ALL" && card.funding_source !== filterSource) return false;
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
-    return card.code?.toLowerCase().includes(q) || card.purchaserName?.toLowerCase().includes(q);
+    return (
+      card.code_display?.toLowerCase().includes(q) ||
+      card.recipient_name?.toLowerCase().includes(q) ||
+      card.purchaser_name?.toLowerCase().includes(q)
+    );
   });
 
-  const handleCopyCode = (code: string) => {
-    if (typeof navigator !== "undefined") {
-      navigator.clipboard.writeText(code);
-      toast.success(`Código ${code} copiado para a área de transferência!`);
-    }
-  };
-
-  const handleCopyClaimLink = (code: string) => {
+  const handleCopyClaimLink = (tokenOrId: string) => {
     if (typeof window !== "undefined") {
-      const url = `${window.location.origin}/gift-card/${code}`;
+      const url = `${window.location.origin}/gift-card/${tokenOrId}`;
       navigator.clipboard.writeText(url);
-      toast.success("Link público de resgate copiado!");
+      toast.success("Link público do presente copiado!");
     }
   };
 
   const handleCancel = async (id: string) => {
-    setProcessingId(id);
     try {
       await cancelGiftCard({ data: { id } });
-      toast.success("Vale-Presente cancelado com sucesso.");
+      toast.success("Vale-presente cancelado.");
       router.invalidate();
     } catch (e: unknown) {
-      toast.error((e instanceof Error ? e.message : String(e)) || "Erro ao cancelar.");
-    } finally {
-      setProcessingId(null);
+      toast.error(e instanceof Error ? e.message : "Erro ao cancelar.");
     }
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 space-y-6 pb-24 animate-in fade-in duration-200">
+      {/* ── 1. Top Header ── */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <PageHeader title="Presentes" />
-        <Button onClick={() => setIsDrawerOpen(true)} className="rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground h-10">
-          <Plus className="h-4 w-4" /> Gerar Vale-Presente
+        <PageHeader title="Vales-Presente & Gifting $WZ" />
+        <Button
+          onClick={() => setIsDrawerOpen(true)}
+          className="rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground h-11 min-h-11 px-5"
+        >
+          <Plus className="h-4 w-4" /> Emitir Vale-Presente
         </Button>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+      {/* ── 2. Cards de Métricas e Passivo Circulante ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="p-5 rounded-lg border border-border/60 bg-card space-y-1">
+          <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+            Vales Vendidos (Comprados)
+          </span>
+          <span className="text-2xl font-black font-mono text-foreground block">
+            {stats.totalSoldWz_formatted || formatWz(stats.totalSoldWz || 0)}
+          </span>
+          <span className="text-xs text-muted-foreground">
+            Receita comercial retida pela empresa
+          </span>
+        </div>
+
+        <div className="p-5 rounded-lg border border-border/60 bg-card space-y-1">
+          <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+            Vales Resgatados em Compras
+          </span>
+          <span className="text-2xl font-black font-mono text-emerald-500 block">
+            {stats.totalRedeemedWz_formatted || formatWz(stats.totalRedeemedWz || 0)}
+          </span>
+          <span className="text-xs text-muted-foreground">
+            Total convertido em vendas e serviços
+          </span>
+        </div>
+
+        <div className="p-5 rounded-lg border border-border/60 bg-card space-y-1">
+          <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+            Vales Ativos em Circulação
+          </span>
+          <span className="text-2xl font-black font-mono text-foreground block">
+            {stats.activeCount || 0}
+          </span>
+          <span className="text-xs text-muted-foreground">
+            Aguardando utilização pelos clientes
+          </span>
+        </div>
+      </div>
+
+      {/* ── 3. Barra de Busca e Filtros de Fonte ── */}
+      <div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center">
         <div className="relative flex-1 sm:w-80">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input
-            placeholder="Buscar por código ou gerador..."
-            className="pl-9 bg-card rounded-lg text-xs h-9"
+            placeholder="Buscar por código ou destinatário..."
+            className="pl-9 bg-card rounded-lg text-xs h-11 min-h-11"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setFilterSource("ALL")}
+            className={`h-11 min-h-11 px-4 rounded-lg text-xs font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${
+              filterSource === "ALL" ? "bg-foreground text-background" : "bg-muted/50 text-muted-foreground"
+            }`}
+          >
+            Todos
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilterSource("PURCHASED")}
+            className={`h-11 min-h-11 px-4 rounded-lg text-xs font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${
+              filterSource === "PURCHASED" ? "bg-foreground text-background" : "bg-muted/50 text-muted-foreground"
+            }`}
+          >
+            Vendidos (Comprados)
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilterSource("MERCHANT_FUNDED")}
+            className={`h-11 min-h-11 px-4 rounded-lg text-xs font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${
+              filterSource === "MERCHANT_FUNDED" ? "bg-foreground text-background" : "bg-muted/50 text-muted-foreground"
+            }`}
+          >
+            Cortesias da Loja
+          </button>
+        </div>
       </div>
 
+      {/* ── 4. Tabela de Vales ── */}
       {filteredCards.length === 0 ? (
         <EmptyState title="Nenhum Vale-Presente encontrado" />
       ) : (
-        <div className="rounded-lg border border-border/60 bg-card overflow-hidden shadow-2xs">
+        <div className="rounded-lg border border-border/60 bg-card overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow className="border-border/40">
-                <TableHead className="text-xs font-bold">Data</TableHead>
-                <TableHead className="text-xs font-bold">Código do Cartão</TableHead>
-                <TableHead className="text-xs font-bold">Gerado Por</TableHead>
-                <TableHead className="text-xs font-bold">Valor Inicial</TableHead>
-                <TableHead className="text-xs font-bold">Saldo Atual</TableHead>
-                <TableHead className="text-xs font-bold">Status</TableHead>
-                <TableHead className="text-right text-xs font-bold">Ações</TableHead>
+              <TableRow>
+                <TableHead className="text-xs">Código</TableHead>
+                <TableHead className="text-xs">Tipo / Financiamento</TableHead>
+                <TableHead className="text-xs">Destinatário</TableHead>
+                <TableHead className="text-xs">Valor $WZ</TableHead>
+                <TableHead className="text-xs">Status</TableHead>
+                <TableHead className="text-xs">Data</TableHead>
+                <TableHead className="text-xs text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredCards.map((card: any) => (
-                <TableRow key={card.id} className="border-border/40 hover:bg-muted/20">
-                  <TableCell className="whitespace-nowrap text-xs font-medium text-muted-foreground">{formatDate(card.createdAt)}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Badge
-                        variant="outline"
-                        className="font-mono text-xs font-bold tracking-widest bg-muted/40 border-border/60"
-                      >
-                        {card.code}
-                      </Badge>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => handleCopyCode(card.code)}
-                        className="size-7 rounded-lg text-muted-foreground hover:text-foreground"
-                        title="Copiar Código"
-                      >
-                        <Copy className="size-3.5" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => handleCopyClaimLink(card.code)}
-                        className="size-7 rounded-lg text-primary hover:bg-primary/10"
-                        title="Copiar Link de Resgate"
-                      >
-                        <ExternalLink className="size-3.5" />
-                      </Button>
-                    </div>
+              {filteredCards.map((c: any) => (
+                <TableRow key={c.id}>
+                  <TableCell className="font-mono text-xs font-bold text-foreground">
+                    {c.code_display}
                   </TableCell>
-                  <TableCell className="text-xs font-medium text-foreground">{card.purchaserName}</TableCell>
-                  <TableCell className="text-xs text-muted-foreground font-mono">
-                    {formatMoney(card.initialBalance)}
-                  </TableCell>
-                  <TableCell className="text-xs font-bold text-foreground font-mono">
-                    {formatMoney(card.currentBalance)}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={getStatusBadge(card.status)} className="text-xs font-bold uppercase">
-                      {translateStatus(card.status)}
+                  <TableCell className="text-xs">
+                    <Badge variant={c.funding_source === "PURCHASED" ? "default" : "outline"} className="text-xs">
+                      {c.funding_source === "PURCHASED" ? "Vendido" : "Cortesia Loja"}
                     </Badge>
                   </TableCell>
+                  <TableCell className="text-xs text-foreground font-medium">
+                    {c.recipient_name}
+                  </TableCell>
+                  <TableCell className="text-xs font-mono font-bold text-foreground">
+                    {c.wz_formatted}
+                  </TableCell>
+                  <TableCell className="text-xs">
+                    <Badge variant={c.status === "active" || c.status === "delivered" ? "default" : "secondary"} className="text-xs uppercase">
+                      {c.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {new Date(c.created_at).toLocaleDateString("pt-BR")}
+                  </TableCell>
                   <TableCell className="text-right">
-                    {card.status === "active" ? (
-                      <CrudActionsMenu
-                        entityName="Vale-Presente"
-                        onDelete={() => handleCancel(card.id)}
-                        deleteConfirmTitle={`Cancelar Vale-Presente ${card.code}?`}
-                        deleteConfirmDescription="Esta ação cancelará permanentemente o saldo restante do vale-presente e invalidará o código de resgate."
-                        customActions={[
-                          {
-                            id: "copy-link",
-                            label: "Copiar Link de Resgate",
-                            icon: Copy,
-                            onClick: () => {
-                              navigator.clipboard.writeText(card.code);
-                              toast.success(`Código ${card.code} copiado!`);
-                            },
-                          },
-                        ]}
-                      />
-                    ) : (
-                      <span className="text-xs text-muted-foreground italic">—</span>
-                    )}
+                    <div className="flex items-center justify-end gap-2">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleCopyClaimLink(c.claim_token || c.id)}
+                        className="h-11 min-h-11 px-3 text-xs focus-visible:ring-2 focus-visible:ring-primary"
+                        title="Copiar Link"
+                      >
+                        <ExternalLink className="size-4" />
+                      </Button>
+                      {c.status === "active" && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleCancel(c.id)}
+                          className="h-11 min-h-11 px-3 text-xs text-destructive hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-destructive"
+                        >
+                          Cancelar
+                        </Button>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -285,12 +391,11 @@ function GiftCardsDashboardPage() {
         </div>
       )}
 
+      {/* Drawer de Emissão */}
       <NewGiftCardDrawer
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
-        onCreated={() => {
-          router.invalidate();
-        }}
+        onCreated={() => router.invalidate()}
       />
     </div>
   );

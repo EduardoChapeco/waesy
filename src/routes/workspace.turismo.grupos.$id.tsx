@@ -116,7 +116,7 @@ function WorkspaceGroupTourDetailPage() {
  return (
  <div className="py-20 text-center space-y-4">
  <h2 className="text-sm font-bold text-foreground">ExcursÃ£o nÃ£o encontrada</h2>
- <Button asChild size="sm" variant="outline" className="rounded-lg">
+ <Button asChild  variant="outline" className="rounded-lg h-11 min-h-11 px-3 text-xs">
  <Link to="/workspace/turismo/grupos">Voltar para Grupos</Link>
  </Button>
  </div>
@@ -175,7 +175,7 @@ function WorkspaceGroupTourDetailPage() {
  <Button
  asChild
  variant="outline"
- className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-9 px-4 sm:px-3 cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-11 px-4 sm:px-3 cursor-pointer"
  >
  <Link
  to={"/workspace/turismo/grupos/$id/embarque" as any}
@@ -190,7 +190,7 @@ function WorkspaceGroupTourDetailPage() {
  type="button"
  variant="outline"
  onClick={() => setMagicLinkModalOpen(true)}
- className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-9 px-4 sm:px-3 cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-11 px-4 sm:px-3 cursor-pointer"
  >
  <Link2 className="size-4 sm:size-3.5" />
  <span>Link MÃ¡gico</span>
@@ -201,7 +201,7 @@ function WorkspaceGroupTourDetailPage() {
  variant="outline"
  disabled={isExportingManifest}
  onClick={handleExportManifest}
- className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-9 px-4 sm:px-3 cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-11 px-4 sm:px-3 cursor-pointer"
  >
  <Download className="size-4 sm:size-3.5" />
  <span>{isExportingManifest ? "Gerando..." : "Manifesto ANTT (PDF)"}</span>

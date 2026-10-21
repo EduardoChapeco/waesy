@@ -367,7 +367,7 @@ export default function WorkspaceTurismoCockpitPage() {
             return (
               <div
                 key={stage.id}
-                className="bg-card border border-border/60 rounded-lg flex flex-col min-w-[260px] max-h-[calc(100vh-280px)]"
+                className="bg-card border border-border/60 rounded-lg flex flex-col min-w-64 max-h-[calc(100vh-280px)]"
               >
                 {/* Cabeçalho da Coluna */}
                 <div className="p-3 border-b border-border/40 flex items-center justify-between shrink-0">
@@ -375,7 +375,7 @@ export default function WorkspaceTurismoCockpitPage() {
                     <span className={`size-2 rounded-full ${stage.dotColor}`} />
                     <span className="text-xs font-bold text-foreground">{stage.title}</span>
                   </div>
-                  <Badge variant="outline" className="text-[10px] font-mono px-1.5 h-5">
+                  <Badge variant="outline" className="text-xs font-mono px-1.5 h-5">
                     {stageLeads.length}
                   </Badge>
                 </div>
@@ -383,7 +383,7 @@ export default function WorkspaceTurismoCockpitPage() {
                 {/* Cards da Coluna */}
                 <div className="p-2 space-y-2 overflow-y-auto flex-1">
                   {stageLeads.length === 0 ? (
-                    <div className="p-4 text-center text-[11px] text-muted-foreground border border-dashed border-border/40 rounded-lg">
+                    <div className="p-4 text-center text-xs text-muted-foreground border border-dashed border-border/40 rounded-lg">
                       Nenhum contato nesta etapa
                     </div>
                   ) : (
@@ -397,19 +397,19 @@ export default function WorkspaceTurismoCockpitPage() {
                           <span className="font-bold text-foreground truncate block">
                             {lead.full_name || "Contato sem nome"}
                           </span>
-                          <span className="font-mono text-[11px] font-semibold text-primary shrink-0">
+                          <span className="font-mono text-xs font-semibold text-primary shrink-0">
                             {formatMoney(lead.estimated_value_cents || 0)}
                           </span>
                         </div>
 
                         {lead.destination && (
-                          <div className="flex items-center gap-1.5 text-muted-foreground text-[11px]">
+                          <div className="flex items-center gap-1.5 text-muted-foreground text-xs">
                             <MapPin className="size-3 text-primary shrink-0" />
                             <span className="truncate">{lead.destination}</span>
                           </div>
                         )}
 
-                        <div className="flex items-center justify-between pt-2 border-t border-border/30 text-[11px]">
+                        <div className="flex items-center justify-between pt-2 border-t border-border/30 text-xs">
                           <span className="text-muted-foreground">
                             {lead.phone || "Sem telefone"}
                           </span>
@@ -430,7 +430,7 @@ export default function WorkspaceTurismoCockpitPage() {
                                 passenger_count: lead.pax_adults || 2,
                               });
                             }}
-                            className="h-7 px-2 text-[11px] text-primary hover:bg-primary/10 font-semibold gap-1"
+                            className="h-7 px-2 text-xs text-primary hover:bg-primary/10 font-semibold gap-1"
                           >
                             <FileText className="size-3" />
                             <span>Proposta</span>
@@ -574,19 +574,19 @@ export default function WorkspaceTurismoCockpitPage() {
             <div className="space-y-3 text-xs">
               <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-muted/30 border border-border/40">
                 <div>
-                  <span className="text-muted-foreground block text-[11px]">Telefone / WhatsApp</span>
+                  <span className="text-muted-foreground block text-xs">Telefone / WhatsApp</span>
                   <span className="font-semibold text-foreground">{selectedLead.phone || "Não informado"}</span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground block text-[11px]">E-mail</span>
+                  <span className="text-muted-foreground block text-xs">E-mail</span>
                   <span className="font-semibold text-foreground">{selectedLead.email || "Não informado"}</span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground block text-[11px]">Destino de Interesse</span>
+                  <span className="text-muted-foreground block text-xs">Destino de Interesse</span>
                   <span className="font-semibold text-foreground">{selectedLead.destination || "A definir"}</span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground block text-[11px]">Orçamento Estimado</span>
+                  <span className="text-muted-foreground block text-xs">Orçamento Estimado</span>
                   <span className="font-bold text-primary font-mono">
                     {formatMoney(selectedLead.estimated_value_cents || 0)}
                   </span>

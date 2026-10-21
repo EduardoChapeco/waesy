@@ -1147,7 +1147,7 @@ export const listCustomerTravelDossierFn = createServerFn({ method: "GET" }).han
 
     const proposalClauses: string[] = [];
     const quoteClauses: string[] = [];
-    const contractClauses: string[] = [];
+    const contractClauses: string[] = [`customer_id.eq.${identity.id}`];
 
     if (cleanEmail && cleanEmail.includes("@")) {
       proposalClauses.push(`client_email.ilike.${cleanEmail}`);
@@ -1827,4 +1827,68 @@ export const verifyTravelCertificate = createServerFn({ method: "GET" })
         error: err?.message || "Erro ao consultar a certidão de autenticidade.",
       };
     }
+  });
+
+
+// ---------------------------------------------------------------------------
+// 12. DOSSIÊ COMPLETO DO VIAJANTE (PORTAL DO PASSAGEIRO - ZERO MOCKS)
+// ---------------------------------------------------------------------------
+export const getTravelerTripPortalDossier = createServerFn({ method: "GET" })
+  .validator(z.object({ tripIdOrCode: z.string().min(1) }))
+  .handler(async ({ data: { tripIdOrCode } }) => {
+    const supabase = getServerClient();
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tripIdOrCode);
+
+    let query = supabase.from("tourism_trips").select("*, stores(id, name, logo_url, phone, settings)");
+    if (isUuid) {
+      query = query.eq("id", tripIdOrCode);
+    } else {
+      query = query.or(`trip_number.eq.${tripIdOrCode},id.eq.${tripIdOrCode}`);
+    }
+
+    const { data: trip, error } = await query.maybeSingle();
+    if (error || !trip) {
+      return null;
+    }
+
+    const [paxRes, confRes, vouchersRes, boletosRes, docsRes, incidentsRes, changesRes] = await Promise.all([
+      supabase.from("trip_passengers").select("*").eq("trip_id", trip.id).order("created_at"),
+      supabase.from("trip_confirmation_items").select("*").eq("trip_id", trip.id).order("service_date", { ascending: true }),
+      supabase.from("tourism_vouchers").select("*").eq("trip_id", trip.id).order("created_at", { ascending: false }),
+      supabase.from("travel_trip_installment_boletos").select("*").eq("trip_id", trip.id).order("installment_number"),
+      supabase.from("travel_trip_official_documents").select("*").eq("trip_id", trip.id).order("created_at"),
+      supabase.from("tourism_incident_tickets").select("*").eq("trip_id", trip.id).order("created_at", { ascending: false }),
+      supabase.from("travel_flight_change_cases").select("*").eq("trip_id", trip.id).order("created_at", { ascending: false }),
+    ]);
+
+    const storeObj = (trip.stores as any) || {};
+    const storeSettings = storeObj.settings || {};
+
+    return {
+      trip: {
+        ...trip,
+        flights: trip.flights || [],
+        hotels: trip.hotels || [],
+        transfers: trip.transfers || [],
+        tours: trip.tours || [],
+        insurance: trip.insurance || {},
+        itinerary: trip.itinerary || [],
+        rooms: trip.rooms || [],
+        includes: trip.includes || [],
+        excludes: trip.excludes || [],
+      },
+      passengers: paxRes.data || [],
+      confirmationItems: confRes.data || [],
+      vouchers: vouchersRes.data || [],
+      boletos: boletosRes.data || [],
+      officialDocuments: docsRes.data || [],
+      incidents: incidentsRes.data || [],
+      flightChanges: changesRes.data || [],
+      agency: {
+        id: trip.store_id,
+        name: storeObj.name || trip.operator_name || "Agência de Viagens Waesy",
+        logo_url: storeObj.logo_url || null,
+        phone: storeSettings.whatsapp_phone || storeSettings.phone || storeObj.phone || "+55 (49) 99999-1372",
+      },
+    };
   });
