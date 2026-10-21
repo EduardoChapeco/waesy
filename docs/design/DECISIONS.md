@@ -1,5 +1,48 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-286: Remediação End-to-End do Domínio de Pacotes de Aulas e Serviços, Direitos de Uso (Entitlements) e Conciliação Auditável de Créditos
+- **Data:** 2026-10-21
+- **Contexto:** Auditoria profunda e refatoração completa do módulo Pacotes de Aulas e Serviços (`_store.conta.pacotes` e `workspace.pacotes`):
+  1. O módulo tratava aquisições de pacotes como um mero contador ingênuo (`remaining_credits = 7`), sem modelagem de direitos de uso (entitlements) e sem separação de créditos disponíveis vs reservados.
+  2. A compra direta emitia um passe desvinculado de pedidos comerciais (`orders`), gerando descasamento no faturamento e histórico de compras da conta do usuário.
+  3. Faltava imutabilidade contratual: se o prestador alterasse o título, preço ou serviço do pacote no catálogo após a venda, o passe do comprador sofria mutação retroativa indevida.
+  4. Faltava interface no painel do prestador (`workspace.pacotes`) para acompanhamento dos passes ativos emitidos aos clientes, histórico de auditoria (ledger) e ajustes manuais com justificativa obrigatória.
+  5. Não havia mecanismo de cancelamento tempestivo com restituição automática de créditos na visualização do cliente nem procedimento auditado de no-show pelo prestador.
+- **Decisão:**
+  1. **Modelagem de Direito de Uso & Snapshot Imutável (EARS-01 / EARS-02):** Todo passe emitido armazena agora `package_snapshot` congelando título, descrição, serviço vinculado, duração, preço contratado, validade e total de créditos no momento exato do pagamento, amarrado a um `order_id` comercial real.
+  2. **Diferenciação Estrita entre Créditos Disponíveis, Reservados e Consumidos (EARS-03):** O BFF e a interface conciliam os 4 contadores em tempo real: contratadas, livres para novo agendamento, reservadas em sessões futuras ativas e realizadas (com check-in ou status completed).
+  3. **Cancelamento Tempestivo & Gestão de No-Show (EARS-04 / EARS-05):** Inclusão de cancelamento de aula diretamente no card do passe com estorno imediato de crédito ao saldo e procedures pessimistas no banco para no-show com penalidade ou cortesia.
+  4. **Workspace Completo do Prestador (EARS-06):** Bifurcação em 3 abas canônicas: (1) `Pacotes Cadastrados`, (2) `Passes de Clientes` (com status e validade) e (3) `Extrato de Auditoria (Ledger)` unificado, acompanhado de modal de ajuste manual de saldo com justificativa obrigatória.
+  5. **Bifurcação Mobile Native vs Desktop System App (EARS-07 / Apple HIG):**
+     - Mobile: `NativeMobileHeader` sticky, cards verticais em squircle `rounded-xl`, alvos de toque 44px (`h-11 min-h-11`), erradicação de `truncate` por `break-words text-wrap leading-tight` (B.38) e proteção anti-jank.
+     - Desktop: Layout widescreen (`max-w-5xl mx-auto`), 4 KPIs canônicos (Passes Ativos, Créditos Livres, Aulas Reservadas, Aulas Concluídas), filtros em linha única contínua (B.39) e atalho de suporte contextual para `/u/suporte`.
+  6. **Evidência de Qualidade:** Suíte automatizada `service-packages-and-passes-end-to-end.test.ts` com 7 testes unitários aprovados com 100% de sucesso e catraca de design lint ratcheted com zero violações em relação à baseline congelada.
+- **Fundamentação:** AGENTS.md B.1 a B.45; B.22, B.25, B.26, B.38, B.39; SPEC-PACOTES-SERVICOS-END-TO-END-REMEDIATION.md.
+- **Consequências:** Eliminação total de divergências de saldo entre cliente e lojista, garantia de imutabilidade contratual pós-compra e conformidade plena com as regras de design e persistência do ecossistema Waesy.
+
+
+
+## DEC-285: Centro Operacional de Pagamentos, Faturas Comerciais, Recebimento Pix Dinâmico e Desacoplamento da Projeção de Finanças
+- **Data:** 2026-10-21
+- **Contexto:** Auditoria profunda e refatoração completa do módulo Pagamentos (`_store.conta.pagamentos`):
+  1. O módulo atuava com visão fragmentada e superficial, limitando-se a pedidos de e-commerce e carnês, ignorando pagamentos de Waesy Go (corridas/fretes), ingressos, reservas de turismo, transferências P2P e cobranças Pix avulsas.
+  2. O empty state *"Nenhum histórico de pagamento ou cobrança"* mascarava falhas de rede e erros internos (`catch(() => [])`), convertendo exceções silenciosamente em lista vazia.
+  3. A aba de Pix limitava-se a gravar um JSON em `profiles.pix_settings`, sem gerar payload EMV/BACEN real, sem QR Code estático ou dinâmico com valor, e sem código Copia e Cola funcional.
+  4. Faturas eram apresentadas sem discriminação comercial, sem cálculo de juros/multas contratuais pro-rata die e sem opção de quitação via Pix.
+  5. Faltava rastreabilidade bidirecional entre o pagamento operacional, a entidade geradora (pedido, corrida, carnê) e o comprovante digital oficial assinado via HMAC-SHA256 (`financial_receipts`).
+- **Decisão:**
+  1. **Separação Canônica Pagamentos (Operacional) vs Finanças (Analítico):** Pagamentos passa a ser a fonte operacional estrita de movimentações financeiras (`payment_charges`, `payments`, `payment_refunds`), enquanto Finanças permanece como a projeção analítica consolidada do extrato.
+  2. **Unificação de 8 Verticais no Histórico Operacional:** Ingestão de pedidos de catálogo (`order`), Waesy Go (`mobility_trip`), carnês (`carne_installment`), ingressos (`ticket`), turismo (`tourism_booking`), transferências P2P (`p2p_transfer`) e cobranças Pix (`pix_charge`) com discriminação de valores, status comercial e links bidirecionais.
+  3. **Estúdio Soberano de Recebimento Pix (Estático e Dinâmico):**
+     - Geração instantânea de QR Code vetorial e Copia e Cola EMV padrão BACEN (com CRC16-CCITT) via `generateQrCodeDataUri` 100% offline (sem APIs de terceiros).
+     - Criador de cobrança Pix dinâmica com valor embutido (sub-campo 54) e persistência atômica via `create_dynamic_pix_charge_atomic`.
+  4. **Faturas Comerciais Estruturadas:** Listagem de cobranças agrupadas com cálculo de multa de 2% e juros diários pro-rata de 1% a.m. para vencimentos ultrapassados e botão de quitação imediata via Pix.
+  5. **Comprovantes Oficiais Criptografados:** Modal de comprovante com verificação de assinatura HMAC-SHA256 inviolável e código de autenticação único.
+  6. **Ergonomia e Design System:** Reorganização em 4 abas canônicas em linha única contínua (`[ Histórico ]`, `[ Faturas ]`, `[ Receber Pix ]`, `[ Métodos & Saldo ]`), alvos táteis mínimos de 44px (`h-11 min-h-11`), tratamento defensivo de erro explícito com botão de retry e 0 violações P0/P1.
+  7. **Evidência Automatizada:** Suíte `payments-operational-end-to-end.test.ts` com 9 testes cobrindo geração BACEN, cálculo de faturas, verificação HMAC e idempotência de transições; aprovada no Vitest com 100% de sucesso.
+- **Fundamentação:** AGENTS.md B.1 a B.45; B.4 (DL-01 a DL-30); SPEC-PAGAMENTOS-OPERACIONAL-END-TO-END.md.
+- **Consequências:** Módulo Pagamentos consolidado como centro operacional confiável, transparente e inviolável da plataforma Waesy.
+
 ## DEC-284: Auditoria Forense End-to-End e Bifurcação Canônica Mobile Native App vs Desktop System App nos Módulos Pedidos e Carnês (Anti-Jank / Anti-Sanfona / Anti-Truncate)
 - **Data:** 2026-10-21
 - **Contexto:** Auditoria forense e saneamento integral dos módulos Pedidos (`_store.conta.pedidos.index`, `_store.conta.pedidos.$id`) e Carnês (`_store.conta.carnes`):
@@ -36,6 +79,8 @@
   3. **Design System & Ergonomia Bidirecional:**
      - Telas bifurcadas: Mobile Native App (< 840px) e Desktop System App (>= 840px), eliminando saltos de layout e efeito sanfona.
      - Régua de abas em linha única contínua (`flex flex-nowrap overflow-x-auto no-scrollbar`) conforme B.39.
+     - Particionamento trifurcado estritamente MECE entre abas (Agora, Agendados, Histórico e Caronas) sem sobreposição ou duplicação residual de itens.
+     - Erradicação de AI-smell e retórica conversacional em cabeçalhos e empty states (substituição de perguntas retóricas por rótulos diretos e objetivos).
      - Cards squircles com raio canônico `rounded-lg` e textos sem truncamento (`break-words text-wrap leading-tight`).
      - Alvos de toque estritamente conformes com o piso de 44px (`h-11 min-h-11`) e anéis de foco `:focus-visible:ring-2`.
   4. **Persistência e Backend Server Functions:**
