@@ -3,7 +3,7 @@ import { getLegalDocumentBySlug } from "@/services/legal.functions";
 import { LegalDocumentViewer } from "@/components/legal/legal-document-viewer";
 
 const DEFAULT_TROCAS = {
-  title: "Políticas de Trocas, Devoluções e Cancelamentos (RMA)",
+  title: "Políticas de Trocas, Devoluções e Reembolsos",
   slug: "trocas-e-devolucoes",
   version: "2.1",
   summary:
@@ -11,9 +11,9 @@ const DEFAULT_TROCAS = {
   content_markdown: `## 1. Direito de Arrependimento (CDC Art. 49)
 Para compras realizadas pela internet ou aplicativo, você tem o direito de desistir da compra em até **7 (sete) dias corridos**, contados a partir da data de recebimento do produto. O reembolso será efetuado integralmente, incluindo eventuais valores de frete pagos.
 
-## 2. Como Solicitar uma Troca ou Devolução (RMA)
+## 2. Como Solicitar uma Troca ou Devolução
 Você pode abrir uma solicitação em menos de 1 minuto diretamente pelo seu painel:
-1. Acesse **Minha Conta > Trocas e Devoluções (RMA)**;
+1. Acesse **Minha Conta > Trocas e Devoluções**;
 2. Selecione o pedido e o produto que deseja trocar ou devolver;
 3. Informe o motivo e anexe fotos se houver alguma avaria visível;
 4. Aguarde a emissão da etiqueta de postagem reversa ou agendamento de coleta.

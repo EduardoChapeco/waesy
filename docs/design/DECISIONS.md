@@ -1,5 +1,42 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-289: Consolidação End-to-End de Pós-Venda (Trocas, Devoluções, Garantias e Reembolsos), Erradicação de Jargões Internos (RMA) e Blindagem de Dados Forenses
+- **Data:** 2026-10-21
+- **Contexto:** Auditoria profunda e refatoração completa do ecossistema de pós-venda comercial (`_store.conta.trocas`, `_store.trocas-e-devolucoes`, `rma.functions.ts` e `workspace.pedidos.trocas.tsx`):
+  1. A interface do cliente exibia jargões técnicos herméticos ("RMA", "Logística Reversa", "Nenhum processo de RMA ativo", "disposition"), violando a linguagem comercial esperada pelo consumidor final.
+  2. Risco crítico de vazamento de dados internos (EARS-04): laudos periciais (`[LAUDO_PERICIAL]`), notas sigilosas da equipe do lojista e scores de suspeita de fraude podiam vazar para respostas de endpoints acessados pelo cliente caso armazenados juntos no campo de notas.
+  3. Faltava amarração nativa com pedidos reais (`orders`) e itens (`order_items`), permitindo devoluções parciais por item com quantidades específicas.
+  4. Falta de filtros segmentados por status de ciclo de vida (Todos, Em Andamento, Concluídas, Recusadas) e modal com motivo explícito para cancelamento voluntário pelo próprio cliente.
+  5. Desalinhamento entre os dados exibidos no portal B2C do cliente e a visão operacional do lojista no Workspace (`workspace.pedidos.trocas.tsx`).
+- **Decisão:**
+  1. **Linguagem 100% Comercial e Erradicação de Jargões (EARS-01):** Extinção do termo "RMA" da interface civil. A página pública e do consumidor adotam títulos e mensagens amigáveis: *"Trocas • Devoluções • Garantias • Reembolsos • Acompanhar Solicitação"*. O empty state comunica claramente: *"Nenhuma solicitação em andamento. Suas trocas, devoluções e solicitações de garantia aparecerão aqui."*
+  2. **Blindagem e Segregação de Dados Internos (Zero-Leaking / EARS-04):** No BFF `rma.functions.ts`, o parser `parseCustomerSafeNotes` expurga deterministicamente qualquer bloco `[LAUDO_PERICIAL]`, scores antifraude e notas confidenciais de atendentes, garantindo que o DTO do cliente contenha unicamente observações legítimas do consumidor e links de evidência fotográfica.
+  3. **Amarração Estrita com Pedidos e Itens Reais (EARS-02 / EARS-03):** Solicitações vinculadas a `orders` e itens `order_items` com validação de quantidades (1..N comprados), motivos comerciais canônicos e upload/anexo seguro de fotos de avaria.
+  4. **Filtros Segmentados e Cancelamento Voluntário (EARS-05 / EARS-06):** Barra de abas com 4 visões (`todos`, `andamento`, `concluidas`, `rejeitadas`), timeline visual com 4 passos do ciclo de vida comercial e modal de cancelamento de solicitações elegíveis (`pending`, `authorized`).
+  5. **Sincronização Bidirecional com o Workspace (EARS-07):** `workspace.pedidos.trocas.tsx` e `exchanges.functions.ts` sincronizados com as solicitações da tabela `rma_requests`, suportando resolução via estorno (`refund`) ou vale-compras (`store_credit` via RPC atômica).
+  6. **Design System & Acessibilidade:** Botões e alvos de toque com altura mínima de 44px (`h-11 min-h-11`), zero `truncate` nos títulos de produtos e pedidos, anéis de foco `:focus-visible:ring-2` e conformidade WCAG 2.2 AA.
+  7. **Evidência Automatizada:** Suíte `after-sales-and-exchanges-end-to-end.test.ts` (12 testes passando 100%), `customer-orders-end-to-end.test.ts` (10 testes) e Design Lint ratcheted com 0 regressões.
+- **Fundamentação:** AGENTS.md B.1 a B.45; B.8, B.9, B.11, B.14, B.22, B.25, B.26, B.33, B.38; SPEC-TROCAS-DEVOLUCOES-REEMBOLSOS-END-TO-END.md; WCAG 2.2 AA.
+- **Consequências:** Domínio de trocas e devoluções seguro, 100% comercial e acessível para os clientes, com proteção integral de dados confidenciais do lojista e sincronização atômica entre consumidor e Workspace.
+
+## DEC-288: Reengenharia End-to-End do Orquestrador Minhas Viagens, Auditoria dos 4 Contadores Semânticos, QR Code Offline Soberano e Desacoplamento de Rotas
+- **Data:** 2026-10-21
+- **Contexto:** Auditoria forense e funcional no módulo Minhas Viagens (`_store.conta.viagens.tsx` e `travel-lifecycle.functions.ts`):
+  1. A promessa da plataforma "Suas reservas, vouchers de embarque, propostas e contratos de qualquer agência credenciada aparecerão automaticamente aqui" exigia orquestração integral de dados reais de múltiplos tenants/agências, sem contadores sintéticos ou dados fake.
+  2. Discrepância semântica potencial nos 4 contadores de KPI ("Reservas Ativas", "Confirmadas", "Propostas & Cotações", "Contratos"): cliques nos cards não aplicavam filtro correspondente 1:1 na listagem, e cancelados/expirados eram computados indevidamente em certas views.
+  3. Falsos Empty States: falhas parciais de rede ou query engoliam resultados e exibiam "Nenhuma viagem reservada" de forma enganosa (Item 106).
+  4. Dependência externa arriscada para exibição de voucher QR Code: uso de `api.qrserver.com`, vazando dados do passageiro para serviço de terceiros e quebrando em modo offline.
+  5. Desconflito de rotas: contratos apontavam erroneamente para `/viajante/$token` (ficha pré-embarque) em vez de `/contrato/$token` (canvas de assinatura eletrônica).
+- **Decisão:**
+  1. **4 Filtros Interativos 1:1:** Os 4 cartões de métricas atuam como botões interativos (`h-11 min-h-11`) que filtram a lista com correspondência estrita (Ativas, Confirmadas, Propostas/Cotações, Contratos).
+  2. **Resiliência a Falhas & Empty States Contextuais:** Substituição de `try/catch` opaco por `Promise.allSettled`, exibindo alerta de retry e estados vazios com CTAs contextuais ("Avaliar Propostas Pendentes" quando viagens = 0 mas propostas > 0).
+  3. **QR Code Offline Soberano (Item 39):** Geração local de SVG vetorial Data URI via `uqr` (`@/lib/qr-code`), garantindo funcionamento 100% offline e sem vazamento de dados de passageiros para APIs externas em `_store.conta.viagens.tsx`, `viajante.carteira.tsx` e `voucher-boarding-card.tsx`.
+  4. **Roteamento Canônico & Carteira do Viajante:** Desacoplamento estrito de rotas públicas: `/contrato/$token` para assinatura de contrato com fé pública, `/proposta/$token` para aprovação comercial, `/viajante/$token` para formulário pré-embarque de passageiro e `/viajante/viagem/$id` para dossiê operacional. Na carteira (`viajante.carteira.tsx`), alvos de toque elevados a 44px (`h-11 min-h-11`) e suporte a apresentação em tela cheia com QR vetorial offline.
+  5. **Design System & Acessibilidade:** Botões >= 44px (`h-11 min-h-11`), anéis `:focus-visible`, régua contínua horizontal sem scrollbar (B.39), sem classes de colchetes arbitrários e conformidade WCAG 2.2 AA.
+  6. **Evidência Automatizada:** Suíte `customer-trips-orchestrator.test.ts` (8 testes), `infotravel-connector-contract.test.ts` (7 testes), `corporate-travel-os.test.ts` (7 testes), `travel-ecosystem-engines.test.ts` (6 testes) e `travel-pipeline-e2e.test.ts` (12 testes) — 40 testes com 100% de aprovação. Build de produção aprovado (`npm run build`) com Exit Code 0.
+- **Fundamentação:** AGENTS.md B.1 a B.45; B.8, B.9, B.11, B.14, B.22, B.25, B.26, B.38, B.39; WCAG 2.2 AA.
+- **Consequências:** Orquestrador da jornada do viajante completamente integrado, auditável e resiliente, sem dados fake, sem dependências externas de QR e com roteamento confiável.
+
 ## DEC-287: Serviço Central de Identidade Geográfica e Logística (Meus Endereços / Address Platform), Snapshots Transacionais Imutáveis e Zero-Amnésia de Checkout
 - **Data:** 2026-10-21
 - **Contexto:** Auditoria profunda e refatoração completa do módulo Meus Endereços (`_store.conta.enderecos`, `addresses.functions`, `_store.checkout`):
@@ -196,7 +233,7 @@
   6. **Reconciliação do Ciclo de Vida (`classifieds.functions.ts`):** Ao marcar como vendido (`completed`), o anúncio é desativado de impulsionamento (`is_boosted = false`, `boosted_until = null`), prevenindo cobranças futuras e gravando evento de conversão com reconciliação auditável.
   7. **Alerta de Gateway Comercial e Resiliência Visual:** Mensagem técnica substituída por aviso comercial amigável; imagens protegidas por fallback `onError` com renderização de squircle neutro garantindo CLS nulo e zero visual de imagem quebrada.
 - **Fundamentação:** AGENTS.md B.1 a B.41, B.4 (DL-01 a DL-30), B.8, B.9, B.14, B.15, B.22, B.25, B.33, B.36, B.38; WCAG 2.2 AA; SPEC-MEUS-ANUNCIOS-PERFORMANCE.md.
-- **Consequências:** Meus Anúncios transformado em cockpit de crescimento e inteligência de vendas; zero quebras visuais e paridade com as melhores práticas de marketplaces globais; 8 testes unitários aprovados com 100% de sucesso.
+- **Consequências:** Meus Anúncios transformado em cockpit de crescimento e inteligência de vendas; cockpit macro consolidado da conta (`/conta/classificados/performance`); zero quebras visuais e paridade com as melhores práticas de marketplaces globais; erradicação total de `truncate` nos cards e painéis; 10 testes unitários aprovados com 100% de sucesso; 0 violações de Design Lint em todos os arquivos tocados.
 
 ## DEC-278: Reengenharia End-to-End do Módulo Pedidos e Histórico, Rastreamento em Tempo Real, Linha do Tempo Visual e Ações Soberanas do Cliente
 - **Data:** 2026-10-21

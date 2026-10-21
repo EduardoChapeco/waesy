@@ -1,55 +1,66 @@
 import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { formatMoney } from "@/lib/money";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { EmptyState } from "@/components/state/states";
-import { listCustomerRmas, requestCustomerRma } from "@/services/rma.functions";
+import {
+  listCustomerAfterSales,
+  createCustomerAfterSalesRequest,
+  cancelCustomerAfterSalesRequest,
+  CustomerAfterSalesRequestDTO,
+} from "@/services/rma.functions";
 import { listCustomerOrders } from "@/services/order.functions";
-import { RefreshCw, Package, Truck, FileText, Plus, ArrowRight, CheckCircle2, Clock, AlertCircle, X, Loader2, HelpCircle, ShieldCheck, ShieldAlert, Camera, ExternalLink } from "lucide-react";
+import {
+  RefreshCw,
+  Package,
+  Truck,
+  FileText,
+  Plus,
+  ArrowRight,
+  CheckCircle2,
+  Clock,
+  AlertCircle,
+  X,
+  Loader2,
+  HelpCircle,
+  ShieldCheck,
+  Camera,
+  ExternalLink,
+  ChevronRight,
+  Undo2,
+} from "lucide-react";
 import { formatDate } from "@/lib/datetime";
 import { toast } from "sonner";
 import { extractMediaFromClipboard } from "@/lib/clipboard-media";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_store/conta/trocas")({
-  head: () => ({ meta: [{ title: "Trocas | Waesy" }] }),
+  head: () => ({ meta: [{ title: "Trocas e Devoluções | Waesy" }] }),
   loader: async () => {
     try {
-      const [rmas, orders] = await Promise.all([
-        listCustomerRmas().catch(() => []),
+      const [requests, orders] = await Promise.all([
+        listCustomerAfterSales().catch(() => []),
         listCustomerOrders().catch(() => []),
       ]);
       return {
-        rmas: rmas || [],
+        requests: requests || [],
         orders: orders || [],
       };
     } catch (err) {
       console.error("[loader:_store.conta.trocas] Unhandled error:", err);
-      return { rmas: [], orders: [] };
+      return { requests: [], orders: [] };
     }
   },
-  component: CustomerRmaPage,
+  component: CustomerAfterSalesPage,
 });
 
-const STATUS_LABELS: Record<string, string> = {
-  pending: "Aguardando Análise",
-  authorized: "Aguardando Envio",
-  shipped_back: "Em Trânsito",
-  received: "Recebido pela Loja",
-  inspected: "Em Inspeção",
-  resolved: "Resolvido",
-  rejected: "Recusado",
-};
-
-const STATUS_VARIANTS: Record<
-  string,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
+const STATUS_VARIANTS: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
   pending: "secondary",
   authorized: "default",
   shipped_back: "outline",
@@ -57,33 +68,53 @@ const STATUS_VARIANTS: Record<
   inspected: "secondary",
   resolved: "default",
   rejected: "destructive",
+  cancelled: "secondary",
 };
 
-const TYPE_LABELS: Record<string, string> = {
-  return: "Devolução",
-  exchange: "Troca",
-  warranty: "Garantia",
-};
-
-function CustomerRmaPage() {
-  const { rmas, orders } = Route.useLoaderData() as { rmas: any[]; orders: any[] };
+function CustomerAfterSalesPage() {
+  const { requests, orders } = Route.useLoaderData() as {
+    requests: CustomerAfterSalesRequestDTO[];
+    orders: any[];
+  };
   const router = useRouter();
 
+  const [filterTab, setFilterTab] = useState<"todos" | "andamento" | "concluidas" | "rejeitadas">("todos");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [cancelModalRequestId, setCancelModalRequestId] = useState<string | null>(null);
 
   // Form State
   const [selectedOrderId, setSelectedOrderId] = useState<string>("");
-  const [rmaType, setRmaType] = useState<string>("return");
-  const [reason, setReason] = useState<string>("Arrependimento de compra (Art. 49 CDC)");
+  const [requestType, setRequestType] = useState<"return" | "exchange" | "warranty">("return");
+  const [selectedItemIds, setSelectedItemIds] = useState<Record<string, number>>({});
+  const [reason, setReason] = useState<string>("Tamanho ou modelo incompatível");
   const [notes, setNotes] = useState<string>("");
   const [claimPhotoUrl, setClaimPhotoUrl] = useState<string>("");
   const [claimPhotoBase64, setClaimPhotoBase64] = useState<string>("");
   const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const selectedOrder = orders.find((o) => o.id === selectedOrderId);
+  const selectedOrder = useMemo(() => {
+    return orders.find((o) => o.id === selectedOrderId);
+  }, [orders, selectedOrderId]);
 
+  // Filtro de solicitações
+  const filteredRequests = useMemo(() => {
+    return requests.filter((r) => {
+      if (filterTab === "andamento") {
+        return ["pending", "authorized", "shipped_back", "received", "inspected"].includes(r.status);
+      }
+      if (filterTab === "concluidas") {
+        return r.status === "resolved";
+      }
+      if (filterTab === "rejeitadas") {
+        return r.status === "rejected" || r.status === "cancelled";
+      }
+      return true;
+    });
+  }, [requests, filterTab]);
+
+  // Manipulação de imagem da evidência (EARS-03)
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -105,7 +136,7 @@ function CustomerRmaPage() {
       setClaimPhotoBase64(base64);
       setPreviewPhoto(base64);
       setClaimPhotoUrl("");
-      toast.success("Foto da avaria anexada com sucesso!");
+      toast.success("Foto do produto anexada!");
     };
     reader.onerror = () => toast.error("Falha ao ler arquivo de imagem.");
   };
@@ -122,7 +153,7 @@ function CustomerRmaPage() {
         setClaimPhotoBase64(base64);
         setPreviewPhoto(base64);
         setClaimPhotoUrl("");
-        toast.success("Foto colada da área de transferência (Ctrl+V)!");
+        toast.success("Foto colada da área de transferência!");
       };
     }
   };
@@ -138,18 +169,8 @@ function CustomerRmaPage() {
         setClaimPhotoBase64(base64);
         setPreviewPhoto(base64);
         setClaimPhotoUrl("");
-        toast.success("Foto da avaria anexada via arrastar e soltar!");
+        toast.success("Foto anexada via arrastar e soltar!");
       };
-    }
-  };
-
-  const handleUrlChange = (url: string) => {
-    setClaimPhotoUrl(url);
-    if (url.trim().startsWith("http")) {
-      setPreviewPhoto(url.trim());
-      setClaimPhotoBase64("");
-    } else if (!url.trim() && !claimPhotoBase64) {
-      setPreviewPhoto(null);
     }
   };
 
@@ -162,275 +183,361 @@ function CustomerRmaPage() {
     }
   };
 
-  const handleSubmitRma = async (e: React.FormEvent) => {
+  const handleSubmitRequest = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedOrderId) {
-      toast.error("Selecione um pedido para solicitar a devolução ou troca.");
+      toast.error("Selecione um pedido para solicitar a troca ou devolução.");
       return;
     }
 
     setIsSubmitting(true);
     try {
       // Itens do pedido selecionado
-      const items = (selectedOrder?.items || []).map((it: any) => ({
-        order_item_id: it.id || it.product_id,
-        qty: it.quantity || 1,
-        reason: reason,
-      }));
+      const orderItems = selectedOrder?.items || selectedOrder?.order_items || [];
+      const itemsPayload =
+        orderItems.length > 0
+          ? orderItems.map((it: any) => ({
+              order_item_id: it.id || it.product_id,
+              qty: selectedItemIds[it.id] || it.quantity || 1,
+              reason,
+            }))
+          : [
+              {
+                order_item_id: selectedOrderId,
+                qty: 1,
+                reason,
+              },
+            ];
 
-      // Se o pedido não tiver itens detalhados no schema simplificado, enviamos um item base
-      const finalItems = items.length > 0 ? items : [
-        {
-          order_item_id: selectedOrderId,
-          qty: 1,
-          reason: reason,
-        }
-      ];
-
-      await requestCustomerRma({
+      await createCustomerAfterSalesRequest({
         data: {
           orderId: selectedOrderId,
-          type: rmaType,
-          items: finalItems,
+          type: requestType,
+          reason,
           notes: notes.trim() || undefined,
           claimPhotoUrl: claimPhotoUrl.trim() || undefined,
           claimPhotoBase64: claimPhotoBase64 || undefined,
+          items: itemsPayload,
         },
       });
 
-      toast.success("Solicitação de RMA aberta com sucesso! Acompanhe o status aqui.");
+      toast.success("Solicitação enviada com sucesso! Acompanhe o status por aqui.");
       setIsModalOpen(false);
       setSelectedOrderId("");
       setNotes("");
       handleClearPhoto();
       router.invalidate();
     } catch (err: any) {
-      toast.error(err?.message || "Não foi possível abrir a solicitação de RMA.");
+      toast.error(err?.message || "Não foi possível enviar sua solicitação.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const handleCancelRequest = async (requestId: string) => {
+    try {
+      await cancelCustomerAfterSalesRequest({ data: { requestId } });
+      toast.success("Solicitação cancelada com sucesso.");
+      setCancelModalRequestId(null);
+      router.invalidate();
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao cancelar solicitação.");
+    }
+  };
+
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-6 pb-24 px-0 sm:px-4 md:px-0">
-      {/* ── 1. Header Apple HIG Minimalista ── */}
-      <NativeMobileHeader title="Trocas" fallbackHref="/conta" mobileOnly />
+    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-safe pb-24 px-0 sm:px-4 md:px-0 animate-in fade-in duration-200">
+      {/* ── 0. Native Mobile Header (<768px) ── */}
+      <NativeMobileHeader
+        title="Trocas e Devoluções"
+        fallbackHref="/conta"
+        mobileOnly
+        rightActions={
+          <Button
+            size="sm"
+            onClick={() => setIsModalOpen(true)}
+            className="rounded-lg h-11 min-h-11 px-3 text-xs font-bold gap-1 bg-foreground text-background hover:bg-foreground/90 shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <Plus className="size-4" />
+            <span>Nova</span>
+          </Button>
+        }
+      />
+
+      {/* ── 1. Desktop Inpage Header (>=768px) ── */}
       <div className="hidden md:flex items-center justify-between gap-4 border-b border-border/40 pb-5 pt-2">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-              Trocas
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+              Trocas e Devoluções
             </h1>
-            {rmas && rmas.length > 0 && (
-              <Badge variant="secondary" className="text-xs font-mono font-bold px-3 py-1 rounded-full">
-                {rmas.length}
+            {requests.length > 0 && (
+              <Badge variant="secondary" className="text-xs font-mono font-bold px-2.5 py-1 rounded-full">
+                {requests.length}
               </Badge>
             )}
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Acompanhe a logística reversa, estornos e solicitações de garantia dos seus pedidos.
+            Acompanhe trocas, devoluções, garantias e reembolsos das suas compras em um só lugar.
           </p>
         </div>
 
         <Button
           size="default"
-          onClick={() => setIsModalOpen(true)} /* focus-visible:ring-2 */
-          className="rounded-lg h-11 px-5 text-sm font-semibold gap-2 bg-foreground text-background hover:bg-foreground/90 shrink-0 shadow-xs cursor-pointer"
+          onClick={() => setIsModalOpen(true)}
+          className="rounded-lg h-11 min-h-11 px-5 text-xs font-semibold gap-2 bg-foreground text-background hover:bg-foreground/90 shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
         >
           <Plus className="size-4" />
-          <span>Solicitar</span>
+          <span>Nova Solicitação</span>
         </Button>
       </div>
 
-      {/* ── 2. Lista de Solicitações no padrão Apple HIG Grouped Cards ── */}
-      {rmas.length === 0 ? (
-        <div className="rounded-lg border border-border/70 bg-card p-10 sm:p-14 text-center space-y-4 shadow-xs">
-          <div className="size-14 rounded-lg bg-muted text-muted-foreground flex items-center justify-center mx-auto">
-            <RefreshCw className="size-7" />
-          </div>
-          <div className="max-w-md mx-auto space-y-2">
-            <h2 className="text-lg font-bold text-foreground">Nenhuma troca ativa</h2>
-            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-              Você não possui nenhum processo de RMA ativo. Se você recebeu um produto e precisa trocar de tamanho, se arrependeu ou notou alguma avaria, solicite abaixo.
-            </p>
-          </div>
-          <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
-            <Button
-              onClick={() => setIsModalOpen(true)} /* focus-visible:ring-2 */
-              className="h-11 rounded-lg px-6 text-sm font-semibold cursor-pointer"
-            >
-              <Plus className="size-4 mr-2" />
-              Solicitar Troca
-            </Button>
-            <Button asChild variant="outline" className="h-11 rounded-lg px-5 text-sm font-semibold cursor-pointer">
-              <Link to="/conta/pedidos">Pedidos</Link>
-            </Button>
-          </div>
+      {/* ── 2. Segmented Tabs Filter (B.39 - Linha Única Horizontal) ── */}
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar px-2 sm:px-0">
+        {(["todos", "andamento", "concluidas", "rejeitadas"] as const).map((tab) => (
+          <button
+            key={tab}
+            type="button"
+            onClick={() => setFilterTab(tab)}
+            className={cn(
+              "h-11 min-h-11 px-4 rounded-lg text-xs font-bold whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-primary capitalize cursor-pointer",
+              filterTab === tab
+                ? "bg-foreground text-background"
+                : "bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground",
+            )}
+          >
+            {tab === "todos"
+              ? "Todas as Solicitações"
+              : tab === "andamento"
+              ? "Em Andamento"
+              : tab === "concluidas"
+              ? "Concluídas"
+              : "Rejeitadas / Canceladas"}
+          </button>
+        ))}
+      </div>
+
+      {/* ── 3. Lista de Solicitações (Apple HIG Grouped Cards) ── */}
+      {filteredRequests.length === 0 ? (
+        <div className="px-2 sm:px-0">
+          <EmptyState
+            title="Nenhuma solicitação em andamento"
+            description="Quando você pedir uma troca, devolução ou garantia de um produto, poderá acompanhar todo o processo por aqui."
+            action={
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <Button
+                  onClick={() => setIsModalOpen(true)}
+                  className="h-11 min-h-11 rounded-lg px-6 text-xs font-bold bg-foreground text-background hover:bg-foreground/90 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <Plus className="size-4 mr-2" />
+                  Nova Solicitação
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="h-11 min-h-11 rounded-lg px-5 text-xs font-bold border-border cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <Link to="/conta/pedidos">Ver Meus Pedidos</Link>
+                </Button>
+              </div>
+            }
+          />
         </div>
       ) : (
-        <div className="space-y-4">
-          {rmas.map((rma: any) => (
+        <div className="space-y-4 px-2 sm:px-0">
+          {filteredRequests.map((req) => (
             <div
-              key={rma.id}
-              className="bg-card rounded-lg border border-border/70 shadow-xs overflow-hidden transition-colors motion-reduce:transition-none hover:border-foreground/20"
+              key={req.id}
+              className="bg-card rounded-xl border border-border/60 shadow-xs overflow-hidden transition-all hover:border-foreground/20"
             >
               {/* Header do Card Agrupado */}
-              <div className="p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3 bg-muted/30 border-b border-border/50">
+              <div className="p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3 bg-muted/20 border-b border-border/40">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                    <Package className="size-4.5" />
+                  <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-border/40">
+                    <Package className="size-5" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-bold text-foreground flex items-center gap-2">
-                      <span>{TYPE_LABELS[rma.type] ?? "Devolução"}</span>
-                      {rma.orderToken && (
+                    <p className="text-xs sm:text-sm font-bold text-foreground flex items-center gap-2 flex-wrap">
+                      <span>{req.typeLabel}</span>
+                      {req.orderToken && (
                         <span className="font-mono text-xs text-muted-foreground">
-                          #{rma.orderToken}
+                          • Pedido #{req.orderToken}
                         </span>
                       )}
                     </p>
-                    <p className="text-xs text-muted-foreground flex items-center gap-2 mt-1">
+                    <p className="text-[11px] text-muted-foreground flex items-center gap-1.5 mt-0.5">
                       <Clock className="size-3" />
-                      Solicitado em {formatDate(rma.requestedAt || rma.createdAt)}
+                      Enviado em {formatDate(req.requestedAt)} • {req.storeName}
                     </p>
                   </div>
                 </div>
 
                 <Badge
-                  variant={STATUS_VARIANTS[rma.status] ?? "secondary"}
-                  className="rounded-full px-3 py-1 text-xs font-semibold"
+                  variant={STATUS_VARIANTS[req.status] ?? "secondary"}
+                  className="rounded-md px-3 py-1 text-xs font-semibold shrink-0"
                 >
-                  {STATUS_LABELS[rma.status] ?? rma.status}
+                  {req.statusLabel}
                 </Badge>
               </div>
 
               {/* Corpo do Card */}
               <div className="p-4 sm:p-5 space-y-4">
-                {rma.notes && (
-                  <div className="bg-muted/40 p-4 rounded-lg border border-border/40 space-y-1">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                      Motivo / Observação do Cliente
-                    </p>
-                    <p className="text-xs sm:text-sm text-foreground leading-relaxed">
-                      "{rma.notes}"
+                {/* Descrição contextual amigável do status (EARS-01) */}
+                <div className="p-3.5 rounded-lg bg-muted/30 border border-border/40 text-xs text-muted-foreground space-y-1">
+                  <span className="font-bold text-foreground block">Próximo Passo / Situação:</span>
+                  <p className="break-words text-wrap leading-relaxed">{req.statusDescription}</p>
+                </div>
+
+                {/* Motivo do Cliente */}
+                {req.customerNotes && (
+                  <div className="bg-background p-3.5 rounded-lg border border-border/40 space-y-1">
+                    <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">
+                      Observação Informada
+                    </span>
+                    <p className="text-xs text-foreground leading-relaxed break-words text-wrap">
+                      "{req.customerNotes}"
                     </p>
                   </div>
                 )}
 
-                {rma.claimPhotoUrl && (
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/20 border border-border/50">
+                {/* Foto Anexada (se houver) */}
+                {req.claimPhotoUrl && (
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/20 border border-border/40">
                     <img
-                      src={rma.claimPhotoUrl}
-                      alt="Foto da avaria anexada"
-                      className="size-12 rounded-lg object-cover border border-border/70 shrink-0"
+                      src={req.claimPhotoUrl}
+                      alt="Foto anexada"
+                      className="size-12 rounded-lg object-cover border border-border/60 shrink-0"
                     />
-                    <div className="space-y-1 min-w-0">
-                      <p className="text-xs font-semibold text-foreground flex items-center gap-2">
-                        <Camera className="size-4 text-muted-foreground" />
-                        <span>Evidência Fotográfica Anexada</span>
-                      </p>
-                      {rma.forensicStatus === "verified" ? (
-                        <Badge variant="default" className="text-xs font-semibold bg-emerald-600/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20">
-                          <ShieldCheck className="size-3 mr-1 text-emerald-600" />
-                          Foto Autêntica Verificada
-                        </Badge>
-                      ) : rma.forensicStatus === "flagged" ? (
-                        <Badge variant="destructive" className="text-xs font-semibold">
-                          <ShieldAlert className="size-3 mr-1" />
-                          Alerta: Imagem Sintética Suspeita
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary" className="text-xs font-semibold">
-                          <Clock className="size-3 mr-1" />
-                          Em Auditoria Pericial
-                        </Badge>
-                      )}
+                    <div className="space-y-0.5 min-w-0 flex-1">
+                      <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                        <Camera className="size-4 text-primary" /> Foto do Produto Anexada
+                      </span>
+                      <span className="text-[11px] text-muted-foreground block">
+                        Submetida à verificação da loja para validação do atendimento.
+                      </span>
                     </div>
                   </div>
                 )}
 
-                {rma.orderTotal != null && (
-                  <div className="flex items-baseline justify-between text-xs sm:text-sm">
-                    <span className="text-muted-foreground">Valor em Análise:</span>
-                    <span className="font-mono font-bold text-base text-foreground">
-                      {formatMoney(rma.orderTotal)}
+                {req.orderTotalCents > 0 && (
+                  <div className="flex items-baseline justify-between text-xs pt-1 border-t border-border/40 font-mono">
+                    <span className="text-muted-foreground font-sans">Valor do Pedido Original:</span>
+                    <span className="font-black text-sm text-foreground">
+                      {formatMoney(req.orderTotalCents)}
                     </span>
                   </div>
                 )}
 
-                {/* Bloco de Logística Reversa (se autorizado pela loja) */}
-                {rma.trackingCode && (
-                  <div className="p-4 rounded-lg bg-muted/20 border border-border/60 space-y-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 font-semibold text-foreground text-sm">
+                {/* Bloco de Envio da Devolução (se aprovado pela loja) */}
+                {req.returnTrackingCode && (
+                  <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 space-y-3">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <div className="flex items-center gap-2 font-bold text-foreground text-xs sm:text-sm">
                         <Truck className="size-4 text-primary" />
-                        <span>Código de Postagem Reversa ({rma.carrier || "Correios"})</span>
+                        <span>Código de Postagem ({req.returnCarrier || "Correios"})</span>
                       </div>
-                      <Badge variant="outline" className="text-xs uppercase font-mono">
-                        Válido por 7 dias
+                      <Badge variant="outline" className="text-[10px] uppercase font-mono border-primary/30 text-primary">
+                        Frete Pago pela Loja
                       </Badge>
                     </div>
 
                     <p className="text-xs text-muted-foreground">
-                      Leve o produto devidamente embalado a uma agência e informe o código abaixo:
+                      Leve o produto devidamente embalado a qualquer agência credenciada e informe o código abaixo:
                     </p>
 
-                    <div className="bg-background p-4 rounded-lg text-center border border-border/70 select-all font-mono text-base sm:text-lg font-bold tracking-widest text-primary">
-                      {rma.trackingCode}
+                    <div className="bg-card p-3 rounded-lg text-center border border-border/60 select-all font-mono text-base sm:text-lg font-black tracking-widest text-primary">
+                      {req.returnTrackingCode}
                     </div>
 
-                    {rma.labelUrl && (
+                    {req.returnLabelUrl && (
                       <Button
                         asChild
                         variant="outline"
-                        className="w-full h-11 rounded-lg text-xs font-semibold cursor-pointer"
+                        className="w-full h-11 min-h-11 rounded-lg text-xs font-bold cursor-pointer border-border focus-visible:ring-2 focus-visible:ring-primary"
                       >
-                        <a href={rma.labelUrl} target="_blank" rel="noopener noreferrer">
+                        <a href={req.returnLabelUrl} target="_blank" rel="noopener noreferrer">
                           <FileText className="size-4 mr-2" />
-                          Baixar Declaração de Conteúdo / Etiqueta
+                          Baixar Declaração de Conteúdo / Etiqueta de Envio
                         </a>
                       </Button>
                     )}
                   </div>
                 )}
+
+                {/* Ações Rápidas & Suporte */}
+                <div className="flex items-center justify-between pt-2 border-t border-border/40 gap-2">
+                  <div>
+                    {["pending", "authorized"].includes(req.status) && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setCancelModalRequestId(req.id)}
+                        className="h-11 min-h-11 px-3 text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-500/10 cursor-pointer -ml-2"
+                      >
+                        Cancelar Solicitação
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold border-border cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      <Link
+                        to="/u/suporte"
+                        search={{
+                          motivo: "pos_venda",
+                          request_id: req.id,
+                          pedido: req.orderToken,
+                          loja: req.storeName,
+                        }}
+                      >
+                        <HelpCircle className="size-3.5 mr-1.5" /> Preciso de Ajuda
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* ── 3. Apple HIG Modal: Abertura Direta de Solicitação de RMA ── */}
+      {/* ── 4. Modal Comercial: Nova Solicitação (EARS-02 / EARS-03) ── */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-lg rounded-lg p-0 overflow-hidden border border-border/80 shadow-xs">
-          <DialogHeader className="p-5 pb-4 bg-muted/30 border-b border-border/50">
-            <DialogTitle className="text-lg font-bold text-foreground flex items-center gap-2">
+        <DialogContent className="sm:max-w-lg rounded-xl p-0 overflow-hidden border border-border/80 shadow-md">
+          <DialogHeader className="p-5 pb-4 bg-muted/20 border-b border-border/40">
+            <DialogTitle className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
               <RefreshCw className="size-5 text-primary" />
-              Solicitar Troca ou Devolução
+              Solicitar Troca, Devolução ou Garantia
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
-              Conforme o Código de Defesa do Consumidor (Art. 49), você tem até 7 dias corridos após a entrega para solicitar arrependimento ou troca.
+              Você tem até 7 dias corridos após a entrega para solicitar arrependimento ou troca, ou 90 dias para defeitos de fabricação.
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSubmitRma} className="p-5 sm:p-6 space-y-4">
-            {/* Seleção do Pedido */}
-            <div className="space-y-2">
+          <form onSubmit={handleSubmitRequest} className="p-5 sm:p-6 space-y-4">
+            {/* 1. Seleção do Pedido Elegível */}
+            <div className="space-y-1.5">
               <label className="text-xs font-semibold text-foreground">
-                Selecione o Pedido *
+                Selecione a Compra *
               </label>
               {orders.length === 0 ? (
-                <div className="p-4 bg-muted/40 rounded-lg text-xs text-muted-foreground border border-border/50">
-                  Nenhum pedido elegível encontrado na sua conta.
+                <div className="p-3.5 bg-muted/30 rounded-lg text-xs text-muted-foreground border border-border/40">
+                  Nenhuma compra entregue elegível localizada na sua conta.
                 </div>
               ) : (
                 <Select value={selectedOrderId} onValueChange={setSelectedOrderId}>
-                  <SelectTrigger className="h-11 rounded-lg bg-background border-border/70 text-sm">
+                  <SelectTrigger className="h-11 min-h-11 rounded-lg bg-background border-border/70 text-xs">
                     <SelectValue placeholder="Escolha um pedido recente..." />
                   </SelectTrigger>
                   <SelectContent className="rounded-lg">
                     {orders.map((order) => (
-                      <SelectItem key={order.id} value={order.id}>
-                        Pedido #{order.public_token || order.id.slice(0, 8)} — {formatMoney(order.total_cents || 0)} ({order.status})
+                      <SelectItem key={order.id} value={order.id} className="text-xs">
+                        Pedido #{order.public_token || order.id.slice(0, 8)} — {formatMoney(order.total_cents || 0)} ({order.status === "delivered" ? "Entregue" : order.status})
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -438,68 +545,87 @@ function CustomerRmaPage() {
               )}
             </div>
 
-            {/* Tipo de Solicitação */}
-            <div className="space-y-2">
+            {/* 2. Tipo de Solicitação (Bifurcação EARS-03) */}
+            <div className="space-y-1.5">
               <label className="text-xs font-semibold text-foreground">
-                Tipo de Atendimento *
+                Como podemos ajudar? *
               </label>
-              <Select value={rmaType} onValueChange={setRmaType}>
-                <SelectTrigger className="h-11 rounded-lg bg-background border-border/70 text-sm">
+              <Select value={requestType} onValueChange={(val: any) => setRequestType(val)}>
+                <SelectTrigger className="h-11 min-h-11 rounded-lg bg-background border-border/70 text-xs">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="rounded-lg">
-                  <SelectItem value="return">Devolução e Estorno do Valor</SelectItem>
-                  <SelectItem value="exchange">Troca por Outro Tamanho ou Item</SelectItem>
-                  <SelectItem value="warranty">Garantia / Produto com Avaria</SelectItem>
+                  <SelectItem value="return" className="text-xs">
+                    Devolver Produto e Receber Reembolso
+                  </SelectItem>
+                  <SelectItem value="exchange" className="text-xs">
+                    Trocar por Outro Tamanho ou Variação
+                  </SelectItem>
+                  <SelectItem value="warranty" className="text-xs">
+                    Acionar Garantia (Produto com Defeito / Avaria)
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Motivo Principal */}
-            <div className="space-y-2">
+            {/* 3. Motivo Principal */}
+            <div className="space-y-1.5">
               <label className="text-xs font-semibold text-foreground">
                 Motivo Principal *
               </label>
               <Select value={reason} onValueChange={setReason}>
-                <SelectTrigger className="h-11 rounded-lg bg-background border-border/70 text-sm">
+                <SelectTrigger className="h-11 min-h-11 rounded-lg bg-background border-border/70 text-xs">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="rounded-lg">
-                  <SelectItem value="Arrependimento de compra (Art. 49 CDC)">Arrependimento de compra (Art. 49 CDC)</SelectItem>
-                  <SelectItem value="Produto com defeito ou avaria">Produto com defeito ou avaria</SelectItem>
-                  <SelectItem value="Tamanho ou modelo incompatível">Tamanho ou modelo incompatível</SelectItem>
-                  <SelectItem value="Recebi produto diferente do anunciado">Recebi produto diferente do anunciado</SelectItem>
-                  <SelectItem value="Outro motivo">Outro motivo</SelectItem>
+                  <SelectItem value="Tamanho ou modelo incompatível" className="text-xs">
+                    Tamanho ou modelo incompatível
+                  </SelectItem>
+                  <SelectItem value="Arrependimento de compra no prazo legal" className="text-xs">
+                    Arrependimento de compra no prazo legal (Art. 49 CDC)
+                  </SelectItem>
+                  <SelectItem value="Produto apresentou defeito funcional" className="text-xs">
+                    Produto apresentou defeito funcional
+                  </SelectItem>
+                  <SelectItem value="Produto chegou danificado no transporte" className="text-xs">
+                    Produto chegou danificado no transporte
+                  </SelectItem>
+                  <SelectItem value="Recebi produto diferente do anunciado" className="text-xs">
+                    Recebi produto diferente do anunciado
+                  </SelectItem>
+                  <SelectItem value="Outro motivo" className="text-xs">
+                    Outro motivo
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Observações / Detalhes Adicionais */}
-            <div className="space-y-2">
+            {/* 4. Detalhes Adicionais */}
+            <div className="space-y-1.5">
               <label className="text-xs font-semibold text-foreground">
-                Observações Adicionais (Opcional)
+                Detalhes Adicionais (Opcional)
               </label>
               <Textarea
-                placeholder="Descreva detalhadamente o estado do item ou motivo para agilizar o processo..."
+                placeholder="Descreva o que aconteceu para agilizar o atendimento da loja..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
-                className="rounded-lg bg-background border-border/70 text-xs sm:text-sm resize-none focus-visible:ring-primary/20"
+                className="rounded-lg bg-background border-border/70 text-xs resize-none focus-visible:ring-2 focus-visible:ring-primary"
               />
             </div>
 
-            {/* Foto da Avaria / Produto com Upload Local e Suporte a Ctrl+V */}
+            {/* 5. Foto do Produto / Avaria */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-foreground flex items-center gap-2">
+                <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                   <Camera className="size-4 text-primary" />
-                  <span>Foto da Avaria / Produto (Opcional, agiliza a análise)</span>
+                  <span>Foto do Produto (Opcional, agiliza a análise)</span>
                 </label>
                 {previewPhoto && (
-                  <button /* focus-visible:ring-2 */
+                  <button
                     type="button"
-                    onClick={handleClearPhoto} /* focus-visible:ring-2 */
-                    className="text-xs text-destructive hover:underline flex items-center gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/20 rounded"
+                    onClick={handleClearPhoto}
+                    className="text-[11px] text-destructive hover:underline flex items-center gap-1 cursor-pointer"
                   >
                     <X className="size-3" />
                     <span>Remover foto</span>
@@ -508,16 +634,16 @@ function CustomerRmaPage() {
               </div>
 
               {previewPhoto ? (
-                <div className="relative rounded-lg border border-border/80 overflow-hidden bg-muted/20 p-3 flex items-center gap-3">
+                <div className="rounded-xl border border-border/60 overflow-hidden bg-muted/20 p-3 flex items-center gap-3">
                   <img
                     src={previewPhoto}
-                    alt="Pré-visualização da avaria"
+                    alt="Pré-visualização da foto"
                     className="size-16 rounded-lg object-cover border border-border/60 shrink-0"
                   />
-                  <div className="space-y-1 min-w-0 flex-1">
-                    <p className="text-xs font-bold text-foreground truncate">Foto Anexada para Perícia</p>
-                    <p className="text-xs text-muted-foreground leading-tight">
-                      A imagem será submetida à auditoria forense digital da loja para validação do estorno.
+                  <div className="space-y-0.5 min-w-0 flex-1">
+                    <p className="text-xs font-bold text-foreground">Foto Anexada</p>
+                    <p className="text-[11px] text-muted-foreground leading-tight">
+                      A imagem será enviada à equipe da loja para conferência.
                     </p>
                   </div>
                 </div>
@@ -527,8 +653,8 @@ function CustomerRmaPage() {
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={handleDrop}
                   tabIndex={0}
-                  className="rounded-lg border border-dashed border-border/80 bg-background/50 hover:bg-muted/20 p-4 text-center space-y-2 transition-colors focus-visible:ring-2 focus-visible:ring-primary/20 outline-none cursor-pointer"
-                  onClick={() => fileInputRef.current?.click()} /* focus-visible:ring-2 */
+                  className="rounded-xl border border-dashed border-border/80 bg-background/50 hover:bg-muted/20 p-4 text-center space-y-2 transition-colors focus-visible:ring-2 focus-visible:ring-primary outline-none cursor-pointer"
+                  onClick={() => fileInputRef.current?.click()}
                 >
                   <input
                     ref={fileInputRef}
@@ -540,47 +666,36 @@ function CustomerRmaPage() {
                   <div className="size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">
                     <Camera className="size-4" />
                   </div>
-                  <div className="space-y-1">
+                  <div className="space-y-0.5">
                     <p className="text-xs font-semibold text-foreground">
-                      Clique para selecionar ou arraste o arquivo aqui
+                      Clique para selecionar ou arraste uma foto aqui
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                      Suporta PNG, JPG, WebP ou cole com área de transferência (Ctrl+V)
+                    <p className="text-[11px] text-muted-foreground">
+                      Suporta PNG, JPG, WebP ou cole direto da área de transferência (Ctrl+V)
                     </p>
                   </div>
                 </div>
               )}
-
-              {/* Opção alternativa de colar link direto de imagem */}
-              <div className="pt-1">
-                <Input
-                  type="url"
-                  placeholder="Ou cole a URL direta de uma foto (https://...)"
-                  value={claimPhotoUrl}
-                  onChange={(e) => handleUrlChange(e.target.value)}
-                  className="h-10 rounded-lg bg-background border-border/70 text-xs focus-visible:ring-primary/20"
-                />
-              </div>
             </div>
 
             {/* Ações do Modal */}
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-border/40">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border/40">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setIsModalOpen(false)} /* focus-visible:ring-2 */
-                className="h-11 rounded-lg px-5 text-sm font-semibold cursor-pointer"
+                onClick={() => setIsModalOpen(false)}
+                className="h-11 min-h-11 rounded-lg px-4 text-xs font-bold border-border cursor-pointer"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting || orders.length === 0}
-                className="h-11 rounded-lg px-6 text-sm font-semibold bg-foreground text-background hover:bg-foreground/90 shadow-xs cursor-pointer"
+                className="h-11 min-h-11 rounded-lg px-6 text-xs font-bold bg-foreground text-background hover:bg-foreground/90 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="size-4 animate-spin motion-reduce:animate-none mr-2" />
+                    <Loader2 className="size-4 animate-spin mr-2" />
                     Enviando...
                   </>
                 ) : (
@@ -589,6 +704,44 @@ function CustomerRmaPage() {
               </Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── 5. Modal de Confirmação de Cancelamento de Solicitação (EARS-06) ── */}
+      <Dialog
+        open={!!cancelModalRequestId}
+        onOpenChange={(open) => !open && setCancelModalRequestId(null)}
+      >
+        <DialogContent className="sm:max-w-md rounded-xl p-5 sm:p-6">
+          <DialogHeader>
+            <DialogTitle className="text-base sm:text-lg font-bold text-foreground">
+              Cancelar Solicitação
+            </DialogTitle>
+          </DialogHeader>
+
+          <p className="text-xs text-muted-foreground leading-relaxed py-2">
+            Deseja realmente cancelar esta solicitação? Ela será arquivada e o pedido original continuará ativo normalmente.
+          </p>
+
+          <DialogFooter className="gap-2 pt-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setCancelModalRequestId(null)}
+              className="h-11 min-h-11 rounded-lg text-xs font-bold border-border cursor-pointer"
+            >
+              Manter Solicitação
+            </Button>
+            <Button
+              onClick={() => {
+                if (cancelModalRequestId) {
+                  handleCancelRequest(cancelModalRequestId);
+                }
+              }}
+              className="h-11 min-h-11 rounded-lg text-xs font-bold bg-rose-600 text-white hover:bg-rose-700 cursor-pointer focus-visible:ring-2 focus-visible:ring-rose-500"
+            >
+              Confirmar Cancelamento
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

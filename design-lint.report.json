@@ -1,32 +1,32 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-21T06:56:36.427Z",
-  "inspectedFiles": 2236,
-  "totalViolations": 12360,
+  "timestamp": "2026-10-21T07:08:26.815Z",
+  "inspectedFiles": 2237,
+  "totalViolations": 12392,
   "summary": {
-    "totalViolations": 12360,
+    "totalViolations": 12392,
     "bySeverity": {
-      "P0": 1365,
-      "P1": 8404,
-      "P2": 1312,
-      "P3": 1279
+      "P0": 1366,
+      "P1": 8426,
+      "P2": 1319,
+      "P3": 1281
     },
     "byRule": {
-      "DL-18": 1153,
-      "DL-02": 3403,
+      "DL-18": 1154,
+      "DL-02": 3407,
       "DL-14": 2037,
-      "DL-28": 282,
-      "DL-15": 1362,
+      "DL-28": 283,
+      "DL-15": 1363,
       "DL-07": 482,
-      "DL-27": 1014,
-      "DL-30": 265,
+      "DL-27": 1015,
+      "DL-30": 266,
       "DL-26": 85,
       "DL-01": 875,
       "DL-29": 119,
       "DL-05": 130,
       "DL-23": 355,
-      "DL-03": 461,
-      "DL-09": 134,
+      "DL-03": 477,
+      "DL-09": 141,
       "DL-08": 107,
       "DL-25": 25,
       "DL-24": 2,
@@ -59,9 +59,9 @@
         "P3": 5
       },
       "components/tourism": {
-        "total": 1037,
+        "total": 1034,
         "P0": 76,
-        "P1": 772,
+        "P1": 769,
         "P2": 129,
         "P3": 60
       },
@@ -101,9 +101,9 @@
         "P3": 0
       },
       "routes/other": {
-        "total": 126,
+        "total": 124,
         "P0": 11,
-        "P1": 93,
+        "P1": 91,
         "P2": 16,
         "P3": 6
       },
@@ -115,11 +115,11 @@
         "P3": 278
       },
       "routes/store": {
-        "total": 1428,
-        "P0": 113,
-        "P1": 941,
-        "P2": 168,
-        "P3": 206
+        "total": 1465,
+        "P0": 114,
+        "P1": 968,
+        "P2": 175,
+        "P3": 208
       },
       "services": {
         "total": 210,
@@ -143,8 +143,8 @@
         "P3": 0
       }
     },
-    "filesWithViolations": 891,
-    "filesCount": 2236
+    "filesWithViolations": 892,
+    "filesCount": 2237
   },
   "config": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
