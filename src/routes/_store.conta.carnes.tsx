@@ -9,6 +9,8 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, CreditCard, CheckCircle2, Clock, AlertCircle, Upload, FileText, Building2, Calendar, DollarSign, Copy, ChevronRight, ShieldCheck, TrendingDown, Info, Check, ExternalLink, FileCheck, MessageSquare, Smartphone, ShoppingBag, HelpCircle, Sparkles } from "lucide-react";
 import { DigitalCompanionCard, type CompanionCardSectionItem, type CompanionRuleItem, type CompanionContactItem } from "@/components/documents/digital-companion-card";
+import { NativeMobileHeader } from "@/components/navigation";
+import { useWindowSizeClass } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
@@ -57,6 +59,7 @@ function ClientCarnesPage() {
 
   const carnes = data?.carnes || [];
   const metrics = data?.metrics;
+  const { isCompact } = useWindowSizeClass();
 
   const [activeTab, setActiveTab] = useState<"all" | "pending" | "overdue" | "settled">("all");
   const [selectedInstallment, setSelectedInstallment] = useState<any>(null);
@@ -176,28 +179,50 @@ function ClientCarnesPage() {
   });
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0">
-      {/* ── 1. Clean Minimalist Header ── */}
-      <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-            Carnês
-          </h1>
-          {carnes.length > 0 && (
-            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-1 rounded-full">
-              {carnes.length}
-            </Badge>
-          )}
-        </div>
+    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0 animate-in fade-in duration-200">
+      {/* ── 1. Canonical Navigation Header (Mobile App Style) ── */}
+      {isCompact && (
+        <NativeMobileHeader
+          title="Carnês"
+          fallbackHref="/conta"
+          badge={
+            carnes.length > 0 ? (
+              <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-1 rounded-md">
+                {carnes.length}
+              </Badge>
+            ) : null
+          }
+          rightActions={
+            <Button asChild size="sm" variant="outline" className="min-h-11 h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer">
+              <Link to="/mercado">Lojas</Link>
+            </Button>
+          }
+        />
+      )}
 
-        <Button asChild size="sm" variant="outline" className="min-h-11 h-11 px-4 rounded-lg text-xs font-semibold cursor-pointer">
-          <Link to="/mercado">Explorar Lojas</Link>
-        </Button>
-      </div>
+      {/* ── 1.1 Desktop Inpage Header (Desktop System App Style) ── */}
+      {!isCompact && (
+        <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+              Carnês
+            </h1>
+            {carnes.length > 0 && (
+              <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-1 rounded-full">
+                {carnes.length}
+              </Badge>
+            )}
+          </div>
+
+          <Button asChild size="sm" variant="outline" className="min-h-11 h-11 px-4 rounded-lg text-xs font-semibold cursor-pointer">
+            <Link to="/mercado">Explorar Lojas</Link>
+          </Button>
+        </div>
+      )}
 
       {/* Dashboard de Métricas Rápidas (Apple HIG Cards) */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="p-4 rounded-lg bg-card border border-border/60 shadow-xs space-y-1">
+      <div className={cn("grid grid-cols-2 sm:grid-cols-4 gap-3", isCompact && "px-2")}>
+        <div className="p-4 rounded-xl bg-card border border-border/60 shadow-xs space-y-1">
           <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
             Saldo Devedor
           </span>
@@ -209,7 +234,7 @@ function ClientCarnesPage() {
           </div>
         </div>
 
-        <div className="p-4 rounded-lg bg-card border border-border/60 shadow-xs space-y-1">
+        <div className="p-4 rounded-xl bg-card border border-border/60 shadow-xs space-y-1">
           <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
             Total Liquidado
           </span>
@@ -219,7 +244,7 @@ function ClientCarnesPage() {
           <div className="text-xs text-muted-foreground">Parcelas já pagas</div>
         </div>
 
-        <div className="p-4 rounded-lg bg-card border border-border/60 shadow-xs space-y-1">
+        <div className="p-4 rounded-xl bg-card border border-border/60 shadow-xs space-y-1">
           <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
             Em Atraso
           </span>
@@ -238,7 +263,7 @@ function ClientCarnesPage() {
           </div>
         </div>
 
-        <div className="p-4 rounded-lg bg-card border border-border/60 shadow-xs space-y-1">
+        <div className="p-4 rounded-xl bg-card border border-border/60 shadow-xs space-y-1">
           <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
             Em Análise
           </span>
@@ -251,7 +276,7 @@ function ClientCarnesPage() {
 
       {/* Card de Próximo Vencimento em Destaque */}
       {metrics?.nextDueInstallment && (
-        <div className="p-4 sm:p-5 rounded-lg bg-primary/5 border border-primary/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className={cn("p-4 sm:p-5 rounded-xl bg-primary/5 border border-primary/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4", isCompact && "mx-2")}>
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full bg-primary/10 text-primary">
@@ -282,7 +307,7 @@ function ClientCarnesPage() {
       )}
 
       {/* Segmented Control / Tabs */}
-      <div className="flex items-center gap-2 p-1 rounded-lg bg-muted/60 border border-border/50 overflow-x-auto no-scrollbar">
+      <div className={cn("flex items-center gap-2 p-1 rounded-xl bg-muted/60 border border-border/50 overflow-x-auto no-scrollbar", isCompact && "mx-2")}>
         <button
           type="button"
           onClick={() => setActiveTab("all")}
@@ -335,8 +360,8 @@ function ClientCarnesPage() {
 
       {/* Lista de Carnês */}
       {filteredCarnes.length === 0 ? (
-        <div className="bg-card border border-border/60 rounded-lg p-10 text-center space-y-3 shadow-xs">
-          <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center mx-auto text-muted-foreground">
+        <div className={cn("bg-card border border-border/60 rounded-xl p-10 text-center space-y-3 shadow-xs", isCompact && "mx-2")}>
+          <div className="h-12 w-12 rounded-xl bg-muted flex items-center justify-center mx-auto text-muted-foreground">
             <CreditCard className="h-6 w-6" />
           </div>
           <h3 className="font-semibold text-base text-foreground">Nenhum carnê encontrado</h3>
@@ -348,7 +373,7 @@ function ClientCarnesPage() {
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className={cn("space-y-4", isCompact && "px-2")}>
           {filteredCarnes.map((carne: any) => {
             const storeName = carne.store?.name || carne.creditor?.full_name || "Loja Parceira";
             const isSettled = carne.status === "settled";
@@ -356,13 +381,13 @@ function ClientCarnesPage() {
             return (
               <div
                 key={carne.id}
-                className="bg-card border border-border/60 rounded-lg overflow-hidden shadow-xs space-y-4 p-5"
+                className="bg-card border border-border/60 rounded-xl overflow-hidden shadow-xs space-y-4 p-5"
               >
                 {/* Cabeçalho do Carnê */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-3 border-b border-border/50">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-base text-foreground">{carne.title}</span>
+                      <span className="font-semibold text-base text-foreground break-words text-wrap leading-tight">{carne.title}</span>
                       {isSettled ? (
                         <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs">
                           <CheckCircle2 className="h-3 w-3 mr-1" /> Quitado

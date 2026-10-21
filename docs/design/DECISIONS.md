@@ -1,5 +1,22 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-284: Auditoria Forense End-to-End e Bifurcação Canônica Mobile Native App vs Desktop System App nos Módulos Pedidos e Carnês (Anti-Jank / Anti-Sanfona / Anti-Truncate)
+- **Data:** 2026-10-21
+- **Contexto:** Auditoria forense e saneamento integral dos módulos Pedidos (`_store.conta.pedidos.index`, `_store.conta.pedidos.$id`) e Carnês (`_store.conta.carnes`):
+  1. A listagem de pedidos continha a classe CSS `truncate` cortando títulos longos de produtos em desacordo com B.38 (Anti-Truncate).
+  2. No desktop (>= 840px), a interface renderizava uma coluna estreita de mobile centralizada (`max-w-2xl`), sem aproveitar a ergonomia widescreen de Desktop System App, enquanto no mobile (< 600px) faltava o `NativeMobileHeader` canônico na tela de Carnês.
+  3. Risco de "efeito sanfona" (accordion deformation) decorrente de quebras e deformações de cards em transições fluidas de tela.
+  4. Presença de valores fracionários de espaçamento fora da grade modular de 4px (`px-2.5`, `gap-2.5`, `pt-2.5`) violando a regra DL-03.
+- **Decisão:**
+  1. **Bifurcação Canônica Estrita (Mobile Native App vs Desktop System App):**
+     - No mobile (< 600px): Renderização em estilo App Nativo (Apple HIG) com `NativeMobileHeader` sticky, navegação por abas com snap horizontal, lista agrupada por mês com alvos de toque mínimos de 44px (`min-h-11 h-11`) e feedback tátil.
+     - No desktop (>= 840px): Renderização em estilo Desktop System App (`max-w-5xl mx-auto`), com 4 tiles de KPI (Total de Pedidos, Em Andamento, Retirada Disponível, Concluídos) e cards horizontais `DesktopOrderCard` em formato squircle (`rounded-xl border border-border/60 bg-card p-5 shadow-xs`) com CTA proeminente de 44px ("Ver Detalhes").
+  2. **Erradicação do Truncamento (B.38):** Substituição de `truncate` por `break-words text-wrap leading-tight` em todas as nomenclaturas de pedidos e parcelas.
+  3. **Conformidade com a Grade de 4px (DL-03):** Correção de espaçamentos fracionários para múltiplos estritos de 4px (`px-2`, `gap-2`, `pt-2`).
+  4. **Validação Automatizada:** 100% dos testes unitários de pedidos e carnês aprovados (21 testes em `customer-orders-end-to-end.test.ts` e `carnes-receivables-end-to-end.test.ts`). Catraca de design lint ratcheted com 0 regressões visuais e nova redução de dívida técnica visual.
+- **Fundamentação:** AGENTS.md B.1 a B.45, B.22, B.26, B.36, B.38; HIG Apple Design System.
+- **Consequências:** Fim do efeito sanfona, paridade funcional completa entre Mobile e Desktop sem quebra de elementos visuais, e alinhamento total à constituição de design do repositório.
+
 ## DEC-283: Plataforma Multimodal Waesy Go, Desacoplamento Produto/Veículo e Fluxo End-to-End
 - **Data:** 2026-10-21
 - **Contexto:** Auditoria profunda e refatoração completa do ecossistema Waesy Go (`_store.mobilidade`, `_store.conta.mobilidade`, `_store.conta.entregador`):
