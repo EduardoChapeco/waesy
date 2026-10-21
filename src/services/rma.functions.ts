@@ -144,7 +144,7 @@ export function parseRmaForensics(rawNotes?: string | null): {
     return {
       cleanNotes: "",
       claimPhotoUrl: null,
-      forensicStatus: null,
+      forensicStatus: "pending",
       forensicRisk: null,
       isAiFlagged: false,
     };
@@ -152,7 +152,7 @@ export function parseRmaForensics(rawNotes?: string | null): {
 
   const safe = parseCustomerSafeNotes(rawNotes);
   const laudoMatch = rawNotes.match(/\[LAUDO_PERICIAL\]([^\n]*)/);
-  let forensicStatus: string | null = null;
+  let forensicStatus: string | null = "pending";
   let forensicRisk: string | null = null;
   let isAiFlagged = false;
 

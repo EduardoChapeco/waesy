@@ -189,24 +189,24 @@ export const listUserPaymentHistory = createServerFn({ method: "GET" }).handler(
     // 3. Corridas e Fretes Waesy Go
     try {
       const { data: trips } = await db
-        .from("mobility_trips")
-        .select("id, status, fare_cents, tip_cents, created_at, completed_at, payment_method, driver:driver_id(full_name)")
-        .eq("rider_id", user.id)
+        .from("mobility_requests")
+        .select("id, status, final_price_cents, estimated_price_cents, tip_cents, created_at, completed_at, payment_method")
+        .eq("customer_id", user.id)
         .order("created_at", { ascending: false })
         .limit(30);
 
       if (trips) {
-        for (const trip of trips) {
-          const driverName = (trip.driver as any)?.full_name || "Motorista Parceiro";
+        for (const trip of (trips as any[])) {
+          const driverName = "Motorista Parceiro Waesy Go";
           const { normalized, label } = mapStatusToLabel(trip.status);
-          const totalTripCents = (trip.fare_cents || 0) + (trip.tip_cents || 0);
+          const totalTripCents = (trip.final_price_cents || trip.estimated_price_cents || 0) + (trip.tip_cents || 0);
 
           if (totalTripCents > 0) {
             items.push({
               id: trip.id,
               origin_type: "mobility_trip",
               direction: "outgoing",
-              title: `Waesy Go - Corrida com ${driverName}`,
+              title: `Waesy Go - Corrida / Entrega`,
               description: `Transporte urbano / entrega Waesy Go`,
               amount_cents: totalTripCents,
               status: normalized,
