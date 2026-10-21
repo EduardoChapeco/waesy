@@ -329,6 +329,7 @@ export function CheckoutPage() {
   const [selectedRateId, setSelectedRateId] = useState<string | null>(null);
   const [isLocatingGPS, setIsLocatingGPS] = useState(false);
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
+  const [saveAddressToBook, setSaveAddressToBook] = useState(true);
 
   // ── V139: Omni-Checkout, Waesy Go & Trust/Safety States ──
   const [isEditingContact, setIsEditingContact] = useState(false);
@@ -912,9 +913,34 @@ export function CheckoutPage() {
         },
       });
 
- if ((res as any)?.status === "error") {
- throw new Error((res as any)?.message || "Não foi possível finalizar o pedido.");
- }
+         if ((res as any)?.status === "error") {
+          throw new Error((res as any)?.message || "Não foi possível finalizar o pedido.");
+        }
+
+        // Zero-Amnésia: salvar endereço em Meus Endereços se requisitado
+        if (
+          formData.shippingMethod !== "pickup" &&
+          saveAddressToBook &&
+          (showNewAddressForm || !userAddresses || userAddresses.length === 0)
+        ) {
+          saveUserAddress({
+            data: {
+              label: "Entrega " + (formData.shippingAddress.neighborhood || "Principal"),
+              icon: "home",
+              address_type: "residential",
+              recipient_name: formData.customerName || undefined,
+              recipient_phone: formData.customerPhone || undefined,
+              zipcode: formData.shippingAddress.zipcode,
+              street: formData.shippingAddress.street,
+              number: formData.shippingAddress.number,
+              complement: formData.shippingAddress.complement || undefined,
+              neighborhood: formData.shippingAddress.neighborhood,
+              city: formData.shippingAddress.city,
+              state: formData.shippingAddress.state,
+              is_default: (userAddresses || []).length === 0,
+            },
+          }).catch((err) => console.warn("[checkout] Zero-amnesia address save error:", err));
+        }
 
  if (
  formData.shippingMethod !== "manual_quote" &&
@@ -2039,11 +2065,25 @@ export function CheckoutPage() {
  })
  }
  className="h-11 rounded-lg text-base sm:text-sm uppercase"
- />
- </div>
- </div>
- </div>
- )}
+                />
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={saveAddressToBook}
+                  onChange={(e) => setSaveAddressToBook(e.target.checked)}
+                  className="size-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+                />
+                <span className="text-xs text-foreground font-medium">
+                  Salvar este endereço em Meus Endereços para compras futuras
+                </span>
+              </label>
+            </div>
+          </div>
+        )}
 
  {/* Seleção de Taxas e Opções de Frete */}
  <div className="space-y-2 pt-2">

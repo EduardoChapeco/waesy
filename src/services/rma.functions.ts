@@ -229,7 +229,7 @@ export function analyzePhotoForensicsInternal(photoData: string, description: st
 export const CreateCustomerAfterSalesSchema = z.object({
   orderId: z.string().uuid("ID do pedido inválido"),
   type: z.enum(["return", "exchange", "warranty"]).default("return"),
-  reason: z.string().min(3, "Informe o motivo principal"),
+  reason: z.string().optional().default("Solicitação de atendimento"),
   notes: z.string().optional(),
   claimPhotoUrl: z.string().optional(),
   claimPhotoBase64: z.string().optional(),
@@ -239,6 +239,7 @@ export const CreateCustomerAfterSalesSchema = z.object({
       order_item_id: z.string().uuid().optional(),
       qty: z.number().int().positive(),
       reason: z.string().optional(),
+      photos: z.array(z.string()).optional(),
     }).refine((data) => !!(data.orderItemId || data.order_item_id), {
       message: "Item do pedido obrigatório",
     })
@@ -387,11 +388,12 @@ export const createCustomerAfterSalesRequest = createServerFn({ method: "POST" }
     }
 
     // 2. Perícia visual interna (grava metadados para o Workspace, sem expor ao consumidor)
-    const effectivePhoto = input.claimPhotoUrl || input.claimPhotoBase64 || null;
+    const effectivePhoto = input.claimPhotoUrl || input.claimPhotoBase64 || input.items[0]?.photos?.[0] || null;
+    const effectiveReason = input.reason || input.items[0]?.reason || (input.type === "exchange" ? "Troca de Produto" : input.type === "warranty" ? "Acionamento de Garantia" : "Devolução e Reembolso");
     let forensicTag = "[LAUDO_PERICIAL] Sem foto anexada | Status: pending | Risco: MODERADO";
 
     if (effectivePhoto) {
-      const forensics = analyzePhotoForensicsInternal(effectivePhoto, input.reason);
+      const forensics = analyzePhotoForensicsInternal(effectivePhoto, effectiveReason);
       forensicTag = `[LAUDO_PERICIAL] Foto: ${effectivePhoto.startsWith("data:") ? "upload_local_midia" : effectivePhoto} | Status: ${forensics.forensicStatus} | Risco: ${forensics.forensicRisk} | FotoUrl: ${effectivePhoto}`;
     }
 
@@ -402,7 +404,7 @@ export const createCustomerAfterSalesRequest = createServerFn({ method: "POST" }
     const finalItems = input.items.map((it) => ({
       order_item_id: it.orderItemId || it.order_item_id!,
       qty: it.qty,
-      reason: it.reason || input.reason,
+      reason: it.reason || effectiveReason,
     }));
 
     const { data: rmaId, error: rpcErr } = await db.rpc("request_order_return", {
