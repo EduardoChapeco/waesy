@@ -12,7 +12,7 @@
  * Regra R30: Dono único da metamorfose.
  */
 
-import { NICHE_TAXONOMY_REGISTRY } from './niche-taxonomy-manifest';
+import { NICHE_TAXONOMY_REGISTRY, normalizeAdEngineNicheId } from "./niche-taxonomy-manifest";
 
 export interface TemplateDefinition {
   id: string;
@@ -26,78 +26,126 @@ export interface TemplateDefinition {
 export const CANONICAL_TEMPLATES_CATALOG: Record<string, TemplateDefinition> = {
   // Turismo
   tourism_immersive: {
-    id: 'tourism_immersive',
-    name: 'Turismo Imersivo & Roteiro',
-    description: 'Hero cinematográfico, itinerário dia a dia, inclusos/exclusos e seleção de saídas.',
-    supportedNiches: ['turismo'],
+    id: "tourism_immersive",
+    name: "Turismo Imersivo & Roteiro",
+    description: "Hero cinematográfico, itinerário dia a dia, inclusos/exclusos e seleção de saídas.",
+    supportedNiches: ["turismo"],
     isDefault: true,
     sectionsCount: 8,
   },
   tourism_catalog: {
-    id: 'tourism_catalog',
-    name: 'Turismo Vitrine / Catálogo Rápido',
-    description: 'Layout compacto para pacotes com foco em preço, partidas rápidas e conversão direta.',
-    supportedNiches: ['turismo'],
+    id: "tourism_catalog",
+    name: "Turismo Vitrine / Catálogo Rápido",
+    description: "Layout compacto para pacotes com foco em preço, partidas rápidas e conversão direta.",
+    supportedNiches: ["turismo"],
     isDefault: false,
     sectionsCount: 5,
   },
 
   // Mercado & Perecíveis
   grocery_gondola: {
-    id: 'grocery_gondola',
-    name: 'Gôndola de Mercado & Conveniência',
-    description: 'Exibição em grade densa com seletor de peso/unidade e disponibilidade em prateleira.',
-    supportedNiches: ['mercado'],
+    id: "grocery_gondola",
+    name: "Gôndola de Mercado & Conveniência",
+    description: "Exibição em grade densa com seletor de peso/unidade e disponibilidade em prateleira.",
+    supportedNiches: ["mercado", "gastronomia"],
     isDefault: true,
     sectionsCount: 4,
   },
 
   // Varejo & Produtos
   retail_standard: {
-    id: 'retail_standard',
-    name: 'Varejo & Vitrine Comercial',
-    description: 'Grade de fotos, seletor de variações, cálculo de frete e parcelamento integrado.',
-    supportedNiches: ['varejo'],
+    id: "retail_standard",
+    name: "Varejo & Vitrine Comercial",
+    description: "Grade de fotos, seletor de variações, cálculo de frete e parcelamento integrado.",
+    supportedNiches: ["varejo", "digital", "gastronomia"],
     isDefault: true,
     sectionsCount: 6,
+  },
+  retail_ecommerce: {
+    id: "retail_ecommerce",
+    name: "E-Commerce Completo",
+    description: "Vitrine comercial com matriz de variações, cálculo logístico e condições de pagamento.",
+    supportedNiches: ["varejo"],
+    isDefault: false,
+    sectionsCount: 6,
+  },
+  retail_grid: {
+    id: "retail_grid",
+    name: "Grade Rápida de Varejo",
+    description: "Exibição enxuta focada em ficha técnica rápida e conversão imediata.",
+    supportedNiches: ["varejo"],
+    isDefault: false,
+    sectionsCount: 4,
   },
 
   // Serviços & Agendamento
   service_schedule: {
-    id: 'service_schedule',
-    name: 'Serviço & Agenda de Especialista',
-    description: 'Portfólio de execuções, tempo de atendimento, slots de agenda e orçamento.',
-    supportedNiches: ['servicos'],
+    id: "service_schedule",
+    name: "Serviço & Agenda de Especialista",
+    description: "Portfólio de execuções, tempo de atendimento, slots de agenda e orçamento.",
+    supportedNiches: ["servico"],
     isDefault: true,
     sectionsCount: 5,
+  },
+  service_booking: {
+    id: "service_booking",
+    name: "Agendamento Direto de Serviço",
+    description: "Foco em disponibilidade de horários, SLA de atendimento e reserva imediata.",
+    supportedNiches: ["servico"],
+    isDefault: false,
+    sectionsCount: 5,
+  },
+  service_portfolio: {
+    id: "service_portfolio",
+    name: "Portfólio & Escopo Técnico",
+    description: "Apresentação consultiva de escopo, credenciais e solicitação de orçamento.",
+    supportedNiches: ["servico"],
+    isDefault: false,
+    sectionsCount: 4,
   },
 
   // Imóveis
   real_estate_luxury: {
-    id: 'real_estate_luxury',
-    name: 'Imóvel & Real Estate Alto Padrão',
-    description: 'Tour visual de alta definição, ficha técnica de metragem, agendamento de visita.',
-    supportedNiches: ['imoveis'],
+    id: "real_estate_luxury",
+    name: "Imóvel & Real Estate Alto Padrão",
+    description: "Tour visual de alta definição, ficha técnica de metragem, agendamento de visita.",
+    supportedNiches: ["imovel"],
     isDefault: true,
     sectionsCount: 7,
+  },
+  real_estate_property: {
+    id: "real_estate_property",
+    name: "Planta & Ficha Patrimonial",
+    description: "Destaque para metragem, dormitórios, condomínio/IPTU e proposta direta.",
+    supportedNiches: ["imovel"],
+    isDefault: false,
+    sectionsCount: 6,
   },
 
   // Veículos
   automotive_deal: {
-    id: 'automotive_deal',
-    name: 'Veículo & Ficha Automotiva',
-    description: 'Quilometragem, ano/modelo, laudo cautelar, simulação de financiamento e troca.',
-    supportedNiches: ['veiculos'],
+    id: "automotive_deal",
+    name: "Veículo & Ficha Automotiva",
+    description: "Quilometragem, ano/modelo, laudo cautelar, simulação de financiamento e troca.",
+    supportedNiches: ["veiculo"],
     isDefault: true,
+    sectionsCount: 6,
+  },
+  vehicle_showroom: {
+    id: "vehicle_showroom",
+    name: "Showroom & Telemetria Veicular",
+    description: "Cockpit automotivo com destaques de motorização, câmbio, opcionais e procedência.",
+    supportedNiches: ["veiculo"],
+    isDefault: false,
     sectionsCount: 6,
   },
 
   // Digital
   digital_access: {
-    id: 'digital_access',
-    name: 'Produto Digital & Entrega Imediata',
-    description: 'Acesso imediato, serial de ativação, visualização de módulos e garantia CDC.',
-    supportedNiches: ['digital'],
+    id: "digital_access",
+    name: "Produto Digital & Entrega Imediata",
+    description: "Acesso imediato, serial de ativação, visualização de módulos e garantia CDC.",
+    supportedNiches: ["digital"],
     isDefault: true,
     sectionsCount: 4,
   },
@@ -108,7 +156,8 @@ export const CANONICAL_TEMPLATES_CATALOG: Record<string, TemplateDefinition> = {
  * Bloqueia expressamente distorções semânticas como Mercado em Turismo (Caso O02).
  */
 export function isTemplateAllowedForNiche(nicheId: string, templateId: string): boolean {
-  const nicheConfig = NICHE_TAXONOMY_REGISTRY[nicheId];
+  const normalized = normalizeAdEngineNicheId(nicheId);
+  const nicheConfig = NICHE_TAXONOMY_REGISTRY[normalized];
   if (Boolean(nicheConfig) === false || Boolean(nicheConfig.allowedTemplates) === false) {
     return false;
   }
@@ -119,7 +168,8 @@ export function isTemplateAllowedForNiche(nicheId: string, templateId: string): 
  * Retorna todos os templates permitidos para determinado nicho.
  */
 export function listAllowedTemplatesForNiche(nicheId: string): TemplateDefinition[] {
-  const nicheConfig = NICHE_TAXONOMY_REGISTRY[nicheId];
+  const normalized = normalizeAdEngineNicheId(nicheId);
+  const nicheConfig = NICHE_TAXONOMY_REGISTRY[normalized];
   if (Boolean(nicheConfig) === false || Boolean(nicheConfig.allowedTemplates) === false) {
     return [];
   }
@@ -140,11 +190,12 @@ export function resolveTemplate(
   nicheId: string,
   requestedTemplateId?: string | null
 ): string {
-  const nicheConfig = NICHE_TAXONOMY_REGISTRY[nicheId];
+  const normalized = normalizeAdEngineNicheId(nicheId);
+  const nicheConfig = NICHE_TAXONOMY_REGISTRY[normalized];
   const allowed = nicheConfig?.allowedTemplates || [];
 
   if (allowed.length === 0) {
-    return 'retail_standard';
+    return "retail_standard";
   }
 
   if (requestedTemplateId && allowed.includes(requestedTemplateId)) {

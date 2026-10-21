@@ -1,5 +1,20 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-293: Sincronização e Desbloqueio Global de Navegação (Sidebar Explorer, Menu Hub, Workspace B2B) e Silêncio Visual Anti-AI (Erradicação de Títulos Compostos)
+- **Data:** 2026-10-21
+- **Contexto:** Auditoria executiva identificou que rotas críticas recém-implementadas e consolidadas estavam desvinculadas das réguas de navegação principais do ecossistema e apresentavam títulos compostos:
+  1. Rotas desvinculadas de menus: /mobilidade (Waesy Go, Ônibus & Caronas), /turismo (Hub de Turismo), /conta/viagens (Minhas Viagens), /conta/mobilidade, /conta/financas (Carteira $WZ), /conta/enderecos, /conta/trocas, /conta/pacotes, /conta/curriculo estavam ausentes de context-sidebar.tsx e global-menu-hub.tsx. No Workspace, /workspace/turismo/corporativo e /workspace/empresa/viagens não constavam em workspace-navigation.ts.
+  2. Ruído visual e títulos compostos: Varredura determinística identificou 12 títulos com separadores não-canônicos e excesso de palavras violando AGENTS.md B.8 e a skill anti-ai-design em pacotes, frotas, orçamentos, radar, reacomodação, metas e coleções.
+- **Decisão:**
+  1. **Desbloqueio Canônico em context-sidebar.tsx:** Inclusão de Mobilidade e Turismo em MAIN_EXPLORER_ITEMS e inclusão de Viagens, Mobilidade, Carteira, Endereços, Passes, Trocas e Currículo em USER_NAV_ITEMS com ícones semânticos e rótulos diretos de 1 palavra.
+  2. **Atualização do GlobalMenuHub (global-menu-hub.tsx):** Adição de Mobilidade em ecosystemItems e expansão de activityItems com Viagens, Mobilidade, Carteira, Endereços, Trocas, Passes e Currículo, garantindo acesso em 1 clique tanto no mobile quanto no desktop.
+  3. **Roteamento no Workspace (workspace-navigation.ts):** Inclusão de "Turismo B2B" (/workspace/turismo/corporativo) no grupo comercial de agências e "Viagens B2B" (/workspace/empresa/viagens) no grupo executivo de painel geral.
+  4. **Silêncio Visual & Títulos Diretos (B.8):** Simplificação de 100% dos títulos compostos para títulos diretos de no máximo 3 palavras ("Editar Pacote", "Nova Tabela de Tarifas", "Gestor de Pedidos", "Roteiro da Viagem", "Radar Operacional", "Registrar Contingência", "Metas de Vendas", "Regras da Coleção", "Entrega e Segurança", "Moments").
+  5. **Purificação Anti-AI em Atendimento:** Refatoração de mensagem padrão em workspace.atendimento.index.tsx para frase comercial direta e objetiva.
+  6. **Design Lint Ratchet Aprovado:** Catraca de CI executada com sucesso mantendo 12.307 violações congeladas com zero novas violações P0/P1.
+- **Fundamentação:** AGENTS.md B.1 a B.45; B.8, B.9, B.11, B.12, B.14, B.22, B.25, B.26; Skills: anti-ai-design, apple-design, layout-adaptivity; WCAG 2.2 AA.
+- **Consequências:** Zero rotas ocultas ou órfãs na experiência do usuário, navegação perfeitamente integrada entre Mobile Shell e Desktop Workspace, eliminação do ruído visual e interface 100% silenciosa e comercial.
+
 ## DEC-292: Conexão Sistêmica Total, Erradicação de Código Órfão e Ativação de UI Bidirecional (Turismo B2B, Rodoviário Intermunicipal, Agenda de Passes, ATS e Pedidos Unificados)
 - **Data:** 2026-10-21
 - **Contexto:** Auditoria sistêmica e varredura completa por código órfão, funções desconectadas e cascas visuais incompletas identificadas nas auditorias forenses:

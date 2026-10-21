@@ -571,7 +571,7 @@ function KDSPage() {
  <div className="rounded-lg border border-border bg-card overflow-hidden">
  <div className="p-4 border-b border-border/80 flex items-center justify-between">
  <div>
- <h3 className="text-sm font-bold text-foreground">Live Dashboard de Pedidos e Acompanhamento de SLA</h3>
+ <h3 className="text-sm font-bold text-foreground">Gestor de Pedidos</h3>
  <p className="text-xs text-muted-foreground">Monitoramento segundo a segundo para eliminação de gargalos operacionais</p>
  </div>
  <Badge variant="outline" className="font-mono text-xs font-bold bg-muted/40">

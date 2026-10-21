@@ -1,6 +1,6 @@
 /**
  * niche-taxonomy-manifest.ts — Taxonomia Canônica e Validação Condicional por Nicho (F09, F10, F24)
- * 
+ *
  * Regras:
  * - R06: O template é COMPOSIÇÃO, não tema.
  * - R10: O nicho é dado, não código. Nada de if (nicho === "turismo") espalhado.
@@ -18,7 +18,7 @@ export interface NicheSectionComposition {
 export interface NicheTaxonomyConfig {
   id: string;
   name: string;
-  label?: string;
+  label: string;
   defaultSellingUnit: string;
   allowedSellingUnits: string[];
   allowedTemplates: string[];
@@ -26,7 +26,7 @@ export interface NicheTaxonomyConfig {
   mandatoryAttributes: string[];
   optionalAttributes: string[];
   sectionsComposition: NicheSectionComposition[];
-  supportsShipping?: boolean;
+  supportsShipping: boolean;
 }
 
 export const NICHE_TAXONOMY_REGISTRY: Record<string, NicheTaxonomyConfig> = {
@@ -34,8 +34,10 @@ export const NICHE_TAXONOMY_REGISTRY: Record<string, NicheTaxonomyConfig> = {
   turismo: {
     id: "turismo",
     name: "Turismo & Viagens",
+    label: "Turismo & Viagens",
     defaultSellingUnit: "pessoa",
     allowedSellingUnits: ["pessoa", "casal", "grupo", "diária"],
+    supportsShipping: false,
     // O02 RESOLVIDO NO DADO: Apenas templates de turismo são aceitos!
     allowedTemplates: ["tourism_immersive", "tourism_catalog"],
     mandatoryListingFields: [
@@ -71,8 +73,10 @@ export const NICHE_TAXONOMY_REGISTRY: Record<string, NicheTaxonomyConfig> = {
   mercado: {
     id: "mercado",
     name: "Mercado & Perecíveis",
+    label: "Mercado & Perecíveis",
     defaultSellingUnit: "un",
     allowedSellingUnits: ["un", "kg", "g", "cx", "fd"],
+    supportsShipping: true,
     // O02: Apenas gôndola de conveniência
     allowedTemplates: ["grocery_gondola"],
     mandatoryListingFields: [
@@ -105,9 +109,11 @@ export const NICHE_TAXONOMY_REGISTRY: Record<string, NicheTaxonomyConfig> = {
   varejo: {
     id: "varejo",
     name: "Varejo & Produtos",
+    label: "Varejo & Produtos",
     defaultSellingUnit: "un",
     allowedSellingUnits: ["un", "kit", "cx", "par"],
-    allowedTemplates: ["retail_ecommerce", "retail_grid"],
+    supportsShipping: true,
+    allowedTemplates: ["retail_standard", "retail_ecommerce", "retail_grid"],
     mandatoryListingFields: [
       "title",
       "price_cents",
@@ -134,9 +140,11 @@ export const NICHE_TAXONOMY_REGISTRY: Record<string, NicheTaxonomyConfig> = {
   servico: {
     id: "servico",
     name: "Serviços & Atendimento",
+    label: "Serviços & Atendimento",
     defaultSellingUnit: "servico",
     allowedSellingUnits: ["servico", "hora", "diária", "projeto"],
-    allowedTemplates: ["service_booking", "service_portfolio"],
+    supportsShipping: false,
+    allowedTemplates: ["service_schedule", "service_booking", "service_portfolio"],
     mandatoryListingFields: [
       "title",
       "price_cents",
@@ -162,9 +170,11 @@ export const NICHE_TAXONOMY_REGISTRY: Record<string, NicheTaxonomyConfig> = {
   imovel: {
     id: "imovel",
     name: "Imóveis & Temporada",
+    label: "Imóveis & Temporada",
     defaultSellingUnit: "imovel",
     allowedSellingUnits: ["imovel", "diária", "mês"],
-    allowedTemplates: ["real_estate_property"],
+    supportsShipping: false,
+    allowedTemplates: ["real_estate_luxury", "real_estate_property"],
     mandatoryListingFields: [
       "title",
       "price_cents",
@@ -195,9 +205,11 @@ export const NICHE_TAXONOMY_REGISTRY: Record<string, NicheTaxonomyConfig> = {
   veiculo: {
     id: "veiculo",
     name: "Veículos & Automotivo",
+    label: "Veículos & Automotivo",
     defaultSellingUnit: "veiculo",
     allowedSellingUnits: ["veiculo"],
-    allowedTemplates: ["vehicle_showroom"],
+    supportsShipping: false,
+    allowedTemplates: ["automotive_deal", "vehicle_showroom"],
     mandatoryListingFields: [
       "title",
       "price_cents",
@@ -224,22 +236,92 @@ export const NICHE_TAXONOMY_REGISTRY: Record<string, NicheTaxonomyConfig> = {
       { id: "features_accessories", label: "Opcionais & Acessórios", order: 4, isRequired: false },
     ],
   },
+
+  // ── PRODUTOS DIGITAIS & ACESSO IMEDIATO ──
+  digital: {
+    id: "digital",
+    name: "Produtos Digitais & Cursos",
+    label: "Produtos Digitais & Cursos",
+    defaultSellingUnit: "un",
+    allowedSellingUnits: ["un", "licença", "acesso"],
+    supportsShipping: false,
+    allowedTemplates: ["digital_access", "retail_standard"],
+    mandatoryListingFields: [
+      "title",
+      "price_cents",
+    ],
+    mandatoryAttributes: [],
+    optionalAttributes: [
+      "digital_file_type",
+      "download_limit",
+    ],
+    sectionsComposition: [
+      { id: "digital_hero", label: "Capa & Demonstração", order: 1, isRequired: true },
+      { id: "digital_modules", label: "Conteúdo & Formato", order: 2, isRequired: true },
+      { id: "digital_delivery", label: "Entrega Imediata", order: 3, isRequired: true },
+    ],
+  },
+
+  // ── GASTRONOMIA & FOOD SERVICE ──
+  gastronomia: {
+    id: "gastronomia",
+    name: "Gastronomia & Delivery",
+    label: "Gastronomia & Delivery",
+    defaultSellingUnit: "un",
+    allowedSellingUnits: ["un", "kg", "porção", "combo"],
+    supportsShipping: true,
+    allowedTemplates: ["grocery_gondola", "retail_standard"],
+    mandatoryListingFields: [
+      "title",
+      "price_cents",
+    ],
+    mandatoryAttributes: [],
+    optionalAttributes: [
+      "food_prep_time_minutes",
+      "servings",
+    ],
+    sectionsComposition: [
+      { id: "food_identity", label: "Prato & Apresentação", order: 1, isRequired: true },
+      { id: "food_prep", label: "Preparo & Porção", order: 2, isRequired: true },
+    ],
+  },
 };
 
 /**
- * Validador Condicional por Nicho (F10)
- * Retorna lista de erros por campo caso algum item mandatório do nicho esteja ausente.
+ * Mapeamento de aliases plurais/inglês para chaves canônicas de NICHE_TAXONOMY_REGISTRY.
  */
 const NICHE_KEY_MAP: Record<string, string> = {
   tourism: "turismo",
+  travel: "turismo",
+  viagem: "turismo",
+  hospedagem: "turismo",
   grocery: "mercado",
   supermarket: "mercado",
+  conveniencia: "mercado",
   food_service: "gastronomia",
+  food: "gastronomia",
   retail: "varejo",
-  services: "servicos",
-  vehicles: "veiculos",
-  real_estate: "imoveis",
+  desapego: "varejo",
+  sale: "varejo",
+  services: "servico",
+  servicos: "servico",
+  service: "servico",
+  vehicles: "veiculo",
+  veiculos: "veiculo",
+  vehicle: "veiculo",
+  automotive: "veiculo",
+  real_estate: "imovel",
+  imoveis: "imovel",
+  property: "imovel",
+  digital: "digital",
 };
+
+export function normalizeAdEngineNicheId(rawNicheId?: string | null): string {
+  const key = (rawNicheId || "").toLowerCase().trim();
+  if (!key) return "varejo";
+  const mapped = NICHE_KEY_MAP[key] || key;
+  return NICHE_TAXONOMY_REGISTRY[mapped] ? mapped : "varejo";
+}
 
 /**
  * Validador Condicional por Nicho (F10, F23, F24)
@@ -265,7 +347,7 @@ export function validateListingNicheTaxonomy(
     data = arg1;
   }
 
-  const normalizedNiche = NICHE_KEY_MAP[rawNicheId] || rawNicheId || "varejo";
+  const normalizedNiche = normalizeAdEngineNicheId(rawNicheId);
   const config = NICHE_TAXONOMY_REGISTRY[normalizedNiche] || NICHE_TAXONOMY_REGISTRY.varejo;
   const errors: Record<string, string> = {};
 

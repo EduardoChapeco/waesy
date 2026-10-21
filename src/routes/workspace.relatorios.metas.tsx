@@ -432,7 +432,7 @@ function RevenueGoalsPage() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-border/50 pb-3">
           <div>
             <h3 className="text-base font-bold text-foreground">
-              Desempenho e Metas por Canal de Venda
+              Metas de Vendas
             </h3>
             <p className="text-xs text-muted-foreground">
               Acompanhe a contribuição de cada canal comercial no atingimento da meta global da empresa.

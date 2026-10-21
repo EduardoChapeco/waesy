@@ -410,7 +410,7 @@ function GiftCardPurchaseStudioPage() {
           {/* Seção 4: Segurança e Agendamento */}
           <div className="p-4 rounded-lg border border-border/60 bg-card space-y-4">
             <h2 className="text-sm font-bold text-foreground tracking-tight">
-              4. Opções avançadas de entrega e segurança
+              4. Entrega e Segurança
             </h2>
 
             <div className="space-y-3">

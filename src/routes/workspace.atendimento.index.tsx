@@ -1061,7 +1061,7 @@ function WorkspaceAtendimentoPage() {
                   {[
                     {
                       cmd: "/ola",
-                      text: "Olá! Seja muito bem-vindo ao atendimento da nossa empresa. Como podemos te ajudar?",
+                      text: "Olá! Como podemos te ajudar hoje?",
                       label: "Saudação",
                     },
                     {

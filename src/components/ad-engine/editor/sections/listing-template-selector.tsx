@@ -14,7 +14,10 @@ import React from "react";
 import { Palette, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { UnifiedNiche } from "@/types/unified-ad-engine";
-import { NICHE_TAXONOMY_REGISTRY } from "@/lib/ad-engine/niche-taxonomy-manifest";
+import {
+  NICHE_TAXONOMY_REGISTRY,
+  normalizeAdEngineNicheId,
+} from "@/lib/ad-engine/niche-taxonomy-manifest";
 import {
   listAllowedTemplatesForNiche,
   resolveTemplate,
@@ -22,7 +25,7 @@ import {
 import { cn } from "@/lib/utils";
 
 export interface ListingTemplateSelectorProps {
-  niche: UnifiedNiche;
+  niche: UnifiedNiche | string;
   value: string;
   onChange: (templateId: string) => void;
   className?: string;
@@ -47,15 +50,15 @@ const TEMPLATE_METADATA: Record<
     badge: "Comércio",
     description: "Layout focado em fotos, atributos de grade (tamanho/cor), cálculo de frete e parcelamento.",
   },
-  retail_showcase: {
-    label: "Vitrine Editorial",
-    badge: "Destaque",
-    description: "Galeria bento expandida com especificações técnicas e reviews de clientes.",
+  retail_ecommerce: {
+    label: "E-Commerce Completo",
+    badge: "Varejo",
+    description: "Vitrine comercial com matriz de variações, cálculo logístico e condições de pagamento.",
   },
-  restaurant_menu: {
-    label: "Cardápio Gastronômico",
-    badge: "Alimentos",
-    description: "Layout otimizado com adicionais, ponto de carne, tempo de preparo e combo.",
+  retail_grid: {
+    label: "Grade Rápida de Varejo",
+    badge: "Catálogo",
+    description: "Exibição enxuta focada em ficha técnica rápida e conversão imediata.",
   },
   grocery_gondola: {
     label: "Gôndola de Supermercado",
@@ -67,15 +70,35 @@ const TEMPLATE_METADATA: Record<
     badge: "Serviço",
     description: "Grade de horários disponíveis, duração da sessão e confirmação imediata.",
   },
+  service_booking: {
+    label: "Reserva Direta de Serviço",
+    badge: "Agenda",
+    description: "Foco em disponibilidade de horários, SLA de atendimento e reserva imediata.",
+  },
+  service_portfolio: {
+    label: "Portfólio & Escopo Técnico",
+    badge: "Especialista",
+    description: "Apresentação consultiva de escopo, credenciais e solicitação de orçamento.",
+  },
   real_estate_luxury: {
     label: "Dossiê Imobiliário",
     badge: "Imóveis",
     description: "Ficha cadastral completa com área útil, metragem, IPTU, condomínio e fotos.",
   },
+  real_estate_property: {
+    label: "Planta & Ficha Patrimonial",
+    badge: "Patrimônio",
+    description: "Destaque para metragem, dormitórios, condomínio/IPTU e proposta direta.",
+  },
   automotive_deal: {
     label: "Ficha Automotiva",
     badge: "Veículos",
     description: "Quilometragem, ano de fabricação, tipo de câmbio, combustível e histórico.",
+  },
+  vehicle_showroom: {
+    label: "Showroom & Telemetria Veicular",
+    badge: "Showroom",
+    description: "Cockpit automotivo com destaques de motorização, câmbio, opcionais e procedência.",
   },
   digital_access: {
     label: "Acesso Digital",
@@ -90,17 +113,18 @@ export function ListingTemplateSelector({
   onChange,
   className,
 }: ListingTemplateSelectorProps) {
-  const nicheConfig = NICHE_TAXONOMY_REGISTRY[niche];
-  const allowedTemplates = listAllowedTemplatesForNiche(niche);
+  const normalizedNiche = normalizeAdEngineNicheId(niche);
+  const nicheConfig = NICHE_TAXONOMY_REGISTRY[normalizedNiche];
+  const allowedTemplates = listAllowedTemplatesForNiche(normalizedNiche);
   const allowedTemplateIds = allowedTemplates.map((t) => t.id);
 
   // Fallback seguro se o template atual for inválido para o nicho (R34)
   React.useEffect(() => {
-    const validTemplate = resolveTemplate(niche, value);
+    const validTemplate = resolveTemplate(normalizedNiche, value);
     if (validTemplate !== value) {
       onChange(validTemplate);
     }
-  }, [niche, value, onChange]);
+  }, [normalizedNiche, value, onChange]);
 
   return (
     <div className={cn("bg-card rounded-lg p-4 sm:p-5 border border-border/60 space-y-4", className)}>
@@ -120,19 +144,20 @@ export function ListingTemplateSelector({
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-        {allowedTemplateIds.map((templateId) => {
+        {allowedTemplates.map((tmpl) => {
+          const templateId = tmpl.id;
           const meta = TEMPLATE_METADATA[templateId] ?? {
-            label: templateId,
-            badge: "Padrão",
-            description: "Composição padrão para este segmento.",
+            label: tmpl.name || templateId,
+            badge: nicheConfig?.label || "Padrão",
+            description: tmpl.description || "Composição padrão para este segmento.",
           };
           const isSelected = value === templateId;
 
           return (
-            <button /* focus-visible: ring-2 */
+            <button
               key={templateId}
               type="button"
-              /* focus-visible: ring-2 */ onClick={() => onChange(templateId)}
+              onClick={() => onChange(templateId)}
               className={cn(
                 "flex flex-col justify-between p-4 rounded-lg border text-left transition-colors min-h-16 cursor-pointer",
                 "focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",

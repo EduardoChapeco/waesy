@@ -45,8 +45,24 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
 
   const titleLower = (classified.title || "").toLowerCase();
 
+  const explicitNiche = String(
+    attrs.niche ||
+    classified.niche ||
+    attrs.niche_id ||
+    classified.niche_id ||
+    ""
+  )
+    .toLowerCase()
+    .trim();
+
+  const isExplicitNonTravel = Boolean(
+    explicitNiche && !["viagem", "travel", "turismo"].includes(explicitNiche)
+  );
+
   // ── Identificação MECE de Nichos com Isolamento Estrito (Invariante B.37) ──
   const isEvent = Boolean(
+    explicitNiche === "evento" ||
+    explicitNiche === "event" ||
     rawCategory.includes("event") ||
     rawCategory.includes("evento") ||
     classified.niche_id === "event" ||
@@ -59,6 +75,8 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
   );
 
   const isJobs = Boolean(
+    explicitNiche === "vaga" ||
+    explicitNiche === "job" ||
     attrs.role ||
     attrs.work_model ||
     attrs.salary_range ||
@@ -70,6 +88,8 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
   );
 
   const isBusiness = Boolean(
+    explicitNiche === "negocio" ||
+    explicitNiche === "business" ||
     attrs.business_type ||
     attrs.monthly_revenue_cents ||
     attrs.is_business_sale ||
@@ -81,21 +101,25 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
   );
 
   const isTravel = Boolean(
-    attrs.destination_city ||
-    attrs.destination ||
-    attrs.itinerary_days?.length ||
-    attrs.lodgings?.length ||
-    attrs.departure_options?.length ||
-    attrs.flight_details ||
-    attrs.meal_plan ||
-    attrs.passenger_composition ||
-    classified.template_style === "editorial" ||
-    attrs.template_style === "editorial" ||
-    rawCategory.includes("turismo") ||
-    rawCategory.includes("viag") ||
-    rawCategory.includes("pacote") ||
-    rawCategory.includes("travel") ||
-    classified.niche_id === "travel"
+    !isExplicitNonTravel &&
+    (
+      explicitNiche === "viagem" ||
+      explicitNiche === "travel" ||
+      explicitNiche === "turismo" ||
+      attrs.destination_city ||
+      attrs.destination ||
+      attrs.itinerary_days?.length ||
+      attrs.lodgings?.length ||
+      attrs.departure_options?.length ||
+      attrs.flight_details ||
+      attrs.meal_plan ||
+      attrs.passenger_composition ||
+      rawCategory.includes("turismo") ||
+      rawCategory.includes("viag") ||
+      rawCategory.includes("pacote") ||
+      rawCategory.includes("travel") ||
+      classified.niche_id === "travel"
+    )
   ) && !isEvent && !isJobs && !isBusiness;
 
   const isHospitality = Boolean(

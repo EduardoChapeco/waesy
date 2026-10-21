@@ -239,7 +239,7 @@ function FullscreenMapaPage() {
  <div className="flex items-center gap-2">
  <span className="size-2 rounded-full bg-destructive animate-ping" />
  <h2 className="text-xs font-bold uppercase tracking-wider text-foreground">
- Moments Ao Vivo • {location.city && location.city.toLowerCase() !== "global" ? location.city : "Região"}
+ Moments {location.city && location.city.toLowerCase() !== "global" ? location.city : "Região"}
  </h2>
  </div>
 

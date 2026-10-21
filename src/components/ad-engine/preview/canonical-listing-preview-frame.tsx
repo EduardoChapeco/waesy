@@ -91,7 +91,7 @@ export function CanonicalListingPreviewFrame({
             type="button"
             variant={viewport === "mobile" ? "default" : "ghost"}
             size="sm"
-            onClick={() => setViewport("mobile")} /* focus-visible:ring-2 */
+            onClick={() => setViewport("mobile")}
             className="h-8 w-8 p-0 rounded-md cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
             title="Mobile (390px)"
           >
@@ -102,7 +102,7 @@ export function CanonicalListingPreviewFrame({
             type="button"
             variant={viewport === "tablet" ? "default" : "ghost"}
             size="sm"
-            onClick={() => setViewport("tablet")} /* focus-visible:ring-2 */
+            onClick={() => setViewport("tablet")}
             className="h-8 w-8 p-0 rounded-md cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
             title="Tablet (768px)"
           >
@@ -113,7 +113,7 @@ export function CanonicalListingPreviewFrame({
             type="button"
             variant={viewport === "desktop" ? "default" : "ghost"}
             size="sm"
-            onClick={() => setViewport("desktop")} /* focus-visible:ring-2 */
+            onClick={() => setViewport("desktop")}
             className="h-8 w-8 p-0 rounded-md cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
             title="Desktop (1280px)"
           >
@@ -127,7 +127,7 @@ export function CanonicalListingPreviewFrame({
             type="button"
             variant="ghost"
             size="icon"
-            onClick={() => setZoomFactor((z) => Math.max(0.6, Number((z - 0.1).toFixed(1))))} /* focus-visible:ring-2 */
+            onClick={() => setZoomFactor((z) => Math.max(0.6, Number((z - 0.1).toFixed(1))))}
             disabled={zoomFactor <= 0.6}
             className="size-8 rounded-md cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
             title="Diminuir Zoom"
@@ -139,7 +139,7 @@ export function CanonicalListingPreviewFrame({
             type="button"
             variant="ghost"
             size="icon"
-            onClick={() => setZoomFactor(1)} /* focus-visible:ring-2 */
+            onClick={() => setZoomFactor(1)}
             disabled={zoomFactor === 1}
             className="size-8 rounded-md cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
             title="Resetar Zoom"
@@ -151,7 +151,7 @@ export function CanonicalListingPreviewFrame({
             type="button"
             variant="ghost"
             size="icon"
-            onClick={() => setZoomFactor((z) => Math.min(1.4, Number((z + 0.1).toFixed(1))))} /* focus-visible:ring-2 */
+            onClick={() => setZoomFactor((z) => Math.min(1.4, Number((z + 0.1).toFixed(1))))}
             disabled={zoomFactor >= 1.4}
             className="size-8 rounded-md cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
             title="Aumentar Zoom"
@@ -164,7 +164,7 @@ export function CanonicalListingPreviewFrame({
               type="button"
               variant="outline"
               size="sm"
-              onClick={onOpenExternalPreview} /* focus-visible:ring-2 */
+              onClick={onOpenExternalPreview}
               className="h-8 rounded-md text-2xs font-semibold gap-1 px-2 cursor-pointer ml-1 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
               title="Abrir em Nova Aba"
             >
@@ -182,6 +182,7 @@ export function CanonicalListingPreviewFrame({
       >
         <div
           ref={frameRef}
+          data-preview-viewport={viewport}
           className={cn(
             "bg-background text-foreground shadow-2xl transition-all border border-border/80 shrink-0 rounded-lg overflow-hidden",
             viewport === "mobile" && "border-4 border-neutral-700/60 ring-1 ring-border/40",
@@ -202,6 +203,7 @@ export function CanonicalListingPreviewFrame({
           <CanonicalListingView
             listing={listing}
             isPreviewMode={true}
+            previewViewport={viewport}
             className="min-h-full"
           />
         </div>

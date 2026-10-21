@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-21T14:38:45.054Z",
+  "timestamp": "2026-10-21T15:07:55.901Z",
   "inspectedFiles": 2239,
   "totalViolations": 12307,
   "summary": {
@@ -667,7 +667,7 @@
       "rule": "DL-07",
       "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/preview/canonical-listing-preview-frame.tsx",
       "module": "components/app",
-      "line": 186,
+      "line": 187,
       "column": 44,
       "severity": "P2",
       "match": "shadow-2xl",
@@ -678,7 +678,7 @@
       "rule": "DL-27",
       "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/preview/canonical-listing-preview-frame.tsx",
       "module": "components/app",
-      "line": 186,
+      "line": 187,
       "column": 55,
       "severity": "P3",
       "match": "transition-all",

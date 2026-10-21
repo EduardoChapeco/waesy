@@ -948,7 +948,7 @@ function NovoOrcamentoTravelosPage() {
  <TabsContent value="roteiro" className="space-y-4">
  <div className="flex items-center justify-between">
  <div>
- <h3 className="text-base font-bold text-foreground">Roteiro Visual e Itinerário Dia a Dia</h3>
+ <h3 className="text-base font-bold text-foreground">Roteiro da Viagem</h3>
  <p className="text-xs text-muted-foreground">Monte o cronograma diário com fotos dos pontos turísticos e atividades.</p>
  </div>
  <div className="flex items-center gap-2">

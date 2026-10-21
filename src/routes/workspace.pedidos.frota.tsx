@@ -536,7 +536,7 @@ function FrotaEntregasPage() {
  <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl flex flex-col p-0 gap-0 overflow-hidden overscroll-contain bg-card border-l border-border">
  <SheetHeader className="p-6 pb-4 border-b border-border/60 bg-card">
  <SheetTitle className="text-base font-semibold text-foreground">
- Nova Tabela de Tarifa de Mobilidade / Frete
+ Nova Tabela de Tarifas
  </SheetTitle>
  <SheetDescription className="text-xs text-muted-foreground mt-1">
  Define o cálculo exato de saída, km rodado e ajudantes para o modal selecionado.

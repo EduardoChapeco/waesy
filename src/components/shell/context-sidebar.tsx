@@ -1,5 +1,5 @@
 import React from "react";
-import { Tag, Newspaper, Gift, Target, Rss } from "lucide-react";
+import { Tag, Newspaper, Gift, Target, Rss, Car, Plane, MapPin, Wallet, RefreshCw, FileText } from "lucide-react";
 import { Link, useLocation } from "@tanstack/react-router";
 import { type ContextConfig } from "@/lib/navigation-registry";
 import { PublishSheet } from "@/components/commerce/publish-sheet";

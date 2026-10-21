@@ -201,7 +201,7 @@ function EditCollectionPage() {
 
  <div className="bg-card rounded-lg border border-border/60 p-6 space-y-4">
  <div className="pb-3 border-b border-border/40">
- <h3 className="text-sm font-bold text-foreground">Tipo de Coleção e Regras de Inclusão</h3>
+ <h3 className="text-sm font-bold text-foreground">Regras da Coleção</h3>
  <p className="text-xs text-muted-foreground mt-1">
  Escolha se os itens são adicionados individualmente ou calculados automaticamente.
  </p>
