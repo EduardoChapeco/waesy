@@ -4012,3 +4012,14 @@
      - Build de produção Cloudflare Pages aprovado (`npm run build`, Exit Code 0).
 - **Fundamentação:** AGENTS.md B.1 a B.47 (Invariantes B.20, B.22, B.26, B.28, B.33, B.38).
 - **Consequências:** Mini-banners de bio link e destaque tornam-se discretos, elegantes e fiéis ao corte do usuário, sem distorções de aspecto nem logos cortadas.
+
+### DEC-275: Remediação End-to-End da Agenda, Agendamentos e Hub Transacional
+- **Data**: 2026-10-20
+- **Status**: Aprovada e Implementada
+- **Contexto**: O módulo de Agenda e Agendamentos carecia de snapshots contratuais imutáveis de preços, títulos e políticas de cancelamento no momento da reserva, fluxo transacional atômico de remarcações (reschedule), reconciliação de agendamentos passados (fechamento de turno), criação manual na recepção pelo prestador e dossiê visual acionável ao clicar no agendamento.
+- **Decisão**: 
+  1. Criação da migration `20270216000000_agenda_bookings_end_to_end_hardening.sql` expandindo a máquina de estados para 8 status canônicos, adicionando colunas de snapshots (`price_cents`, `service_title`, `cancellation_policy`, `modality`), auditoria de cancelamento/no-show e rastreabilidade de remarcações (`rescheduled_from_id`, `reschedule_count`).
+  2. Implementação das Server Functions `rescheduleAppointment`, `createManualAppointment`, `reconcilePastAppointments` e `getAppointmentDossier` em `src/services/booking.functions.ts`.
+  3. Criação dos componentes `BookingDossierModal` e `ManualAppointmentModal`, integrando a experiência completa tanto para o cliente em `_store.conta.agendamentos.tsx` quanto para o prestador em `workspace.agenda.index.tsx`.
+  4. Implementação de suíte de testes automatizados `src/services/__tests__/booking-agenda-end-to-end.test.ts` cobrindo 100% dos requisitos em sintaxe EARS.
+- **Consequências**: Agenda consolidada como hub transacional canônico bidirecional, imutável contra deriva de catálogo, com fechamento de turno contra agendamentos esquecidos e suporte a remarcação atômica com liberação de slots.

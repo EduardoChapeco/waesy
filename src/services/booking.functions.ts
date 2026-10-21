@@ -28,6 +28,31 @@ export const createAppointmentSchema = z.object({
   resource_id: z.string().uuid().optional(),
 });
 
+export const rescheduleAppointmentSchema = z.object({
+  appointment_id: z.string().uuid(),
+  new_scheduled_at: z.string().datetime(),
+  new_resource_id: z.string().uuid().optional(),
+  reason: z.string().optional(),
+});
+
+export const createManualAppointmentSchema = z.object({
+  service_id: z.string().uuid(),
+  resource_id: z.string().uuid().optional(),
+  guest_name: z.string().min(2, "Nome é obrigatório"),
+  guest_phone: z.string().min(8, "Telefone é obrigatório"),
+  scheduled_at: z.string().datetime(),
+  duration_minutes: z.number().int().min(5).optional(),
+  price_cents: z.number().int().min(0).optional(),
+  payment_status: z.enum(["pay_at_location", "paid", "unpaid"]).default("pay_at_location"),
+  payment_method: z.string().default("at_location"),
+  notes: z.string().optional(),
+});
+
+export const reconcilePastAppointmentsSchema = z.object({
+  action: z.enum(["mark_completed", "mark_no_show"]),
+  appointment_ids: z.array(z.string().uuid()).min(1),
+});
+
 // --- FUNCTIONS ---
 
 /**
@@ -623,7 +648,7 @@ export const listPublicStoreResources = createServerFn({ method: "GET" })
 export const listResources = createServerFn({ method: "GET" }).handler(async () => {
     try {
       const identity = await getServerIdentity();
-      assertStoreAccess(identity, ["owner", "admin", "manager", "gerente"]);
+      assertStoreAccess(identity, ["owner", "admin", "manager", "gerente", "professional"]);
  const storeId = await resolveTenantStoreId();
  if (!storeId) throw new Error("Loja não encontrada no contexto.");
 
@@ -1072,3 +1097,320 @@ export const listClinicalRecords = createServerFn({ method: "GET" })
  throw new Error("Erro ao listar prontuários.");
  }
  });
+
+
+// --- RESCHEDULING, MANUAL BOOKING, RECONCILIATION & DOSSIER (DEC-275) ---
+
+/**
+ * Remarca um agendamento para nova data/horário de forma atômica.
+ * Suporta cliente (titular) ou prestador (staff da loja).
+ * Libera o slot anterior em resource_availabilities e reserva o novo horário com trava anti-double booking.
+ */
+export const rescheduleAppointment = createServerFn({ method: "POST" })
+  .validator(rescheduleAppointmentSchema)
+  .handler(async ({ data: input }) => {
+    try {
+      const identity = await getServerIdentity();
+      if (!identity?.id) throw new Error("Não autorizado.");
+
+      const db = getServerClient();
+
+      // 1. Buscar o agendamento
+      const { data: appt, error: apptErr } = await db
+        .from("booking_appointments")
+        .select(`
+          id, store_id, customer_id, service_id, resource_id, scheduled_at,
+          duration_minutes, status, pass_id, notes, reschedule_count,
+          booking_services ( id, title, duration_minutes, price_cents )
+        `)
+        .eq("id", input.appointment_id)
+        .single();
+
+      if (apptErr || !appt) throw new Error("Agendamento não encontrado.");
+
+      // 2. Verificar permissão: titular do agendamento OU staff da loja
+      const isOwner = appt.customer_id === identity.id;
+      let isStaff = false;
+      if (!isOwner) {
+        try {
+          assertStoreAccess(identity, ["owner", "admin", "manager", "gerente", "professional"]);
+          const storeId = await resolveTenantStoreId();
+          isStaff = storeId === appt.store_id;
+        } catch {
+          isStaff = false;
+        }
+      }
+
+      if (!isOwner && !isStaff) {
+        throw new Error("Você não possui permissão para remarcar este agendamento.");
+      }
+
+      // 3. Validar estado do agendamento
+      if (["cancelled", "completed", "no_show"].includes(appt.status)) {
+        throw new Error(`Não é possível remarcar um agendamento ${appt.status === "completed" ? "já concluído" : appt.status === "cancelled" ? "cancelado" : "marcado como falta"}.`);
+      }
+
+      // 4. Validar nova data/horário futura
+      const newStart = new Date(input.new_scheduled_at);
+      if (Number.isNaN(newStart.getTime()) || newStart.getTime() <= Date.now()) {
+        throw new Error("O novo horário deve ser uma data e hora futura válida.");
+      }
+
+      const duration = appt.duration_minutes || (appt.booking_services as any)?.duration_minutes || 60;
+      const newEnd = new Date(newStart.getTime() + duration * 60000);
+      const targetResourceId = input.new_resource_id || appt.resource_id;
+
+      // 5. Anti-Double Booking Hold no novo slot
+      const { data: holdRes, error: holdErr } = await db.rpc("hold_resource_slot", {
+        p_resource_id: targetResourceId || appt.service_id,
+        p_resource_type: targetResourceId ? "booking_resource" : "booking_service",
+        p_start_at: newStart.toISOString(),
+        p_end_at: newEnd.toISOString(),
+      });
+
+      if (holdErr || (holdRes && !(holdRes as any).success)) {
+        throw new Error((holdRes as any)?.message || "O novo horário selecionado já está ocupado por outro atendimento.");
+      }
+
+      // 6. Liberar o slot anterior
+      const oldStart = new Date(appt.scheduled_at);
+      const oldEnd = new Date(oldStart.getTime() + duration * 60000);
+      await db.rpc("release_resource_slot", {
+        p_resource_id: appt.resource_id || appt.service_id,
+        p_start_at: oldStart.toISOString(),
+        p_end_at: oldEnd.toISOString(),
+      }).catch(() => {});
+
+      // 7. Atualizar o agendamento com rastreabilidade
+      const currentCount = appt.reschedule_count || 0;
+      const appendNote = input.reason
+        ? `Remarcado (${isStaff ? "prestador" : "cliente"}): ${input.reason}`
+        : `Remarcado de ${new Date(appt.scheduled_at).toLocaleString("pt-BR")}`;
+      const updatedNotes = appt.notes ? `${appt.notes} | ${appendNote}` : appendNote;
+
+      const { data: updatedAppt, error: updateErr } = await db
+        .from("booking_appointments")
+        .update({
+          scheduled_at: input.new_scheduled_at,
+          resource_id: targetResourceId,
+          rescheduled_from_id: appt.id,
+          reschedule_count: currentCount + 1,
+          status: "confirmed",
+          notes: updatedNotes,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", appt.id)
+        .select()
+        .single();
+
+      if (updateErr) throw updateErr;
+
+      // 8. Se houver passe, registrar no ledger
+      if (appt.pass_id) {
+        await db.from("service_pass_ledger").insert({
+          pass_id: appt.pass_id,
+          appointment_id: appt.id,
+          movement_type: "session_booked",
+          credits_delta: 0,
+          balance_after: 0,
+          reason: `Remarcação para ${new Date(input.new_scheduled_at).toLocaleString("pt-BR")}`,
+        }).catch(() => {});
+      }
+
+      return { success: true, data: updatedAppt };
+    } catch (e: unknown) {
+      console.error("[booking.functions] rescheduleAppointment error:", e);
+      throw new Error(
+        (e instanceof Error ? e.message : String(e)) || "Erro ao remarcar agendamento."
+      );
+    }
+  });
+
+/**
+ * Cadastra um agendamento manual na recepção / telefone / walk-in pelo prestador.
+ */
+export const createManualAppointment = createServerFn({ method: "POST" })
+  .validator(createManualAppointmentSchema)
+  .handler(async ({ data: input }) => {
+    try {
+      const identity = await getServerIdentity();
+      assertStoreAccess(identity, ["owner", "admin", "manager", "gerente", "professional"]);
+      const storeId = await resolveTenantStoreId();
+      if (!storeId) throw new Error("Loja não encontrada no contexto operacional.");
+
+      const db = getServerClient();
+
+      // Buscar serviço
+      const { data: service, error: sErr } = await db
+        .from("booking_services")
+        .select("id, store_id, title, duration_minutes, price_cents, cancellation_policy, modality")
+        .eq("id", input.service_id)
+        .eq("store_id", storeId)
+        .single();
+
+      if (sErr || !service) throw new Error("Serviço não encontrado na loja.");
+
+      const apptStart = new Date(input.scheduled_at);
+      if (Number.isNaN(apptStart.getTime())) {
+        throw new Error("Data e horário de agendamento inválidos.");
+      }
+
+      const duration = input.duration_minutes || service.duration_minutes || 60;
+      const priceCents = input.price_cents !== undefined ? input.price_cents : (service.price_cents || 0);
+      const apptEnd = new Date(apptStart.getTime() + duration * 60000);
+
+      // Trava de Anti-Double Booking no banco
+      const targetResourceId = input.resource_id || service.id;
+      const { data: holdRes, error: holdErr } = await db.rpc("hold_resource_slot", {
+        p_resource_id: targetResourceId,
+        p_resource_type: input.resource_id ? "booking_resource" : "booking_service",
+        p_start_at: apptStart.toISOString(),
+        p_end_at: apptEnd.toISOString(),
+      });
+
+      if (holdErr || (holdRes && !(holdRes as any).success)) {
+        throw new Error((holdRes as any)?.message || "Este horário já está ocupado por outro atendimento.");
+      }
+
+      const { data: appt, error: insertErr } = await db
+        .from("booking_appointments")
+        .insert({
+          store_id: storeId,
+          service_id: service.id,
+          resource_id: input.resource_id || null,
+          customer_id: null,
+          guest_name: input.guest_name,
+          guest_phone: input.guest_phone,
+          scheduled_at: input.scheduled_at,
+          duration_minutes: duration,
+          price_cents: priceCents,
+          service_title: service.title,
+          cancellation_policy: service.cancellation_policy || null,
+          modality: service.modality || "in_store",
+          payment_status: input.payment_status || "pay_at_location",
+          payment_method: input.payment_method || "at_location",
+          notes: input.notes ? `[Lançamento Manual] ${input.notes}` : "[Lançamento Manual]",
+          status: "confirmed",
+        })
+        .select()
+        .single();
+
+      if (insertErr) throw insertErr;
+
+      return { status: "success" as const, data: appt };
+    } catch (e: unknown) {
+      console.error("[booking.functions] createManualAppointment error:", e);
+      throw new Error(
+        (e instanceof Error ? e.message : String(e)) || "Erro ao cadastrar agendamento manual."
+      );
+    }
+  });
+
+/**
+ * Reconcilia e fecha em lote agendamentos passados pendentes de finalização (Fechamento de Turno).
+ */
+export const reconcilePastAppointments = createServerFn({ method: "POST" })
+  .validator(reconcilePastAppointmentsSchema)
+  .handler(async ({ data: input }) => {
+    try {
+      const identity = await getServerIdentity();
+      assertStoreAccess(identity, ["owner", "admin", "manager", "gerente", "professional"]);
+      const storeId = await resolveTenantStoreId();
+      if (!storeId) throw new Error("Loja não encontrada no contexto.");
+
+      const db = getServerClient();
+      const targetStatus = input.action === "mark_completed" ? "completed" : "no_show";
+      const nowIso = new Date().toISOString();
+
+      const updateData: Record<string, any> = {
+        status: targetStatus,
+        updated_at: nowIso,
+      };
+
+      if (input.action === "mark_completed") {
+        updateData.completed_at = nowIso;
+        updateData.completed_by = identity.id;
+      } else {
+        updateData.no_show_marked_at = nowIso;
+        updateData.no_show_marked_by = identity.id;
+      }
+
+      const { data, error } = await db
+        .from("booking_appointments")
+        .update(updateData)
+        .in("id", input.appointment_ids)
+        .eq("store_id", storeId)
+        .select("id, status");
+
+      if (error) throw error;
+      return { success: true, updated_count: data?.length || 0, target_status: targetStatus };
+    } catch (e: unknown) {
+      console.error("[booking.functions] reconcilePastAppointments error:", e);
+      throw new Error(
+        (e instanceof Error ? e.message : String(e)) || "Erro ao reconciliar agendamentos passados."
+      );
+    }
+  });
+
+/**
+ * Retorna o dossiê detalhado e auditável de um agendamento.
+ * Disponível para o cliente titular do agendamento ou para a equipe da loja prestadora.
+ */
+export const getAppointmentDossier = createServerFn({ method: "GET" })
+  .validator(z.object({ appointment_id: z.string().uuid() }))
+  .handler(async ({ data: { appointment_id } }) => {
+    try {
+      const identity = await getServerIdentity().catch(() => null);
+      const db = getServerClient();
+
+      const { data: appt, error: apptErr } = await db
+        .from("booking_appointments")
+        .select(`
+          id, store_id, service_id, resource_id, customer_id, guest_name, guest_phone,
+          scheduled_at, duration_minutes, status, notes, pass_id, session_number,
+          price_cents, service_title, cancellation_policy, modality, payment_status,
+          payment_method, rescheduled_from_id, reschedule_count, cancelled_by,
+          cancellation_reason, cancelled_at, check_in_at, no_show_marked_at,
+          completed_at, created_at, updated_at,
+          booking_services ( id, title, duration_minutes, price_cents, category, included_items, guidelines, cancellation_policy, modality ),
+          booking_resources ( id, name, resource_type ),
+          stores ( id, name, slug, avatar_url, settings, address_line, neighborhood, city, state, phone )
+        `)
+        .eq("id", appointment_id)
+        .single();
+
+      if (apptErr || !appt) throw new Error("Agendamento não encontrado.");
+
+      // Verificar permissão
+      const isCustomer = identity?.id && appt.customer_id === identity.id;
+      let isStaff = false;
+      if (identity?.id && !isCustomer) {
+        try {
+          assertStoreAccess(identity, ["owner", "admin", "manager", "gerente", "professional"]);
+          const storeId = await resolveTenantStoreId();
+          isStaff = storeId === appt.store_id;
+        } catch {
+          isStaff = false;
+        }
+      }
+
+      return {
+        success: true,
+        data: appt,
+        permissions: {
+          can_cancel: ["pending", "confirmed"].includes(appt.status),
+          can_reschedule: ["pending", "confirmed"].includes(appt.status),
+          can_check_in: isStaff && ["pending", "confirmed"].includes(appt.status),
+          can_complete: isStaff && ["in_service", "checked_in", "confirmed"].includes(appt.status),
+          can_mark_no_show: isStaff && ["pending", "confirmed"].includes(appt.status),
+          is_staff: isStaff,
+          is_customer: Boolean(isCustomer),
+        },
+      };
+    } catch (e: unknown) {
+      console.error("[booking.functions] getAppointmentDossier error:", e);
+      throw new Error(
+        (e instanceof Error ? e.message : String(e)) || "Erro ao carregar dossiê do agendamento."
+      );
+    }
+  });

@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Calendar as CalendarIcon, Clock, CheckCircle2, FileText, Play, Ticket, ChevronLeft, ChevronRight, DollarSign, Users, MessageCircle, Smartphone } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, CheckCircle2, FileText, Play, Ticket, ChevronLeft, ChevronRight, DollarSign, Users, MessageCircle, Smartphone, Plus, AlertTriangle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DigitalCompanionCard } from "@/components/documents/digital-companion-card";
 import { format, addDays, subDays, isSameDay } from "date-fns";
@@ -9,7 +9,9 @@ import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { playCashRegisterSound } from "@/lib/audio-chimes";
 
-import { listAppointments, updateAppointmentStatus, listClinicalRecords, addClinicalRecord } from "@/services/booking.functions";
+import { listAppointments, updateAppointmentStatus, listClinicalRecords, addClinicalRecord, reconcilePastAppointments } from "@/services/booking.functions";
+import { BookingDossierModal } from "@/components/booking/booking-dossier-modal";
+import { ManualAppointmentModal } from "@/components/booking/manual-appointment-modal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/commerce/page-header";
@@ -112,6 +114,8 @@ function AdminAppointmentsPage() {
  const [selectedAppt, setSelectedAppt] = useState<{ id: string; name: string } | null>(null);
  const [companionCardOpen, setCompanionCardOpen] = useState(false);
  const [companionData, setCompanionData] = useState<any>(null);
+  const [isManualModalOpen, setIsManualModalOpen] = useState(false);
+  const [selectedDossierAppt, setSelectedDossierAppt] = useState<any | null>(null);
 
  const handleOpenCompanion = (appt: any, resourceName: string) => {
  const serviceTitle = appt.booking_services?.title || "Atendimento";
@@ -217,7 +221,33 @@ function AdminAppointmentsPage() {
  return map;
  }, [filteredAppointments]);
 
- const dayMetrics = useMemo(() => {
+   const pastUnresolvedAppointments = useMemo(() => {
+    const now = new Date();
+    return appointments.filter((appt: any) => {
+      if (!appt.scheduled_at) return false;
+      const apptDate = new Date(appt.scheduled_at);
+      const duration = appt.duration_minutes || 60;
+      const endDate = new Date(apptDate.getTime() + duration * 60000);
+      return endDate < now && ["pending", "confirmed", "checked_in", "in_service"].includes(appt.status);
+    });
+  }, [appointments]);
+
+  const reconcileMutation = useMutation({
+    mutationFn: (action: "mark_completed" | "mark_no_show") =>
+      reconcilePastAppointments({
+        data: {
+          action,
+          appointment_ids: pastUnresolvedAppointments.map((a: any) => a.id),
+        },
+      }),
+    onSuccess: (res) => {
+      toast.success(`Fechamento de turno: ${res.updated_count} atendimento(s) atualizado(s)!`);
+      queryClient.invalidateQueries({ queryKey: ["admin-appointments"] });
+    },
+    onError: (e: any) => toast.error(e.message || "Erro ao reconciliar agendamentos."),
+  });
+
+  const dayMetrics = useMemo(() => {
  const totalCount = filteredAppointments.length;
  const completedCount = filteredAppointments.filter((a: any) => a.status === "completed").length;
  const revenueCents = filteredAppointments
@@ -546,7 +576,25 @@ function AdminAppointmentsPage() {
  </div>
  )}
 
- <ClinicalRecordDrawer
+ {/* ── Dossiê Completo do Agendamento (DEC-275) ── */}
+      <BookingDossierModal
+        isOpen={Boolean(selectedDossierAppt)}
+        onClose={() => setSelectedDossierAppt(null)}
+        appointment={selectedDossierAppt}
+        isStaff={true}
+        onOpenClinicalRecords={(id, name) => setSelectedAppt({ id, name })}
+        onUpdated={() => queryClient.invalidateQueries({ queryKey: ["admin-appointments"] })}
+      />
+
+      {/* ── Lançamento de Agendamento Manual (DEC-275) ── */}
+      <ManualAppointmentModal
+        isOpen={isManualModalOpen}
+        onClose={() => setIsManualModalOpen(false)}
+        initialDate={selectedDate}
+        onSuccess={() => queryClient.invalidateQueries({ queryKey: ["admin-appointments"] })}
+      />
+
+      <ClinicalRecordDrawer
  appointmentId={selectedAppt?.id || null}
  isOpen={Boolean(selectedAppt)}
  onClose={() => setSelectedAppt(null)}
