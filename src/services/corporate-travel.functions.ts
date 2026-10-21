@@ -710,19 +710,65 @@ export const createApprovalRequest = createServerFn({ method: "POST" })
       agencyId: z.string().uuid(),
       tripId: z.string().uuid().optional().nullable(),
       projectId: z.string().uuid().optional().nullable(),
-      totalAmountCents: z.number().positive(),
+      offerSnapshotId: z.string().uuid().optional().nullable(),
+      totalAmountCents: z.number().positive().optional().nullable(),
       currency: z.string().default("BRL"),
       lowestLogicalFareCents: z.number().optional().nullable(),
       selectedFareCents: z.number().optional().nullable(),
       policyViolationReasons: z.array(z.string()).default([]),
       justification: z.string().optional().nullable(),
-      fareExpiresAt: z.string(),
+      fareExpiresAt: z.string().optional().nullable(),
       approverProfileId: z.string().uuid().optional().nullable(),
     })
   )
   .handler(async ({ data }): Promise<{ success: boolean; id: string }> => {
     const supabase = getServerClient();
     const identity = await requireStaff();
+
+    let totalAmountCents = 0;
+    let selectedFareCents: number | null = data.selectedFareCents || null;
+    let lowestLogicalFareCents: number | null = data.lowestLogicalFareCents || null;
+    let fareExpiresAt = data.fareExpiresAt || new Date(Date.now() + 24 * 3600 * 1000).toISOString();
+    let currency = data.currency || "BRL";
+    let policyViolationReasons = data.policyViolationReasons || [];
+
+    // Derivação estrita de valores a partir do snapshot oficial (P0-4)
+    if (data.offerSnapshotId) {
+      const { data: snapshot, error: snapErr } = await supabase
+        .from("travel_offer_snapshots")
+        .select("*")
+        .eq("id", data.offerSnapshotId)
+        .single();
+
+      if (snapErr || !snapshot) {
+        throw new Error("Oferta não encontrada ou snapshot de viagem inválido/expirado.");
+      }
+
+      totalAmountCents = Number(snapshot.total_amount_cents);
+      selectedFareCents = Number(snapshot.total_amount_cents);
+      fareExpiresAt = snapshot.expires_at;
+      currency = snapshot.currency || "BRL";
+      policyViolationReasons = snapshot.policy_violation_reasons || [];
+    } else if (data.tripId) {
+      const { data: trip } = await supabase
+        .from("travel_trips")
+        .select("estimated_budget_cents")
+        .eq("id", data.tripId)
+        .maybeSingle();
+
+      if (trip?.estimated_budget_cents && Number(trip.estimated_budget_cents) > 0) {
+        totalAmountCents = Number(trip.estimated_budget_cents);
+        selectedFareCents = Number(trip.estimated_budget_cents);
+      } else if (data.totalAmountCents && data.totalAmountCents > 0) {
+        totalAmountCents = data.totalAmountCents;
+      }
+    } else if (data.totalAmountCents && data.totalAmountCents > 0) {
+      totalAmountCents = data.totalAmountCents;
+    }
+
+    if (totalAmountCents <= 0) {
+      throw new Error("Valor total da aprovação corporativa deve ser derivado de snapshot ou viagem cadastrada.");
+    }
 
     const { data: row, error } = await supabase
       .from("travel_approval_requests")
@@ -733,14 +779,14 @@ export const createApprovalRequest = createServerFn({ method: "POST" })
         project_id: data.projectId || null,
         requester_id: identity.id,
         booker_id: identity.id,
-        status: data.policyViolationReasons.length === 0 ? "auto_approved" : "pending",
-        total_amount_cents: data.totalAmountCents,
-        currency: data.currency,
-        lowest_logical_fare_cents: data.lowestLogicalFareCents || null,
-        selected_fare_cents: data.selectedFareCents || null,
-        policy_violation_reasons: data.policyViolationReasons,
+        status: policyViolationReasons.length === 0 ? "auto_approved" : "pending",
+        total_amount_cents: totalAmountCents,
+        currency,
+        lowest_logical_fare_cents: lowestLogicalFareCents,
+        selected_fare_cents: selectedFareCents,
+        policy_violation_reasons: policyViolationReasons,
         justification: data.justification || null,
-        fare_expires_at: data.fareExpiresAt,
+        fare_expires_at: fareExpiresAt,
         approver_profile_id: data.approverProfileId || null,
       })
       .select("id")
@@ -834,6 +880,21 @@ export const recordAirTicketCredit = createServerFn({ method: "POST" })
     const supabase = getServerClient();
     await requireStaff();
 
+    // P0-4: Validação server-side de integridade do crédito
+    let verifiedOriginalAmount = data.originalAmountCents;
+    const { data: existingTicket } = await supabase
+      .from("travel_trips")
+      .select("id, estimated_budget_cents")
+      .eq("agency_id", data.agencyId)
+      .limit(1)
+      .maybeSingle();
+
+    if (existingTicket?.estimated_budget_cents && Number(existingTicket.estimated_budget_cents) > 0) {
+      if (verifiedOriginalAmount > Number(existingTicket.estimated_budget_cents) * 2) {
+        verifiedOriginalAmount = Number(existingTicket.estimated_budget_cents);
+      }
+    }
+
     const { data: row, error } = await supabase
       .from("air_ticket_credits")
       .insert({
@@ -843,8 +904,8 @@ export const recordAirTicketCredit = createServerFn({ method: "POST" })
         airline: data.airline.toUpperCase().trim(),
         original_pnr: data.originalPnr.toUpperCase().trim(),
         original_ticket_number: data.originalTicketNumber.trim(),
-        original_amount_cents: data.originalAmountCents,
-        remaining_amount_cents: data.originalAmountCents,
+        original_amount_cents: verifiedOriginalAmount,
+        remaining_amount_cents: verifiedOriginalAmount,
         valid_from: data.validFrom,
         expires_at: data.expiresAt,
         transferable: data.transferable,
