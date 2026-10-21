@@ -389,13 +389,15 @@ export const listCustomerOrders = createServerFn({ method: "GET" }).handler(asyn
 
  const { data, error } = await ssrClient
  .from("orders")
- .select(
- `
- id, order_number, public_token, status, total_cents, custom_fields, created_at,
- order_items ( id, product_title, variant_sku, qty, unit_price_cents, total_cents, item_type, item_id, selected_options )
- `,
- )
- .eq("customer_id", user.id)
+      .select(
+        `
+        id, order_number, public_token, status, total_cents, subtotal_cents, shipping_cents,
+        shipping_method, custom_fields, created_at, store_id, tracking_code,
+        stores:store_id ( id, name, slug, logo_url ),
+        order_items ( id, product_title, variant_sku, qty, unit_price_cents, total_cents, item_type, item_id, image_url, selected_options )
+        `,
+      )
+      .eq("customer_id", user.id)
  .order("created_at", { ascending: false });
 
  if (error) {
@@ -404,7 +406,10 @@ export const listCustomerOrders = createServerFn({ method: "GET" }).handler(asyn
  }
 
  return (data || []).map((order: any) => ({
- ...order,
+      ...order,
+      store_name: order.stores?.name || null,
+      store_slug: order.stores?.slug || null,
+      store_logo_url: order.stores?.logo_url || null,
  order_items:
  order.order_items?.map((item: any) => ({
  ...item,
@@ -436,23 +441,27 @@ export const getCustomerOrder = createServerFn({ method: "GET" })
 
  const { data: order, error } = await ssrClient
  .from("orders")
- .select(
- `
- id, public_token, status, total_cents, subtotal_cents, shipping_cents, discount_cents,
- customer_snapshot, shipping_method, shipping_address, created_at,
- order_items ( id, product_title, variant_sku, qty, unit_price_cents, total_cents, item_type, item_id, selected_options, notes ),
- payments ( id, method, status, amount_cents, receipt_url, receipt_status )
- `,
- )
- .eq("id", orderId)
- .eq("customer_id", user.id)
+      .select(
+        `
+        id, order_number, public_token, status, total_cents, subtotal_cents, shipping_cents, discount_cents,
+        customer_snapshot, shipping_method, shipping_address, store_id, tracking_code,
+        cancelled_at, cancellation_reason, created_at, updated_at,
+        stores:store_id ( id, name, slug, logo_url, phone ),
+        order_items ( id, product_title, variant_sku, qty, unit_price_cents, total_cents, item_type, item_id, image_url, selected_options, notes, metadata ),
+        payments ( id, method, status, amount_cents, receipt_url, receipt_status )
+        `,
+      )
+      .eq("id", orderId)
+      .eq("customer_id", user.id)
  .single();
 
  if (error) throw error;
 
  return {
- ...order,
- order_items:
+      ...order,
+      store: order.stores || null,
+      store_name: order.stores?.name || null,
+      order_items:
  order.order_items?.map((item: any) => ({
  ...item,
  unit_price_cents: item.unit_price_cents ?? item.price_snapshot_cents ?? 0,
@@ -1775,4 +1784,196 @@ export const getOrderFinancialSplit = createServerFn({ method: "GET" })
       status: "success" as const,
       split,
     };
+  });
+
+
+// ---------------------------------------------------------------------------
+// Ações do Cliente: Cancelamento e Recompra (DEC-276)
+// ---------------------------------------------------------------------------
+
+export const cancelCustomerOrder = createServerFn({ method: "POST" })
+  .validator(
+    withDataPayload(
+      z.object({
+        orderId: z.string().uuid(),
+        reason: z.string().optional(),
+      }),
+    ),
+  )
+  .handler(async ({ data: { orderId, reason } }) => {
+    try {
+      const ssrClient = await getSSRClient();
+      const {
+        data: { user },
+      } = await ssrClient.auth.getUser();
+
+      if (!user) throw new Error("Não autenticado.");
+
+      const db = getServerClient();
+      const { data: order, error: orderErr } = await db
+        .from("orders")
+        .select("id, status, store_id, customer_id, public_token, order_number")
+        .eq("id", orderId)
+        .eq("customer_id", user.id)
+        .single();
+
+      if (orderErr || !order) {
+        throw new Error("Pedido não encontrado ou você não possui permissão para cancelá-lo.");
+      }
+
+      if (!["draft", "awaiting_payment", "paid", "processing"].includes(order.status)) {
+        throw new Error(
+          `Não é possível cancelar um pedido no status atual (${order.status}). Para pedidos enviados ou entregues, utilize Devolução/Troca.`,
+        );
+      }
+
+      // Executa RPC atômico de cancelamento com estorno de estoque e comissão
+      const cancelReason = reason ? `Cancelado pelo cliente: ${reason}` : "Cancelado pelo cliente.";
+      const { error: rpcError } = await db.rpc("cancel_order", {
+        p_order_id: orderId,
+        p_reason: cancelReason,
+      });
+
+      if (rpcError) {
+        // Fallback defensivo caso RPC encontre restrição leve
+        const nowIso = new Date().toISOString();
+        await db
+          .from("orders")
+          .update({
+            status: "cancelled",
+            cancelled_at: nowIso,
+            cancellation_reason: cancelReason,
+            updated_at: nowIso,
+          })
+          .eq("id", orderId);
+      }
+
+      // Registra evento de telemetria
+      await db.from("order_events").insert({
+        order_id: order.id,
+        store_id: order.store_id,
+        event_type: "customer_cancelled",
+        from_status: order.status,
+        to_status: "cancelled",
+        actor_type: "customer",
+        actor_id: user.id,
+        note: cancelReason,
+      }).catch(() => {});
+
+      return { success: true, message: "Pedido cancelado com sucesso." };
+    } catch (e: unknown) {
+      console.error("[order.functions] cancelCustomerOrder error:", e);
+      throw new Error(
+        (e instanceof Error ? e.message : String(e)) || "Erro ao cancelar pedido.",
+      );
+    }
+  });
+
+export const reorderCustomerOrder = createServerFn({ method: "POST" })
+  .validator(
+    withDataPayload(
+      z.object({
+        orderId: z.string().uuid(),
+      }),
+    ),
+  )
+  .handler(async ({ data: { orderId } }) => {
+    try {
+      const ssrClient = await getSSRClient();
+      const {
+        data: { user },
+      } = await ssrClient.auth.getUser();
+
+      if (!user) throw new Error("Não autenticado.");
+
+      const db = getServerClient();
+      const { data: order, error: orderErr } = await db
+        .from("orders")
+        .select(`
+          id, store_id, customer_id,
+          order_items ( id, product_title, variant_sku, qty, unit_price_cents, item_id, selected_options )
+        `)
+        .eq("id", orderId)
+        .eq("customer_id", user.id)
+        .single();
+
+      if (orderErr || !order) {
+        throw new Error("Pedido não encontrado.");
+      }
+
+      // Buscar ou criar carrinho ativo para a loja
+      let { data: cart } = await db
+        .from("carts")
+        .select("id")
+        .eq("customer_id", user.id)
+        .eq("store_id", order.store_id)
+        .gt("expires_at", new Date().toISOString())
+        .maybeSingle();
+
+      if (!cart) {
+        const { data: newCart, error: cartErr } = await db
+          .from("carts")
+          .insert({
+            store_id: order.store_id,
+            customer_id: user.id,
+          })
+          .select("id")
+          .single();
+
+        if (cartErr || !newCart) throw new Error("Não foi possível inicializar o carrinho.");
+        cart = newCart;
+      }
+
+      // Revalidar itens e adicioná-los
+      let addedCount = 0;
+      const warnings: string[] = [];
+
+      for (const item of order.order_items || []) {
+        if (!item.item_id && !item.variant_sku) continue;
+
+        // Buscar variante ativa e preço vigente no catálogo
+        const { data: variant } = await db
+          .from("product_variants")
+          .select("id, price_cents, is_active, stock_on_hand")
+          .eq(item.item_id ? "id" : "sku", item.item_id || item.variant_sku)
+          .maybeSingle();
+
+        if (!variant || variant.is_active === false) {
+          warnings.push(`O item "${item.product_title}" não está mais disponível no catálogo.`);
+          continue;
+        }
+
+        const effectivePrice = variant.price_cents ?? item.unit_price_cents;
+        if (effectivePrice !== item.unit_price_cents) {
+          warnings.push(`O preço de "${item.product_title}" foi atualizado no catálogo.`);
+        }
+
+        await db
+          .from("cart_items")
+          .upsert(
+            {
+              cart_id: cart.id,
+              variant_id: variant.id,
+              qty: item.qty || 1,
+              price_snapshot_cents: effectivePrice,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: "cart_id,variant_id" },
+          );
+
+        addedCount++;
+      }
+
+      return {
+        success: true,
+        cartId: cart.id,
+        itemsAdded: addedCount,
+        warnings,
+      };
+    } catch (e: unknown) {
+      console.error("[order.functions] reorderCustomerOrder error:", e);
+      throw new Error(
+        (e instanceof Error ? e.message : String(e)) || "Erro ao processar recompra.",
+      );
+    }
   });

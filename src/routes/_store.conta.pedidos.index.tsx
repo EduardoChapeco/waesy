@@ -1,5 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState, useMemo, type ElementType } from "react";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { useState, useMemo, useEffect, type ElementType } from "react";
 import { formatMoney } from "@/lib/money";
 import { formatHumanOrderId } from "@/lib/order-id";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeMobileHeader } from "@/components/navigation";
 import { listCustomerOrders } from "@/services/order.functions";
+import { subscribeToTableChanges } from "@/services/realtime-channel";
 import { formatDate } from "@/lib/datetime";
 import { ShoppingBag, ChevronRight, Search, Package, Truck, CheckCircle2, Clock, XCircle, AlertCircle, RotateCcw, MapPin, QrCode, CreditCard, Filter } from "lucide-react";
 
@@ -236,7 +237,40 @@ function OrderRow({ order }: { order: any }) {
 // ─── Componente Principal ─────────────────────────────────────────────────────
 
 function CustomerOrdersPage() {
-  const orders = (Route.useLoaderData() as any[]) || [];
+  const initialOrders = (Route.useLoaderData() as any[]) || [];
+  const router = useRouter();
+  const [orders, setOrders] = useState<any[]>(initialOrders);
+
+  useEffect(() => {
+    setOrders(initialOrders);
+  }, [initialOrders]);
+
+  // Realtime subscription + adaptive polling for live order updates (DEC-276)
+  useEffect(() => {
+    const unsub = subscribeToTableChanges({
+      channelName: "customer-orders-live",
+      table: "orders",
+      onPayload: () => {
+        router.invalidate();
+      },
+    });
+
+    const hasActiveOrders = orders.some((o: any) =>
+      ["awaiting_payment", "paid", "processing", "shipped", "ready_for_pickup"].includes(o.status),
+    );
+
+    let intervalId: any = null;
+    if (hasActiveOrders) {
+      intervalId = setInterval(() => {
+        router.invalidate();
+      }, 10000);
+    }
+
+    return () => {
+      unsub();
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [orders, router]);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState("todos");
