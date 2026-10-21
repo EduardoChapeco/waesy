@@ -10,12 +10,14 @@ import { formatMoney } from "@/lib/money";
 import { getCart, getGlobalCarts, cancelCart, updateCartShipping, applyCouponToCart, updateCartContact } from "@/services/cart.functions";
 import { useCartContext } from "@/lib/cart-context";
 import { checkGiftCardBalance } from "@/services/giftcard.functions";
+import { getCheckoutWzAvailability } from "@/services/wz-engine.functions";
+import { formatWz } from "@/lib/wz-quote-engine";
 import { processCheckout, getStoreCheckoutConfig, type CheckoutDynamicConfig } from "@/services/checkout.functions";
 import { initiatePaymentTransaction, getPublicPaymentMethods, getGatewayStatus } from "@/services/payment.functions";
 import { calculateShipping } from "@/services/shipping.functions";
 import { getPublicStoreProfile } from "@/services/catalog.functions";
 import { getProfile } from "@/services/auth.functions";
-import { getUserAddresses, validateDeliveryLocationGPS } from "@/services/addresses.functions";
+import { getUserAddresses, validateDeliveryLocationGPS, saveUserAddress } from "@/services/addresses.functions";
 import { DeliveryLocationPolicySheet } from "@/components/commerce/delivery-location-policy-sheet";
 import { GpsMismatchModal } from "@/components/commerce/gps-mismatch-modal";
 import { Check, CheckCircle2, Ticket, User, Truck, CreditCard, ShoppingBag, AlertCircle, MapPin, Loader2, Gift, QrCode, Clock, Store, ChevronRight, ArrowLeft, Navigation, Layers, Plus, ShieldCheck, Building2, ShieldAlert, Plane, Users, Calendar, Zap, FileText, Trash2, Package } from 'lucide-react';
@@ -341,7 +343,30 @@ export function CheckoutPage() {
   // Promo & Gift Card code states
   const [promoCode, setPromoCode] = useState("");
   const [isApplyingPromo, setIsApplyingPromo] = useState(false);
- const [appliedGiftCard, setAppliedGiftCard] = useState<{
+ 
+  // $WZ Balance Checkout Integration
+  const [wzAvailability, setWzAvailability] = useState<{
+    authenticated: boolean;
+    totalUsableWz: number;
+    usableReferenceBrlCents: number;
+    availableStoreWz: number;
+    availableGlobalWz: number;
+  } | null>(null);
+  const [useWzBalance, setUseWzBalance] = useState(false);
+
+  useEffect(() => {
+    if (cart?.store_id) {
+      getCheckoutWzAvailability({ data: { storeId: cart.store_id } })
+        .then((res) => {
+          if (res && res.authenticated) {
+            setWzAvailability(res);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [cart?.store_id]);
+
+  const [appliedGiftCard, setAppliedGiftCard] = useState<{
  code: string;
  balanceCents: number;
  } | null>(null);
@@ -863,6 +888,7 @@ export function CheckoutPage() {
           paymentMethodId:
             formData.paymentMethod === "manual" ? formData.paymentMethodId : undefined,
           giftCardCode: appliedGiftCard?.code || undefined,
+          useWzBalance: useWzBalance,
           customFields: Object.keys(customFieldValues).length > 0 ? customFieldValues : undefined,
           notes: orderNotes.trim() || undefined,
           deliveryToDoor: isPhysicalDelivery ? deliveryToDoor : false,
@@ -2875,7 +2901,14 @@ export function CheckoutPage() {
  <span className="font-mono">{formatMoney(effectiveSubtotalCents)}</span>
  </div>
 
- {cart.discountCents > 0 && (
+ {useWzBalance && wzDeductionCents > 0 && (
+                <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-medium">
+                  <span>Desconto Saldo $WZ</span>
+                  <span className="font-mono">-{formatMoney(wzDeductionCents)}</span>
+                </div>
+              )}
+
+              {cart.discountCents > 0 && (
  <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-medium">
  <span>Desconto Cupom</span>
  <span className="font-mono">-{formatMoney(cart.discountCents)}</span>

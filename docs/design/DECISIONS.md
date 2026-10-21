@@ -1,5 +1,27 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-287: Serviço Central de Identidade Geográfica e Logística (Meus Endereços / Address Platform), Snapshots Transacionais Imutáveis e Zero-Amnésia de Checkout
+- **Data:** 2026-10-21
+- **Contexto:** Auditoria profunda e refatoração completa do módulo Meus Endereços (`_store.conta.enderecos`, `addresses.functions`, `_store.checkout`):
+  1. O módulo atuava como um CRUD isolado de usuário, sem integração com o mapa interativo, sem autocomplete inteligente resiliente e sem suporte a reverse geocoding ao arrastar o pino.
+  2. Risco arquitetural de mutabilidade retroativa: se um cliente editasse "Minha Casa" para uma nova rua, faltava clareza de que transações de pedidos (`orders`), fretes e atendimentos em domicílio não podiam sofrer alteração.
+  3. No checkout (`_store.checkout`), ao preencher um novo endereço de entrega, não havia persistência atômica no catálogo do usuário (`user_addresses`), forçando o cliente a redigitar seus dados em compras subsequentes.
+  4. Faltavam garantias de atomicidade de endereço padrão: dois endereços podiam ficar marcados simultaneamente com `is_default = true` em situações de concorrência ou atualização rápida.
+- **Decisão:**
+  1. **Consolidação da Fonte Canônica (SSOT):** A tabela `user_addresses` e o BFF `addresses.functions.ts` passam a ser a autoridade única de endereços cadastrados do usuário para toda a plataforma (checkout, pedidos, entregadores e serviços).
+  2. **Isolamento Estrito: Endereço Salvo (Mutável) vs Snapshot Transacional (Imutável) (EARS-05 / EARS-06):** Edições no catálogo pessoal alteram apenas preferências futuras. Todo pedido (`orders.shipping_address`) ou agendamento domiciliar congela um snapshot JSONB imutável com coordenadas, logradouro e dados de condomínio.
+  3. **Mapa Interativo Integrado com Fullscreen & Reverse Geocoding (EARS-02):**
+     - O formulário incorpora MapLibre com pino móvel (`draggable: true`), evento `dragend` para recálculo de endereço reverso via Nominatim, botão de centralização e modo tela cheia.
+     - Botão "Puxar via GPS" com consentimento do navegador para preenchimento imediato de coordenadas.
+  4. **Suporte Completo a Condomínios e Acesso (V139 Waesy Go):** Campos dedicados para `is_apartment`, `block_tower`, `intercom_code`, `reference_point` e `instructions`.
+  5. **Atomicidade de Padrão & Soft Delete (EARS-04):** Procedure `save_user_address_atomic` e `delete_user_address_atomic` com índice único parcial (`uq_user_addresses_single_default`) impedindo múltiplos padrões e elegendo o mais recente remanescente ao excluir o padrão.
+  6. **Zero-Amnésia no Checkout:** Integração bidirecional com o checkout, permitindo salvar novos endereços com 1 clique direto no catálogo de `Meus Endereços`.
+  7. **Evidência Automatizada:** Suíte `canonical-address-platform-end-to-end.test.ts` com 6 testes cobrindo Zod, imutabilidade de snapshot, cálculo esférico de Haversine e detecção de mismatch de GPS aprovada com 100% de sucesso. Catraca de design lint ratcheted com 0 regressões.
+- **Fundamentação:** AGENTS.md B.1 a B.45; B.22, B.25, B.26, B.38; SPEC-ENDERECOS-CANONICAL-ADDRESS-PLATFORM.md.
+- **Consequências:** Fim da fragmentação de endereços, eliminação de digitação redundante no checkout, precisão máxima para entregadores do Waesy Go e garantia de imutabilidade histórica.
+
+
+
 ## DEC-286: Remediação End-to-End do Domínio de Pacotes de Aulas e Serviços, Direitos de Uso (Entitlements) e Conciliação Auditável de Créditos
 - **Data:** 2026-10-21
 - **Contexto:** Auditoria profunda e refatoração completa do módulo Pacotes de Aulas e Serviços (`_store.conta.pacotes` e `workspace.pacotes`):

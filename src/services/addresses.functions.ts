@@ -23,6 +23,10 @@ export interface UserAddressDTO {
   is_apartment?: boolean;
   block_tower?: string | null;
   intercom_code?: string | null;
+  address_type?: "residential" | "commercial" | "rural" | "other";
+  icon?: "home" | "building" | "briefcase" | "heart" | "map_pin";
+  instructions?: string | null;
+  formatted_address?: string | null;
   created_at?: string;
 }
 
@@ -31,25 +35,27 @@ export const UserAddressInputSchema = z.object({
   label: z.string().default("Principal"),
   recipient_name: z.string().optional().nullable(),
   recipient_phone: z.string().optional().nullable(),
-  zipcode: z.string().min(8),
-  street: z.string().min(2),
-  number: z.string().min(1),
+  zipcode: z.string().min(8, "CEP deve conter pelo menos 8 dígitos"),
+  street: z.string().min(2, "Logradouro é obrigatório"),
+  number: z.string().min(1, "Número é obrigatório"),
   complement: z.string().optional().nullable(),
   reference_point: z.string().optional().nullable(),
-  neighborhood: z.string().min(2),
-  city: z.string().min(2),
-  state: z.string().length(2),
+  neighborhood: z.string().min(2, "Bairro é obrigatório"),
+  city: z.string().min(2, "Cidade é obrigatória"),
+  state: z.string().length(2, "UF deve ter 2 caracteres"),
   latitude: z.number().optional().nullable(),
   longitude: z.number().optional().nullable(),
   is_default: z.boolean().default(false),
   is_apartment: z.boolean().default(false),
   block_tower: z.string().optional().nullable(),
   intercom_code: z.string().optional().nullable(),
+  address_type: z.enum(["residential", "commercial", "rural", "other"]).default("residential"),
+  icon: z.enum(["home", "building", "briefcase", "heart", "map_pin"]).default("home"),
+  instructions: z.string().optional().nullable(),
 });
 
 /**
- * Obtém todos os endereços salvos do usuário autenticado.
- * Consulta prioritariamente a tabela relacional `user_addresses`.
+ * Obtém todos os endereços salvos e ativos do usuário autenticado (EARS-01 / EARS-06).
  */
 export const getUserAddresses = createServerFn({ method: "GET" }).handler(
   async (): Promise<UserAddressDTO[]> => {
@@ -62,12 +68,12 @@ export const getUserAddresses = createServerFn({ method: "GET" }).handler(
         .from("user_addresses")
         .select("*")
         .eq("user_id", identity.id)
+        .is("deleted_at", null)
         .order("is_default", { ascending: false })
         .order("created_at", { ascending: false });
 
       if (error) {
         console.warn("[addresses.functions] Falha ao ler user_addresses, consultando perfil:", error.message);
-        // Fallback defensivo para profiles.resume_data
         const { data: profile } = await supabase
           .from("profiles")
           .select("resume_data")
@@ -98,7 +104,7 @@ export const getUserAddresses = createServerFn({ method: "GET" }).handler(
 );
 
 /**
- * Salva ou atualiza um endereço do usuário com geolocalização e especificações de condomínio.
+ * Salva ou atualiza um endereço com atomicidade e garantia de default único (EARS-01 / EARS-04).
  */
 export const saveUserAddress = createServerFn({ method: "POST" })
   .validator(UserAddressInputSchema)
@@ -108,11 +114,41 @@ export const saveUserAddress = createServerFn({ method: "POST" })
 
     const supabase = getServerClient();
 
-    // Se marcado como padrão, desmarca os anteriores
+    // 1. Tenta executar via procedure atômica
+    const { data: rpcRes, error: rpcErr } = await supabase.rpc("save_user_address_atomic", {
+      p_id: input.id || null,
+      p_user_id: identity.id,
+      p_label: input.label || "Principal",
+      p_recipient_name: input.recipient_name || null,
+      p_recipient_phone: input.recipient_phone || null,
+      p_zipcode: input.zipcode,
+      p_street: input.street,
+      p_number: input.number,
+      p_complement: input.complement || null,
+      p_reference_point: input.reference_point || null,
+      p_neighborhood: input.neighborhood,
+      p_city: input.city,
+      p_state: input.state,
+      p_latitude: input.latitude || null,
+      p_longitude: input.longitude || null,
+      p_is_default: input.is_default,
+      p_is_apartment: input.is_apartment,
+      p_block_tower: input.block_tower || null,
+      p_intercom_code: input.intercom_code || null,
+      p_address_type: input.address_type,
+      p_icon: input.icon,
+      p_instructions: input.instructions || null,
+    });
+
+    if (!rpcErr && rpcRes?.success && rpcRes.address) {
+      return { success: true, address: rpcRes.address as UserAddressDTO };
+    }
+
+    // Fallback relacional seguro caso a procedure ainda não tenha sido aplicada no ambiente
     if (input.is_default) {
       await supabase
         .from("user_addresses")
-        .update({ is_default: false })
+        .update({ is_default: false, updated_at: new Date().toISOString() })
         .eq("user_id", identity.id);
     }
 
@@ -135,6 +171,10 @@ export const saveUserAddress = createServerFn({ method: "POST" })
       is_apartment: input.is_apartment,
       block_tower: input.block_tower || null,
       intercom_code: input.intercom_code || null,
+      address_type: input.address_type,
+      icon: input.icon,
+      instructions: input.instructions || null,
+      formatted_address: `${input.street}, ${input.number} - ${input.neighborhood}, ${input.city} - ${input.state.toUpperCase()}`,
       updated_at: new Date().toISOString(),
     };
 
@@ -162,7 +202,7 @@ export const saveUserAddress = createServerFn({ method: "POST" })
   });
 
 /**
- * Remove um endereço do usuário com isolamento estrito.
+ * Remove um endereço do usuário com soft-delete e eleição atômica de novo padrão (EARS-04 / EARS-06).
  */
 export const deleteUserAddress = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string().uuid() }))
@@ -171,9 +211,21 @@ export const deleteUserAddress = createServerFn({ method: "POST" })
     if (!identity.id) throw new Error("Acesso não autorizado.");
 
     const supabase = getServerClient();
+
+    // 1. Tenta procedure atômica
+    const { data: rpcRes, error: rpcErr } = await supabase.rpc("delete_user_address_atomic", {
+      p_id: id,
+      p_user_id: identity.id,
+    });
+
+    if (!rpcErr && rpcRes?.success) {
+      return { success: true, new_default_id: rpcRes.new_default_id };
+    }
+
+    // Fallback direto
     const { error } = await supabase
       .from("user_addresses")
-      .delete()
+      .update({ deleted_at: new Date().toISOString(), is_default: false })
       .eq("id", id)
       .eq("user_id", identity.id);
 
@@ -182,7 +234,7 @@ export const deleteUserAddress = createServerFn({ method: "POST" })
   });
 
 /**
- * Validação de Mismatch de GPS entre a localização atual do dispositivo e o endereço de entrega.
+ * Validação de Mismatch de GPS entre a localização atual do dispositivo e o endereço de entrega (EARS-05).
  * Usa fórmula esférica de Haversine para cálculo de raio geodésico em quilômetros.
  */
 export const validateDeliveryLocationGPS = createServerFn({ method: "POST" })
@@ -194,15 +246,13 @@ export const validateDeliveryLocationGPS = createServerFn({ method: "POST" })
       deliveryLng: z.number().optional().nullable(),
       deliveryCity: z.string().optional(),
       deliveryState: z.string().optional(),
-      maxAllowedThresholdKm: z.number().default(35), // Alerta quando a distância for superior a 35km
+      maxAllowedThresholdKm: z.number().default(35),
     })
   )
   .handler(async ({ data: input }) => {
-    // Se não tiver coordenadas do endereço, tenta usar coordenadas padrão da cidade
     let targetLat = input.deliveryLat;
     let targetLng = input.deliveryLng;
 
-    // Coordenadas aproximadas de referência para Chapecó / SC
     if (!targetLat || !targetLng) {
       if (input.deliveryCity?.toLowerCase().includes("chapeco") || input.deliveryCity?.toLowerCase().includes("chapecó")) {
         targetLat = -27.1004;
@@ -218,9 +268,8 @@ export const validateDeliveryLocationGPS = createServerFn({ method: "POST" })
       };
     }
 
-    // Fórmula de Haversine
     const toRad = (value: number) => (value * Math.PI) / 180;
-    const R = 6371; // Raio da Terra em km
+    const R = 6371;
 
     const dLat = toRad(targetLat - input.deviceLat);
     const dLon = toRad(targetLng - input.deviceLng);
