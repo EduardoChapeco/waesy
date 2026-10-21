@@ -257,10 +257,10 @@ function MobilityPage() {
         data: {
           originCity: caronaOriginCity,
           destinationCity: caronaDestinationCity,
-          womenOnly: caronaWomenOnly,
+          filterWomenOnly: caronaWomenOnly,
         },
       });
-      return res?.corridors || [];
+      return res || [];
     },
     enabled: selectedCategory === "carona",
   });

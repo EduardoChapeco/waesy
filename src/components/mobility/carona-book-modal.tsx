@@ -38,7 +38,7 @@ export function CaronaBookModal({
 
   if (!corridor) return null;
 
-  const totalPriceCents = corridor.matchedPriceCents * seatsCount;
+  const totalPriceCents = corridor.segmentPriceCents * seatsCount;
 
   const handleConfirmBooking = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,11 +47,11 @@ export function CaronaBookModal({
       try {
         const res = await bookCaronaSegment({
           data: {
-            rideId: corridor.corridorRideId,
-            fromStopOrder: corridor.fromStopOrder,
-            toStopOrder: corridor.toStopOrder,
-            fromCity: corridor.fromCity,
-            toCity: corridor.toCity,
+            rideId: corridor.id,
+            fromStopOrder: corridor.matchedFromStopOrder,
+            toStopOrder: corridor.matchedToStopOrder,
+            fromCity: corridor.matchedOriginCity,
+            toCity: corridor.matchedDestinationCity,
             seatsBooked: seatsCount,
             passengerName: passengerName.trim() || undefined,
             initialMessage: notes.trim() || undefined,
@@ -103,7 +103,7 @@ export function CaronaBookModal({
 
             <div className="text-xs text-muted-foreground bg-muted/20 p-3 rounded-lg border border-border/40">
               <p>
-                <strong>Trecho:</strong> {corridor.fromCity} → {corridor.toCity}
+                <strong>Trecho:</strong> {corridor.matchedOriginCity} → {corridor.matchedDestinationCity}
               </p>
               <p>
                 <strong>Motorista:</strong> {corridor.driverName} ({corridor.vehicleModel})
@@ -130,7 +130,7 @@ export function CaronaBookModal({
                     Confirmar Reserva de Carona
                   </DialogTitle>
                   <DialogDescription className="text-xs text-muted-foreground">
-                    {corridor.fromCity} → {corridor.toCity}
+                    {corridor.matchedOriginCity} → {corridor.matchedDestinationCity}
                   </DialogDescription>
                 </div>
               </div>
@@ -155,7 +155,7 @@ export function CaronaBookModal({
                   <Calendar className="size-3" />
                   <span>{formatDate(corridor.departureAt)}</span>
                 </span>
-                <span>{corridor.availableSeats} vagas restantes</span>
+                <span>{corridor.availableSeatsForSegment} vagas restantes</span>
               </div>
             </div>
 
@@ -166,7 +166,7 @@ export function CaronaBookModal({
                   <Input
                     type="number"
                     min={1}
-                    max={Math.min(corridor.availableSeats, 4)}
+                    max={Math.min(corridor.availableSeatsForSegment, 4)}
                     value={seatsCount}
                     onChange={(e) => setSeatsCount(parseInt(e.target.value, 10) || 1)}
                     required

@@ -59,8 +59,8 @@ const PRESET_AMOUNTS = [
 
 const THEME_OPTIONS: Array<{ id: CardThemeId; label: string }> = [
   { id: "classic_gold", label: "Classic Gold" },
-  { id: "birthday", label: "Aniversário" },
-  { id: "christmas", label: "Festas" },
+  { id: "aniversario", label: "Aniversário" },
+  { id: "natal", label: "Festas" },
   { id: "minimal_dark", label: "Dark Titanium" },
   { id: "neon_pulse", label: "Neon Pulse" },
 ];
