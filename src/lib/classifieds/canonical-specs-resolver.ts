@@ -215,6 +215,8 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
 
   // Zero falso-positivo de grocery: se for qualquer outro nicho explícito, grocery é desativado!
   const isExplicitNonGrocery = Boolean(
+    explicitNiche === "desapego" ||
+    explicitNiche === "digital" ||
     isEvent ||
     isJobs ||
     isBusiness ||

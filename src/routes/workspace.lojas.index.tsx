@@ -42,13 +42,13 @@ export default function WorkspaceLojasPage() {
  if (typeof window !== "undefined") {
  window.document.cookie = `waesy_active_tenant=${storeId}; path=/; max-age=31536000; SameSite=Lax`;
  }
- const res = await setTenantContext({ data: { store_id: storeId } }).catch(() => null);
- toast.success(`Contexto alterado para ${res?.storeName || storeName}`);
- window.location.href = "/workspace";
- } catch {
- toast.error("Erro ao alternar loja.");
- setSwitchingId(null);
- }
+ const res = await setTenantContext({ data: { store_id: storeId } });
+      toast.success(`Contexto alterado para ${res?.storeName || storeName}`);
+      window.location.href = "/workspace";
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao alternar loja.");
+      setSwitchingId(null);
+    }
  };
 
  const handleOpenEditor = (st: any) => {

@@ -47,7 +47,7 @@ import { listStoreLeadForms } from "@/services/lead-forms.functions";
 import { createListingWithAI } from "@/services/ai-sdr.functions";
 import { analyzeCommercialPointPotential, auditCnpjWithSimLabs } from "@/services/market-intelligence.functions";
 import { lookupCnpj } from "@/services/public-apis.functions";
-import { CANONICAL_VEHICLE_BRANDS, CANONICAL_TRANSMISSIONS, CANONICAL_FUELS, CANONICAL_VEHICLE_COLORS, CANONICAL_VEHICLE_OPTIONS, CANONICAL_VEHICLE_PROVENANCE, CANONICAL_GOODS_SEGMENTS, CANONICAL_ITEM_CONDITIONS, CANONICAL_SMARTPHONE_BRANDS, CANONICAL_COMPUTER_TYPES, CANONICAL_COMPUTER_BRANDS, CANONICAL_PROCESSORS, CANONICAL_RAM_OPTIONS, CANONICAL_STORAGE_OPTIONS, CANONICAL_APPLIANCE_TYPES, CANONICAL_APPLIANCE_BRANDS, CANONICAL_VOLTAGES, CANONICAL_GAME_CONSOLES, CANONICAL_FASHION_CATEGORIES, CANONICAL_FASHION_SIZES, CANONICAL_FOOD_SUBNICHES, CANONICAL_SERVICE_SUBNICHES, CANONICAL_BUSINESS_TYPES, CANONICAL_BUSINESS_SEGMENTS, CANONICAL_SALE_REASONS, CANONICAL_EMPLOYEES_RANGES, CANONICAL_COMMERCIAL_POINT_TYPES, CANONICAL_INVESTMENT_MODELS, CANONICAL_PROJECT_STAGES, CANONICAL_USE_OF_FUNDS, CANONICAL_GROCERY_DEPARTMENTS, CANONICAL_UNIT_TYPES, CANONICAL_STORAGE_TEMPERATURES, CANONICAL_MEAT_CUT_OPTIONS, CANONICAL_BAKERY_PREP_OPTIONS, GroceryFreshPricing, GroceryRipenessConfig, ProgressiveDiscountTier, OrderBumpOffer, RipenessStage, DEFAULT_RIPENESS_LABELS } from "@/lib/classifieds/canonical-taxonomy";
+import { CANONICAL_VEHICLE_BRANDS, CANONICAL_TRANSMISSIONS, CANONICAL_FUELS, CANONICAL_VEHICLE_COLORS, CANONICAL_VEHICLE_OPTIONS, CANONICAL_VEHICLE_PROVENANCE, CANONICAL_GOODS_SEGMENTS, CANONICAL_ITEM_CONDITIONS, CANONICAL_SMARTPHONE_BRANDS, CANONICAL_COMPUTER_TYPES, CANONICAL_COMPUTER_BRANDS, CANONICAL_PROCESSORS, CANONICAL_RAM_OPTIONS, CANONICAL_STORAGE_OPTIONS, CANONICAL_APPLIANCE_TYPES, CANONICAL_APPLIANCE_BRANDS, CANONICAL_VOLTAGES, CANONICAL_GAME_CONSOLES, CANONICAL_FASHION_CATEGORIES, CANONICAL_FASHION_SIZES, CANONICAL_FOOD_SUBNICHES, CANONICAL_SERVICE_SUBNICHES, CANONICAL_BUSINESS_TYPES, CANONICAL_BUSINESS_SEGMENTS, CANONICAL_SALE_REASONS, CANONICAL_EMPLOYEES_RANGES, CANONICAL_COMMERCIAL_POINT_TYPES, CANONICAL_INVESTMENT_MODELS, CANONICAL_PROJECT_STAGES, CANONICAL_USE_OF_FUNDS, CANONICAL_GROCERY_DEPARTMENTS, CANONICAL_UNIT_TYPES, CANONICAL_STORAGE_TEMPERATURES, CANONICAL_MEAT_CUT_OPTIONS, CANONICAL_BAKERY_PREP_OPTIONS, GroceryFreshPricing, GroceryRipenessConfig, ProgressiveDiscountTier, OrderBumpOffer, RipenessStage, DEFAULT_RIPENESS_LABELS, getDefaultClassifiedTemplateForNiche, getAllowedClassifiedTemplatesForNiche, resolveCompatibleClassifiedTemplate } from "@/lib/classifieds/canonical-taxonomy";
 import { CANONICAL_EDUCATION_LEVELS, CANONICAL_EXPERIENCE_LEVELS, CANONICAL_JOB_REGIMES, CANONICAL_WORKPLACE_MODELS, CANONICAL_WORK_SCHEDULES, CANONICAL_SALARY_RANGES, CANONICAL_JOB_BENEFITS, SUGGESTED_JOB_SKILLS, getEducationLabel, getExperienceLabel, getRegimeLabel, getWorkplaceModelLabel } from "@/lib/classifieds/canonical-hiring";
 import { resolveClassifiedNiche, getNicheDefaultInquiryConfig, isNichePaymentApplicable } from "@/lib/classifieds/semantics";
 import { z } from "zod";
@@ -1353,26 +1353,35 @@ function SpecializedClassifiedEditor({
     enabled: !!effectiveStoreId,
   });
 
-  // Template de Exibição (6 Modelos Canônicos + Auto-Theming Inteligente)
+  // Template de Exibição (Catálogo Canônico + Compatibilidade por Nicho)
   const defaultNicheTemplateStyle = useMemo<ClassifiedTemplateStyle>(() => {
-    if (niche.id === "veiculo") return "automotivo";
-    if (niche.id === "imovel") return "imobiliario";
-    if (niche.id === "viagem" || niche.id === "hospedagem") return "resort_hotel";
-    if (niche.id === "servico") return "servicos_agenda";
-    if (niche.id === "mercado") return "conveniencia";
-    return "standard";
+    return getDefaultClassifiedTemplateForNiche(niche.id);
   }, [niche.id]);
 
-  const [templateStyle, setTemplateStyle] = useState<ClassifiedTemplateStyle>(
-    (initialData?.attributes?.template_style as ClassifiedTemplateStyle) || defaultNicheTemplateStyle
+  const allowedTemplatesForNiche = useMemo(() => {
+    return getAllowedClassifiedTemplatesForNiche(niche.id);
+  }, [niche.id]);
+
+  const [templateStyle, setTemplateStyle] = useState<ClassifiedTemplateStyle>(() =>
+    resolveCompatibleClassifiedTemplate(
+      niche.id,
+      (initialData?.attributes?.template_style || initialData?.template_style) as string | undefined
+    )
   );
 
-  // Sincroniza o template quando o usuário troca o nicho ativo (se não for edição com template explícito inicial)
+  const prevNicheIdRef = useRef<string>(niche.id);
   useEffect(() => {
-    if (!initialData?.attributes?.template_style) {
-      setTemplateStyle(defaultNicheTemplateStyle);
+    if (prevNicheIdRef.current !== niche.id) {
+      const prevDefault = getDefaultClassifiedTemplateForNiche(prevNicheIdRef.current);
+      prevNicheIdRef.current = niche.id;
+      setTemplateStyle((prev) =>
+        resolveCompatibleClassifiedTemplate(
+          niche.id,
+          prev === prevDefault ? undefined : prev
+        )
+      );
     }
-  }, [defaultNicheTemplateStyle, initialData]);
+  }, [niche.id]);
 
   const [displayMode, setDisplayMode] = useState<ClassifiedDisplayMode>(
     (initialData?.attributes?.display_mode as ClassifiedDisplayMode) || "tabs"
@@ -2807,9 +2816,13 @@ function SpecializedClassifiedEditor({
           activate_sdr_ai: civilInquiryActivateSdr,
           questions: civilInquiryQuestions,
         },
-        story_highlights: travelStoryHighlights,
-        itinerary_days: travelItineraryDays,
-        bio_bullets: travelBioBullets.map((b) => b.trim()).filter(Boolean),
+        ...(niche.id === "viagem"
+          ? {
+              story_highlights: travelStoryHighlights,
+              itinerary_days: travelItineraryDays,
+              bio_bullets: travelBioBullets.map((b) => b.trim()).filter(Boolean),
+            }
+          : {}),
       };
 
       if (niche.id === "mercado" || niche.id === "gastronomia" || templateStyle === "conveniencia") {
@@ -3650,57 +3663,62 @@ function SpecializedClassifiedEditor({
         financing_notes: financingNotes,
         accepts_cash: acceptsCash,
         cancellation_policy: cancellationPolicy,
-        destination_city: travelDestinationCity || locationName || "Chapecó",
-        duration_text: travelDuration,
-        package_duration: travelDuration,
-        meal_plan: travelMealPlan,
-        guests_text: travelGuests,
-        guest_capacity: travelGuests,
-        dates_text: travelDates,
-        departure_options: travelDepartureOptions,
-        flight_details: {
-          transport_type: travelTransportType,
-          departure_iata: travelDepartureIATA,
-          arrival_iata: travelArrivalIATA,
-          airline: travelAirline,
-          connections: travelConnections,
-          departure_time: travelDepartureTime,
-          arrival_time: travelArrivalTime,
-          price_text: travelFlightPrice,
-          duration_text: travelFlightDuration,
-          bus_category: travelBusCategory,
-          bus_company: travelBusCompany,
-          departure_city: travelDepartureCity,
-          meeting_point: travelMeetingPoint,
-          boarding_gateways: travelBoardingGateways,
-          return_departure_time: travelReturnDepartureTime,
-          guide_service: travelGuideService,
-          combo_flight_from_iata: travelComboFromIATA,
-          combo_flight_to_iata: travelComboToIATA,
-          combo_airline: travelComboAirline,
-          combo_flight_price_text: travelComboFlightPrice,
-          transfer_vehicle: travelTransferVehicle,
-          transfer_from: travelTransferFrom,
-          transfer_to: travelTransferTo,
-          transfer_duration: travelTransferDuration,
-          transfer_departure_time: travelTransferTime,
-          combo_notes: travelComboNotes,
-          ship_name: travelShipName,
-          cruise_line: travelCruiseLine,
-          cabin_category: travelCabinCategory,
-          embarkation_port: travelEmbarkationPort,
-        },
-        story_highlights: travelStoryHighlights,
-        itinerary_days: travelItineraryDays,
-        bio_bullets: generatedBioBullets,
-        // Hospedagem do Pacote de Turismo
-        lodgings: travelLodgings.filter((l) => l.name.trim() !== ""),
-        hotels: travelLodgings.filter((l) => l.name.trim() !== ""),
-        hotel_name: travelLodgings[0]?.name || undefined,
-        hotel_description: travelLodgings[0]?.description || undefined,
-        hotel_address: travelLodgings[0]?.address || undefined,
-        hotel_stars: travelLodgings[0]?.stars || undefined,
-        hotel_amenities: travelLodgings[0]?.amenities || undefined,
+        ...(niche.id === "viagem"
+          ? {
+              destination_city: travelDestinationCity || locationName || "Chapecó",
+              departure_date: travelDepartureDate || undefined,
+              return_date: travelReturnDate || undefined,
+              duration_text: travelDuration,
+              package_duration: travelDuration,
+              meal_plan: travelMealPlan,
+              guests_text: travelGuests,
+              guest_capacity: travelGuests,
+              dates_text: travelDates,
+              departure_options: travelDepartureOptions,
+              flight_details: {
+                transport_type: travelTransportType,
+                departure_iata: travelDepartureIATA,
+                arrival_iata: travelArrivalIATA,
+                airline: travelAirline,
+                connections: travelConnections,
+                departure_time: travelDepartureTime,
+                arrival_time: travelArrivalTime,
+                price_text: travelFlightPrice,
+                duration_text: travelFlightDuration,
+                bus_category: travelBusCategory,
+                bus_company: travelBusCompany,
+                departure_city: travelDepartureCity,
+                meeting_point: travelMeetingPoint,
+                boarding_gateways: travelBoardingGateways,
+                return_departure_time: travelReturnDepartureTime,
+                guide_service: travelGuideService,
+                combo_flight_from_iata: travelComboFromIATA,
+                combo_flight_to_iata: travelComboToIATA,
+                combo_airline: travelComboAirline,
+                combo_flight_price_text: travelComboFlightPrice,
+                transfer_vehicle: travelTransferVehicle,
+                transfer_from: travelTransferFrom,
+                transfer_to: travelTransferTo,
+                transfer_duration: travelTransferDuration,
+                transfer_departure_time: travelTransferTime,
+                combo_notes: travelComboNotes,
+                ship_name: travelShipName,
+                cruise_line: travelCruiseLine,
+                cabin_category: travelCabinCategory,
+                embarkation_port: travelEmbarkationPort,
+              },
+              story_highlights: travelStoryHighlights,
+              itinerary_days: travelItineraryDays,
+              bio_bullets: generatedBioBullets,
+              lodgings: travelLodgings.filter((l) => l.name.trim() !== ""),
+              hotels: travelLodgings.filter((l) => l.name.trim() !== ""),
+              hotel_name: travelLodgings[0]?.name || undefined,
+              hotel_description: travelLodgings[0]?.description || undefined,
+              hotel_address: travelLodgings[0]?.address || undefined,
+              hotel_stars: travelLodgings[0]?.stars || undefined,
+              hotel_amenities: travelLodgings[0]?.amenities || undefined,
+            }
+          : {}),
         // Hospedagem
         deal_type: niche.id === "hospedagem" ? "temporada" : niche.id === "imovel" ? reDealType : undefined,
         rental_period: niche.id === "hospedagem" ? "diaria" : undefined,
@@ -4105,15 +4123,7 @@ function SpecializedClassifiedEditor({
                 Visualização do Comprador
               </span>
               <div className="flex items-center gap-1 bg-muted p-0.5 rounded-lg text-xs">
-                {[
-                  { id: "standard", label: "Padrão" },
-                  { id: "editorial", label: "Editorial" },
-                  { id: "automotivo", label: "Auto" },
-                  { id: "imobiliario", label: "Imóvel" },
-                  { id: "resort_hotel", label: "Resort" },
-                  { id: "servicos_agenda", label: "Serviço" },
-                  ...(niche.id === "mercado" ? [{ id: "conveniencia", label: "Mercado" }] : []),
-                ].map((t) => (
+                {allowedTemplatesForNiche.map((t) => (
                   <button
                     key={t.id}
                     type="button"
@@ -4170,7 +4180,7 @@ function SpecializedClassifiedEditor({
                   : "max-w-5xl"
               )}
             >
-              {templateStyle === "conveniencia" || niche.id === "mercado" ? (
+              {templateStyle === "conveniencia" ? (
                 <ConvenienceShowcaseView
                   classified={livePreviewClassified}
                   previewData={{
@@ -4234,10 +4244,11 @@ function SpecializedClassifiedEditor({
                   compact={previewDevice === "mobile"}
                   onEdit={() => setCurrentStep(2)}
                 />
-              ) : templateStyle === "editorial" || (templateStyle as string) === "instagram" || (templateStyle as string) === "instagram_resort" || (!templateStyle && niche.id === "viagem") ? (
+              ) : niche.id === "viagem" && (templateStyle === "editorial" || (templateStyle as string) === "instagram" || (templateStyle as string) === "instagram_resort" || !templateStyle) ? (
                 <EditorialShowcaseView
                   classified={livePreviewClassified}
                   isOwner={true}
+                  previewViewport={previewDevice}
                   onOpenBookingModal={() => toast.info("Modo de Pré-visualização: As reservas estarão ativas após a publicação do anúncio.")}
                   onOpenProposalModal={() => toast.info("Modo de Pré-visualização: O envio de propostas estará ativo após a publicação do anúncio.")}
                   onEditClassified={() => setCurrentStep(2)}
@@ -11224,14 +11235,7 @@ function SpecializedClassifiedEditor({
                     <div className="space-y-2">
                       <Label className="text-xs font-semibold text-foreground">Modelo Visual do Anúncio</Label>
                       <div className="grid grid-cols-2 sm:grid-cols-1 sm:grid-cols-3 gap-2">
-                        {[
-                          { id: "standard", label: "Padrão Geral", desc: "Limpo & Universal" },
-                          { id: "editorial", label: "Revista Editorial", desc: "Narrativa Imersiva" },
-                          { id: "automotivo", label: "Automotivo", desc: "Specs & Ficha Técnica" },
-                          { id: "imobiliario", label: "Imobiliário", desc: "Cômodos & Condomínio" },
-                          { id: "resort_hotel", label: "Resort & Hotel", desc: "Diárias & Lazer" },
-                          { id: "servicos_agenda", label: "Serviços & Agenda", desc: "Slots & Reserva" },
-                        ].map((tpl) => (
+                        {allowedTemplatesForNiche.map((tpl) => (
                           <button
                             key={tpl.id}
                             type="button"
@@ -11244,7 +11248,7 @@ function SpecializedClassifiedEditor({
                             )}
                           >
                             <p className="text-xs font-bold text-foreground">{tpl.label}</p>
-                            <p className="text-xs text-muted-foreground mt-1">{tpl.desc}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{tpl.description}</p>
                           </button>
                         ))}
                       </div>
@@ -11268,15 +11272,7 @@ function SpecializedClassifiedEditor({
                 <span>Prévia ao vivo</span>
               </span>
               <div className="flex items-center gap-1 bg-background/80 p-0.5 rounded-lg border border-border/50">
-                {[
-                  { id: "standard", label: "Padrão" },
-                  { id: "editorial", label: "Editorial" },
-                  { id: "automotivo", label: "Auto" },
-                  { id: "imobiliario", label: "Imóvel" },
-                  { id: "resort_hotel", label: "Resort" },
-                  { id: "servicos_agenda", label: "Serviço" },
-                  ...(niche.id === "mercado" ? [{ id: "conveniencia", label: "Mercado" }] : []),
-                ].map((tpl) => (
+                {allowedTemplatesForNiche.map((tpl) => (
                   <button
                     key={tpl.id}
                     type="button"
@@ -11322,8 +11318,17 @@ function SpecializedClassifiedEditor({
             </div>
           </div>
 
-          <div className="max-h-[calc(100vh-140px)] overflow-y-auto">
-            {templateStyle === "conveniencia" || niche.id === "mercado" ? (
+          <div className="max-h-[calc(100vh-140px)] overflow-y-auto bg-muted/20">
+            <div
+              data-preview-device={previewDevice}
+              className={cn(
+                "w-full transition-colors duration-200",
+                previewDevice === "mobile"
+                  ? "max-w-sm mx-auto border-x border-border/70 bg-background shadow-xs"
+                  : "w-full bg-background"
+              )}
+            >
+            {templateStyle === "conveniencia" ? (
               <ConvenienceShowcaseView
                 classified={livePreviewClassified}
                 previewData={{
@@ -11389,10 +11394,11 @@ function SpecializedClassifiedEditor({
                 compact={previewDevice === "mobile"}
                 onEdit={() => setCurrentStep(2)}
               />
-            ) : templateStyle === "editorial" || (templateStyle as string) === "instagram" || (templateStyle as string) === "instagram_resort" || (!templateStyle && niche.id === "viagem") ? (
+            ) : niche.id === "viagem" && (templateStyle === "editorial" || (templateStyle as string) === "instagram" || (templateStyle as string) === "instagram_resort" || !templateStyle) ? (
               <EditorialShowcaseView
                 classified={livePreviewClassified}
                 isOwner={false}
+                previewViewport={previewDevice}
               />
             ) : (
               <UniversalClassifiedShowcase
@@ -11405,6 +11411,7 @@ function SpecializedClassifiedEditor({
                 onEdit={() => setCurrentStep(2)}
               />
             )}
+            </div>
           </div>
         </div>
  </main>

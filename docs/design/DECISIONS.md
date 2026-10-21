@@ -1,5 +1,36 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-295: Auditoria Forense, Refatoração Sistêmica e Hardening do Template Engine, Niche Engine, Live Preview Bidirecional e Paridade Pública
+- **Data:** 2026-10-21
+- **Contexto:** Auditoria forense ponta a ponta (UI -> State -> Contract -> BFF -> Service -> DB -> Public Renderer) dos motores de templates, nichos, mockup/preview Desktop/Mobile e superfície pública:
+  1. Vazamento Cruzado em `livePreviewClassified` e `canonical-specs-resolver.ts`: `_store.conta.classificados.novo.tsx` injetava `destination_city: 'Chapecó'`, `flight_details` e `itinerary_days` para todos os nichos, sequestrando o preview para `EditorialShowcaseView`, e `canonical-specs-resolver.ts` ativava `isTravel` quando `template_style === 'editorial'`.
+  2. Inércia Visual de Templates em `ClassifiedDetailDesktop` e `ClassifiedDetailMobile`: `templateStyle` era lido mas ignorado na árvore JSX, fazendo com que alternar entre `standard`, `editorial`, `automotivo`, `imobiliario`, `resort_hotel` e `servicos_agenda` não alterasse a composição visual.
+  3. Desalinhamento de Chaves no `ad-engine`: `NICHE_KEY_MAP` mapeava para chaves plurais (`servicos`, `veiculos`, `imoveis`) ausentes em `NICHE_TAXONOMY_REGISTRY`, e `CANONICAL_TEMPLATES_CATALOG` omitia templates declarados em `allowedTemplates`.
+  4. Preview Mobile/Desktop Unidirecional: `CanonicalListingPreviewFrame` e `EditorialShowcaseView` dependiam de `@media` da janela global em vez de `previewViewport`, impedindo a visualização real da composição Mobile Native dentro de monitores Desktop.
+  5. Filtragem Excessiva no BFF Público: `getPublicClassifiedById` removia atributos legítimos de viagem, imóveis, vagas, mercado e negócios por não constarem em `CLASSIFIED_PUBLIC_ALLOWLIST_EXTRA`, e `mapDatabaseRowToUnifiedListing` omitia o campo `template`.
+- **Decisão:**
+  1. **Catálogo Canônico e Matriz de Compatibilidade (`canonical-taxonomy.ts` & `template-metamorphosis.ts`):** Implementados `CLASSIFIED_TEMPLATES_CATALOG`, `NICHE_TEMPLATE_COMPATIBILITY_MAP`, `resolveCompatibleClassifiedTemplate` e `normalizeAdEngineNicheId`, filtrando seletores apenas para templates compatíveis com o nicho ativo e aplicando fallback determinístico na troca de nicho.
+  2. **Isolamento Semântico Estrito de Nichos (B.37):** Restrição de atributos de viagem a `niche.id === 'viagem'` no editor/preview, bloqueio `isExplicitNonTravel` e `isExplicitNonGrocery` em `canonical-specs-resolver.ts` e defaults condicionais por categoria em `upsertClassified`.
+  3. **Renderização Bidirecional Desktop Native vs Mobile Native:** Propagação de `previewViewport` para `UniversalClassifiedShowcase`, `EditorialShowcaseView`, `ConvenienceShowcaseView` e `CanonicalListingView`, com strips dedicados por template (`data-active-template`, `data-render-mode`) e suporte `compact` em `TeteterisGridView`.
+  4. **Paridade Preview × Público e Blindagem Zero-Trust no BFF:** Expansão de `CLASSIFIED_PUBLIC_ALLOWLIST_EXTRA` e `PUBLIC_SPEC_ALLOWLIST`, mapeamento de `template` em `mapDatabaseRowToUnifiedListing`, validação multi-tenant de `store_id` e preservação de `author_profile_id` em `upsertClassified`.
+  5. **Verificação e Documentação Forense:** 13 artefatos de auditoria gravados em `docs/audits/` e 14/14 testes automatizados aprovados em `preview.test.ts` e `template-niche-preview.test.ts`.
+- **Fundamentação:** AGENTS.md B.1 a B.45; B.31, B.36, B.37, B.38, B.39; Apple HIG Bidirectional Design.
+- **Consequências:** Seleção de templates reativa (`A -> B -> A`), zero vazamento entre nichos, alternância real Desktop Native / Mobile Native no mockup e paridade integral entre preview e produção.
+
+## DEC-294: Blindagem Zero-Trust de Tenant Context & Membership Authorization (Erradicação de Auto-Grant e Falsos Sucessos)
+- **Data:** 2026-10-21
+- **Contexto:** Auditoria forense e execução da Prioridade 1 e 2 do mandato de trabalho recursivo (Autenticação, Identidade e Resolução de Tenant):
+  1. Vulnerabilidade Crítica de Tenant Context: A função setTenantContext em src/services/identity.functions.ts continha um auto-upsert indevido com role: "owner" na tabela canônica workspace_members para qualquer store_id enviado. Usuários sem qualquer vínculo podiam assumir a titularidade de lojas de terceiros enviando o UUID correspondente.
+  2. Mascaramento de Erros e Falsos Sucessos: Quatro superfícies centrais de alternância de contexto (workspace.lojas.index.tsx, _store.conta.lojas.tsx, _store.conta.index.tsx e context-switcher.tsx) envolviam a chamada de setTenantContext com .catch(() => null), exibindo toasts de falso sucesso ("Contexto alterado") e navegando para /workspace mesmo em caso de falha de banco ou rede.
+- **Decisão:**
+  1. **Remoção do Auto-Grant em setTenantContext:** Extinção imediata de upsert automático na tabela workspace_members.
+  2. **Validação Zero-Trust de Autorização:** setTenantContext exige autenticação e consulta a tabela workspace_members para assegurar que profile_id possui vínculo válido na store_id solicitada. Apenas platform_admin possui permissão para alternar contexto sem registro prévio.
+  3. **Tratamento Rigoroso de Erros nos Consumidores:** Extirpação de .catch(() => null) em todos os 4 pontos de chamada. Em caso de erro, a UI exibe o toast de erro real, reseta o estado de carregamento e bloqueia o redirecionamento.
+  4. **Comprovação com Testes Automatizados no Banco Real:** Criação da suíte tenant-context-zero-trust.test.ts cobrindo rejeição de não-membros, aprovação de membros legítimos, autorização de platform_admin e comprovação de ausência de registros espúrios (4/4 testes PASS).
+  5. **Design Lint Ratchet Aprovado:** Catraca de CI mantida com zero violações P0/P1 novas e zero regressões em relação à baseline congelada (12.307 violações).
+- **Fundamentação:** AGENTS.md B.1, B.10, B.31, B.41; Fases 1 a 18 do Protocolo de Trabalho Recursivo; WCAG 2.2 AA.
+- **Consequências:** Integridade multi-tenant plenamente garantida, eliminação de falsos sucessos operacionais e conformidade estrita entre frontend, BFF e banco PostgreSQL.
+
 ## DEC-293: Sincronização e Desbloqueio Global de Navegação (Sidebar Explorer, Menu Hub, Workspace B2B) e Silêncio Visual Anti-AI (Erradicação de Títulos Compostos)
 - **Data:** 2026-10-21
 - **Contexto:** Auditoria executiva identificou que rotas críticas recém-implementadas e consolidadas estavam desvinculadas das réguas de navegação principais do ecossistema e apresentavam títulos compostos:

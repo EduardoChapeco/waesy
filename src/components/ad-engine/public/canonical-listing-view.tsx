@@ -136,7 +136,7 @@ export function CanonicalListingView({
   // Custom attributes / specifications (Anti-truncate B.38)
   const rawSpecs = {
     ...(listing.attributes || {}),
-    ...(listing.custom_attributes || {}),
+    ...((listing as any).custom_attributes || {}),
   };
   const specEntries = Object.entries(rawSpecs).filter(
     ([key, val]) =>
@@ -343,7 +343,7 @@ export function CanonicalListingView({
                     type="button"
                     onClick={() => setSelectedImage(idx)}
                     className={cn(
-                      "size-16 sm:size-20 rounded-lg border-2 overflow-hidden shrink-0 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+                      "size-16 sm:size-20 rounded-lg border-2 overflow-hidden shrink-0 transition-colors transition-transform cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                       selectedImage === idx
                         ? "border-primary ring-2 ring-primary/20 scale-105"
                         : "border-border/60 opacity-70 hover:opacity-100"

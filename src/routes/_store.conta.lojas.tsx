@@ -35,13 +35,13 @@ export default function ContaLojasPage() {
  if (typeof window !== "undefined") {
  window.document.cookie = `waesy_active_tenant=${storeId}; path=/; max-age=31536000; SameSite=Lax`;
  }
- await setTenantContext({ data: { store_id: storeId } });
- toast.success(`Acessando painel de ${storeName}`);
- window.location.href = "/workspace";
- } catch {
- toast.error("Erro ao alternar loja.");
- setSwitchingId(null);
- }
+ const res = await setTenantContext({ data: { store_id: storeId } });
+      toast.success(`Acessando painel de ${res?.storeName || storeName}`);
+      window.location.href = "/workspace";
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao alternar loja.");
+      setSwitchingId(null);
+    }
  };
 
  return (

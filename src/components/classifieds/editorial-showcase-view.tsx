@@ -34,6 +34,7 @@ export interface EditorialShowcaseViewProps {
   onOpenProposalModal?: () => void;
   onEditClassified?: () => void;
   onOpenCompanionCard?: () => void;
+  previewViewport?: "mobile" | "desktop";
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -54,7 +55,10 @@ export function EditorialShowcaseView({
   onOpenProposalModal,
   onEditClassified,
   onOpenCompanionCard,
+  previewViewport,
 }: EditorialShowcaseViewProps) {
+  const isForcedMobile = previewViewport === "mobile";
+  const isForcedDesktop = previewViewport === "desktop";
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"grid" | "resort" | "itinerary" | "explore">("resort");
   const [activeStoryModal, setActiveStoryModal] = useState<any | null>(null);
@@ -677,9 +681,14 @@ export function EditorialShowcaseView({
   };
 
   return (
-    <div className="min-h-dvh bg-background text-foreground pb-28 font-sans select-none">
+    <div
+      data-active-template="editorial"
+      data-active-niche={nicheId}
+      data-render-mode={isForcedMobile ? "mobile-native" : isForcedDesktop ? "desktop-native" : "responsive"}
+      className="min-h-dvh bg-background text-foreground pb-28 font-sans select-none"
+    >
       {/* ── Top Bar Fixo de Navegação (Apenas Mobile) ── */}
-      <div className="md:hidden sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border/40 px-3 py-2 flex items-center justify-between">
+      <div className={cn(isForcedMobile ? "flex" : isForcedDesktop ? "hidden" : "md:hidden flex", "sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border/40 px-3 py-2 items-center justify-between")}>
         <button
           type="button"
           onClick={() => navigate({ to: "/classificados", search: {} as any })}
@@ -756,7 +765,7 @@ export function EditorialShowcaseView({
       <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 pt-0 sm:pt-4 space-y-4 animate-in fade-in duration-200">
 
         {/* ── Desktop Contextual Header / Breadcrumbs (Apenas Desktop) ── */}
-        <div className="hidden md:flex items-center justify-between py-2 border-b border-border/40">
+        <div className={cn(isForcedMobile ? "hidden" : isForcedDesktop ? "flex" : "hidden md:flex", "items-center justify-between py-2 border-b border-border/40")}>
           <button
             type="button"
             onClick={() => navigate({ to: "/classificados", search: {} as any })}
@@ -827,9 +836,9 @@ export function EditorialShowcaseView({
         </div>
 
         {/* ── Grid Principal Responsiva (Desktop 2 Colunas Estilo Mercado Livre / Airbnb) ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className={cn("grid grid-cols-1 gap-8 items-start", !isForcedMobile && "lg:grid-cols-12")}>
           {/* Coluna Esquerda: Mídias, Roteiro & Abas Editoriais (7 colunas no Desktop) */}
-          <div className="lg:col-span-7 space-y-4">
+          <div className={cn("space-y-4", !isForcedMobile && "lg:col-span-7")}>
             {/* ── Galeria Editorial Proporcional (Hero Natural 16:10 + Miniaturas) ── */}
             {images.length > 0 && (
               <div className="w-full space-y-2">
@@ -898,7 +907,7 @@ export function EditorialShowcaseView({
         {/* ── Título, Subtítulo & Bullets ── */}
         <div className="space-y-2 px-4 sm:px-0">
           {/* Título & Localização — Apenas no Mobile (no Desktop está em destaque no card fixo à direita) */}
-          <div className="lg:hidden space-y-1">
+          <div className={cn("space-y-1", !isForcedMobile && "lg:hidden")}>
             {isTravel ? (
               departureCity ? (
                 <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider flex-wrap">
@@ -955,7 +964,7 @@ export function EditorialShowcaseView({
         </div>
 
         {/* ── Card do Anunciante / Loja Parceira (Visível no Mobile) ── */}
-        <div className="lg:hidden mx-4 sm:mx-0 p-4 rounded-lg bg-muted/30 border border-border/50 flex items-center justify-between gap-3 transition-colors hover:bg-muted/40">
+        <div className={cn("mx-4 sm:mx-0 p-4 rounded-lg bg-muted/30 border border-border/50 flex items-center justify-between gap-3 transition-colors hover:bg-muted/40", !isForcedMobile && "lg:hidden")}>
           <div className="flex items-center gap-3 min-w-0">
             <div className="size-11 rounded-lg bg-background border border-border/60 overflow-hidden shrink-0 flex items-center justify-center">
               {advertiserAvatar ? (
@@ -2252,7 +2261,7 @@ export function EditorialShowcaseView({
       </div>
 
       {/* Coluna Direita: Painel Sticky de Preço, Datas, Stats e CTAs (5 colunas no Desktop) */}
-      <div className="hidden lg:block lg:col-span-5 lg:sticky lg:top-24 space-y-4">
+      <div className={cn(isForcedMobile ? "block pt-2 px-4 sm:px-0" : "hidden lg:block lg:col-span-5 lg:sticky lg:top-24", "space-y-4")}>
         <div className="bg-card rounded-lg border border-border/70 p-6 sm:p-7 space-y-5">
 
           {/* ── 1. Localização / Rota + Título ── */}
@@ -2536,7 +2545,7 @@ export function EditorialShowcaseView({
       </div>
 
       {/* ── Barra Inferior Flutuante Fixa (Apenas no Mobile) ── */}
-      <div className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-background/95 backdrop-blur-xl border-t border-border/60 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      <div className={cn(isForcedMobile ? "hidden" : "md:hidden", "fixed bottom-0 inset-x-0 z-30 bg-background/95 backdrop-blur-xl border-t border-border/60 pb-[max(0.75rem,env(safe-area-inset-bottom))]")}>
         <div className="max-w-3xl lg:max-w-4xl mx-auto px-4 sm:px-6 md:px-8 py-2 sm:py-3 flex items-center justify-between gap-3">
           {/* Lado Esquerdo: Valor Parcelado / Total Limpo (Sem cortes, clicável para abrir opções) */}
           <button

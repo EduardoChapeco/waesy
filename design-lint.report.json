@@ -1,15 +1,15 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-21T15:07:55.901Z",
-  "inspectedFiles": 2239,
-  "totalViolations": 12307,
+  "timestamp": "2026-10-21T15:40:53.657Z",
+  "inspectedFiles": 2241,
+  "totalViolations": 12306,
   "summary": {
-    "totalViolations": 12307,
+    "totalViolations": 12306,
     "bySeverity": {
       "P0": 1359,
       "P1": 8350,
       "P2": 1319,
-      "P3": 1279
+      "P3": 1278
     },
     "byRule": {
       "DL-18": 1151,
@@ -18,7 +18,7 @@
       "DL-28": 280,
       "DL-15": 1356,
       "DL-07": 482,
-      "DL-27": 1013,
+      "DL-27": 1012,
       "DL-30": 266,
       "DL-26": 85,
       "DL-01": 875,
@@ -38,11 +38,11 @@
     },
     "byModule": {
       "components/app": {
-        "total": 5585,
+        "total": 5584,
         "P0": 559,
         "P1": 3787,
         "P2": 691,
-        "P3": 548
+        "P3": 547
       },
       "components/builder": {
         "total": 130,
@@ -144,7 +144,7 @@
       }
     },
     "filesWithViolations": 891,
-    "filesCount": 2239
+    "filesCount": 2241
   },
   "config": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -766,22 +766,11 @@
       "rule": "DL-30",
       "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/public/canonical-listing-view.tsx",
       "module": "components/app",
-      "line": 246,
+      "line": 339,
       "column": 55,
       "severity": "P3",
       "match": "overflow-x-auto",
       "message": "Overflow horizontal \"overflow-x-auto\" em superfície de aplicação fora de tabela/carrossel."
-    },
-    {
-      "id": "DL-27",
-      "rule": "DL-27",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/public/canonical-listing-view.tsx",
-      "module": "components/app",
-      "line": 253,
-      "column": 88,
-      "severity": "P3",
-      "match": "transition-all",
-      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
     },
     {
       "id": "DL-14",
@@ -1992,6 +1981,17 @@
       "severity": "P1",
       "match": "text-[10px]",
       "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-15",
+      "rule": "DL-15",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-floating-action-bar.tsx",
+      "module": "components/app",
+      "line": 33,
+      "column": 2,
+      "severity": "P0",
+      "match": "onClick sem focus-visible",
+      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
     }
   ]
 }

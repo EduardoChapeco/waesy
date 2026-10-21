@@ -53,30 +53,41 @@ export const setTenantContext = createServerFn({ method: "POST" })
       return { success: true, store_id: null };
     }
 
-    // 1. Verifica se a store solicitada existe no banco de dados
-    const { data: targetStore } = await adminDb
+        // 1. Exige autenticação
+    if (!identity.id) {
+      throw new Error("Não autenticado: faça login para acessar este espaço de trabalho.");
+    }
+
+    // 2. Verifica se a store solicitada existe no banco de dados
+    const { data: targetStore, error: storeErr } = await adminDb
       .from("stores")
-      .select("id, name, slug")
+      .select("id, name, slug, is_active")
       .eq("id", store_id)
       .maybeSingle();
 
-    if (!targetStore) {
+    if (storeErr || !targetStore) {
       throw new Error("Loja ou espaço de trabalho não encontrado.");
     }
 
-    // 2. Se o usuário estiver autenticado, garante o vínculo em workspace_members e atualiza profiles
-    if (identity.id) {
-      try {
-        await adminDb.from("workspace_members").upsert(
-          {
-            profile_id: identity.id,
-            store_id: store_id,
-            role: "owner",
-          },
-          { onConflict: "profile_id,store_id" },
-        );
-      } catch (e) {
-        console.warn("[setTenantContext] Upsert em workspace_members / profiles:", e);
+    // 3. Validação estrita de autorização de tenant:
+    // O usuário DEVE possuir registro legítimo em workspace_members para este store_id,
+    // a menos que seja um platform_admin / master global.
+    const isPlatformAdmin =
+      identity.role === "platform_admin" ||
+      identity.role === "master" ||
+      identity.role === "superadmin" ||
+      identity.isPlatformAdmin === true;
+
+    if (!isPlatformAdmin) {
+      const { data: membership, error: memErr } = await adminDb
+        .from("workspace_members")
+        .select("role")
+        .eq("profile_id", identity.id)
+        .eq("store_id", store_id)
+        .maybeSingle();
+
+      if (memErr || !membership) {
+        throw new Error("Acesso não autorizado: você não é membro desta empresa ou workspace.");
       }
     }
 

@@ -79,6 +79,185 @@ const CLASSIFIED_PUBLIC_ALLOWLIST_EXTRA = new Set([
   "host_avatar_url",
   "host_phone",
   "host_role",
+  // Template & Nicho Canônico
+  "template_id",
+  "niche",
+  "vertical",
+  // Turismo, Pacotes, Excursões & Roteiros
+  "destination_city",
+  "destination",
+  "destination_summary",
+  "departure_city",
+  "departure_date",
+  "return_date",
+  "duration_text",
+  "package_duration",
+  "meal_plan",
+  "guests_text",
+  "guest_capacity",
+  "dates_text",
+  "bio_bullets",
+  "departure_options",
+  "flight_details",
+  "lodgings",
+  "hotels",
+  "hotel_name",
+  "hotel_description",
+  "hotel_address",
+  "hotel_stars",
+  "hotel_amenities",
+  "hotel_photos",
+  "hotel_images",
+  "story_highlights",
+  "itinerary_days",
+  "itinerary",
+  "passenger_composition",
+  "is_custom_quote",
+  "has_transfer",
+  "transfer_vehicle",
+  "transfer_from",
+  "transfer_to",
+  "included_tours",
+  "package_includes",
+  // Veículos & Agro
+  "year_fab",
+  "year_model",
+  "mileage_km",
+  "hours_used",
+  "horimetro",
+  "traction",
+  "tracao",
+  "implement_type",
+  "power_cv",
+  "cabin_type",
+  // Imóveis & Hospedagem
+  "deal_type",
+  "property_type",
+  "area_sqm",
+  "parking_spots",
+  "condo_cents",
+  "iptu_cents",
+  "furnished",
+  "max_guests",
+  "cleaning_fee_cents",
+  "checkin_type",
+  "checkin_time",
+  "checkout_time",
+  "house_rules",
+  "rental_period",
+  // Vagas de Emprego
+  "role",
+  "work_model",
+  "regime",
+  "work_schedule",
+  "salary_range",
+  "min_education",
+  "experience_level",
+  "application_methods",
+  "benefits",
+  "skills",
+  // Serviços & Saúde
+  "modality",
+  "service_area",
+  "estimated_duration",
+  "pricing_type",
+  "booking_enabled",
+  "service_duration_minutes",
+  "available_slots",
+  "service_subniche",
+  "professional_council",
+  "specialty",
+  "availability",
+  "subniche",
+  "retention_prescription",
+  "active_ingredient",
+  "anvisa_registry",
+  // Bens Físicos / Desapego
+  "desapego_subcategory",
+  "storage",
+  "battery_health",
+  "accessories",
+  "computer_type",
+  "processor",
+  "ram",
+  "appliance_type",
+  "console",
+  "room",
+  "fashion_category",
+  "gender",
+  "size",
+  // Mercado, Hortifrúti, Açougue & Gastronomia
+  "volume",
+  "temperature",
+  "is_alcoholic",
+  "delivery_estimate",
+  "ready_delivery",
+  "grocery_department",
+  "sub_category",
+  "unit_type",
+  "estimated_weight_per_unit",
+  "storage_temp",
+  "manufacturer",
+  "barcode_ean",
+  "ingredients",
+  "contains_gluten",
+  "contains_lactose",
+  "is_organic",
+  "prep_options",
+  "delivery_fee_cents",
+  "grocery_fresh_pricing",
+  "grocery_ripeness_config",
+  "progressive_discount_tiers",
+  "order_bump_offer",
+  "food_subniche",
+  "food_prep_time_minutes",
+  "food_delivery_modes",
+  // Negócios, Franquias, Equipamentos & Digitais
+  "business_segment",
+  "monthly_revenue_cents",
+  "net_profit_cents",
+  "valuation_cents",
+  "working_capital_cents",
+  "foundation_year",
+  "employees_range",
+  "sale_reason",
+  "commercial_point_type",
+  "monthly_rent_cents",
+  "monthly_iptu_cents",
+  "monthly_condo_cents",
+  "contract_remaining_years",
+  "requires_nda",
+  "advisor_supported",
+  "target_investment_cents",
+  "offered_equity_percent",
+  "investment_model",
+  "project_stage",
+  "use_of_funds",
+  "pitch_deck_url",
+  "equipment_period",
+  "deposit_cents",
+  "digital_file_type",
+  "digital_file_name",
+  "digital_file_size_bytes",
+  "download_limit",
+  "digital_preview_url",
+  // Condições Comerciais Públicas (Sem Chaves Sensíveis)
+  "price_min_cents",
+  "price_max_cents",
+  "price_disclaimer",
+  "custom_disclaimer",
+  "accepts_boleto",
+  "boleto_due_days",
+  "accepts_boleto_installments",
+  "max_boleto_installments",
+  "accepts_carne",
+  "max_carne_installments",
+  "accepts_cash",
+  "accepts_financing",
+  "card_interest_free",
+  "accepted_payment_methods",
+  "delivery_available",
+  "free_shipping_local",
 ]);
 
 function sanitizePublicClassifiedAttributes(
@@ -1099,6 +1278,55 @@ export const upsertClassified = createServerFn({ method: "POST" })
       }
     }
 
+    // Valida autorização multi-tenant caso o anúncio seja vinculado a uma loja (store_id)
+    if (rest.store_id) {
+      const hasDirectMembership =
+        identity.store_id === rest.store_id ||
+        identity.isPlatformAdmin ||
+        (Array.isArray(identity.memberships) &&
+          identity.memberships.some((m: any) => m.store_id === rest.store_id));
+
+      if (!hasDirectMembership) {
+        const { data: storeOwnerOrMember } = await supabase
+          .from("stores")
+          .select("id, owner_id")
+          .eq("id", rest.store_id)
+          .maybeSingle();
+
+        let authorizedStore = storeOwnerOrMember?.owner_id === identity.id;
+        if (!authorizedStore) {
+          const { data: memberRow } = await supabase
+            .from("workspace_members")
+            .select("id")
+            .eq("store_id", rest.store_id)
+            .eq("profile_id", identity.id)
+            .maybeSingle();
+          authorizedStore = !!memberRow;
+        }
+        if (!authorizedStore) {
+          throw new Error("Você não possui permissão para vincular anúncios a esta loja.");
+        }
+      }
+    }
+
+    const isRealEstateOrStay =
+      rest.category === "real_estate" ||
+      rest.attributes?.niche === "imovel" ||
+      rest.attributes?.niche === "hospedagem";
+
+    const catStr = String(rest.category || "");
+    const isPhysicalDeliveryCategory =
+      catStr === "goods" ||
+      catStr === "mercado" ||
+      catStr === "food" ||
+      catStr === "donation" ||
+      catStr === "equipment_rental" ||
+      rest.attributes?.niche === "desapego" ||
+      rest.attributes?.niche === "mercado" ||
+      rest.attributes?.niche === "gastronomia" ||
+      rest.attributes?.niche === "doacao" ||
+      rest.attributes?.niche === "aluguel_equipamentos";
+
     // Sanitiza e mapeia os campos para colunas existentes estritamente na tabela classifieds
     const payload: Record<string, any> = {
       title: rest.title,
@@ -1108,7 +1336,7 @@ export const upsertClassified = createServerFn({ method: "POST" })
       deal_type:
         rest.deal_type ||
         rest.attributes?.deal_type ||
-        (rest.category === "real_estate" ? "venda" : "venda"),
+        (isRealEstateOrStay ? "venda" : null),
       property_type: rest.property_type || rest.attributes?.property_type || null,
       bedrooms: rest.bedrooms ?? rest.attributes?.bedrooms ?? null,
       bathrooms: rest.bathrooms ?? rest.attributes?.bathrooms ?? null,
@@ -1120,12 +1348,15 @@ export const upsertClassified = createServerFn({ method: "POST" })
         : Array.isArray(rest.attributes?.amenities)
           ? rest.attributes.amenities
           : [],
-      max_guests: rest.max_guests ?? rest.attributes?.max_guests ?? 1,
+      max_guests:
+        rest.max_guests ??
+        rest.attributes?.max_guests ??
+        (isRealEstateOrStay ? 1 : null),
       cleaning_fee_cents: rest.cleaning_fee_cents ?? rest.attributes?.cleaning_fee_cents ?? 0,
       rental_period:
         rest.rental_period ||
         rest.attributes?.rental_period ||
-        (rest.deal_type === "temporada" ? "diaria" : "mensal"),
+        (isRealEstateOrStay ? (rest.deal_type === "temporada" ? "diaria" : "mensal") : null),
       is_digital: rest.is_digital ?? !!rest.digital_file_url,
       digital_file_url: rest.digital_file_url || rest.attributes?.digital_file_url || null,
       digital_file_name: rest.digital_file_name || rest.attributes?.digital_file_name || null,
@@ -1145,7 +1376,10 @@ export const upsertClassified = createServerFn({ method: "POST" })
           ? rest.attributes.property_tags
           : [],
       is_boosted: rest.is_boosted ?? rest.attributes?.is_boosted ?? false,
-      delivery_mode: rest.delivery_mode || rest.attributes?.delivery_mode || "pickup",
+      delivery_mode:
+        rest.delivery_mode ||
+        rest.attributes?.delivery_mode ||
+        (isPhysicalDeliveryCategory ? "pickup" : null),
       accepts_trade: rest.accepts_trade ?? rest.attributes?.accepts_trade ?? false,
       accepts_card: rest.accepts_card ?? rest.attributes?.accepts_card ?? false,
       max_installments: rest.max_installments ?? rest.attributes?.max_installments ?? 1,
@@ -1212,7 +1446,10 @@ export const upsertClassified = createServerFn({ method: "POST" })
           : rest.access_token || null,
       max_discount_pct: rest.max_discount_pct ?? 0,
       delivery_type:
-        rest.delivery_type || rest.delivery_mode || rest.attributes?.delivery_type || "pickup",
+        rest.delivery_type ||
+        rest.delivery_mode ||
+        rest.attributes?.delivery_type ||
+        (isPhysicalDeliveryCategory ? "pickup" : null),
       author_profile_id: identity.id,
       store_id: rest.store_id || null,
       // FASE 1: Lifecycle & Validade Obrigatória (30, 60 ou 90 dias)
@@ -1281,6 +1518,8 @@ export const upsertClassified = createServerFn({ method: "POST" })
       if (!isAuthor && !isStoreManager) {
         throw new Error("Você não tem permissão para editar este anúncio.");
       }
+
+      payload.author_profile_id = existingAd.author_profile_id;
 
       const { data, error } = await supabase
         .from("classifieds")

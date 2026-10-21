@@ -403,7 +403,12 @@ export function ClassifiedDetailMobile({
   }, [attrs, classified, images, locationText]);
 
   return (
-    <div className="w-full min-h-screen bg-background text-foreground pb-32 pb-safe select-none">
+    <div
+      data-active-template={templateStyle}
+      data-active-niche={niche.id}
+      data-render-mode="mobile-native"
+      className="w-full min-h-screen bg-background text-foreground pb-32 pb-safe select-none"
+    >
       {/* ── 1. HEADER PADRONIZADO FIXO NO TOPO COM FLEX ROW E BACK BUTTON ALINHADO ── */}
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border/40 px-3 h-12 flex items-center justify-between">
         <NativeBackButton
@@ -576,6 +581,19 @@ export function ClassifiedDetailMobile({
                 <Badge variant="outline" className="text-xs font-semibold text-primary border-primary/30 bg-primary/10">
                   {niche.shortLabel || niche.title}
                 </Badge>
+                <Badge variant="secondary" data-template-badge={templateStyle} className="text-xs font-semibold">
+                  {templateStyle === "automotivo"
+                    ? "Showroom Automotivo"
+                    : templateStyle === "imobiliario"
+                    ? "Ficha Patrimonial"
+                    : templateStyle === "resort_hotel"
+                    ? "Estadia & Hospitalidade"
+                    : templateStyle === "servicos_agenda"
+                    ? "Agenda & Serviços"
+                    : templateStyle === "editorial"
+                    ? "Dossiê Editorial"
+                    : "Vitrine Padrão"}
+                </Badge>
                 {classified.condition && !["hospitality_stay", "real_estate_sale", "real_estate_rent", "service", "job", "event", "travel", "digital", "subscription", "business"].includes(niche.id) && (
                   <Badge variant="secondary" className="text-xs font-medium">
                     {classified.condition === "new" ? "Novo" : classified.condition === "refurbished" ? "Revisado" : "Usado"}
@@ -633,6 +651,63 @@ export function ClassifiedDetailMobile({
                 <span className="break-words text-wrap">{locationText}</span>
               </div>
             </div>
+
+            {/* Strip Canônico do Template Selecionado (Mobile Native) */}
+            {templateStyle === "automotivo" && (
+              <div data-template-strip="automotivo" className="rounded-lg border border-border/70 bg-muted/20 p-4 space-y-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-foreground block">Showroom Automotivo</span>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="rounded-lg bg-card border border-border/50 p-3">
+                    <span className="text-xs text-muted-foreground block">Ano</span>
+                    <span className="text-xs font-bold text-foreground break-words">{attrs.year || attrs.year_model || "Consulte"}</span>
+                  </div>
+                  <div className="rounded-lg bg-card border border-border/50 p-3">
+                    <span className="text-xs text-muted-foreground block">KM</span>
+                    <span className="text-xs font-bold text-foreground break-words">{attrs.mileage || attrs.mileage_km ? `${attrs.mileage || attrs.mileage_km} km` : "Consulte"}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {templateStyle === "resort_hotel" && (
+              <div data-template-strip="resort_hotel" className="rounded-lg border border-border/70 bg-muted/20 p-4 flex items-center justify-between gap-3">
+                <div className="space-y-1 min-w-0">
+                  <span className="text-xs font-bold text-foreground block break-words text-wrap">Estadia & Hospitalidade</span>
+                  <p className="text-xs text-muted-foreground break-words text-wrap">
+                    Check-in {attrs.checkin_time || "14:00"} • Check-out {attrs.checkout_time || "12:00"}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {templateStyle === "servicos_agenda" && (
+              <div data-template-strip="servicos_agenda" className="rounded-lg border border-border/70 bg-muted/20 p-4 flex items-center justify-between gap-3">
+                <div className="space-y-1 min-w-0">
+                  <span className="text-xs font-bold text-foreground block break-words text-wrap">Agenda & Atendimento</span>
+                  <p className="text-xs text-muted-foreground break-words text-wrap">
+                    Modalidade: {attrs.modality === "online" ? "Online" : attrs.modality === "domicilio" ? "Domicílio" : "Presencial"}
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleStartNativeChat("Olá, gostaria de consultar disponibilidade na agenda.")}
+                  className="h-11 min-h-11 px-3 text-xs font-bold rounded-lg border-primary/40 text-primary hover:bg-primary/10 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  Agendar
+                </Button>
+              </div>
+            )}
+
+            {templateStyle === "editorial" && (
+              <div data-template-strip="editorial" className="rounded-lg border border-primary/25 bg-primary/5 p-4 space-y-1">
+                <span className="text-xs font-bold uppercase tracking-wider text-primary block">Dossiê Editorial</span>
+                <p className="text-xs text-muted-foreground break-words text-wrap">
+                  Curadoria completa com especificações detalhadas e negociação verificada.
+                </p>
+              </div>
+            )}
 
             {/* Negociação e Agendamento Específico por Nicho */}
             {templateStyle === "automotivo" && (attrs.accepts_trade || attrs.accepts_financing || attrs.negotiable) && (
