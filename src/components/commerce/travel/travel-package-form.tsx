@@ -49,6 +49,7 @@ import {
   type HotelBankDTO,
   type DestinationDTO,
 } from "@/services/travel-catalog.functions";
+import { HotelCombobox, type HotelComboboxItem } from "@/components/ui/hotel-combobox";
 import {
   type TravelPackageData,
   type TravelItineraryDay,
@@ -274,6 +275,71 @@ export function TravelPackageForm({
         image: h.image,
       })) as any,
     });
+  };
+
+  const handleSelectHotelFromCombobox = (hotelId: string, hotelItem?: HotelComboboxItem) => {
+    if (!hotelId) {
+      onChange({
+        ...value,
+        resort: {
+          ...resort,
+          name: "",
+        },
+      });
+      return;
+    }
+
+    if (!hotelItem) {
+      const foundInStore = hotelsBankList.find((h: HotelBankDTO) => h.id === hotelId);
+      if (foundInStore) {
+        handleSelectHotelFromBank(hotelId);
+      }
+      return;
+    }
+
+    const defaultMealPlan = hotelItem.regime_options?.[0] || resort.meal_plan || "All Inclusive";
+    const hotelCity = hotelItem.city || destination.name;
+    const hotelRegion = hotelItem.state ? `${hotelItem.state}, ${hotelItem.country || "Brasil"}` : destination.region;
+
+    // Inclusão inteligente de hospedagem no pacote se ainda não houver
+    const currentInclusions = [...(value.inclusions || [])];
+    const accommodationInclusion = `Hospedagem em ${hotelItem.name} (${defaultMealPlan})`;
+    if (
+      !currentInclusions.some(
+        (inc) =>
+          inc.toLowerCase().includes("hospedagem") ||
+          inc.toLowerCase().includes(hotelItem.name.toLowerCase()),
+      )
+    ) {
+      currentInclusions.unshift(accommodationInclusion);
+    }
+
+    onChange({
+      ...value,
+      resort: {
+        ...resort,
+        name: hotelItem.name,
+        meal_plan: defaultMealPlan,
+        cover_image_url: hotelItem.cover_photo_url || resort.cover_image_url,
+        badges: hotelItem.badges && hotelItem.badges.length > 0 ? hotelItem.badges : resort.badges,
+        bio_bullets:
+          hotelItem.bio_bullets && hotelItem.bio_bullets.length > 0
+            ? hotelItem.bio_bullets
+            : resort.bio_bullets,
+        photos:
+          hotelItem.photos && hotelItem.photos.length > 0
+            ? hotelItem.photos
+            : resort.photos,
+      },
+      destination: {
+        ...destination,
+        name: hotelCity,
+        region: hotelRegion,
+        country: hotelItem.country || destination.country || "Brasil",
+      },
+      inclusions: currentInclusions,
+    });
+    toast.success(`Hotel "${hotelItem.name}" vinculado com autopreenchimento!`);
   };
 
   const handleSelectHotelFromBank = (hotelId: string) => {
@@ -1205,27 +1271,17 @@ export function TravelPackageForm({
               </div>
             </div>
 
-            {/* Seletor de Hotel Pré-cadastrado */}
-            {hotelsBankList.length > 0 && (
-              <div className="p-3 rounded-lg bg-muted/20 border border-border/50 space-y-2">
-                <Label className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
-                  <Sliders className="size-3 text-primary" />
-                  <span>Vincular do Catálogo Oficial de Hotéis & Resorts</span>
-                </Label>
-                <Select onValueChange={handleSelectHotelFromBank}>
-                  <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
-                    <SelectValue placeholder="Escolher um hotel parceiro cadastrado..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {hotelsBankList.map((h: HotelBankDTO) => (
-                      <SelectItem key={h.id} value={h.id}>
-                        {h.name} — {h.city}, {h.state}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+            {/* Seletor de Hotel Inteligente com Combobox Tátil e Busca em Tempo Real */}
+            <div className="p-3 rounded-lg bg-muted/20 border border-border/50 space-y-2">
+              <HotelCombobox
+                label="Vincular do Catálogo Oficial de Hotéis & Resorts"
+                placeholder="Buscar hotel, resort ou pousada (ex: Salinas, Nannai, Tivoli)..."
+                value={resort.name}
+                storeHotels={hotelsBankList}
+                onChange={(hotelId, hotelItem) => handleSelectHotelFromCombobox(hotelId, hotelItem)}
+                helperText="Busque no banco central ou no catálogo de sua agência para preencher automaticamente destino, fotos e refeições."
+              />
+            </div>
 
             {/* Modal Inline de Cadastro Rápido de Hotel */}
             {showNewHotelModal && (

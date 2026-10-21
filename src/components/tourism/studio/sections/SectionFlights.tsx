@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { type Proposal, type Flight } from "@/services/proposals";
 import { Accordion, Card, AddBtn, L, Inp, TextField, NumField, SMALL_INPUT } from "@/components/proposals/ProposalFormFields";
 import { replaceAt } from "@/components/proposals/ProposalFormFields";
-import { Trash2, Plus, PlaneTakeoff, PlaneLanding, BaggageClaim, Search } from "lucide-react";
+import { Trash2, Plus, PlaneTakeoff, PlaneLanding, BaggageClaim, Search, AlertTriangle, Clock } from "lucide-react";
 import { useAgency } from "@/lib/agency-context";
 import { getAgencyMarkup, calculateMarkup } from "@/utils/pricing";
 import { infotravelSearchFlights } from "@/services/infotravel";
@@ -30,6 +30,56 @@ const BLANK: Flight = {
   baggage_rules: "23kg",
   price: 0,
 };
+
+export function parseTimeToMinutes(t?: string): number | null {
+  if (!t || !t.includes(":")) return null;
+  const [h, m] = t.split(":").map((v) => parseInt(v, 10));
+  if (isNaN(h) || isNaN(m)) return null;
+  return h * 60 + m;
+}
+
+export function getConnectionWarning(prev?: Flight, curr?: Flight): { type: "tight" | "negative" | "long"; message: string } | null {
+  if (!prev || !curr) return null;
+  if (!prev.destination || !curr.origin) return null;
+
+  const destClean = prev.destination.trim().toUpperCase();
+  const origClean = curr.origin.trim().toUpperCase();
+
+  // Compara conexão se o destino anterior é a mesma cidade/aeroporto da nova origem
+  if (destClean !== origClean && prev.date !== curr.date) return null;
+
+  const arrMin = parseTimeToMinutes(prev.arrival_time);
+  const depMin = parseTimeToMinutes(curr.departure_time);
+
+  if (arrMin === null || depMin === null) return null;
+
+  const diff = depMin - arrMin;
+
+  if (diff < 0) {
+    return {
+      type: "negative",
+      message: `Inconsistência de horários: O voo ${curr.flight_number || "seguinte"} decola às ${curr.departure_time}, antes da chegada do voo anterior (${prev.arrival_time}) em ${prev.destination}.`,
+    };
+  }
+
+  if (diff < 45) {
+    return {
+      type: "tight",
+      message: `Conexão apertada em ${prev.destination}: apenas ${diff} min de solo. Risco elevado de perda de conexão ou extravio de bagagem despachada.`,
+    };
+  }
+
+  if (diff >= 360) {
+    const hours = Math.floor(diff / 60);
+    const mins = diff % 60;
+    return {
+      type: "long",
+      message: `Conexão longa em ${prev.destination}: ${hours}h${mins > 0 ? ` ${mins}min` : ""} de espera no aeroporto.`,
+    };
+  }
+
+  return null;
+}
 
 export function SectionFlights({ draft, save }: Props) {
   const { agency } = useAgency();
@@ -102,8 +152,25 @@ export function SectionFlights({ draft, save }: Props) {
 
   return (
     <Accordion title={`Voos (${flights.length})`}>
-      {flights.map((f, i) => (
-        <Card key={f.id || i} onRemove={() => remove(i)}>
+      {flights.map((f, i) => {
+        const connectionAlert = i > 0 ? getConnectionWarning(flights[i - 1], f) : null;
+        return (
+          <Card key={f.id || i} onRemove={() => remove(i)}>
+            {connectionAlert && (
+              <div
+                role="alert"
+                className={`mb-3 flex items-start gap-2 rounded-lg border p-3 text-xs font-medium leading-relaxed ${
+                  connectionAlert.type === "negative"
+                    ? "border-destructive/40 bg-destructive/10 text-destructive"
+                    : connectionAlert.type === "tight"
+                      ? "border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-200"
+                      : "border-blue-500/40 bg-blue-500/10 text-blue-800 dark:text-blue-200"
+                }`}
+              >
+                <AlertTriangle className="size-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+                <span>{connectionAlert.message}</span>
+              </div>
+            )}
           <div className="grid grid-cols-2 gap-2 mb-2">
             <L label="Origem">
               <Inp value={f.origin} onChange={(v) => upd(i, { origin: v })} ph="ex. GRU" />
@@ -203,7 +270,8 @@ export function SectionFlights({ draft, save }: Props) {
             </L>
           </div>
         </Card>
-      ))}
+        );
+      })}
       <div className="flex gap-2">
         <AddBtn onClick={add}>Adicionar voo</AddBtn>
         <Button

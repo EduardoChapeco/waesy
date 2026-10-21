@@ -62,7 +62,7 @@ export default function ContaLojasPage() {
         </div>
 
         <Button asChild size="sm" className="rounded-lg h-11 min-h-11 sm:h-9 px-4 text-xs font-semibold gap-2 bg-foreground text-background hover:bg-foreground/90 shrink-0 cursor-pointer">
-          <Link to="/criar-negocio">
+          <Link to="/conta/lojas/nova">
             <Plus className="size-3.5" />
             <span>Nova Loja</span>
           </Link>
@@ -85,7 +85,7 @@ export default function ContaLojasPage() {
  </div>
  <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
  <Button asChild className="rounded-lg text-xs font-bold gap-2">
- <Link to="/criar-negocio">
+ <Link to="/conta/lojas/nova">
  <Plus className="size-4" />
  Cadastrar Meu Negócio
  </Link>

@@ -202,6 +202,7 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
     const { error: membershipError } = await db.from("workspace_members").upsert(
       {
         profile_id: userId,
+        user_id: userId,
         store_id: store.id,
         role: "owner",
         is_active: true,
@@ -228,7 +229,7 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
       const catPayload = defaultCategories.map((catName, idx) => ({
         store_id: store.id,
         name: catName,
-        slug: `${generateSlug(catName)}-${Math.floor(100 + Math.random() * 900)}`,
+        slug: `${generateSlug(catName)}-${idx + 1}`,
         position: idx,
         is_active: true,
       }));

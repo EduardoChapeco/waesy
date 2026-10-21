@@ -12,6 +12,7 @@ export interface UserAddressDTO {
   zipcode: string;
   street: string;
   number: string;
+  has_no_number?: boolean;
   complement?: string | null;
   reference_point?: string | null;
   neighborhood: string;
@@ -30,29 +31,40 @@ export interface UserAddressDTO {
   created_at?: string;
 }
 
-export const UserAddressInputSchema = z.object({
-  id: z.string().uuid().optional(),
-  label: z.string().default("Principal"),
-  recipient_name: z.string().optional().nullable(),
-  recipient_phone: z.string().optional().nullable(),
-  zipcode: z.string().min(8, "CEP deve conter pelo menos 8 dígitos"),
-  street: z.string().min(2, "Logradouro é obrigatório"),
-  number: z.string().min(1, "Número é obrigatório"),
-  complement: z.string().optional().nullable(),
-  reference_point: z.string().optional().nullable(),
-  neighborhood: z.string().min(2, "Bairro é obrigatório"),
-  city: z.string().min(2, "Cidade é obrigatória"),
-  state: z.string().length(2, "UF deve ter 2 caracteres"),
-  latitude: z.number().optional().nullable(),
-  longitude: z.number().optional().nullable(),
-  is_default: z.boolean().default(false),
-  is_apartment: z.boolean().default(false),
-  block_tower: z.string().optional().nullable(),
-  intercom_code: z.string().optional().nullable(),
-  address_type: z.enum(["residential", "commercial", "rural", "other"]).default("residential"),
-  icon: z.enum(["home", "building", "briefcase", "heart", "map_pin"]).default("home"),
-  instructions: z.string().optional().nullable(),
-});
+export const UserAddressInputSchema = z
+  .object({
+    id: z.string().uuid().optional(),
+    label: z.string().default("Principal"),
+    recipient_name: z.string().optional().nullable(),
+    recipient_phone: z.string().optional().nullable(),
+    zipcode: z.string().min(8, "CEP deve conter pelo menos 8 dígitos"),
+    street: z.string().min(2, "Logradouro é obrigatório"),
+    number: z.string().default(""),
+    has_no_number: z.boolean().default(false),
+    complement: z.string().optional().nullable(),
+    reference_point: z.string().optional().nullable(),
+    neighborhood: z.string().min(2, "Bairro é obrigatório"),
+    city: z.string().min(2, "Cidade é obrigatória"),
+    state: z.string().length(2, "UF deve ter 2 caracteres"),
+    latitude: z.number().optional().nullable(),
+    longitude: z.number().optional().nullable(),
+    is_default: z.boolean().default(false),
+    is_apartment: z.boolean().default(false),
+    block_tower: z.string().optional().nullable(),
+    intercom_code: z.string().optional().nullable(),
+    address_type: z.enum(["residential", "commercial", "rural", "other"]).default("residential"),
+    icon: z.enum(["home", "building", "briefcase", "heart", "map_pin"]).default("home"),
+    instructions: z.string().optional().nullable(),
+  })
+  .superRefine((data, ctx) => {
+    if (!data.has_no_number && (!data.number || data.number.trim().length === 0)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Número é obrigatório quando não marcado 'Sem número'",
+        path: ["number"],
+      });
+    }
+  });
 
 /**
  * Obtém todos os endereços salvos e ativos do usuário autenticado (EARS-01 / EARS-06).
@@ -114,6 +126,8 @@ export const saveUserAddress = createServerFn({ method: "POST" })
 
     const supabase = getServerClient();
 
+    const effectiveNumber = input.has_no_number || !input.number?.trim() ? "S/N" : input.number.trim();
+
     // 1. Tenta executar via procedure atômica
     const { data: rpcRes, error: rpcErr } = await supabase.rpc("save_user_address_atomic", {
       p_id: input.id || null,
@@ -123,7 +137,7 @@ export const saveUserAddress = createServerFn({ method: "POST" })
       p_recipient_phone: input.recipient_phone || null,
       p_zipcode: input.zipcode,
       p_street: input.street,
-      p_number: input.number,
+      p_number: effectiveNumber,
       p_complement: input.complement || null,
       p_reference_point: input.reference_point || null,
       p_neighborhood: input.neighborhood,
@@ -138,6 +152,7 @@ export const saveUserAddress = createServerFn({ method: "POST" })
       p_address_type: input.address_type,
       p_icon: input.icon,
       p_instructions: input.instructions || null,
+      p_has_no_number: input.has_no_number || false,
     });
 
     if (!rpcErr && rpcRes?.success && rpcRes.address) {
@@ -159,7 +174,8 @@ export const saveUserAddress = createServerFn({ method: "POST" })
       recipient_phone: input.recipient_phone || null,
       zipcode: input.zipcode.replace(/\D/g, ""),
       street: input.street,
-      number: input.number,
+      number: effectiveNumber,
+      has_no_number: input.has_no_number || false,
       complement: input.complement || null,
       reference_point: input.reference_point || null,
       neighborhood: input.neighborhood,
@@ -174,7 +190,7 @@ export const saveUserAddress = createServerFn({ method: "POST" })
       address_type: input.address_type,
       icon: input.icon,
       instructions: input.instructions || null,
-      formatted_address: `${input.street}, ${input.number} - ${input.neighborhood}, ${input.city} - ${input.state.toUpperCase()}`,
+      formatted_address: `${input.street}, ${effectiveNumber} - ${input.neighborhood}, ${input.city} - ${input.state.toUpperCase()}`,
       updated_at: new Date().toISOString(),
     };
 
@@ -188,6 +204,20 @@ export const saveUserAddress = createServerFn({ method: "POST" })
         .single();
 
       if (error) throw new Error("Erro ao atualizar endereço: " + error.message);
+
+      // Trilha de Auditoria Estruturada (GAP-4.8)
+      try {
+        await supabase.from("system_audit_logs").insert({
+          action: "user_address_updated",
+          user_id: identity.id,
+          table_name: "user_addresses",
+          record_id: data.id,
+          payload: { city: input.city, state: input.state, is_default: input.is_default },
+        });
+      } catch (auditErr) {
+        console.warn("[addresses.functions] Falha não impeditiva no audit log:", auditErr);
+      }
+
       return { success: true, address: data as UserAddressDTO };
     } else {
       const { data, error } = await supabase
@@ -197,6 +227,20 @@ export const saveUserAddress = createServerFn({ method: "POST" })
         .single();
 
       if (error) throw new Error("Erro ao cadastrar endereço: " + error.message);
+
+      // Trilha de Auditoria Estruturada (GAP-4.8)
+      try {
+        await supabase.from("system_audit_logs").insert({
+          action: "user_address_created",
+          user_id: identity.id,
+          table_name: "user_addresses",
+          record_id: data.id,
+          payload: { city: input.city, state: input.state, is_default: input.is_default },
+        });
+      } catch (auditErr) {
+        console.warn("[addresses.functions] Falha não impeditiva no audit log:", auditErr);
+      }
+
       return { success: true, address: data as UserAddressDTO };
     }
   });
@@ -230,7 +274,116 @@ export const deleteUserAddress = createServerFn({ method: "POST" })
       .eq("user_id", identity.id);
 
     if (error) throw new Error("Erro ao remover endereço: " + error.message);
+
+    // Trilha de Auditoria Estruturada (GAP-4.8)
+    try {
+      await supabase.from("system_audit_logs").insert({
+        action: "user_address_deleted",
+        user_id: identity.id,
+        table_name: "user_addresses",
+        record_id: id,
+        payload: { deleted_at: new Date().toISOString() },
+      });
+    } catch (auditErr) {
+      console.warn("[addresses.functions] Falha não impeditiva no audit log:", auditErr);
+    }
+
     return { success: true };
+  });
+
+/**
+ * Define um endereço existente como predefinido (EARS-04).
+ */
+export const setDefaultUserAddress = createServerFn({ method: "POST" })
+  .validator(z.object({ id: z.string().uuid() }))
+  .handler(async ({ data: { id } }) => {
+    const identity = await getServerIdentity();
+    if (!identity.id) throw new Error("Acesso não autorizado.");
+
+    const supabase = getServerClient();
+
+    // 1. Tenta procedure atômica
+    const { data: rpcRes, error: rpcErr } = await supabase.rpc("set_default_user_address_atomic", {
+      p_id: id,
+      p_user_id: identity.id,
+    });
+
+    if (!rpcErr && rpcRes?.success) {
+      return { success: true, default_id: rpcRes.default_id };
+    }
+
+    // Fallback relacional
+    await supabase
+      .from("user_addresses")
+      .update({ is_default: false, updated_at: new Date().toISOString() })
+      .eq("user_id", identity.id)
+      .is("deleted_at", null);
+
+    const { error } = await supabase
+      .from("user_addresses")
+      .update({ is_default: true, updated_at: new Date().toISOString() })
+      .eq("id", id)
+      .eq("user_id", identity.id)
+      .is("deleted_at", null);
+
+    if (error) throw new Error("Erro ao definir endereço predefinido: " + error.message);
+
+    return { success: true, default_id: id };
+  });
+
+/**
+ * Atualização rápida de indicações para o entregador / condomínio (EARS-06 / Paridade Mercado Livre).
+ */
+export const updateAddressInstructions = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string().uuid(),
+      instructions: z.string().optional().nullable(),
+      reference_point: z.string().optional().nullable(),
+      intercom_code: z.string().optional().nullable(),
+      block_tower: z.string().optional().nullable(),
+    })
+  )
+  .handler(async ({ data: input }) => {
+    const identity = await getServerIdentity();
+    if (!identity.id) throw new Error("Acesso não autorizado.");
+
+    const supabase = getServerClient();
+
+    const { id, instructions, reference_point, intercom_code, block_tower } = input;
+
+    // 1. Tenta procedure atômica
+    const { data: rpcRes, error: rpcErr } = await supabase.rpc("update_address_instructions_atomic", {
+      p_id: id,
+      p_user_id: identity.id,
+      p_instructions: instructions || null,
+      p_reference_point: reference_point || null,
+      p_intercom_code: intercom_code || null,
+      p_block_tower: block_tower || null,
+    });
+
+    if (!rpcErr && rpcRes?.success && rpcRes.address) {
+      return { success: true, address: rpcRes.address as UserAddressDTO };
+    }
+
+    // Fallback relacional
+    const { data, error } = await supabase
+      .from("user_addresses")
+      .update({
+        instructions: instructions || null,
+        reference_point: reference_point || null,
+        intercom_code: intercom_code || null,
+        block_tower: block_tower || null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .eq("user_id", identity.id)
+      .select()
+      .single();
+
+    if (error) throw new Error("Erro ao salvar indicações do endereço: " + error.message);
+
+    return { success: true, address: data as UserAddressDTO };
   });
 
 /**

@@ -1417,3 +1417,49 @@ export const listCorporateInvoiceItems = createServerFn({ method: "GET" })
     }
     return rows || [];
   });
+
+
+// ─── 17. Magic Links para Passageiros Corporativos (GAP-4.21) ─────────────────
+
+export const generateCorporateTravelerMagicLink = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      travelerId: z.string().uuid(),
+      companyId: z.string().uuid(),
+      expiresInDays: z.number().int().min(1).max(30).default(7),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    if (!identity.id) throw new Error("Acesso não autorizado.");
+
+    const { data: traveler, error } = await supabase
+      .from("corporate_travelers")
+      .select("id, company_id, full_name, email")
+      .eq("id", data.travelerId)
+      .eq("company_id", data.companyId)
+      .maybeSingle();
+
+    if (error || !traveler) throw new Error("Viajante não encontrado nesta organização.");
+
+    const token = `corppax_${crypto.randomUUID().replace(/-/g, "")}`;
+    const expiresAt = new Date(Date.now() + data.expiresInDays * 24 * 60 * 60 * 1000).toISOString();
+
+    await supabase
+      .from("corporate_travelers")
+      .update({
+        magic_token: token,
+        magic_token_expires_at: expiresAt,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", traveler.id);
+
+    return {
+      success: true,
+      token,
+      magicLinkUrl: `/viagem/viajante/${token}`,
+      expiresAt,
+      travelerName: traveler.full_name,
+    };
+  });

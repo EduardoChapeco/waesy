@@ -1613,6 +1613,25 @@ export const upsertClassified = createServerFn({ method: "POST" })
       }
     }
 
+    // Disparo proativo do Radar Comercial de Turismo (Matching Determinístico com Backlog de Interesses)
+    if (
+      savedRecord &&
+      savedRecord.store_id &&
+      savedRecord.status === "active" &&
+      (savedRecord.category === "turismo" ||
+        savedRecord.attributes?.niche === "turismo" ||
+        savedRecord.attributes?.excelencia_offer ||
+        savedRecord.sub_category === "pacotes" ||
+        savedRecord.category === "travel")
+    ) {
+      try {
+        const { internalEvaluateOfferMatches } = await import("./travel-commercial-intelligence.functions");
+        await internalEvaluateOfferMatches(savedRecord.store_id, savedRecord.id, supabase);
+      } catch (matchErr) {
+        console.warn("[travel_commercial_intelligence] Falha ao auto-avaliar matches da oferta:", matchErr);
+      }
+    }
+
     // Telemetria invisível de histórico de rotatividade de ponto comercial (Fase 4 Master Plan)
     if (
       savedRecord &&

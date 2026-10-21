@@ -70,7 +70,7 @@ describe("Corporate Travel OS — Orquestração, Políticas e Integridade", () 
   });
 
   describe("2. Saga de Reserva Multi-Provider com Compensação", () => {
-    it("deve completar a saga com sucesso quando todos os steps respondem positivamente", async () => {
+    it("deve interromper a saga e registrar falha atômica quando o provedor não possui credenciais ativas no cofre (P0-3)", async () => {
       const result = await executeMultiProviderBookingSaga({
         tripId: "trip_123",
         agencyId: "agency_456",
@@ -81,10 +81,11 @@ describe("Corporate Travel OS — Orquestração, Políticas e Integridade", () 
         ],
       });
 
-      expect(result.status).toBe("completed");
-      expect(result.steps.length).toBe(3);
-      expect(result.steps.every((s) => s.status === "success")).toBe(true);
-      expect(result.compensations_executed).toBe(false);
+      expect(result.status).toBe("failed");
+      expect(result.steps.length).toBeGreaterThanOrEqual(1);
+      expect(result.steps[0].status).toBe("failed");
+      expect(result.steps[0].error).toContain("BLOCKED — PROVIDER CREDENTIAL REQUIRED");
+      expect(result.steps[0].locator_code).toBeUndefined();
     });
   });
 

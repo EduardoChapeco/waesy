@@ -96,6 +96,23 @@ export const PromoteOpportunityToCrmLeadSchema = z.object({
   notes: z.string().optional(),
 });
 
+export const BulkImportInterestsSchema = z.object({
+  items: z
+    .array(
+      z.object({
+        name: z.string().trim().min(2, "Nome deve ter ao menos 2 caracteres"),
+        phone: z.string().trim().min(8, "Telefone deve ter ao menos 8 dígitos"),
+        destinations: z.array(z.string().trim()).min(1, "Ao menos um destino"),
+        targetMonth: z.string().optional().nullable(),
+        maxInstallmentCents: z.number().int().positive().optional().nullable(),
+        adults: z.number().int().min(1).default(2),
+        children: z.number().int().min(0).default(0),
+        notes: z.string().optional().nullable(),
+      })
+    )
+    .min(1, "Envie ao menos um contato para importação"),
+});
+
 // ============================================================================
 // 1. GESTÃO DE CONTATOS PRÉ-CRM
 // ============================================================================
@@ -174,6 +191,17 @@ export const upsertCommercialContactFn = createServerFn({ method: "POST" })
 
     if (data.id) {
       payload.id = data.id;
+    } else {
+      const { data: existing } = await supabase
+        .from("travel_commercial_contacts")
+        .select("id")
+        .eq("store_id", staff.store_id)
+        .eq("phone", cleanPhone)
+        .maybeSingle();
+
+      if (existing?.id) {
+        payload.id = existing.id;
+      }
     }
 
     const { data: saved, error } = await supabase
@@ -320,6 +348,186 @@ export const upsertTravelInterestFn = createServerFn({ method: "POST" })
 // 3. MOTOR DE MATCHING DETERMINÍSTICO E OPORTUNIDADES
 // ============================================================================
 
+/**
+ * Função interna reutilizável para avaliação de matches entre uma oferta e os interesses do tenant.
+ */
+export async function internalEvaluateOfferMatches(
+  storeId: string,
+  offerId: string,
+  supabase: any
+): Promise<{ matchesFound: number; newOpportunitiesCreated: number }> {
+  // 1. Carregar a oferta do classificado
+  const { data: classified, error: classifiedError } = await supabase
+    .from("classifieds")
+    .select("*")
+    .eq("id", offerId)
+    .eq("store_id", storeId)
+    .single();
+
+  if (classifiedError || !classified) {
+    return { matchesFound: 0, newOpportunitiesCreated: 0 };
+  }
+
+  // Extrair TravelOffer ou sintetizar a partir dos atributos
+  const offerPayload: TravelOffer = classified.attributes?.excelencia_offer || {
+    id: classified.id,
+    operator: {
+      code: "INTERNAL",
+      name: "Excelência Tour",
+      brandColor: "var(--primary)",
+      supportPhone: "",
+    },
+    destination: {
+      title: classified.title,
+      city: classified.attributes?.destination || classified.title,
+      country: classified.attributes?.country || "Brasil",
+      regionCategory: classified.attributes?.region_category || "nacional",
+    },
+    dates: {
+      departureDate: classified.attributes?.departure_date || new Date().toISOString().slice(0, 10),
+      returnDate: classified.attributes?.return_date || new Date().toISOString().slice(0, 10),
+      durationNights: Number(classified.attributes?.nights_count || 5),
+      displayRangeText: classified.attributes?.dates_label || "Data a consultar",
+    },
+    airfare: {
+      included: Boolean(classified.attributes?.has_flights),
+      airline: classified.attributes?.airline || "Aéreo Selecionado",
+      departureOriginCity: classified.attributes?.origin_city || "Chapecó / Região",
+      baggageIncluded: Boolean(classified.attributes?.baggage_included),
+    },
+    hotels: [
+      {
+        hotelId: classified.attributes?.hotel_id || "hotel-default",
+        hotelName: classified.attributes?.hotel_name || classified.title,
+        categoryStars: Number(classified.attributes?.hotel_stars || 4),
+        mealPlan: classified.attributes?.meal_plan || "breakfast",
+        mealPlanLabel: classified.attributes?.meal_plan_label || "Café da manhã",
+        roomType: classified.attributes?.room_type || "Standard",
+        inclusions: classified.attributes?.included_items || [],
+      },
+    ],
+    transfers: {
+      included: Boolean(classified.attributes?.has_transfers ?? true),
+      transferType: "in_out",
+    },
+    pricing: {
+      priceBasis: classified.attributes?.price_basis || "per_person",
+      priceBasisLabel: classified.attributes?.price_basis === "total_package" ? "Total do pacote" : "Por pessoa",
+      totalPackagePriceCents: classified.price_cents || 0,
+    },
+    paymentTermsSnapshot: {
+      installmentCount: Number(classified.attributes?.installments_count || 10),
+      installmentAmountCents: Math.round(
+        (classified.price_cents || 0) / Number(classified.attributes?.installments_count || 10)
+      ),
+      totalAmountCents: classified.price_cents || 0,
+      shortStoryLabel: "Sem juros",
+      interestRule: "zero_interest",
+    },
+    publicPage: {
+      url: `/classificados/${classified.id}`,
+    },
+  };
+
+  // 2. Carregar todos os interesses abertos da loja
+  const { data: rawInterests, error: interestsError } = await supabase
+    .from("travel_interests")
+    .select("*, contact:travel_commercial_contacts(*)")
+    .eq("store_id", storeId)
+    .in("status", ["open", "matched"]);
+
+  if (interestsError || !rawInterests || rawInterests.length === 0) {
+    return { matchesFound: 0, newOpportunitiesCreated: 0 };
+  }
+
+  const interests: TravelInterest[] = [];
+  const contactsMap: Record<string, CommercialContact> = {};
+
+  for (const r of rawInterests) {
+    if (!r.contact || r.contact.status === "opted_out") continue;
+
+    const c: CommercialContact = {
+      id: r.contact.id,
+      tenantId: r.contact.store_id,
+      name: r.contact.name,
+      phone: r.contact.phone,
+      email: r.contact.email,
+      instagramHandle: r.contact.instagram_handle,
+      city: r.contact.city,
+      preferredChannel: r.contact.preferred_channel || "whatsapp",
+      status: r.contact.status || "active",
+      notes: r.contact.notes,
+      linkedCrmLeadId: r.contact.linked_crm_lead_id,
+      linkedCustomerId: r.contact.linked_customer_id,
+      createdAt: r.contact.created_at,
+      updatedAt: r.contact.updated_at,
+    };
+    contactsMap[c.id] = c;
+
+    interests.push({
+      id: r.id,
+      contactId: r.contact_id,
+      tenantId: r.store_id,
+      title: r.title,
+      destinations: r.destinations || [],
+      destinationCategories: r.destination_categories || [],
+      preferredOrigins: r.preferred_origins || [],
+      dates: r.dates || { flexibility: "flexible_anytime" },
+      party: r.party || { adults: 2, children: 0 },
+      budget: r.budget || {},
+      inclusionsWanted: r.inclusions_wanted || [],
+      hotelPreferences: r.hotel_preferences,
+      urgency: r.urgency || "moderate",
+      status: r.status || "open",
+      sourceInquiryText: r.source_inquiry_text,
+      expiresAt: r.expires_at,
+      createdAt: r.created_at,
+      updatedAt: r.updated_at,
+    });
+  }
+
+  // 3. Executar o motor determinístico
+  const matches = evaluateInterestBacklogAgainstOffer(offerPayload, interests, contactsMap);
+
+  let createdCount = 0;
+
+  // 4. Persistir matches qualificados (score >= 60)
+  for (const match of matches) {
+    const matchPayload = {
+      store_id: storeId,
+      interest_id: match.interestId,
+      offer_id: match.offerId,
+      contact_id: match.contactId,
+      match_score: match.matchScore,
+      is_high_priority: match.isHighPriority,
+      dimensions: match.dimensions,
+      approach_draft: match.approachDraft,
+      offer_snapshot: match.offerSnapshot,
+      status: "new",
+      matched_at: match.matchedAt,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { error: upsertError } = await supabase
+      .from("travel_opportunity_matches")
+      .upsert(matchPayload, { onConflict: "interest_id,offer_id" });
+
+    if (!upsertError) {
+      createdCount++;
+      // Atualizar status do interesse para "matched"
+      await supabase
+        .from("travel_interests")
+        .update({ status: "matched", updated_at: new Date().toISOString() })
+        .eq("id", match.interestId);
+    }
+  }
+
+  return {
+    matchesFound: matches.length,
+    newOpportunitiesCreated: createdCount,
+  };
+}
+
 export const evaluateOfferMatchesFn = createServerFn({ method: "POST" })
   .validator(
     z.object({
@@ -329,174 +537,113 @@ export const evaluateOfferMatchesFn = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const staff = await requireStaff();
     const supabase = getServerClient();
+    return internalEvaluateOfferMatches(staff.store_id, data.offerId, supabase);
+  });
 
-    // 1. Carregar a oferta do classificado
-    const { data: classified, error: classifiedError } = await supabase
-      .from("classifieds")
-      .select("*")
-      .eq("id", data.offerId)
-      .eq("store_id", staff.store_id)
-      .single();
+export const bulkImportInterestsFn = createServerFn({ method: "POST" })
+  .validator(BulkImportInterestsSchema)
+  .handler(async ({ data }) => {
+    const staff = await requireStaff();
+    const supabase = getServerClient();
 
-    if (classifiedError || !classified) {
-      throw new Error("Oferta de classificado não encontrada ou acesso negado.");
-    }
+    let importedContacts = 0;
+    let importedInterests = 0;
 
-    // Extrair TravelOffer ou sintetizar a partir dos atributos
-    const offerPayload: TravelOffer = classified.attributes?.excelencia_offer || {
-      id: classified.id,
-      operator: {
-        code: "INTERNAL",
-        name: "Excelência Tour",
-        brandColor: "var(--primary)",
-        supportPhone: "",
-      },
-      destination: {
-        title: classified.title,
-        city: classified.attributes?.destination || classified.title,
-        country: classified.attributes?.country || "Brasil",
-        regionCategory: classified.attributes?.region_category || "nacional",
-      },
-      dates: {
-        departureDate: classified.attributes?.departure_date || new Date().toISOString().slice(0, 10),
-        returnDate: classified.attributes?.return_date || new Date().toISOString().slice(0, 10),
-        durationNights: Number(classified.attributes?.nights_count || 5),
-        displayRangeText: classified.attributes?.dates_label || "Data a consultar",
-      },
-      airfare: {
-        included: Boolean(classified.attributes?.has_flights),
-        airline: classified.attributes?.airline || "Aéreo Selecionado",
-        departureOriginCity: classified.attributes?.origin_city || "Chapecó / Região",
-        baggageIncluded: Boolean(classified.attributes?.baggage_included),
-      },
-      hotels: [
-        {
-          hotelId: classified.attributes?.hotel_id || "hotel-default",
-          hotelName: classified.attributes?.hotel_name || classified.title,
-          categoryStars: Number(classified.attributes?.hotel_stars || 4),
-          mealPlan: classified.attributes?.meal_plan || "breakfast",
-          mealPlanLabel: classified.attributes?.meal_plan_label || "Café da manhã",
-          roomType: classified.attributes?.room_type || "Standard",
-          inclusions: classified.attributes?.included_items || [],
-        },
-      ],
-      transfers: {
-        included: Boolean(classified.attributes?.has_transfers ?? true),
-        transferType: "in_out",
-      },
-      pricing: {
-        priceBasis: classified.attributes?.price_basis || "per_person",
-        priceBasisLabel: classified.attributes?.price_basis === "total_package" ? "Total do pacote" : "Por pessoa",
-        totalPackagePriceCents: classified.price_cents || 0,
-      },
-      paymentTermsSnapshot: {
-        installmentCount: Number(classified.attributes?.installments_count || 10),
-        installmentAmountCents: Math.round((classified.price_cents || 0) / Number(classified.attributes?.installments_count || 10)),
-        totalAmountCents: classified.price_cents || 0,
-        shortStoryLabel: "Sem juros",
-        interestRule: "zero_interest",
-      },
-      publicPage: {
-        url: `/classificados/${classified.id}`,
-      },
-    };
+    for (const item of data.items) {
+      const cleanPhone = item.phone.replace(/\D/g, "");
+      if (!cleanPhone || cleanPhone.length < 8) continue;
 
-    // 2. Carregar todos os interesses abertos da loja
-    const { data: rawInterests, error: interestsError } = await supabase
-      .from("travel_interests")
-      .select("*, contact:travel_commercial_contacts(*)")
-      .eq("store_id", staff.store_id)
-      .in("status", ["open", "matched"]);
+      // 1. Localiza ou cria contato pré-CRM
+      const { data: existingContact } = await supabase
+        .from("travel_commercial_contacts")
+        .select("id")
+        .eq("store_id", staff.store_id)
+        .eq("phone", cleanPhone)
+        .maybeSingle();
 
-    if (interestsError || !rawInterests || rawInterests.length === 0) {
-      return { matchesFound: 0, newOpportunitiesCreated: 0 };
-    }
+      let contactId = existingContact?.id;
 
-    const interests: TravelInterest[] = [];
-    const contactsMap: Record<string, CommercialContact> = {};
+      if (!contactId) {
+        const { data: newContact, error: cErr } = await supabase
+          .from("travel_commercial_contacts")
+          .insert({
+            store_id: staff.store_id,
+            name: item.name.trim(),
+            phone: cleanPhone,
+            preferred_channel: "whatsapp",
+            status: "active",
+            notes: item.notes?.trim() || null,
+          })
+          .select("id")
+          .single();
 
-    for (const r of rawInterests) {
-      if (!r.contact || r.contact.status === "opted_out") continue;
+        if (cErr || !newContact) {
+          console.warn("[bulkImportInterestsFn] Falha ao criar contato:", cErr);
+          continue;
+        }
+        contactId = newContact.id;
+        importedContacts++;
+      }
 
-      const c: CommercialContact = {
-        id: r.contact.id,
-        tenantId: r.contact.store_id,
-        name: r.contact.name,
-        phone: r.contact.phone,
-        email: r.contact.email,
-        instagramHandle: r.contact.instagram_handle,
-        city: r.contact.city,
-        preferredChannel: r.contact.preferred_channel || "whatsapp",
-        status: r.contact.status || "active",
-        notes: r.contact.notes,
-        linkedCrmLeadId: r.contact.linked_crm_lead_id,
-        linkedCustomerId: r.contact.linked_customer_id,
-        createdAt: r.contact.created_at,
-        updatedAt: r.contact.updated_at,
-      };
-      contactsMap[c.id] = c;
+      // 2. Cria o interesse de viagem
+      const title = `${item.destinations[0]} - ${item.adults} adultos${item.children ? ` + ${item.children} crianças` : ""}`;
+      const { error: iErr } = await supabase
+        .from("travel_interests")
+        .insert({
+          contact_id: contactId,
+          store_id: staff.store_id,
+          title,
+          destinations: item.destinations,
+          dates: {
+            flexibility: item.targetMonth ? "specific_month" : "flexible_anytime",
+            targetMonths: item.targetMonth ? [item.targetMonth] : [],
+          },
+          party: {
+            adults: item.adults,
+            children: item.children,
+            childrenAges: [],
+            roomConfiguration: "family",
+          },
+          budget: {
+            maxInstallmentCents: item.maxInstallmentCents || null,
+            preferredInstallments: 12,
+            priceBasisPreference: "per_person",
+          },
+          inclusionsWanted: ["all_inclusive", "aereo_incluso"],
+          urgency: "moderate",
+          status: "open",
+          source_inquiry_text: item.notes?.trim() || "Importado via Lote de Inteligência Comercial",
+        });
 
-      interests.push({
-        id: r.id,
-        contactId: r.contact_id,
-        tenantId: r.store_id,
-        title: r.title,
-        destinations: r.destinations || [],
-        destinationCategories: r.destination_categories || [],
-        preferredOrigins: r.preferred_origins || [],
-        dates: r.dates || { flexibility: "flexible_anytime" },
-        party: r.party || { adults: 2, children: 0 },
-        budget: r.budget || {},
-        inclusionsWanted: r.inclusions_wanted || [],
-        hotelPreferences: r.hotel_preferences,
-        urgency: r.urgency || "moderate",
-        status: r.status || "open",
-        sourceInquiryText: r.source_inquiry_text,
-        expiresAt: r.expires_at,
-        createdAt: r.created_at,
-        updatedAt: r.updated_at,
-      });
-    }
-
-    // 3. Executar o motor determinístico
-    const matches = evaluateInterestBacklogAgainstOffer(offerPayload, interests, contactsMap);
-
-    let createdCount = 0;
-
-    // 4. Persistir matches qualificados (score >= 60)
-    for (const match of matches) {
-      const matchPayload = {
-        store_id: staff.store_id,
-        interest_id: match.interestId,
-        offer_id: match.offerId,
-        contact_id: match.contactId,
-        match_score: match.matchScore,
-        is_high_priority: match.isHighPriority,
-        dimensions: match.dimensions,
-        approach_draft: match.approachDraft,
-        offer_snapshot: match.offerSnapshot,
-        status: "new",
-        matched_at: match.matchedAt,
-        updated_at: new Date().toISOString(),
-      };
-
-      const { error: upsertError } = await supabase
-        .from("travel_opportunity_matches")
-        .upsert(matchPayload, { onConflict: "interest_id,offer_id" });
-
-      if (!upsertError) {
-        createdCount++;
-        // Atualizar status do interesse para "matched"
-        await supabase
-          .from("travel_interests")
-          .update({ status: "matched", updated_at: new Date().toISOString() })
-          .eq("id", match.interestId);
+      if (!iErr) {
+        importedInterests++;
       }
     }
 
+    // 3. Avalia contra os pacotes/ofertas ativos da loja
+    let matchesEvaluated = 0;
+    try {
+      const { data: activeOffers } = await supabase
+        .from("classifieds")
+        .select("id")
+        .eq("store_id", staff.store_id)
+        .eq("status", "active")
+        .limit(20);
+
+      if (activeOffers && activeOffers.length > 0) {
+        for (const offer of activeOffers) {
+          await internalEvaluateOfferMatches(staff.store_id, offer.id, supabase);
+          matchesEvaluated++;
+        }
+      }
+    } catch (e) {
+      console.warn("[bulkImportInterestsFn] Erro ao auto-avaliar matches:", e);
+    }
+
     return {
-      matchesFound: matches.length,
-      newOpportunitiesCreated: createdCount,
+      importedContacts,
+      importedInterests,
+      matchesEvaluated,
     };
   });
 

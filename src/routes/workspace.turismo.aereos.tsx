@@ -16,6 +16,7 @@ import { listCustomers } from '@/services/crm.functions';
 import { listTravelSuppliers } from '@/services/travel-suppliers.functions';
 import type { TravelFlightItinerary, FlightCabin, FlightItineraryType } from '@/types/travel-flights';
 import { GLOBAL_AIRPORTS_CATALOG } from '@/lib/data/airports-catalog';
+import { AirportCombobox } from '@/components/ui/airport-combobox';
 import { formatMoney } from '@/lib/money';
 
 const CONSOLIDATOR_PRESETS = [
@@ -453,115 +454,33 @@ export default function FlightsPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="space-y-2 md:col-span-2">
-                  <Label className="text-xs font-semibold">Cia Aérea (IATA + Nome)</Label>
-                  <div className="grid grid-cols-3 gap-2">
-                    <Input
-                      placeholder="LA"
-                      value={airlineCode}
-                      onChange={(e) => setAirlineCode(e.target.value)}
-                      className="h-11 uppercase font-bold text-center rounded-lg"
-                      maxLength={3}
-                    />
-                    <Input
-                      placeholder="LATAM Airlines"
-                      value={airlineName}
-                      onChange={(e) => setAirlineName(e.target.value)}
-                      className="h-11 col-span-2 rounded-lg"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2 md:col-span-2">
-                  <Label className="text-xs font-semibold">Número do Voo</Label>
-                  <Input
-                    placeholder="Ex: 3214"
-                    value={flightNumber}
-                    onChange={(e) => setFlightNumber(e.target.value)}
-                    className="h-11 uppercase font-mono font-bold rounded-lg"
+                  <AirportCombobox
+                    label="Origem do Voo (IATA / Cidade)"
+                    value={originIata}
+                    onChange={(iata, airport) => {
+                      setOriginIata(iata);
+                      if (airport) {
+                        const loc = airport.country_code === 'BR' ? (airport.state_province || 'BR') : airport.country;
+                        setOriginCity(`${airport.city} (${loc})`);
+                      }
+                    }}
+                    showAirportLink
                   />
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs font-semibold">Origem (IATA + Cidade)</Label>
-                    <span className="text-xs text-muted-foreground font-mono">Malha Central</span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <Input
-                      placeholder="GRU"
-                      value={originIata}
-                      onChange={(e) => handleSelectOrigin(e.target.value)}
-                      list="airports-catalog-list"
-                      className="h-11 uppercase font-bold text-center rounded-lg"
-                      maxLength={3}
-                    />
-                    <Input
-                      placeholder="São Paulo / Guarulhos"
-                      value={originCity}
-                      onChange={(e) => setOriginCity(e.target.value)}
-                      className="h-11 col-span-2 rounded-lg"
-                    />
-                  </div>
-                  <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pt-1">
-                    {["GRU", "CGH", "BSB", "SDU", "GIG", "CNF", "SSA", "REC", "XAP", "POA", "CWB", "FLN"].map((hub) => (
-                      <button
-                        key={hub}
-                        type="button"
-                        onClick={() => handleSelectOrigin(hub)}
-                        className={`text-xs font-mono px-2 py-1 rounded-md border transition-colors cursor-pointer ${
-                          originIata === hub ? "bg-primary text-primary-foreground border-primary" : "bg-muted/40 text-muted-foreground hover:bg-muted border-border/60"
-                        }`}
-                      >
-                        {hub}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-2 md:col-span-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs font-semibold">Destino (IATA + Cidade)</Label>
-                    <span className="text-xs text-muted-foreground font-mono">Malha Central</span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <Input
-                      placeholder="MIA"
-                      value={destinationIata}
-                      onChange={(e) => handleSelectDestination(e.target.value)}
-                      list="airports-catalog-list"
-                      className="h-11 uppercase font-bold text-center rounded-lg"
-                      maxLength={3}
-                    />
-                    <Input
-                      placeholder="Miami"
-                      value={destinationCity}
-                      onChange={(e) => setDestinationCity(e.target.value)}
-                      className="h-11 col-span-2 rounded-lg"
-                    />
-                  </div>
-                  <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pt-1">
-                    {["MIA", "MCO", "JFK", "LIS", "MAD", "CDG", "LHR", "DXB", "EZE", "SCL", "CUN", "PUJ"].map((hub) => (
-                      <button
-                        key={hub}
-                        type="button"
-                        onClick={() => handleSelectDestination(hub)}
-                        className={`text-xs font-mono px-2 py-1 rounded-md border transition-colors cursor-pointer ${
-                          destinationIata === hub ? "bg-primary text-primary-foreground border-primary" : "bg-muted/40 text-muted-foreground hover:bg-muted border-border/60"
-                        }`}
-                      >
-                        {hub}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Datalist nativo para autocomplete de 100+ aeroportos comerciais */}
-                  <datalist id="airports-catalog-list">
-                    {GLOBAL_AIRPORTS_CATALOG.map((a) => (
-                      <option key={a.iata_code} value={a.iata_code}>
-                        {a.iata_code} - {a.city} ({a.name})
-                      </option>
-                    ))}
-                  </datalist>
+                  <AirportCombobox
+                    label="Destino do Voo (IATA / Cidade)"
+                    value={destinationIata}
+                    onChange={(iata, airport) => {
+                      setDestinationIata(iata);
+                      if (airport) {
+                        const loc = airport.country_code === 'BR' ? (airport.state_province || 'BR') : airport.country;
+                        setDestinationCity(`${airport.city} (${loc})`);
+                      }
+                    }}
+                    showAirportLink
+                  />
                 </div>
 
                 <div className="space-y-2 md:col-span-2">

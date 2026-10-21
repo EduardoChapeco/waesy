@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Plane, Check, ChevronsUpDown, Search, X } from "lucide-react";
+import { Plane, Check, ChevronsUpDown, Search, X, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -64,18 +64,24 @@ export interface AirportComboboxProps {
   disabled?: boolean;
   countryFilter?: string;
   id?: string;
+  showAirportLink?: boolean;
 }
 
-// ── Hubs Rápidos de 1 Toque (Brasil & Destinos Internacionais Populares) ──────
+// ── Hubs Rápidos de 1 Toque (Brasil & Destinos Internacionais Mais Procurados) ──────
 const POPULAR_HUBS = [
   { iata: "XAP", label: "Chapecó (XAP)" },
   { iata: "GRU", label: "Guarulhos (GRU)" },
+  { iata: "CGH", label: "Congonhas (CGH)" },
   { iata: "FLN", label: "Florianópolis (FLN)" },
   { iata: "NVT", label: "Navegantes (NVT)" },
   { iata: "POA", label: "Porto Alegre (POA)" },
   { iata: "CWB", label: "Curitiba (CWB)" },
   { iata: "BSB", label: "Brasília (BSB)" },
+  { iata: "GIG", label: "Galeão (GIG)" },
+  { iata: "SDU", label: "Santos Dumont (SDU)" },
+  { iata: "CNF", label: "Belo Horizonte (CNF)" },
   { iata: "REC", label: "Recife (REC)" },
+  { iata: "SSA", label: "Salvador (SSA)" },
   { iata: "FOR", label: "Fortaleza (FOR)" },
   { iata: "MIA", label: "Miami (MIA)" },
   { iata: "MCO", label: "Orlando (MCO)" },
@@ -84,6 +90,14 @@ const POPULAR_HUBS = [
   { iata: "CUN", label: "Cancún (CUN)" },
   { iata: "SCL", label: "Santiago (SCL)" },
   { iata: "EZE", label: "Buenos Aires (EZE)" },
+  { iata: "LIM", label: "Lima (LIM)" },
+];
+
+// Lista de aeroportos mais procurados para exibir quando o campo de busca estiver vazio
+const DEFAULT_TOP_AIRPORTS_IATAS = [
+  "XAP", "GRU", "CGH", "GIG", "SDU", "BSB", "CNF", "POA", "CWB", "FLN", "NVT",
+  "REC", "SSA", "FOR", "VIX", "CGR", "GYN", "BEL", "MAO", "MIA", "MCO", "JFK",
+  "LIS", "OPO", "MAD", "CDG", "LHR", "EZE", "SCL", "LIM", "CUN", "PUJ",
 ];
 
 // ── Painel de Busca e Seleção ────────────────────────────────────────────────
@@ -102,10 +116,21 @@ function AirportPickerPanel({
   onClose: () => void;
   countryFilter?: string;
 }) {
-  const filteredAirports = searchAirportsCatalog(searchQuery, {
-    country: countryFilter,
-    limit: 30,
-  });
+  const isSearchEmpty = !searchQuery.trim();
+
+  // Quando vazio, exibe apenas os aeroportos mais procurados (evita poluição da lista)
+  const defaultAirports = React.useMemo(() => {
+    return DEFAULT_TOP_AIRPORTS_IATAS
+      .map((iata) => getAirportByIata(iata))
+      .filter((a): a is AirportRecord => Boolean(a));
+  }, []);
+
+  const filteredAirports = isSearchEmpty
+    ? defaultAirports
+    : searchAirportsCatalog(searchQuery, {
+        country: countryFilter,
+        limit: 30,
+      });
 
   const queryUpper = searchQuery.trim().toUpperCase();
   const isCustomCode =
@@ -136,35 +161,48 @@ function AirportPickerPanel({
         )}
       </div>
 
-      {/* Hubs Rápidos */}
-      {!searchQuery && (
-        <div className="px-4 flex flex-wrap items-center gap-2 pb-1">
-          {POPULAR_HUBS.map((hub) => {
-            const isSelected = selectedAirport?.iata_code === hub.iata;
-            return (
-              <button
-                key={hub.iata}
-                type="button"
-                onClick={() => {
-                  const found = getAirportByIata(hub.iata);
-                  if (found) {
-                    onSelect(found);
-                    onClose();
-                  }
-                }}
-                className={cn(
-                  "shrink-0 h-11 min-h-11 px-3 rounded-lg text-xs font-semibold border transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                  isSelected
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-card text-foreground border-border/70 hover:border-primary/50 hover:bg-primary/10",
-                )}
-              >
-                {hub.label}
-              </button>
-            );
-          })}
+      {/* Hubs Rápidos de 1 Toque */}
+      {isSearchEmpty && (
+        <div className="px-4 space-y-1.5">
+          <div className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
+            Destinos Mais Procurados
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5 pb-1 max-h-28 overflow-y-auto no-scrollbar">
+            {POPULAR_HUBS.map((hub) => {
+              const isSelected = selectedAirport?.iata_code === hub.iata;
+              return (
+                <button
+                  key={hub.iata}
+                  type="button"
+                  onClick={() => {
+                    const found = getAirportByIata(hub.iata);
+                    if (found) {
+                      onSelect(found);
+                      onClose();
+                    }
+                  }}
+                  className={cn(
+                    "shrink-0 h-11 min-h-11 px-3 rounded-lg text-xs font-semibold border transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                    isSelected
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-card text-foreground border-border/70 hover:border-primary/50 hover:bg-primary/10",
+                  )}
+                >
+                  {hub.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
+
+      {/* Título da Lista */}
+      <div className="px-4 text-2xs font-bold text-muted-foreground uppercase tracking-wider flex items-center justify-between">
+        <span>{isSearchEmpty ? "Principais Aeroportos Comerciais" : `Resultados (${filteredAirports.length})`}</span>
+        {!isSearchEmpty && (
+          <span className="text-muted-foreground/80 font-normal">Auto-filtrado instantâneo</span>
+        )}
+      </div>
 
       {/* Lista de Resultados */}
       <div className="overflow-y-auto max-h-80 px-2 space-y-1">
@@ -265,6 +303,7 @@ export function AirportCombobox({
   disabled,
   countryFilter,
   id,
+  showAirportLink = false,
 }: AirportComboboxProps) {
   const [desktopOpen, setDesktopOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -399,6 +438,21 @@ export function AirportCombobox({
           </DrawerContent>
         </DrawerRoot>
       </div>
+
+      {showAirportLink && selectedAirport && (
+        <div className="flex items-center justify-between text-xs pt-1 px-0.5">
+          <span className="text-muted-foreground text-2xs">Aeroporto selecionado:</span>
+          <a
+            href={`/aeroporto/${selectedAirport.iata_code.toLowerCase()}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline font-semibold flex items-center gap-1 text-2xs"
+          >
+            Ver Terminais, PF e Serviços ({selectedAirport.iata_code})
+            <ExternalLink className="size-3" />
+          </a>
+        </div>
+      )}
 
       {helperText && (
         <p className="text-xs text-muted-foreground">{helperText}</p>

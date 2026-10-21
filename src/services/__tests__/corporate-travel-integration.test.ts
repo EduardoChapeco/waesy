@@ -19,9 +19,10 @@ import {
   listCorporateTravelExpenses,
   saveCorporateTravelExpense,
   listCorporateInvoiceItems,
+  generateCorporateTravelerMagicLink,
 } from "@/services/corporate-travel.functions";
 
-describe("GAP-4.11 / Cluster 1: Integração de Funções Corporativas de Viagens & Tabelas B2B", () => {
+describe("GAP-4.11 & GAP-4.21 / Cluster 1: Integração Corporativa & Magic Links", () => {
   it("deve exportar todas as funções corporativas de viagens com validação Zod ativa", () => {
     expect(typeof listTravelerDocuments).toBe("function");
     expect(typeof saveTravelerDocument).toBe("function");
@@ -42,6 +43,7 @@ describe("GAP-4.11 / Cluster 1: Integração de Funções Corporativas de Viagen
     expect(typeof listCorporateTravelExpenses).toBe("function");
     expect(typeof saveCorporateTravelExpense).toBe("function");
     expect(typeof listCorporateInvoiceItems).toBe("function");
+    expect(typeof generateCorporateTravelerMagicLink).toBe("function");
   });
 
   it("deve rejeitar payloads inválidos em saveCorporateContract", async () => {
@@ -104,6 +106,18 @@ describe("GAP-4.11 / Cluster 1: Integração de Funções Corporativas de Viagen
           travelerId: "invalid-uuid",
           category: "invalid_cat" as any,
           amountCents: -10,
+        } as any,
+      })
+    ).rejects.toThrow();
+  });
+
+  it("deve validar parâmetros de geração de Magic Link para viajante corporativo (GAP-4.21)", async () => {
+    await expect(
+      generateCorporateTravelerMagicLink({
+        data: {
+          travelerId: "invalid-uuid",
+          companyId: "invalid-uuid",
+          expiresInDays: 99 as any,
         } as any,
       })
     ).rejects.toThrow();

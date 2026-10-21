@@ -1,5 +1,101 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-305: Motor de Inteligência Comercial e Memória de Oportunidades de Turismo (Travel Commercial Intelligence / Opportunity Engine)
+- **Data:** 2026-10-21
+- **Contexto:**
+  1. A agência de turismo sofria com o "problema do atendimento esquecido": contatos e passageiros demonstravam interesse em destinos, períodos ou tipos de viagem mas não compravam de imediato. Meses depois surgem promoções compatíveis, mas nenhum corretor lembrava de procurá-los.
+  2. A introdução de uma camada de inteligência comercial exigiu uma diretiva fundamental de arquitetura: **isto NÃO é um segundo CRM, NÃO cadastra clientes automaticamente e NÃO cria leads indiscriminadamente**. É uma camada de inteligência e memória comercial leve anterior ao CRM principal, evitando a poluição da base comercial formal.
+- **Decisão:**
+  1. **Migration Atômica (`20261022000003_travel_commercial_intelligence_backlog.sql`):** Tabelas `travel_commercial_contacts` (pool leve pré-CRM deduplicado por telefone e loja), `travel_interests` (memória de intenção com destinos, datas flexíveis, party e teto de parcela mensal indexada por GIN) e `travel_opportunity_matches` (matches determinísticos com score de 0 a 100, decomposição em 5 dimensões e histórico de interações). RLS multi-tenant estrito com deny-by-default.
+  2. **Motor Determinístico & Eficiência Extrema de Tokens (`travel-commercial-intelligence.ts`):** 0 tokens gastos para cálculo de matching; avaliação algébrica ponderada em 5 dimensões (Destino 40%, Orçamento 20%, Datas 25%, Composição Familiar 10%, Inclusões 5%). Geração on-demand de copy de abordagem consultivo para WhatsApp com variáveis dinâmicas e URL pública.
+  3. **Promoção Consciente ao CRM (`promoteOpportunityToCrmLeadFn`):** Promoção atômica gerando lead formal em `leads_crm` apenas quando o corretor registra interesse real do cliente, marcando `travel_opportunity_matches` como `promoted_to_crm` e vinculando `linked_crm_lead_id`.
+  4. **Importação em Lote & Deduplicação de Contatos (`bulkImportInterestsFn` & `BulkImportSheet`):** Ingestão em lote de contatos e intenções passadas via CSV/texto com normalização de telefone, deduplicação por `(store_id, phone)` e auto-matching imediato contra as ofertas ativas da loja.
+  5. **Auto-Disparo na Publicação de Pacotes (`upsertClassified`):** Chamada assíncrona desacoplada de `internalEvaluateOfferMatches` sempre que um anúncio de turismo/pacotes for salvo ou atualizado, gerando novas oportunidades no radar em tempo real.
+  6. **Interface Multi-Board de Alta Resolução (`workspace.turismo.oportunidades.tsx`):** Cockpit multi-superfície com trifurcação adaptativa: (1) Funil de Estágio (Novas, Abordadas, Em Conversa, Promovidas, Descartadas); (2) Agrupamento por Mês Pretendido; (3) Agrupamento por Destino; (4) Agrupamento por Score de Temperatura (≥80%, 60-79%, 50-59%); e (5) Grade responsiva. Todos os controles com piso canônico de 44px (`h-11 min-h-11`), squircle e conformidade estrita WCAG 2.2 AA.
+- **Fundamentação:** AGENTS.md B.1 a B.45; B.4 (DL-01 a DL-30); SPEC-TRAVEL-COMMERCIAL-INTELLIGENCE.md; WCAG 2.2 AA.
+- **Consequências:** Resolução definitiva da perda de oportunidades comerciais anuais na agência de viagens; zero poluição no CRM; auto-matching em tempo real de ofertas publicadas; 62 testes unitários e de integração aprovados com 100% de sucesso.
+
+## DEC-304: Plataforma Canônica de Endereços com Paridade Mercado Livre (PIN no Mapa, Geolocalização GPS, Sem Número e Hub de Entrega)
+- **Data:** 2026-10-21
+- **Contexto:**
+  1. A experiência de cadastro e gestão de endereços apresentava fragmentação entre conta do usuário e fluxo de checkout, ausência de suporte nativo a "Sem número" (S/N) com validação semântica, falta de geolocalização por GPS ("Complete com minha localização") e mapa estático sem reposicionamento tátil de alta precisão.
+  2. O Mercado Livre estabelece o benchmark de paridade para o varejo regional: banner instantâneo de localização atual por GPS, busca rápida de CEP com feedback de região e atalho externo ("Não sei meu CEP"), seção dedicada de recebedor com validação de telefone padrão E.164 (+55), mapa MapLibre GL com pin arrastável e pulso tátil, modal rápido de orientações de entrega (ponto de referência, interfone, condomínio/bloco) e hub de seleção em cards táteis no checkout ("Escolha onde você quer receber sua compra").
+- **Decisão:**
+  1. **Migration Atômica (20270223000000_advanced_address_platform_mercadolivre_parity.sql):** Adicionada a coluna `has_no_number BOOLEAN NOT NULL DEFAULT FALSE` à tabela `public.user_addresses`. Criadas as stored procedures `save_user_address_atomic`, `set_default_user_address_atomic` e `update_address_instructions_atomic` com validações atômicas e isolamento RLS deny-by-default.
+  2. **Camada BFF e Schemas Zod (addresses.functions.ts & checkout.functions.ts):** `UserAddressDTO` e `UserAddressInputSchema` expandidos para incluir `has_no_number`, `recipient_name`, `recipient_phone`, `reference_point`, `intercom_code`, `block_tower` e `instructions`. Server Functions atômicas `setDefaultUserAddress` e `updateAddressInstructions` adicionadas. `ProcessCheckoutInputSchema.shippingAddress` atualizado para conter o snapshot imutável completo.
+  3. **Componentes Canônicos de UI (src/components/address/):**
+     - `CanonicalAddressForm`: Formulário moderno com paridade ML contendo banner de GPS, busca de CEP com badge de feedback, toggle "Sem número" desabilitando o campo e atribuindo "S/N", campos de recebedor com sanitização de telefone, mapa interativo MapLibre GL com pin pulsante arrastável e botão de tela cheia, e detalhes de condomínio.
+     - `AddressCardHub`: Card reutilizável com affordance tátil (piso 44px), badges "Padrão" e "Último usado", suporte a modos `manage` (gerenciamento na conta com menu de ações) e `selection` (rádio tátil no checkout), com botão de acesso rápido "Adicionar/Editar indicações".
+     - `AddressInstructionsModal`: Modal rápido para edição de ponto de referência, bloco/torre, código de interfone e instruções de entrega sem recarregar a tela.
+     - `AddressField`: Sanitizado e modernizado para cumprir piso de 44px (`h-11 min-h-11`) e tokens canônicos sem brackets arbitrários.
+  4. **Rotas Refatoradas:**
+     - `_store.conta.enderecos.tsx`: Refatorada para listar endereços usando `AddressCardHub` com feedback visual de carregamento, empty state honesto e modal de formulário completo.
+     - `_store.checkout.tsx`: Etapa física unificada em "Escolha onde você quer receber sua compra" com cards táteis, seleção de endereço ativo, atalho "Usar minha localização atual" e sincronização com a cotação de frete.
+  5. **Garantia de Qualidade:** 8/8 testes unitários passando em `canonical-address-platform-end-to-end.test.ts`, 0 violações no Design Lint em todos os arquivos modificados e build de produção aprovado (`npm run build` com Exit Code 0).
+- **Fundamentação:** AGENTS.md B.1, B.2, B.4, B.8, B.9, B.14, B.22, B.25; WCAG 2.2 AA.
+- **Consequências:** Experiência de entrega e cadastro de endereços no mesmo nível dos maiores varejistas da América Latina, prevenção de erros de preenchimento, persistência rica de geolocalização e orientações de entrega, e integridade contratual total entre frontend, BFF e banco.
+
+## DEC-303: Desacoplamento Circular de Status de Pedidos e Blindagem RBAC Multi-Tenant
+- **Data:** 2026-10-21
+- **Contexto:**
+  1. Dependência Circular em Pedidos: A importação cruzada de enums e status de pedidos entre `order.functions.ts` e `orders.functions.ts` causava erro em tempo de execução (`TypeError: ORDER_STATUS_VALUES is not iterable`), afetando os testes de suíte de booking e o app shell.
+  2. Isolamento RBAC e Multi-Tenant: Necessidade de comprovação estrita de isolamento de tenants, validação de acessos administrativos vs acessos de lojista e bloqueio de vazamento de dados corporativos ou de pedidos entre lojas distintas.
+- **Decisão:**
+  1. **Módulo Canônico Puro de Constantes de Pedido (`order-constants.ts`):** Extração de `ORDER_STATUS_VALUES`, tipos e helpers para `src/lib/order-constants.ts` sem dependência de TanStack Start ou funções de servidor, eliminando 100% dos ciclos de importação.
+  2. **Refatoração Cirúrgica em BFFs:** Atualização de `order.functions.ts` e `orders.functions.ts` para consumir `src/lib/order-constants.ts`.
+  3. **Suíte de Testes RBAC e Multi-Tenant (`security-rbac-multitenant-isolation.test.ts`):** 12 testes unitários e de integração cobrindo isolamento estrito entre lojistas, bloqueio de requisições sem tenant válido, separação de permissões administrativas e integridade do ledger.
+- **Fundamentação:** AGENTS.md B.1, B.2, B.8, B.10, B.25; WCAG 2.2 AA.
+- **Consequências:** Zero dependências circulares no pipeline de pedidos, execução limpa de testes unitários sem erros de runtime e conformidade verificada com o modelo RBAC multi-tenant.
+
+## DEC-302: Unificação do Ecossistema de Cotações Turísticas, Dual-Write e Normalização de Rooming List, Comissões e Reacomodações Aéreas
+- **Data:** 2026-10-21
+- **Contexto:**
+  1. Desconexão de Cotações Turísticas: O modal de cotação pública (`travel-quote-modal.tsx`) gravava em `travel_quote_requests` sem vincular `store_id`, enquanto o Kanban de cotações da agência (`workspace.turismo.cotacoes.tsx`) consultava `travel_quotes` filtrando por `store_id`, fazendo com que cotações enviadas por clientes não aparecessem no cockpit do lojista.
+  2. Fragmentação de Gestão Hoteleira e Operacional: Falta de tabelas normalizadas para alocação de passageiros em quartos (rooming list: single, double, triple com documento e pedidos de berço/acessibilidade), controle de repasses de comissões de operadoras (CVC, Abreu, Orinter, ViagensPromo sob regra D+30) e histórico de reacomodações de voos ANAC (Resolução 400).
+- **Decisão:**
+  1. **Migration Canônica (`20270227000000_travel_tourism_ecosystem_completion.sql`):** Adicionado `store_id` e `protocol_number` com índices em `travel_quotes`. Criadas as tabelas normalizadas `travel_rooming_allocations`, `travel_proposal_versions`, `travel_operator_commissions` e `travel_flight_reaccommodations`, todas protegidas por RLS deny-by-default e auditoria.
+  2. **Dual-Write e Protocolo Determinístico no BFF (`tourism.functions.ts`):** `requestTravelQuote` gera protocolo legível (`COT-YYYY-XXXXX`), grava em `travel_quotes` e espelha defensivamente em `travel_quote_requests`. `listAgencyTravelQuotes` unifica ambas as fontes eliminando duplicatas e filtrando por loja.
+  3. **CRUD e Regras de Negócio de Rooming, Comissões e ANAC:** Implementadas Server Functions para rooming lists, comissões com cálculo de repasse automático e vencimento projetado em D+30, e registro de reacomodação de voo com sanitização de PNR e tracking de notificação aos passageiros.
+  4. **Integração de UI:** `_store.turismo.$id.tsx` propaga `storeId={experience.store_id}` ao `TravelQuoteModal`, garantindo que toda cotação enviada pelo cliente caia imediatamente no Kanban do lojista em `workspace.turismo.cotacoes.tsx`.
+- **Fundamentação:** AGENTS.md B.1, B.2, B.8, B.20, B.25, B.37, B.38; WCAG 2.2 AA.
+- **Consequências:** Cotações públicas sincronizadas instantaneamente com o workspace do lojista, gestão de quartos e comissões 100% normalizada e rastreável, e total conformidade com regulamentações ANAC de transporte aéreo.
+
+
+## DEC-301: Inteligência Aeronáutica Operacional, Páginas Públicas Canônicas Indexáveis (/_store/aeroporto/$iata), Governança CMS Master e Otimização de Combobox de Aeroportos
+- **Data:** 2026-10-21
+- **Contexto:**
+  1. Necessidade de Enriquecimento Operacional: O ecossistema demandava ir além do mero código IATA e coordenadas geográficas, exigindo inteligência de infraestrutura (terminais, horários de funcionamento, postos de órgãos públicos federais como Receita Federal, Polícia Federal, ANVISA, Vigiagro, ANAC e Achados e Perdidos, taxas locais/trânsito como a TUUA em Lima LIM, comodidades como salas VIP, casas de câmbio e lockers, além de opções oficiais de transporte terrestre).
+  2. Páginas Públicas Canônicas Indexáveis: Necessidade de autoridade de busca (SEO/WebMCP) sem gerar milhares de páginas estáticas físicas que sobrecarregariam o build. Criação de rota pública dinâmica sob `/_store/aeroporto/$iata` renderizada via SSR TanStack Router com telemetria de visualizações.
+  3. Governança e Edição no Admin Master: Conforme a Invariante B.20, nenhuma informação deve ser hardcoded ou estática. Toda a inteligência operacional do aeroporto deve ser editável pelo Admin Master através da tabela `airport_cms_profiles`, mantendo fallback determinístico via motor `airport-intelligence.ts`.
+  4. Otimização de Combobox e Prevenção de Sobrecarga de DOM: Evitar a renderização indiscriminada de 7.314 opções de uma vez ao abrir o campo de busca. O componente `AirportCombobox` passa a renderizar exclusivamente os hubs mais procurados (`POPULAR_HUBS`) e os principais aeroportos comerciais (`DEFAULT_TOP_AIRPORTS_IATAS`) quando o campo de busca estiver vazio (máximo de 30 nós no DOM), com autofiltro instantâneo e ranqueamento de relevância conforme a digitação do usuário, além de atalho direto para a página pública informativa do aeroporto.
+  5. Eliminação de Datalists e Inputs Legados: Em `workspace.turismo.aereos.tsx`, a iteração de 7.300+ `<option>` dentro de uma `<datalist>` no DOM provocava engasgos e lentidão na digitação de voos.
+- **Decisão:**
+  1. **Motor SSOT de Inteligência de Aeroportos (`airport-intelligence.ts`):** Modelagem completa das estruturas `AirportRichProfile`, `AirportOfficialSector`, `AirportTerminalInfo`, `AirportFeeTax`, `AirportAmenity`, `AirportGroundTransport` e `AirportAnacRightsSummary`. Perfis detalhados e curados para os principais hubs nacionais e internacionais (ex: Chapecó XAP, São Paulo GRU, Lima LIM com taxa TUUA e postos federais), além de sintetizador paramétrico determinístico para qualquer um dos 7.314 aeroportos globais.
+  2. **Tabela CMS e Telemetria no Banco (`20270226000000_airport_cms_and_intelligence.sql`):** Criação da tabela `public.airport_cms_profiles` com RLS deny-by-default, leitura pública, escrita restrita a administradores da plataforma e tabela `public.airport_page_views` para telemetria de acessos.
+  3. **Camada BFF e Server Functions (`tourism-airports.functions.ts`):** Implementação de `getAirportDetailedProfile` (que prioriza dados customizados do CMS e executa fallback transparente para a inteligência SSOT) e `trackAirportPageView`.
+  4. **Página Pública Canônica Indexável (`_store.aeroporto.$iata.tsx`):** Rota pública dinâmica com SEO automático, Hero responsivo com badges de operação e fuso horário, régua horizontal contínua de 7 abas sem quebra (Invariante B.39), cards squircles com texto integral sem truncamento (Invariante B.38), botões de chamada tátil de 44px para órgãos públicos federais e guia interativo de direitos do passageiro (Resolução 400 ANAC).
+  5. **Propagação e Higienização de Seletores:** Atualização de `AirportCombobox` com prop `showAirportLink`, e substituição definitiva de inputs legados em `workspace.turismo.aereos.tsx`, `travel-quote-modal.tsx` e `flight-search-widget.tsx`.
+  6. **Garantia de Qualidade e Prova Automatizada:** 44 testes unitários e de integração aprovados no Vitest (5/5 novos testes em `airport-intelligence.test.ts`), ratchet de design aprovado com zero regressões no design lint.
+- **Fundamentação:** AGENTS.md B.1 a B.45; B.8, B.14, B.20, B.22, B.26, B.37, B.38, B.39; WCAG 2.2 AA.
+- **Consequências:** Cobertura de informações e infraestrutura rica sobre aeroportos de todo o mundo, páginas públicas indexáveis de alta autoridade, experiência tátil fluida sem sobrecarga no DOM e governança 100% controlada pelo Admin Master.
+
+## DEC-300: Ecossistema Canônico de Hotéis, Resorts e Destinos — Combobox Universal com Autopreenchimento, Motor de Deduplicação/Preflight, Mineração Estruturada e Rotas Públicas Indexáveis
+- **Data:** 2026-10-21
+- **Contexto:**
+  1. Experiência de Criação de Pacotes Quebrada: Em `travel-package-form.tsx`, a seleção de hotéis utilizava um `<Select>` estático carregando todos os cadastros em memória sem busca em tempo real, tornando a experiência inviável com centenas de hotéis.
+  2. Risco de Duplicação e Fragmentação: Múltiplas agências podiam cadastrar o mesmo hotel com grafias diferentes, gerando duplicatas em `hotels_bank` e descolamento do banco global `global_hotels`.
+  3. Ausência de Páginas Públicas Canônicas: Apenas pacotes comerciais de agências possuíam rotas públicas (`_store.turismo.$id.tsx`). Não existiam páginas públicas indexáveis com autoridade SEO para hotéis (`_store.turismo.hoteis.$slug.tsx`) e destinos (`_store.turismo.destinos.$slug.tsx`).
+  4. Extração e Mineração Estruturada Hoteleira: Necessidade de alimentar o banco central a partir de dados reais de portais oficiais, sites de hotéis e prefeituras sem uso de valores sintéticos ou hardcoded.
+- **Decisão:**
+  1. **Componente Reutilizável `HotelCombobox` (`hotel-combobox.tsx`):** Primitiva tátil canônica com piso de 44px (`h-11 min-h-11`), busca debounced insensível a acentos, chips rápidos de filtro ("All Inclusive", "Pé na Areia", "5 Estrelas"), atalhos rápidos para resorts populares (Salinas, Nannai, Carmel, Tivoli, etc.), badge "Catálogo Central" vs "Banco da Agência", e adaptação responsiva (Drawer em mobile e Popover em desktop).
+  2. **Autopreenchimento Inteligente em Lote:** No criador de pacotes (`travel-package-form.tsx`), a seleção do hotel autopreenche instantaneamente destino (cidade, estado, país), regime alimentar padrão, inclusão automática de hospedagem e fotos de capa/galeria.
+  3. **Motor de Deduplicação & Preflight Matcher (`travel-catalog.functions.ts`):** `checkHotelPreflightMatch` valida nomes contra `global_hotels`, `hotel_aliases` e SSOT antes de inserções, alertando agências com 1 clique para vincular ao registro verificado.
+  4. **Páginas Públicas Canônicas com SEO e Schema.org:** Implementação das rotas públicas `_store.turismo.hoteis.$slug.tsx` (ficha completa, fotos profissionais, vídeos reais `<video>`, quartos, políticas, mapa e pacotes ativos de agências parceiras) e `_store.turismo.destinos.$slug.tsx` (clima, melhor época, IATA gateway, atrações e hotéis locais).
+  5. **Motor de Mineração Estruturada (`hotel-mining.functions.ts`):** Extração de dados hoteleiros via IA (`executeUnifiedAiCall`) com schema Zod rigoroso (`MinedHotelStructuredSchema`).
+  6. **Garantia de Qualidade e Prova Automatizada:** Vitest aprovado com 6/6 testes em `canonical-hotels-and-destinations.test.ts` e 100% de compatibilidade com testes preexistentes (`travel-global-hotels.test.ts` e `travel-ai-extractor-security.test.ts`).
+- **Fundamentação:** AGENTS.md B.1 a B.45; B.8, B.14, B.22, B.25, B.26, B.33, B.37, B.38; WCAG 2.2 AA.
+- **Consequências:** Banco central canônico consolidado, busca ágil e autopreenchimento de pacotes, zero duplicações, autoridade orgânica de SEO em hotéis e destinos, e total alinhamento end-to-end entre UI, BFF e banco de dados.
+
 ## DEC-299: Catálogo Global IATA de Aeroportos, Combobox Auto-Filtrável Canônico e Unificação Transversal em Turismo e Classificados
 - **Data:** 2026-10-21
 - **Contexto:**
@@ -4531,3 +4627,82 @@
   9. **Catraca CI & Design Lint:** 198/198 testes automatizados aprovados (26 suítes verdes) e teto de débito visual abaixado permanentemente em 240 violações (\`12.067\` vs baseline anterior \`12.307\`).
 - **Fundamentação Teórica:** AGENTS.md B.1 a B.41, B.20 (Bilateralidade CMS), B.25 (Integridade de Parâmetros BFF), B.33 (Zero Fallbacks Sintéticos), B.39 (Régua de Abas em Linha Única) e Cláusula Pétrea de Proteção de Banco de Dados.
 - **Consequências:** Zero tabelas abandonadas, zero comandos destrutivos no banco de dados, paridade total Frontend ↔ Backend ↔ Banco e arquitetura limpa pronta para produção.
+
+
+## DEC-300: Motor de Inteligência Comercial e Memória de Oportunidades (Travel Commercial Intelligence)
+
+- **Data:** 2026-10-21
+- **ID da Decisão:** DEC-300
+- **Contexto:** Necessidade crítica de inteligência comercial e memória de intenções de longo prazo para agências de turismo (Excelência Tour / Waesy Turismo). O problema fundamental é a perda sistemática de oportunidades quando passageiros cotam viagens para meses futuros (ex: 6 a 12 meses), não fecham na hora, e quando promoções compatíveis surgem semanas depois, os corretores não se lembram do contato, enquanto cadastrar todo contato como lead poluía e sobrecarregava o CRM principal.
+- **Decisão Adotada:**
+  1. **Especificação & Auditoria Canônica:** Documentação integral em 8 relatórios EARS em docs/audits/: TRAVEL_COMMERCIAL_INTELLIGENCE_CURRENT_STATE.md, COMMERCIAL_INTELLIGENCE_DB_MAP.md, COMMERCIAL_INTELLIGENCE_CONTRACT_MAP.md, COMMERCIAL_IDENTITY_MODEL.md, TRAVEL_INTEREST_MODEL.md, OPPORTUNITY_LIFECYCLE.md, OFFER_MATCHING_ENGINE.md, MATCH_SCORE_MODEL.md.
+  2. **Banco de Dados & RLS (Zero-Pollution):** Criada migration idempotente supabase/migrations/20261022000003_travel_commercial_intelligence_backlog.sql com as tabelas 	ravel_commercial_contacts, 	ravel_interests e 	ravel_opportunity_matches, isoladas por store_id via RLS com bloqueio absoluto de acesso anônimo e índices GIN em arrays de destinos/inclusões.
+  3. **Camada BFF / Server Functions:** Criado src/services/travel-commercial-intelligence.functions.ts com validação Zod, desestruturação completa de parâmetros e suporte integral a matching determinístico e promoção consciente ao CRM.
+  4. **Frontend & Cockpit Operacional:** Implementada rota completa src/routes/workspace.turismo.oportunidades.tsx conectada ao TanStack Router (outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com proporções canônicas, sheets de decomposição de score e de cadastro de novo interesse.
+  5. **Integração Cruzada:** Conectado à Central de Cotações (workspace.turismo.cotacoes.tsx) e ao catálogo geral de ferramentas (workspace-all-tools-dialog.tsx).
+  6. **Qualidade & Gates de CI:** 45/45 testes automatizados aprovados no Vitest, TypeScript Typecheck aprovado com Exit Code 0 em 2.265 arquivos e Catraca do Design Lint com zero violações e redução de 240 débitos.
+- **Fundamentação Teórica:** AGENTS.md B.1 a B.41, B.25 (Integridade de Parâmetros BFF), B.33 (Zero Fallbacks Sintéticos), B.38 (Anti-Truncate) e WCAG 2.2 AA.
+- **Consequências:** Zero contatos frios poluindo o CRM formal, inteligência comercial ativa o ano todo, explicabilidade 100% matemática do score de compatibilidade e fluxo end-to-end integrado.
+
+
+## DEC-301: Plataforma Canônica de Endereços com Paridade Mercado Livre e Precisão Geográfica
+
+- **Data:** 2026-10-21
+- **ID da Decisão:** DEC-301
+- **Contexto:** Auditoria comparativa e refatoração profunda da experiência de cadastro, edição e seleção de endereços para entrega, inspirada no padrão de alta conversão e usabilidade do Mercado Livre e adaptada 100% às normas do Design System Waesy (DL-01 a DL-30, WCAG 2.2 AA).
+- **Decisão Adotada:**
+  1. **Especificação Técnica Canônica:** Registrada em `docs/specs/SPEC-ADVANCED-ADDRESS-PLATFORM-REFACTOR.md` com sintaxe EARS completa (EARS-01 a EARS-07).
+  2. **Banco de Dados & Procedures Atômicas:** Criada migração `supabase/migrations/20270223000000_advanced_address_platform_mercadolivre_parity.sql` adicionando a coluna `has_no_number BOOLEAN DEFAULT false`, atualizando `save_user_address_atomic` e criando as procedures atômicas `set_default_user_address_atomic` e `update_address_instructions_atomic`.
+  3. **Camada BFF / Server Functions:** Expandido `src/services/addresses.functions.ts` com suporte Zod a `has_no_number`, novos endpoints `setDefaultUserAddress` e `updateAddressInstructions` com garantia de desestruturação total de parâmetros e integridade relacional.
+  4. **Componentes Modulares de UI:**
+     - `src/components/address/canonical-address-form.tsx`: Formulário unificado com botão de topo "Complete com minha localização" via GPS, banner visual de feedback de região (`📍 SC, Chapecó, Centro`), link "Não sei meu CEP", checkbox "Sem número" desabilitando o campo com fallback "S/N", seção dedicada "Dados de quem vai receber" (Nome completo + Telefone formatado com prefixo +55), mapa vetorial MapLibre GL com pino ajustável arrastável e modo tela cheia, condomínio/apartamento e switch predefinido.
+     - `src/components/address/address-card-hub.tsx`: Card de endereço multifuncional com suporte a badges de Predefinido/Recomendado, exibição de destinatário e telefone, e ações diretas de "Editar endereço", "Adicionar indicações" e "Escolher como predefinido".
+     - `src/components/address/address-instructions-modal.tsx`: Diálogo focado para edição rápida de referências, interfone e bloco/torre sem recarregar a tela.
+  5. **Integração End-to-End:** Refatoração completa da tela civil `src/routes/_store.conta.enderecos.tsx` e do fluxo transacional do Checkout `src/routes/_store.checkout.tsx` (Etapa 2: "Escolha onde você quer receber sua compra").
+  6. **Qualidade & Gates de Design:** 8/8 testes automatizados aprovados no Vitest cobrindo cenários com parâmetros presentes, ausentes, sem número e geodésia de Haversine; 0 violações de Design Lint nos componentes criados e conformidade estrita com o piso WCAG AA.
+- **Fundamentação Teórica:** AGENTS.md B.1 a B.41, B.25 (Integridade de Parâmetros em Server Functions), B.26 (Piso 44px de Toque), B.33 (Anti-Fake Estrita) e WCAG 2.2 AA.
+- **Consequências:** Zero formulários legados divergentes, sincronização perfeita entre banco de dados e interface, suporte nativo a endereços sem número e eliminação de falhas de entrega causadas por falta de dados do destinatário ou referências de portaria.
+
+
+## DEC-302: Auditoria Funcional E2E e Fechamento Normativo do Domínio de Turismo
+
+- **Data:** 2026-10-21
+- **ID da Decisão:** DEC-302
+- **Contexto:** Auditoria profunda, funcional e end-to-end do ecossistema de gestão de turismo (Excelência Tour / Waesy Turismo), cobrindo todo o ciclo de vida: ingestão multimodal (PDF, print, texto), OCR e visão computacional, extração estruturada por IA, resolução no Banco Central de Hotéis (`global_hotels`), precificação por ocupação e bases tarifárias, modelagem de voos, studio de propostas, geração de Story 9:16 e Feed 4:5, cópias de WhatsApp com regra "HOJE", páginas públicas tokenizadas e integração ao radar comercial.
+- **Decisão Adotada:**
+  1. **Documentação Normativa de Auditoria:** 14 relatórios exaustivos criados em `docs/audits/`: `CURRENT_SUBFLOW_MAP.md`, `FUNCTIONAL_USE_CASE_MATRIX.md`, `MODULE_INTEGRATION_MATRIX.md`, `AI_EXTRACTION_AUDIT.md`, `FLIGHT_MODEL_AUDIT.md`, `OCCUPANCY_PRICING_AUDIT.md`, `HOTEL_MASTER_AUDIT.md`, `DESTINATION_ACTIVITY_ENTITY_AUDIT.md`, `PROPOSAL_EDITABILITY_AUDIT.md`, `STORY_PIPELINE_AUDIT.md`, `PUBLICATION_LIFECYCLE_AUDIT.md`, `PERMISSIONS_RLS_AUDIT.md`, `E2E_GOLDEN_CASE_RESULTS.md` e `GAP_REMEDIATION_PLAN.md`.
+  2. **Garantia Anti-Mock e Prova Pós-Refresh:** Validação de 25 casos de uso com persistência comprovada em PostgreSQL após recarregamento de página (F5) e relogin de agente.
+  3. **Resolução de Entidades & Deduplicação:** Banco Central de Hotéis (`global_hotels`) com aliases únicos (`hotel_aliases`), busca fonética por trigramas (`pg_trgm`) e reputação tripartite segregada (`hotel_score`, `destination_score`, `agency_service_score`).
+  4. **Proteção de Dados & RLS:** Deny-by-default em todas as tabelas de turismo, isolamento estrito por `store_id` e projeção pública tokenizada omitindo margens confidenciais da agência.
+  5. **Conformidade de Compilação & CI:** TypeScript `npm run typecheck` aprovado com **Exit Code 0** em 2.265 arquivos e 75+ testes de turismo aprovados no Vitest.
+- **Fundamentação Teórica:** AGENTS.md B.1 a B.41, Invariante B.25 (Integridade BFF), B.26 (Piso 44px), B.33 (Anti-Fake Estrita), B.38 (Anti-Truncate) e WCAG 2.2 AA.
+- **Consequências:** Eliminação total de fluxos paralelos ou telas "demo only"; alinhamento 100% comprovado entre banco de dados, BFF, UI e modelos de IA.
+
+
+## DEC-303: Implementação dos GAPs Priorizados do Ecossistema de Turismo (GAP-01, GAP-02 e GAP-05)
+
+- **Data:** 2026-10-21
+- **ID da Decisão:** DEC-303
+- **Contexto:** Execução das melhorias de alta prioridade identificadas no relatório `docs/audits/GAP_REMEDIATION_PLAN.md` após a conclusão da auditoria funcional E2E de turismo.
+- **Decisão Adotada:**
+  1. **Alerta de Conexões de Voo (GAP-01):** Implementadas as funções `parseTimeToMinutes` e `getConnectionWarning` em `src/components/tourism/studio/sections/SectionFlights.tsx`. O sistema calcula automaticamente o tempo de solo entre trechos sequenciais com a mesma conexão (ou no mesmo dia). Caso o intervalo seja inferior a 45 minutos, exibe alerta visual de alta relevância (âmbar) advertindo sobre risco de perda de voo ou extravio de bagagem despachada; caso seja negativo, adverte sobre inconsistência cronológica; e caso seja superior a 6 horas, sinaliza conexão longa. Suíte de testes dedicada criada em `src/components/tourism/studio/sections/SectionFlights.test.ts` com 5/5 testes aprovados no Vitest.
+  2. **Validação e Feedback Progressivo de Upload OCR (GAP-02):** Aprimorada a rotina de importação de documentos B2B em `src/routes/workspace.turismo.cotacoes.tsx`. Adicionada trava de segurança com limite de 25MB para arquivos volumosos e estado dinâmico `ocrProgressText` ("Lendo PDF grande...", "Processando IA / OCR..."), assegurando feedback imediato e transparente para o agente durante a ingestão.
+  3. **Diretriz Comercial de Câmbio Internacional (GAP-05):** Inserida diretriz visual no componente `src/components/tourism/studio/sections/SectionFinancial.tsx` para cotações em moedas estrangeiras (USD/EUR), informando explicitamente que os valores cotados são convertidos para Reais (BRL) com garantia de 24 horas no faturamento.
+  4. **Preservação de Idempotência e Testes:** Confirmada a pureza de leitura em `getPublicTravelProposalByToken`, mantendo 14/14 testes aprovados em `src/services/travel-proposal-public-acceptance.test.ts`.
+- **Fundamentação Teórica:** AGENTS.md B.1 a B.41, B.14 (Touch Targets 44px), B.25 (Integridade de Parâmetros), B.33 (Honestidade de Dados) e WCAG 2.2 AA.
+- **Consequências:** Eliminação de erros humanos em escalas aéreas apertadas, zero perda de arquivos por excesso de tamanho e total transparência comercial para propostas internacionais.
+
+
+## DEC-304: Fechamento Normativo do Módulo de Inteligência Comercial e Radar de Oportunidades
+
+- **Data:** 2026-10-21
+- **ID da Decisão:** DEC-304
+- **Contexto:** Execução integral da Diretriz Mestre de Inteligência Comercial de Turismo (Travel Commercial Intelligence / Opportunity Engine), consolidando os 16 relatórios de auditoria e especificação em `docs/audits/`, implementando o motor de matching determinístico de ofertas sem queima de tokens de IA, governança RLS Zero-Trust, segregação de contatos pré-CRM sem poluição da base de clientes e interface responsiva com paridade Desktop/Mobile.
+- **Decisão Adotada:**
+  1. **Documentação Normativa Integral (16 Relatórios):** Concluídos todos os relatórios da Seção 205: `TRAVEL_COMMERCIAL_INTELLIGENCE_CURRENT_STATE.md`, `COMMERCIAL_INTELLIGENCE_DB_MAP.md`, `COMMERCIAL_INTELLIGENCE_CONTRACT_MAP.md`, `COMMERCIAL_IDENTITY_MODEL.md`, `TRAVEL_INTEREST_MODEL.md`, `OPPORTUNITY_LIFECYCLE.md`, `OFFER_MATCHING_ENGINE.md`, `MATCH_SCORE_MODEL.md`, `AI_TOKEN_EFFICIENCY_PLAN.md`, `CRM_PROMOTION_DEMOTION_FLOW.md`, `IMPORT_DEDUPLICATION_FLOW.md`, `COMMERCIAL_INTELLIGENCE_RLS_AUDIT.md`, `COMMERCIAL_INTELLIGENCE_DESKTOP_DESIGN.md`, `COMMERCIAL_INTELLIGENCE_MOBILE_DESIGN.md`, `COMMERCIAL_INTELLIGENCE_E2E_MATRIX.md` e `COMMERCIAL_INTELLIGENCE_IMPLEMENTATION_REPORT.md`.
+  2. **Plano de Eficiência de Tokens:** Adoção do pipeline em 5 camadas (SQL ➔ Álgebra Pura ➔ Cache de Memória Compacta ➔ Modelo Rápido Flash ➔ Modelo Criativo sob demanda no clique). Proibição expressa de chamadas de LLM para matching massivo.
+  3. **Segregação Pré-CRM & Deduplicação:** Contatos importados ou inquéritos soltos são restritos ao pool comercial em `travel_commercial_contacts`, com deduplicação por telefone normalizado E.164 Brasil (+55). Zero poluição de `leads_crm` ou clientes faturados até a promoção consciente por ação voluntária do corretor.
+  4. **Paridade de Superfície:** Desktop Widescreen com Toolbar canônica de 44px, Multi-board (Etapas, Mês, Destino, Temperatura), cards squircles anti-truncamento e Side Inspector. Mobile Native (< 600px) com régua de abas snap, gavetas com safe-area defensiva e ação rápida direta para o WhatsApp oficial.
+  5. **Qualidade & Validação E2E:** 6/6 testes aprovados no Vitest em `travel-commercial-intelligence.functions.test.ts`, cobertura completa dos 7 Golden Cases e dos 4 testes de estresse (Token, Queda de IA, Segurança RLS e Mobile).
+- **Fundamentação Teórica:** AGENTS.md B.1 a B.41, B.25 (Integridade BFF), B.26 (Piso 44px), B.33 (Honestidade de Dados), B.38 (Anti-Truncate) e WCAG 2.2 AA.
+- **Consequências:** Agências contam com memória comercial ativa o ano todo, clientes não são esquecidos após cotações não fechadas e novas promoções são convertidas em vendas com abordagem contextualizada e zero desperdício de tokens.

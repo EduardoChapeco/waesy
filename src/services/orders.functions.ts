@@ -11,7 +11,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
-import { ORDER_STATUS_VALUES } from "@/services/order.functions";
+import { ORDER_STATUS_VALUES } from "@/lib/order-constants";
 import { syncCommissionOnOrderStatusChange } from "@/services/affiliate-ledger.functions";
 
 // ── Schemas de Validação Zod ──────────────────────────────────────────────

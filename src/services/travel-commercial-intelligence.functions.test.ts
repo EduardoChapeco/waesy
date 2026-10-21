@@ -4,6 +4,7 @@ import {
   UpsertTravelInterestSchema,
   RecordCommercialInteractionSchema,
   PromoteOpportunityToCrmLeadSchema,
+  BulkImportInterestsSchema,
 } from "./travel-commercial-intelligence.functions";
 
 describe("Travel Commercial Intelligence Schemas & Invariants", () => {
@@ -111,5 +112,55 @@ describe("Travel Commercial Intelligence Schemas & Invariants", () => {
     if (parsed.success) {
       expect(parsed.data.customEstimatedBudgetCents).toBe(1850000);
     }
+  });
+
+  it("valida importação em lote com múltiplos contatos e destinos", () => {
+    const validBatch = {
+      items: [
+        {
+          name: "Roberto Silveira",
+          phone: "49999887766",
+          destinations: ["Punta Cana", "Cancún"],
+          targetMonth: "2026-07",
+          maxInstallmentCents: 90000,
+          adults: 2,
+          children: 1,
+          notes: "Prefere resort all inclusive com voo saindo de Chapecó",
+        },
+        {
+          name: "Fernanda Costa",
+          phone: "49988771122",
+          destinations: ["Maceió", "Porto de Galinhas"],
+          targetMonth: "2026-09",
+          maxInstallmentCents: 65000,
+          adults: 2,
+          children: 0,
+        },
+      ],
+    };
+
+    const parsed = BulkImportInterestsSchema.safeParse(validBatch);
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.items).toHaveLength(2);
+      expect(parsed.data.items[0].destinations).toEqual(["Punta Cana", "Cancún"]);
+      expect(parsed.data.items[1].maxInstallmentCents).toBe(65000);
+    }
+  });
+
+  it("rejeita importação em lote com lista vazia ou telefone inválido", () => {
+    const emptyBatch = { items: [] };
+    expect(BulkImportInterestsSchema.safeParse(emptyBatch).success).toBe(false);
+
+    const invalidPhoneBatch = {
+      items: [
+        {
+          name: "João",
+          phone: "123",
+          destinations: ["Caribe"],
+        },
+      ],
+    };
+    expect(BulkImportInterestsSchema.safeParse(invalidPhoneBatch).success).toBe(false);
   });
 });

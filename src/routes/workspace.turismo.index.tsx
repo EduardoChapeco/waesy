@@ -27,6 +27,7 @@ import {
   Check,
   Eye,
   SlidersHorizontal,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -342,6 +343,14 @@ export default function WorkspaceTurismoCockpitPage() {
           >
             <FileText className="size-3.5" />
             <span>Propostas Emitidas ({proposals.length})</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => router.navigate({ to: "/workspace/turismo/oportunidades" })}
+            className="h-11 min-h-11 px-4 text-xs font-semibold rounded-lg transition-colors flex items-center gap-2 text-primary hover:bg-primary/10 border border-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Sparkles className="size-3.5" />
+            <span>Radar de Oportunidades</span>
           </button>
         </div>
 

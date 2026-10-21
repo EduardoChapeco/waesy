@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AirportCombobox } from "@/components/ui/airport-combobox";
 import { CANONICAL_AIRPORTS, searchAirports, type AirportItem } from "@/lib/airports-data";
 import { requestTravelQuote, type TravelTripType } from "@/services/tourism.functions";
 import { toast } from "sonner";
@@ -173,97 +174,55 @@ export function TravelQuoteModal({
  {/* ── ETAPA 1: ORIGEM & DESTINO ── */}
  {step === 1 && (
  <div className="space-y-4">
- {/* Seletor de Origem */}
- <div className="space-y-2">
- <Label className="text-xs font-bold text-muted-foreground">Onde você vai pegar seu voo / embarque?</Label>
- <div className="relative">
- <Input
- value={origin}
- onChange={(e) => {
- setOrigin(e.target.value);
- setShowOriginSearch(true);
- setAirportQuery(e.target.value);
- }}
- onFocus={() => setShowOriginSearch(true)}
- placeholder="Cidade ou Aeroporto de Origem..."
- className="h-11 rounded-lg bg-muted/40 border-border text-xs pl-9 font-medium"
- />
- <AirplaneTilt size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
- </div>
+ {/* Seletor de Origem com Combobox Inteligente */}
+              <div className="space-y-1.5">
+                <AirportCombobox
+                  label="Aeroporto / Cidade de Origem"
+                  value={originIata}
+                  onChange={(iata, airport) => {
+                    setOriginIata(iata);
+                    if (airport) {
+                      setOrigin(`${airport.city} (${airport.iata_code})`);
+                    } else {
+                      setOrigin(iata);
+                    }
+                  }}
+                  placeholder="Ex: Chapecó (XAP), Guarulhos (GRU)..."
+                  showAirportLink
+                />
+              </div>
 
- {showOriginSearch && (
- <div className=" rounded-lg bg-card p-2 space-y-1 max-h-40 overflow-y-auto no-scrollbar">
- {filteredAirports.slice(0, 15).map((a) => (
- <button
- key={a.iata}
- type="button"
- onClick={() => {
- setOrigin(`${a.city} (${a.iata})`);
- setOriginIata(a.iata);
- setShowOriginSearch(false);
- }}
- className="w-full text-left p-2 rounded-lg hover:bg-muted text-xs flex items-center justify-between cursor-pointer"
- >
- <span className="font-semibold text-foreground">{a.city} - {a.state}</span>
- <span className="font-mono font-bold text-primary">{a.iata}</span>
- </button>
- ))}
- </div>
- )}
- </div>
+              {/* Botão de Troca (⇄) */}
+              <div className="flex justify-center -my-1">
+                <button
+                  type="button"
+                  onClick={handleSwapLocations}
+                  className="size-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  title="Inverter Origem e Destino"
+                >
+                  <ArrowsLeftRight size={14} weight="bold" />
+                </button>
+              </div>
 
- {/* Botão de Troca (⇄) */}
- <div className="flex justify-center -my-1">
- <button
- type="button"
- onClick={handleSwapLocations}
- className="size-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer "
- title="Inverter Origem e Destino"
- >
- <ArrowsLeftRight size={14} weight="bold" />
- </button>
- </div>
+              {/* Seletor de Destino com Combobox Inteligente */}
+              <div className="space-y-1.5">
+                <AirportCombobox
+                  label="Aeroporto / Cidade de Destino"
+                  value={destinationIata}
+                  onChange={(iata, airport) => {
+                    setDestinationIata(iata);
+                    if (airport) {
+                      setDestination(`${airport.city} (${airport.iata_code})`);
+                    } else {
+                      setDestination(iata);
+                    }
+                  }}
+                  placeholder="Ex: Cancún (CUN), Orlando (MCO), Lisboa (LIS)..."
+                  showAirportLink
+                />
+              </div>
 
- {/* Seletor de Destino */}
- <div className="space-y-2">
- <Label className="text-xs font-bold text-muted-foreground">Para qual destino você quer ir?</Label>
- <div className="relative">
- <Input
- value={destination}
- onChange={(e) => {
- setDestination(e.target.value);
- setShowDestSearch(true);
- setAirportQuery(e.target.value);
- }}
- onFocus={() => setShowDestSearch(true)}
- placeholder="Cidade ou Aeroporto de Destino..."
- className="h-11 rounded-lg bg-muted/40 border-border text-xs pl-9 font-medium"
- />
- <MapPin size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
- </div>
-
- {showDestSearch && (
- <div className=" rounded-lg bg-card p-2 space-y-1 max-h-40 overflow-y-auto no-scrollbar">
- {filteredAirports.slice(0, 15).map((a) => (
- <button
- key={a.iata}
- type="button"
- onClick={() => {
- setDestination(`${a.city} (${a.iata})`);
- setDestinationIata(a.iata);
- setShowDestSearch(false);
- }}
- className="w-full text-left p-2 rounded-lg hover:bg-muted text-xs flex items-center justify-between cursor-pointer"
- >
- <span className="font-semibold text-foreground">{a.city} - {a.state} ({a.country})</span>
- <span className="font-mono font-bold text-primary">{a.iata}</span>
- </button>
- ))}
- </div>
- )}
- </div>
-
- {/* Buscas Recentes Rápidas */}
+              {/* Buscas Recentes Rápidas */}
  <div className="pt-2 space-y-2">
  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
  Destinos Populares

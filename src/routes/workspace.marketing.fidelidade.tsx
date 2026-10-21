@@ -10,7 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Award, QrCode, Smartphone, Coffee, Utensils, Gift, Scissors, Plane, HeartHandshake, Check, Plus, Stamp, Users, CreditCard, Share2 } from "lucide-react";
+import { Award, QrCode, Smartphone, Coffee, Utensils, Gift, Scissors, Plane, HeartHandshake, Check, Plus, Stamp, Users, CreditCard, Share2, Coins } from "lucide-react";
+import { grantMerchantLoyaltyWz } from "@/services/wz-engine.functions";
 import { getStoreLoyaltyProgram, saveStoreLoyaltyProgram, listStoreLoyaltyCustomers, stampCustomerCard, redeemLoyaltyReward } from "@/services/loyalty.functions";
 import type { CustomerLoyaltyCard } from "@/services/loyalty.functions";
 import { cn } from "@/lib/utils";
@@ -53,6 +54,37 @@ export default function LoyaltyDashboardPage() {
  const [cardTextColor, setCardTextColor] = useState("#FFFFFF");
  const [stampIcon, setStampIcon] = useState("star");
  const [proximityAlerts, setProximityAlerts] = useState(false);
+
+  // Modal de Concessão de $WZ Fidelidade (GAP-4.3)
+  const [wzModalOpen, setWzModalOpen] = useState(false);
+  const [targetCustomerForWz, setTargetCustomerForWz] = useState<any>(null);
+  const [wzAmount, setWzAmount] = useState(50);
+  const [wzReason, setWzReason] = useState("Bonificação de fidelidade da loja");
+  const [isGrantingWz, setIsGrantingWz] = useState(false);
+
+  const handleGrantWz = async () => {
+    if (!targetCustomerForWz?.customer_id) {
+      toast.error("Identificador de cliente não encontrado.");
+      return;
+    }
+    setIsGrantingWz(true);
+    try {
+      await grantMerchantLoyaltyWz({
+        data: {
+          customerId: targetCustomerForWz.customer_id,
+          amountWz: wzAmount,
+          reason: wzReason || "Bonificação de fidelidade",
+        },
+      });
+      toast.success(`${wzAmount} $WZ creditados com sucesso!`);
+      setWzModalOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["loyalty-customers"] });
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao conceder $WZ");
+    } finally {
+      setIsGrantingWz(false);
+    }
+  };
 
  // Sync initial program state
  useEffect(() => {

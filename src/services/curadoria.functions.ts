@@ -531,3 +531,88 @@ export const resolveHardshipAndBoostStore = createServerFn({ method: "POST" })
       }`,
     };
   });
+
+
+// ============================================================
+// 8. ADMIN MASTER: GOVERNANÇA DE SQUADS & AGENTES DE IA (GAP-4.17)
+// ============================================================
+
+export const listAiSquadsAndAgentsAdmin = createServerFn({ method: "GET" }).handler(async () => {
+  await requirePlatformAdmin();
+  const db = getServerClient();
+
+  const [curationSquadsRes, squadTemplatesRes, agentsRes] = await Promise.all([
+    db.from("curation_squad_registry").select("*").order("created_at", { ascending: false }),
+    db.from("squad_templates").select("*").order("created_at", { ascending: false }),
+    db.from("agent_registry").select("id, name, category, seniority, career_summary, default_model, is_active").order("name"),
+  ]);
+
+  return {
+    curation_squads: curationSquadsRes.data || [],
+    squad_templates: squadTemplatesRes.data || [],
+    agents: agentsRes.data || [],
+  };
+});
+
+// ============================================================
+// 9. ADMIN MASTER: GESTÃO & CURADORIA DE AEROPORTOS (DEC-301)
+// ============================================================
+
+export const listAirportsForAdminCuration = createServerFn({ method: "GET" })
+  .validator((data: unknown) =>
+    z.object({
+      search: z.string().optional(),
+    }).optional().parse(data)
+  )
+  .handler(async () => {
+    await requirePlatformAdmin();
+    const db = getServerClient();
+
+    const { data: customProfiles } = await db
+      .from("airport_cms_profiles")
+      .select("*")
+      .order("view_count", { ascending: false });
+
+    return {
+      customProfiles: customProfiles || [],
+    };
+  });
+
+export const saveAirportCmsOverrideAdmin = createServerFn({ method: "POST" })
+  .validator((data: unknown) =>
+    z.object({
+      iata_code: z.string().length(3),
+      operator_name: z.string().optional().nullable(),
+      operating_hours: z.string().optional().nullable(),
+      website_url: z.string().optional().nullable(),
+      phone_pabx: z.string().optional().nullable(),
+      is_featured: z.boolean().optional(),
+    }).parse(data)
+  )
+  .handler(async ({ data }) => {
+    await requirePlatformAdmin();
+    const db = getServerClient();
+
+    const cleanIata = data.iata_code.trim().toUpperCase();
+
+    const { error } = await db
+      .from("airport_cms_profiles")
+      .upsert(
+        {
+          iata_code: cleanIata,
+          operator_name: data.operator_name || null,
+          operating_hours: data.operating_hours || null,
+          website_url: data.website_url || null,
+          phone_pabx: data.phone_pabx || null,
+          is_featured: data.is_featured ?? false,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "iata_code" }
+      );
+
+    if (error) {
+      throw new Error(`Falha ao salvar customização do aeroporto: ${error.message}`);
+    }
+
+    return { success: true, message: `Aeroporto ${cleanIata} atualizado com sucesso!` };
+  });

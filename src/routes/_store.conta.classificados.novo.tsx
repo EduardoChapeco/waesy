@@ -5090,6 +5090,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                             value={travelDepartureIATA}
                             onChange={(iata) => setTravelDepartureIATA(iata)}
                             placeholder="Buscar saída (ex: XAP, GRU)..."
+                            showAirportLink={true}
                           />
                         </div>
                         <div className="space-y-2">
@@ -5098,6 +5099,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                             value={travelArrivalIATA}
                             onChange={(iata) => setTravelArrivalIATA(iata)}
                             placeholder="Buscar chegada (ex: FOR, MIA)..."
+                            showAirportLink={true}
                           />
                         </div>
                         <div className="space-y-2">
@@ -5318,6 +5320,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                               value={travelComboFromIATA}
                               onChange={(iata) => setTravelComboFromIATA(iata)}
                               placeholder="Buscar origem (ex: XAP, CWB)..."
+                              showAirportLink={true}
                             />
                           </div>
                           <div className="space-y-2">
@@ -5326,6 +5329,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                               value={travelComboToIATA}
                               onChange={(iata) => setTravelComboToIATA(iata)}
                               placeholder="Buscar gateway (ex: FOR, CUN)..."
+                              showAirportLink={true}
                             />
                           </div>
                           <div className="space-y-2">

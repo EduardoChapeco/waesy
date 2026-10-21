@@ -21,6 +21,9 @@ import {
   UserCheck,
   CheckCircle2,
   AlertCircle,
+  Upload,
+  LayoutGrid,
+  Columns,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -39,6 +42,7 @@ import {
   upsertTravelInterestFn,
   recordCommercialInteractionFn,
   promoteOpportunityToCrmLeadFn,
+  bulkImportInterestsFn,
 } from "@/services/travel-commercial-intelligence.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
@@ -80,6 +84,8 @@ export default function WorkspaceTurismoOportunidadesPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [isNewInterestOpen, setIsNewInterestOpen] = useState(false);
+  const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
+  const [boardGrouping, setBoardGrouping] = useState<"stage" | "month" | "destination" | "temperature" | "grid">("stage");
   const [selectedMatch, setSelectedMatch] = useState<any | null>(null);
 
   // Queries TanStack
@@ -186,6 +192,72 @@ export default function WorkspaceTurismoOportunidadesPage() {
     });
   }, [matches, search, statusFilter]);
 
+  const boardColumns = useMemo(() => {
+    if (boardGrouping === "grid") return null;
+
+    if (boardGrouping === "stage") {
+      const stages = [
+        { id: "new", title: "Novas Detectadas", icon: Sparkles },
+        { id: "approached", title: "Abordadas (WhatsApp)", icon: Phone },
+        { id: "engaged", title: "Em Conversa", icon: MessageSquare },
+        { id: "promoted_to_crm", title: "Promovidas ao CRM", icon: UserCheck },
+        { id: "dismissed", title: "Descartadas", icon: Archive },
+      ];
+      return stages.map((st) => ({
+        ...st,
+        matches: filteredMatches.filter((m: any) => m.status === st.id),
+      }));
+    }
+
+    if (boardGrouping === "temperature") {
+      const temps = [
+        { id: "high", title: "Alta Prioridade (≥ 80%)", icon: TrendingUp },
+        { id: "medium", title: "Média Prioridade (60–79%)", icon: SlidersHorizontal },
+        { id: "low", title: "Em Monitoramento (50–59%)", icon: Sparkles },
+      ];
+      return temps.map((t) => ({
+        ...t,
+        matches: filteredMatches.filter((m: any) => {
+          if (t.id === "high") return m.matchScore >= 80;
+          if (t.id === "medium") return m.matchScore >= 60 && m.matchScore < 80;
+          return m.matchScore < 60;
+        }),
+      }));
+    }
+
+    if (boardGrouping === "destination") {
+      const map: Record<string, any[]> = {};
+      filteredMatches.forEach((m: any) => {
+        const dest = m.offerSnapshot?.destinationCity || m.offerSnapshot?.title || "Outros Destinos";
+        if (!map[dest]) map[dest] = [];
+        map[dest].push(m);
+      });
+      return Object.entries(map).map(([dest, list]) => ({
+        id: dest,
+        title: dest,
+        icon: MapPin,
+        matches: list,
+      }));
+    }
+
+    if (boardGrouping === "month") {
+      const map: Record<string, any[]> = {};
+      filteredMatches.forEach((m: any) => {
+        const month = m.offerSnapshot?.datesDisplayText || "Período Flexível";
+        if (!map[month]) map[month] = [];
+        map[month].push(m);
+      });
+      return Object.entries(map).map(([month, list]) => ({
+        id: month,
+        title: month,
+        icon: Calendar,
+        matches: list,
+      }));
+    }
+
+    return null;
+  }, [filteredMatches, boardGrouping]);
+
   const handleCopyApproach = (match: any) => {
     if (navigator?.clipboard?.writeText) {
       navigator.clipboard.writeText(match.approachDraft);
@@ -233,6 +305,11 @@ export default function WorkspaceTurismoOportunidadesPage() {
           icon: Plus,
           onClick: () => setIsNewInterestOpen(true),
         }}
+        secondaryAction={{
+          label: "Importar Lote",
+          icon: Upload,
+          onClick: () => setIsBulkImportOpen(true),
+        }}
       />
 
       {/* Navegação entre Abas */}
@@ -267,9 +344,58 @@ export default function WorkspaceTurismoOportunidadesPage() {
           </Button>
         </div>
 
-        {/* Filtro de Status para Oportunidades */}
+        {/* Filtro de Status e Agrupamento para Oportunidades */}
         {activeTab === "opportunities" && (
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Seletor de Agrupamento Multi-Board */}
+            <div className="flex items-center gap-1 border border-border rounded-lg p-1 bg-muted/20">
+              <Button
+                variant={boardGrouping === "stage" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setBoardGrouping("stage")}
+                className="h-9 px-2.5 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Columns className="size-3.5 mr-1" />
+                Funil
+              </Button>
+              <Button
+                variant={boardGrouping === "month" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setBoardGrouping("month")}
+                className="h-9 px-2.5 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Calendar className="size-3.5 mr-1" />
+                Mês
+              </Button>
+              <Button
+                variant={boardGrouping === "destination" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setBoardGrouping("destination")}
+                className="h-9 px-2.5 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <MapPin className="size-3.5 mr-1" />
+                Destino
+              </Button>
+              <Button
+                variant={boardGrouping === "temperature" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setBoardGrouping("temperature")}
+                className="h-9 px-2.5 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <TrendingUp className="size-3.5 mr-1" />
+                Score
+              </Button>
+              <Button
+                variant={boardGrouping === "grid" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setBoardGrouping("grid")}
+                className="h-9 px-2.5 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <LayoutGrid className="size-3.5 mr-1" />
+                Grade
+              </Button>
+            </div>
+
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-48 h-11 min-h-11 bg-background text-sm">
                 <SelectValue placeholder="Filtrar status" />
@@ -299,112 +425,77 @@ export default function WorkspaceTurismoOportunidadesPage() {
                   Quando novas ofertas de pacotes forem publicadas ou importadas, o motor determinístico cruzará os
                   dados com o backlog de interesses e exibirá as combinações aqui.
                 </p>
-                <Button
-                  variant="outline"
-                  onClick={() => setIsNewInterestOpen(true)}
-                  className="mt-6 h-11 min-h-11 px-4 focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <Plus className="size-4 mr-2" />
-                  Cadastrar Primeiro Interesse
-                </Button>
+                <div className="flex items-center gap-3 mt-6">
+                  <Button
+                    variant="default"
+                    onClick={() => setIsNewInterestOpen(true)}
+                    className="h-11 min-h-11 px-4 focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <Plus className="size-4 mr-2" />
+                    Cadastrar Primeiro Interesse
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsBulkImportOpen(true)}
+                    className="h-11 min-h-11 px-4 focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <Upload className="size-4 mr-2" />
+                    Importar Lista em Lote
+                  </Button>
+                </div>
               </Card>
+            ) : boardColumns ? (
+              <div className="flex items-start gap-4 overflow-x-auto pb-6 no-scrollbar">
+                {boardColumns.map((col) => {
+                  const Icon = col.icon;
+                  return (
+                    <div
+                      key={col.id}
+                      className="flex-1 min-w-72 max-w-sm bg-muted/20 border border-border/60 rounded-xl p-3 flex flex-col gap-3 shrink-0"
+                    >
+                      {/* Header da Coluna */}
+                      <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Icon className="size-4 text-primary shrink-0" />
+                          <span className="font-semibold text-sm text-foreground truncate">{col.title}</span>
+                        </div>
+                        <Badge variant="secondary" className="text-xs px-2 py-0.5 shrink-0 font-bold">
+                          {col.matches.length}
+                        </Badge>
+                      </div>
+
+                      {/* Lista de Cards da Coluna */}
+                      <div className="flex flex-col gap-3 overflow-y-auto max-h-[calc(100vh-280px)] pr-1">
+                        {col.matches.length === 0 ? (
+                          <div className="p-6 text-center text-xs text-muted-foreground italic border border-dashed border-border/40 rounded-lg">
+                            Nenhuma oportunidade nesta coluna
+                          </div>
+                        ) : (
+                          col.matches.map((m: any) => (
+                            <OpportunityMatchCard
+                              key={m.id}
+                              match={m}
+                              onOpenWhatsApp={handleOpenWhatsApp}
+                              onCopyApproach={handleCopyApproach}
+                              onInspect={setSelectedMatch}
+                            />
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredMatches.map((m: any) => (
-                  <Card
+                  <OpportunityMatchCard
                     key={m.id}
-                    className={cn(
-                      "p-4 border transition-colors flex flex-col justify-between",
-                      m.matchScore >= 80
-                        ? "border-emerald-500/40 bg-emerald-500/5 hover:border-emerald-500/60"
-                        : "border-border bg-card hover:border-border/80"
-                    )}
-                  >
-                    <div>
-                      {/* Cabeçalho do Card com Score */}
-                      <div className="flex items-center justify-between gap-2 mb-3">
-                        <Badge
-                          variant={m.matchScore >= 80 ? "default" : "secondary"}
-                          className={cn(
-                            "px-3 py-1 font-semibold text-xs tracking-wide",
-                            m.matchScore >= 80
-                              ? "bg-emerald-600 text-primary-foreground"
-                              : "bg-muted text-foreground"
-                          )}
-                        >
-                          {m.matchScore}% Compatibilidade
-                        </Badge>
-                        <Badge variant="outline" className="text-xs uppercase font-medium">
-                          {m.status === "promoted_to_crm"
-                            ? "Promovido"
-                            : m.status === "approached"
-                            ? "Abordado"
-                            : "Novo"}
-                        </Badge>
-                      </div>
-
-                      {/* Dados do Viajante e Destino */}
-                      <h4 className="text-base font-semibold text-foreground break-words text-wrap leading-tight">
-                        {m.contact?.name || "Passageiro Interessado"}
-                      </h4>
-                      <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                        <Phone className="size-3" />
-                        {m.contact?.phone || "Telefone não informado"}
-                      </p>
-
-                      <div className="mt-4 pt-3 border-t border-border/60 space-y-2">
-                        <div className="flex items-start gap-2">
-                          <MapPin className="size-4 text-primary shrink-0 mt-1" />
-                          <div className="text-sm font-medium text-foreground break-words text-wrap leading-tight">
-                            {m.offerSnapshot?.title || "Pacote de Viagem"}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <Calendar className="size-3.5 shrink-0" />
-                          <span>{m.offerSnapshot?.datesDisplayText || "Período flexível"}</span>
-                        </div>
-
-                        <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
-                          <DollarSign className="size-3.5 text-emerald-600 shrink-0" />
-                          <span>
-                            {m.offerSnapshot?.installmentCount}x de{" "}
-                            {formatMoney(m.offerSnapshot?.installmentCents || 0)}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Ações Rápidas */}
-                    <div className="mt-6 pt-3 border-t border-border flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        onClick={() => handleOpenWhatsApp(m)}
-                        className="flex-1 h-11 min-h-11 font-medium bg-emerald-600 hover:bg-emerald-700 text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring"
-                      >
-                        <MessageSquare className="size-4 mr-2" />
-                        WhatsApp
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleCopyApproach(m)}
-                        aria-label="Copiar texto de abordagem"
-                        className="h-11 min-h-11 px-3 focus-visible:ring-2 focus-visible:ring-ring"
-                      >
-                        <Copy className="size-4" />
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => setSelectedMatch(m)}
-                        aria-label="Ver detalhes da compatibilidade"
-                        className="h-11 min-h-11 px-3 focus-visible:ring-2 focus-visible:ring-ring"
-                      >
-                        <SlidersHorizontal className="size-4" />
-                      </Button>
-                    </div>
-                  </Card>
+                    match={m}
+                    onOpenWhatsApp={handleOpenWhatsApp}
+                    onCopyApproach={handleCopyApproach}
+                    onInspect={setSelectedMatch}
+                  />
                 ))}
               </div>
             )}
@@ -643,6 +734,18 @@ export default function WorkspaceTurismoOportunidadesPage() {
           queryClient.invalidateQueries({ queryKey: ["travel-opportunities"] });
           queryClient.invalidateQueries({ queryKey: ["commercial-contacts"] });
           setIsNewInterestOpen(false);
+        }}
+      />
+
+      {/* Sheet de Importação em Lote */}
+      <BulkImportSheet
+        open={isBulkImportOpen}
+        onOpenChange={setIsBulkImportOpen}
+        onSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: ["travel-interests"] });
+          queryClient.invalidateQueries({ queryKey: ["travel-opportunities"] });
+          queryClient.invalidateQueries({ queryKey: ["commercial-contacts"] });
+          setIsBulkImportOpen(false);
         }}
       />
 
@@ -889,6 +992,368 @@ function NewInterestSheet({ open, onOpenChange, onSuccess }: NewInterestSheetPro
             </Button>
           </div>
         </form>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+// ============================================================================
+// COMPONENTE: CARD DA OPORTUNIDADE (RADAR COMERCIAL)
+// ============================================================================
+
+interface OpportunityMatchCardProps {
+  match: any;
+  onOpenWhatsApp: (match: any) => void;
+  onCopyApproach: (match: any) => void;
+  onInspect: (match: any) => void;
+}
+
+function OpportunityMatchCard({
+  match,
+  onOpenWhatsApp,
+  onCopyApproach,
+  onInspect,
+}: OpportunityMatchCardProps) {
+  const isHighPriority = match.matchScore >= 80;
+
+  return (
+    <Card
+      className={cn(
+        "p-4 border transition-colors flex flex-col justify-between rounded-xl",
+        isHighPriority
+          ? "border-emerald-500/40 bg-emerald-500/5 hover:border-emerald-500/60"
+          : "border-border bg-card hover:border-border/80"
+      )}
+    >
+      <div>
+        {/* Cabeçalho do Card com Score */}
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <Badge
+            variant={isHighPriority ? "default" : "secondary"}
+            className={cn(
+              "px-3 py-1 font-semibold text-xs tracking-wide",
+              isHighPriority
+                ? "bg-emerald-600 text-primary-foreground"
+                : "bg-muted text-foreground"
+            )}
+          >
+            {match.matchScore}% Compatibilidade
+          </Badge>
+          <Badge variant="outline" className="text-xs uppercase font-medium">
+            {match.status === "promoted_to_crm"
+              ? "Promovido"
+              : match.status === "approached"
+              ? "Abordado"
+              : match.status === "engaged"
+              ? "Em Conversa"
+              : match.status === "dismissed"
+              ? "Descartado"
+              : "Novo"}
+          </Badge>
+        </div>
+
+        {/* Dados do Viajante e Destino */}
+        <h4 className="text-base font-semibold text-foreground break-words text-wrap leading-tight">
+          {match.contact?.name || "Passageiro Interessado"}
+        </h4>
+        <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+          <Phone className="size-3" />
+          {match.contact?.phone || "Telefone não informado"}
+        </p>
+
+        <div className="mt-4 pt-3 border-t border-border/60 space-y-2">
+          <div className="flex items-start gap-2">
+            <MapPin className="size-4 text-primary shrink-0 mt-1" />
+            <div className="text-sm font-medium text-foreground break-words text-wrap leading-tight">
+              {match.offerSnapshot?.title || "Pacote de Viagem"}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Calendar className="size-3.5 shrink-0" />
+            <span>{match.offerSnapshot?.datesDisplayText || "Período flexível"}</span>
+          </div>
+
+          <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
+            <DollarSign className="size-3.5 text-emerald-600 shrink-0" />
+            <span>
+              {match.offerSnapshot?.installmentCount}x de{" "}
+              {formatMoney(match.offerSnapshot?.installmentCents || 0)}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Ações Rápidas com Touch Target Piso 44px */}
+      <div className="mt-5 pt-3 border-t border-border flex items-center gap-2">
+        <Button
+          size="sm"
+          onClick={() => onOpenWhatsApp(match)}
+          className="flex-1 h-11 min-h-11 font-medium bg-emerald-600 hover:bg-emerald-700 text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <MessageSquare className="size-4 mr-2" />
+          WhatsApp
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onCopyApproach(match)}
+          aria-label="Copiar texto de abordagem"
+          className="h-11 min-h-11 px-3 focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <Copy className="size-4" />
+        </Button>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => onInspect(match)}
+          aria-label="Ver detalhes da compatibilidade"
+          className="h-11 min-h-11 px-3 focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <SlidersHorizontal className="size-4" />
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
+// ============================================================================
+// COMPONENTE: IMPORTAÇÃO EM LOTE DE CONTATOS & INTERESSES (PRÉ-CRM)
+// ============================================================================
+
+interface BulkImportSheetProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess: () => void;
+}
+
+function BulkImportSheet({ open, onOpenChange, onSuccess }: BulkImportSheetProps) {
+  const [rawText, setRawText] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Parser em tempo real
+  const parsedItems = useMemo(() => {
+    if (!rawText.trim()) return [];
+    const lines = rawText.split("\n");
+    const result: Array<{
+      name: string;
+      phone: string;
+      destinations: string[];
+      targetMonth?: string;
+      maxInstallmentCents?: number;
+      adults: number;
+      children: number;
+      notes?: string;
+    }> = [];
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith("#") || trimmed.startsWith("//")) continue;
+
+      const parts = trimmed.includes("\t")
+        ? trimmed.split("\t")
+        : trimmed.includes(";")
+        ? trimmed.split(";")
+        : trimmed.split(",");
+
+      if (parts.length < 2) continue;
+
+      const name = parts[0]?.trim();
+      const phone = parts[1]?.trim();
+      if (!name || !phone) continue;
+
+      const destRaw = parts[2]?.trim() || "Caribe";
+      const destinations = destRaw
+        .split("/")
+        .map((d) => d.trim())
+        .filter(Boolean);
+
+      const targetMonth = parts[3]?.trim() || undefined;
+      const installmentRaw = parts[4]?.replace(/[^\d.]/g, "") || "";
+      const maxInstallmentCents = installmentRaw
+        ? Math.round(parseFloat(installmentRaw) * 100)
+        : undefined;
+
+      const adults = parseInt(parts[5]?.trim() || "2", 10) || 2;
+      const children = parseInt(parts[6]?.trim() || "0", 10) || 0;
+      const notes = parts[7]?.trim() || undefined;
+
+      result.push({
+        name,
+        phone,
+        destinations: destinations.length > 0 ? destinations : [destRaw],
+        targetMonth,
+        maxInstallmentCents,
+        adults,
+        children,
+        notes,
+      });
+    }
+
+    return result;
+  }, [rawText]);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result as string;
+      if (content) {
+        setRawText(content);
+        toast.success(`Arquivo ${file.name} carregado com sucesso!`);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const handleExecuteImport = async () => {
+    if (parsedItems.length === 0) {
+      toast.error("Nenhum contato válido detectado para importação.");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const res = await bulkImportInterestsFn({
+        data: {
+          items: parsedItems,
+        },
+      });
+
+      toast.success(
+        `Importação concluída! ${res.importedContacts} contatos e ${res.importedInterests} interesses registrados. ${res.matchesEvaluated} pacotes avaliados no radar.`
+      );
+      setRawText("");
+      onSuccess();
+    } catch (err: any) {
+      toast.error(`Falha ao importar lote: ${err.message}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto p-6 space-y-6">
+        <SheetHeader>
+          <SheetTitle className="text-xl font-bold flex items-center gap-2">
+            <Upload className="size-5 text-primary" />
+            Importação em Lote de Contatos & Interesses
+          </SheetTitle>
+          <SheetDescription>
+            Importe listas de atendimentos e passageiros anteriores para a memória comercial pré-CRM.
+            Zero poluição no CRM principal e auto-matching com as ofertas ativas.
+          </SheetDescription>
+        </SheetHeader>
+
+        {/* Upload de Arquivo CSV ou Textarea */}
+        <div className="space-y-4">
+          <div className="p-4 bg-muted/30 border border-dashed border-border rounded-xl space-y-2">
+            <Label htmlFor="csv-file-input" className="text-xs font-semibold text-foreground">
+              Carregar Arquivo CSV ou Planilha de Contatos
+            </Label>
+            <Input
+              id="csv-file-input"
+              type="file"
+              accept=".csv,.txt"
+              onChange={handleFileUpload}
+              className="h-11 min-h-11 cursor-pointer bg-background"
+            />
+            <p className="text-xs text-muted-foreground">
+              Formato esperado por linha:{" "}
+              <code className="text-foreground">Nome, WhatsApp, Destinos, Mês (YYYY-MM), Parcela Máx, Adultos, Crianças, Notas</code>
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="raw-text-input" className="text-xs font-semibold text-foreground">
+                Ou cole linhas de contatos diretamente:
+              </Label>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() =>
+                  setRawText(
+                    "Mariana Souza, 49999112233, Punta Cana/Caribe, 2026-07, 800, 2, 2, Resort all inclusive\nCarlos Eduardo, 49988223344, Cancún, 2026-09, 750, 2, 0, Lua de mel\nLuciana Prado, 49991556677, Maceió/Nordeste, 2026-10, 500, 2, 1, Férias em família"
+                  )
+                }
+                className="h-8 px-2 text-xs text-primary"
+              >
+                Inserir Exemplo
+              </Button>
+            </div>
+            <Textarea
+              id="raw-text-input"
+              placeholder="Exemplo: Mariana Souza, 49999112233, Punta Cana, 2026-07, 800, 2, 2"
+              value={rawText}
+              onChange={(e) => setRawText(e.target.value)}
+              className="min-h-36 font-mono text-xs"
+            />
+          </div>
+
+          {/* Prévia dos registros detectados */}
+          {parsedItems.length > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-semibold text-foreground">
+                  Registros Válidos Detectados: {parsedItems.length}
+                </span>
+                <Badge variant="outline" className="text-xs">
+                  Pré-CRM Protegido
+                </Badge>
+              </div>
+
+              <div className="max-h-48 overflow-y-auto border border-border rounded-lg bg-card">
+                <table className="w-full text-xs text-left">
+                  <thead className="bg-muted/50 border-b border-border text-muted-foreground sticky top-0">
+                    <tr>
+                      <th className="p-2">Nome</th>
+                      <th className="p-2">Telefone</th>
+                      <th className="p-2">Destino</th>
+                      <th className="p-2">Mês</th>
+                      <th className="p-2">Parcela Máx</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {parsedItems.map((item, idx) => (
+                      <tr key={idx} className="hover:bg-muted/20">
+                        <td className="p-2 font-medium text-foreground">{item.name}</td>
+                        <td className="p-2 font-mono text-muted-foreground">{item.phone}</td>
+                        <td className="p-2">{item.destinations.join(", ")}</td>
+                        <td className="p-2 text-muted-foreground">{item.targetMonth || "Qualquer"}</td>
+                        <td className="p-2 font-medium">
+                          {item.maxInstallmentCents ? formatMoney(item.maxInstallmentCents) : "Livre"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Botões de Ação */}
+          <div className="pt-4 border-t border-border flex items-center justify-end gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              className="h-11 min-h-11 px-4 focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleExecuteImport}
+              disabled={isSubmitting || parsedItems.length === 0}
+              className="h-11 min-h-11 px-6 font-medium focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {isSubmitting ? "Importando..." : `Importar ${parsedItems.length} Registros`}
+            </Button>
+          </div>
+        </div>
       </SheetContent>
     </Sheet>
   );

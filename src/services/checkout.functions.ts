@@ -199,17 +199,26 @@ const CheckoutSchema = z
  customerDocument: z.string().optional(),
  customerPhone: z.string().optional(),
  shippingMethod: z.enum(["manual_table", "provider", "pickup", "manual_quote"]),
- shippingAddress: z
- .object({
- zipcode: z.string().min(8),
- street: z.string().min(2),
- number: z.string().min(1),
- complement: z.string().optional(),
- neighborhood: z.string().min(2),
- city: z.string().min(2),
- state: z.string().length(2),
- })
- .optional(),
+  shippingAddress: z
+    .object({
+      zipcode: z.string().min(8),
+      street: z.string().min(2),
+      number: z.string().default("S/N"),
+      has_no_number: z.boolean().optional(),
+      complement: z.string().optional().nullable(),
+      reference_point: z.string().optional().nullable(),
+      neighborhood: z.string().min(2),
+      city: z.string().min(2),
+      state: z.string().length(2),
+      latitude: z.number().optional().nullable(),
+      longitude: z.number().optional().nullable(),
+      recipient_name: z.string().optional().nullable(),
+      recipient_phone: z.string().optional().nullable(),
+      block_tower: z.string().optional().nullable(),
+      intercom_code: z.string().optional().nullable(),
+      instructions: z.string().optional().nullable(),
+    })
+    .optional(),
  paymentMethod: z.enum(["pix", "manual", "credit_card", "receipt"]),
  paymentMethodId: z.string().uuid().optional(),
  giftCardCode: z.string().optional(),
