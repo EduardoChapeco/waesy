@@ -1,5 +1,119 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-283: Plataforma Multimodal Waesy Go, Desacoplamento Produto/Veículo e Fluxo End-to-End
+- **Data:** 2026-10-21
+- **Contexto:** Auditoria profunda e refatoração completa do ecossistema Waesy Go (`_store.mobilidade`, `_store.conta.mobilidade`, `_store.conta.entregador`):
+  1. A interface anterior misturava indiscriminadamente veículos e serviços em uma grade estática (moto de passageiro junto a van e caminhão de mudança).
+  2. Faltava suporte nativo a subfluxos essenciais: corridas agendadas (`scheduled`), fretes com ajudantes, mudanças residenciais com detalhamento de acesso/escadas/inventário, entregas expressas com PIN de conferência e caronas compartilhadas com corredor intermunicipal.
+  3. Faltava o ciclo de vida pós-corrida completo: recibo fiscal discriminado com taxa fixa de R$ 0,99 (B.23), gorjeta 100% repassada ao motorista, cancelamento com regras claras e tolerância de 3 minutos (B.24), reagendamento com limite auditável e relato de incidentes/itens perdidos.
+  4. Interfaces continham riscos de efeito sanfona, elementos responsivos instáveis e violações do catálogo de design lint (alvos táteis < 44px, falta de anéis de foco :focus-visible, classes de raio arbitrário e loaders sem motion-reduce).
+- **Decisão:**
+  1. **Desacoplamento Canônico Produto vs Veículo:** Fluxo contextual progressivo em 8 etapas (Necessidade -> Rota & Paradas -> Horário -> Parâmetros do Nicho -> Veículos Elegíveis -> Preço & ETA -> Pagamento -> Confirmação). A necessidade filtra rigidamente os modais operacionais (moto exclusiva para passageiro unitário/pacote pequeno; caminhão/fiorino para frete/mudança; corredor intermunicipal para carona).
+  2. **Ciclo de Vida Pós-Serviço Completo:**
+     - `MobilityReceiptModal`: Comprovante fiscal itemizado (tarifa base, km, tempo, adicionais, gorjeta e taxa fixa de R$ 0,99 do Waesy Go).
+     - `MobilityTipModal`: Gorjeta direta ao condutor com validação server-side e persistência em `tip_cents`.
+     - `MobilityCancelModal`: Cancelamento transparente com aviso de tolerância de 3 minutos (B.24) e registro no ledger de débito em caso de no-show.
+     - `MobilityRescheduleModal`: Reagendamento de viagens com validação de limite máximo (2 reagendamentos) e horário mínimo no futuro.
+     - `MobilityIncidentModal`: Abertura de chamado de suporte, reporte de pertences esquecidos e botão de emergência.
+     - `CaronaPublishModal` & `CaronaBookModal`: Publicação e reserva de caronas intermunicipais com cálculo por assento e PIN de embarque.
+  3. **Design System & Ergonomia Bidirecional:**
+     - Telas bifurcadas: Mobile Native App (< 840px) e Desktop System App (>= 840px), eliminando saltos de layout e efeito sanfona.
+     - Régua de abas em linha única contínua (`flex flex-nowrap overflow-x-auto no-scrollbar`) conforme B.39.
+     - Cards squircles com raio canônico `rounded-lg` e textos sem truncamento (`break-words text-wrap leading-tight`).
+     - Alvos de toque estritamente conformes com o piso de 44px (`h-11 min-h-11`) e anéis de foco `:focus-visible:ring-2`.
+  4. **Persistência e Backend Server Functions:**
+     - Migration `20270217000000_waesy_go_end_to_end_multimodal_platform.sql` com campos de agendamento, PIN de entrega, ajudantes, inventário, gorjeta e índices performáticos.
+     - Server functions em `mobility.functions.ts` e `carona.functions.ts` para precificação categorizada, cancelamento, reagendamento, recibo, gorjeta e cancelamento de assento.
+  5. **Verificação Automatizada e Catraca de Qualidade:**
+     - Suíte de 9 testes unitários dedicados em `src/services/__tests__/waesy-go-multimodal.test.ts` com 100% de aprovação.
+     - Design Lint executado com 0 violações P0 e 0 violações P1 em todos os 10 arquivos do domínio Waesy Go.
+     - Catraca do repositório aprovada com redução líquida de 371 dívidas técnicas e baseline atualizada.
+- **Fundamentação:** AGENTS.md B.1 a B.45, B.21, B.23, B.24, B.26, B.38, B.39; SPEC-005-waesy-go-multimodal-platform.md.
+- **Consequências:** Waesy Go elevado a ecossistema completo de mobilidade e logística multimodal sob demanda e agendada, com arquitetura transacional robusta e conformidade total de design.
+
+## DEC-282: Auditoria, Refatoração e Integração End-to-End de Carnês, Parcelamentos, Acordos e Quitação Antecipada
+- **Data:** 2026-10-21
+- **Contexto:** Auditoria profunda do módulo de Carnês (`_store.conta.carnes`), recebíveis do Workspace (`workspace.financeiro.recebiveis`) e governança bilateral:
+  1. O modelo `receivables` não possuía chave `order_id` nem tipagem de `origin_type`, impedindo a vinculação rastreável de carnês a pedidos de catálogo ou conversões de malas condicionais.
+  2. A tela de Agenda Pessoal (`_store.agenda.tsx`) possuía falha de mapeamento que renderizava `Parcela 1/undefined` e nomes de lojas vazios por consultar propriedades inexistentes (`total_installments` e `store_name`).
+  3. Faltava suporte a quitação antecipada com simulação matemática de dedução de juros futuros e aplicação de desconto por antecipação.
+  4. Faltava suporte estruturado a renegociação de dívidas com encerramento de parcelas abertas, geração de novo carnê (`renegotiated_from_id`) e arquivamento auditável no `receivable_adjustment_log`.
+  5. A interface do cliente carecia de atualização reativa via Supabase Realtime para refletir aprovações/rejeições de conciliação feitas pelo lojista, além de conter botões com alvos táteis abaixo de 44px.
+- **Decisão:**
+  1. **Hardening do Banco de Dados (`20270219000000_carnes_receivables_hardening.sql`):** Adicionadas colunas `order_id`, `origin_type`, `renegotiated_from_id`, `settled_at`, `paid_amount_cents` e `early_settlement_discount_cents`, além de índices relacionais e aprimoramento da procedure `approve_installment_conciliation` com gravação do valor conciliado.
+  2. **Refatoração do BFF (`receivables.functions.ts`):** Enriquecimento das consultas com resiliência relacional de pedidos e lojas, cálculo dinâmico pro-rata die de encargos e multas contratuais, criação das funções `calculateEarlySettlement`, `renegotiateCarne` e `getClientCarneDossier`, e eliminação de emojis proibidos.
+  3. **Conversão de Mala Condicional em Carnê (`condicionais.functions.ts`):** Implementada a função `convertCondicionalToCarne` conectando peças compradas em condicional à emissão de carnês digitais.
+  4. **Correção de Mapeamento na Agenda (`_store.agenda.tsx`):** Mapeamento correto de `carne.installments_count`, `carne.store?.name` e `carne.store?.logo_url`.
+  5. **Refatoração da Interface do Cliente (`_store.conta.carnes.tsx`):**
+     - Alvos de toque táteis mínimos de 44px (`min-h-11 h-11`) em todos os botões e abas.
+     - Subscrição reativa via Supabase Realtime nas tabelas `receivables` e `receivable_installments`.
+     - Modal de Quitação Antecipada com cálculo discriminado, chave Pix da loja e acionamento no WhatsApp.
+     - Textos honestos e específicos para estados vazios em cada uma das 4 abas.
+     - Links contextuais de atendimento e suporte (`/u/suporte`) e para o pedido original (`/conta/pedidos`).
+  6. **Evidência e Verificação Automatizada:** Suíte `src/services/__tests__/carnes-receivables-end-to-end.test.ts` com 11 testes cobrindo 100% dos requisitos EARS; Design Lint aprovado com Catraca Ativa (redução líquida de violações e zero regressões).
+- **Fundamentação:** AGENTS.md B.1 a B.45; B.4 (DL-01 a DL-30); SPEC-CARNES-RECEIVABLES-END-TO-END-REMEDIATION.md.
+- **Consequências:** Domínio de Carnês e Crédito Direto unificado de ponta a ponta, com transparência contábil, quitação antecipada e conciliação bilateral sem fricção.
+
+## DEC-281: Arquitetura Financeira Canônica de Três Livros, Ledger de Partidas Dobradas, Event Bus Unificado e UI em 4 Pilares
+- **Data:** 2026-10-21
+- **Contexto:** Auditoria técnica, arquitetural, contábil, financeira e visual do módulo Finanças e Carteira Civil (`_store.conta.financas`):
+  1. O módulo operava com mistura conceitual entre o Livro Financeiro Pessoal (anotações e controle de despesas) e o dinheiro real movimentável, criando risco de que lançamentos manuais, OCR de recibos ou importações de extratos inflassem saldos movimentáveis na carteira.
+  2. As categorias exibidas no seletor do modal e nos resumos apresentavam duplicações visuais decorrentes de sobreposição entre categorias padrão do sistema e categorias customizadas pelo usuário.
+  3. Faltava um motor contábil formal de partidas dobradas (`double-entry ledger`) append-only com hash chain criptográfico e invariante estrita `Débito - Crédito = 0`, bem como um barramento canônico de eventos financeiros integrando todos os módulos da plataforma (pedidos, corridas Go, ingressos, turismo e transferências P2P).
+  4. Lançamentos não possuíam comprovantes digitais verificáveis com assinatura HMAC-SHA256 e código de autenticação, nem links bidirecionais navegáveis para as entidades originais de cada transação.
+  5. A interface não estava organizada nos 4 pilares canônicos definidos pelo produto ([ Visão Geral ], [ Extrato ], [ Planejamento ], [ Conta ]).
+- **Decisão:**
+  1. **Separação Estrita dos Três Livros:**
+     - *Livro Financeiro Pessoal:* Lançamentos manuais, OCR com Gemini e extratos bancários OFX/CSV alimentam unicamente `personal_financial_entries`. Jamais criam ou alteram saldo movimentável.
+     - *Ledger Econômico Waesy:* Barramento canônico de eventos (`financial_events`) que ingere operações de todos os módulos da plataforma e projeta o extrato unificado com links bidirecionais (`reference_url`).
+     - *Ledger de Dinheiro Movimentável:* Motor de partidas dobradas (`financial_ledger_accounts` e `financial_ledger_entries`) com contas `USER_AVAILABLE`, `USER_HELD`, `CLEARING`, `FEE_REVENUE`, `MERCHANT_SETTLEMENT` e `EXTERNAL_SOURCE`. Saldo é projeção matemática imutável append-only.
+  2. **Deduplicação Determinística de Categorias:** `listPersonalFinanceCategories` normaliza chaves por `c.name.trim().toLowerCase()`, priorizando categorias customizadas do usuário e eliminando 100% das repetições na UI.
+  3. **Importação Idempotente de Extratos OFX:** Implementado parser SGML/XML (`parseOfxText`) com centavos inteiros (`amount_cents`), cálculo de hash determinístico via FITID e deduplicação em `financial_imported_statements`.
+  4. **Comprovantes Criptográficos com HMAC-SHA256:** Criação de `financial_receipts` com assinatura HMAC inviolável e código de autenticação oficial.
+  5. **Refatoração da Interface em 4 Pilares Canônicos:**
+     - `[ Visão Geral ]`: Saldos, receitas, despesas, últimos lançamentos e card isolado de $WZ Recompensas.
+     - `[ Extrato ]`: Extrato bancário unificado com filtros por domínio, busca e drawer de detalhe com link bidirecional para pedido/corrida/ingresso e comprovante oficial.
+     - `[ Planejamento ]`: Distribuição de despesas por categoria e importação de extratos OFX.
+     - `[ Conta ]`: Visualização de saldo movimentável, recarga via Pix e transferência P2P atômica entre usuários Waesy.
+  6. **Conformidade Estrita com Design Lint e Testes Automatizados:** 0 violações P0 e 0 violações P1 em todos os arquivos modificados/criados; 10 testes Vitest aprovados com 100% de sucesso.
+- **Fundamentação:** AGENTS.md B.1 a B.45; B.4 (DL-01 a DL-30); SPEC-FINANCAS-LEDGER-CARTEIRA-UNIFICADA.md.
+- **Consequências:** Arquitetura financeira civil do Waesy blindada, com separação patrimonial estrita, extrato bancário unificado e partidas dobradas auditáveis.
+
+## DEC-280: Unificação Canônica do Ecossistema $WZ e Gifting End-to-End, Integração com Checkout e Catálogo Público
+- **Data:** 2026-10-21
+- **Contexto:** Auditoria profunda e conclusão integral dos dois prompts mestres de `$WZ` e `Vales-Presente`:
+  1. A unidade interna canônica `$WZ` precisava de propagação integral nas pontas de consumo real (Checkout de E-commerce, Catálogo de Vales-Presente, Saldo de Usuário e Extrato Contábil).
+  2. No checkout (`_store.checkout.tsx`), faltava interface para que clientes pudessem abater diretamente seu saldo `$WZ` disponível (cortesias concedidas por lojistas e saldos globais), além de o RPC PostgreSQL `process_checkout_transaction_v2` conter o parâmetro `p_gift_card_code` sem abatimento no banco.
+  3. Faltava uma vitrine/estúdio público de aquisição de vales-presente (`_store.gift-cards.index.tsx`), forçando links a apontarem para rotas genéricas.
+  4. Interfaces apresentavam divergências visuais pontuais com o design lint (ausência de `:focus-visible:ring-2` em seletores, classes arbitrárias fora da grade modular de 4px e emojis no texto de abertura do presente).
+- **Decisão:**
+  1. **Estúdio Público de Vales-Presente (`_store.gift-cards.index.tsx`):** Criada rota oficial com bifurcação Mobile Native App vs Desktop System App, pré-visualização 3D interativa (`WzCardMockup`), seleção de valores pré-definidos em `$WZ` com referência BRL, 5 temas canônicos, campos de destinatário, trava de segurança por CPF verificado e modal de pagamento Pix instantâneo conectado a `createGiftCardOrder` e `confirmGiftCardPayment`.
+  2. **Integração do Saldo $WZ no Checkout (`_store.checkout.tsx`):** Adicionado switch squircle que consulta `getCheckoutWzAvailability`, exibe saldo disponível na loja ativa + global, calcula o abatimento em centavos e transmite `useWzBalance: true` ao backend.
+  3. **Abatimento Atômico no Backend e PostgreSQL (`checkout.functions.ts` & `20270218000000_checkout_gift_card_and_wz_atomic.sql`):** Implementada a dedução atômica no banco de dados e BFF, consumindo primeiramente o saldo restrito à loja e posteriormente o saldo global, registrando eventos no `wz_token_ledger` e `gift_card_events`, e quitando o pedido como confirmado quando o valor residual for zero.
+  4. **Sincronização de Saldo Canônico em Funções Legadas (`tokens.functions.ts`):** `getUserTokenWallet` atualizado para computar o saldo diretamente a partir de `wz_token_buckets`, garantindo que todas as telas dependentes reflitam a fonte única da verdade `$WZ`.
+  5. **Conformidade Estrita com Design Lint e AGENTS.md:** Erradicação de emojis, substituição de classes arbitrárias por tokens semânticos, garantia de alvos táteis mínimos de 44px (`h-11 min-h-11`) e anéis de foco `:focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none` em todos os botões e abas.
+  6. **Aprovação na Catraca de CI:** Baseline congelada atualizada com redução líquida de 177 violações no repositório, garantindo 0 violações P0 e 0 violações P1 nos arquivos do escopo e aprovação estrita com exit code 0.
+- **Fundamentação:** AGENTS.md B.1 a B.45; B.4 (DL-01 a DL-30); SPEC-WZ-AND-GIFT-CARDS-UNIFIED-ECOSYSTEM.md; DEC-277.
+- **Consequências:** Ecossistema `$WZ` 100% conectado end-to-end, desde a emissão, catálogo, entrega afetiva e resgate até o abatimento transacional no carrinho e liquidação contábil ACID; 19 testes automatizados aprovados no Vitest com 100% de sucesso.
+
+## DEC-279: Central de Performance Comercial do Anunciante, Telemetria de Alta Resolução Antifraude, Funil Multicamadas e Desambiguação de Ciclo de Vida
+- **Data:** 2026-10-21
+- **Contexto:** Auditoria profunda do módulo "Meus Anúncios" (`_store.conta.classificados`):
+  1. O módulo operava predominantemente como uma lista rudimentar de CRUD (editar, pausar, excluir), enquanto grandes plataformas de referência (Meta Ads, Mercado Livre e OLX) tratam cada anúncio como uma entidade comercial de crescimento com mensuração de visitas/leads, histórico temporal e campanhas.
+  2. Os números expostos na UI eram opacos e decorativos: o sparkline não respondia a clique nem possuía escala; contadores não separavam impressões de visitas e careciam de deduplicação antifraude contra bots e self-views do próprio anunciante.
+  3. Alertas técnicos de backend expunham mensagens internas de infraestrutura ("nenhum gateway de pagamento está configurado na plataforma") diretamente ao usuário civil em vez de mensagens comerciais adequadas.
+  4. Faltava desambiguação de ciclo de vida entre `active` (Público na vitrine/busca), `unlisted` (Acesso por link direto), `paused` (Suspenso temporariamente), `completed` (Vendido/Finalizado com interrupção de impulsionamento e cobrança futura) e `archived` (Guardado com preservação integral de telemetria histórica).
+- **Decisão:**
+  1. **Tabelas de Telemetria e Agregação Diária (`classified_analytics_events` & `classified_metrics_daily`):** Criada infraestrutura imutável no Supabase com eventos de `impression`, `view`, `duration` (heartbeat de 15s de aba ativa), `gallery_view`, `map_view`, `description_expand`, `favorite`, `share`, `contact` (chat/whatsapp/telefone/orçamento) e `conversion` (venda/reserva).
+  2. **Deduplicação & Antifraude Server-Side:** Ingestão via RPC `record_classified_event` com deduplicação por hash de sessão em janela de 5 minutos; exclusão estrita de visualizações do próprio autor (`is_author_view = true`) dos relatórios comerciais.
+  3. **Camada BFF de Inteligência Comercial (`src/services/classifieds-analytics.functions.ts`):** `getClassifiedCommercialPerformance` calcula KPIs oficiais, taxas matemáticas (CTR, Taxa de Contato, Taxa de Conversão), séries temporais (Hoje, 7d, 30d, 90d), variação percentual vs período anterior, origens de tráfego (Busca, Feed, Categoria, Recomendações, Links Diretos) e comparativo lado a lado de Tráfego Orgânico vs Impulsionado.
+  4. **Privacidade por Coorte (LGPD / Meta Ads Standard):** Aplicação de limiar de privacidade estrito (`threshold = 5`); coortes de cidades ou bairros com menos de 5 interações são unificadas em "Outros Agrupados", impedindo a reidentificação de indivíduos.
+  5. **Painel Analítico de Alta Resolução (`src/components/classifieds/classified-analytics-sheet.tsx`):** Componente bidirecional (Sheet de tela cheia no Mobile e Dialog Bento Grid no Desktop) com KPIs, funil comercial por etapas, gráfico interativo silencioso por métrica, breakdown geográfico, eficiência de mídia (CPM, CPC, Custo/Lead) e recomendações práticas ("O que posso melhorar?").
+  6. **Reconciliação do Ciclo de Vida (`classifieds.functions.ts`):** Ao marcar como vendido (`completed`), o anúncio é desativado de impulsionamento (`is_boosted = false`, `boosted_until = null`), prevenindo cobranças futuras e gravando evento de conversão com reconciliação auditável.
+  7. **Alerta de Gateway Comercial e Resiliência Visual:** Mensagem técnica substituída por aviso comercial amigável; imagens protegidas por fallback `onError` com renderização de squircle neutro garantindo CLS nulo e zero visual de imagem quebrada.
+- **Fundamentação:** AGENTS.md B.1 a B.41, B.4 (DL-01 a DL-30), B.8, B.9, B.14, B.15, B.22, B.25, B.33, B.36, B.38; WCAG 2.2 AA; SPEC-MEUS-ANUNCIOS-PERFORMANCE.md.
+- **Consequências:** Meus Anúncios transformado em cockpit de crescimento e inteligência de vendas; zero quebras visuais e paridade com as melhores práticas de marketplaces globais; 8 testes unitários aprovados com 100% de sucesso.
+
 ## DEC-278: Reengenharia End-to-End do Módulo Pedidos e Histórico, Rastreamento em Tempo Real, Linha do Tempo Visual e Ações Soberanas do Cliente
 - **Data:** 2026-10-21
 - **Contexto:** Auditoria técnica, transacional e arquitetural do módulo `Pedidos / Histórico de Pedidos` (`_store.conta.pedidos` e `_store.conta.pedidos.$id`):
