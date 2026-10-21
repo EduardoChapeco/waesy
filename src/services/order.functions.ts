@@ -1981,3 +1981,15 @@ export const reorderCustomerOrder = createServerFn({ method: "POST" })
       );
     }
   });
+
+// Re-exports canônicos de gestão do Workspace para compatibilidade (EARS-DRY-01)
+export {
+  listOrdersFn as listWorkspaceOrders,
+  getOrderDetailFn as getWorkspaceOrderDetail,
+  updateOrderStatusFn as updateWorkspaceOrderStatus,
+  listOrdersInputSchema,
+  getOrderDetailInputSchema,
+  updateOrderStatusInputSchema,
+  type WorkspaceOrderItemDTO,
+  type OrderDetailDTO,
+} from "./orders.functions";

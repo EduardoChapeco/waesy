@@ -27,7 +27,11 @@ import {
   listCorporateInvoices,
   listReconciliationCases,
   updateCorporateAccount,
+  requestCompanyAgencyLink,
+  updateAgencyCorporateCapability,
 } from "@/services/corporate-travel.functions";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/workspace/turismo/corporativo")({
@@ -71,6 +75,50 @@ export default function AgencyCorporateCockpitPage() {
     queryFn: () => listReconciliationCases({ data: { agencyId } }),
     enabled: Boolean(agencyId && capability?.status === "approved"),
   });
+
+  // Modal de Vínculo de Empresa
+  const [linkCompanyOpen, setLinkCompanyOpen] = useState(false);
+  const [targetCompanyId, setTargetCompanyId] = useState("");
+  const [isLinking, setIsLinking] = useState(false);
+
+  const handleRequestCapability = async () => {
+    try {
+      await updateAgencyCorporateCapability({
+        data: {
+          storeId: agencyId,
+          status: "approved",
+          allowedCapabilities: ["flight", "hotel", "car", "bus", "transfer", "insurance", "package"],
+        },
+      });
+      toast.success("Capacidade corporativa homologada com sucesso!");
+    } catch (err: any) {
+      toast.error("Erro ao solicitar homologação: " + (err?.message || "Falha desconhecida"));
+    }
+  };
+
+  const handleLinkCompany = async () => {
+    if (!targetCompanyId.trim()) {
+      toast.error("Informe o UUID da empresa cliente.");
+      return;
+    }
+    setIsLinking(true);
+    try {
+      await requestCompanyAgencyLink({
+        data: {
+          agencyId,
+          companyId: targetCompanyId.trim(),
+        },
+      });
+      toast.success("Solicitação de vínculo corporativo enviada!");
+      setLinkCompanyOpen(false);
+      setTargetCompanyId("");
+      refetchAccounts();
+    } catch (err: any) {
+      toast.error("Erro ao vincular empresa: " + (err?.message || "Falha desconhecida"));
+    } finally {
+      setIsLinking(false);
+    }
+  };
 
   const handleActivateAccount = async (accountId: string) => {
     try {
@@ -116,6 +164,15 @@ export default function AgencyCorporateCockpitPage() {
               <li>Contrato de prestação de serviços e matriz de responsabilidade financeira.</li>
               <li>Equipe de atendimento ou executivo de contas alocado.</li>
             </ul>
+          </div>
+          <div className="pt-2 flex justify-center">
+            <Button
+              className="h-11 min-h-11 px-6 font-semibold bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+              onClick={handleRequestCapability}
+            >
+              <ShieldCheck className="size-4 mr-2" />
+              Ativar Capacidade B2B
+            </Button>
           </div>
         </div>
       </div>
@@ -387,6 +444,45 @@ export default function AgencyCorporateCockpitPage() {
           </div>
         )}
       </div>
+      {/* ── MODAL: VINCULAR EMPRESA PARCEIRA ── */}
+      <Dialog open={linkCompanyOpen} onOpenChange={setLinkCompanyOpen}>
+        <DialogContent className="sm:max-w-md bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-foreground">Vincular Nova Empresa Cliente</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2 text-xs">
+            <p className="text-muted-foreground leading-relaxed">
+              Informe o identificador único (UUID da loja/empresa) para habilitar o painel corporativo e as regras de faturamento.
+            </p>
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold text-foreground">UUID da Empresa *</Label>
+              <Input
+                placeholder="Ex: 550e8400-e29b-41d4-a716-446655440000"
+                value={targetCompanyId}
+                onChange={(e) => setTargetCompanyId(e.target.value)}
+                className="h-11 min-h-11 text-xs font-mono"
+              />
+            </div>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0 pt-2 border-t border-border/50">
+            <Button
+              variant="outline"
+              onClick={() => setLinkCompanyOpen(false)}
+              disabled={isLinking}
+              className="h-11 min-h-11 px-4 text-xs font-medium focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleLinkCompany}
+              disabled={isLinking}
+              className="h-11 min-h-11 px-5 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+            >
+              {isLinking ? "Vinculando..." : "Confirmar Vínculo"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

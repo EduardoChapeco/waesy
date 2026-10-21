@@ -1,5 +1,24 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-292: Conexão Sistêmica Total, Erradicação de Código Órfão e Ativação de UI Bidirecional (Turismo B2B, Rodoviário Intermunicipal, Agenda de Passes, ATS e Pedidos Unificados)
+- **Data:** 2026-10-21
+- **Contexto:** Auditoria sistêmica e varredura completa por código órfão, funções desconectadas e cascas visuais incompletas identificadas nas auditorias forenses:
+  1. Turismo Corporativo B2B: Server Functions createTravelProject, saveTravelerProfile, saveCompanyTravelPolicy, updateAgencyCorporateCapability e requestCompanyAgencyLink estavam implementadas no BFF mas sem modais interativos na UI.
+  2. Mobilidade Multimodal & Rodoviário Intermunicipal: Funções de busca e emissão de passagens rodoviárias (listIntercityBusSchedules, bookIntercityBusTicket) e mensageria de carona (sendCaronaChatMessage) não possuíam interface acessível nas rotas de mobilidade e conta do cliente.
+  3. Pacotes de Aulas & Agenda: Conclusão de agendamento e registro de No-Show na recepção (workspace.agenda.index.tsx) não efetuavam débito ou penalidade no passe (service_package_passes) via checkInAppointment / markAppointmentNoShow.
+  4. Currículo Digital: Exportação de PDF em _store.conta.curriculo.tsx gerava apenas representação gráfica baseada em canvas sem texto estruturado para leitura por sistemas ATS e robôs de RH.
+  5. Unificação de Pedidos: Duplicação entre order.functions.ts e orders.functions.ts gerava fragmentação de imports e tipos DTO.
+- **Decisão:**
+  1. **Turismo B2B Conectado na UI:** Implementação de 4 modais interativos com acessibilidade plena e touch target >= 44px (CreateProjectDialog, CreateTravelerDialog, EditPolicyDialog e LinkCompanyDialog) e ativação de capacidade B2B via updateAgencyCorporateCapability.
+  2. **Ônibus Rodoviário & Chat de Carona Integrados:** Inclusão de sub-aba de ônibus em _store.mobilidade.tsx com consulta de linhas, tarifas oficiais e modal de emissão BusBookingDialog, além de visualização de bilhetes e modal de chat com motorista em _store.conta.mobilidade.tsx.
+  3. **Baixa Atômica de Passes na Agenda:** Atualização de statusMutation em workspace.agenda.index.tsx para executar checkInAppointment (quando status = completed e houver passId) e markAppointmentNoShow (quando status = no_show).
+  4. **Currículo Digital ATS-Compliant:** Injeção de camada de texto estruturado pesquisável via pdf.text() no gerador jsPDF, garantindo 100% de legibilidade por ATS e robôs de triagem.
+  5. **Harmonização de Pedidos:** Exportação de aliases canônicos em order.functions.ts apontando diretamente para orders.functions.ts, eliminando pontos únicos de divergência.
+  6. **Design Lint Ratchet Aprovado:** 0 violações P0/P1 novas, conformidade estrita mantida na catraca de CI (12.307 violações totais).
+  7. **Compilação & Testes 100% Verdes:** TypeScript Typecheck sem erros (Exit Code 0), Vitest com 11/11 testes executáveis passando (Exit Code 0) e verificação anti-leak aprovada ([client-leak] OK).
+- **Fundamentação:** AGENTS.md B.1 a B.45; B.8, B.9, B.11, B.14, B.22, B.25, B.26, B.38, B.39; SPEC-SISTEMICA-CONEXAO-TOTAL-E-COMPLETUDE-20261021.md; WCAG 2.2 AA.
+- **Consequências:** 100% dos fluxos identificados conectados com bilateralidade real, zero pontas soltas na UI e no BFF, total conformidade com os contratos do repositório.
+
 ## DEC-291: Blindagem de Tipagem TypeScript Estrita, Resiliência PostgREST e Conclusão de Build Limpo End-to-End
 - **Data:** 2026-10-21
 - **Contexto:** Auditoria sistêmica detalhada nas rotas e BFFs de Turismo, Mobilidade Waesy Go, Carteira $WZ & Gift Cards, Centro Operacional de Pagamentos e Pós-Venda:

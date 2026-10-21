@@ -304,6 +304,33 @@ export default function MeuCurriculoPage() {
 
       const imgData = canvas.toDataURL("image/jpeg", 0.98);
       const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+
+      // Injeta camada de texto estruturado ATS-friendly pesquisável (EARS-CURR-01)
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(8);
+      pdf.setTextColor(250, 250, 250);
+
+      const atsStructuredLines: string[] = [
+        `NOME: ${fullName}`,
+        `CARGO: ${occupation}`,
+        `CONTATO: ${phone} | ${profile?.email || ""} | ${city} - ${state}`,
+        website ? `PORTFOLIO: ${website}` : "",
+        `RESUMO PROFISSIONAL: ${summary}`,
+        "EXPERIENCIAS PROFISSIONAIS:",
+        ...experiences.map((e) => `${e.role} em ${e.company} (${e.startDate} - ${e.endDate || "Atual"}): ${e.description || ""}`),
+        "FORMACAO ACADEMICA:",
+        ...educations.map((ed) => `${ed.degree} em ${ed.institution} (${ed.startDate} - ${ed.endDate || ""})`),
+        "COMPETENCIAS:",
+        skills.join(", "),
+      ].filter(Boolean);
+
+      let textY = 10;
+      for (const line of atsStructuredLines) {
+        if (textY > 285) break;
+        pdf.text(line.slice(0, 110), 10, textY);
+        textY += 4;
+      }
+
       pdf.addImage(imgData, "JPEG", 0, 0, 210, 297);
 
       const cleanName = (fullName || "curriculo")

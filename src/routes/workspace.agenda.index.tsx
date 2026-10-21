@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { playCashRegisterSound } from "@/lib/audio-chimes";
 
 import { listAppointments, updateAppointmentStatus, listClinicalRecords, addClinicalRecord, reconcilePastAppointments } from "@/services/booking.functions";
+import { checkInAppointment, markAppointmentNoShow } from "@/services/service-packages.functions";
 import { BookingDossierModal } from "@/components/booking/booking-dossier-modal";
 import { ManualAppointmentModal } from "@/components/booking/manual-appointment-modal";
 import { Badge } from "@/components/ui/badge";
@@ -180,10 +181,22 @@ function AdminAppointmentsPage() {
  });
 
  const statusMutation = useMutation({
- mutationFn: async ({ id, status }: { id: string; status: any }) => {
- return await updateAppointmentStatus({ data: { id, status } });
- },
- onSuccess: (_data, variables) => {
+    mutationFn: async ({ id, status, passId }: { id: string; status: any; passId?: string | null }) => {
+      if (passId && status === "completed") {
+        return await checkInAppointment({ data: { appointment_id: id } });
+      }
+      if (passId && status === "no_show") {
+        return await markAppointmentNoShow({
+          data: {
+            appointment_id: id,
+            penalty_applied: true,
+            reason: "Não comparecimento (No-Show) registrado na recepção",
+          },
+        });
+      }
+      return await updateAppointmentStatus({ data: { id, status } });
+    },
+    onSuccess: (_data, variables) => {
  if (variables.status === "completed") {
  playCashRegisterSound();
  toast.success("Atendimento concluído com sucesso!");
@@ -540,7 +553,7 @@ function AdminAppointmentsPage() {
  size="sm"
  className="min-h-11 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
  onClick={() =>
- statusMutation.mutate({ id: appt.id, status: "completed" })
+ statusMutation.mutate({ id: appt.id, status: "completed", passId: appt.pass_id })
  }
  >
  <CheckCircle2 className="size-3 mr-1" />
@@ -560,7 +573,7 @@ function AdminAppointmentsPage() {
  size="sm"
  variant="ghost"
  className="min-h-11 text-xs text-muted-foreground hover:text-destructive cursor-pointer px-2"
- onClick={() => statusMutation.mutate({ id: appt.id, status: "no_show" })}
+ onClick={() => statusMutation.mutate({ id: appt.id, status: "no_show", passId: appt.pass_id })}
  >
  Falta (No-Show)
  </Button>
