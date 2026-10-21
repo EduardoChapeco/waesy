@@ -10,12 +10,14 @@ import { formatMoney } from "@/lib/money";
 import { getCart, getGlobalCarts, cancelCart, updateCartShipping, applyCouponToCart, updateCartContact } from "@/services/cart.functions";
 import { useCartContext } from "@/lib/cart-context";
 import { checkGiftCardBalance } from "@/services/giftcard.functions";
+import { getCheckoutWzAvailability } from "@/services/wz-engine.functions";
+import { formatWz } from "@/lib/wz-quote-engine";
 import { processCheckout, getStoreCheckoutConfig, type CheckoutDynamicConfig } from "@/services/checkout.functions";
 import { initiatePaymentTransaction, getPublicPaymentMethods, getGatewayStatus } from "@/services/payment.functions";
 import { calculateShipping } from "@/services/shipping.functions";
 import { getPublicStoreProfile } from "@/services/catalog.functions";
 import { getProfile } from "@/services/auth.functions";
-import { getUserAddresses, validateDeliveryLocationGPS } from "@/services/addresses.functions";
+import { getUserAddresses, validateDeliveryLocationGPS, saveUserAddress } from "@/services/addresses.functions";
 import { DeliveryLocationPolicySheet } from "@/components/commerce/delivery-location-policy-sheet";
 import { GpsMismatchModal } from "@/components/commerce/gps-mismatch-modal";
 import { Check, CheckCircle2, Ticket, User, Truck, CreditCard, ShoppingBag, AlertCircle, MapPin, Loader2, Gift, QrCode, Clock, Store, ChevronRight, ArrowLeft, Navigation, Layers, Plus, ShieldCheck, Building2, ShieldAlert, Plane, Users, Calendar, Zap, FileText, Trash2, Package } from 'lucide-react';
@@ -327,6 +329,7 @@ export function CheckoutPage() {
   const [selectedRateId, setSelectedRateId] = useState<string | null>(null);
   const [isLocatingGPS, setIsLocatingGPS] = useState(false);
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
+  const [saveAddressToBook, setSaveAddressToBook] = useState(true);
 
   // ── V139: Omni-Checkout, Waesy Go & Trust/Safety States ──
   const [isEditingContact, setIsEditingContact] = useState(false);
@@ -341,7 +344,30 @@ export function CheckoutPage() {
   // Promo & Gift Card code states
   const [promoCode, setPromoCode] = useState("");
   const [isApplyingPromo, setIsApplyingPromo] = useState(false);
- const [appliedGiftCard, setAppliedGiftCard] = useState<{
+ 
+  // $WZ Balance Checkout Integration
+  const [wzAvailability, setWzAvailability] = useState<{
+    authenticated: boolean;
+    totalUsableWz: number;
+    usableReferenceBrlCents: number;
+    availableStoreWz: number;
+    availableGlobalWz: number;
+  } | null>(null);
+  const [useWzBalance, setUseWzBalance] = useState(false);
+
+  useEffect(() => {
+    if (cart?.store_id) {
+      getCheckoutWzAvailability({ data: { storeId: cart.store_id } })
+        .then((res) => {
+          if (res && res.authenticated) {
+            setWzAvailability(res);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [cart?.store_id]);
+
+  const [appliedGiftCard, setAppliedGiftCard] = useState<{
  code: string;
  balanceCents: number;
  } | null>(null);
@@ -703,7 +729,8 @@ export function CheckoutPage() {
  ? Math.min(appliedGiftCard.balanceCents, preGiftTotalCents)
  : 0;
 
- const finalTotalCents = Math.max(0, preGiftTotalCents - giftCardDeductionCents);
+ const wzDeductionCents = (useWzBalance && wzAvailability?.usableReferenceBrlCents) ? Math.min(wzAvailability.usableReferenceBrlCents, Math.max(0, preGiftTotalCents - giftCardDeductionCents)) : 0;
+ const finalTotalCents = Math.max(0, preGiftTotalCents - giftCardDeductionCents - wzDeductionCents);
  const installmentOptions = calculateInstallmentOptions(finalTotalCents);
  const activeInstallmentOption = installmentOptions.find((o) => o.number === selectedInstallment);
  const checkoutTotalCents =
@@ -863,6 +890,7 @@ export function CheckoutPage() {
           paymentMethodId:
             formData.paymentMethod === "manual" ? formData.paymentMethodId : undefined,
           giftCardCode: appliedGiftCard?.code || undefined,
+          useWzBalance: useWzBalance,
           customFields: Object.keys(customFieldValues).length > 0 ? customFieldValues : undefined,
           notes: orderNotes.trim() || undefined,
           deliveryToDoor: isPhysicalDelivery ? deliveryToDoor : false,
@@ -886,9 +914,34 @@ export function CheckoutPage() {
         },
       });
 
- if ((res as any)?.status === "error") {
- throw new Error((res as any)?.message || "Não foi possível finalizar o pedido.");
- }
+         if ((res as any)?.status === "error") {
+          throw new Error((res as any)?.message || "Não foi possível finalizar o pedido.");
+        }
+
+        // Zero-Amnésia: salvar endereço em Meus Endereços se requisitado
+        if (
+          formData.shippingMethod !== "pickup" &&
+          saveAddressToBook &&
+          (showNewAddressForm || !userAddresses || userAddresses.length === 0)
+        ) {
+          saveUserAddress({
+            data: {
+              label: "Entrega " + (formData.shippingAddress.neighborhood || "Principal"),
+              icon: "home",
+              address_type: "residential",
+              recipient_name: formData.customerName || undefined,
+              recipient_phone: formData.customerPhone || undefined,
+              zipcode: formData.shippingAddress.zipcode,
+              street: formData.shippingAddress.street,
+              number: formData.shippingAddress.number,
+              complement: formData.shippingAddress.complement || undefined,
+              neighborhood: formData.shippingAddress.neighborhood,
+              city: formData.shippingAddress.city,
+              state: formData.shippingAddress.state,
+              is_default: (userAddresses || []).length === 0,
+            },
+          }).catch((err) => console.warn("[checkout] Zero-amnesia address save error:", err));
+        }
 
  if (
  formData.shippingMethod !== "manual_quote" &&
@@ -2013,11 +2066,25 @@ export function CheckoutPage() {
  })
  }
  className="h-11 rounded-lg text-base sm:text-sm uppercase"
- />
- </div>
- </div>
- </div>
- )}
+                />
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={saveAddressToBook}
+                  onChange={(e) => setSaveAddressToBook(e.target.checked)}
+                  className="size-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+                />
+                <span className="text-xs text-foreground font-medium">
+                  Salvar este endereço em Meus Endereços para compras futuras
+                </span>
+              </label>
+            </div>
+          </div>
+        )}
 
  {/* Seleção de Taxas e Opções de Frete */}
  <div className="space-y-2 pt-2">
@@ -2875,7 +2942,14 @@ export function CheckoutPage() {
  <span className="font-mono">{formatMoney(effectiveSubtotalCents)}</span>
  </div>
 
- {cart.discountCents > 0 && (
+ {useWzBalance && wzDeductionCents > 0 && (
+                <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-medium">
+                  <span>Desconto Saldo $WZ</span>
+                  <span className="font-mono">-{formatMoney(wzDeductionCents)}</span>
+                </div>
+              )}
+
+              {cart.discountCents > 0 && (
  <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-medium">
  <span>Desconto Cupom</span>
  <span className="font-mono">-{formatMoney(cart.discountCents)}</span>

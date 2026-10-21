@@ -1,12 +1,28 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
-import { ChevronLeft, Package, MapPin, CreditCard, Copy, Upload, Info, AlertTriangle, QrCode, Smartphone } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Package,
+  MapPin,
+  CreditCard,
+  Copy,
+  Upload,
+  Info,
+  AlertTriangle,
+  QrCode,
+  Smartphone,
+  RefreshCw,
+  HelpCircle,
+  XOctagon,
+  ArrowRight,
+} from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { DigitalCompanionCard } from "@/components/documents/digital-companion-card";
+import { OrderTimeline } from "@/components/commerce/order-timeline";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { NativeMobileHeader, NativeBackButton } from "@/components/navigation";
 import { ReviewModal } from "@/components/commerce/review-modal";
 import { RmaWizard } from "@/components/commerce/rma-wizard";
@@ -14,7 +30,14 @@ import { EmptyState } from "@/components/state/states";
 import { formatMoney } from "@/lib/money";
 import { formatHumanOrderId } from "@/lib/order-id";
 import { formatDate } from "@/lib/datetime";
-import { getCustomerOrder, getOrderPaymentInstructions } from "@/services/order.functions";
+import {
+  getCustomerOrder,
+  getOrderPaymentInstructions,
+  getOrderTimelineEvents,
+  cancelCustomerOrder,
+  reorderCustomerOrder,
+} from "@/services/order.functions";
+import { subscribeToTableChanges } from "@/services/realtime-channel";
 import { uploadPaymentReceipt } from "@/services/payment.functions";
 import { getDeliveryProofsByOrderId, type DeliveryProof } from "@/services/dispatch.functions";
 import { DealDeliveryTrackingCard } from "@/components/commercial/deal-delivery-tracking-card";
@@ -24,23 +47,30 @@ export const Route = createFileRoute("/_store/conta/pedidos/$id")({
   head: () => ({ meta: [{ title: "Detalhes do Pedido | Waesy" }] }),
   loader: async ({ params }) => {
     try {
-      const [orderRes, instrRes, proofs] = await Promise.all([
+      const [orderRes, instrRes, proofs, timelineEvents] = await Promise.all([
         getCustomerOrder({ data: { orderId: params.id } }),
         getOrderPaymentInstructions({ data: { orderId: params.id } }).catch(() => ({
           status: "error" as const,
           data: null,
         })),
         getDeliveryProofsByOrderId({ data: { orderId: params.id } }).catch(() => []),
+        getOrderTimelineEvents({ data: { orderId: params.id } }).catch(() => []),
       ]);
 
       return {
         order: orderRes,
         paymentInstructions: instrRes || { pix_key: null, payment_instructions: null },
         proofs: (proofs || []) as DeliveryProof[],
+        timelineEvents: timelineEvents || [],
       };
     } catch (err) {
       console.error("[loader:_store.conta.pedidos.$id] Unhandled loader error:", err);
-      return { order: null, paymentInstructions: { pix_key: null, payment_instructions: null }, proofs: [] };
+      return {
+        order: null,
+        paymentInstructions: { pix_key: null, payment_instructions: null },
+        proofs: [],
+        timelineEvents: [],
+      };
     }
   },
   component: CustomerOrderDetailPage,
@@ -49,7 +79,7 @@ export const Route = createFileRoute("/_store/conta/pedidos/$id")({
 function translateStatus(status: string) {
   const map: Record<string, string> = {
     draft: "Aguardando Confirmação",
-    awaiting_payment: "Aguardando Confirmação",
+    awaiting_payment: "Aguardando Pagamento",
     payment_processing: "Em Análise",
     paid: "Confirmado",
     processing: "Em Preparação",
@@ -59,28 +89,65 @@ function translateStatus(status: string) {
     completed: "Concluído",
     cancelled: "Cancelado",
     payment_failed: "Pagamento Não Aprovado",
+    return_requested: "Devolução Solicitada",
+    returned: "Devolvido",
   };
   return map[status] || "Em Andamento";
 }
 
 function getStatusVariant(status: string): "default" | "secondary" | "destructive" | "outline" {
   if (["paid", "completed", "delivered"].includes(status)) return "default";
-  if (["awaiting_payment", "payment_processing", "processing", "shipped"].includes(status))
+  if (["awaiting_payment", "payment_processing", "processing", "shipped", "ready_for_pickup"].includes(status))
     return "secondary";
   if (["cancelled", "payment_failed"].includes(status)) return "destructive";
   return "outline";
 }
 
 function CustomerOrderDetailPage() {
-  const { order, paymentInstructions, proofs } = ((Route.useLoaderData?.() as any) || {}) as {
+  const { order, paymentInstructions, proofs, timelineEvents } = ((Route.useLoaderData?.() as any) || {}) as {
     order: any;
     paymentInstructions: { pix_key: string | null; payment_instructions: string | null };
     proofs: DeliveryProof[];
+    timelineEvents: any[];
   };
   const router = useRouter();
   const [uploading, setUploading] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [reordering, setReordering] = useState(false);
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
   const [rmaWizardOpen, setRmaWizardOpen] = useState(false);
   const [companionOpen, setCompanionOpen] = useState(false);
+
+  // Realtime subscription + adaptive polling (DEC-276)
+  useEffect(() => {
+    if (!order?.id) return;
+
+    const unsub = subscribeToTableChanges({
+      channelName: `customer-order-${order.id}`,
+      table: "orders",
+      filter: `id=eq.${order.id}`,
+      onPayload: () => {
+        router.invalidate();
+      },
+    });
+
+    const isActive = ["draft", "awaiting_payment", "paid", "processing", "shipped", "ready_for_pickup"].includes(
+      order.status,
+    );
+
+    let intervalId: any = null;
+    if (isActive) {
+      intervalId = setInterval(() => {
+        router.invalidate();
+      }, 8000);
+    }
+
+    return () => {
+      unsub();
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [order?.id, order?.status, router]);
 
   if (!order) {
     return (
@@ -94,11 +161,55 @@ function CustomerOrderDetailPage() {
   const payment = order.payments?.[0];
   const items = order.order_items || [];
   const address = order.shipping_address || {};
+  const canCancel = ["draft", "awaiting_payment", "paid", "processing"].includes(order.status);
 
   const handleCopyPix = () => {
     if (!paymentInstructions?.pix_key) return;
     navigator.clipboard.writeText(paymentInstructions.pix_key);
     toast.success("Chave PIX copiada");
+  };
+
+  const handleCancelOrder = async () => {
+    setCancelling(true);
+    try {
+      await cancelCustomerOrder({
+        data: {
+          orderId: order.id,
+          reason: cancelReason.trim() || undefined,
+        },
+      });
+      toast.success("Pedido cancelado com sucesso.");
+      setCancelModalOpen(false);
+      router.invalidate();
+    } catch (err: unknown) {
+      toast.error(
+        (err instanceof Error ? err.message : String(err)) || "Não foi possível cancelar o pedido.",
+      );
+    } finally {
+      setCancelling(false);
+    }
+  };
+
+  const handleReorder = async () => {
+    setReordering(true);
+    try {
+      const res = await reorderCustomerOrder({
+        data: {
+          orderId: order.id,
+        },
+      });
+      if (res.warnings && res.warnings.length > 0) {
+        toast.info(res.warnings[0]);
+      }
+      toast.success(`${res.itemsAdded} item(s) adicionado(s) ao carrinho! Redirecionando...`);
+      router.navigate({ to: "/carrinho" });
+    } catch (err: unknown) {
+      toast.error(
+        (err instanceof Error ? err.message : String(err)) || "Erro ao adicionar itens ao carrinho.",
+      );
+    } finally {
+      setReordering(false);
+    }
   };
 
   const companionData = useMemo(() => {
@@ -271,16 +382,25 @@ function CustomerOrderDetailPage() {
             Realizado em {formatDate(order.created_at)}
           </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setCompanionOpen(true)}
-          className="rounded-lg text-xs font-semibold gap-2 h-11 min-h-11 px-4 cursor-pointer border-emerald-500/30 text-emerald-700 dark:text-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/10 focus-visible:ring-2 focus-visible:ring-primary"
-        >
-          <Smartphone className="size-4" />
-          <span>Resumo Digital 9:16</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCompanionOpen(true)}
+            className="rounded-lg text-xs font-semibold gap-2 h-11 min-h-11 px-4 cursor-pointer border-emerald-500/30 text-emerald-700 dark:text-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/10 focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <Smartphone className="size-4" />
+            <span>Resumo Digital 9:16</span>
+          </Button>
+        </div>
       </div>
+
+      {/* ── Visual Progress Timeline ── */}
+      <OrderTimeline
+        status={order.status}
+        events={timelineEvents}
+        shippingMethod={order.shipping_method}
+      />
 
       <div className="grid gap-6 md:grid-cols-3">
         {/* Left: items + shipping */}
@@ -299,51 +419,60 @@ function CustomerOrderDetailPage() {
                     key={item.id}
                     className="flex justify-between py-4 first:pt-0 last:pb-0 text-xs"
                   >
-                    <div className="space-y-1 pr-4">
-                      <p className="font-semibold text-sm text-foreground flex items-center gap-2 flex-wrap">
-                        {item.product_title}
-                        {isBackorderItem && (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 rounded-md">
-                            ⏱ Sob Encomenda
-                          </span>
+                    <div className="flex gap-3 pr-4">
+                      {item.image_url && (
+                        <img
+                          src={item.image_url}
+                          alt={item.product_title}
+                          className="size-12 rounded-lg object-cover border border-border/50 shrink-0"
+                        />
+                      )}
+                      <div className="space-y-1">
+                        <p className="font-semibold text-sm text-foreground flex items-center gap-2 flex-wrap">
+                          {item.product_title}
+                          {isBackorderItem && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 rounded-md">
+                              ⏱ Sob Encomenda
+                            </span>
+                          )}
+                        </p>
+                        {item.variant_sku && (
+                          <p className="text-[11px] text-muted-foreground font-mono">
+                            SKU: {item.variant_sku}
+                          </p>
                         )}
-                      </p>
-                      {item.variant_sku && (
-                        <p className="text-[11px] text-muted-foreground font-mono">
-                          SKU: {item.variant_sku}
-                        </p>
-                      )}
-                      {item.selected_options && (
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {(Array.isArray(item.selected_options)
-                            ? item.selected_options
-                            : typeof item.selected_options === "object"
-                            ? Object.values(item.selected_options)
-                            : []
-                          ).map((opt: any, oIdx: number) => {
-                            const label = typeof opt === "string" ? opt : opt?.label || opt?.name;
-                            if (!label) return null;
-                            return (
-                              <span
-                                key={oIdx}
-                                className="text-[10px] font-bold bg-muted/60 text-foreground/80 border border-border/60 px-2 py-1 rounded-md"
-                              >
-                                + {label}
-                              </span>
-                            );
-                          })}
-                        </div>
-                      )}
-                      {item.notes && (
-                        <p className="text-[11px] font-medium text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded-md inline-block mt-1">
-                          Observação: {item.notes}
-                        </p>
-                      )}
-                      {isBackorderItem && (
-                        <p className="text-[11px] text-amber-700 dark:text-amber-400">
-                          Este item será produzido sob encomenda.
-                        </p>
-                      )}
+                        {item.selected_options && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {(Array.isArray(item.selected_options)
+                              ? item.selected_options
+                              : typeof item.selected_options === "object"
+                              ? Object.values(item.selected_options)
+                              : []
+                            ).map((opt: any, oIdx: number) => {
+                              const label = typeof opt === "string" ? opt : opt?.label || opt?.name;
+                              if (!label) return null;
+                              return (
+                                <span
+                                  key={oIdx}
+                                  className="text-[10px] font-bold bg-muted/60 text-foreground/80 border border-border/60 px-2 py-1 rounded-md"
+                                >
+                                  + {label}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        )}
+                        {item.notes && (
+                          <p className="text-[11px] font-medium text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded-md inline-block mt-1">
+                            Observação: {item.notes}
+                          </p>
+                        )}
+                        {isBackorderItem && (
+                          <p className="text-[11px] text-amber-700 dark:text-amber-400">
+                            Este item será produzido sob encomenda.
+                          </p>
+                        )}
+                      </div>
                     </div>
                     <div className="text-right shrink-0">
                       <p className="font-bold text-sm font-mono text-foreground">
@@ -354,7 +483,7 @@ function CustomerOrderDetailPage() {
                       </p>
                       {order.status === "delivered" && (
                         <div className="mt-2">
-                          <ReviewModal productId={item.product_id} productName={item.product_title} orderId={order.id} />
+                          <ReviewModal productId={item.product_id || item.item_id} productName={item.product_title} orderId={order.id} />
                         </div>
                       )}
                     </div>
@@ -449,7 +578,7 @@ function CustomerOrderDetailPage() {
           </div>
         </div>
 
-        {/* Right: totals + payment */}
+        {/* Right: totals + payment + contextual actions */}
         <div className="space-y-6">
           {/* Summary totals */}
           <div className="rounded-lg border border-border/60 bg-card p-4 sm:p-5 space-y-4 text-foreground">
@@ -483,6 +612,54 @@ function CustomerOrderDetailPage() {
             </div>
           </div>
 
+          {/* Customer Action Hub: Reorder, Support, Cancel */}
+          <div className="rounded-lg border border-border/60 bg-card p-4 sm:p-5 space-y-3 text-foreground">
+            <h3 className="text-sm font-bold pb-2 border-b border-border/40">Ações Rápidas</h3>
+
+            {/* Reorder Button */}
+            <Button
+              variant="default"
+              className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+              onClick={handleReorder}
+              disabled={reordering}
+            >
+              <RefreshCw className={`size-4 ${reordering ? "animate-spin" : ""}`} />
+              <span>{reordering ? "Revalidando Itens..." : "Pedir Novamente"}</span>
+            </Button>
+
+            {/* Contextual Support */}
+            <Button
+              asChild
+              variant="outline"
+              className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 cursor-pointer border-border/70 hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <Link
+                to={"/u/suporte" as any}
+                search={{
+                  orderId: order.id,
+                  orderNumber: order.order_number || order.public_token,
+                  totalCents: order.total_cents,
+                  storeId: order.store_id || "",
+                } as any}
+              >
+                <HelpCircle className="size-4 text-muted-foreground" />
+                <span>Ajuda com este Pedido</span>
+              </Link>
+            </Button>
+
+            {/* Cancel Button */}
+            {canCancel && (
+              <Button
+                variant="outline"
+                className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 text-destructive border-destructive/30 hover:bg-destructive/10 hover:border-destructive/40 cursor-pointer focus-visible:ring-2 focus-visible:ring-destructive"
+                onClick={() => setCancelModalOpen(true)}
+              >
+                <XOctagon className="size-4" />
+                <span>Cancelar Pedido</span>
+              </Button>
+            )}
+          </div>
+
           {/* Payment instructions & Upload */}
           {order.status === "awaiting_payment" && (
             <div className="rounded-lg border border-border/60 bg-card p-4 sm:p-5 space-y-4 text-foreground">
@@ -505,7 +682,7 @@ function CustomerOrderDetailPage() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="w-full font-semibold rounded-lg text-xs h-9 cursor-pointer"
+                    className="w-full font-semibold rounded-lg text-xs h-11 min-h-11 cursor-pointer"
                     onClick={handleCopyPix}
                   >
                     <Copy className="size-3.5 mr-2" /> Copiar Chave PIX
@@ -541,7 +718,7 @@ function CustomerOrderDetailPage() {
                 <Button
                   asChild
                   size="sm"
-                  className="w-full rounded-lg text-xs font-semibold h-9 cursor-pointer"
+                  className="w-full rounded-lg text-xs font-semibold h-11 min-h-11 cursor-pointer"
                   disabled={uploading}
                 >
                   <label htmlFor="receipt-file">
@@ -578,14 +755,27 @@ function CustomerOrderDetailPage() {
           )}
 
           {["paid", "processing", "completed"].includes(order.status) && (
-            <div className="flex items-start gap-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-900 dark:text-emerald-200 text-xs p-4 rounded-lg">
-              <Info className="size-4 shrink-0 mt-1 text-emerald-600 dark:text-emerald-400" />
-              <div>
-                <p className="font-bold">Pagamento Confirmado</p>
-                <p className="mt-1 opacity-90">
-                  Seu pagamento foi confirmado! O pedido está sendo preparado.
-                </p>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-900 dark:text-emerald-200 text-xs p-4 rounded-lg">
+              <div className="flex items-start gap-3">
+                <Info className="size-4 shrink-0 mt-1 text-emerald-600 dark:text-emerald-400" />
+                <div>
+                  <p className="font-bold">Pagamento Confirmado</p>
+                  <p className="mt-1 opacity-90">
+                    Seu pagamento foi confirmado! O pedido está sendo preparado.
+                  </p>
+                </div>
               </div>
+
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg shrink-0 border-emerald-500/30 text-emerald-900 dark:text-emerald-100 hover:bg-emerald-500/20 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+              >
+                <Link to="/conta/pagamentos">
+                  <span>Ver Pagamento</span>
+                </Link>
+              </Button>
             </div>
           )}
 
@@ -593,7 +783,7 @@ function CustomerOrderDetailPage() {
             <>
               <Button
                 variant="outline"
-                className="w-full mt-4 rounded-lg text-xs font-semibold h-10 cursor-pointer"
+                className="w-full mt-4 rounded-lg text-xs font-semibold h-11 min-h-11 cursor-pointer"
                 onClick={() => setRmaWizardOpen(true)}
               >
                 Solicitar Devolução / Troca
@@ -609,6 +799,54 @@ function CustomerOrderDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Modal de Cancelamento de Pedido */}
+      <Dialog open={cancelModalOpen} onOpenChange={setCancelModalOpen}>
+        <DialogContent className="max-w-md border-border bg-card rounded-lg">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold flex items-center gap-2 text-destructive">
+              <XOctagon className="size-5" />
+              Cancelar Pedido
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2 text-xs">
+            <p className="text-muted-foreground leading-relaxed">
+              Você tem certeza de que deseja cancelar este pedido? Se o pagamento já tiver sido efetuado, o estorno será iniciado automaticamente.
+            </p>
+            <div className="space-y-2">
+              <label htmlFor="cancel-reason" className="font-semibold text-foreground">
+                Motivo do cancelamento (opcional):
+              </label>
+              <Textarea
+                id="cancel-reason"
+                placeholder="Ex: Comprei por engano, mudança de endereço, etc."
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                className="text-xs resize-none"
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              className="h-11 min-h-11 text-xs font-semibold rounded-lg"
+              onClick={() => setCancelModalOpen(false)}
+              disabled={cancelling}
+            >
+              Voltar
+            </Button>
+            <Button
+              variant="destructive"
+              className="h-11 min-h-11 text-xs font-semibold rounded-lg"
+              onClick={handleCancelOrder}
+              disabled={cancelling}
+            >
+              {cancelling ? "Cancelando..." : "Confirmar Cancelamento"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Modal do Cartão Digital 9:16 */}
       <Dialog open={companionOpen} onOpenChange={setCompanionOpen}>

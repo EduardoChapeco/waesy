@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity } from "@/lib/server-access";
 import { executeUnifiedAiCall } from "@/services/api-orchestrator.functions";
+import { createHash } from "node:crypto";
 
 export interface PersonalFinancialCategoryDTO {
   id: string;
@@ -95,15 +96,26 @@ export const listPersonalFinanceCategories = createServerFn({ method: "GET" })
       return [];
     }
 
-    return (data || []).map((c: any) => ({
-      id: c.id,
-      profileId: c.profile_id,
-      name: c.name,
-      icon: c.icon || "Receipt",
-      color: c.color || "#6366f1",
-      type: c.type,
-      isSystem: c.profile_id === null,
-    }));
+    // Deduplicação determinística por nome normalizado (SPEC-FINANCAS-LEDGER-CARTEIRA-UNIFICADA)
+    const deduplicatedMap = new Map<string, PersonalFinancialCategoryDTO>();
+    for (const c of data || []) {
+      const key = (c.name || "").trim().toLowerCase();
+      if (!key) continue;
+      const existing = deduplicatedMap.get(key);
+      if (!existing || (c.profile_id && existing.isSystem)) {
+        deduplicatedMap.set(key, {
+          id: c.id,
+          profileId: c.profile_id,
+          name: c.name.trim(),
+          icon: c.icon || "Receipt",
+          color: c.color || "#6366f1",
+          type: c.type,
+          isSystem: c.profile_id === null,
+        });
+      }
+    }
+
+    return Array.from(deduplicatedMap.values()).sort((a, b) => a.name.localeCompare(b.name));
   });
 
 /**
@@ -733,3 +745,166 @@ export const listMySignedContracts = createServerFn({ method: "GET" }).handler(
     }));
   }
 );
+
+// ============================================================
+// 11. Importação e Parsing Idempotente de Extratos Bancários (OFX)
+// ============================================================
+
+export interface ParsedOfxTransaction {
+  fitid: string;
+  type: "income" | "expense";
+  amountCents: number;
+  entryDate: string; // YYYY-MM-DD
+  description: string;
+  memo: string;
+}
+
+export interface ImportOfxResultDTO {
+  success: boolean;
+  importedCount: number;
+  skippedDuplicatesCount: number;
+  totalParsed: number;
+}
+
+/**
+ * Utilitário puro: Parser SGML/XML de arquivos OFX bancários
+ */
+export function parseOfxText(ofxContent: string): ParsedOfxTransaction[] {
+  const transactions: ParsedOfxTransaction[] = [];
+  const trnBlocks = ofxContent.split(/<STMTTRN>/i).slice(1);
+
+  for (const block of trnBlocks) {
+    const content = block.split(/<\/STMTTRN>/i)[0];
+
+    const getTagValue = (tagName: string): string => {
+      const match = content.match(new RegExp(`<${tagName}>([^<\\r\\n]+)`, "i"));
+      return match ? match[1].trim() : "";
+    };
+
+    const fitid = getTagValue("FITID") || getTagValue("CHECKNUM") || "";
+    const rawAmt = getTagValue("TRNAMT");
+    const rawDate = getTagValue("DTPOSTED");
+    const memo = getTagValue("MEMO");
+    const name = getTagValue("NAME");
+
+    if (!rawAmt || !rawDate) continue;
+
+    const amtFloat = parseFloat(rawAmt.replace(",", "."));
+    if (isNaN(amtFloat)) continue;
+
+    const isExpense = amtFloat < 0;
+    const amountCents = Math.round(Math.abs(amtFloat) * 100);
+
+    // Formata data YYYYMMDD... -> YYYY-MM-DD
+    let entryDate = new Date().toISOString().split("T")[0];
+    const dateMatch = rawDate.match(/^(\d{4})(\d{2})(\d{2})/);
+    if (dateMatch) {
+      entryDate = `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}`;
+    }
+
+    const description = (name || memo || "Transação Bancária").slice(0, 100);
+
+    transactions.push({
+      fitid: fitid || `${entryDate}_${amountCents}_${description}`,
+      type: isExpense ? "expense" : "income",
+      amountCents,
+      entryDate,
+      description,
+      memo: memo || name || "",
+    });
+  }
+
+  return transactions;
+}
+
+/**
+ * 11. Importa extrato OFX bancário com deduplicação por FITID e persistência exclusiva no Livro Financeiro Pessoal
+ * [INVARIANTE DE OURO]: Não cria saldo nem altera a carteira movimentável (wallet)
+ */
+export const importOfxStatement = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      ofxContent: z.string().min(20, "Conteúdo OFX inválido ou muito curto."),
+      institutionName: z.string().default("Banco / Extrato Importado"),
+      accountId: z.string().optional(),
+    })
+  )
+  .handler(async ({ data }): Promise<ImportOfxResultDTO> => {
+    const identity = await getServerIdentity();
+    if (!identity.id) {
+      throw new Error("Faça login para importar extratos.");
+    }
+
+    const parsed = parseOfxText(data.ofxContent);
+    if (parsed.length === 0) {
+      throw new Error("Nenhuma transação válida identificada no arquivo OFX.");
+    }
+
+    const supabase = getServerClient();
+    let importedCount = 0;
+    let skippedDuplicatesCount = 0;
+
+    for (const tx of parsed) {
+      // Gera hash único da transação
+      const fitidHash = createHash("sha256")
+        .update(`${identity.id}:${data.institutionName}:${data.accountId || "default"}:${tx.fitid}`)
+        .digest("hex");
+
+      // Verifica se já foi importada
+      const { data: existing } = await supabase
+        .from("financial_imported_statements")
+        .select("id")
+        .eq("profile_id", identity.id)
+        .eq("fitid_hash", fitidHash)
+        .maybeSingle();
+
+      if (existing) {
+        skippedDuplicatesCount++;
+        continue;
+      }
+
+      // Registra no Livro Financeiro Pessoal (NUNCA no ledger de dinheiro movimentável)
+      const { error: insertErr } = await supabase
+        .from("personal_financial_entries")
+        .insert({
+          profile_id: identity.id,
+          type: tx.type,
+          amount_cents: tx.amountCents,
+          description: tx.description,
+          entry_date: tx.entryDate,
+          payment_method: "transfer",
+          is_locked: false,
+          reference_type: "imported_ofx",
+          transaction_token: fitidHash,
+          notes: tx.memo ? `OFX Memo: ${tx.memo}` : null,
+          tags: ["ofx", "extrato", data.institutionName],
+        });
+
+      if (insertErr) {
+        console.warn("[personal-finance] Erro ao inserir lançamento OFX:", insertErr);
+        continue;
+      }
+
+      // Salva no registro de deduplicação
+      await supabase.from("financial_imported_statements").insert({
+        profile_id: identity.id,
+        institution_name: data.institutionName,
+        account_id: data.accountId || null,
+        fitid_hash: fitidHash,
+        amount_cents: tx.amountCents,
+        entry_date: tx.entryDate,
+        description: tx.description,
+        raw_transaction_data: tx,
+      });
+
+      importedCount++;
+    }
+
+    return {
+      success: true,
+      importedCount,
+      skippedDuplicatesCount,
+      totalParsed: parsed.length,
+    };
+  });
+

@@ -17,7 +17,7 @@ import { Label } from "@/components/ui/label";
 import { playCashRegisterSound, playWarningAlert } from "@/lib/audio-chimes";
 
 export const Route = createFileRoute("/workspace/pedidos/trocas")({
-  head: () => ({ meta: [{ title: "Trocas (RMA) | Workspace Waesy" }] }),
+  head: () => ({ meta: [{ title: "Trocas e Devoluções | Workspace Waesy" }] }),
   loader: async () => {
     try {
       const data = await listExchanges();

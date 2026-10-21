@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { listClientWalletPasses } from "@/services/client-wallet.functions";
 import type { ClientWalletPass, PassType } from "@/types/client-wallet";
 import { exportElementAsPdf } from "@/lib/pdf-export";
+import { generateQrCodeDataUri } from "@/lib/qr-code";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/viajante/carteira")({
@@ -76,7 +77,7 @@ export default function ViajanteCarteiraPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-background text-foreground flex flex-col items-center justify-start p-4 sm:p-6 pb-24">
+    <div className="min-h-dvh bg-background text-foreground flex flex-col items-center justify-start p-4 sm:p-6 pb-24">
       <div className="w-full max-w-3xl flex flex-col gap-6">
         {/* Top Bar Sóbria */}
         <div className="flex items-center justify-between">
@@ -90,7 +91,7 @@ export default function ViajanteCarteiraPage() {
 
           <div className="flex items-center gap-2">
             {isServingOffline && (
-              <Badge variant="outline" className="text-[10px] font-normal border-border text-muted-foreground">
+              <Badge variant="outline" className="text-xs font-normal border-border text-muted-foreground">
                 <WifiOff className="size-3 mr-1" />
                 Offline
               </Badge>
@@ -99,8 +100,8 @@ export default function ViajanteCarteiraPage() {
             <Button
               asChild
               variant="outline"
-              size="sm"
-              className="h-8 px-3 rounded-lg text-xs font-medium border-border/60"
+
+              className="h-11 min-h-11 px-4 rounded-lg text-xs font-medium border-border/60"
             >
               <a
                 href="https://wa.me/5549999999999?text=Ol%C3%A1%2C%20preciso%20de%20atendimento%20sobre%20minha%20reserva."
@@ -179,7 +180,7 @@ export default function ViajanteCarteiraPage() {
                   className={`
                     w-full rounded-lg p-6 text-white cursor-pointer transition-all duration-300 border border-border/40
                     ${config.bg}
-                    ${isSelected ? "relative z-50 min-h-[500px]" : "h-48 mb-[-105px] hover:-translate-y-2"}
+                    ${isSelected ? "relative z-50 min-h-128" : "h-48 -mb-28 hover:-translate-y-2"}
                   `}
                   style={{
                     transform: !isSelected
@@ -239,7 +240,7 @@ export default function ViajanteCarteiraPage() {
                         title="Toque para tela cheia de embarque"
                       >
                         <img
-                          src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&margin=8&data=${encodeURIComponent(pass.barcode_value)}`}
+                          src={generateQrCodeDataUri(pass.barcode_value)}
                           alt={`QR Code ${pass.barcode_value}`}
                           className="size-32 object-contain"
                           loading="lazy"
@@ -247,7 +248,7 @@ export default function ViajanteCarteiraPage() {
                       </button>
 
                       <div className="mt-2 text-center">
-                        <span className="text-[10px] text-muted-foreground uppercase font-mono tracking-wider">
+                        <span className="text-xs text-muted-foreground uppercase font-mono tracking-wider">
                           Código de Embarque
                         </span>
                         <p className="font-mono text-base font-bold text-foreground mt-1">
@@ -257,14 +258,14 @@ export default function ViajanteCarteiraPage() {
 
                       <div className="mt-4 w-full flex justify-between items-center text-xs border-t border-border/60 pt-3">
                         <span className="text-muted-foreground">Status</span>
-                        <span className="text-foreground font-medium flex items-center gap-1 text-[11px]">
+                        <span className="text-foreground font-medium flex items-center gap-1 text-xs">
                           <CheckCircle2 className="size-3.5 text-primary" />
                           Confirmado
                         </span>
                       </div>
                     </div>
                   ) : (
-                    <div className="absolute bottom-4 left-6 right-6 flex justify-between items-center text-[11px] text-zinc-400">
+                    <div className="absolute bottom-4 left-6 right-6 flex justify-between items-center text-xs text-zinc-400">
                       <span>Ver detalhes</span>
                       <span className="font-mono">{pass.barcode_value.slice(0, 8)}...</span>
                     </div>
@@ -288,11 +289,11 @@ export default function ViajanteCarteiraPage() {
                 >
                   <div className="space-y-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground">
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground">
                         <Icon className="size-3" />
                         {config.label}
                       </span>
-                      <span className="text-[10px] font-mono text-muted-foreground">
+                      <span className="text-xs font-mono text-muted-foreground">
                         {pass.barcode_value}
                       </span>
                     </div>
@@ -306,7 +307,7 @@ export default function ViajanteCarteiraPage() {
 
                   <div className="flex items-center gap-2 shrink-0">
                     <Button
-                      size="sm"
+        
                       variant="outline"
                       onClick={() => handleDownloadPdf(pass)}
                       className="h-8 px-3 rounded-lg text-xs font-medium"
@@ -315,7 +316,7 @@ export default function ViajanteCarteiraPage() {
                       PDF
                     </Button>
                     <Button
-                      size="sm"
+        
                       onClick={() => setFullscreenQrPass(pass)}
                       className="h-8 px-3 rounded-lg text-xs font-medium"
                     >
@@ -347,7 +348,7 @@ export default function ViajanteCarteiraPage() {
           {fullscreenQrPass && (
             <div className="my-4 p-5 bg-white rounded-lg border border-border/60 flex flex-col items-center shadow-xs">
               <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&margin=10&data=${encodeURIComponent(fullscreenQrPass.barcode_value)}`}
+                src={generateQrCodeDataUri(fullscreenQrPass.barcode_value)}
                 alt={`QR Code ${fullscreenQrPass.barcode_value}`}
                 className="size-52 sm:size-60 object-contain"
               />
@@ -364,7 +365,7 @@ export default function ViajanteCarteiraPage() {
             <Button
               onClick={() => setFullscreenQrPass(null)}
               variant="outline"
-              className="w-full h-9 rounded-lg font-medium text-xs"
+              className="w-full h-11 min-h-11 rounded-lg font-medium text-xs"
             >
               Fechar
             </Button>

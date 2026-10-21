@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/money";
 import { resolveClassifiedNiche } from "@/lib/classifieds/semantics";
 import { trackClassifiedWhatsAppClick } from "@/services/classifieds.functions";
+import { recordClassifiedTelemetry } from "@/services/classifieds-analytics.functions";
 import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
 import { UniversalNicheCard } from "@/components/commerce/universal-niche-card";
 import { cn } from "@/lib/utils";
@@ -31,9 +32,28 @@ export function ClassifiedItemCard({ item, variant = "grid" }: ClassifiedItemCar
   const itemNiche = resolveClassifiedNiche(item);
   const targetPhone = item.contact_whatsapp || item.whatsapp || item.profiles?.phone;
 
+  React.useEffect(() => {
+    if (item?.id) {
+      recordClassifiedTelemetry({
+        data: {
+          classifiedId: item.id,
+          eventType: "impression",
+          surface: variant === "list" ? "feed" : "search",
+        },
+      }).catch(() => {});
+    }
+  }, [item?.id, variant]);
+
   const handleWhatsApp = (e: React.MouseEvent) => {
     e.preventDefault();
     if (!targetPhone) return;
+    recordClassifiedTelemetry({
+      data: {
+        classifiedId: item.id,
+        eventType: "contact_whatsapp",
+        surface: variant === "list" ? "feed" : "search",
+      },
+    }).catch(() => {});
     trackClassifiedWhatsAppClick({ data: { adId: item.id } }).catch(() => {});
     trackAndOpenWhatsApp(
       targetPhone,

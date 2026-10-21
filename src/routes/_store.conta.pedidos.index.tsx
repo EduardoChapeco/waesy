@@ -1,14 +1,16 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState, useMemo, type ElementType } from "react";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { useState, useMemo, useEffect, type ElementType } from "react";
 import { formatMoney } from "@/lib/money";
 import { formatHumanOrderId } from "@/lib/order-id";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeMobileHeader } from "@/components/navigation";
+import { useWindowSizeClass } from "@/hooks/use-mobile";
 import { listCustomerOrders } from "@/services/order.functions";
+import { subscribeToTableChanges } from "@/services/realtime-channel";
 import { formatDate } from "@/lib/datetime";
-import { ShoppingBag, ChevronRight, Search, Package, Truck, CheckCircle2, Clock, XCircle, AlertCircle, RotateCcw, MapPin, QrCode, CreditCard, Filter } from "lucide-react";
+import { ShoppingBag, ChevronRight, Search, Package, Truck, CheckCircle2, Clock, XCircle, AlertCircle, RotateCcw, MapPin, QrCode, CreditCard, Filter, ArrowRight, Store } from "lucide-react";
 
 // ─── Tipos e Constantes ───────────────────────────────────────────────────────
 
@@ -125,7 +127,7 @@ function groupOrdersByMonth(orders: any[]): { label: string; orders: any[] }[] {
     });
 }
 
-// ─── Componente de Card de Pedido (WhatsApp Row Style) ───────────────────────
+// ─── Componente de Card de Pedido (WhatsApp Row Style - Mobile) ─────────────
 
 function OrderRow({ order }: { order: any }) {
   const StatusIcon = STATUS_ICONS[order.status] || ShoppingBag;
@@ -144,7 +146,7 @@ function OrderRow({ order }: { order: any }) {
       id={`order-row-${order.id}`}
     >
       {/* Thumbnail ou ícone de status */}
-      <div className="size-12 rounded-lg border border-border/50 overflow-hidden shrink-0 flex items-center justify-center bg-muted/30 relative">
+      <div className="size-12 rounded-xl border border-border/50 overflow-hidden shrink-0 flex items-center justify-center bg-muted/30 relative">
         {firstItem?.image_url ? (
           <img
             src={firstItem.image_url}
@@ -175,7 +177,7 @@ function OrderRow({ order }: { order: any }) {
         {/* Título e total */}
         <div className="flex items-start justify-between gap-2 mb-1">
           <div className="min-w-0 flex-1">
-            <p className="text-[13px] font-bold text-foreground truncate leading-snug">
+            <p className="text-[13px] font-bold text-foreground break-words text-wrap leading-tight">
               {firstItem?.product_title || order.store_name || "Pedido"}
               {extraCount > 0 && (
                 <span className="text-muted-foreground font-normal text-xs ml-1">
@@ -200,7 +202,7 @@ function OrderRow({ order }: { order: any }) {
             </Badge>
             {isReadyPickup && (
               <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded-md animate-pulse">
-                Retirar já!
+                Retirar já
               </span>
             )}
           </div>
@@ -222,21 +224,159 @@ function OrderRow({ order }: { order: any }) {
             Rastreio: {order.tracking_code}
           </p>
         )}
-        {isShipped && !order.tracking_code && (
-          <p className="text-[10px] text-sky-600 dark:text-sky-400 mt-1 flex items-center gap-1">
-            <Truck className="size-3" strokeWidth={1.5} />
-            A caminho — toque para acompanhar
-          </p>
-        )}
       </div>
     </Link>
+  );
+}
+
+// ─── Componente de Card de Pedido (Desktop System App Card) ───────────────────
+
+function DesktopOrderCard({ order }: { order: any }) {
+  const StatusIcon = STATUS_ICONS[order.status] || ShoppingBag;
+  const statusLabel = STATUS_LABELS[order.status] || order.status;
+  const statusVariant = STATUS_VARIANTS[order.status] || "secondary";
+  const items = order.order_items || [];
+  const isShipped = ["shipped", "delivered", "completed"].includes(order.status);
+  const isReadyPickup = order.status === "ready_for_pickup";
+  const orderCode = order.order_number || formatHumanOrderId(order.custom_fields?.short_id || order.public_token);
+
+  return (
+    <div className="rounded-xl border border-border/60 bg-card p-5 space-y-4 shadow-xs hover:border-primary/40 transition-colors">
+      {/* Top row: store, date, order code, status */}
+      <div className="flex items-center justify-between gap-4 pb-3 border-b border-border/40">
+        <div className="flex items-center gap-3">
+          <div className="size-10 rounded-xl bg-muted/40 border border-border/60 flex items-center justify-center shrink-0">
+            <Store className="size-5 text-muted-foreground" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-foreground break-words text-wrap leading-tight">
+              {order.store_name || "Loja Parceira Waesy"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Realizado em {formatDate(order.created_at)} • <span className="font-mono font-semibold">{orderCode}</span>
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {isReadyPickup && (
+            <span className="text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded-md animate-pulse">
+              Pronto para Retirar
+            </span>
+          )}
+          <Badge variant={statusVariant} className="text-xs font-semibold px-3 py-1 rounded-lg">
+            <StatusIcon className="size-3.5 mr-1" />
+            {statusLabel}
+          </Badge>
+        </div>
+      </div>
+
+      {/* Middle row: items previews */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3 flex-wrap flex-1 min-w-0">
+          {items.slice(0, 3).map((item: any, idx: number) => (
+            <div key={idx} className="flex items-center gap-2 bg-muted/20 border border-border/50 rounded-lg p-2 max-w-xs">
+              {item.image_url ? (
+                <img
+                  src={item.image_url}
+                  alt={item.product_title}
+                  className="size-10 rounded-lg object-cover border border-border/40 shrink-0"
+                />
+              ) : (
+                <div className="size-10 rounded-lg bg-muted/60 flex items-center justify-center shrink-0">
+                  <Package className="size-4 text-muted-foreground" />
+                </div>
+              )}
+              <div className="text-xs min-w-0 flex-1">
+                <p className="font-semibold text-foreground break-words text-wrap leading-tight">
+                  {item.product_title}
+                </p>
+                <p className="text-muted-foreground text-xs font-mono mt-0.5">
+                  {item.qty || 1}x {formatMoney(item.unit_price_cents || 0)}
+                </p>
+              </div>
+            </div>
+          ))}
+          {items.length > 3 && (
+            <span className="text-xs text-muted-foreground font-semibold px-2 py-1 rounded-md bg-muted/30 border border-border/40">
+              +{items.length - 3} item(s) adicional(is)
+            </span>
+          )}
+        </div>
+
+        {/* Right side: total and action button */}
+        <div className="flex items-center gap-4 shrink-0 text-right">
+          <div>
+            <span className="text-xs text-muted-foreground block">Valor Total</span>
+            <span className="text-lg font-bold font-mono text-foreground">
+              {formatMoney(order.total_cents)}
+            </span>
+          </div>
+
+          <Button
+            asChild
+            variant="default"
+            className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <Link to="/conta/pedidos/$id" params={{ id: order.id }}>
+              <span>Ver Detalhes</span>
+              <ArrowRight className="size-3.5" />
+            </Link>
+          </Button>
+        </div>
+      </div>
+
+      {/* Rastreamento se enviado */}
+      {isShipped && order.tracking_code && (
+        <div className="pt-2 border-t border-border/30 flex items-center justify-between text-xs text-muted-foreground font-mono">
+          <span className="flex items-center gap-2">
+            <Truck className="size-3.5 text-primary" /> Código de Rastreio: <strong className="text-foreground">{order.tracking_code}</strong>
+          </span>
+          <span className="text-xs text-muted-foreground">Acompanhe pelo detalhe do pedido</span>
+        </div>
+      )}
+    </div>
   );
 }
 
 // ─── Componente Principal ─────────────────────────────────────────────────────
 
 function CustomerOrdersPage() {
-  const orders = (Route.useLoaderData() as any[]) || [];
+  const initialOrders = (Route.useLoaderData() as any[]) || [];
+  const router = useRouter();
+  const { isCompact } = useWindowSizeClass();
+  const [orders, setOrders] = useState<any[]>(initialOrders);
+
+  useEffect(() => {
+    setOrders(initialOrders);
+  }, [initialOrders]);
+
+  // Realtime subscription + adaptive polling for live order updates (DEC-276)
+  useEffect(() => {
+    const unsub = subscribeToTableChanges({
+      channelName: "customer-orders-live",
+      table: "orders",
+      onPayload: () => {
+        router.invalidate();
+      },
+    });
+
+    const hasActiveOrders = orders.some((o: any) =>
+      ["awaiting_payment", "paid", "processing", "shipped", "ready_for_pickup"].includes(o.status),
+    );
+
+    let intervalId: any = null;
+    if (hasActiveOrders) {
+      intervalId = setInterval(() => {
+        router.invalidate();
+      }, 10000);
+    }
+
+    return () => {
+      unsub();
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [orders, router]);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState("todos");
@@ -281,52 +421,124 @@ function CustomerOrdersPage() {
     );
   }, [orders]);
 
-  return (
-    <div className="w-full max-w-2xl mx-auto pb-24 px-0 sm:px-0 animate-in fade-in duration-200">
-      {/* ── 1. Canonical Navigation Header ── */}
-      <NativeMobileHeader
-        title="Pedidos"
-        fallbackHref="/conta"
-        badge={
-          orders.length > 0 ? (
-            <Badge
-              variant="secondary"
-              className="text-xs font-mono font-bold px-2 py-1 rounded-md"
-            >
-              {orders.length}
-            </Badge>
-          ) : null
-        }
-        rightActions={
-          <Button
-            asChild
-            size="sm"
-            variant="outline"
-            className="rounded-lg text-xs font-semibold h-11 px-4 cursor-pointer"
-          >
-            <Link to="/mercado">Explorar</Link>
-          </Button>
-        }
-      />
+  // KPIs de cabeçalho desktop
+  const activeOrdersCount = useMemo(() => {
+    return orders.filter((o: any) =>
+      ["awaiting_payment", "paid", "processing", "shipped"].includes(o.status)
+    ).length;
+  }, [orders]);
 
-      {/* ── 1.1 Desktop Inpage Header (Apple HIG) ── */}
-      <div className="hidden md:flex items-center justify-between pb-4 border-b border-border/40 mb-6">
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl font-bold tracking-tight text-foreground">Histórico de Pedidos</h1>
-          {orders.length > 0 && (
-            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-1 rounded-md">
-              {orders.length}
-            </Badge>
-          )}
+  const pickupOrdersCount = useMemo(() => {
+    return orders.filter((o: any) => o.status === "ready_for_pickup").length;
+  }, [orders]);
+
+  const completedOrdersCount = useMemo(() => {
+    return orders.filter((o: any) => ["delivered", "completed"].includes(o.status)).length;
+  }, [orders]);
+
+  return (
+    <div
+      className={
+        isCompact
+          ? "w-full max-w-2xl mx-auto pb-24 px-0 animate-in fade-in duration-200"
+          : "w-full max-w-5xl mx-auto pb-24 px-4 sm:px-6 space-y-6 animate-in fade-in duration-200"
+      }
+    >
+      {/* ── 1. Canonical Navigation Header (Mobile App Style) ── */}
+      {isCompact && (
+        <NativeMobileHeader
+          title="Pedidos"
+          fallbackHref="/conta"
+          badge={
+            orders.length > 0 ? (
+              <Badge
+                variant="secondary"
+                className="text-xs font-mono font-bold px-2 py-1 rounded-md"
+              >
+                {orders.length}
+              </Badge>
+            ) : null
+          }
+          rightActions={
+            <Button
+              asChild
+              size="sm"
+              variant="outline"
+              className="rounded-lg text-xs font-semibold h-11 px-4 cursor-pointer"
+            >
+              <Link to="/mercado">Explorar</Link>
+            </Button>
+          }
+        />
+      )}
+
+      {/* ── 1.1 Desktop Inpage Header (Desktop System App Style) ── */}
+      {!isCompact && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between pb-4 border-b border-border/40">
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+                Histórico de Pedidos
+              </h1>
+              {orders.length > 0 && (
+                <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-1 rounded-full">
+                  {orders.length}
+                </Badge>
+              )}
+            </div>
+            <Button
+              asChild
+              variant="outline"
+              className="rounded-lg text-xs font-semibold h-11 px-4 cursor-pointer"
+            >
+              <Link to="/mercado">Explorar Lojas</Link>
+            </Button>
+          </div>
+
+          {/* KPI Dashboard Cards (Apple HIG Squircles) */}
+          <div className="grid grid-cols-4 gap-3">
+            <div className="p-4 rounded-xl bg-card border border-border/60 shadow-xs space-y-1">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Total de Pedidos
+              </span>
+              <div className="text-xl font-bold text-foreground">
+                {orders.length}
+              </div>
+              <div className="text-xs text-muted-foreground">Histórico acumulado</div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-card border border-border/60 shadow-xs space-y-1">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Em Andamento
+              </span>
+              <div className="text-xl font-bold text-sky-600 dark:text-sky-400">
+                {activeOrdersCount}
+              </div>
+              <div className="text-xs text-muted-foreground">Preparação ou trânsito</div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-card border border-border/60 shadow-xs space-y-1">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Retirada Disponível
+              </span>
+              <div className="text-xl font-bold text-amber-600 dark:text-amber-400">
+                {pickupOrdersCount}
+              </div>
+              <div className="text-xs text-muted-foreground">Prontos no balcão</div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-card border border-border/60 shadow-xs space-y-1">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Concluídos
+              </span>
+              <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
+                {completedOrdersCount}
+              </div>
+              <div className="text-xs text-muted-foreground">Entregues com sucesso</div>
+            </div>
+          </div>
         </div>
-        <Button
-          asChild
-          variant="outline"
-          className="rounded-lg text-xs font-semibold h-11 px-4 cursor-pointer"
-        >
-          <Link to="/mercado">Explorar Lojas</Link>
-        </Button>
-      </div>
+      )}
 
       {orders.length === 0 ? (
         /* ── Empty State Honesto ── */
@@ -338,17 +550,17 @@ function CustomerOrdersPage() {
               Suas compras em lojas e restaurantes parceiros aparecerão aqui com rastreamento em tempo real.
             </p>
           </div>
-          <Button asChild className="rounded-lg h-10 px-6 text-xs font-bold mt-2">
-            <Link to="/mercado">Explorar</Link>
+          <Button asChild className="rounded-lg h-11 px-6 text-xs font-bold mt-2">
+            <Link to="/mercado">Explorar Lojas</Link>
           </Button>
         </div>
       ) : (
         <>
-          {/* ── 2. Busca ── */}
-          <div className="px-2 sm:px-0 pt-3 pb-1">
+          {/* ── 2. Busca e Filtros ── */}
+          <div className={isCompact ? "px-2 pt-3 pb-1 space-y-2" : "space-y-3"}>
             <div className="relative">
               <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground"
+                className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground"
                 strokeWidth={2}
               />
               <Input
@@ -357,45 +569,47 @@ function CustomerOrdersPage() {
                 placeholder="Buscar por produto, loja ou código de rastreio..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8.5 h-10 text-base sm:text-xs rounded-lg border-border/60 bg-muted/30 focus:bg-background transition-colors"
+                className="pl-9 h-11 text-xs rounded-xl border-border/60 bg-muted/30 focus:bg-background transition-colors"
               />
             </div>
-          </div>
 
-          {/* ── 3. Chips de filtro com scroll horizontal ── */}
-          <div className="overflow-x-auto scrollbar-none px-2 sm:px-0 py-2 snap-x snap-mandatory">
-            <div className="flex items-center gap-2 min-w-max">
-              {FILTER_CHIPS.map((chip) => {
-                const count = counts[chip.id] || 0;
-                const isActive = activeFilter === chip.id;
-                if (count === 0 && chip.id !== "todos") return null;
-                return (
-                  <button
-                    key={chip.id}
-                    id={`filter-chip-${chip.id}`}
-                    type="button"
-                    onClick={() => setActiveFilter(chip.id)}
-                    className={`flex items-center gap-2 h-8 px-3 rounded-lg text-xs font-semibold whitespace-nowrap transition-all border cursor-pointer snap-start ${
-                      isActive
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-background text-muted-foreground border-border/60 hover:border-border hover:text-foreground"
-                    }`}
-                  >
-                    {chip.label}
-                    {count > 0 && (
-                      <span
-                        className={`text-[10px] font-mono ${isActive ? "opacity-80" : "text-muted-foreground"}`}
-                      >
-                        {count}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
+            {/* Chips de filtro */}
+            <div className="overflow-x-auto no-scrollbar py-1">
+              <div className="flex items-center gap-2 min-w-max">
+                {FILTER_CHIPS.map((chip) => {
+                  const count = counts[chip.id] || 0;
+                  const isActive = activeFilter === chip.id;
+                  if (count === 0 && chip.id !== "todos") return null;
+                  return (
+                    <button
+                      key={chip.id}
+                      id={`filter-chip-${chip.id}`}
+                      type="button"
+                      onClick={() => setActiveFilter(chip.id)}
+                      className={`flex items-center gap-2 h-11 min-h-11 px-4 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${
+                        isActive
+                          ? "bg-primary text-primary-foreground border-primary font-bold shadow-xs"
+                          : "bg-background text-muted-foreground border-border/60 hover:border-border hover:text-foreground"
+                      }`}
+                    >
+                      {chip.label}
+                      {count > 0 && (
+                        <span
+                          className={`text-xs font-mono px-2 py-0.5 rounded-full ${
+                            isActive ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground"
+                          }`}
+                        >
+                          {count}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
-          {/* ── 4. Lista agrupada por mês ── */}
+          {/* ── 3. Lista de Pedidos ── */}
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 px-6 text-center gap-2">
               <Filter className="size-8 text-muted-foreground/40" strokeWidth={1.5} />
@@ -404,24 +618,30 @@ function CustomerOrdersPage() {
                 Tente outro filtro ou termo de busca.
               </p>
             </div>
-          ) : (
+          ) : isCompact ? (
+            /* VISÃO MOBILE (< 600px): Linha agrupada por mês estilo WhatsApp */
             <div className="flex flex-col gap-0 mt-1">
               {grouped.map((group) => (
                 <section key={group.label} className="mb-2">
-                  {/* Cabeçalho do mês */}
-                  <div className="px-4 sm:px-0 py-2">
+                  <div className="px-4 py-2">
                     <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
                       {group.label}
                     </p>
                   </div>
 
-                  {/* Cards do mês — WhatsApp list style */}
-                  <div className="w-full bg-card border-y border-border/40 sm:border sm:rounded-lg overflow-hidden divide-y divide-border/30 mx-0 shadow-2xs">
+                  <div className="w-full bg-card border-y border-border/40 overflow-hidden divide-y divide-border/30 shadow-2xs">
                     {group.orders.map((order: any) => (
                       <OrderRow key={order.id} order={order} />
                     ))}
                   </div>
                 </section>
+              ))}
+            </div>
+          ) : (
+            /* VISÃO DESKTOP (>= 840px): Cards ricos de sistema desktop (Anti-Jank / Anti-Sanfona) */
+            <div className="space-y-4">
+              {filtered.map((order: any) => (
+                <DesktopOrderCard key={order.id} order={order} />
               ))}
             </div>
           )}

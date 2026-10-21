@@ -12,6 +12,7 @@ import { getUserSession } from "@/services/auth.functions";
 import { listCustomerAppointments, cancelCustomerAppointment } from "@/services/booking.functions";
 import { DigitalCompanionCard, type CompanionCardSectionItem, type CompanionRuleItem, type CompanionContactItem } from "@/components/documents/digital-companion-card";
 import { cn } from "@/lib/utils";
+import { BookingDossierModal } from "@/components/booking/booking-dossier-modal";
 
 export const Route = createFileRoute("/_store/conta/agendamentos")({
  head: () => ({
@@ -78,6 +79,7 @@ function CustomerAgendaPage() {
   const [cancellingAppt, setCancellingAppt] = useState<any | null>(null);
   const [cancelReason, setCancelReason] = useState("");
   const [selectedCompanionAppt, setSelectedCompanionAppt] = useState<any | null>(null);
+  const [selectedDossierAppt, setSelectedDossierAppt] = useState<any | null>(null);
   const router = useRouter();
 
  const { data: appointments, refetch } = useQuery({
@@ -269,6 +271,14 @@ function CustomerAgendaPage() {
 
  <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
  <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => setSelectedDossierAppt(appt)}
+                  className="rounded-lg text-xs font-semibold h-8 cursor-pointer"
+                >
+                  <span>Dossiê</span>
+                </Button>
+                <Button
    type="button"
    variant="outline"
    size="sm"
@@ -371,6 +381,19 @@ function CustomerAgendaPage() {
         )}
       </DialogContent>
     </Dialog>
+
+      {/* ── Dossiê Completo de Agendamento (DEC-275) ── */}
+      <BookingDossierModal
+        isOpen={Boolean(selectedDossierAppt)}
+        onClose={() => setSelectedDossierAppt(null)}
+        appointment={selectedDossierAppt}
+        onUpdated={() => {
+          refetch();
+          router.invalidate();
+        }}
+      />
+
+
  </div>
  );
 }

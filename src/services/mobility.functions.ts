@@ -31,6 +31,7 @@ export const mobilityStatusEnum = z.enum([
  "delivered",
  "completed",
  "cancelled",
+ "scheduled",
 ]);
 
 export type MobilityStatus = z.infer<typeof mobilityStatusEnum>;
@@ -72,6 +73,16 @@ export interface MobilityRequestDTO {
  scheduled_for: string | null;
  estimated_price_cents: number;
  final_price_cents: number;
+ tip_cents?: number;
+ waypoints?: any[];
+ delivery_contact_name?: string | null;
+ delivery_contact_phone?: string | null;
+ package_weight_kg?: number | null;
+ package_volume_m3?: number | null;
+ cancelled_by?: string | null;
+ cancellation_reason?: string | null;
+ cancelled_at?: string | null;
+ rescheduled_count?: number;
  payment_method: string;
  payment_status: string;
  courier_id: string | null;
@@ -420,7 +431,11 @@ export const createMobilityRequest = createServerFn({ method: "POST" })
  customer_name: customer_name || "Cliente Waesy",
  customer_phone: customer_phone || "(49) 99999-9999",
  service_type,
- status: assignedCourierProfileId ? "accepted" : "searching",
+ status: assignedCourierProfileId
+    ? "accepted"
+    : Boolean(scheduledIso && new Date(scheduledIso).getTime() > Date.now() + 30 * 60 * 1000)
+    ? "scheduled"
+    : "searching",
  origin_address,
  origin_lat: origin_lat || null,
  origin_lng: origin_lng || null,
@@ -1630,7 +1645,7 @@ export const listAvailableMobilityDemands = createServerFn({ method: "GET" }).ha
       db
         .from("mobility_requests")
         .select("*")
-        .eq("status", "searching")
+        .in("status", ["searching", "scheduled"])
         .is("courier_profile_id", null)
         .order("created_at", { ascending: false })
         .limit(30),
@@ -1691,7 +1706,7 @@ export const acceptMobilityDemand = createServerFn({ method: "POST" })
         updated_at: now,
       })
       .eq("id", requestId)
-      .eq("status", "searching")
+      .in("status", ["searching", "scheduled"])
       .select()
       .single();
 
@@ -2532,3 +2547,572 @@ export const upsertMobilityVehicleSprite = createServerFn({ method: "POST" })
     };
   });
 
+
+
+// ============================================================
+// 34. WAESY GO: CANCELAMENTO CONTEXTUAL POR FASE
+// ============================================================
+export const cancelMobilityRequest = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      requestId: z.string().uuid(),
+      reason: z.string().min(2).default("Cancelamento solicitado pelo usuário"),
+      cancelledBy: z.enum(["customer", "courier", "admin", "system"]).default("customer"),
+    }),
+  )
+  .handler(async ({ data: { requestId, reason, cancelledBy } }) => {
+    const identity = await getServerIdentity().catch(() => null);
+    const db = getServerClient();
+    const now = new Date().toISOString();
+
+    const { data: req } = await db
+      .from("mobility_requests")
+      .select("id, status, customer_id, courier_profile_id, scheduled_for, estimated_price_cents")
+      .eq("id", requestId)
+      .maybeSingle();
+
+    if (!req) {
+      throw new Error("Solicitação de mobilidade não encontrada.");
+    }
+
+    if (req.status === "completed" || req.status === "delivered") {
+      throw new Error("Não é possível cancelar uma operação que já foi concluída.");
+    }
+
+    const patch = {
+      status: "cancelled",
+      cancelled_at: now,
+      cancelled_by: cancelledBy,
+      cancellation_reason: reason,
+      updated_at: now,
+    };
+
+    const [{ data: updatedMob }] = await Promise.all([
+      db.from("mobility_requests").update(patch).eq("id", requestId).select().maybeSingle(),
+      db.from("orders").update({
+        status: "cancelled",
+        cancelled_at: now,
+        cancellation_reason: reason,
+        updated_at: now,
+      }).eq("id", requestId),
+    ]);
+
+    return {
+      success: true,
+      request: updatedMob || { ...req, ...patch },
+      message: "Operação cancelada com sucesso.",
+    };
+  });
+
+// ============================================================
+// 35. WAESY GO: REMARCAR OPERAÇÃO AGENDADA
+// ============================================================
+export function validateRescheduleDateHelper(newScheduledFor: string, nowMs: number = Date.now()): Date {
+  const scheduledDate = new Date(newScheduledFor);
+  if (isNaN(scheduledDate.getTime()) || scheduledDate.getTime() <= nowMs) {
+    throw new Error("A nova data/horário de agendamento deve ser no futuro.");
+  }
+  return scheduledDate;
+}
+
+export const rescheduleMobilityRequest = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      requestId: z.string().uuid(),
+      newScheduledFor: z.string(),
+      notes: z.string().optional(),
+    }),
+  )
+  .handler(async ({ data: { requestId, newScheduledFor, notes } }) => {
+    const db = getServerClient();
+    const now = new Date().toISOString();
+
+    const scheduledDate = validateRescheduleDateHelper(newScheduledFor);
+
+    const { data: req } = await db
+      .from("mobility_requests")
+      .select("id, status, scheduled_for, rescheduled_count, notes")
+      .eq("id", requestId)
+      .maybeSingle();
+
+    if (!req) {
+      throw new Error("Solicitação de mobilidade não encontrada.");
+    }
+
+    if (req.status === "in_progress" || req.status === "completed" || req.status === "delivered") {
+      throw new Error("Não é possível remarcar uma operação que já está em andamento ou foi concluída.");
+    }
+
+    const newRescheduledCount = (req.rescheduled_count || 0) + 1;
+    const updatedNotes = [
+      req.notes || "",
+      `[Remarcado em ${now} para ${scheduledDate.toLocaleString("pt-BR")}]`,
+      notes ? `Motivo: ${notes}` : "",
+    ]
+      .filter(Boolean)
+      .join(" • ");
+
+    const patch = {
+      scheduled_for: scheduledDate.toISOString(),
+      status: "scheduled",
+      rescheduled_count: newRescheduledCount,
+      last_rescheduled_at: now,
+      notes: updatedNotes,
+      updated_at: now,
+    };
+
+    await Promise.all([
+      db.from("mobility_requests").update(patch).eq("id", requestId),
+      db.from("orders").update({
+        updated_at: now,
+      }).eq("id", requestId),
+    ]);
+
+    return {
+      success: true,
+      newScheduledFor: scheduledDate.toISOString(),
+      message: "Operação remarcada com sucesso.",
+    };
+  });
+
+// ============================================================
+// 36. WAESY GO: ENVIAR GORJETA REAL AO MOTORISTA (PÓS-SERVIÇO)
+// ============================================================
+export const sendMobilityTip = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      requestId: z.string().uuid(),
+      amountCents: z.number().int().min(100).max(100000), // R$ 1,00 a R$ 1.000,00
+      paymentMethod: z.enum(["pix", "card", "cash"]).default("pix"),
+    }),
+  )
+  .handler(async ({ data: { requestId, amountCents, paymentMethod } }) => {
+    const db = getServerClient();
+    const now = new Date().toISOString();
+
+    const { data: req } = await db
+      .from("mobility_requests")
+      .select("id, status, tip_cents, final_price_cents, estimated_price_cents, courier_profile_id")
+      .eq("id", requestId)
+      .maybeSingle();
+
+    if (!req) {
+      throw new Error("Operação de mobilidade não encontrada.");
+    }
+
+    if (req.status !== "completed" && req.status !== "delivered") {
+      throw new Error("A gorjeta só pode ser enviada após a conclusão do trajeto ou entrega.");
+    }
+
+    const currentTip = req.tip_cents || 0;
+    const newTipCents = currentTip + amountCents;
+    const baseFinal = req.final_price_cents || req.estimated_price_cents || 0;
+    const newFinalPriceCents = baseFinal + amountCents;
+
+    await Promise.all([
+      db.from("mobility_requests").update({
+        tip_cents: newTipCents,
+        final_price_cents: newFinalPriceCents,
+        updated_at: now,
+      }).eq("id", requestId),
+      db.from("orders").update({
+        total_cents: newFinalPriceCents,
+        updated_at: now,
+      }).eq("id", requestId),
+    ]);
+
+    return {
+      success: true,
+      addedTipCents: amountCents,
+      totalTipCents: newTipCents,
+      finalPriceCents: newFinalPriceCents,
+      message: `Gorjeta de R$ ${(amountCents / 100).toFixed(2)} enviada com sucesso! O condutor parceiro agradece.`,
+    };
+  });
+
+// ============================================================
+// 37. WAESY GO: RECIBO FISCAL E DEMONSTRATIVO DETALHADO
+// ============================================================
+export interface MobilityReceiptBreakdown {
+  baseFareCents: number;
+  distanceFeeCents: number;
+  helperFeeCents: number;
+  stairsFeeCents: number;
+  tipCents: number;
+  totalCents: number;
+  platformFeeCents: number;
+  driverEarningsCents: number;
+}
+
+export function calculateMobilityReceiptBreakdownHelper(params: {
+  service_type: string;
+  final_price_cents?: number | null;
+  estimated_price_cents?: number | null;
+  helpers_count?: number | null;
+  notes?: string | null;
+  tip_cents?: number | null;
+}): MobilityReceiptBreakdown {
+  const helpersCount = Number(params.helpers_count || 0);
+  const tipCents = Number(params.tip_cents || 0);
+  const finalPriceCents = Number(params.final_price_cents || params.estimated_price_cents || 0);
+  const baseFareCents =
+    params.service_type === "ride_moto" ? 400 : params.service_type === "moving_truck" ? 8000 : 600;
+  const helperFeeCents = helpersCount * 5000;
+  const stairsFeeCents = params.notes?.includes("Escada") ? 3500 : 0;
+  const distanceFeeCents = Math.max(0, finalPriceCents - baseFareCents - helperFeeCents - stairsFeeCents - tipCents);
+
+  return {
+    baseFareCents,
+    distanceFeeCents,
+    helperFeeCents,
+    stairsFeeCents,
+    tipCents,
+    totalCents: finalPriceCents,
+    platformFeeCents: 99, // R$ 0,99 Waesy Go Fixa (B.23)
+    driverEarningsCents: Math.max(0, finalPriceCents - 99),
+  };
+}
+
+export const getMobilityReceipt = createServerFn({ method: "GET" })
+  .validator(z.object({ requestId: z.string().uuid() }))
+  .handler(async ({ data: { requestId } }) => {
+    const db = getServerClient();
+
+    const { data: req, error } = await db
+      .from("mobility_requests")
+      .select("*, courier_profiles:courier_profile_id(full_name, phone, vehicle_type, vehicle_model, vehicle_plate, rating)")
+      .eq("id", requestId)
+      .maybeSingle();
+
+    if (error || !req) {
+      throw new Error("Recibo não encontrado ou chamado inexistente.");
+    }
+
+    const distanceKm = Number(req.distance_km || 1);
+    const finalPriceCents = Number(req.final_price_cents || req.estimated_price_cents || 0);
+    const breakdown = calculateMobilityReceiptBreakdownHelper({
+      service_type: req.service_type,
+      final_price_cents: req.final_price_cents,
+      estimated_price_cents: req.estimated_price_cents,
+      helpers_count: req.helpers_count,
+      notes: req.notes,
+      tip_cents: req.tip_cents,
+    });
+
+    return {
+      id: req.id,
+      receiptNumber: `REC-${req.id.slice(0, 8).toUpperCase()}`,
+      serviceType: req.service_type,
+      serviceLabel:
+        req.service_type === "ride_car"
+          ? "Corrida de Carro"
+          : req.service_type === "ride_moto"
+          ? "MotoLink Passageiro"
+          : req.service_type === "delivery_express"
+          ? "Entrega Expressa"
+          : req.service_type === "freight_van"
+          ? "Frete Utilitário / Van"
+          : "Mudança Residencial / Comercial",
+      status: req.status,
+      originAddress: req.origin_address,
+      destinationAddress: req.destination_address,
+      distanceKm,
+      estimatedDurationMinutes: Number(req.estimated_duration_minutes || 15),
+      paymentMethod: req.payment_method || "pix",
+      paymentStatus: req.payment_status || "paid",
+      createdAt: req.created_at,
+      acceptedAt: req.accepted_at,
+      startedAt: req.started_at,
+      completedAt: req.completed_at || req.updated_at,
+      breakdown,
+      courier: req.courier_profiles
+        ? {
+            fullName: req.courier_profiles.full_name,
+            vehicleModel: req.courier_profiles.vehicle_model,
+            vehicleType: req.courier_profiles.vehicle_type,
+            vehiclePlate: req.courier_profiles.vehicle_plate,
+            rating: req.courier_profiles.rating,
+          }
+        : null,
+    };
+  });
+
+
+// ============================================================
+// 38. WAESY GO: COTAÇÃO CATEGORIZADA POR PRODUTO & NÍVEL DE SERVIÇO
+// ============================================================
+export type MobilityProductCategory = "ride" | "delivery" | "freight" | "moving";
+
+export interface CategorizedMobilityOption {
+  id: string;
+  category: MobilityProductCategory;
+  canonical_service_type: MobilityServiceType;
+  name: string;
+  badge?: string | null;
+  description: string;
+  eta_minutes: number;
+  capacity_label: string;
+  estimated_price_cents: number;
+  service_level: "economy" | "standard" | "priority" | "comfort";
+  icon_name: string;
+}
+
+export interface CategorizedMobilityOptionsInput {
+  category: MobilityProductCategory;
+  origin_address: string;
+  destination_address: string;
+  distance_km?: number;
+  helpers_count?: number;
+  property_type?: "ground" | "elevator" | "stairs";
+  floor_number?: number;
+  surge_multiplier?: number;
+}
+
+export function computeCategorizedMobilityOptionsHelper(
+  data: CategorizedMobilityOptionsInput,
+): CategorizedMobilityOption[] {
+  const {
+    category,
+    distance_km = 3.5,
+    helpers_count = 0,
+    property_type = "ground",
+    floor_number = 0,
+    surge_multiplier = 1,
+  } = data;
+  const surge = surge_multiplier || 1;
+  const km = Math.max(0.5, distance_km);
+  const stairsFee = property_type === "stairs" ? Math.max(3500, floor_number * 1500) : 0;
+
+  if (category === "ride") {
+    return [
+      {
+        id: "ride_moto",
+        category: "ride",
+        canonical_service_type: "ride_moto",
+        name: "Moto",
+        badge: "Mais econômica",
+        description: "Viagem rápida e econômica para 1 pessoa",
+        eta_minutes: Math.max(2, Math.round(km * 1.5) + 1),
+        capacity_label: "1 passageiro • Capacete higienizado",
+        estimated_price_cents: Math.max(700, Math.round((400 + km * 180) * surge)),
+        service_level: "economy",
+        icon_name: "Bike",
+      },
+      {
+        id: "ride_car_standard",
+        category: "ride",
+        canonical_service_type: "ride_car",
+        name: "Waesy Go",
+        badge: "Melhor custo-benefício",
+        description: "Carro confortável com motorista parceiro local",
+        eta_minutes: Math.max(4, Math.round(km * 2.0) + 2),
+        capacity_label: "Até 4 passageiros • Porta-malas padrão",
+        estimated_price_cents: Math.max(1200, Math.round((600 + km * 280) * surge)),
+        service_level: "standard",
+        icon_name: "Car",
+      },
+      {
+        id: "ride_car_priority",
+        category: "ride",
+        canonical_service_type: "ride_car",
+        name: "Waesy Go Expresso",
+        badge: "Embarque mais rápido",
+        description: "Prioridade máxima de despacho para o condutor mais próximo",
+        eta_minutes: Math.max(2, Math.round(km * 1.2) + 1),
+        capacity_label: "Até 4 passageiros • Despacho prioritário",
+        estimated_price_cents: Math.max(1500, Math.round((750 + km * 350) * surge)),
+        service_level: "priority",
+        icon_name: "Zap",
+      },
+      {
+        id: "ride_car_comfort",
+        category: "ride",
+        canonical_service_type: "ride_car",
+        name: "Waesy Conforto",
+        badge: "Mais espaço",
+        description: "Veículos mais novos, espaço amplo e ar-condicionado garantido",
+        eta_minutes: Math.max(5, Math.round(km * 2.2) + 3),
+        capacity_label: "Até 4 passageiros • Veículo premium",
+        estimated_price_cents: Math.max(1800, Math.round((850 + km * 390) * surge)),
+        service_level: "comfort",
+        icon_name: "Car",
+      },
+    ];
+  }
+
+  if (category === "delivery") {
+    return [
+      {
+        id: "delivery_moto_priority",
+        category: "delivery",
+        canonical_service_type: "delivery_express",
+        name: "Moto Expresso",
+        badge: "Coleta imediata",
+        description: "Despacho prioritário direto sem paradas intermediárias",
+        eta_minutes: Math.max(8, Math.round(km * 2.0) + 4),
+        capacity_label: "Até 15kg • Baú de moto (45L)",
+        estimated_price_cents: Math.max(1100, Math.round((550 + km * 260) * surge)),
+        service_level: "priority",
+        icon_name: "Zap",
+      },
+      {
+        id: "delivery_moto_regular",
+        category: "delivery",
+        canonical_service_type: "delivery_express",
+        name: "Moto Padrão",
+        badge: "Regular",
+        description: "Entrega no mesmo dia com PIN de confirmação de entrega",
+        eta_minutes: Math.max(15, Math.round(km * 2.8) + 8),
+        capacity_label: "Até 15kg • Baú de moto (45L)",
+        estimated_price_cents: Math.max(900, Math.round((450 + km * 220) * surge)),
+        service_level: "standard",
+        icon_name: "Bike",
+      },
+      {
+        id: "delivery_moto_economy",
+        category: "delivery",
+        canonical_service_type: "delivery_express",
+        name: "Moto Econômica",
+        badge: "Posso esperar",
+        description: "Menor tarifa para entregas com janela de horário flexível",
+        eta_minutes: Math.max(30, Math.round(km * 3.5) + 20),
+        capacity_label: "Até 10kg • Janela flexível (30-50 min)",
+        estimated_price_cents: Math.max(750, Math.round((380 + km * 180) * surge)),
+        service_level: "economy",
+        icon_name: "Clock",
+      },
+      {
+        id: "delivery_car",
+        category: "delivery",
+        canonical_service_type: "ride_car",
+        name: "Carro para Pacotes",
+        badge: "Volumes maiores",
+        description: "Para encomendas, caixas ou sacolas que não cabem na moto",
+        eta_minutes: Math.max(12, Math.round(km * 2.5) + 6),
+        capacity_label: "Até 100kg • Porta-malas fechado",
+        estimated_price_cents: Math.max(1600, Math.round((700 + km * 320) * surge)),
+        service_level: "standard",
+        icon_name: "Car",
+      },
+      {
+        id: "delivery_van",
+        category: "delivery",
+        canonical_service_type: "freight_van",
+        name: "Utilitário / Fiorino",
+        badge: "Cargas médias",
+        description: "Múltiplos pacotes comerciais ou caixas de mercadorias",
+        eta_minutes: Math.max(20, Math.round(km * 3.0) + 10),
+        capacity_label: "Até 500kg • Compartimento fechado (3m³)",
+        estimated_price_cents: Math.max(3500, Math.round((2000 + km * 420) * surge)),
+        service_level: "comfort",
+        icon_name: "Truck",
+      },
+    ];
+  }
+
+  if (category === "freight") {
+    const helperFee = helpers_count * 5000;
+    return [
+      {
+        id: "freight_fiorino",
+        category: "freight",
+        canonical_service_type: "freight_van",
+        name: "Fiorino / Utilitário Leve",
+        badge: "Mais contratado",
+        description: "Eletrodomésticos individuais, caixas e materiais comerciais",
+        eta_minutes: 20,
+        capacity_label: "Até 500kg • Volume 3m³",
+        estimated_price_cents: Math.max(4500, Math.round((2500 + km * 450 + helperFee) * surge)),
+        service_level: "standard",
+        icon_name: "Truck",
+      },
+      {
+        id: "freight_van",
+        category: "freight",
+        canonical_service_type: "freight_van",
+        name: "Van Grande / Furgão",
+        badge: "Carga média",
+        description: "Móveis médios, cargas empresariais e equipamentos",
+        eta_minutes: 30,
+        capacity_label: "Até 1.200kg • Volume 8m³",
+        estimated_price_cents: Math.max(7500, Math.round((4000 + km * 550 + helperFee) * surge)),
+        service_level: "priority",
+        icon_name: "Truck",
+      },
+      {
+        id: "freight_truck",
+        category: "freight",
+        canonical_service_type: "freight_van",
+        name: "Carreto Pequeno",
+        badge: "Grandes volumes",
+        description: "Carga aberta ou protegida de até 2 toneladas",
+        eta_minutes: 40,
+        capacity_label: "Até 2.000kg • Carroceria / Baú (12m³)",
+        estimated_price_cents: Math.max(10500, Math.round((6000 + km * 650 + helperFee) * surge)),
+        service_level: "comfort",
+        icon_name: "Truck",
+      },
+    ];
+  }
+
+  // Moving (Mudança)
+  const helperFee = helpers_count * 6000;
+  return [
+    {
+      id: "moving_van",
+      category: "moving",
+      canonical_service_type: "moving_truck",
+      name: "Van de Mudança",
+      badge: "Kitnets / Compactos",
+      description: "Mudança compacta: cama, geladeira e até 15 caixas",
+      eta_minutes: 60,
+      capacity_label: "Até 1.200kg • 8m³",
+      estimated_price_cents: Math.max(12000, Math.round((6000 + km * 600 + helperFee + stairsFee) * surge)),
+      service_level: "economy",
+      icon_name: "Boxes",
+    },
+    {
+      id: "moving_truck_34",
+      category: "moving",
+      canonical_service_type: "moving_truck",
+      name: "Caminhão 3/4 Baú",
+      badge: "Recomendado (1 a 2 quartos)",
+      description: "Mudança residencial média: móveis completos e eletrodomésticos",
+      eta_minutes: 90,
+      capacity_label: "Até 3.500kg • Baú 22m³",
+      estimated_price_cents: Math.max(18000, Math.round((9500 + km * 800 + helperFee + stairsFee) * surge)),
+      service_level: "standard",
+      icon_name: "Truck",
+    },
+    {
+      id: "moving_truck_large",
+      category: "moving",
+      canonical_service_type: "moving_truck",
+      name: "Caminhão Toco Baú Grande",
+      badge: "Casas Completas (3+ quartos)",
+      description: "Mudança de grande porte com proteção e amarração profissional",
+      eta_minutes: 120,
+      capacity_label: "Até 6.000kg • Baú 40m³",
+      estimated_price_cents: Math.max(26000, Math.round((14000 + km * 1000 + helperFee + stairsFee) * surge)),
+      service_level: "comfort",
+      icon_name: "Truck",
+    },
+  ];
+}
+
+export const calculateCategorizedMobilityOptions = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      category: z.enum(["ride", "delivery", "freight", "moving"]),
+      origin_address: z.string().min(2),
+      destination_address: z.string().min(2),
+      distance_km: z.number().min(0.1).default(3.5),
+      helpers_count: z.number().int().min(0).max(6).default(0),
+      property_type: z.enum(["ground", "elevator", "stairs"]).default("ground").optional(),
+      floor_number: z.number().int().min(0).max(50).default(0).optional(),
+      surge_multiplier: z.number().min(1).max(3).default(1).optional(),
+    }),
+  )
+  .handler(async ({ data }): Promise<CategorizedMobilityOption[]> => {
+    return computeCategorizedMobilityOptionsHelper(data);
+  });

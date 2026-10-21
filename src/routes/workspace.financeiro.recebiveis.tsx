@@ -13,7 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
-import { listStoreCarnes, getCarnesReportSummary, approveInstallmentPayment, rejectInstallmentPayment, adjustInstallmentAmount, sendMassBillingReminders, generateInstallmentWhatsAppReminder, createStoreCarne, searchCustomersForCarne } from "@/services/receivables.functions";
+import { listStoreCarnes, getCarnesReportSummary, approveInstallmentPayment, rejectInstallmentPayment, adjustInstallmentAmount, sendMassBillingReminders, generateInstallmentWhatsAppReminder, createStoreCarne, searchCustomersForCarne, renegotiateCarne } from "@/services/receivables.functions";
 import { listStoreCondicionais, createStoreCondicional, resolveCondicionalItems, type StoreCondicionalDTO, type CondicionalItemDTO } from "@/services/condicionais.functions";
 import { createContract } from "@/services/contracts.functions";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -468,14 +468,14 @@ Assinatura da Loja (Consignante)`;
             <>
               {selectedInstallmentIds.length > 0 && (
                 <Button
-                  className="rounded-lg bg-primary text-primary-foreground font-medium text-xs h-10 px-4 shadow-sm"
+                  className="rounded-lg bg-primary text-primary-foreground font-medium text-xs h-11 min-h-11 px-4 shadow-xs"
                   onClick={() => setIsMassBillingOpen(true)}
                 >
                   <Send className="h-3.5 w-3.5 mr-2" /> Cobrar ({selectedInstallmentIds.length}) Selecionados
                 </Button>
               )}
               <Button
-                className="rounded-lg bg-foreground text-background hover:bg-foreground/90 font-medium text-xs h-10 px-4 shadow-sm"
+                className="rounded-lg bg-foreground text-background hover:bg-foreground/90 font-medium text-xs h-11 min-h-11 px-4 shadow-xs"
                 onClick={() => setIsCreateModalOpen(true)}
               >
                 <Plus className="h-4 w-4 mr-2" /> Emitir Novo Carnê
@@ -485,7 +485,7 @@ Assinatura da Loja (Consignante)`;
 
           {mainTab === "condicionais" && (
             <Button
-              className="rounded-lg bg-foreground text-background hover:bg-foreground/90 font-medium text-xs h-10 px-4 shadow-sm"
+              className="rounded-lg bg-foreground text-background hover:bg-foreground/90 font-medium text-xs h-11 min-h-11 px-4 shadow-xs"
               onClick={() => setIsCreateCondicionalOpen(true)}
             >
               <Plus className="h-4 w-4 mr-2" /> Nova Saída em Condicional
@@ -499,10 +499,9 @@ Assinatura da Loja (Consignante)`;
         <button
           type="button"
           onClick={() => setMainTab("carnes")}
-          className={cn(
-            "flex-1 flex items-center justify-center gap-2 py-2 px-4 text-xs font-semibold rounded-lg transition-all",
+          className={cn("flex-1 flex items-center justify-center gap-2 h-11 min-h-11 px-4 text-xs font-semibold rounded-lg transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
             mainTab === "carnes"
-              ? "bg-background text-foreground shadow-sm"
+              ? "bg-background text-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground",
           )}
         >
@@ -516,10 +515,9 @@ Assinatura da Loja (Consignante)`;
         <button
           type="button"
           onClick={() => setMainTab("condicionais")}
-          className={cn(
-            "flex-1 flex items-center justify-center gap-2 py-2 px-4 text-xs font-semibold rounded-lg transition-all",
+          className={cn("flex-1 flex items-center justify-center gap-2 h-11 min-h-11 px-4 text-xs font-semibold rounded-lg transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
             mainTab === "condicionais"
-              ? "bg-background text-foreground shadow-sm"
+              ? "bg-background text-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground",
           )}
         >
@@ -601,8 +599,7 @@ Assinatura da Loja (Consignante)`;
           <button
             type="button"
             onClick={() => setActiveFilter("all")}
-            className={cn(
-              "px-3 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap",
+            className={cn("px-4 min-h-11 h-11 text-xs font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
               activeFilter === "all"
                 ? "bg-background text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground",
@@ -613,8 +610,7 @@ Assinatura da Loja (Consignante)`;
           <button
             type="button"
             onClick={() => setActiveFilter("due_soon")}
-            className={cn(
-              "px-3 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap",
+            className={cn("px-4 min-h-11 h-11 text-xs font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
               activeFilter === "due_soon"
                 ? "bg-background text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground",
@@ -625,8 +621,7 @@ Assinatura da Loja (Consignante)`;
           <button
             type="button"
             onClick={() => setActiveFilter("late")}
-            className={cn(
-              "px-3 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap",
+            className={cn("px-4 min-h-11 h-11 text-xs font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
               activeFilter === "late"
                 ? "bg-background text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground",
@@ -637,14 +632,13 @@ Assinatura da Loja (Consignante)`;
           <button
             type="button"
             onClick={() => setActiveFilter("pending_conciliation")}
-            className={cn(
-              "px-3 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap flex items-center gap-2",
+            className={cn("px-4 min-h-11 h-11 text-xs font-medium rounded-lg transition-colors whitespace-nowrap flex items-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
               activeFilter === "pending_conciliation"
                 ? "bg-background text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
-            ⏳ Conciliações
+            Conciliações
             {(report?.pendingConciliationCount || 0) > 0 && (
               <span className="px-2 py-0.2 rounded-full bg-amber-500/10 text-amber-600 font-bold text-xs text-muted-foreground/75">
                 {report?.pendingConciliationCount}
@@ -654,8 +648,7 @@ Assinatura da Loja (Consignante)`;
           <button
             type="button"
             onClick={() => setActiveFilter("settled")}
-            className={cn(
-              "px-3 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap",
+            className={cn("px-4 min-h-11 h-11 text-xs font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
               activeFilter === "settled"
                 ? "bg-background text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground",
@@ -672,7 +665,7 @@ Assinatura da Loja (Consignante)`;
             placeholder="Buscar por cliente, título..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 h-10 text-xs rounded-lg bg-card"
+            className="pl-9 h-11 min-h-11 text-xs rounded-lg bg-card"
           />
         </div>
       </div>
@@ -852,7 +845,7 @@ Assinatura da Loja (Consignante)`;
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  className="h-11 sm:h-8 px-3 text-xs rounded-lg font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 cursor-pointer"
+                                  className="h-11 min-h-11 px-3 text-xs rounded-lg font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 cursor-pointer"
                                   onClick={() => handleSendWhatsAppReminder(carne, inst)}
                                   title="Enviar lembrete via WhatsApp"
                                 >
@@ -865,7 +858,7 @@ Assinatura da Loja (Consignante)`;
                                 size="sm"
                                 variant={isPending ? "default" : "outline"}
                                 className={cn(
-                                  "h-11 sm:h-8 px-4 text-xs rounded-lg font-medium cursor-pointer shadow-2xs",
+                                  "h-11 min-h-11 px-4 text-xs rounded-lg font-medium cursor-pointer shadow-2xs",
                                   isPending ? "bg-primary text-primary-foreground" : "text-foreground",
                                 )}
                                 onClick={() => handleOpenConciliation(carne, inst)}
@@ -981,8 +974,7 @@ Assinatura da Loja (Consignante)`;
                   key={f.key}
                   type="button"
                   onClick={() => setCondicionaisFilter(f.key)}
-                  className={cn(
-                    "px-3 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap",
+                  className={cn("px-4 min-h-11 h-11 text-xs font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                     condicionaisFilter === f.key
                       ? "bg-background text-foreground shadow-xs"
                       : "text-muted-foreground hover:text-foreground",
@@ -999,7 +991,7 @@ Assinatura da Loja (Consignante)`;
                 placeholder="Buscar cliente ou mala..."
                 value={condicionaisSearch}
                 onChange={(e) => setCondicionaisSearch(e.target.value)}
-                className="pl-9 h-9 text-xs rounded-lg bg-card border-border/60"
+                className="pl-9 h-11 min-h-11 text-xs rounded-lg bg-card border-border/60"
               />
             </div>
           </div>
@@ -1031,7 +1023,7 @@ Assinatura da Loja (Consignante)`;
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-sm shrink-0">
+                        <div className="h-11 min-h-11 w-10 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-sm shrink-0">
                           {cond.customerName.charAt(0)}
                         </div>
                         <div>
@@ -1074,7 +1066,7 @@ Assinatura da Loja (Consignante)`;
                             )}!%20Passando%20para%20saber%20como%20ficaram%20as%20pe%C3%A7as%20da%20sua%20mala%20condicional%20%E2%9C%A8`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-4 h-11 sm:h-8 text-xs font-medium rounded-lg border border-border/70 hover:bg-muted/50 text-foreground transition-colors cursor-pointer"
+                            className="inline-flex items-center gap-2 px-4 h-11 min-h-11 text-xs font-medium rounded-lg border border-border/70 hover:bg-muted/50 text-foreground transition-colors cursor-pointer"
                           >
                             <MessageSquare className="h-4 w-4 sm:h-3.5 sm:w-3.5 text-emerald-500" /> WhatsApp
                           </a>
@@ -1083,7 +1075,7 @@ Assinatura da Loja (Consignante)`;
                         <Button
                           size="sm"
                           variant="outline"
-                          className="h-11 sm:h-8 px-3 text-xs rounded-lg font-medium border-indigo-500/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 cursor-pointer shadow-2xs"
+                          className="h-11 min-h-11 px-3 text-xs rounded-lg font-medium border-indigo-500/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 cursor-pointer shadow-2xs"
                           onClick={() => handleGenerateCondicionalContract(cond)}
                           title="Gerar Termo"
                         >
@@ -1094,7 +1086,7 @@ Assinatura da Loja (Consignante)`;
                         {!isClosed && (
                           <Button
                             size="sm"
-                            className="h-11 sm:h-8 px-4 text-xs rounded-lg bg-foreground text-background hover:bg-foreground/90 font-medium cursor-pointer shadow-2xs"
+                            className="h-11 min-h-11 px-4 text-xs rounded-lg bg-foreground text-background hover:bg-foreground/90 font-medium cursor-pointer shadow-2xs"
                             onClick={() => handleOpenReturnModal(cond)}
                           >
                             <CheckCircle2 className="h-4 w-4 sm:h-3.5 sm:w-3.5 mr-1 text-emerald-400" /> Dar Baixa / Conferir
@@ -1293,7 +1285,7 @@ Assinatura da Loja (Consignante)`;
                     min="0"
                     placeholder="0.00"
                     onChange={(e) => setDiscountCents(Math.round(Number(e.target.value) * 100))}
-                    className="h-9 text-xs rounded-lg"
+                    className="h-11 min-h-11 text-xs rounded-lg"
                   />
                 </div>
 
@@ -1303,7 +1295,7 @@ Assinatura da Loja (Consignante)`;
                     placeholder="Ex: Pagamento conferido na conta Santander..."
                     value={conciliationNotes}
                     onChange={(e) => setConciliationNotes(e.target.value)}
-                    className="h-9 text-xs rounded-lg"
+                    className="h-11 min-h-11 text-xs rounded-lg"
                   />
                 </div>
               </div>
@@ -1313,7 +1305,7 @@ Assinatura da Loja (Consignante)`;
                 <Button
                   type="button"
                   variant="outline"
-                  className="rounded-lg text-rose-600 border-rose-200 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-xs h-10"
+                  className="rounded-lg text-rose-600 border-rose-200 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-xs h-11 min-h-11"
                   onClick={() => setIsRejecting(true)}
                 >
                   <XCircle className="h-4 w-4 mr-1" /> Recusar Comprovante
@@ -1322,7 +1314,7 @@ Assinatura da Loja (Consignante)`;
                 <Button
                   type="button"
                   disabled={isApproving}
-                  className="rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs h-10 px-4 font-medium"
+                  className="rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs h-11 min-h-11 px-4 font-medium"
                   onClick={handleConfirmApproval}
                 >
                   {isApproving ? "Conciliando..." : "Confirmar Baixa & Espelhar"}
@@ -1340,7 +1332,7 @@ Assinatura da Loja (Consignante)`;
                   placeholder="Ex: O comprovante está ilegível / Valor transferido inferior ao devido..."
                   value={rejectReason}
                   onChange={(e) => setRejectReason(e.target.value)}
-                  className="text-xs min-h-[80px] rounded-lg"
+                  className="text-xs min-h-20 rounded-lg"
                 />
               </div>
 
@@ -1348,7 +1340,7 @@ Assinatura da Loja (Consignante)`;
                 <Button
                   type="button"
                   variant="outline"
-                  className="rounded-lg text-xs h-10"
+                  className="rounded-lg text-xs h-11 min-h-11"
                   onClick={() => setIsRejecting(false)}
                 >
                   Voltar
@@ -1356,7 +1348,7 @@ Assinatura da Loja (Consignante)`;
                 <Button
                   type="button"
                   disabled={isRejectingMutation || !rejectReason.trim()}
-                  className="rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs h-10 px-4"
+                  className="rounded-lg bg-rose-600 hover:bg-rose-700 text-primary-foreground text-xs h-11 min-h-11 px-4"
                   onClick={handleConfirmRejection}
                 >
                   {isRejectingMutation ? "Recusando..." : "Confirmar Recusa e Notificar"}
@@ -1449,7 +1441,7 @@ Assinatura da Loja (Consignante)`;
                   max="50"
                   value={massDiscount}
                   onChange={(e) => setMassDiscount(Number(e.target.value))}
-                  className="h-9 text-xs rounded-lg"
+                  className="h-11 min-h-11 text-xs rounded-lg"
                 />
               </div>
             )}
@@ -1458,7 +1450,7 @@ Assinatura da Loja (Consignante)`;
               <Button
                 type="button"
                 variant="outline"
-                className="rounded-lg text-xs h-10"
+                className="rounded-lg text-xs h-11 min-h-11"
                 onClick={() => setIsMassBillingOpen(false)}
               >
                 Cancelar
@@ -1466,7 +1458,7 @@ Assinatura da Loja (Consignante)`;
               <Button
                 type="button"
                 disabled={isSendingMass}
-                className="rounded-lg bg-primary text-primary-foreground text-xs h-10 px-4 font-medium"
+                className="rounded-lg bg-primary text-primary-foreground text-xs h-11 min-h-11 px-4 font-medium"
                 onClick={() =>
                   sendMassReminders({
                     data: {
@@ -1519,7 +1511,7 @@ Assinatura da Loja (Consignante)`;
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="text-xs text-muted-foreground hover:text-foreground h-7"
+                    className="text-xs text-muted-foreground hover:text-foreground h-11 min-h-11"
                     onClick={() => setSelectedCustomer(null)}
                   >
                     Trocar
@@ -1531,14 +1523,15 @@ Assinatura da Loja (Consignante)`;
                     placeholder="Digite nome, e-mail ou telefone do cliente..."
                     value={customerSearch}
                     onChange={(e) => setCustomerSearch(e.target.value)}
-                    className="h-9 text-xs rounded-lg"
+                    className="h-11 min-h-11 text-xs rounded-lg"
                   />
                   {searchedCustomers.length > 0 && (
                     <div className="rounded-lg border divide-y bg-card max-h-36 overflow-y-auto shadow-xs">
                       {searchedCustomers.map((cust: any) => (
-                        <div
+                        <button
                           key={cust.id}
-                          className="p-2 text-xs flex items-center justify-between hover:bg-muted/40 cursor-pointer"
+                          type="button"
+                          className="w-full text-left p-3 text-xs flex items-center justify-between hover:bg-muted/40 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                           onClick={() => {
                             setSelectedCustomer(cust);
                             setCustomerSearch("");
@@ -1551,7 +1544,7 @@ Assinatura da Loja (Consignante)`;
                             </span>
                           </div>
                           <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                        </div>
+                        </button>
                       ))}
                     </div>
                   )}
@@ -1566,7 +1559,7 @@ Assinatura da Loja (Consignante)`;
                 placeholder="Ex: Compra de Móveis Planejados, Tratamento Dental..."
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
-                className="h-9 text-xs rounded-lg"
+                className="h-11 min-h-11 text-xs rounded-lg"
                 required
               />
             </div>
@@ -1582,7 +1575,7 @@ Assinatura da Loja (Consignante)`;
                   placeholder="0.00"
                   value={newTotalReais || ""}
                   onChange={(e) => setNewTotalReais(Number(e.target.value))}
-                  className="h-9 text-xs rounded-lg"
+                  className="h-11 min-h-11 text-xs rounded-lg"
                   required
                 />
               </div>
@@ -1595,7 +1588,7 @@ Assinatura da Loja (Consignante)`;
                   max="72"
                   value={newInstallmentsCount}
                   onChange={(e) => setNewInstallmentsCount(Number(e.target.value))}
-                  className="h-9 text-xs rounded-lg"
+                  className="h-11 min-h-11 text-xs rounded-lg"
                   required
                 />
               </div>
@@ -1610,7 +1603,7 @@ Assinatura da Loja (Consignante)`;
                 type="date"
                 value={newFirstDueDate}
                 onChange={(e) => setNewFirstDueDate(e.target.value)}
-                className="h-9 text-xs rounded-lg"
+                className="h-11 min-h-11 text-xs rounded-lg"
                 required
               />
             </div>
@@ -1625,7 +1618,7 @@ Assinatura da Loja (Consignante)`;
                   min="0"
                   value={newInterestRate}
                   onChange={(e) => setNewInterestRate(Number(e.target.value))}
-                  className="h-8 text-xs rounded-lg"
+                  className="h-11 min-h-11 text-xs rounded-lg"
                 />
               </div>
 
@@ -1637,7 +1630,7 @@ Assinatura da Loja (Consignante)`;
                   min="0"
                   value={newFinePercent}
                   onChange={(e) => setNewFinePercent(Number(e.target.value))}
-                  className="h-8 text-xs rounded-lg"
+                  className="h-11 min-h-11 text-xs rounded-lg"
                 />
               </div>
 
@@ -1648,7 +1641,7 @@ Assinatura da Loja (Consignante)`;
                   min="0"
                   value={newGraceDays}
                   onChange={(e) => setNewGraceDays(Number(e.target.value))}
-                  className="h-8 text-xs rounded-lg"
+                  className="h-11 min-h-11 text-xs rounded-lg"
                 />
               </div>
             </div>
@@ -1658,7 +1651,7 @@ Assinatura da Loja (Consignante)`;
               <Button
                 type="button"
                 variant="outline"
-                className="rounded-lg text-xs h-10"
+                className="rounded-lg text-xs h-11 min-h-11"
                 onClick={() => setIsCreateModalOpen(false)}
               >
                 Cancelar
@@ -1666,7 +1659,7 @@ Assinatura da Loja (Consignante)`;
               <Button
                 type="submit"
                 disabled={isCreating}
-                className="rounded-lg bg-primary text-primary-foreground text-xs h-10 px-4 font-medium"
+                className="rounded-lg bg-primary text-primary-foreground text-xs h-11 min-h-11 px-4 font-medium"
               >
                 {isCreating ? "Gerando Carnê..." : "Emitir Carnê Digital"}
               </Button>
@@ -1696,7 +1689,7 @@ Assinatura da Loja (Consignante)`;
                   placeholder="Ex: Mariana Silva"
                   value={newCondCustomerName}
                   onChange={(e) => setNewCondCustomerName(e.target.value)}
-                  className="h-9 text-xs rounded-lg"
+                  className="h-11 min-h-11 text-xs rounded-lg"
                   required
                 />
               </div>
@@ -1706,7 +1699,7 @@ Assinatura da Loja (Consignante)`;
                   placeholder="(49) 99999-9999"
                   value={newCondCustomerPhone}
                   onChange={(e) => setNewCondCustomerPhone(e.target.value)}
-                  className="h-9 text-xs rounded-lg"
+                  className="h-11 min-h-11 text-xs rounded-lg"
                 />
               </div>
             </div>
@@ -1721,7 +1714,7 @@ Assinatura da Loja (Consignante)`;
                       type="button"
                       onClick={() => setNewCondDays(d)}
                       className={cn(
-                        "flex-1 py-2 text-xs font-medium rounded-lg border transition-colors",
+                        "flex-1 h-11 min-h-11 px-3 text-xs font-medium rounded-lg border transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                         newCondDays === d
                           ? "bg-foreground text-background border-foreground font-semibold"
                           : "border-border/60 text-muted-foreground hover:text-foreground",
@@ -1738,7 +1731,7 @@ Assinatura da Loja (Consignante)`;
                   placeholder="Ex: Prova para festa de formatura"
                   value={newCondNotes}
                   onChange={(e) => setNewCondNotes(e.target.value)}
-                  className="h-9 text-xs rounded-lg"
+                  className="h-11 min-h-11 text-xs rounded-lg"
                 />
               </div>
             </div>
@@ -1751,7 +1744,7 @@ Assinatura da Loja (Consignante)`;
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="h-7 px-3 text-xs rounded-lg"
+                  className="h-11 min-h-11 px-3 text-xs rounded-lg"
                   onClick={() =>
                     setNewCondItems([...newCondItems, { name: "", size: "M", priceReais: 0 }])
                   }
@@ -1771,7 +1764,7 @@ Assinatura da Loja (Consignante)`;
                         updated[idx].name = e.target.value;
                         setNewCondItems(updated);
                       }}
-                      className="h-8 text-xs rounded-lg flex-2"
+                      className="h-11 min-h-11 text-xs rounded-lg flex-2"
                     />
                     <Input
                       placeholder="Tam"
@@ -1781,7 +1774,7 @@ Assinatura da Loja (Consignante)`;
                         updated[idx].size = e.target.value;
                         setNewCondItems(updated);
                       }}
-                      className="h-8 text-xs rounded-lg w-16"
+                      className="h-11 min-h-11 text-xs rounded-lg w-16"
                     />
                     <Input
                       type="number"
@@ -1793,14 +1786,14 @@ Assinatura da Loja (Consignante)`;
                         updated[idx].priceReais = Number(e.target.value);
                         setNewCondItems(updated);
                       }}
-                      className="h-8 text-xs rounded-lg w-24"
+                      className="h-11 min-h-11 text-xs rounded-lg w-24"
                     />
                     {newCondItems.length > 1 && (
                       <Button
                         type="button"
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-muted-foreground hover:text-rose-600 shrink-0"
+                        className="h-11 min-h-11 w-8 text-muted-foreground hover:text-rose-600 shrink-0"
                         onClick={() => setNewCondItems(newCondItems.filter((_, i) => i !== idx))}
                       >
                         <XCircle className="h-4 w-4" />
@@ -1826,14 +1819,14 @@ Assinatura da Loja (Consignante)`;
               <Button
                 type="button"
                 variant="outline"
-                className="rounded-lg text-xs h-9"
+                className="rounded-lg text-xs h-11 min-h-11"
                 onClick={() => setIsCreateCondicionalOpen(false)}
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
-                className="rounded-lg bg-foreground text-background hover:bg-foreground/90 text-xs h-9 px-4 font-medium"
+                className="rounded-lg bg-foreground text-background hover:bg-foreground/90 text-xs h-11 min-h-11 px-4 font-medium"
               >
                 Registrar Saída em Condicional
               </Button>
@@ -1879,13 +1872,13 @@ Assinatura da Loja (Consignante)`;
                             setItemReturnDecisions({ ...itemReturnDecisions, [item.id]: "bought" })
                           }
                           className={cn(
-                            "px-3 py-1 rounded-lg text-xs font-medium border transition-colors",
+                            "h-11 min-h-11 px-4 rounded-lg text-xs font-semibold border transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                             decision === "bought"
-                              ? "bg-emerald-600 text-white border-emerald-600 font-semibold"
+                              ? "bg-emerald-600 text-primary-foreground border-emerald-600 font-bold"
                               : "border-border/60 text-muted-foreground hover:text-foreground",
                           )}
                         >
-                          ️ Comprou
+                          Comprou
                         </button>
                         <button
                           type="button"
@@ -1893,13 +1886,13 @@ Assinatura da Loja (Consignante)`;
                             setItemReturnDecisions({ ...itemReturnDecisions, [item.id]: "returned" })
                           }
                           className={cn(
-                            "px-3 py-1 rounded-lg text-xs font-medium border transition-colors",
+                            "h-11 min-h-11 px-4 rounded-lg text-xs font-semibold border transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                             decision === "returned"
-                              ? "bg-muted text-foreground border-border font-semibold"
+                              ? "bg-muted text-foreground border-border font-bold"
                               : "border-border/60 text-muted-foreground hover:text-foreground",
                           )}
                         >
-                          ↩️ Devolveu
+                          Devolveu
                         </button>
                       </div>
                     </div>
@@ -1947,14 +1940,14 @@ Assinatura da Loja (Consignante)`;
                 <Button
                   type="button"
                   variant="outline"
-                  className="rounded-lg text-xs h-9"
+                  className="rounded-lg text-xs h-11 min-h-11"
                   onClick={() => setIsReturnCondicionalOpen(false)}
                 >
                   Cancelar
                 </Button>
                 <Button
                   type="button"
-                  className="rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-xs h-9 px-4"
+                  className="rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-xs h-11 min-h-11 px-4"
                   onClick={handleConfirmReturnCondicional}
                 >
                   Confirmar Baixa e Reintegrar Peças

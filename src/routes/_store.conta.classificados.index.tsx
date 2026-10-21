@@ -29,6 +29,7 @@ import {
   Archive,
   Globe,
   Lock,
+  TrendingUp,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -46,6 +47,8 @@ import { exportClassifiedEventLeadsCsv } from "@/services/classifieds-events.fun
 import { EmptyState } from "@/components/ui/empty-state";
 import { NativeMobileHeader } from "@/components/navigation";
 import { BoostBottomSheet } from "@/components/commerce/boost-bottom-sheet";
+import { ClassifiedAnalyticsSheet } from "@/components/classifieds/classified-analytics-sheet";
+import { BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -207,6 +210,7 @@ function ClassificadosIndex() {
   const [, setSelectedPlan] = useState<7 | 15 | 30>(15);
   const [boostStep, setBoostStep] = useState<BoostStep>("plan_select");
   const [activeBoostPayment, setActiveBoostPayment] = useState<ActiveBoostPayment | null>(null);
+  const [analyticsAd, setAnalyticsAd] = useState<any | null>(null);
 
   // Estados de Gerenciamento & Exclusão E2E
   const [migratingAd, setMigratingAd] = useState<any | null>(null);
@@ -217,6 +221,7 @@ function ClassificadosIndex() {
   const [isMlFilterOpen, setIsMlFilterOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<"recent" | "views" | "contacts" | "price_desc" | "price_asc">("recent");
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -289,12 +294,12 @@ function ClassificadosIndex() {
   });
 
   const toggleStatusMutation = useMutation({
-    mutationFn: async ({ id, newStatus }: { id: string; newStatus: "active" | "paused" }) => {
+    mutationFn: async ({ id, newStatus }: { id: string; newStatus: "active" | "paused" | "completed" | "archived" }) => {
       return await updateClassifiedStatus({ data: { id, status: newStatus } });
     },
     onSuccess: (_, variables) => {
       toast.success(
-        variables.newStatus === "active" ? "Anúncio ativado com sucesso!" : "Anúncio pausado."
+        variables.newStatus === "active" ? "Anúncio ativado com sucesso!" : variables.newStatus === "completed" ? "Anúncio marcado como finalizado!" : "Anúncio pausado."
       );
       queryClient.invalidateQueries({ queryKey: ["classifieds"] });
     },
@@ -426,6 +431,22 @@ function ClassificadosIndex() {
     );
   });
 
+  const sorted = [...filtered].sort((a: any, b: any) => {
+    if (sortBy === "views") {
+      return Number(b.views_count || 0) - Number(a.views_count || 0);
+    }
+    if (sortBy === "contacts") {
+      return Number(b.whatsapp_clicks_count || b.proposals_count || 0) - Number(a.whatsapp_clicks_count || a.proposals_count || 0);
+    }
+    if (sortBy === "price_desc") {
+      return Number(b.price_cents || 0) - Number(a.price_cents || 0);
+    }
+    if (sortBy === "price_asc") {
+      return Number(a.price_cents || 0) - Number(b.price_cents || 0);
+    }
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+
   const activeFiltersCount =
     (statusFilter !== "all" ? 1 : 0) + (categoryFilter !== "all" ? 1 : 0);
   const gatewayAvailable = gatewayStatus?.available ?? false;
@@ -476,16 +497,29 @@ function ClassificadosIndex() {
             </Badge>
           )}
         </div>
-        <Button
-          asChild
-          size="default"
-          className="h-11 min-h-11 px-4 rounded-lg font-bold gap-2 bg-primary text-primary-foreground focus-visible:ring-2 focus-visible:ring-primary"
-        >
-          <Link to="/conta/classificados/novo">
-            <Plus className="size-4" />
-            <span>Novo Anúncio</span>
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            asChild
+            variant="outline"
+            size="default"
+            className="h-11 min-h-11 px-4 rounded-lg font-bold gap-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <Link to="/conta/classificados/performance">
+              <TrendingUp className="size-4 text-primary" />
+              <span>Cockpit Geral</span>
+            </Link>
+          </Button>
+          <Button
+            asChild
+            size="default"
+            className="h-11 min-h-11 px-4 rounded-lg font-bold gap-2 bg-primary text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <Link to="/conta/classificados/novo">
+              <Plus className="size-4" />
+              <span>Novo Anúncio</span>
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* ── Aviso Gateway ── */}
@@ -493,10 +527,51 @@ function ClassificadosIndex() {
         <div className="mx-4 sm:mx-0 flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-xs text-amber-700 dark:text-amber-400">
           <AlertTriangle className="size-4 shrink-0 mt-1" />
           <div>
-            <span className="font-bold">Impulsionamento indisponível.</span> Nenhum gateway de pagamento está configurado na plataforma.
+            <span className="font-bold">Impulsionamento temporariamente indisponível.</span> Estamos aprimorando os métodos de pagamento locais. Suas publicações e tráfego orgânico continuam ativos normalmente.
           </div>
         </div>
       )}
+
+      {/* ── Barra de Ordenação e Atalho de Cockpit Mobile ── */}
+      <div className="px-4 sm:px-0 flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground font-medium shrink-0">Ordenar:</span>
+          {(
+            [
+              { id: "recent", label: "Recentes" },
+              { id: "views", label: "Mais Vistos" },
+              { id: "contacts", label: "Mais Contatos" },
+              { id: "price_desc", label: "Maior Preço" },
+            ] as const
+          ).map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => setSortBy(s.id)}
+              className={cn(
+                "h-11 min-h-11 px-3 rounded-lg border text-xs font-semibold shrink-0 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                sortBy === s.id
+                  ? "border-primary bg-primary/10 text-primary font-bold"
+                  : "border-border/60 bg-card text-foreground hover:bg-muted/40"
+              )}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+
+        <Button
+          asChild
+          variant="outline"
+          size="sm"
+          className="sm:hidden h-11 min-h-11 px-3 rounded-lg font-bold gap-2 shrink-0 text-primary border-primary/30"
+        >
+          <Link to="/conta/classificados/performance">
+            <TrendingUp className="size-3.5" />
+            <span>Cockpit</span>
+          </Link>
+        </Button>
+      </div>
 
       {/* ── 2. BIFURCAÇÃO NATIVA: Mobile (<640px WhatsApp List) vs Desktop (>=640px Bento Cards) ── */}
       {isLoading ? (
@@ -511,7 +586,7 @@ function ClassificadosIndex() {
               Zero-Dead-Space Mandate: se estende de ponta a ponta sem margem dupla
           ══════════════════════════════════════════════════════════════════ */}
           <div className="block sm:hidden border-y border-border/40 divide-y divide-border/40 bg-card">
-            {filtered.map((ad: any) => {
+            {sorted.map((ad: any) => {
               const statusConf = STATUS_CONFIG[ad.status] || STATUS_CONFIG.draft;
               const isBoosted = ad.is_boosted && ad.boosted_until && new Date(ad.boosted_until) > new Date();
               const isPaused = ad.status === "paused";
@@ -537,7 +612,7 @@ function ClassificadosIndex() {
                       isVideo ? (
                         <video src={thumbUrl} className="size-full object-cover" muted />
                       ) : (
-                        <img src={thumbUrl} alt={ad.title} loading="lazy" className="size-full object-cover" />
+                        <img src={thumbUrl} alt={ad.title} loading="lazy" onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }} className="size-full object-cover" />
                       )
                     ) : (
                       <ImageIcon className="size-6 text-muted-foreground/35" />
@@ -555,7 +630,7 @@ function ClassificadosIndex() {
                       <Link
                         to="/classificados/$id"
                         params={{ id: ad.id }}
-                        className="text-xs font-bold text-foreground truncate hover:text-primary transition-colors flex-1"
+                        className="text-xs font-bold text-foreground break-words text-wrap leading-tight hover:text-primary transition-colors flex-1"
                       >
                         {ad.title}
                       </Link>
@@ -571,13 +646,18 @@ function ClassificadosIndex() {
                       <span className="text-xs font-bold font-mono text-foreground">
                         {ad.price_cents != null ? (ad.price_cents === 0 ? "Doação" : formatMoney(ad.price_cents)) : "—"}
                       </span>
-                      <span className="text-xs text-muted-foreground capitalize truncate">
+                      <span className="text-xs text-muted-foreground capitalize break-words text-wrap leading-tight">
                         {niche.shortLabel}
                       </span>
                     </div>
 
                     {/* Telemetria Compacta */}
-                    <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
+                    <button
+                      type="button"
+                      onClick={() => setAnalyticsAd(ad)}
+                      className="flex items-center gap-2 text-xs font-mono text-muted-foreground hover:text-foreground py-1 px-1 rounded transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      title="Abrir relatório de performance comercial"
+                    >
                       <span className="flex items-center gap-1" title="Visualizações">
                         <Eye className="size-2.5" />
                         <span>{viewsCount}</span>
@@ -590,7 +670,11 @@ function ClassificadosIndex() {
                         <MessageCircle className="size-2.5" />
                         <span>{whatsappCount}</span>
                       </span>
-                    </div>
+                      <span className="flex items-center gap-1 text-2xs font-bold text-primary ml-1">
+                        <BarChart3 className="size-2.5" />
+                        <span>Stats</span>
+                      </span>
+                    </button>
                   </div>
 
                   {/* Ações Mobile 44x44px */}
@@ -629,6 +713,14 @@ function ClassificadosIndex() {
                             <Edit3 className="size-4 mr-2 text-muted-foreground" />
                             <span>Editar Anúncio</span>
                           </Link>
+                        </DropdownMenuItem>
+
+                        <DropdownMenuItem
+                          onClick={() => setAnalyticsAd(ad)}
+                          className="rounded-lg cursor-pointer text-xs font-semibold py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary text-primary"
+                        >
+                          <BarChart3 className="size-4 mr-2" />
+                          <span>Performance Comercial</span>
                         </DropdownMenuItem>
 
                         <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-semibold py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
@@ -781,7 +873,7 @@ function ClassificadosIndex() {
               DESKTOP VIEW: High-Density Bento Cards (>=640px)
           ══════════════════════════════════════════════════════════════════ */}
           <div className="hidden sm:block space-y-4">
-            {filtered.map((ad: any) => {
+            {sorted.map((ad: any) => {
               const statusConf = STATUS_CONFIG[ad.status] || STATUS_CONFIG.draft;
               const isBoosted = ad.is_boosted && ad.boosted_until && new Date(ad.boosted_until) > new Date();
               const isPaused = ad.status === "paused";
@@ -807,7 +899,7 @@ function ClassificadosIndex() {
                       isVideo ? (
                         <video src={thumbUrl} className="size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none" muted />
                       ) : (
-                        <img src={thumbUrl} alt={ad.title} loading="lazy" className="size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none" />
+                        <img src={thumbUrl} alt={ad.title} loading="lazy" onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }} className="size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none" />
                       )
                     ) : (
                       <ImageIcon className="size-8 text-muted-foreground/35" />
@@ -851,7 +943,7 @@ function ClassificadosIndex() {
                         {(ad.location_city || ad.location_name) && (
                           <>
                             <span>•</span>
-                            <span className="truncate max-w-40">
+                            <span className="break-words text-wrap leading-tight">
                               {ad.location_city || ad.location_name}
                             </span>
                           </>
@@ -861,33 +953,44 @@ function ClassificadosIndex() {
 
                     <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/40">
                       <div className="flex items-center gap-2 sm:gap-2 flex-wrap">
-                        <span
-                          className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-muted/60 border border-border/40 text-xs font-mono text-muted-foreground"
-                          title="Visualizações reais auditadas"
+                        <button
+                          type="button"
+                          onClick={() => setAnalyticsAd(ad)}
+                          className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-muted/60 border border-border/40 text-xs font-mono text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          title="Visualizações reais auditadas — clique para ver estatísticas completas"
                         >
                           <Eye className="size-3" />
                           <span>{viewsCount}</span>
-                        </span>
+                        </button>
 
-                        <span
-                          className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-muted/60 border border-border/40 text-xs font-mono text-muted-foreground"
-                          title="Cliques no anúncio"
+                        <button
+                          type="button"
+                          onClick={() => setAnalyticsAd(ad)}
+                          className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-muted/60 border border-border/40 text-xs font-mono text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          title="Cliques no anúncio — clique para ver estatísticas completas"
                         >
                           <MousePointer className="size-3 text-sky-600 dark:text-sky-400" />
                           <span>{clicksCount}</span>
-                        </span>
+                        </button>
 
-                        <span
-                          className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-muted/60 border border-border/40 text-xs font-mono text-muted-foreground"
-                          title="Contatos WhatsApp e Propostas"
+                        <button
+                          type="button"
+                          onClick={() => setAnalyticsAd(ad)}
+                          className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-muted/60 border border-border/40 text-xs font-mono text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          title="Contatos WhatsApp e Propostas — clique para ver estatísticas completas"
                         >
                           <MessageCircle className="size-3 text-emerald-600 dark:text-emerald-400" />
                           <span>{whatsappCount}</span>
-                        </span>
+                        </button>
 
-                        <div className="hidden sm:flex items-center pl-1 border-l border-border/40" title="Tendência 7 dias">
+                        <button
+                          type="button"
+                          onClick={() => setAnalyticsAd(ad)}
+                          className="hidden sm:flex items-center pl-1 border-l border-border/40 hover:opacity-80 transition-opacity cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
+                          title="Tendência 7 dias — clique para abrir relatório completo"
+                        >
                           <AdSparkline data={ad.sparkline_7d || [0, 0, 0, 0, 0, 0, viewsCount]} className="h-6 w-14" />
-                        </div>
+                        </button>
                       </div>
 
                       <div className="flex items-center gap-2 shrink-0">
@@ -1301,6 +1404,19 @@ function ClassificadosIndex() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* ── SHEET DE PERFORMANCE COMERCIAL E TELEMETRIA ── */}
+      <ClassifiedAnalyticsSheet
+        open={!!analyticsAd}
+        onOpenChange={(open) => !open && setAnalyticsAd(null)}
+        classifiedId={analyticsAd?.id || null}
+        adTitle={analyticsAd?.title}
+        onOpenBoostModal={() => {
+          const ad = analyticsAd;
+          setAnalyticsAd(null);
+          handleOpenBoostModal(ad);
+        }}
+      />
 
       {/* ── MODAL DE CONFIRMAÇÃO DE EXCLUSÃO (CORREÇÃO DE GAP LÓGICO E2E) ── */}
       <Dialog open={!!adToDelete} onOpenChange={(open) => !open && setAdToDelete(null)}>

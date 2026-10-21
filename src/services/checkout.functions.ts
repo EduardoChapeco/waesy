@@ -18,6 +18,7 @@ import { getCurrentIdentity, withDataPayload } from "./cart-helpers";
 import { getRequest } from "@tanstack/start-server-core";
 import { readCookieFromRequest } from "@/lib/http-cookies";
 import { generateTransactionCertificate } from "@/services/security.functions";
+import { consumeCheckoutWzAtomic } from "@/services/wz-engine.functions";
 
 export interface CheckoutDynamicConfig {
   niche: "grocery" | "food" | "retail" | "services" | "general" | "tourism";
@@ -212,6 +213,7 @@ const CheckoutSchema = z
  paymentMethod: z.enum(["pix", "manual", "credit_card", "receipt"]),
  paymentMethodId: z.string().uuid().optional(),
  giftCardCode: z.string().optional(),
+  useWzBalance: z.boolean().optional(),
  notes: z.string().optional(),
  customFields: z.record(z.any()).optional(),
 
@@ -504,6 +506,54 @@ export const processCheckout = createServerFn({ method: "POST" })
         }
 
         await db.from("orders").update(updatePayload).eq("id", result.orderId);
+
+        // Abatimento Atômico de Saldo $WZ (Se solicitado pelo cliente autenticado)
+        if (params.useWzBalance && result.orderId && (identity as any)?.id) {
+          try {
+            const { data: ord } = await db
+              .from("orders")
+              .select("id, store_id, total_cents, discount_cents, status")
+              .eq("id", result.orderId)
+              .single();
+
+            if (ord && ord.total_cents > 0) {
+              const wzRes = await consumeCheckoutWzAtomic({
+                data: {
+                  storeId: ord.store_id,
+                  orderId: ord.id,
+                  amountCents: ord.total_cents,
+                },
+              });
+
+              if (wzRes && wzRes.deductedCents > 0) {
+                const newTotal = Math.max(0, ord.total_cents - wzRes.deductedCents);
+                const newDiscount = (ord.discount_cents || 0) + wzRes.deductedCents;
+                const isFullyPaid = newTotal === 0;
+
+                await db
+                  .from("orders")
+                  .update({
+                    total_cents: newTotal,
+                    discount_cents: newDiscount,
+                    status: isFullyPaid ? "confirmed" : ord.status,
+                  })
+                  .eq("id", ord.id);
+
+                await db
+                  .from("payments")
+                  .update({
+                    amount_cents: newTotal,
+                    status: isFullyPaid ? "paid" : "pending",
+                    method: isFullyPaid ? ("manual" as any) : undefined,
+                  })
+                  .eq("order_id", ord.id);
+              }
+            }
+          } catch (wzErr) {
+            console.warn("[checkout.wz] Erro no abatimento $WZ:", wzErr);
+          }
+        }
+
 
         // V113 ACID: Despacho Waesy Go MotoLink (Haversine Server-Side + PIN 4 dígitos + Telemetria IP)
         await Promise.resolve(

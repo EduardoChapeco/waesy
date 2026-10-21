@@ -120,6 +120,24 @@ export const Route = createFileRoute("/_store/conta/entregador")({
   component: CourierDriverHubPage,
 });
 
+
+function getDemandCategoryMeta(serviceType: string) {
+  switch (serviceType) {
+    case "ride_moto":
+      return { label: "MotoLink Passageiro", category: "Corrida", icon: Bike, color: "text-amber-500", acceptLabel: "Aceitar Corrida (Gerar PIN)" };
+    case "ride_car":
+      return { label: "Corrida Waesy Go (Carro)", category: "Corrida", icon: Car, color: "text-blue-500", acceptLabel: "Aceitar Corrida (Gerar PIN)" };
+    case "delivery_express":
+      return { label: "Entrega Expressa", category: "Entrega", icon: Package, color: "text-emerald-500", acceptLabel: "Aceitar Entrega (Gerar PIN)" };
+    case "freight_van":
+      return { label: "Frete / Utilitário Carga", category: "Frete", icon: Truck, color: "text-indigo-500", acceptLabel: "Aceitar Frete (Gerar PIN)" };
+    case "moving_truck":
+      return { label: "Mudança Residencial / Comercial", category: "Mudança", icon: Building2, color: "text-purple-500", acceptLabel: "Aceitar Mudança (Gerar PIN)" };
+    default:
+      return { label: serviceType, category: "Transporte", icon: Navigation, color: "text-primary", acceptLabel: "Aceitar Operação (Gerar PIN)" };
+  }
+}
+
 function CourierDriverHubPage() {
   const loaderData = (Route.useLoaderData() || {}) as any;
   const initialProfile = loaderData.courierProfile as CourierProfileDTO | null;
@@ -821,51 +839,94 @@ function CourierDriverHubPage() {
             </div>
           ) : (
             <div className="space-y-3">
-              {demands.map((req) => (
-                <div
-                  key={req.id}
-                  className="p-5 rounded-lg bg-card border border-border/70 hover:border-foreground/20 transition-colors space-y-3 shadow-2xs"
-                >
-                  <div className="flex items-center justify-between">
-                    <Badge variant="outline" className="font-mono text-xs uppercase">
-                      {req.service_type}
-                    </Badge>
-                    <div className="text-right">
-                      <span className="text-base font-bold text-foreground font-mono block">
-                        {formatMoney(req.estimated_price_cents)}
-                      </span>
-                      <span className="text-xs text-emerald-600 font-mono">
-                        Líquido: {formatMoney(Math.max(0, req.estimated_price_cents - 99))} (Taxa R$ 0,99)
-                      </span>
-                    </div>
-                  </div>
+              {demands.map((req) => {
+                const meta = getDemandCategoryMeta(req.service_type);
+                const Icon = meta.icon;
+                const isScheduled = Boolean(req.scheduled_for);
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                    <div>
-                      <span className="text-muted-foreground block text-xs">Coleta / Origem:</span>
-                      <p className="text-foreground break-words">{req.origin_address}</p>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground block text-xs">Destino:</span>
-                      <p className="text-foreground break-words">{req.destination_address}</p>
-                    </div>
-                  </div>
+                return (
+                  <div
+                    key={req.id}
+                    className="p-5 rounded-lg bg-card border border-border/80 hover:border-foreground/30 transition-colors space-y-3 shadow-xs"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <div className="size-8 rounded-lg bg-muted flex items-center justify-center">
+                          <Icon className={`size-4 ${meta.color}`} />
+                        </div>
+                        <div>
+                          <span className="text-xs font-bold text-foreground block">
+                            {meta.label}
+                          </span>
+                          <span className="text-xs text-muted-foreground font-mono">
+                            #{req.id.slice(0, 8)}
+                          </span>
+                        </div>
+                      </div>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-border/40 text-xs">
-                    <span className="text-muted-foreground">
-                      {req.distance_km} km • ~{req.estimated_duration_minutes} min • Taxa Waesy Fixa R$ 0,99
-                    </span>
-                    <Button
-                      variant="outline"
-                      onClick={() => handleAcceptDemand(req)}
-                      disabled={isPending || !isOnline}
-                      className="h-11 min-h-11 px-5 rounded-lg text-xs font-bold bg-primary text-primary-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
-                    >
-                      Aceitar Corrida (Gerar PIN)
-                    </Button>
+                      <div className="text-right">
+                        <span className="text-base font-black text-foreground font-mono block">
+                          {formatMoney(req.estimated_price_cents)}
+                        </span>
+                        <span className="text-xs text-emerald-600 font-bold font-mono">
+                          Líquido: {formatMoney(Math.max(0, req.estimated_price_cents - 99))} (Taxa Waesy R$ 0,99)
+                        </span>
+                      </div>
+                    </div>
+
+                    {isScheduled && req.scheduled_for && (
+                      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-700 dark:text-purple-300 text-xs font-bold">
+                        <Clock className="size-3.5" />
+                        <span>Agendamento para: {formatDate(req.scheduled_for)}</span>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-muted/20 p-3 rounded-lg border border-border/40">
+                      <div>
+                        <span className="text-muted-foreground font-semibold block text-xs uppercase">
+                          Coleta / Origem:
+                        </span>
+                        <p className="text-foreground break-words font-medium">{req.origin_address}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground font-semibold block text-xs uppercase">
+                          Destino / Entrega:
+                        </span>
+                        <p className="text-foreground break-words font-medium">{req.destination_address}</p>
+                      </div>
+                    </div>
+
+                    {(req.package_description || req.notes || req.helpers_count > 0) && (
+                      <div className="text-xs p-3 rounded-lg bg-muted/40 border border-border/50 text-muted-foreground space-y-1">
+                        {req.helpers_count > 0 && (
+                          <span className="font-bold text-foreground text-xs block">
+                            Ajudantes contratados: {req.helpers_count}
+                          </span>
+                        )}
+                        {(req.package_description || req.notes) && (
+                          <p className="break-words text-xs leading-relaxed">
+                            {req.package_description || req.notes}
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-border/50 text-xs">
+                      <span className="text-muted-foreground font-medium">
+                        {req.distance_km} km • ~{req.estimated_duration_minutes} min • Taxa Fixa R$ 0,99
+                      </span>
+                      <Button
+                        variant="default"
+                        onClick={() => handleAcceptDemand(req)}
+                        disabled={isPending || !isOnline}
+                        className="h-11 min-h-11 px-6 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none shadow-xs"
+                      >
+                        {meta.acceptLabel}
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </TabsContent>

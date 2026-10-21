@@ -208,7 +208,7 @@ export default function WorkspaceTripsListPage() {
               <Plus className="size-3.5" />
               <span>Registrar Primeira Viagem</span>
             </Button>
-            <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-bold">
+            <Button asChild  variant="outline" className="rounded-lg text-xs font-bold h-11 min-h-11 px-3 text-xs">
               <Link to="/workspace/turismo/cotacoes">Ver Cotações e Leads</Link>
             </Button>
           </div>
@@ -309,7 +309,7 @@ export default function WorkspaceTripsListPage() {
                     </span>
                   </div>
 
-                  <Button asChild size="sm" className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-9 px-4 cursor-pointer shadow-2xs">
+                  <Button asChild className="rounded-lg text-xs font-bold gap-2 h-11 px-4 cursor-pointer shadow-2xs">
                     <Link to="/workspace/turismo/viagens/$id" params={{ id: trip.id }}>
                       <span>Gerenciar</span>
                       <ArrowUpRight className="size-3.5" />

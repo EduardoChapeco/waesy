@@ -169,7 +169,7 @@ export function BoostBottomSheet({
             </span>
 
             {/* Pílulas de Seleção (Apple HIG) */}
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {CANONICAL_BOOST_PLANS.map((plan) => {
                 const isSelected = selectedDays === plan.days;
                 return (
@@ -177,7 +177,7 @@ export function BoostBottomSheet({
                     key={plan.days}
                     type="button"
                     onClick={() => setSelectedDays(plan.days)}
-                    className={`min-h-16 p-3 rounded-lg border text-center flex flex-col items-center justify-center transition-all cursor-pointer active:scale-97 select-none ${
+                    className={`min-h-16 p-3 rounded-lg border text-center flex flex-col items-center justify-center transition-colors cursor-pointer active:scale-97 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                       isSelected
                         ? "border-amber-500 bg-amber-500/12 ring-2 ring-amber-500/20 shadow-xs"
                         : "border-border/60 bg-card hover:bg-muted/30"
@@ -216,7 +216,7 @@ export function BoostBottomSheet({
           <div className="space-y-4 py-2">
             {paymentResult.pixQrCode && (
               <div className="space-y-3 text-center">
-                <div className="size-48 sm:size-52 mx-auto bg-white p-3 rounded-lg border border-border/60 shadow-xs flex items-center justify-center">
+                <div className="size-48 sm:size-52 mx-auto bg-card p-3 rounded-lg border border-border/60 shadow-xs flex items-center justify-center">
                   <img
                     src={`data:image/png;base64,${paymentResult.pixQrCode}`}
                     alt="QR Code PIX"
@@ -232,7 +232,7 @@ export function BoostBottomSheet({
                     type="button"
                     variant="outline"
                     onClick={handleCopyPix}
-                    className="w-full h-11 rounded-lg text-xs font-bold gap-2 cursor-pointer"
+                    className="w-full h-11 rounded-lg text-xs font-bold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     {copiedPix ? (
                       <>
@@ -273,7 +273,7 @@ export function BoostBottomSheet({
             type="button"
             disabled={isLoading}
             onClick={() => onConfirmBoost(selectedDays)}
-            className="w-full h-11 rounded-lg text-xs font-bold gap-2 bg-amber-500 text-black hover:bg-amber-400 cursor-pointer shadow-xs active:scale-98 transition-all"
+            className="w-full h-11 rounded-lg text-xs font-bold gap-2 bg-amber-500 text-foreground hover:bg-amber-400 cursor-pointer shadow-xs active:scale-98 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             {isLoading ? (
               <span>Gerando Pagamento Seguro...</span>
@@ -292,7 +292,7 @@ export function BoostBottomSheet({
               if (onResetPayment) onResetPayment();
               onOpenChange(false);
             }}
-            className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground"
+            className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             Fechar Janela
           </Button>

@@ -19,6 +19,8 @@ import {
   type MatchedCaronaCorridorDTO,
 } from "@/lib/mobility/carona-graph-engine";
 
+export type { MatchedCaronaCorridorDTO };
+
 // ============================================================
 // Seed Resiliente para Corredores de SC (Testabilidade Imediata)
 // ============================================================
@@ -832,6 +834,49 @@ export const bookCaronaSegment = createServerFn({ method: "POST" })
       },
       boardingPin,
       remainingSeatsOnSegment: availableSeats - seatsBooked,
+    };
+  });
+
+// ============================================================
+// 3B. CANCELAR RESERVA DE CARONA
+// ============================================================
+
+export const cancelCaronaBooking = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      bookingId: z.string().min(1),
+      reason: z.string().optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const { bookingId, reason } = data;
+    const identity = await getServerIdentity();
+    if (!identity?.id) {
+      throw new Error("Acesso não autorizado.");
+    }
+
+    const db = getServerClient();
+    const now = new Date().toISOString();
+
+    const { data: booking, error } = await db
+      .from("carona_segment_bookings")
+      .update({
+        status: "cancelled",
+        updated_at: now,
+      })
+      .eq("id", bookingId)
+      .eq("passenger_id", identity.id)
+      .select()
+      .maybeSingle();
+
+    if (error) {
+      throw new Error(`Erro ao cancelar reserva: ${error.message}`);
+    }
+
+    return {
+      success: true,
+      message: "Reserva de carona cancelada com sucesso.",
+      booking,
     };
   });
 

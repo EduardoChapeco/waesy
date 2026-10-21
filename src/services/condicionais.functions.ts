@@ -250,3 +250,89 @@ export const resolveCondicionalItems = createServerFn({ method: "POST" })
 
     return { success: true, totalSoldCents, isClosed: !hasItemsWithCustomer };
   });
+
+/**
+ * Converte as compras de um condicional em um carnê digital formal.
+ */
+export const convertCondicionalToCarne = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      condicionalId: z.string().uuid(),
+      debtorId: z.string().uuid(),
+      installmentsCount: z.number().int().min(1).max(72),
+      firstDueDate: z.string(),
+      interestRateMonthly: z.number().min(0).default(0),
+      finePercent: z.number().min(0).default(0),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "seller", "manager"]);
+
+    const { data: cond, error: condErr } = await supabase
+      .from("store_condicionais")
+      .select("*, items:condicional_items(*)")
+      .eq("id", data.condicionalId)
+      .single();
+
+    if (condErr || !cond) throw new Error("Condicional não encontrado.");
+    assertStoreAccess(identity, undefined, cond.store_id);
+
+    const purchasedItems = (cond.items || []).filter((it: any) => it.status === "purchased");
+    const totalCents = purchasedItems.reduce((acc: number, it: any) => acc + (it.price_cents || 0), 0);
+
+    if (totalCents <= 0) {
+      throw new Error("Não há itens comprados neste condicional para emissão de carnê.");
+    }
+
+    const { data: rpcRes, error: rpcErr } = await supabase.rpc("create_receivable_with_installments", {
+      p_creditor_id: identity.id,
+      p_debtor_id: data.debtorId,
+      p_store_id: cond.store_id,
+      p_contract_id: null,
+      p_deal_id: null,
+      p_title: `Carnê — Mala Ref. ${cond.id.substring(0, 8).toUpperCase()} (${cond.customer_name})`,
+      p_description: `Conversão de mala condicional em compras parceladas (${purchasedItems.length} peças).`,
+      p_total_cents: totalCents,
+      p_installments_count: data.installmentsCount,
+      p_first_due_date: new Date(data.firstDueDate).toISOString(),
+      p_interest_rate_monthly: data.interestRateMonthly,
+      p_fine_percent: data.finePercent,
+      p_grace_days: 0,
+    });
+
+    if (rpcErr) throw new Error("Erro ao emitir carnê: " + rpcErr.message);
+
+    const recId = (rpcRes as any)?.receivable_id;
+    if (recId) {
+      await supabase
+        .from("receivables")
+        .update({
+          origin_type: "condicional_conversion",
+          metadata: {
+            condicional_id: cond.id,
+            customer_name: cond.customer_name,
+            customer_phone: cond.customer_phone,
+            items_count: purchasedItems.length,
+          },
+        })
+        .eq("id", recId);
+    }
+
+    // Fechar condicional se tudo foi resolvido
+    await supabase
+      .from("store_condicionais")
+      .update({
+        status: "closed",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", cond.id);
+
+    return {
+      success: true,
+      receivableId: recId,
+      totalCents,
+      installmentsCount: data.installmentsCount,
+    };
+  });

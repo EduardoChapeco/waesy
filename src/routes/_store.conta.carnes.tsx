@@ -5,10 +5,12 @@
  */
 
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, CreditCard, CheckCircle2, Clock, AlertCircle, Upload, FileText, Building2, Calendar, DollarSign, Copy, ChevronRight, ShieldCheck, TrendingDown, Info, Check, ExternalLink, FileCheck, MessageSquare, Smartphone } from "lucide-react";
+import { ArrowLeft, CreditCard, CheckCircle2, Clock, AlertCircle, Upload, FileText, Building2, Calendar, DollarSign, Copy, ChevronRight, ShieldCheck, TrendingDown, Info, Check, ExternalLink, FileCheck, MessageSquare, Smartphone, ShoppingBag, HelpCircle, Sparkles } from "lucide-react";
 import { DigitalCompanionCard, type CompanionCardSectionItem, type CompanionRuleItem, type CompanionContactItem } from "@/components/documents/digital-companion-card";
+import { NativeMobileHeader } from "@/components/navigation";
+import { useWindowSizeClass } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
@@ -17,9 +19,10 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ImageUpload } from "@/components/ui/image-upload";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { listClientCarnes, submitInstallmentProof } from "@/services/receivables.functions";
+import { listClientCarnes, submitInstallmentProof, calculateEarlySettlement } from "@/services/receivables.functions";
+import { getBrowserClient } from "@/lib/supabase";
 
 export const Route = createFileRoute("/_store/conta/carnes")({
   head: () => ({ meta: [{ title: "Meus Carnês e Parcelas | Waesy" }] }),
@@ -48,7 +51,7 @@ function ClientCarnesPage() {
   const initialData = Route.useLoaderData();
   const queryClient = useQueryClient();
 
-  const { data, isLoading } = useQuery({
+  const { data } = useQuery({
     queryKey: ["client-carnes"],
     queryFn: () => listClientCarnes(),
     initialData,
@@ -56,6 +59,7 @@ function ClientCarnesPage() {
 
   const carnes = data?.carnes || [];
   const metrics = data?.metrics;
+  const { isCompact } = useWindowSizeClass();
 
   const [activeTab, setActiveTab] = useState<"all" | "pending" | "overdue" | "settled">("all");
   const [selectedInstallment, setSelectedInstallment] = useState<any>(null);
@@ -65,6 +69,43 @@ function ClientCarnesPage() {
   const [notes, setNotes] = useState("");
   const [copiedPix, setCopiedPix] = useState(false);
   const [selectedCompanionCarne, setSelectedCompanionCarne] = useState<any | null>(null);
+
+  // Quitação Antecipada
+  const [isEarlySettlementOpen, setIsEarlySettlementOpen] = useState(false);
+  const [earlySettlementData, setEarlySettlementData] = useState<any>(null);
+  const [isCalculatingEarly, setIsCalculatingEarly] = useState(false);
+
+  // Subscrição Supabase Realtime Reativa
+  useEffect(() => {
+    let supabase: ReturnType<typeof getBrowserClient> | null = null;
+    try {
+      supabase = getBrowserClient();
+    } catch {
+      return;
+    }
+
+    const channel = supabase
+      .channel("client-carnes-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "receivable_installments" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["client-carnes"] });
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "receivables" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["client-carnes"] });
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase?.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   const { mutate: submitProof, isPending: isSubmitting } = useMutation({
     mutationFn: submitInstallmentProof,
@@ -86,6 +127,22 @@ function ClientCarnesPage() {
     setProofUrl(inst.payment_proof_url || "");
     setNotes(inst.notes || "");
     setIsPayModalOpen(true);
+  };
+
+  const handleOpenEarlySettlement = async (carne: any) => {
+    setSelectedCarne(carne);
+    setIsCalculatingEarly(true);
+    try {
+      const res = await calculateEarlySettlement({
+        data: { receivableId: carne.id },
+      });
+      setEarlySettlementData(res);
+      setIsEarlySettlementOpen(true);
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao simular quitação antecipada.");
+    } finally {
+      setIsCalculatingEarly(false);
+    }
   };
 
   const handleConfirmProof = (e: React.FormEvent) => {
@@ -122,404 +179,586 @@ function ClientCarnesPage() {
   });
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0">
-      {/* ── 1. Clean Minimalist Header ── */}
-      <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-            Carnês
-          </h1>
-          {carnes.length > 0 && (
-            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-1 rounded-full">
-              {carnes.length}
-            </Badge>
-          )}
+    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0 animate-in fade-in duration-200">
+      {/* ── 1. Canonical Navigation Header (Mobile App Style) ── */}
+      {isCompact && (
+        <NativeMobileHeader
+          title="Carnês"
+          fallbackHref="/conta"
+          badge={
+            carnes.length > 0 ? (
+              <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-1 rounded-md">
+                {carnes.length}
+              </Badge>
+            ) : null
+          }
+          rightActions={
+            <Button asChild size="sm" variant="outline" className="min-h-11 h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer">
+              <Link to="/mercado">Lojas</Link>
+            </Button>
+          }
+        />
+      )}
+
+      {/* ── 1.1 Desktop Inpage Header (Desktop System App Style) ── */}
+      {!isCompact && (
+        <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+              Carnês
+            </h1>
+            {carnes.length > 0 && (
+              <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-1 rounded-full">
+                {carnes.length}
+              </Badge>
+            )}
+          </div>
+
+          <Button asChild size="sm" variant="outline" className="min-h-11 h-11 px-4 rounded-lg text-xs font-semibold cursor-pointer">
+            <Link to="/mercado">Explorar Lojas</Link>
+          </Button>
+        </div>
+      )}
+
+      {/* Dashboard de Métricas Rápidas (Apple HIG Cards) */}
+      <div className={cn("grid grid-cols-2 sm:grid-cols-4 gap-3", isCompact && "px-2")}>
+        <div className="p-4 rounded-xl bg-card border border-border/60 shadow-xs space-y-1">
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            Saldo Devedor
+          </span>
+          <div className="text-lg sm:text-xl font-bold text-foreground">
+            {formatMoney(metrics?.totalDebtCents || 0)}
+          </div>
+          <div className="text-xs text-muted-foreground">
+            {metrics?.activeCarnesCount || 0} carnê(s) ativo(s)
+          </div>
         </div>
 
-        <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold h-8 px-4 cursor-pointer">
-          <Link to="/mercado">Explorar Lojas</Link>
-        </Button>
+        <div className="p-4 rounded-xl bg-card border border-border/60 shadow-xs space-y-1">
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            Total Liquidado
+          </span>
+          <div className="text-lg sm:text-xl font-bold text-emerald-600 dark:text-emerald-400">
+            {formatMoney(metrics?.totalPaidCents || 0)}
+          </div>
+          <div className="text-xs text-muted-foreground">Parcelas já pagas</div>
+        </div>
+
+        <div className="p-4 rounded-xl bg-card border border-border/60 shadow-xs space-y-1">
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            Em Atraso
+          </span>
+          <div
+            className={cn(
+              "text-lg sm:text-xl font-bold",
+              (metrics?.overdueInstallmentsCount || 0) > 0
+                ? "text-rose-600 dark:text-rose-400"
+                : "text-foreground",
+            )}
+          >
+            {metrics?.overdueInstallmentsCount || 0} parcela(s)
+          </div>
+          <div className="text-xs text-muted-foreground">
+            {(metrics?.overdueInstallmentsCount || 0) > 0 ? "Com juros de mora" : "Tudo em dia"}
+          </div>
+        </div>
+
+        <div className="p-4 rounded-xl bg-card border border-border/60 shadow-xs space-y-1">
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            Em Análise
+          </span>
+          <div className="text-lg sm:text-xl font-bold text-amber-600 dark:text-amber-400">
+            {metrics?.pendingConciliationCount || 0}
+          </div>
+          <div className="text-xs text-muted-foreground">Comprovante sob análise</div>
+        </div>
       </div>
 
-        {/* Dashboard de Métricas Rápidas (Apple HIG Cards) */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="p-4 rounded-lg bg-card border border-border/60 shadow-xs space-y-1">
-            <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-              Saldo Devedor
-            </span>
-            <div className="text-lg sm:text-xl font-bold text-foreground">
-              {formatMoney(metrics?.totalDebtCents || 0)}
-            </div>
-            <div className="text-[11px] text-muted-foreground">
-              {metrics?.activeCarnesCount || 0} carnê(s) ativo(s)
-            </div>
-          </div>
-
-          <div className="p-4 rounded-lg bg-card border border-border/60 shadow-xs space-y-1">
-            <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-              Total Liquidado
-            </span>
-            <div className="text-lg sm:text-xl font-bold text-emerald-600 dark:text-emerald-400">
-              {formatMoney(metrics?.totalPaidCents || 0)}
-            </div>
-            <div className="text-[11px] text-muted-foreground">Parcelas já pagas</div>
-          </div>
-
-          <div className="p-4 rounded-lg bg-card border border-border/60 shadow-xs space-y-1">
-            <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-              Em Atraso
-            </span>
-            <div
-              className={cn(
-                "text-lg sm:text-xl font-bold",
-                (metrics?.overdueInstallmentsCount || 0) > 0
-                  ? "text-rose-600 dark:text-rose-400"
-                  : "text-foreground",
-              )}
-            >
-              {metrics?.overdueInstallmentsCount || 0} parcela(s)
-            </div>
-            <div className="text-[11px] text-muted-foreground">
-              {(metrics?.overdueInstallmentsCount || 0) > 0 ? "Com juros de mora" : "Tudo em dia"}
-            </div>
-          </div>
-
-          <div className="p-4 rounded-lg bg-card border border-border/60 shadow-xs space-y-1">
-            <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-              Em Análise
-            </span>
-            <div className="text-lg sm:text-xl font-bold text-amber-600 dark:text-amber-400">
-              {metrics?.pendingConciliationCount || 0}
-            </div>
-            <div className="text-[11px] text-muted-foreground">Comprovante sob análise</div>
-          </div>
-        </div>
-
-        {/* Card de Próximo Vencimento em Destaque */}
-        {metrics?.nextDueInstallment && (
-          <div className="p-4 sm:p-5 rounded-lg bg-primary/5 border border-primary/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full bg-primary/10 text-primary">
-                  <Calendar className="h-3 w-3" /> Próximo Vencimento
+      {/* Card de Próximo Vencimento em Destaque */}
+      {metrics?.nextDueInstallment && (
+        <div className={cn("p-4 sm:p-5 rounded-xl bg-primary/5 border border-primary/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4", isCompact && "mx-2")}>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full bg-primary/10 text-primary">
+                <Calendar className="h-3 w-3" /> Próximo Vencimento
+              </span>
+              {metrics.nextDueInstallment.isLate && (
+                <span className="text-xs font-semibold px-2 py-1 rounded-full bg-rose-500/10 text-rose-600">
+                  Vencida
                 </span>
-                {metrics.nextDueInstallment.isLate && (
-                  <span className="text-xs font-semibold px-2 py-1 rounded-full bg-rose-500/10 text-rose-600">
-                    Vencida
-                  </span>
-                )}
-              </div>
-              <div className="text-base font-semibold text-foreground">
-                Parcela {metrics.nextDueInstallment.installmentNumber} —{" "}
-                {metrics.nextDueInstallment.carneTitle}
-              </div>
-              <div className="text-xs text-muted-foreground">
-                Loja: {metrics.nextDueInstallment.storeName} • Vencimento:{" "}
-                {formatDate(metrics.nextDueInstallment.dueDate)}
-              </div>
+              )}
             </div>
-
-            <div className="text-left sm:text-right w-full sm:w-auto">
-              <div className="text-lg font-bold text-foreground">
-                {formatMoney(metrics.nextDueInstallment.amountCents)}
-              </div>
+            <div className="text-base font-semibold text-foreground">
+              Parcela {metrics.nextDueInstallment.installmentNumber} —{" "}
+              {metrics.nextDueInstallment.carneTitle}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Loja: {metrics.nextDueInstallment.storeName} • Vencimento:{" "}
+              {formatDate(metrics.nextDueInstallment.dueDate)}
             </div>
           </div>
-        )}
 
-        {/* Segmented Control / Tabs */}
-        <div className="flex items-center gap-2 p-1 rounded-lg bg-muted/60 border border-border/50 overflow-x-auto no-scrollbar">
-          <button
-            type="button"
-            onClick={() => setActiveTab("all")}
-            className={cn(
-              "px-3 py-2 text-xs sm:text-sm font-medium rounded-lg transition-colors whitespace-nowrap",
-              activeTab === "all"
-                ? "bg-background text-foreground shadow-xs"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            Todos ({carnes.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("pending")}
-            className={cn(
-              "px-3 py-2 text-xs sm:text-sm font-medium rounded-lg transition-colors whitespace-nowrap",
-              activeTab === "pending"
-                ? "bg-background text-foreground shadow-xs"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            Em Aberto
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("overdue")}
-            className={cn(
-              "px-3 py-2 text-xs sm:text-sm font-medium rounded-lg transition-colors whitespace-nowrap",
-              activeTab === "overdue"
-                ? "bg-background text-foreground shadow-xs"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            Em Atraso ({metrics?.overdueInstallmentsCount || 0})
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("settled")}
-            className={cn(
-              "px-3 py-2 text-xs sm:text-sm font-medium rounded-lg transition-colors whitespace-nowrap",
-              activeTab === "settled"
-                ? "bg-background text-foreground shadow-xs"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            Quitados
-          </button>
+          <div className="text-left sm:text-right w-full sm:w-auto">
+            <div className="text-lg font-bold text-foreground">
+              {formatMoney(metrics.nextDueInstallment.amountCents)}
+            </div>
+          </div>
         </div>
+      )}
 
-        {/* Lista de Carnês */}
-        {filteredCarnes.length === 0 ? (
-          <div className="bg-card border border-border/60 rounded-lg p-10 text-center space-y-3 shadow-xs">
-            <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center mx-auto text-muted-foreground">
-              <CreditCard className="h-6 w-6" />
-            </div>
-            <h3 className="font-semibold text-base text-foreground">Nenhum carnê encontrado</h3>
-            <p className="text-xs sm:text-sm text-muted-foreground max-w-sm mx-auto">
-              {activeTab === "all"
-                ? "Você ainda não possui compras ou acordos parcelados ativos."
-                : "Nenhum registro corresponde ao filtro selecionado."}
-            </p>
+      {/* Segmented Control / Tabs */}
+      <div className={cn("flex items-center gap-2 p-1 rounded-xl bg-muted/60 border border-border/50 overflow-x-auto no-scrollbar", isCompact && "mx-2")}>
+        <button
+          type="button"
+          onClick={() => setActiveTab("all")}
+          className={cn(
+            "min-h-11 h-11 px-4 text-xs sm:text-sm font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+            activeTab === "all"
+              ? "bg-background text-foreground shadow-xs font-bold"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          Todos ({carnes.length})
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("pending")}
+          className={cn(
+            "min-h-11 h-11 px-4 text-xs sm:text-sm font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+            activeTab === "pending"
+              ? "bg-background text-foreground shadow-xs font-bold"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          Em Aberto
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("overdue")}
+          className={cn(
+            "min-h-11 h-11 px-4 text-xs sm:text-sm font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+            activeTab === "overdue"
+              ? "bg-background text-foreground shadow-xs font-bold"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          Em Atraso ({metrics?.overdueInstallmentsCount || 0})
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("settled")}
+          className={cn(
+            "min-h-11 h-11 px-4 text-xs sm:text-sm font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+            activeTab === "settled"
+              ? "bg-background text-foreground shadow-xs font-bold"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          Quitados
+        </button>
+      </div>
+
+      {/* Lista de Carnês */}
+      {filteredCarnes.length === 0 ? (
+        <div className={cn("bg-card border border-border/60 rounded-xl p-10 text-center space-y-3 shadow-xs", isCompact && "mx-2")}>
+          <div className="h-12 w-12 rounded-xl bg-muted flex items-center justify-center mx-auto text-muted-foreground">
+            <CreditCard className="h-6 w-6" />
           </div>
-        ) : (
-          <div className="space-y-4">
-            {filteredCarnes.map((carne: any) => {
-              const storeName = carne.store?.name || carne.creditor?.full_name || "Loja Parceira";
-              const isSettled = carne.status === "settled";
+          <h3 className="font-semibold text-base text-foreground">Nenhum carnê encontrado</h3>
+          <p className="text-xs sm:text-sm text-muted-foreground max-w-sm mx-auto">
+            {activeTab === "all" && "Você ainda não possui compras ou acordos parcelados cadastrados."}
+            {activeTab === "pending" && "Nenhum carnê ou parcela em aberto no momento. Todos os seus compromissos estão em dia!"}
+            {activeTab === "overdue" && "Nenhuma parcela em atraso! Parabéns pela sua pontualidade e histórico impecável."}
+            {activeTab === "settled" && "Nenhum carnê quitado ainda. Suas compras parceladas e termos de quitação aparecerão aqui após a liquidação integral."}
+          </p>
+        </div>
+      ) : (
+        <div className={cn("space-y-4", isCompact && "px-2")}>
+          {filteredCarnes.map((carne: any) => {
+            const storeName = carne.store?.name || carne.creditor?.full_name || "Loja Parceira";
+            const isSettled = carne.status === "settled";
 
-              return (
-                <div
-                  key={carne.id}
-                  className="bg-card border border-border/60 rounded-lg overflow-hidden shadow-xs space-y-4 p-5"
-                >
-                  {/* Cabeçalho do Carnê */}
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-3 border-b border-border/50">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-base text-foreground">{carne.title}</span>
-                        {isSettled ? (
-                          <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs">
-                            <CheckCircle2 className="h-3 w-3 mr-1" /> Quitado
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-xs">
-                            Ativo
-                          </Badge>
-                        )}
+            return (
+              <div
+                key={carne.id}
+                className="bg-card border border-border/60 rounded-xl overflow-hidden shadow-xs space-y-4 p-5"
+              >
+                {/* Cabeçalho do Carnê */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-3 border-b border-border/50">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold text-base text-foreground break-words text-wrap leading-tight">{carne.title}</span>
+                      {isSettled ? (
+                        <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs">
+                          <CheckCircle2 className="h-3 w-3 mr-1" /> Quitado
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-xs">
+                          Ativo
+                        </Badge>
+                      )}
+
+                      {carne.order_id && (
+                        <Link
+                          to="/conta/pedidos"
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                          title="Ver Pedido Original"
+                        >
+                          <ShoppingBag className="size-3" />
+                          <span>Pedido #{carne.order?.order_number || carne.order_id.slice(0, 8)}</span>
+                          <ExternalLink className="size-2.5" />
+                        </Link>
+                      )}
+
+                      {carne.renegotiated_from_id && (
+                        <Badge variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20 text-xs">
+                          Renegociado
+                        </Badge>
+                      )}
+                    </div>
+
+                    <div className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap pt-1">
+                      <span className="flex items-center gap-1">
+                        <Building2 className="h-3.5 w-3.5" /> {storeName}
+                      </span>
+
+                      {carne.contract?.verification_code && (
+                        <Link
+                          to="/verify/document/$code"
+                          params={{ code: carne.contract.verification_code }}
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                          title="Contrato"
+                        >
+                          <FileCheck className="size-3" />
+                          <span>Contrato Assinado</span>
+                          <ExternalLink className="size-2.5" />
+                        </Link>
+                      )}
+
+                      {isSettled && (
+                        <Link
+                          to="/conta/contratos"
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
+                          title="Ver Certificado de Quitação no Cofre"
+                        >
+                          <CheckCircle2 className="size-3" />
+                          <span>Termo de Quitação</span>
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                    <div className="text-left sm:text-right">
+                      <div className="text-sm font-semibold text-foreground">
+                        {formatMoney(carne.total_cents)}
                       </div>
-                      <div className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap pt-1">
-                        <span className="flex items-center gap-1">
-                          <Building2 className="h-3.5 w-3.5" /> {storeName}
-                        </span>
-
-                        {carne.contract?.verification_code && (
-                          <Link
-                            to="/verify/document/$code"
-                            params={{ code: carne.contract.verification_code }}
-                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline"
-                            title="Contrato"
-                          >
-                            <FileCheck className="size-3" />
-                            <span>Contrato Assinado</span>
-                            <ExternalLink className="size-2.5" />
-                          </Link>
-                        )}
-
-                        {isSettled && (
-                          <Link
-                            to="/conta/contratos"
-                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
-                            title="Ver Certificado de Quitação no Cofre"
-                          >
-                            <CheckCircle2 className="size-3" />
-                            <span>Termo de Quitação ✓</span>
-                          </Link>
-                        )}
+                      <div className="text-xs text-muted-foreground">
+                        {carne.summary.paidCount} de {carne.summary.totalCount} pagas (
+                        {carne.summary.progressPercent}%)
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <div className="text-left sm:text-right">
-                        <div className="text-sm font-semibold text-foreground">
-                          {formatMoney(carne.total_cents)}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {carne.summary.paidCount} de {carne.summary.totalCount} pagas (
-                          {carne.summary.progressPercent}%)
-                        </div>
-                      </div>
-
+                    {!isSettled && carne.summary.remainingCents > 0 && (
                       <Button
                         type="button"
                         size="sm"
                         variant="outline"
-                        onClick={() => setSelectedCompanionCarne(carne)}
-                        className="h-8 px-3 rounded-lg text-xs font-bold gap-1 text-primary border-primary/25 hover:bg-primary/5 cursor-pointer shrink-0"
-                        title="Visualizar Carnê Digital 9:16 para WhatsApp"
+                        onClick={() => handleOpenEarlySettlement(carne)}
+                        disabled={isCalculatingEarly}
+                        className="min-h-11 h-11 px-3 rounded-lg text-xs font-bold gap-1 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer shrink-0"
+                        title="Simular quitação antecipada com dedução de encargos"
                       >
-                        <Smartphone className="size-3.5" />
-                        <span>Carnê 9:16</span>
+                        <Sparkles className="size-3.5" />
+                        <span>Quitar Antecipado</span>
+                      </Button>
+                    )}
+
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setSelectedCompanionCarne(carne)}
+                      className="min-h-11 h-11 px-3 rounded-lg text-xs font-bold gap-1 text-primary border-primary/25 hover:bg-primary/5 cursor-pointer shrink-0"
+                      title="Visualizar Carnê Digital 9:16 para WhatsApp"
+                    >
+                      <Smartphone className="size-3.5" />
+                      <span>Carnê 9:16</span>
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Barra de Progresso */}
+                <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-emerald-500 rounded-full transition-colors duration-300"
+                    style={{ width: `${carne.summary.progressPercent}%` }}
+                  />
+                </div>
+
+                {/* Tabela de Parcelas */}
+                <div className="divide-y divide-border/40 -mx-5 px-5">
+                  {carne.installments.map((inst: any) => {
+                    const isPaid = inst.status === "paid";
+                    const isPendingConciliation = inst.conciliation_status === "pending";
+                    const isRejected = inst.conciliation_status === "rejected";
+                    const dueDate = new Date(inst.due_date);
+                    const isLate = !isPaid && dueDate < new Date();
+
+                    const originalAmount = Number(
+                      inst.original_amount_cents || inst.amount_cents || 0,
+                    );
+                    const finalAmount = Number(
+                      inst.final_amount_cents || inst.original_amount_cents || inst.amount_cents || 0,
+                    );
+                    const interestAccrued = Number(inst.interest_accrued_cents || 0);
+                    const fineAmount = Number(inst.fine_cents || 0);
+                    const discountAmount = Number(inst.discount_cents || 0);
+
+                    return (
+                      <div
+                        key={inst.id}
+                        className="py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-sm"
+                      >
+                        {/* Info Parcela */}
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-medium text-foreground">
+                              Parcela {inst.installment_number}/{carne.installments_count}
+                            </span>
+
+                            {isPaid && (
+                              <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-600 font-medium">
+                                <CheckCircle2 className="h-3 w-3" /> Paga
+                              </span>
+                            )}
+
+                            {!isPaid && isPendingConciliation && (
+                              <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-amber-500/10 text-amber-600 font-medium">
+                                <Clock className="h-3 w-3" /> Em Análise
+                              </span>
+                            )}
+
+                            {!isPaid && isRejected && (
+                              <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-rose-500/10 text-rose-600 font-medium">
+                                <AlertCircle className="h-3 w-3" /> Comprovante Recusado
+                              </span>
+                            )}
+
+                            {!isPaid && !isPendingConciliation && isLate && (
+                              <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-rose-500/10 text-rose-600 font-medium">
+                                <AlertCircle className="h-3 w-3" /> Vencida ({inst.late_days || 1}d)
+                              </span>
+                            )}
+
+                            {!isPaid && !isPendingConciliation && !isLate && (
+                              <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground font-medium">
+                                A Vencer
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-2">
+                            <span>Vencimento: {formatDate(inst.due_date)}</span>
+                            {isPaid && inst.paid_at && (
+                              <span>• Pago em: {formatDate(inst.paid_at)}</span>
+                            )}
+                          </div>
+
+                          {/* Detalhamento de juros e multas */}
+                          {!isPaid && (interestAccrued > 0 || fineAmount > 0 || discountAmount > 0) && (
+                            <div className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap">
+                              <span>Nominal: {formatMoney(originalAmount)}</span>
+                              {fineAmount > 0 && (
+                                <span className="text-rose-500">+Multa: {formatMoney(fineAmount)}</span>
+                              )}
+                              {interestAccrued > 0 && (
+                                <span className="text-rose-500">+Juros: {formatMoney(interestAccrued)}</span>
+                              )}
+                              {discountAmount > 0 && (
+                                <span className="text-emerald-500">-Desconto: {formatMoney(discountAmount)}</span>
+                              )}
+                            </div>
+                          )}
+
+                          {isRejected && inst.conciliation_notes && (
+                            <div className="text-xs text-rose-600 font-medium bg-rose-50 dark:bg-rose-950/20 p-2 rounded-md">
+                              Motivo da recusa: {inst.conciliation_notes}
+                            </div>
+                          )}
+
+                          <div className="pt-1">
+                            <Link
+                              to={"/u/suporte" as any}
+                              className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground underline cursor-pointer"
+                            >
+                              <HelpCircle className="size-3" />
+                              <span>Ajuda com esta parcela</span>
+                            </Link>
+                          </div>
+                        </div>
+
+                        {/* Valor e Ação */}
+                        <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
+                          <div className="text-left sm:text-right">
+                            <div className="font-semibold text-foreground">
+                              {formatMoney(finalAmount)}
+                            </div>
+                            {isPaid && (
+                              <div className="text-xs text-emerald-600 flex items-center gap-1 justify-end">
+                                <ShieldCheck className="h-3 w-3" /> No Ledger
+                              </div>
+                            )}
+                          </div>
+
+                          {!isPaid && (
+                            <Button
+                              size="sm"
+                              variant={isPendingConciliation ? "outline" : "default"}
+                              className={cn(
+                                "min-h-11 h-11 px-4 text-xs font-medium rounded-lg cursor-pointer",
+                                isPendingConciliation
+                                  ? "border-amber-400/50 text-amber-700 dark:text-amber-300"
+                                  : "bg-primary text-primary-foreground",
+                              )}
+                              onClick={() => handleOpenPay(carne, inst)}
+                            >
+                              {isPendingConciliation ? (
+                                <>
+                                  <Clock className="h-3.5 w-3.5 mr-1" /> Reenviar
+                                </>
+                              ) : (
+                                <>
+                                  <Upload className="h-3.5 w-3.5 mr-1" /> Pagar / Comprovante
+                                </>
+                              )}
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ── MODAL DE QUITAÇÃO ANTECIPADA ── */}
+      <Dialog open={isEarlySettlementOpen} onOpenChange={setIsEarlySettlementOpen}>
+        <DialogContent className="max-w-md rounded-lg p-6 space-y-4">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-emerald-600" />
+              Quitação Antecipada
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              {earlySettlementData?.title} • {earlySettlementData?.storeName}
+            </DialogDescription>
+          </DialogHeader>
+
+          {earlySettlementData && (
+            <div className="space-y-4">
+              <div className="p-4 rounded-lg bg-muted/40 border border-border/50 space-y-2 text-xs">
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Parcelas a liquidar:</span>
+                  <span className="font-semibold text-foreground">{earlySettlementData.installmentsCount} parcela(s)</span>
+                </div>
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Soma Nominal:</span>
+                  <span>{formatMoney(earlySettlementData.totalNominalCents)}</span>
+                </div>
+                {earlySettlementData.totalFineCents > 0 && (
+                  <div className="flex justify-between text-rose-600">
+                    <span>Multa de parcelas vencidas:</span>
+                    <span>+{formatMoney(earlySettlementData.totalFineCents)}</span>
+                  </div>
+                )}
+                {earlySettlementData.totalInterestCents > 0 && (
+                  <div className="flex justify-between text-rose-600">
+                    <span>Juros moratórios acumulados:</span>
+                    <span>+{formatMoney(earlySettlementData.totalInterestCents)}</span>
+                  </div>
+                )}
+                {earlySettlementData.totalDiscountCents > 0 && (
+                  <div className="flex justify-between text-emerald-600 font-medium">
+                    <span>Desconto por Pontualidade / Antecipação:</span>
+                    <span>-{formatMoney(earlySettlementData.totalDiscountCents)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-sm font-bold text-foreground pt-2 border-t border-border/40">
+                  <span>Total para Quitação Hoje:</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                    {formatMoney(earlySettlementData.netPayoffCents)}
+                  </span>
+                </div>
+              </div>
+
+              {earlySettlementData.storePhone && (
+                <div className="p-4 rounded-lg border border-dashed border-border bg-card space-y-3">
+                  <span className="text-xs font-medium text-muted-foreground uppercase">
+                    Chave PIX da Loja (Telefone)
+                  </span>
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
+                    <span className="font-mono text-xs sm:text-sm font-semibold text-foreground bg-muted/40 p-2 rounded-lg border border-border/60 truncate max-w-full">
+                      {earlySettlementData.storePhone}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="min-h-11 h-11 px-3 text-xs rounded-lg font-medium cursor-pointer flex-1 sm:flex-initial"
+                        onClick={() => handleCopyPix(earlySettlementData.storePhone)}
+                      >
+                        {copiedPix ? (
+                          <>
+                            <Check className="h-3.5 w-3.5 mr-2 text-emerald-500" /> Copiado
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="h-3.5 w-3.5 mr-2" /> Copiar PIX
+                          </>
+                        )}
+                      </Button>
+
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        className="min-h-11 h-11 px-3 text-xs rounded-lg font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 border border-emerald-500/20 cursor-pointer flex-1 sm:flex-initial"
+                        onClick={() => {
+                          const phone = earlySettlementData.storePhone.replace(/\D/g, "");
+                          const amount = formatMoney(earlySettlementData.netPayoffCents);
+                          const msg = encodeURIComponent(
+                            `Olá! Quero quitar antecipadamente todas as ${earlySettlementData.installmentsCount} parcelas do meu carnê "${earlySettlementData.title}" com desconto no valor total de ${amount}.`,
+                          );
+                          window.open(`https://wa.me/55${phone}?text=${msg}`, "_blank");
+                        }}
+                      >
+                        <MessageSquare className="h-3.5 w-3.5 mr-2" />
+                        Avisar Loja no WhatsApp
                       </Button>
                     </div>
                   </div>
-
-                  {/* Barra de Progresso */}
-                  <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-emerald-500 rounded-full transition-all duration-300"
-                      style={{ width: `${carne.summary.progressPercent}%` }}
-                    />
-                  </div>
-
-                  {/* Tabela de Parcelas */}
-                  <div className="divide-y divide-border/40 -mx-5 px-5">
-                    {carne.installments.map((inst: any) => {
-                      const isPaid = inst.status === "paid";
-                      const isPendingConciliation = inst.conciliation_status === "pending";
-                      const isRejected = inst.conciliation_status === "rejected";
-                      const dueDate = new Date(inst.due_date);
-                      const isLate = !isPaid && dueDate < new Date();
-
-                      const originalAmount = Number(
-                        inst.original_amount_cents || inst.amount_cents || 0,
-                      );
-                      const finalAmount = Number(
-                        inst.final_amount_cents || inst.original_amount_cents || inst.amount_cents || 0,
-                      );
-                      const interestAccrued = Number(inst.interest_accrued_cents || 0);
-                      const fineAmount = Number(inst.fine_cents || 0);
-                      const discountAmount = Number(inst.discount_cents || 0);
-
-                      return (
-                        <div
-                          key={inst.id}
-                          className="py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-sm"
-                        >
-                          {/* Info Parcela */}
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium text-foreground">
-                                Parcela {inst.installment_number}/{carne.installments_count}
-                              </span>
-
-                              {isPaid && (
-                                <span className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-600 font-medium">
-                                  <CheckCircle2 className="h-3 w-3" /> Paga
-                                </span>
-                              )}
-
-                              {!isPaid && isPendingConciliation && (
-                                <span className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full bg-amber-500/10 text-amber-600 font-medium">
-                                  <Clock className="h-3 w-3" /> Em Análise
-                                </span>
-                              )}
-
-                              {!isPaid && isRejected && (
-                                <span className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full bg-rose-500/10 text-rose-600 font-medium">
-                                  <AlertCircle className="h-3 w-3" /> Comprovante Recusado
-                                </span>
-                              )}
-
-                              {!isPaid && !isPendingConciliation && isLate && (
-                                <span className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full bg-rose-500/10 text-rose-600 font-medium">
-                                  <AlertCircle className="h-3 w-3" /> Vencida ({inst.late_days || 1}d)
-                                </span>
-                              )}
-
-                              {!isPaid && !isPendingConciliation && !isLate && (
-                                <span className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full bg-muted text-muted-foreground font-medium">
-                                  A Vencer
-                                </span>
-                              )}
-                            </div>
-
-                            <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-2">
-                              <span>Vencimento: {formatDate(inst.due_date)}</span>
-                              {isPaid && inst.paid_at && (
-                                <span>• Pago em: {formatDate(inst.paid_at)}</span>
-                              )}
-                            </div>
-
-                            {/* Detalhamento de juros e multas se houver */}
-                            {!isPaid && (interestAccrued > 0 || fineAmount > 0 || discountAmount > 0) && (
-                              <div className="text-[11px] text-muted-foreground flex items-center gap-2">
-                                <span>Nominal: {formatMoney(originalAmount)}</span>
-                                {fineAmount > 0 && (
-                                  <span className="text-rose-500">+Multa: {formatMoney(fineAmount)}</span>
-                                )}
-                                {interestAccrued > 0 && (
-                                  <span className="text-rose-500">+Juros: {formatMoney(interestAccrued)}</span>
-                                )}
-                                {discountAmount > 0 && (
-                                  <span className="text-emerald-500">-Desconto: {formatMoney(discountAmount)}</span>
-                                )}
-                              </div>
-                            )}
-
-                            {isRejected && inst.conciliation_notes && (
-                              <div className="text-xs text-rose-600 font-medium bg-rose-50 dark:bg-rose-950/20 p-2 rounded-md">
-                                Motivo da recusa: {inst.conciliation_notes}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Valor e Ação */}
-                          <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
-                            <div className="text-left sm:text-right">
-                              <div className="font-semibold text-foreground">
-                                {formatMoney(finalAmount)}
-                              </div>
-                              {isPaid && (
-                                <div className="text-[11px] text-emerald-600 flex items-center gap-1 justify-end">
-                                  <ShieldCheck className="h-3 w-3" /> No Ledger
-                                </div>
-                              )}
-                            </div>
-
-                            {!isPaid && (
-                              <Button
-                                size="sm"
-                                variant={isPendingConciliation ? "outline" : "default"}
-                                className={cn(
-                                  "h-9 px-3 text-xs font-medium rounded-lg",
-                                  isPendingConciliation
-                                    ? "border-amber-400/50 text-amber-700 dark:text-amber-300"
-                                    : "bg-primary text-primary-foreground",
-                                )}
-                                onClick={() => handleOpenPay(carne, inst)}
-                              >
-                                {isPendingConciliation ? (
-                                  <>
-                                    <Clock className="h-3.5 w-3.5 mr-1" /> Reenviar
-                                  </>
-                                ) : (
-                                  <>
-                                    <Upload className="h-3.5 w-3.5 mr-1" /> Pagar / Comprovante
-                                  </>
-                                )}
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
+              )}
+            </div>
+          )}
+
+          <DialogFooter className="pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="min-h-11 h-11 rounded-lg text-xs cursor-pointer"
+              onClick={() => setIsEarlySettlementOpen(false)}
+            >
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Modal / Drawer de Pagamento e Envio de Comprovante */}
       <Dialog open={isPayModalOpen} onOpenChange={setIsPayModalOpen}>
@@ -570,7 +809,7 @@ function ClientCarnesPage() {
 
             <div className="flex justify-between text-sm font-bold text-foreground pt-2 border-t border-border/40">
               <span>Total Atual a Pagar:</span>
-              <span className="text-primary">
+              <span className="text-primary font-bold">
                 {formatMoney(
                   selectedInstallment?.final_amount_cents ||
                     selectedInstallment?.original_amount_cents ||
@@ -584,7 +823,7 @@ function ClientCarnesPage() {
           {/* Chave PIX da Loja / Código Copia e Cola & Notificação Rápida */}
           {(selectedInstallment?.pix_copy_paste || selectedCarne?.store?.phone) && (
             <div className="p-4 rounded-lg border border-dashed border-border bg-card space-y-3">
-              <span className="text-[11px] font-medium text-muted-foreground uppercase">
+              <span className="text-xs font-medium text-muted-foreground uppercase">
                 {selectedInstallment?.pix_copy_paste ? "PIX Copia e Cola da Parcela" : "Chave PIX da Loja (Telefone)"}
               </span>
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
@@ -596,7 +835,7 @@ function ClientCarnesPage() {
                     type="button"
                     size="sm"
                     variant="outline"
-                    className="h-10 sm:h-9 px-3 text-xs rounded-lg font-medium cursor-pointer flex-1 sm:flex-initial"
+                    className="min-h-11 h-11 px-3 text-xs rounded-lg font-medium cursor-pointer flex-1 sm:flex-initial"
                     onClick={() => handleCopyPix(selectedInstallment?.pix_copy_paste || selectedCarne?.store?.phone)}
                   >
                     {copiedPix ? (
@@ -614,7 +853,7 @@ function ClientCarnesPage() {
                     type="button"
                     size="sm"
                     variant="ghost"
-                    className="h-10 sm:h-9 px-3 text-xs rounded-lg font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 border border-emerald-500/20 cursor-pointer flex-1 sm:flex-initial"
+                    className="min-h-11 h-11 px-3 text-xs rounded-lg font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 border border-emerald-500/20 cursor-pointer flex-1 sm:flex-initial"
                     onClick={() => {
                       const phone = (selectedCarne.store.phone || "").replace(/\D/g, "");
                       const amount = formatMoney(
@@ -660,7 +899,7 @@ function ClientCarnesPage() {
                 placeholder="Ex: Pago via Nubank às 14:30 em nome de Maria..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="text-xs min-h-[65px] rounded-lg"
+                className="text-xs min-h-16 rounded-lg"
               />
             </div>
 
@@ -668,7 +907,7 @@ function ClientCarnesPage() {
               <Button
                 type="button"
                 variant="outline"
-                className="rounded-lg h-10 text-xs"
+                className="min-h-11 h-11 rounded-lg text-xs cursor-pointer"
                 onClick={() => setIsPayModalOpen(false)}
               >
                 Cancelar
@@ -676,7 +915,7 @@ function ClientCarnesPage() {
               <Button
                 type="submit"
                 disabled={isSubmitting || !proofUrl}
-                className="rounded-lg h-10 text-xs px-4 bg-primary text-primary-foreground font-medium"
+                className="min-h-11 h-11 rounded-lg text-xs px-4 bg-primary text-primary-foreground font-medium cursor-pointer"
               >
                 {isSubmitting ? "Enviando..." : "Enviar Comprovante"}
               </Button>
@@ -692,7 +931,7 @@ function ClientCarnesPage() {
           if (!open) setSelectedCompanionCarne(null);
         }}
       >
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-lg bg-background border border-border shadow-xs">
+        <DialogContent className="max-w-4xl max-h-screen overflow-y-auto p-4 sm:p-6 rounded-lg bg-background border border-border shadow-xs">
           <DialogHeader className="sr-only">
             <DialogTitle>Carnê Digital 9:16 de Pagamento</DialogTitle>
           </DialogHeader>
@@ -720,13 +959,13 @@ function getCarneCompanionData(carne: any) {
     return {
       id: `inst-${inst.installment_number}`,
       type: "custom" as const,
-      badge: isPaid ? "PAGA ✓" : isLate ? "EM ATRASO" : "A VENCER",
+      badge: isPaid ? "PAGA" : isLate ? "EM ATRASO" : "A VENCER",
       title: `Parcela ${inst.installment_number}/${carne.installments_count}`,
       subtitle: `Vencimento: ${formatDate(inst.due_date).split(" ")[0]}`,
       details: [
         { label: "Valor", value: formatMoney(amountCents), highlight: true },
         { label: "Situação", value: isPaid ? "Liquidada" : isLate ? "Vencida com juros" : "Aguardando pagamento" },
-        ...(inst.pix_code ? [{ label: "Chave Pix", value: inst.pix_code }] : []),
+        ...(inst.pix_copy_paste ? [{ label: "Chave Pix", value: inst.pix_copy_paste }] : []),
       ],
     };
   });

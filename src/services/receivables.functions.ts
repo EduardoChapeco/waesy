@@ -121,7 +121,7 @@ export const listClientCarnes = createServerFn({ method: "GET" }).handler(async 
     .select(
       `
       *,
-      creditor:creditor_id (id, full_name, avatar_url),
+      creditor:creditor_id (id, full_name, avatar_url, phone),
       store:store_id (id, name, logo_url, phone),
       contract:contract_id (id, title, status, verification_code),
       installments:receivable_installments (*)
@@ -135,6 +135,21 @@ export const listClientCarnes = createServerFn({ method: "GET" }).handler(async 
     throw new Error("Erro ao carregar seus carnês digitais.");
   }
 
+  // Resiliência relacional: buscar ordens associadas
+  const orderIds = (carnes || []).map((c: any) => c.order_id).filter(Boolean);
+  const orderMap = new Map();
+  if (orderIds.length > 0) {
+    try {
+      const { data: orders } = await supabase
+        .from("orders")
+        .select("id, order_number, status, total_cents")
+        .in("id", orderIds);
+      (orders || []).forEach((o: any) => orderMap.set(o.id, o));
+    } catch (orderErr) {
+      console.warn("[receivables] Aviso ao carregar ordens vinculadas:", orderErr);
+    }
+  }
+
   const now = new Date();
   let totalDebtCents = 0;
   let totalPaidCents = 0;
@@ -144,7 +159,7 @@ export const listClientCarnes = createServerFn({ method: "GET" }).handler(async 
   let nextDueCandidate: any = null;
 
   const enrichedCarnes = (carnes || []).map((carne: any) => {
-    const installments = (carne.installments || []).sort(
+    const rawInstallments = (carne.installments || []).sort(
       (a: any, b: any) => a.installment_number - b.installment_number,
     );
 
@@ -153,21 +168,46 @@ export const listClientCarnes = createServerFn({ method: "GET" }).handler(async 
     let carnePaidCount = 0;
     let carneLateCount = 0;
 
-    installments.forEach((inst: any) => {
+    const installments = rawInstallments.map((inst: any) => {
       const isPaid = inst.status === "paid";
       const isPendingConciliation = inst.conciliation_status === "pending";
       const dueDate = new Date(inst.due_date);
       const isOverdue = !isPaid && dueDate < now;
 
+      let fineCents = Number(inst.fine_cents || 0);
+      let interestAccruedCents = Number(inst.interest_accrued_cents || 0);
+      let lateDays = Number(inst.late_days || 0);
+      const originalAmt = Number(inst.original_amount_cents || inst.amount_cents || 0);
+
+      if (!isPaid && isOverdue) {
+        const diffMs = now.getTime() - dueDate.getTime();
+        lateDays = Math.max(1, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
+        const graceDays = Number(carne.grace_days || 0);
+
+        if (lateDays > graceDays) {
+          if (Number(carne.fine_percent || 0) > 0) {
+            fineCents = Math.round((originalAmt * Number(carne.fine_percent)) / 100);
+          }
+          if (Number(carne.interest_rate_monthly || 0) > 0) {
+            interestAccruedCents = Math.round(
+              originalAmt * (Number(carne.interest_rate_monthly) / 30 / 100) * lateDays,
+            );
+          }
+        }
+      }
+
+      const discountAmt = Number(inst.discount_cents || 0);
+      const computedFinalAmt = isPaid
+        ? Number(inst.paid_amount_cents || inst.final_amount_cents || originalAmt)
+        : Math.max(0, originalAmt + fineCents + interestAccruedCents - discountAmt);
+
       if (isPaid) {
-        const amt = Number(inst.final_amount_cents || inst.original_amount_cents || inst.amount_cents || 0);
-        carnePaidCents += amt;
-        totalPaidCents += amt;
+        carnePaidCents += computedFinalAmt;
+        totalPaidCents += computedFinalAmt;
         carnePaidCount++;
       } else {
-        const amt = Number(inst.final_amount_cents || inst.original_amount_cents || inst.amount_cents || 0);
-        carneRemainingCents += amt;
-        totalDebtCents += amt;
+        carneRemainingCents += computedFinalAmt;
+        totalDebtCents += computedFinalAmt;
 
         if (isOverdue || inst.status === "late") {
           carneLateCount++;
@@ -178,18 +218,26 @@ export const listClientCarnes = createServerFn({ method: "GET" }).handler(async 
           pendingConciliationCount++;
         }
 
-        // Determinar próximo vencimento
         if (!nextDueCandidate || dueDate < new Date(nextDueCandidate.dueDate)) {
           nextDueCandidate = {
             carneTitle: carne.title,
             storeName: carne.store?.name || carne.creditor?.full_name || "Loja",
             installmentNumber: inst.installment_number,
-            amountCents: amt,
+            amountCents: computedFinalAmt,
             dueDate: inst.due_date,
             isLate: isOverdue,
           };
         }
       }
+
+      return {
+        ...inst,
+        late_days: lateDays,
+        fine_cents: fineCents,
+        interest_accrued_cents: interestAccruedCents,
+        final_amount_cents: computedFinalAmt,
+        is_overdue: isOverdue,
+      };
     });
 
     if (carne.status === "active") {
@@ -198,6 +246,7 @@ export const listClientCarnes = createServerFn({ method: "GET" }).handler(async 
 
     return {
       ...carne,
+      order: carne.order_id ? orderMap.get(carne.order_id) || null : null,
       installments,
       summary: {
         paidCents: carnePaidCents,
@@ -290,6 +339,268 @@ export const submitInstallmentProof = createServerFn({ method: "POST" })
     }
 
     return { success: true, installment: updated };
+  });
+
+export const getClientCarneDossier = createServerFn({ method: "GET" })
+  .validator(z.object({ receivableId: z.string().uuid() }))
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const identity = await getIdentity();
+    if (!identity?.id) throw new Error("Não autenticado");
+
+    const { data: carne, error } = await supabase
+      .from("receivables")
+      .select(
+        `
+        *,
+        creditor:creditor_id (id, full_name, avatar_url, phone),
+        debtor:debtor_id (id, full_name, avatar_url, phone, cpf),
+        store:store_id (id, name, logo_url, phone),
+        contract:contract_id (id, title, status, verification_code),
+        installments:receivable_installments (*)
+      `,
+      )
+      .eq("id", input.receivableId)
+      .single();
+
+    if (error || !carne) {
+      throw new Error("Carnê não localizado.");
+    }
+
+    if (carne.debtor_id !== identity.id && carne.creditor_id !== identity.id) {
+      throw new Error("Acesso negado a este carnê.");
+    }
+
+    // Ordens associadas
+    let order = null;
+    if (carne.order_id) {
+      const { data: orderData } = await supabase
+        .from("orders")
+        .select("id, order_number, status, total_cents, created_at")
+        .eq("id", carne.order_id)
+        .maybeSingle();
+      order = orderData;
+    }
+
+    // Log de renegociação
+    const { data: adjustments } = await supabase
+      .from("receivable_adjustment_log")
+      .select("*")
+      .eq("receivable_id", carne.id)
+      .order("created_at", { ascending: false });
+
+    return {
+      ...carne,
+      order,
+      adjustments: adjustments || [],
+    };
+  });
+
+export const calculateEarlySettlement = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      receivableId: z.string().uuid(),
+      installmentIds: z.array(z.string().uuid()).optional(),
+    }),
+  )
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const identity = await getIdentity();
+    if (!identity?.id) throw new Error("Não autenticado");
+
+    const { data: carne, error } = await supabase
+      .from("receivables")
+      .select("*, store:store_id(id, name, phone), installments:receivable_installments(*)")
+      .eq("id", input.receivableId)
+      .single();
+
+    if (error || !carne) throw new Error("Carnê não encontrado.");
+    if (carne.debtor_id !== identity.id && carne.creditor_id !== identity.id) {
+      throw new Error("Acesso negado.");
+    }
+
+    const targetInstallments = (carne.installments || []).filter((inst: any) => {
+      if (inst.status === "paid") return false;
+      if (input.installmentIds && input.installmentIds.length > 0) {
+        return input.installmentIds.includes(inst.id);
+      }
+      return true;
+    });
+
+    if (targetInstallments.length === 0) {
+      throw new Error("Nenhuma parcela pendente elegível para quitação antecipada.");
+    }
+
+    const now = new Date();
+    let totalNominalCents = 0;
+    let totalFineCents = 0;
+    let totalInterestCents = 0;
+    let totalDiscountCents = 0;
+
+    targetInstallments.forEach((inst: any) => {
+      const orig = Number(inst.original_amount_cents || inst.amount_cents || 0);
+      totalNominalCents += orig;
+      const dueDate = new Date(inst.due_date);
+
+      if (dueDate < now) {
+        const lateDays = Math.max(1, Math.floor((now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)));
+        if (lateDays > Number(carne.grace_days || 0)) {
+          totalFineCents += Math.round((orig * Number(carne.fine_percent || 0)) / 100);
+          totalInterestCents += Math.round(
+            orig * (Number(carne.interest_rate_monthly || 0) / 30 / 100) * lateDays,
+          );
+        }
+      } else {
+        const discountRate = Number(carne.discount_percent || 5);
+        const disc = Math.round((orig * discountRate) / 100);
+        totalDiscountCents += disc;
+      }
+    });
+
+    const netPayoffCents = Math.max(0, totalNominalCents + totalFineCents + totalInterestCents - totalDiscountCents);
+    const storePhone = carne.store?.phone || "";
+
+    return {
+      receivableId: carne.id,
+      title: carne.title,
+      storeName: carne.store?.name || "Loja Credora",
+      targetInstallmentIds: targetInstallments.map((i: any) => i.id),
+      installmentsCount: targetInstallments.length,
+      totalNominalCents,
+      totalFineCents,
+      totalInterestCents,
+      totalDiscountCents,
+      netPayoffCents,
+      storePhone,
+    };
+  });
+
+export const renegotiateCarne = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      receivableId: z.string().uuid(),
+      newInstallmentsCount: z.number().int().min(1).max(72),
+      firstDueDate: z.string(),
+      interestRateMonthly: z.number().min(0).default(0),
+      finePercent: z.number().min(0).default(0),
+      agreedTotalCents: z.number().int().positive().optional(),
+      reason: z.string().min(5, "Justificativa obrigatória da renegociação"),
+    }),
+  )
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const serverIdentity = await getServerIdentity();
+    if (!serverIdentity?.id) throw new Error("Não autenticado");
+
+    const { data: oldCarne, error } = await supabase
+      .from("receivables")
+      .select("*, installments:receivable_installments(*)")
+      .eq("id", input.receivableId)
+      .single();
+
+    if (error || !oldCarne) throw new Error("Carnê não encontrado.");
+
+    if (oldCarne.store_id) {
+      assertManagerAccess(serverIdentity, oldCarne.store_id);
+    } else if (oldCarne.creditor_id !== serverIdentity.id) {
+      throw new Error("Acesso negado.");
+    }
+
+    let remainingDebtCents = 0;
+    (oldCarne.installments || []).forEach((inst: any) => {
+      if (inst.status !== "paid") {
+        remainingDebtCents += Number(inst.final_amount_cents || inst.original_amount_cents || inst.amount_cents || 0);
+      }
+    });
+
+    const newTotalCents = input.agreedTotalCents || remainingDebtCents;
+    if (newTotalCents <= 0) {
+      throw new Error("O saldo devedor para renegociação deve ser maior que zero.");
+    }
+
+    // 1. Cancelar parcelas abertas do carnê anterior
+    await supabase
+      .from("receivable_installments")
+      .update({
+        status: "waived",
+        notes: `Cancelada por renegociação em ${new Date().toLocaleDateString("pt-BR")}.`,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("receivable_id", oldCarne.id)
+      .neq("status", "paid");
+
+    // 2. Marcar carnê anterior como cancelled
+    await supabase
+      .from("receivables")
+      .update({
+        status: "cancelled",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", oldCarne.id);
+
+    // 3. Emitir novo carnê via RPC
+    const { data: newCarneRes, error: newCarneErr } = await supabase.rpc("create_receivable_with_installments", {
+      p_creditor_id: oldCarne.creditor_id,
+      p_debtor_id: oldCarne.debtor_id,
+      p_store_id: oldCarne.store_id || null,
+      p_contract_id: oldCarne.contract_id || null,
+      p_deal_id: oldCarne.deal_id || null,
+      p_title: `Renegociação — ${oldCarne.title}`,
+      p_description: `Refinanciamento de dívida do carnê #${oldCarne.id.slice(0, 8)}. Motivo: ${input.reason}`,
+      p_total_cents: newTotalCents,
+      p_installments_count: input.newInstallmentsCount,
+      p_first_due_date: new Date(input.firstDueDate).toISOString(),
+      p_interest_rate_monthly: input.interestRateMonthly,
+      p_fine_percent: input.finePercent,
+      p_grace_days: oldCarne.grace_days || 0,
+    });
+
+    if (newCarneErr) {
+      throw new Error("Erro ao criar novo plano de pagamento: " + newCarneErr.message);
+    }
+
+    const newCarneId = (newCarneRes as any)?.receivable_id;
+
+    if (newCarneId) {
+      await supabase
+        .from("receivables")
+        .update({
+          origin_type: "renegotiation",
+          renegotiated_from_id: oldCarne.id,
+        })
+        .eq("id", newCarneId);
+    }
+
+    // Registrar no log de ajustes
+    await supabase.from("receivable_adjustment_log").insert({
+      receivable_id: oldCarne.id,
+      installment_id: (oldCarne.installments || [])[0]?.id || oldCarne.id,
+      adjusted_by: serverIdentity.id,
+      adjustment_type: "manual_override",
+      previous_amount_cents: remainingDebtCents,
+      new_amount_cents: newTotalCents,
+      reason: `Renegociação formalizada: ${input.reason}. Novo carnê: ${newCarneId}`,
+    });
+
+    // Notificar cliente
+    try {
+      await supabase.from("notifications").insert({
+        user_id: oldCarne.debtor_id,
+        type: "carne_renegotiated",
+        title: "Acordo de Renegociação Concluído",
+        message: `Seu carnê "${oldCarne.title}" foi renegociado em ${input.newInstallmentsCount} novas parcelas. Acesse seus carnês para conferir o novo cronograma.`,
+        link_url: "/conta/carnes",
+      });
+    } catch (notifErr) {
+      console.warn("[receivables] Falha ao notificar devedor:", notifErr);
+    }
+
+    return {
+      success: true,
+      oldReceivableId: oldCarne.id,
+      newReceivableId: newCarneId,
+      newTotalCents,
+    };
   });
 
 // ==============================================================================
@@ -694,17 +1005,17 @@ export const sendMassBillingReminders = createServerFn({ method: "POST" })
       ).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
       if (input.template === "friendly") {
-        title = "📅 Lembrete de Parcela";
+        title = "Lembrete de Parcela";
         message = `Olá! A Parcela ${inst.installment_number} de "${rec.title}" (${amountFormatted}) vence em breve. Você pode emitir o PIX ou anexar o comprovante direto no seu Carnê Digital.`;
       } else if (input.template === "due_warning") {
-        title = "⚠️ Aviso de Vencimento";
+        title = "Aviso de Vencimento";
         message = `Sua Parcela ${inst.installment_number} de "${rec.title}" no valor de ${amountFormatted} está com vencimento próximo/vencida. Evite juros adicionais regularizando pelo aplicativo.`;
       } else if (input.template === "overdue_discount") {
         const disc = input.discountOfferedPercent || 10;
-        title = `🎁 Desconto Especial de ${disc}% para Quitação`;
+        title = `Desconto Especial de ${disc}% para Quitação`;
         message = `Regularize a Parcela ${inst.installment_number} de "${rec.title}" com ${disc}% de desconto oferecido pela loja! Envie seu comprovante pelo app.`;
       } else {
-        title = "📢 Mensagem da Loja sobre seu Carnê";
+        title = "Mensagem da Loja sobre seu Carnê";
         message =
           input.customMessage ||
           `Aviso sobre a Parcela ${inst.installment_number} de "${rec.title}" (${amountFormatted}).`;
@@ -782,17 +1093,17 @@ export const generateInstallmentWhatsAppReminder = createServerFn({ method: "POS
     let messageText = "";
     if (input.template === "friendly") {
       messageText = `Olá, *${clientName}*! Tudo bem?\n\nPassando para lembrar que a Parcela *${inst.installment_number}* de *"${rec.title}"* no valor de *${amountFormatted}* vence em *${dueDateFormatted}*.\n\n` +
-        (storePixKey ? `🔑 *Chave PIX da Loja:* \`${storePixKey}\`\n\n` : "") +
-        `📱 Você pode acessar e anexar seu comprovante pelo seu Carnê Digital:\nhttps://waesy.com.br/conta/carnes\n\nQualquer dúvida estamos à disposição! — *${storeName}*`;
+        (storePixKey ? `*Chave PIX da Loja:* \`${storePixKey}\`\n\n` : "") +
+        `Você pode acessar e anexar seu comprovante pelo seu Carnê Digital:\nhttps://waesy.com.br/conta/carnes\n\nQualquer dúvida estamos à disposição! — *${storeName}*`;
     } else if (input.template === "due_warning") {
       messageText = `Olá, *${clientName}*!\n\nAviso importante: a Parcela *${inst.installment_number}* de *"${rec.title}"* no valor de *${amountFormatted}* venceu/está com vencimento em *${dueDateFormatted}*.\n\n` +
         `Para regularizar sem juros adicionais e manter sua conta em dia, utilize a chave PIX ou envie seu comprovante pelo aplicativo:\n` +
-        (storePixKey ? `🔑 *Chave PIX:* \`${storePixKey}\`\n` : "") +
+        (storePixKey ? `*Chave PIX:* \`${storePixKey}\`\n` : "") +
         `https://waesy.com.br/conta/carnes\n\nObrigado! — *${storeName}*`;
     } else if (input.template === "overdue_discount") {
       const disc = input.discountOfferedPercent || 10;
       messageText = `Olá, *${clientName}*! Condição especial de quitação:\n\nA *${storeName}* preparou um desconto exclusivo de *${disc}%* para a quitação da Parcela *${inst.installment_number}* de *"${rec.title}"* hoje!\n\n` +
-        (storePixKey ? `🔑 *Pague via PIX:* \`${storePixKey}\`\n` : "") +
+        (storePixKey ? `*Pague via PIX:* \`${storePixKey}\`\n` : "") +
         `Envie o comprovante pelo link:\nhttps://waesy.com.br/conta/carnes\n\nAproveite essa oportunidade!`;
     } else {
       messageText = input.customMessage || `Olá, ${clientName}! Informamos sobre a Parcela ${inst.installment_number} de "${rec.title}" (${amountFormatted}) com vencimento em ${dueDateFormatted}.`;
@@ -812,7 +1123,7 @@ export const generateInstallmentWhatsAppReminder = createServerFn({ method: "POS
       await supabase.from("notifications").insert({
         user_id: debtor.id,
         type: "billing_reminder",
-        title: "📅 Lembrete de Cobrança da Loja",
+        title: "Lembrete de Cobrança da Loja",
         message: `Lembrete sobre a Parcela ${inst.installment_number} de "${rec.title}" (${amountFormatted}).`,
         link_url: "/conta/carnes",
       });
@@ -847,6 +1158,8 @@ export const createStoreCarne = createServerFn({ method: "POST" })
       contractId: z.string().uuid().optional(),
       dealId: z.string().uuid().optional(),
       storeId: z.string().uuid().optional(),
+      orderId: z.string().uuid().optional(),
+      originType: z.enum(["order", "deal_p2p", "store_pos", "condicional_conversion", "renegotiation"]).default("store_pos"),
     }),
   )
   .handler(async ({ data: input }) => {
@@ -878,6 +1191,17 @@ export const createStoreCarne = createServerFn({ method: "POST" })
     if (error) {
       console.error("[receivables] create_receivable_with_installments error:", error);
       throw new Error("Erro ao emitir carnê digital: " + error.message);
+    }
+
+    const recId = (result as any)?.receivable_id;
+    if (recId && (input.orderId || input.originType)) {
+      await supabase
+        .from("receivables")
+        .update({
+          order_id: input.orderId || null,
+          origin_type: input.originType || (input.orderId ? "order" : "store_pos"),
+        })
+        .eq("id", recId);
     }
 
     // Notificar o devedor sobre o novo carnê gerado

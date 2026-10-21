@@ -81,6 +81,8 @@ export interface WorkspaceCanonicalToolbarProps {
   primaryAction?: React.ReactNode | WorkspaceCanonicalAction;
 
   className?: string;
+  title?: string;
+  children?: React.ReactNode;
 }
 
 /**
@@ -129,6 +131,8 @@ export function WorkspaceCanonicalToolbar({
   secondaryActions,
   primaryAction,
   className,
+  title,
+  children,
 }: WorkspaceCanonicalToolbarProps) {
   const effectiveTabs = tabs || viewModes || [];
   const currentActive = activeTab || activeViewMode;
@@ -464,6 +468,7 @@ export function WorkspaceCanonicalToolbar({
           filters={filters}
         />
       )}
+      {children}
     </div>
   );
 }
