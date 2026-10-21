@@ -178,7 +178,7 @@ BEGIN
     IF v_account_id IS NULL THEN
       INSERT INTO public.financial_ledger_accounts (profile_id, account_type, currency)
       VALUES (p_profile_id, p_account_type, p_currency)
-      ON CONFLICT (profile_id, account_type, currency) DO UPDATE
+      ON CONFLICT (profile_id, account_type, currency) WHERE profile_id IS NOT NULL DO UPDATE
         SET updated_at = now()
       RETURNING id INTO v_account_id;
     END IF;
@@ -193,7 +193,7 @@ BEGIN
     IF v_account_id IS NULL THEN
       INSERT INTO public.financial_ledger_accounts (profile_id, account_type, currency)
       VALUES (NULL, p_account_type, p_currency)
-      ON CONFLICT (account_type, currency) DO UPDATE
+      ON CONFLICT (account_type, currency) WHERE profile_id IS NULL DO UPDATE
         SET updated_at = now()
       RETURNING id INTO v_account_id;
     END IF;

@@ -706,12 +706,12 @@ BEGIN
 
   -- 3. Atualizar instâncias de gift_cards legadas com $WZ equivalentes
   FOR v_gc IN
-    SELECT * FROM public.gift_cards WHERE (wz_initial = 0 OR wz_initial IS NULL) AND (initial_balance_cents > 0 OR initial_value_cents > 0)
+    SELECT * FROM public.gift_cards WHERE (wz_initial = 0 OR wz_initial IS NULL) AND (initial_value_cents > 0)
   LOOP
-    v_wz_amount := ROUND(COALESCE(v_gc.initial_balance_cents, v_gc.initial_value_cents, 0) * 14.2857);
+    v_wz_amount := ROUND(COALESCE(v_gc.initial_value_cents, 0) * 14.2857);
     UPDATE public.gift_cards
     SET wz_initial = v_wz_amount,
-        wz_remaining = ROUND(COALESCE(v_gc.current_balance_cents, v_gc.balance_cents, 0) * 14.2857),
+        wz_remaining = ROUND(COALESCE(v_gc.current_balance_cents, 0) * 14.2857),
         code_display = '•••• •••• ' || RIGHT(code, 4),
         claim_token = COALESCE(claim_token, encode(digest(id::text || code || now()::text, 'sha256'), 'hex')),
         updated_at = now()
@@ -751,9 +751,7 @@ CREATE POLICY "wz_token_buckets_user_select" ON public.wz_token_buckets
   USING (
     user_id = auth.uid()
     OR
-    scope_id IN (
-      SELECT store_id FROM public.profiles WHERE id = auth.uid() AND role IN ('owner', 'admin', 'manager')
-    )
+    (scope_id IS NOT NULL AND public.is_store_staff(scope_id))
   );
 
 -- wz_token_ledger: usuário vê seus próprios registros
@@ -772,9 +770,7 @@ DROP POLICY IF EXISTS "gift_card_products_manager_all" ON public.gift_card_produ
 CREATE POLICY "gift_card_products_manager_all" ON public.gift_card_products
   FOR ALL TO authenticated
   USING (
-    store_id IN (
-      SELECT store_id FROM public.profiles WHERE id = auth.uid() AND role IN ('owner', 'admin', 'manager')
-    )
+    store_id IS NOT NULL AND public.is_store_staff(store_id)
   );
 
 -- gift_card_media: leitura pública de mídia vinculada a cartões

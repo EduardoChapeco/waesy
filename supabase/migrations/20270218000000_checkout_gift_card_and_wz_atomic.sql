@@ -5,6 +5,10 @@
 
 BEGIN;
 
+-- Assegurar coluna relacional de pedido em gift_card_events
+ALTER TABLE public.gift_card_events
+  ADD COLUMN IF NOT EXISTS order_id UUID REFERENCES public.orders(id) ON DELETE SET NULL;
+
 CREATE OR REPLACE FUNCTION public.process_checkout_transaction_v2(
   p_cart_id uuid,
   p_idempotency_key text,
