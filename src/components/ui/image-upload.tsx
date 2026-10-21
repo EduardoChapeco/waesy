@@ -7,13 +7,14 @@ import { cn } from "@/lib/utils";
 import { ImageCropperDialog } from "@/components/ui/image-cropper-dialog";
 import { extractMediaFromClipboard } from "@/lib/clipboard-media";
 
-export type AspectRatioPreset = "square" | "classified" | "widescreen" | "banner" | "cover" | "header" | "free" | "portrait";
+export type AspectRatioPreset = "square" | "classified" | "widescreen" | "banner" | "cover" | "header" | "free" | "portrait" | "compact_banner";
 
 const PRESET_ASPECT_RATIOS: Record<AspectRatioPreset, number | undefined> = {
  square: 1, // 1:1 (Produtos, Logos, Avatars)
  classified: 4 / 3, // 4:3 (Classificados, Carros, Imóveis)
  widescreen: 16 / 9, // 16:9 (Panorâmico moderno, Banners delicados de Bio/Destaque)
  cover: 3 / 1, // 3:1 (Capa de Perfil de Membro)
+ compact_banner: 3 / 1, // 3:1 (Mini-Banner Bio Link Discreto)
  banner: 21 / 9, // 21:9 (Top Banners Hero de Loja)
  header: 4 / 1, // 4:1 (Banners Panorâmicos de Topo)
  portrait: 9 / 16, // 9:16 (Stories, Reels, Mobile Portrait)
@@ -206,6 +207,8 @@ export function ImageUpload({
  return "16:9 (Panorâmico)";
  case "cover":
  return "3:1 (Capa de Perfil)";
+ case "compact_banner":
+ return "3:1 (Mini-Banner Discreto)";
  case "banner":
  return "21:9 (Banner de Loja)";
  case "header":
@@ -336,10 +339,11 @@ export function ImageUpload({
 
  // ── 2. VARIANTE BANNER / COVER / HEADER PANORÂMICO (LARGURA TOTAL DA COLUNA) ──
  // O aspect ratio do preview CSS DEVE ser idêntico ao aspect ratio do cropper.
- if (variant === "banner" || aspectPreset === "banner" || aspectPreset === "cover" || aspectPreset === "header" || aspectPreset === "widescreen") {
+ if (variant === "banner" || aspectPreset === "banner" || aspectPreset === "cover" || aspectPreset === "header" || aspectPreset === "widescreen" || aspectPreset === "compact_banner") {
  // Monta o aspect CSS como string para o style inline — garante pixel-perfect com o cropper
  const previewAspect = effectiveAspect ? `${effectiveAspect}` : "16/9";
- const previewStyle: React.CSSProperties = { aspectRatio: previewAspect, maxHeight: "14rem" };
+ const maxHeight = aspectPreset === "compact_banner" ? "8rem" : "14rem";
+ const previewStyle: React.CSSProperties = { aspectRatio: previewAspect, maxHeight };
 
  return (
  <div

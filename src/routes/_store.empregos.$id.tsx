@@ -77,10 +77,13 @@ function JobDetailPage() {
     });
   };
 
- const [candidateName, setCandidateName] = useState(session?.user_metadata?.full_name || "");
- const [candidateEmail, setCandidateEmail] = useState(session?.email || "");
- const [candidatePhone, setCandidatePhone] = useState("");
- const [resumeUrl, setResumeUrl] = useState("");
+ const host = typeof window !== "undefined" ? window.location.origin : "https://usewaesy.pages.dev";
+ const defaultResumeUrl = profile ? `${host}/u/${profile.username || profile.id}` : "";
+
+ const [candidateName, setCandidateName] = useState(profile?.fullName || profile?.full_name || session?.user_metadata?.full_name || "");
+ const [candidateEmail, setCandidateEmail] = useState(profile?.email || session?.email || "");
+ const [candidatePhone, setCandidatePhone] = useState(profile?.phone || "");
+ const [resumeUrl, setResumeUrl] = useState(defaultResumeUrl);
  const [coverLetter, setCoverLetter] = useState("");
  const [hasApplied, setHasApplied] = useState(false);
 
@@ -175,6 +178,7 @@ function JobDetailPage() {
         isOpen={isApplyOpen}
         onOpenChange={setIsApplyOpen}
         job={job}
+        userProfile={profile}
         candidateName={candidateName}
         setCandidateName={setCandidateName}
         candidateEmail={candidateEmail}

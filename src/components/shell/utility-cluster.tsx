@@ -64,7 +64,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
     session?.user?.email?.split("@")[0] ||
     session?.email?.split("@")[0] ||
     "membro";
-  const userAvatar = userMeta?.avatar_url || session?.user?.avatar_url || session?.avatar_url || session?.profile?.avatar_url || "";
+  const userAvatar = session?.avatarUrl || session?.avatar_url || userMeta?.avatar_url || session?.user?.avatar_url || session?.profile?.avatar_url || "";
   const userInitial = userName.charAt(0).toUpperCase();
   const isPlatformAdmin =
     session?.role === "platform_admin" ||
@@ -253,7 +253,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
                 <div className="p-4 sm:p-5 border-b border-border/50 bg-muted/20 flex items-center gap-3 shrink-0">
                   <div className="size-12 rounded-lg overflow-hidden bg-muted shrink-0 flex items-center justify-center border border-border/60">
                     {userAvatar && !avatarError ? (
-                      <img src={userAvatar} alt={userName} className="size-full object-cover" />
+                      <img src={userAvatar} alt={userName} className="size-full object-cover" onError={() => setAvatarError(true)} />
                     ) : (
                       <span className="text-base font-black text-primary">{userInitial}</span>
                     )}
@@ -309,7 +309,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
                   {/* ── CONTEXTO 1: MODO CRIADOR ATIVO ── */}
                   {activeContext === "creator" && (
                     <>
-                      <div className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider px-3 py-1 flex items-center gap-1.5">
+                      <div className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider px-3 py-1 flex items-center gap-2">
                         <Sparkles className="size-3.5" />
                         <span>Painel do Criador (@{activeCreatorId || "ativo"})</span>
                       </div>
@@ -414,7 +414,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
                   {/* ── CONTEXTO 2: MODO EMPRESA ATIVO ── */}
                   {activeContext === "store" && (
                     <>
-                      <div className="text-xs font-bold text-primary uppercase tracking-wider px-3 py-1 flex items-center gap-1.5">
+                      <div className="text-xs font-bold text-primary uppercase tracking-wider px-3 py-1 flex items-center gap-2">
                         <Building2 className="size-3.5" />
                         <span>Gestão: {activeStoreName}</span>
                       </div>
@@ -426,7 +426,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
                       >
                         <div className="flex items-center gap-3">
                           <LayoutDashboard className="size-4" />
-                          <span>Acessar Painel Workspace</span>
+                          <span>Acessar Painel da Empresa</span>
                         </div>
                         <ArrowUpRight className="size-4" />
                       </Link>
@@ -504,196 +504,168 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
                     </>
                   )}
 
-                  {/* ── CONTEXTO 3: CONTA CIVIL PESSOAL (ROOT TRANSACIONAL PADRÃO) ── */}
+                  {/* ── CONTEXTO 3: CONTA CIVIL PESSOAL (BENTO GRID MODULAR CANÔNICO) ── */}
                   {activeContext === "civil" && (
-                    <>
-                      <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider px-3 py-1">
-                        Minha Conta Pessoal
+                    <div className="space-y-4">
+                      {/* 1. Hub de Criação & Perfis — Bento Grid 2 Colunas */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between px-1">
+                          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                            Hub de Criação & Negócios
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          {/* Tile 1: Criar Empresa ou Acessar Painel da Empresa */}
+                          {memberships.length > 0 ? (
+                            <Link
+                              to="/workspace"
+                              onClick={() => setIsAccountOpen(false)}
+                              className="col-span-2 p-3 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/15 transition-colors flex items-center justify-between min-h-14 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            >
+                              <div className="flex items-center gap-3 min-w-0">
+                                <div className="size-10 rounded-lg bg-primary/20 flex items-center justify-center shrink-0">
+                                  <Building2 className="size-5 text-primary" />
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="text-xs font-bold text-foreground truncate">Painel da Empresa</div>
+                                  <div className="text-xs text-muted-foreground truncate">Gerenciar catálogo, pedidos e caixa</div>
+                                </div>
+                              </div>
+                              <ArrowUpRight className="size-4 text-primary shrink-0" />
+                            </Link>
+                          ) : (
+                            <Link
+                              to="/criar-negocio"
+                              onClick={() => setIsAccountOpen(false)}
+                              className="col-span-2 p-3 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/15 transition-colors flex items-center justify-between min-h-14 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            >
+                              <div className="flex items-center gap-3 min-w-0">
+                                <div className="size-10 rounded-lg bg-primary text-primary-foreground flex items-center justify-center shrink-0">
+                                  <Plus className="size-5" />
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="text-xs font-bold text-foreground truncate">Criar Empresa</div>
+                                  <div className="text-xs text-muted-foreground truncate">Cadastrar comércio, loja ou serviço</div>
+                                </div>
+                              </div>
+                              <ArrowUpRight className="size-4 text-primary shrink-0" />
+                            </Link>
+                          )}
+
+                          {/* Tile 2: Perfil Criador */}
+                          <Link
+                            to="/conta/criadores"
+                            onClick={() => setIsAccountOpen(false)}
+                            className="p-3 rounded-lg bg-card border border-border/60 hover:border-primary/40 hover:bg-muted/40 transition-colors flex flex-col justify-between min-h-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          >
+                            <div className="flex items-center justify-between w-full">
+                              <div className="size-8 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                                <Sparkles className="size-4" />
+                              </div>
+                              <ArrowUpRight className="size-3.5 text-muted-foreground/60" />
+                            </div>
+                            <div className="mt-2 min-w-0">
+                              <div className="text-xs font-bold text-foreground truncate">Perfil Criador</div>
+                              <div className="text-xs text-muted-foreground truncate">Personas & Vitrine</div>
+                            </div>
+                          </Link>
+
+                          {/* Tile 3: Perfil Marca */}
+                          <Link
+                            to="/conta/empresa"
+                            onClick={() => setIsAccountOpen(false)}
+                            className="p-3 rounded-lg bg-card border border-border/60 hover:border-primary/40 hover:bg-muted/40 transition-colors flex flex-col justify-between min-h-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          >
+                            <div className="flex items-center justify-between w-full">
+                              <div className="size-8 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+                                <Tag className="size-4" />
+                              </div>
+                              <ArrowUpRight className="size-3.5 text-muted-foreground/60" />
+                            </div>
+                            <div className="mt-2 min-w-0">
+                              <div className="text-xs font-bold text-foreground truncate">Perfil Marca</div>
+                              <div className="text-xs text-muted-foreground truncate">Presença & Branding</div>
+                            </div>
+                          </Link>
+
+                          {/* Tile 4: Perfil Afiliado */}
+                          <Link
+                            to="/afiliados"
+                            onClick={() => setIsAccountOpen(false)}
+                            className="p-3 rounded-lg bg-card border border-border/60 hover:border-primary/40 hover:bg-muted/40 transition-colors flex flex-col justify-between min-h-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          >
+                            <div className="flex items-center justify-between w-full">
+                              <div className="size-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                                <DollarSign className="size-4" />
+                              </div>
+                              <ArrowUpRight className="size-3.5 text-muted-foreground/60" />
+                            </div>
+                            <div className="mt-2 min-w-0">
+                              <div className="text-xs font-bold text-foreground truncate">Perfil Afiliado</div>
+                              <div className="text-xs text-muted-foreground truncate">Comissões & Links</div>
+                            </div>
+                          </Link>
+
+                          {/* Tile 5: Perfil Mobilidade (Waesy Go) */}
+                          <Link
+                            to="/conta/mobilidade"
+                            onClick={() => setIsAccountOpen(false)}
+                            className="p-3 rounded-lg bg-card border border-border/60 hover:border-primary/40 hover:bg-muted/40 transition-colors flex flex-col justify-between min-h-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          >
+                            <div className="flex items-center justify-between w-full">
+                              <div className="size-8 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                                <Bike className="size-4" />
+                              </div>
+                              <ArrowUpRight className="size-3.5 text-muted-foreground/60" />
+                            </div>
+                            <div className="mt-2 min-w-0">
+                              <div className="text-xs font-bold text-foreground truncate">Waesy Go</div>
+                              <div className="text-xs text-muted-foreground truncate">Motorista & Entregas</div>
+                            </div>
+                          </Link>
+
+                          {/* Tile 6: Painel Global Master (Admin) */}
+                          {isPlatformAdmin && (
+                            <Link
+                              to="/admin-master"
+                              onClick={() => setIsAccountOpen(false)}
+                              className="col-span-2 p-3 rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-colors flex items-center justify-between min-h-14 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            >
+                              <div className="flex items-center gap-3 min-w-0">
+                                <div className="size-10 rounded-lg bg-background/20 text-background flex items-center justify-center shrink-0">
+                                  <ShieldAlert className="size-5" />
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="text-xs font-bold truncate">Painel Global Master</div>
+                                  <div className="text-xs opacity-80 truncate">Gestão de vitrines, CMS, cidades e moderação</div>
+                                </div>
+                              </div>
+                              <ArrowUpRight className="size-4 shrink-0" />
+                            </Link>
+                          )}
+                        </div>
                       </div>
 
-                      <Link
-                        to="/conta"
-                        onClick={() => setIsAccountOpen(false)}
-                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-bold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                      >
-                        <div className="flex items-center gap-3">
-                          <User className="size-4 text-muted-foreground" />
-                          <span>Painel Geral</span>
-                        </div>
-                        <ChevronRight className="size-4 text-muted-foreground/60" />
-                      </Link>
+                      {/* 2. Empresas Vinculadas (Com logotipos reais) */}
+                      {memberships.length > 0 && (
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between px-1">
+                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                              Minhas Empresas ({memberships.length})
+                            </span>
+                            <Link
+                              to="/criar-negocio"
+                              onClick={() => setIsAccountOpen(false)}
+                              className="text-xs font-bold text-primary hover:underline flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            >
+                              <Plus className="size-3" />
+                              <span>Nova Empresa</span>
+                            </Link>
+                          </div>
 
-                      <Link
-                        to="/conta/perfil"
-                        onClick={() => setIsAccountOpen(false)}
-                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                      >
-                        <div className="flex items-center gap-3">
-                          <Edit3 className="size-4 text-muted-foreground" />
-                          <span>Perfil & Identidade</span>
-                        </div>
-                        <ChevronRight className="size-4 text-muted-foreground/60" />
-                      </Link>
-
-                      <Link
-                        to="/conta/pedidos"
-                        onClick={() => setIsAccountOpen(false)}
-                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                      >
-                        <div className="flex items-center gap-3">
-                          <ShoppingBag className="size-4 text-muted-foreground" />
-                          <span>Meus Pedidos</span>
-                        </div>
-                        <ChevronRight className="size-4 text-muted-foreground/60" />
-                      </Link>
-
-                      <Link
-                        to="/conta/ingressos"
-                        onClick={() => setIsAccountOpen(false)}
-                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                      >
-                        <div className="flex items-center gap-3">
-                          <Ticket className="size-4 text-muted-foreground" />
-                          <span>Ingressos & Eventos</span>
-                        </div>
-                        <ChevronRight className="size-4 text-muted-foreground/60" />
-                      </Link>
-
-                      <Link
-                        to="/conta/agendamentos"
-                        onClick={() => setIsAccountOpen(false)}
-                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                      >
-                        <div className="flex items-center gap-3">
-                          <Calendar className="size-4 text-muted-foreground" />
-                          <span>Agendamentos</span>
-                        </div>
-                        <ChevronRight className="size-4 text-muted-foreground/60" />
-                      </Link>
-
-                      <Link
-                        to="/conta/trocas"
-                        onClick={() => setIsAccountOpen(false)}
-                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                      >
-                        <div className="flex items-center gap-3">
-                          <RefreshCw className="size-4 text-muted-foreground" />
-                          <span>Trocas & Negociações</span>
-                        </div>
-                        <ChevronRight className="size-4 text-muted-foreground/60" />
-                      </Link>
-
-                      <Link
-                        to="/conta/classificados"
-                        onClick={() => setIsAccountOpen(false)}
-                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                      >
-                        <div className="flex items-center gap-3">
-                          <Layers className="size-4 text-muted-foreground" />
-                          <span>Meus Anúncios</span>
-                        </div>
-                        <ChevronRight className="size-4 text-muted-foreground/60" />
-                      </Link>
-
-                      <Link
-                        to="/conta/salvos"
-                        onClick={() => setIsAccountOpen(false)}
-                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                      >
-                        <div className="flex items-center gap-3">
-                          <Bookmark className="size-4 text-muted-foreground" />
-                          <span>Salvos & Favoritos</span>
-                        </div>
-                        <ChevronRight className="size-4 text-muted-foreground/60" />
-                      </Link>
-
-                      <Link
-                        to="/conta/seguranca"
-                        onClick={() => setIsAccountOpen(false)}
-                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                      >
-                        <div className="flex items-center gap-3">
-                          <Lock className="size-4 text-muted-foreground" />
-                          <span>Segurança & Acesso</span>
-                        </div>
-                        <ChevronRight className="size-4 text-muted-foreground/60" />
-                      </Link>
-
-                      <Link
-                        to="/conta/suporte"
-                        onClick={() => setIsAccountOpen(false)}
-                        className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                      >
-                        <div className="flex items-center gap-3">
-                          <HelpCircle className="size-4 text-muted-foreground" />
-                          <span>Suporte & Ajuda</span>
-                        </div>
-                        <ChevronRight className="size-4 text-muted-foreground/60" />
-                      </Link>
-
-                      {/* Seção Gestão & Negócios */}
-                      <div className="pt-3 border-t border-border/40 mt-2">
-                        <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider px-3 py-1">
-                          Gestão & Outros Perfis
-                        </div>
-
-                        {isPlatformAdmin && (
-                          <Link
-                            to="/admin-master"
-                            onClick={() => setIsAccountOpen(false)}
-                            className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 transition-colors text-xs font-bold mb-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                          >
-                            <div className="flex items-center gap-3">
-                              <ShieldAlert className="size-4" />
-                              <span>Painel Global Master</span>
-                            </div>
-                            <ArrowUpRight className="size-4" />
-                          </Link>
-                        )}
-
-                        {creatorProfiles.length > 0 && (
-                          <button
-                            type="button"
-                            onClick={() => handleSwitchCreator(creatorProfiles[0])}
-                            className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between bg-amber-500/10 text-amber-700 dark:text-amber-400 hover:bg-amber-500/20 border border-amber-500/20 transition-colors text-xs font-bold mb-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                          >
-                            <div className="flex items-center gap-3">
-                              <Award className="size-4 text-amber-500" />
-                              <span>Alternar para @{creatorProfiles[0].handle} (Criador)</span>
-                            </div>
-                            <ArrowUpRight className="size-4" />
-                          </button>
-                        )}
-
-                        {memberships.length > 0 || isPlatformAdmin ? (
-                          <Link
-                            to="/workspace"
-                            onClick={() => setIsAccountOpen(false)}
-                            className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between bg-foreground text-background hover:bg-foreground/90 transition-colors text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                          >
-                            <div className="flex items-center gap-3">
-                              <LayoutDashboard className="size-4" />
-                              <span>Acessar Workspace</span>
-                            </div>
-                            <ArrowUpRight className="size-4" />
-                          </Link>
-                        ) : (
-                          <Link
-                            to="/criar-negocio"
-                            onClick={() => setIsAccountOpen(false)}
-                            className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                          >
-                            <div className="flex items-center gap-3">
-                              <Plus className="size-4" />
-                              <span>Criar Minha Empresa</span>
-                            </div>
-                            <ArrowUpRight className="size-4" />
-                          </Link>
-                        )}
-
-                        {memberships.length > 0 && (
-                          <div className="space-y-1 mt-2">
-                            {memberships.slice(0, 3).map((m: any) => {
+                          <div className="space-y-2">
+                            {memberships.map((m: any) => {
                               const isCurrent = m.store_id === activeStoreId;
                               return (
                                 <button
@@ -702,15 +674,28 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
                                   disabled={isSwitching}
                                   onClick={() => handleSwitchStore(m.store_id)}
                                   className={cn(
-                                    "w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between transition-colors cursor-pointer text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                                    "w-full h-12 min-h-12 px-3 rounded-lg flex items-center justify-between transition-colors cursor-pointer text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border",
                                     isCurrent
-                                      ? "bg-primary/10 text-primary font-bold"
-                                      : "hover:bg-muted/60 text-foreground font-medium"
+                                      ? "bg-primary/10 border-primary/30 text-primary font-bold"
+                                      : "bg-card border-border/60 hover:bg-muted/60 text-foreground font-medium"
                                   )}
                                 >
-                                  <div className="flex items-center gap-2 min-w-0">
-                                    <Store className="size-4 text-primary shrink-0" />
-                                    <span className="truncate">{m.name || "Minha Loja"}</span>
+                                  <div className="flex items-center gap-3 min-w-0">
+                                    {m.logo_url ? (
+                                      <img
+                                        src={m.logo_url}
+                                        alt={m.name || "Logo"}
+                                        className="size-7 rounded-md object-cover border border-border/60 shrink-0"
+                                      />
+                                    ) : (
+                                      <div className="size-7 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                                        <Store className="size-4" />
+                                      </div>
+                                    )}
+                                    <div className="min-w-0 text-left">
+                                      <div className="text-xs font-bold truncate">{m.name || "Minha Empresa"}</div>
+                                      <div className="text-xs text-muted-foreground truncate">{m.role || "Membro"}</div>
+                                    </div>
                                   </div>
                                   {isCurrent ? (
                                     <span className="text-xs font-bold text-primary px-2 py-1 rounded bg-primary/20 shrink-0">
@@ -723,9 +708,103 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
                               );
                             })}
                           </div>
-                        )}
+                        </div>
+                      )}
+
+                      {/* 3. Minha Conta Civil — Bento Grid 2 Colunas */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between px-1">
+                          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                            Conta Pessoal
+                          </span>
+                          <Link
+                            to="/conta/perfil"
+                            onClick={() => setIsAccountOpen(false)}
+                            className="text-xs font-medium text-primary hover:underline flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          >
+                            <Edit3 className="size-3" />
+                            <span>Editar Perfil</span>
+                          </Link>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <Link
+                            to="/conta/pedidos"
+                            onClick={() => setIsAccountOpen(false)}
+                            className="h-11 min-h-11 px-3 rounded-lg bg-card border border-border/60 hover:bg-muted/60 transition-colors flex items-center gap-2 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          >
+                            <ShoppingBag className="size-4 text-muted-foreground shrink-0" />
+                            <span className="truncate">Meus Pedidos</span>
+                          </Link>
+
+                          <Link
+                            to="/conta/ingressos"
+                            onClick={() => setIsAccountOpen(false)}
+                            className="h-11 min-h-11 px-3 rounded-lg bg-card border border-border/60 hover:bg-muted/60 transition-colors flex items-center gap-2 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          >
+                            <Ticket className="size-4 text-muted-foreground shrink-0" />
+                            <span className="truncate">Ingressos</span>
+                          </Link>
+
+                          <Link
+                            to="/conta/agendamentos"
+                            onClick={() => setIsAccountOpen(false)}
+                            className="h-11 min-h-11 px-3 rounded-lg bg-card border border-border/60 hover:bg-muted/60 transition-colors flex items-center gap-2 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          >
+                            <Calendar className="size-4 text-muted-foreground shrink-0" />
+                            <span className="truncate">Agendamentos</span>
+                          </Link>
+
+                          <Link
+                            to="/conta/negociacoes"
+                            onClick={() => setIsAccountOpen(false)}
+                            className="h-11 min-h-11 px-3 rounded-lg bg-card border border-border/60 hover:bg-muted/60 transition-colors flex items-center gap-2 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          >
+                            <RefreshCw className="size-4 text-muted-foreground shrink-0" />
+                            <span className="truncate">Negociações</span>
+                          </Link>
+
+                          <Link
+                            to="/conta/classificados"
+                            onClick={() => setIsAccountOpen(false)}
+                            className="h-11 min-h-11 px-3 rounded-lg bg-card border border-border/60 hover:bg-muted/60 transition-colors flex items-center gap-2 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          >
+                            <Layers className="size-4 text-muted-foreground shrink-0" />
+                            <span className="truncate">Meus Anúncios</span>
+                          </Link>
+
+                          <Link
+                            to="/conta/salvos"
+                            onClick={() => setIsAccountOpen(false)}
+                            className="h-11 min-h-11 px-3 rounded-lg bg-card border border-border/60 hover:bg-muted/60 transition-colors flex items-center gap-2 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          >
+                            <Bookmark className="size-4 text-muted-foreground shrink-0" />
+                            <span className="truncate">Salvos</span>
+                          </Link>
+                        </div>
                       </div>
-                    </>
+
+                      {/* 4. Segurança & Suporte */}
+                      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/40">
+                        <Link
+                          to="/conta/seguranca"
+                          onClick={() => setIsAccountOpen(false)}
+                          className="h-11 min-h-11 px-3 rounded-lg bg-card border border-border/60 hover:bg-muted/60 transition-colors flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        >
+                          <Lock className="size-4 shrink-0" />
+                          <span className="truncate">Segurança</span>
+                        </Link>
+
+                        <Link
+                          to="/conta/suporte"
+                          onClick={() => setIsAccountOpen(false)}
+                          className="h-11 min-h-11 px-3 rounded-lg bg-card border border-border/60 hover:bg-muted/60 transition-colors flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        >
+                          <HelpCircle className="size-4 shrink-0" />
+                          <span className="truncate">Suporte</span>
+                        </Link>
+                      </div>
+                    </div>
                   )}
                 </div>
 

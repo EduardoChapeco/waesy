@@ -630,18 +630,27 @@ export const listCustomerChatThreads = createServerFn({ method: "GET" }).handler
     const { data, error } = await db
       .from("chat_threads")
       .select(`
-        id, status, subject, department, updated_at, created_at, order_id, thread_type, customer_id, recipient_profile_id,
+        id, store_id, status, subject, department, updated_at, created_at, order_id, thread_type, context_type, metadata, customer_id, recipient_profile_id,
         store:stores(id, name, slug, settings),
         chat_messages(id, message, created_at, is_staff_reply)
       `)
       .or(`customer_id.eq.${user.id},recipient_profile_id.eq.${user.id}`)
+      .not("thread_type", "in", "(ai_assistant,copilot,project)")
       .order("updated_at", { ascending: false });
 
     if (error) throw error;
 
+    // ISOLAMENTO ZERO-TRUST: Garantir que nenhuma thread de IA apareça no inbox humano/comercial
+    const sanitizedData = (data || []).filter((t: any) => {
+      if (t.thread_type === "ai_assistant" || t.thread_type === "copilot" || t.thread_type === "project") return false;
+      if (t.context_type === "ai_assistant" || t.context_type === "copilot" || t.context_type === "project") return false;
+      if (t.metadata?.is_copilot || t.metadata?.is_civil || t.metadata?.agent_mode) return false;
+      return true;
+    });
+
     // Se houver conversas P2P, busca perfis participantes
     const p2pProfileIds = new Set<string>();
-    for (const t of data || []) {
+    for (const t of sanitizedData) {
       if (t.thread_type === "direct_p2p" || t.recipient_profile_id) {
         const otherId = t.customer_id === user.id ? t.recipient_profile_id : t.customer_id;
         if (otherId) p2pProfileIds.add(otherId);
@@ -659,7 +668,7 @@ export const listCustomerChatThreads = createServerFn({ method: "GET" }).handler
       }
     }
 
-    return (data || []).map((thread: any) => {
+    return sanitizedData.map((thread: any) => {
       const messages = thread.chat_messages || [];
       messages.sort(
         (a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),

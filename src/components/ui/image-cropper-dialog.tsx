@@ -25,6 +25,7 @@ const ASPECT_PRESETS: Array<{ label: string; value: number | undefined }> = [
   { label: "28:9 (Desktop Fino)", value: 28 / 9 },
   { label: "21:9 (iFood/Banner)", value: 21 / 9 },
   { label: "16:9 (Widescreen)", value: 16 / 9 },
+  { label: "3:1 (Bio Link Discreto)", value: 3 / 1 },
   { label: "4:5 (Post Threads)", value: 4 / 5 },
   { label: "9:16 (Story/Reels)", value: 9 / 16 },
   { label: "1:1 (Quadrado)", value: 1 },

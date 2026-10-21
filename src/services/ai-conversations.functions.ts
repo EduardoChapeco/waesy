@@ -2340,14 +2340,37 @@ export const listAiConversationThreads = createServerFn({ method: "GET" }).handl
         return [];
       }
 
-      const storeIds = Array.from(
-        new Set(
-          [
-            identity.store_id,
-            ...(identity.memberships || []).map((membership) => membership.store_id),
-          ].filter(Boolean),
-        ),
-      );
+      // 1. Tentar ler prioritariamente do domínio canônico isolado ai_threads
+      const { data: aiThreads, error: aiError } = await db
+        .from("ai_threads")
+        .select(`
+          id, domain_type, title, workspace_id, user_id,
+          status, pinned, metadata, working_memory, created_at, updated_at,
+          last_message_snippet, last_message_at
+        `)
+        .eq("user_id", identity.id)
+        .order("pinned", { ascending: false })
+        .order("updated_at", { ascending: false });
+
+      if (!aiError && aiThreads) {
+        return aiThreads.map((t: any) => ({
+          id: t.id,
+          type: (t.domain_type === "workspace" ? "project" : "ai_assistant") as any,
+          title: t.title || "Conversa Copilot",
+          store_id: t.workspace_id,
+          customer_id: t.user_id,
+          status: t.status || "open",
+          is_pinned: Boolean(t.pinned),
+          metadata: t.metadata || {},
+          working_memory: t.working_memory || {},
+          created_at: t.created_at,
+          updated_at: t.updated_at,
+          last_message_snippet: t.last_message_snippet,
+          last_message_at: t.last_message_at,
+        }));
+      }
+
+      // 2. Fallback de compatibilidade para chat_threads legado
       const visibilityClauses = [
         `customer_id.eq.${identity.id}`,
         `recipient_profile_id.eq.${identity.id}`,
@@ -2415,6 +2438,35 @@ export const createAiConversationThread = createServerFn({ method: "POST" })
       assertAiStoreTarget(resolvedStoreId, identity);
     }
 
+    const domainType = resolvedStoreId ? "workspace" : "personal";
+
+    // Cria prioritariamente em ai_threads
+    const { data: newAiThread, error: aiError } = await db
+      .from("ai_threads")
+      .insert({
+        user_id: identity.id,
+        workspace_id: resolvedStoreId,
+        domain_type: domainType,
+        title: data.title,
+        metadata: data.metadata,
+        working_memory: data.workingMemory,
+        status: "open",
+        pinned: false,
+      })
+      .select("id, domain_type, title, created_at, updated_at")
+      .single();
+
+    if (!aiError && newAiThread) {
+      return {
+        id: newAiThread.id,
+        thread_type: data.type || "ai_assistant",
+        subject: newAiThread.title,
+        created_at: newAiThread.created_at,
+        updated_at: newAiThread.updated_at,
+      };
+    }
+
+    // Fallback legado para chat_threads
     const { data: newThread, error } = await db
       .from("chat_threads")
       .insert({
@@ -2453,7 +2505,69 @@ export const getAiConversationThread = createServerFn({ method: "GET" })
     }
     const authenticatedIdentity = identity;
 
-    // 1. Thread
+    // 1. Tentar carregar de ai_threads
+    const { data: aiThread } = await db
+      .from("ai_threads")
+      .select("*")
+      .eq("id", threadId)
+      .maybeSingle();
+
+    if (aiThread) {
+      if (aiThread.user_id !== identity.id && !["platform_admin", "master"].includes(identity.role)) {
+        if (aiThread.workspace_id) {
+          assertStoreAccess({ ...identity, store_id: aiThread.workspace_id });
+        } else {
+          throw new Error("Sem permissão para acessar esta conversa");
+        }
+      }
+
+      const { data: messages, error: messagesErr } = await db
+        .from("ai_messages")
+        .select("*")
+        .eq("thread_id", threadId)
+        .order("created_at", { ascending: true });
+      if (messagesErr) throw new Error("Falha ao carregar mensagens da conversa");
+
+      const { data: artifacts, error: artifactsErr } = await db
+        .from("ai_artifacts")
+        .select("*")
+        .eq("thread_id", threadId)
+        .order("updated_at", { ascending: false });
+      if (artifactsErr) throw new Error("Falha ao carregar artefatos da conversa");
+
+      return {
+        thread: {
+          id: aiThread.id,
+          type: (aiThread.domain_type === "workspace" ? "project" : "ai_assistant") as any,
+          title: aiThread.title || "Conversa",
+          is_pinned: Boolean(aiThread.pinned),
+          working_memory: aiThread.working_memory || {},
+          metadata: aiThread.metadata || {},
+          status: aiThread.status,
+        },
+        messages: (messages || []).map((m: any) => ({
+          id: m.id,
+          threadId: m.thread_id,
+          clientMessageId: m.client_message_id || undefined,
+          executionId: m.run_id || m.structured_payload?.executionId,
+          senderId: m.sender_id,
+          isStaffOrAI: m.role === "assistant",
+          text: m.content,
+          createdAt: m.created_at,
+          status: m.status || "delivered",
+          activitySteps: m.activity_steps || m.structured_payload?.activitySteps || [],
+          toolCalls: m.tool_calls || m.structured_payload?.toolCalls || [],
+          artifact: m.structured_payload?.artifact || null,
+          structuredPayload: m.structured_payload?.structuredBlocks || null,
+          fsmPhase: m.fsm_phase || m.structured_payload?.fsmPhase,
+          fsmState: m.fsm_state || m.structured_payload?.fsmState,
+          attachments: m.attachments || [],
+        })),
+        artifacts: artifacts || [],
+      };
+    }
+
+    // Fallback legado para chat_threads
     const { data: thread, error: threadErr } = await db
       .from("chat_threads")
       .select("*")
@@ -2527,121 +2641,268 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
       throw new Error("Usuário não autenticado");
     }
 
-    // 1. Obter thread para contexto e memória de trabalho
-    const { data: thread } = await db
-      .from("chat_threads")
-      .select(
-        "id, thread_type, working_memory, store_id, customer_id, recipient_profile_id, assigned_to_profile_id",
-      )
+    // 1. Obter thread para contexto e memória de trabalho (Canônico ai_threads com fallback)
+    const { data: aiThread } = await db
+      .from("ai_threads")
+      .select("id, user_id, workspace_id, working_memory, title, domain_type")
       .eq("id", data.threadId)
-      .single();
+      .maybeSingle();
 
-    if (!thread) {
-      throw new Error("Thread inexistente");
-    }
-    assertAiThreadAccess(thread, identity);
-
-    // 2. Inserir ou recuperar a mensagem do usuário por chave estável.
-    // A constraint (thread_id, client_message_id) é a última barreira contra
-    // retries concorrentes; o lookup anterior permite devolver o resultado já
-    // persistido sem executar o pipeline/consumir tokens novamente.
+    const isAiThread = Boolean(aiThread);
+    let resolvedWorkingMemory: Record<string, any> = {};
+    let resolvedStoreId: string | null = null;
     let userMsg: { id: string; created_at: string } | null = null;
-    if (data.clientMessageId) {
-      const { data: existingUser } = await db
-        .from("chat_messages")
-        .select("id, created_at, status, message, payload")
-        .eq("thread_id", data.threadId)
-        .eq("client_message_id", data.clientMessageId)
-        .eq("sender_id", identity.id)
-        .eq("is_staff_reply", false)
-        .maybeSingle();
 
-      if (existingUser) {
-        const { data: existingAi } = await db
-          .from("chat_messages")
-          .select("id, created_at, message, payload, status")
+    if (aiThread) {
+      if (aiThread.user_id !== identity.id && !["platform_admin", "master"].includes(identity.role)) {
+        if (aiThread.workspace_id) {
+          assertStoreAccess({ ...identity, store_id: aiThread.workspace_id });
+        } else {
+          throw new Error("Sem permissão para acessar esta conversa");
+        }
+      }
+      resolvedWorkingMemory = aiThread.working_memory || {};
+      resolvedStoreId = aiThread.workspace_id || null;
+
+      // Idempotência e persistência em ai_messages
+      if (data.clientMessageId) {
+        const { data: existingUser } = await db
+          .from("ai_messages")
+          .select("id, created_at, status, content, structured_payload")
           .eq("thread_id", data.threadId)
-          .eq("is_staff_reply", true)
-          .contains("payload", { clientMessageId: data.clientMessageId })
-          .order("created_at", { ascending: true })
-          .limit(1)
+          .eq("client_message_id", data.clientMessageId)
+          .eq("sender_id", identity.id)
+          .eq("role", "user")
           .maybeSingle();
 
-        if (existingAi) {
-          return {
-            userMessageId: existingUser.id,
-            aiMessage: mapPersistedAiMessage(existingAi, data.threadId),
-            updatedWorkingMemory: thread.working_memory || {},
-          };
-        }
+        if (existingUser) {
+          const { data: existingAi } = await db
+            .from("ai_messages")
+            .select("id, created_at, content, structured_payload, status, activity_steps, tool_calls, fsm_phase, fsm_state")
+            .eq("thread_id", data.threadId)
+            .eq("role", "assistant")
+            .order("created_at", { ascending: true })
+            .limit(1)
+            .maybeSingle();
 
-        if (existingUser.status === "sending") {
-          throw new Error("Mensagem já está em processamento; aguarde a resposta persistida.");
-        }
+          if (existingAi) {
+            return {
+              userMessageId: existingUser.id,
+              aiMessage: {
+                id: existingAi.id,
+                threadId: data.threadId,
+                executionId: existingAi.structured_payload?.executionId,
+                text: existingAi.content,
+                activitySteps: existingAi.activity_steps || existingAi.structured_payload?.activitySteps || [],
+                artifact: existingAi.structured_payload?.artifact || null,
+                structuredPayload: existingAi.structured_payload?.structuredBlocks || null,
+                createdAt: existingAi.created_at,
+                status: existingAi.status || "delivered",
+                fsmPhase: existingAi.fsm_phase || existingAi.structured_payload?.fsmPhase,
+                fsmState: existingAi.fsm_state || existingAi.structured_payload?.fsmState,
+                toolCalls: existingAi.tool_calls || existingAi.structured_payload?.toolCalls || [],
+              },
+              updatedWorkingMemory: aiThread.working_memory || {},
+            };
+          }
 
-        const { error: resetError } = await db
-          .from("chat_messages")
-          .update({ status: "sending", failed_at: null, error_message: null })
-          .eq("id", existingUser.id);
-        if (resetError) throw new Error("Falha ao reabrir mensagem para retry");
-        userMsg = { id: existingUser.id, created_at: existingUser.created_at };
+          if (existingUser.status === "sending") {
+            throw new Error("Mensagem já está em processamento; aguarde a resposta persistida.");
+          }
+
+          const { error: resetError } = await db
+            .from("ai_messages")
+            .update({ status: "sending", failed_at: null, error_message: null })
+            .eq("id", existingUser.id);
+          if (resetError) throw new Error("Falha ao reabrir mensagem para retry");
+          userMsg = { id: existingUser.id, created_at: existingUser.created_at };
+        }
+      }
+
+      if (!userMsg) {
+        const { data: insertedUser, error: userMsgErr } = await db
+          .from("ai_messages")
+          .insert({
+            thread_id: data.threadId,
+            client_message_id: data.clientMessageId || null,
+            sender_id: identity.id,
+            role: "user",
+            content: data.message,
+            attachments: data.attachments || [],
+            status: "sending",
+          })
+          .select("id, created_at")
+          .single();
+
+        if (userMsgErr || !insertedUser) {
+          if (data.clientMessageId && userMsgErr?.code === "23505") {
+            const { data: winner } = await db
+              .from("ai_messages")
+              .select("id, created_at, status, structured_payload")
+              .eq("thread_id", data.threadId)
+              .eq("client_message_id", data.clientMessageId)
+              .eq("sender_id", identity.id)
+              .eq("role", "user")
+              .maybeSingle();
+            if (winner) {
+              const { data: winnerAi } = await db
+                .from("ai_messages")
+                .select("id, created_at, content, structured_payload, status, activity_steps, tool_calls, fsm_phase, fsm_state")
+                .eq("thread_id", data.threadId)
+                .eq("role", "assistant")
+                .order("created_at", { ascending: true })
+                .limit(1)
+                .maybeSingle();
+              if (winnerAi) {
+                return {
+                  userMessageId: winner.id,
+                  aiMessage: {
+                    id: winnerAi.id,
+                    threadId: data.threadId,
+                    executionId: winnerAi.structured_payload?.executionId,
+                    text: winnerAi.content,
+                    activitySteps: winnerAi.activity_steps || winnerAi.structured_payload?.activitySteps || [],
+                    artifact: winnerAi.structured_payload?.artifact || null,
+                    structuredPayload: winnerAi.structured_payload?.structuredBlocks || null,
+                    createdAt: winnerAi.created_at,
+                    status: winnerAi.status || "delivered",
+                    fsmPhase: winnerAi.fsm_phase || winnerAi.structured_payload?.fsmPhase,
+                    fsmState: winnerAi.fsm_state || winnerAi.structured_payload?.fsmState,
+                    toolCalls: winnerAi.tool_calls || winnerAi.structured_payload?.toolCalls || [],
+                  },
+                  updatedWorkingMemory: aiThread.working_memory || {},
+                };
+              }
+              if (winner.status === "sending") {
+                throw new Error("Mensagem já está em processamento; aguarde a resposta persistida.");
+              }
+            }
+          }
+          throw new Error("Falha ao registrar mensagem do usuário");
+        }
+        userMsg = insertedUser;
       }
     }
 
-    if (!userMsg) {
-      const { data: insertedUser, error: userMsgErr } = await db
-        .from("chat_messages")
-        .insert({
-          thread_id: data.threadId,
-          client_message_id: data.clientMessageId || null,
-          sender_id: identity.id,
-          is_staff_reply: false,
-          message: data.message,
-          message_type: "text",
-          attachments: data.attachments || [],
-          status: "sending",
-        })
-        .select("id, created_at")
+    let thread: any = null;
+    if (!aiThread) {
+      const { data: legacyThread } = await db
+        .from("chat_threads")
+        .select(
+          "id, thread_type, working_memory, store_id, customer_id, recipient_profile_id, assigned_to_profile_id",
+        )
+        .eq("id", data.threadId)
         .single();
 
-      if (userMsgErr || Boolean(insertedUser) === false) {
-        if (data.clientMessageId && userMsgErr?.code === "23505") {
-          const { data: winner } = await db
-            .from("chat_messages")
-            .select("id, created_at, status, payload")
-            .eq("thread_id", data.threadId)
-            .eq("client_message_id", data.clientMessageId)
-            .eq("sender_id", identity.id)
-            .eq("is_staff_reply", false)
-            .maybeSingle();
-          if (winner) {
-            const { data: winnerAi } = await db
-              .from("chat_messages")
-              .select("id, created_at, message, payload, status")
-              .eq("thread_id", data.threadId)
-              .eq("is_staff_reply", true)
-              .contains("payload", { clientMessageId: data.clientMessageId })
-              .order("created_at", { ascending: true })
-              .limit(1)
-              .maybeSingle();
-            if (winnerAi) {
-              return {
-                userMessageId: winner.id,
-                aiMessage: mapPersistedAiMessage(winnerAi, data.threadId),
-                updatedWorkingMemory: thread.working_memory || {},
-              };
-            }
-            if (winner.status === "sending") {
-              throw new Error("Mensagem já está em processamento; aguarde a resposta persistida.");
-            }
-          }
-          throw new Error(
-            "Mensagem duplicada sem resposta persistida; tente novamente para recuperar o resultado.",
-          );
-        }
-        throw new Error("Falha ao registrar mensagem do usuário");
+      if (!legacyThread) {
+        throw new Error("Thread inexistente");
       }
-      userMsg = insertedUser;
+      assertAiThreadAccess(legacyThread, identity);
+      thread = legacyThread;
+      resolvedWorkingMemory = legacyThread.working_memory || {};
+      resolvedStoreId = legacyThread.store_id || null;
+
+      // 2. Inserir ou recuperar a mensagem do usuário por chave estável.
+      // A constraint (thread_id, client_message_id) é a última barreira contra
+      // retries concorrentes; o lookup anterior permite devolver o resultado já
+      // persistido sem executar o pipeline/consumir tokens novamente.
+      if (data.clientMessageId) {
+        const { data: existingUser } = await db
+          .from("chat_messages")
+          .select("id, created_at, status, message, payload")
+          .eq("thread_id", data.threadId)
+          .eq("client_message_id", data.clientMessageId)
+          .eq("sender_id", identity.id)
+          .eq("is_staff_reply", false)
+          .maybeSingle();
+
+        if (existingUser) {
+          const { data: existingAi } = await db
+            .from("chat_messages")
+            .select("id, created_at, message, payload, status")
+            .eq("thread_id", data.threadId)
+            .eq("is_staff_reply", true)
+            .contains("payload", { clientMessageId: data.clientMessageId })
+            .order("created_at", { ascending: true })
+            .limit(1)
+            .maybeSingle();
+
+          if (existingAi) {
+            return {
+              userMessageId: existingUser.id,
+              aiMessage: mapPersistedAiMessage(existingAi, data.threadId),
+              updatedWorkingMemory: thread.working_memory || {},
+            };
+          }
+
+          if (existingUser.status === "sending") {
+            throw new Error("Mensagem já está em processamento; aguarde a resposta persistida.");
+          }
+
+          const { error: resetError } = await db
+            .from("chat_messages")
+            .update({ status: "sending", failed_at: null, error_message: null })
+            .eq("id", existingUser.id);
+          if (resetError) throw new Error("Falha ao reabrir mensagem para retry");
+          userMsg = { id: existingUser.id, created_at: existingUser.created_at };
+        }
+      }
+
+      if (!userMsg) {
+        const { data: insertedUser, error: userMsgErr } = await db
+          .from("chat_messages")
+          .insert({
+            thread_id: data.threadId,
+            client_message_id: data.clientMessageId || null,
+            sender_id: identity.id,
+            is_staff_reply: false,
+            message: data.message,
+            message_type: "text",
+            attachments: data.attachments || [],
+            status: "sending",
+          })
+          .select("id, created_at")
+          .single();
+
+        if (userMsgErr || Boolean(insertedUser) === false) {
+          if (data.clientMessageId && userMsgErr?.code === "23505") {
+            const { data: winner } = await db
+              .from("chat_messages")
+              .select("id, created_at, status, payload")
+              .eq("thread_id", data.threadId)
+              .eq("client_message_id", data.clientMessageId)
+              .eq("sender_id", identity.id)
+              .eq("is_staff_reply", false)
+              .maybeSingle();
+            if (winner) {
+              const { data: winnerAi } = await db
+                .from("chat_messages")
+                .select("id, created_at, message, payload, status")
+                .eq("thread_id", data.threadId)
+                .eq("is_staff_reply", true)
+                .contains("payload", { clientMessageId: data.clientMessageId })
+                .order("created_at", { ascending: true })
+                .limit(1)
+                .maybeSingle();
+              if (winnerAi) {
+                return {
+                  userMessageId: winner.id,
+                  aiMessage: mapPersistedAiMessage(winnerAi, data.threadId),
+                  updatedWorkingMemory: thread.working_memory || {},
+                };
+              }
+              if (winner.status === "sending") {
+                throw new Error("Mensagem já está em processamento; aguarde a resposta persistida.");
+              }
+            }
+            throw new Error(
+              "Mensagem duplicada sem resposta persistida; tente novamente para recuperar o resultado.",
+            );
+          }
+          throw new Error("Falha ao registrar mensagem do usuário");
+        }
+        userMsg = insertedUser;
+      }
     }
 
     // 3. Execução do pipeline de IA ReAct com chamada de ferramentas reais (com Error Boundary)
@@ -2649,10 +2910,10 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
     const copilotAbortController = new AbortController();
     try {
       execution = await withCopilotTimeout(
-        executeAiCopilotPipeline(data.message, thread.working_memory || {}, {
+        executeAiCopilotPipeline(data.message, resolvedWorkingMemory, {
           threadId: data.threadId,
           userId: identity.id,
-          storeId: thread.store_id || undefined,
+          storeId: resolvedStoreId || undefined,
           userLat: data.userLat,
           userLng: data.userLng,
           city: normalizeActiveCity(data.city) ?? resolveActiveCity(),
@@ -2682,9 +2943,13 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
             completedAt: new Date().toISOString(),
           },
         ],
-        updatedMemory: thread.working_memory || {},
+        updatedMemory: resolvedWorkingMemory,
         fsmPhase: "FAILED_RETRYABLE",
       };
+    }
+
+    if (!userMsg) {
+      throw new Error("Falha ao registrar ou localizar mensagem do usuário");
     }
 
     // 4–6. Finalizar o exchange em uma única transação no Postgres.
@@ -2721,7 +2986,7 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
         p_ai_status: aiStatus,
         p_updated_memory: execution.updatedMemory,
         p_artifact: execution.artifact || null,
-        p_store_id: thread.store_id || null,
+        p_store_id: resolvedStoreId,
       },
     );
 
@@ -2737,6 +3002,18 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
     }
     const persistedAiMessageId = (persistedExchange as { ai_message_id?: string }).ai_message_id;
     const persistedAiCreatedAt = (persistedExchange as { ai_created_at?: string }).ai_created_at;
+
+    if (isAiThread) {
+      await db
+        .from("ai_threads")
+        .update({
+          last_message_snippet: execution.responseMessage?.slice(0, 140) || "",
+          last_message_at: persistedAiCreatedAt || new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          working_memory: execution.updatedMemory,
+        })
+        .eq("id", data.threadId);
+    }
 
     // 🧠 Motor Autônomo Estilo Manus AI: Aprendizado contínuo & Memória episódica
     extractAndSaveFactsFromConversation({
@@ -2786,6 +3063,52 @@ export const saveAiChatArtifact = createServerFn({ method: "POST" })
 
     if (!identity?.id) {
       throw new Error("Usuário não autenticado");
+    }
+
+    const { data: aiThread } = await db
+      .from("ai_threads")
+      .select("id, user_id, workspace_id")
+      .eq("id", data.threadId)
+      .maybeSingle();
+
+    if (aiThread) {
+      if (aiThread.user_id !== identity.id && !["platform_admin", "master"].includes(identity.role)) {
+        if (aiThread.workspace_id) {
+          assertStoreAccess({ ...identity, store_id: aiThread.workspace_id });
+        } else {
+          throw new Error("Sem permissão para salvar artefato nesta conversa");
+        }
+      }
+
+      const { data: artifact, error } = await db
+        .from("ai_artifacts")
+        .insert({
+          user_id: identity.id,
+          workspace_id: aiThread.workspace_id || data.storeId || null,
+          thread_id: data.threadId,
+          message_id: data.messageId || null,
+          artifact_type: data.artifactType,
+          title: data.title,
+          current_version: data.version || 1,
+          data: data.data || {},
+          metadata: data.metadata || {},
+        })
+        .select("*")
+        .single();
+
+      if (error || !artifact) {
+        throw new Error("Falha ao salvar artefato");
+      }
+
+      await db.from("ai_artifact_versions").insert({
+        artifact_id: artifact.id,
+        version_number: data.version || 1,
+        data: data.data || {},
+        metadata: data.metadata || {},
+        created_by: identity.id,
+      });
+
+      return artifact;
     }
 
     const { data: thread, error: threadError } = await db
@@ -2838,6 +3161,28 @@ export const toggleAiThreadPinned = createServerFn({ method: "POST" })
       throw new Error("Usuário não autenticado");
     }
 
+    const { data: aiThread } = await db
+      .from("ai_threads")
+      .select("id, user_id, workspace_id")
+      .eq("id", data.threadId)
+      .maybeSingle();
+
+    if (aiThread) {
+      if (aiThread.user_id !== identity.id && !["platform_admin", "master"].includes(identity.role)) {
+        if (aiThread.workspace_id) {
+          assertStoreAccess({ ...identity, store_id: aiThread.workspace_id });
+        } else {
+          throw new Error("Sem permissão para alterar esta conversa");
+        }
+      }
+      const { error: aiErr } = await db
+        .from("ai_threads")
+        .update({ pinned: data.isPinned, updated_at: new Date().toISOString() })
+        .eq("id", data.threadId);
+      if (aiErr) throw new Error("Falha ao alterar fixação da thread");
+      return { success: true, isPinned: data.isPinned };
+    }
+
     const { data: thread } = await db
       .from("chat_threads")
       .select("customer_id, recipient_profile_id, store_id, assigned_to_profile_id")
@@ -2863,6 +3208,33 @@ export const toggleAiThreadArchived = createServerFn({ method: "POST" })
     const db = getServerClient();
     const identity = await getServerIdentity().catch(() => null);
     if (!identity?.id) throw new Error("Usuário não autenticado");
+
+    const { data: aiThread } = await db
+      .from("ai_threads")
+      .select("id, user_id, workspace_id")
+      .eq("id", data.threadId)
+      .maybeSingle();
+
+    if (aiThread) {
+      if (aiThread.user_id !== identity.id && !["platform_admin", "master"].includes(identity.role)) {
+        if (aiThread.workspace_id) {
+          assertStoreAccess({ ...identity, store_id: aiThread.workspace_id });
+        } else {
+          throw new Error("Sem permissão para alterar esta conversa");
+        }
+      }
+      const { error: aiErr } = await db
+        .from("ai_threads")
+        .update({
+          archived: data.isArchived,
+          status: data.isArchived ? "archived" : "open",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", data.threadId);
+      if (aiErr) throw new Error("Falha ao alterar arquivamento da thread");
+      return { success: true, isArchived: data.isArchived };
+    }
+
     const { data: thread } = await db
       .from("chat_threads")
       .select("customer_id, recipient_profile_id, store_id, assigned_to_profile_id")
@@ -2897,6 +3269,28 @@ export const deleteAiConversationThread = createServerFn({ method: "POST" })
 
     if (!identity?.id) {
       throw new Error("Usuário não autenticado");
+    }
+
+    const { data: aiThread } = await db
+      .from("ai_threads")
+      .select("id, user_id, workspace_id")
+      .eq("id", data.threadId)
+      .maybeSingle();
+
+    if (aiThread) {
+      if (aiThread.user_id !== identity.id && !["platform_admin", "master"].includes(identity.role)) {
+        if (aiThread.workspace_id) {
+          assertStoreAccess({ ...identity, store_id: aiThread.workspace_id });
+        } else {
+          throw new Error("Sem permissão para excluir esta conversa");
+        }
+      }
+      await db.from("ai_messages").delete().eq("thread_id", data.threadId);
+      await db.from("ai_artifacts").delete().eq("thread_id", data.threadId);
+      await db.from("ai_tasks").update({ thread_id: null }).eq("thread_id", data.threadId);
+      const { error } = await db.from("ai_threads").delete().eq("id", data.threadId);
+      if (error) throw new Error("Falha ao excluir conversa");
+      return { success: true };
     }
 
     const { data: thread } = await db

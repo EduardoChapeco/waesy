@@ -17,41 +17,131 @@
     "touchTargetMinSizePx": 44,
     "maxAnimationDurationMs": 300,
     "minTextContrastRatio": 4.5,
-    "minControlContrastRatio": 3.0,
+    "minControlContrastRatio": 3,
     "maxHeadingWords": 6,
     "maxButtonWords": 3
   },
   "rules": {
-    "DL-01": { "severity": "P1", "enabled": true },
-    "DL-02": { "severity": "P1", "enabled": true },
-    "DL-03": { "severity": "P1", "enabled": true },
-    "DL-04": { "severity": "P0", "enabled": true },
-    "DL-05": { "severity": "P1", "enabled": true },
-    "DL-06": { "severity": "P2", "enabled": true },
-    "DL-07": { "severity": "P2", "enabled": true },
-    "DL-08": { "severity": "P2", "enabled": true },
-    "DL-09": { "severity": "P2", "enabled": true },
-    "DL-10": { "severity": "P2", "enabled": true },
-    "DL-11": { "severity": "P1", "enabled": true },
-    "DL-12": { "severity": "P1", "enabled": true },
-    "DL-13": { "severity": "P1", "enabled": true },
-    "DL-14": { "severity": "P1", "enabled": true },
-    "DL-15": { "severity": "P0", "enabled": true },
-    "DL-16": { "severity": "P0", "enabled": true },
-    "DL-17": { "severity": "P0", "enabled": true },
-    "DL-18": { "severity": "P1", "enabled": true },
-    "DL-19": { "severity": "P2", "enabled": true },
-    "DL-20": { "severity": "P2", "enabled": true },
-    "DL-21": { "severity": "P3", "enabled": true },
-    "DL-22": { "severity": "P2", "enabled": true },
-    "DL-23": { "severity": "P2", "enabled": true },
-    "DL-24": { "severity": "P2", "enabled": true },
-    "DL-25": { "severity": "P2", "enabled": true },
-    "DL-26": { "severity": "P2", "enabled": true },
-    "DL-27": { "severity": "P3", "enabled": true },
-    "DL-28": { "severity": "P1", "enabled": true },
-    "DL-29": { "severity": "P2", "enabled": true },
-    "DL-30": { "severity": "P3", "enabled": true }
+    "DL-01": {
+      "severity": "P1",
+      "enabled": true
+    },
+    "DL-02": {
+      "severity": "P1",
+      "enabled": true
+    },
+    "DL-03": {
+      "severity": "P1",
+      "enabled": true
+    },
+    "DL-04": {
+      "severity": "P0",
+      "enabled": true
+    },
+    "DL-05": {
+      "severity": "P1",
+      "enabled": true
+    },
+    "DL-06": {
+      "severity": "P2",
+      "enabled": true
+    },
+    "DL-07": {
+      "severity": "P2",
+      "enabled": true
+    },
+    "DL-08": {
+      "severity": "P2",
+      "enabled": true
+    },
+    "DL-09": {
+      "severity": "P2",
+      "enabled": true
+    },
+    "DL-10": {
+      "severity": "P2",
+      "enabled": true
+    },
+    "DL-11": {
+      "severity": "P1",
+      "enabled": true
+    },
+    "DL-12": {
+      "severity": "P1",
+      "enabled": true
+    },
+    "DL-13": {
+      "severity": "P1",
+      "enabled": true
+    },
+    "DL-14": {
+      "severity": "P1",
+      "enabled": true
+    },
+    "DL-15": {
+      "severity": "P0",
+      "enabled": true
+    },
+    "DL-16": {
+      "severity": "P0",
+      "enabled": true
+    },
+    "DL-17": {
+      "severity": "P0",
+      "enabled": true
+    },
+    "DL-18": {
+      "severity": "P1",
+      "enabled": true
+    },
+    "DL-19": {
+      "severity": "P2",
+      "enabled": true
+    },
+    "DL-20": {
+      "severity": "P2",
+      "enabled": true
+    },
+    "DL-21": {
+      "severity": "P3",
+      "enabled": true
+    },
+    "DL-22": {
+      "severity": "P2",
+      "enabled": true
+    },
+    "DL-23": {
+      "severity": "P2",
+      "enabled": true
+    },
+    "DL-24": {
+      "severity": "P2",
+      "enabled": true
+    },
+    "DL-25": {
+      "severity": "P2",
+      "enabled": true
+    },
+    "DL-26": {
+      "severity": "P2",
+      "enabled": true
+    },
+    "DL-27": {
+      "severity": "P3",
+      "enabled": true
+    },
+    "DL-28": {
+      "severity": "P1",
+      "enabled": true
+    },
+    "DL-29": {
+      "severity": "P2",
+      "enabled": true
+    },
+    "DL-30": {
+      "severity": "P3",
+      "enabled": true
+    }
   },
   "allowlist": [
     {
@@ -84,6 +174,22 @@
       "reason": "Paletas de temas e templates de canvas para sites do OmniPage Builder",
       "date": "2026-10-18",
       "expiry": "2027-12-31",
+      "approvedBy": "design-system-architect"
+    },
+    {
+      "id": "DL-18",
+      "file": "src/components/resume/resume-document.tsx",
+      "reason": "Folha fisica A4 de papel para impressao e preview isolado do modo escuro exige fundo branco e cores fisicas",
+      "date": "2026-10-20",
+      "expiry": "2028-12-31",
+      "approvedBy": "design-system-architect"
+    },
+    {
+      "id": "DL-12",
+      "file": "src/components/resume/resume-document.tsx",
+      "reason": "Documento impresso A4 omite secoes vazias de acordo com preenchimento real do candidato",
+      "date": "2026-10-20",
+      "expiry": "2028-12-31",
       "approvedBy": "design-system-architect"
     }
   ]

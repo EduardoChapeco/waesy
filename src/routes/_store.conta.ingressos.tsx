@@ -1,6 +1,20 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import { Ticket, Calendar, MapPin, QrCode, CheckCircle2, Clock, XCircle, ChevronRight, Share2, Search } from "lucide-react";
+import {
+  Ticket,
+  Calendar,
+  MapPin,
+  QrCode,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  ChevronRight,
+  Share2,
+  Search,
+  ArrowRight,
+  Sparkles,
+  Info,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { NativeMobileHeader } from "@/components/navigation";
@@ -8,21 +22,23 @@ import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
+import { generateQrCodeDataUri } from "@/lib/qr-code";
 import { listCustomerEventTickets, type CustomerEventTicketDTO } from "@/services/events.functions";
+import { TicketDetailModal } from "@/components/eventos/ticket-detail-modal";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const FILTER_CHIPS = [
   { id: "todos", label: "Todos" },
-  { id: "valid", label: "Válidos", statuses: ["paid", "processing", "completed"] },
+  { id: "valid", label: "Válidos", statuses: ["paid", "processing", "completed", "valid"] },
   { id: "used", label: "Utilizados", isUsed: true },
-  { id: "cancelled", label: "Cancelados", statuses: ["cancelled", "returned"] },
+  { id: "cancelled", label: "Cancelados", statuses: ["cancelled", "returned", "revoked"] },
 ];
 
 // ─── Route ────────────────────────────────────────────────────────────────────
 
 export const Route = createFileRoute("/_store/conta/ingressos")({
-  head: () => ({ meta: [{ title: "Ingressos | Waesy" }] }),
+  head: () => ({ meta: [{ title: "Meus Ingressos | Waesy" }] }),
   loader: async () => {
     try {
       return (await listCustomerEventTickets().catch(() => [])) || [];
@@ -57,15 +73,15 @@ function CustomerTicketsErrorComponent({ error, reset }: { error: any; reset: ()
   );
 }
 
-// ─── QR Display Component ─────────────────────────────────────────────────────
+// ─── Offline Vector QR Display Component ──────────────────────────────────────
 
-function QrDisplay({ code }: { code: string }) {
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&margin=10&data=${encodeURIComponent(code)}`;
+function OfflineQrDisplay({ code }: { code: string }) {
+  const qrDataUri = useMemo(() => generateQrCodeDataUri(code), [code]);
 
   return (
     <div className="inline-flex flex-col items-center p-3 bg-card border border-border/40 rounded-lg shadow-xs">
       <img
-        src={qrUrl}
+        src={qrDataUri}
         alt={`QR Code para validação do ingresso ${code}`}
         className="size-28 sm:size-32 object-contain rounded-lg"
         loading="lazy"
@@ -79,40 +95,56 @@ function QrDisplay({ code }: { code: string }) {
 
 // ─── Ticket Card ──────────────────────────────────────────────────────────────
 
-function TicketCard({ ticket }: { ticket: CustomerEventTicketDTO }) {
+function TicketCard({
+  ticket,
+  onOpenDetail,
+}: {
+  ticket: CustomerEventTicketDTO;
+  onOpenDetail: (ticket: CustomerEventTicketDTO) => void;
+}) {
   const [showQr, setShowQr] = useState(false);
-  const isValid = !ticket.isUsed && ["paid", "processing", "completed"].includes(ticket.status);
-  const isCancelled = ["cancelled", "returned"].includes(ticket.status);
+  const isValid = !ticket.isUsed && ["paid", "processing", "completed", "valid"].includes(ticket.status);
+  const isCancelled = ["cancelled", "returned", "revoked"].includes(ticket.status);
 
-  const handleShare = async () => {
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     try {
       await navigator.share({
         title: ticket.eventTitle,
-        text: `Meu ingresso: ${ticket.eventTitle} — Código: ${ticket.accessCode}`,
+        text: `Meu ingresso: ${ticket.eventTitle} — Código: ${ticket.humanCode || ticket.accessCode}`,
         url: window.location.href,
       });
     } catch {
-      navigator.clipboard.writeText(ticket.accessCode);
+      navigator.clipboard.writeText(ticket.humanCode || ticket.accessCode);
     }
   };
 
   return (
     <div
-      className={`bg-card border rounded-lg overflow-hidden transition-colors ${
+      role="button"
+      tabIndex={0}
+      onClick={() => onOpenDetail(ticket)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onOpenDetail(ticket);
+        }
+      }}
+      className={`bg-card border rounded-lg overflow-hidden transition-colors duration-200 cursor-pointer hover:border-primary/40 group select-none focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring ${
         ticket.isUsed
-          ? "border-border/30 opacity-70"
+          ? "border-border/30 opacity-75"
           : isCancelled
-          ? "border-destructive/20"
-          : "border-border/50"
+          ? "border-destructive/20 opacity-70"
+          : "border-border/60 hover:shadow-xs"
       }`}
     >
       {/* Capa do evento se houver */}
       {ticket.coverUrl && (
-        <div className="aspect-video max-h-36 overflow-hidden">
+        <div className="aspect-video max-h-36 overflow-hidden relative">
           <img
             src={ticket.coverUrl}
             alt={ticket.eventTitle}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300"
           />
         </div>
       )}
@@ -125,14 +157,14 @@ function TicketCard({ ticket }: { ticket: CustomerEventTicketDTO }) {
               ticket.isUsed
                 ? "bg-muted/50 text-muted-foreground/50"
                 : isValid
-                ? "bg-primary/5 text-primary border border-primary/20"
+                ? "bg-primary/10 text-primary border border-primary/20"
                 : "bg-muted/40 text-muted-foreground/60"
             }`}
           >
             <Ticket className="size-5" strokeWidth={1.75} />
           </div>
           <div className="min-w-0 flex-1">
-            <h4 className="text-sm font-bold text-foreground leading-snug line-clamp-2">
+            <h4 className="text-sm font-bold text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors">
               {ticket.eventTitle}
             </h4>
             {ticket.lotName && (
@@ -169,22 +201,22 @@ function TicketCard({ ticket }: { ticket: CustomerEventTicketDTO }) {
       <div className="px-4 py-3 border-b border-border/30 space-y-2">
         {ticket.eventDate && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Calendar className="size-4 shrink-0" strokeWidth={1.75} />
+            <Calendar className="size-4 shrink-0 text-primary" strokeWidth={1.75} />
             <span>{formatDate(ticket.eventDate)}</span>
           </div>
         )}
         {ticket.eventLocation && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <MapPin className="size-4 shrink-0" strokeWidth={1.75} />
+            <MapPin className="size-4 shrink-0 text-primary" strokeWidth={1.75} />
             <span className="truncate">{ticket.eventLocation}</span>
           </div>
         )}
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">
-            {ticket.quantity > 1 ? `${ticket.quantity}× ingressos` : "1 ingresso"}
+        <div className="flex items-center justify-between pt-1">
+          <span className="text-xs text-muted-foreground font-mono">
+            Código: {ticket.humanCode || ticket.accessCode}
           </span>
           <span className="text-sm font-bold text-foreground font-mono">
-            {formatMoney(ticket.priceCents)}
+            {ticket.priceCents === 0 ? "Grátis" : formatMoney(ticket.priceCents)}
           </span>
         </div>
       </div>
@@ -195,54 +227,45 @@ function TicketCard({ ticket }: { ticket: CustomerEventTicketDTO }) {
           <button
             type="button"
             id={`qr-toggle-${ticket.id}`}
-            onClick={() => setShowQr(!showQr)}
-            className="w-full flex items-center justify-between text-xs font-semibold text-foreground cursor-pointer py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowQr(!showQr);
+            }}
+            className="w-full flex items-center justify-between text-xs font-semibold text-foreground cursor-pointer py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg"
           >
             <div className="flex items-center gap-2">
-              <QrCode className="size-4 text-muted-foreground" strokeWidth={1.75} />
-              <span>Código de Acesso</span>
+              <QrCode className="size-4 text-primary" strokeWidth={1.75} />
+              <span>QR Code de Entrada</span>
             </div>
             <span className="text-muted-foreground text-xs">{showQr ? "Ocultar" : "Exibir QR"}</span>
           </button>
 
           {showQr && (
             <div className="flex flex-col items-center gap-2 pt-3 animate-in fade-in duration-200">
-              <QrDisplay code={ticket.qrHash} />
-              <p className="text-xs text-muted-foreground text-center max-w-52">
-                Mostre este QR Code na entrada do evento
+              <OfflineQrDisplay code={ticket.qrHash || ticket.humanCode} />
+              <p className="text-xs text-muted-foreground text-center max-w-56">
+                Mostre este QR Code na portaria digital do evento
               </p>
             </div>
           )}
         </div>
       )}
 
-      {/* Ações */}
-      <div className="px-4 py-3 flex items-center gap-2">
-        {ticket.classifiedId ? (
-          <Button
-            asChild
-            size="default"
-            variant="outline"
-            className="flex-1 rounded-lg text-xs font-semibold h-11 min-h-11 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            <Link to="/classificados/$id" params={{ id: ticket.classifiedId }}>
-              <ChevronRight className="size-4 mr-1" strokeWidth={2} />
-              <span>Ver Evento</span>
-            </Link>
-          </Button>
-        ) : (
-          <Button
-            asChild
-            size="default"
-            variant="outline"
-            className="flex-1 rounded-lg text-xs font-semibold h-11 min-h-11 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            <Link to="/conta/pedidos/$id" params={{ id: ticket.orderId }}>
-              <ChevronRight className="size-4 mr-1" strokeWidth={2} />
-              <span>Comprovante</span>
-            </Link>
-          </Button>
-        )}
+      {/* Ações do Card */}
+      <div className="px-4 py-3 flex items-center gap-2 bg-muted/10">
+        <Button
+          type="button"
+          size="default"
+          variant="outline"
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpenDetail(ticket);
+          }}
+          className="flex-1 rounded-lg text-xs font-semibold h-11 min-h-11 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          <ChevronRight className="size-4 mr-1" strokeWidth={2} />
+          <span>Ver Detalhes do Ingresso</span>
+        </Button>
         {isValid && (
           <Button
             type="button"
@@ -263,20 +286,22 @@ function TicketCard({ ticket }: { ticket: CustomerEventTicketDTO }) {
 // ─── Página Principal ─────────────────────────────────────────────────────────
 
 function CustomerTicketsPage() {
+  const router = useRouter();
   const tickets = (Route.useLoaderData() as CustomerEventTicketDTO[]) || [];
   const [activeFilter, setActiveFilter] = useState("todos");
   const [search, setSearch] = useState("");
+  const [selectedTicket, setSelectedTicket] = useState<CustomerEventTicketDTO | null>(null);
 
   const filtered = useMemo(() => {
     let result = tickets;
     if (activeFilter === "used") {
-      result = result.filter((t) => t.isUsed);
+      result = result.filter((t) => t.isUsed || t.status === "used");
     } else if (activeFilter === "valid") {
       result = result.filter(
-        (t) => !t.isUsed && ["paid", "processing", "completed"].includes(t.status)
+        (t) => !t.isUsed && ["paid", "processing", "completed", "valid"].includes(t.status)
       );
     } else if (activeFilter === "cancelled") {
-      result = result.filter((t) => ["cancelled", "returned"].includes(t.status));
+      result = result.filter((t) => ["cancelled", "returned", "revoked"].includes(t.status));
     }
     if (search.trim()) {
       const term = search.trim().toLowerCase();
@@ -284,6 +309,7 @@ function CustomerTicketsPage() {
         (t) =>
           t.eventTitle?.toLowerCase().includes(term) ||
           t.eventLocation?.toLowerCase().includes(term) ||
+          t.humanCode?.toLowerCase().includes(term) ||
           t.accessCode?.toLowerCase().includes(term)
       );
     }
@@ -294,19 +320,23 @@ function CustomerTicketsPage() {
     () => ({
       todos: tickets.length,
       valid: tickets.filter(
-        (t) => !t.isUsed && ["paid", "processing", "completed"].includes(t.status)
+        (t) => !t.isUsed && ["paid", "processing", "completed", "valid"].includes(t.status)
       ).length,
-      used: tickets.filter((t) => t.isUsed).length,
-      cancelled: tickets.filter((t) => ["cancelled", "returned"].includes(t.status)).length,
+      used: tickets.filter((t) => t.isUsed || t.status === "used").length,
+      cancelled: tickets.filter((t) => ["cancelled", "returned", "revoked"].includes(t.status)).length,
     }),
     [tickets]
   );
 
   const navActionBtn = (
     <Button asChild size="default" variant="outline" className="rounded-lg text-xs font-semibold h-11 min-h-11 px-4 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary">
-      <Link to="/agenda">Agenda</Link>
+      <Link to="/eventos">Eventos</Link>
     </Button>
   );
+
+  const handleRefresh = () => {
+    router.invalidate();
+  };
 
   return (
     <div className="w-full max-w-2xl mx-auto pb-24 px-0 sm:px-4 md:px-0">
@@ -334,15 +364,23 @@ function CustomerTicketsPage() {
       </div>
 
       {tickets.length === 0 ? (
-        /* ── Empty State ── */
+        /* ── Empty State Canônico com Redirecionamento para Eventos ── */
         <EmptyState
           icon={Ticket}
           title="Nenhum ingresso encontrado"
-          description="Seus ingressos para shows, festivais e eventos culturais aparecerão aqui com QR Code de acesso digital."
+          description="Seus ingressos para shows, festivais, festas e conferências aparecerão aqui com QR Code e segurança nominal WCTS-1."
           action={
-            <Button asChild size="default" className="rounded-lg h-11 min-h-11 px-6 text-xs font-bold mt-2 focus-visible:ring-2 focus-visible:ring-primary">
-              <Link to="/agenda">Explorar Agenda</Link>
-            </Button>
+            <div className="flex flex-col sm:flex-row items-center gap-2 mt-3">
+              <Button asChild size="default" className="rounded-lg h-11 min-h-11 px-6 text-xs font-bold gap-2 focus-visible:ring-2 focus-visible:ring-primary shadow-xs">
+                <Link to="/eventos">
+                  <Sparkles className="size-4" />
+                  <span>Explorar Eventos & Shows</span>
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="default" className="rounded-lg h-11 min-h-11 px-5 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary">
+                <Link to="/agenda">Ver Agenda Cultural</Link>
+              </Button>
+            </div>
           }
           className="my-8"
         />
@@ -355,7 +393,7 @@ function CustomerTicketsPage() {
               <Input
                 id="tickets-search"
                 type="text"
-                placeholder="Buscar por evento ou local..."
+                placeholder="Buscar por evento, local ou código de ingresso..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9 h-11 min-h-11 text-xs rounded-lg border-border/60 bg-muted/30 focus:bg-background transition-colors"
@@ -393,16 +431,56 @@ function CustomerTicketsPage() {
           {/* ── 5. Grid de Ingressos ── */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
             {filtered.length === 0 ? (
-              <div className="col-span-full flex flex-col items-center justify-center py-12 text-center gap-2">
-                <p className="text-sm font-semibold text-foreground">Nenhum ingresso encontrado</p>
-                <p className="text-xs text-muted-foreground">Tente outro filtro ou limpe a busca.</p>
+              <div className="col-span-full flex flex-col items-center justify-center py-12 text-center gap-2 bg-muted/10 border border-dashed border-border/50 rounded-lg p-6">
+                <Ticket className="size-8 text-muted-foreground/40 mb-1" />
+                <p className="text-sm font-semibold text-foreground">
+                  {search ? "Nenhum ingresso encontrado para esta busca" : "Nenhum ingresso nesta categoria"}
+                </p>
+                <p className="text-xs text-muted-foreground max-w-sm">
+                  {search
+                    ? `Não localizamos ingressos com o termo "${search}".`
+                    : "Você não possui ingressos correspondentes ao filtro selecionado."}
+                </p>
+                {search ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setSearch("")}
+                    className="h-11 px-4 text-xs font-semibold rounded-lg mt-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    Limpar Busca
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setActiveFilter("todos")}
+                    className="h-11 px-4 text-xs font-semibold rounded-lg mt-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    Ver Todos os Ingressos
+                  </Button>
+                )}
               </div>
             ) : (
-              filtered.map((ticket) => <TicketCard key={ticket.id} ticket={ticket} />)
+              filtered.map((ticket) => (
+                <TicketCard
+                  key={ticket.id}
+                  ticket={ticket}
+                  onOpenDetail={(t) => setSelectedTicket(t)}
+                />
+              ))
             )}
           </div>
         </>
       )}
+
+      {/* Modal de Detalhes do Ingresso */}
+      <TicketDetailModal
+        open={Boolean(selectedTicket)}
+        onOpenChange={(open) => !open && setSelectedTicket(null)}
+        ticket={selectedTicket}
+        onTicketUpdated={handleRefresh}
+      />
     </div>
   );
 }

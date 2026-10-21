@@ -2638,14 +2638,6 @@ export const saveBuilderNodes = createServerFn({ method: "POST" })
         targetVersionId = newVersion.id;
         targetVersion = newVersion;
         isForked = true;
-      } else {
-        // Versão já em rascunho: remove nós anteriores para substituição atômica
-        const { error: delError } = await db
-          .from("experience_nodes")
-          .delete()
-          .eq("version_id", targetVersionId);
-
-        if (delError) throw delError;
       }
 
       // 2. Mapeamento de nós (com novos UUIDs se for forked para evitar colisão de PK)
@@ -2706,10 +2698,24 @@ export const saveBuilderNodes = createServerFn({ method: "POST" })
 
       nodesToInsert.forEach((n) => visitNode(n));
 
-      // 4. Inserção no banco
-      if (sortedNodes.length > 0) {
-        const { error: insError } = await db.from("experience_nodes").insert(sortedNodes);
-        if (insError) throw insError;
+      // 4. Persistência Transacional Atômica via RPC (com fallback resiliente)
+      const { error: rpcError } = await db.rpc("save_builder_nodes_atomic", {
+        p_version_id: targetVersionId,
+        p_nodes: sortedNodes,
+      });
+
+      if (rpcError) {
+        if (!isForked) {
+          const { error: delError } = await db
+            .from("experience_nodes")
+            .delete()
+            .eq("version_id", targetVersionId);
+          if (delError) throw delError;
+        }
+        if (sortedNodes.length > 0) {
+          const { error: insError } = await db.from("experience_nodes").insert(sortedNodes);
+          if (insError) throw insError;
+        }
       }
 
       return {
@@ -2766,50 +2772,56 @@ export const publishBuilderVersion = createServerFn({ method: "POST" })
         .eq("document_id", version.document_id)
         .eq("status", "published");
 
-      // 3. Substitui os nós desta versão com ordenação topológica
-      await db.from("experience_nodes").delete().eq("version_id", input.version_id);
+      // 3. Substitui os nós desta versão de forma atômica com ordenação topológica
+      const nodesToInsert = input.nodes.map((node: any) => ({
+        id: node.id,
+        version_id: input.version_id,
+        parent_id: node.parent_id || null,
+        page_id: node.page_id || null,
+        node_type: node.node_type,
+        block_type: node.block_type,
+        layout_variant: node.layout_variant || null,
+        content: node.content || {},
+        design_tokens: node.design_tokens || {},
+        layout_rules: node.layout_rules || {},
+        animation_rules: node.animation_rules || {},
+        responsive_overrides: node.responsive_overrides || {},
+        data_bindings: node.data_bindings || {},
+        action_bindings: node.action_bindings || {},
+        sort_order: node.sort_order || 0,
+        is_hidden: node.is_hidden || false,
+      }));
 
-      if (input.nodes.length > 0) {
-        const nodesToInsert = input.nodes.map((node: any) => ({
-          id: node.id,
-          version_id: input.version_id,
-          parent_id: node.parent_id || null,
-          page_id: node.page_id || null,
-          node_type: node.node_type,
-          block_type: node.block_type,
-          layout_variant: node.layout_variant || null,
-          content: node.content || {},
-          design_tokens: node.design_tokens || {},
-          layout_rules: node.layout_rules || {},
-          animation_rules: node.animation_rules || {},
-          responsive_overrides: node.responsive_overrides || {},
-          data_bindings: node.data_bindings || {},
-          action_bindings: node.action_bindings || {},
-          sort_order: node.sort_order || 0,
-          is_hidden: node.is_hidden || false,
-        }));
+      const nodeMap = new Map(nodesToInsert.map((n) => [n.id, n]));
+      nodesToInsert.forEach((n) => {
+        if (n.parent_id && !nodeMap.has(n.parent_id)) {
+          n.parent_id = null;
+        }
+      });
 
-        const nodeMap = new Map(nodesToInsert.map((n) => [n.id, n]));
-        nodesToInsert.forEach((n) => {
-          if (n.parent_id && !nodeMap.has(n.parent_id)) {
-            n.parent_id = null;
-          }
-        });
+      const sortedNodes: typeof nodesToInsert = [];
+      const visited = new Set<string>();
+      const visitNode = (n: (typeof nodesToInsert)[0]) => {
+        if (visited.has(n.id)) return;
+        if (n.parent_id && nodeMap.has(n.parent_id)) {
+          visitNode(nodeMap.get(n.parent_id)!);
+        }
+        visited.add(n.id);
+        sortedNodes.push(n);
+      };
+      nodesToInsert.forEach((n) => visitNode(n));
 
-        const sortedNodes: typeof nodesToInsert = [];
-        const visited = new Set<string>();
-        const visitNode = (n: (typeof nodesToInsert)[0]) => {
-          if (visited.has(n.id)) return;
-          if (n.parent_id && nodeMap.has(n.parent_id)) {
-            visitNode(nodeMap.get(n.parent_id)!);
-          }
-          visited.add(n.id);
-          sortedNodes.push(n);
-        };
-        nodesToInsert.forEach((n) => visitNode(n));
+      const { error: rpcError } = await db.rpc("save_builder_nodes_atomic", {
+        p_version_id: input.version_id,
+        p_nodes: sortedNodes,
+      });
 
-        const { error: insError } = await db.from("experience_nodes").insert(sortedNodes);
-        if (insError) throw insError;
+      if (rpcError) {
+        await db.from("experience_nodes").delete().eq("version_id", input.version_id);
+        if (sortedNodes.length > 0) {
+          const { error: insError } = await db.from("experience_nodes").insert(sortedNodes);
+          if (insError) throw insError;
+        }
       }
 
       // 4. Marca esta versão como published

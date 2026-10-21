@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
-import { ArrowUpRight, Sparkles } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import type { HomeSectionItemDTO, HomeAspectRatio } from "@/services/admin-home-cms.functions";
+import {
+  type HomeSectionItemDTO,
+  type HomeAspectRatio,
+  isHealthyImageUrl,
+} from "@/services/admin-home-cms.functions";
 
 export interface BentoGridTetrisProps {
   items: HomeSectionItemDTO[];
@@ -12,7 +14,12 @@ export interface BentoGridTetrisProps {
 }
 
 export function BentoGridTetris({ items, aspectRatio, className }: BentoGridTetrisProps) {
-  const activeItems = (items || []).filter((item) => item.is_active !== false);
+  // Invariante de Omissão Estrita: Cards sem imagem NÃO DEVEM aparecer
+  const activeItems = (items || []).filter(
+    (item) =>
+      item.is_active !== false &&
+      isHealthyImageUrl(item.image_desktop_url || item.image_mobile_url || item.image_url),
+  );
   if (activeItems.length === 0) return null;
 
   const isThreeItemPack = activeItems.length === 3;
@@ -72,7 +79,16 @@ interface BentoTileItemProps {
 
 function BentoTileItem({ item, colClass, rowClass, isHero }: BentoTileItemProps) {
   const [imageError, setImageError] = useState(false);
-  const hasValidImage = Boolean(item.image_url && !imageError);
+  const imageUrl = item.image_desktop_url || item.image_url || item.image_mobile_url;
+  const hasValidImage = Boolean(imageUrl && !imageError && isHealthyImageUrl(imageUrl));
+
+  // Invariante Estrita: Se não possui imagem saudável ou falhar no carregamento, OMITIR O CARD COMPLETAMENTE
+  if (!hasValidImage) {
+    return null;
+  }
+
+  // Título e badge são estritamente desativados por padrão; só renderizam se o Admin Master marcar show_text = true
+  const canShowText = item.show_text === true && Boolean(item.title && item.title.trim().length > 0);
 
   return (
     <div
@@ -87,59 +103,29 @@ function BentoTileItem({ item, colClass, rowClass, isHero }: BentoTileItemProps)
         className="block size-full relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         aria-label={item.title || "Destaque modular"}
       >
-        {hasValidImage ? (
-          <>
-            <img
-              src={item.image_url!}
-              alt=""
-              loading="lazy"
-              className="size-full object-cover group-hover:scale-102 transition-transform duration-300 motion-reduce:transition-none"
-              onError={() => setImageError(true)}
-            />
-            {item.title && (
-              <div className="absolute inset-x-0 bottom-0 bg-background/90 border-t border-border/50 flex flex-col justify-end p-4 pointer-events-none">
-                {item.subtitle && (
-                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                    {item.subtitle}
-                  </span>
-                )}
-                <h3
-                  className={cn(
-                    "text-foreground font-bold leading-tight break-words text-wrap",
-                    isHero ? "text-lg sm:text-2xl" : "text-sm sm:text-base",
-                  )}
-                >
-                  {item.title}
-                </h3>
-              </div>
-            )}
-          </>
-        ) : (
-          /* Honest Typographic Editorial Layout (Anti-Fake & Zero Fallbacks Sintéticos B.8/B.33) */
-          <div className="size-full flex flex-col justify-between p-4 bg-card">
-            <div className="flex items-center justify-between gap-2">
-              {item.subtitle ? (
-                <Badge variant="secondary" className="text-xs font-medium px-2 py-1 rounded-full">
-                  {item.subtitle}
-                </Badge>
-              ) : (
-                <span className="size-6 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                  <Sparkles className="size-3.5" />
-                </span>
-              )}
-              <ArrowUpRight className="size-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-            </div>
+        <img
+          src={imageUrl!}
+          alt={canShowText ? (item.title || "") : ""}
+          loading="lazy"
+          className="size-full object-cover group-hover:scale-102 transition-transform duration-300 motion-reduce:transition-none"
+          onError={() => setImageError(true)}
+        />
 
-            <div className="mt-3">
-              <h3
-                className={cn(
-                  "font-bold text-foreground leading-tight break-words text-wrap",
-                  isHero ? "text-lg sm:text-xl" : "text-sm sm:text-base",
-                )}
-              >
-                {item.title || "Ver Destaque"}
-              </h3>
-            </div>
+        {canShowText && (
+          <div className="absolute inset-x-0 bottom-0 bg-background/90 border-t border-border/50 flex flex-col justify-end p-4 pointer-events-none">
+            {item.subtitle && (
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                {item.subtitle}
+              </span>
+            )}
+            <h3
+              className={cn(
+                "text-foreground font-bold leading-tight break-words text-wrap",
+                isHero ? "text-lg sm:text-2xl" : "text-sm sm:text-base",
+              )}
+            >
+              {item.title}
+            </h3>
           </div>
         )}
       </Link>

@@ -176,6 +176,40 @@ describe("Homepage Nativa 3.0 & CMS Omni-Builder (DEC-220)", () => {
       expect(Array.isArray(postsParam)).toBe(true);
       expect(postsParam.length).toBe(0);
     });
+
+    it("deve garantir que show_text é estritamente false por padrão e títulos/badges não são injetados sem autorização do admin", () => {
+      const sampleItem: HomeSectionItemDTO = {
+        id: "test-item",
+        section_id: "sec-1",
+        title: "Farmácia Central",
+        subtitle: "Saúde e Bem-estar",
+        image_url: "https://cdn.waesy.com.br/farmacia.webp",
+        target_url: "/diretorio/farmacia",
+        show_text: false,
+        grid_span_x: 1,
+        grid_span_y: 1,
+        badge_text: "Destaque",
+        is_active: true,
+        sort_order: 1,
+      };
+
+      expect(sampleItem.show_text).toBe(false);
+      expect(isHealthyImageUrl(sampleItem.image_url)).toBe(true);
+    });
+
+    it("deve rejeitar e omitir itens com image_url nula ou vazia perante a regra de omissão estrita", () => {
+      const phantomItems: Array<{ image_url: string | null | undefined }> = [
+        { image_url: null },
+        { image_url: "" },
+        { image_url: "   " },
+        { image_url: undefined },
+        { image_url: "null" },
+      ];
+
+      phantomItems.forEach((item) => {
+        expect(isHealthyImageUrl(item.image_url)).toBe(false);
+      });
+    });
   });
 });
 

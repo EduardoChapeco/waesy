@@ -27,6 +27,9 @@ import {
   ShieldCheck,
   Check,
   XCircle,
+  AtSign,
+  Sparkles,
+  History,
 } from "lucide-react";
 import {
   listAllUsers,
@@ -34,6 +37,11 @@ import {
   adminTriggerPasswordReset,
   adminUpdateUserRole,
 } from "@/services/master.functions";
+import {
+  adminReclaimHandle,
+  adminAuditHandleLookup,
+  generateAvailableHandleSuggestions,
+} from "@/services/auth.functions";
 import {
   getUserFull360Activity,
   adminForceSetUserPassword,
@@ -123,6 +131,96 @@ function AdminUsuariosPage() {
   const [isApplyingSanction, setIsApplyingSanction] = useState(false);
   const [updatingRoleId, setUpdatingRoleId] = useState<string | null>(null);
 
+  // Reivindicação Soberana de Handle & Proteção de Marca
+  const [isReclaimModalOpen, setIsReclaimModalOpen] = useState(false);
+  const [reclaimTargetUser, setReclaimTargetUser] = useState<any | null>(null);
+  const [reclaimNewHandle, setReclaimNewHandle] = useState("");
+  const [reclaimAction, setReclaimAction] = useState<"reassign_and_reserve" | "reassign_and_freeze" | "force_change">("reassign_and_reserve");
+  const [reclaimReason, setReclaimReason] = useState("Direito de Marca Registrada / Uso Exclusivo da Plataforma Waesy conforme Termos de Propriedade Intelectual");
+  const [reclaimNotice, setReclaimNotice] = useState("");
+  const [reclaimSuggestions, setReclaimSuggestions] = useState<string[]>([]);
+  const [isReclaimingHandle, setIsReclaimingHandle] = useState(false);
+
+  // Consulta / Auditoria Global de Handles
+  const [handleLookupQuery, setHandleLookupQuery] = useState("");
+  const [handleLookupResult, setHandleLookupResult] = useState<any | null>(null);
+  const [isLookingUpHandle, setIsLookingUpHandle] = useState(false);
+
+  const handleOpenReclaimModal = async (user: any) => {
+    setReclaimTargetUser(user);
+    const oldHandle = user.username || "usuario";
+    const defaultNew = `${oldHandle}_civil`.toLowerCase().replace(/[^a-z0-9_]/g, "");
+    setReclaimNewHandle(defaultNew);
+    setReclaimAction("reassign_and_reserve");
+    setReclaimReason("Direito de Marca Registrada / Uso Exclusivo da Plataforma Waesy conforme Termos de Propriedade Intelectual");
+    setReclaimNotice(
+      `Seu nome de usuário anterior (@${oldHandle}) foi reivindicado pela administração por motivos de conformidade de marca e termos de uso. Seu novo identificador é @${defaultNew}.`
+    );
+    setIsReclaimModalOpen(true);
+
+    try {
+      const sugs = await generateAvailableHandleSuggestions(oldHandle, user.full_name);
+      setReclaimSuggestions(sugs);
+    } catch {
+      setReclaimSuggestions([]);
+    }
+  };
+
+  const handleConfirmReclaim = async () => {
+    if (!reclaimTargetUser) return;
+    const cleanNew = reclaimNewHandle.trim().toLowerCase().replace(/[^a-z0-9_]/g, "");
+    if (!cleanNew || cleanNew.length < 3) {
+      toast.error("O novo identificador do usuário deve conter no mínimo 3 caracteres alfanuméricos.");
+      return;
+    }
+    if (!reclaimReason.trim()) {
+      toast.error("Informe a justificativa / fundamento de marca da reivindicação.");
+      return;
+    }
+
+    setIsReclaimingHandle(true);
+    try {
+      const res = await adminReclaimHandle({
+        data: {
+          targetProfileId: reclaimTargetUser.id,
+          claimedHandle: reclaimTargetUser.username || "indefinido",
+          newHandleForTarget: cleanNew,
+          action: reclaimAction,
+          reason: reclaimReason.trim(),
+          trademarkNotice: reclaimNotice.trim() || undefined,
+        },
+      });
+      toast.success(res.message);
+      setIsReclaimModalOpen(false);
+      setReclaimTargetUser(null);
+      router.invalidate();
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Erro ao executar reivindicação soberana de handle.");
+    } finally {
+      setIsReclaimingHandle(false);
+    }
+  };
+
+  const handleExecuteLookup = async () => {
+    const q = handleLookupQuery.trim().replace(/^@/, "").toLowerCase().replace(/[^a-z0-9_]/g, "");
+    if (!q) {
+      toast.error("Digite o @ que deseja consultar.");
+      return;
+    }
+    setIsLookingUpHandle(true);
+    try {
+      const res = await adminAuditHandleLookup({ data: { handle: q } });
+      setHandleLookupResult(res);
+      if (!res.currentOwner && !res.isQuarantined && !res.isReserved) {
+        toast.info(`O handle @${q} está completamente livre e disponível para registro.`);
+      }
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Erro ao consultar identificador.");
+    } finally {
+      setIsLookingUpHandle(false);
+    }
+  };
+
   const handleRoleChange = async (userId: string, newRole: string) => {
     setUpdatingRoleId(userId);
     try {
@@ -145,6 +243,7 @@ function AdminUsuariosPage() {
       u.full_name?.toLowerCase().includes(q) ||
       u.email?.toLowerCase().includes(q) ||
       u.tax_id?.toLowerCase().includes(q) ||
+      u.username?.toLowerCase().includes(q) ||
       u.id?.toLowerCase().includes(q)
     );
   });
@@ -344,6 +443,125 @@ function AdminUsuariosPage() {
         </div>
       </div>
 
+      {/* Ferramenta de Auditoria Global de Identificadores (@) & Propriedade Intelectual */}
+      <div className="bg-card rounded-lg border p-4 space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-0.5">
+            <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+              <AtSign className="size-4 text-primary" />
+              <span>Auditoria Global de Identificadores (@) & Propriedade Intelectual</span>
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Consulte qualquer @ da rede para verificar titularidade ativa, quarentena de 30 dias e histórico de transferências.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="relative flex items-center w-full sm:w-64">
+              <span className="absolute left-3 text-xs font-mono font-bold text-primary select-none">@</span>
+              <Input
+                placeholder="buscar-arroba..."
+                value={handleLookupQuery}
+                onChange={(e) => setHandleLookupQuery(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleExecuteLookup();
+                }}
+                className="h-11 min-h-11 pl-7 text-xs font-mono rounded-lg"
+              />
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={isLookingUpHandle || !handleLookupQuery.trim()}
+              onClick={handleExecuteLookup}
+              className="h-11 min-h-11 px-4 text-xs font-bold gap-2 rounded-lg focus-visible:ring-2 focus-visible:ring-primary shrink-0"
+            >
+              {isLookingUpHandle ? <Loader2 className="size-4 animate-spin" /> : <Search className="size-4" />}
+              <span>Consultar @</span>
+            </Button>
+          </div>
+        </div>
+
+        {/* Painel de Resultado da Consulta */}
+        {handleLookupResult && (
+          <div className="p-4 rounded-lg border border-border/80 bg-muted/20 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-2">
+              <div className="flex items-center gap-2">
+                <span className="font-mono font-bold text-sm text-foreground">
+                  @{handleLookupResult.handle}
+                </span>
+                {handleLookupResult.isReserved && (
+                  <Badge className="bg-primary/10 text-primary text-xs font-semibold">
+                    Reservado do Sistema
+                  </Badge>
+                )}
+                {handleLookupResult.isQuarantined && (
+                  <Badge variant="destructive" className="text-xs font-semibold">
+                    Em Quarentena (30 Dias)
+                  </Badge>
+                )}
+                {!handleLookupResult.currentOwner && !handleLookupResult.isQuarantined && !handleLookupResult.isReserved && (
+                  <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
+                    Livre / Disponível
+                  </Badge>
+                )}
+              </div>
+
+              {handleLookupResult.currentOwner && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleOpenReclaimModal(handleLookupResult.currentOwner)}
+                  className="h-11 min-h-11 px-3 text-xs font-bold gap-2 text-primary border-primary/30 hover:bg-primary/10 rounded-lg focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <AtSign className="size-4" />
+                  Reivindicar @ de Titular
+                </Button>
+              )}
+            </div>
+
+            {handleLookupResult.currentOwner ? (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                <div>
+                  <span className="text-muted-foreground block text-xs">Titular Atual</span>
+                  <span className="font-semibold text-foreground">{handleLookupResult.currentOwner.full_name || "Sem nome"}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block text-xs">Nível / Role</span>
+                  <span className="font-mono font-semibold">{handleLookupResult.currentOwner.role}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block text-xs">Membro desde</span>
+                  <span>{formatDateTime(handleLookupResult.currentOwner.created_at)}</span>
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Nenhum membro ativo possui este identificador no momento.
+              </p>
+            )}
+
+            {/* Histórico recente de transferências */}
+            {handleLookupResult.history && handleLookupResult.history.length > 0 && (
+              <div className="space-y-1 pt-1 border-t border-border/50">
+                <span className="text-xs font-bold text-muted-foreground flex items-center gap-1 uppercase tracking-wider">
+                  <History className="size-3 text-primary" />
+                  Histórico de Alterações / Quarentena
+                </span>
+                <div className="space-y-1">
+                  {handleLookupResult.history.slice(0, 3).map((h: any) => (
+                    <div key={h.id} className="text-xs text-muted-foreground flex items-center gap-2">
+                      <span className="font-mono">@{h.old_handle} → @{h.new_handle}</span>
+                      <span>•</span>
+                      <span>{formatDateTime(h.created_at)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
       {/* Tabela de Usuários */}
       <div className="bg-card rounded-lg overflow-hidden border">
         <div className="divide-y divide-border">
@@ -367,6 +585,11 @@ function AdminUsuariosPage() {
                       <span className="font-bold text-sm text-foreground">
                         {u.full_name || "Usuário sem nome"}
                       </span>
+                      {u.username && (
+                        <Badge variant="secondary" className="text-xs font-mono font-semibold text-primary bg-primary/10 border-primary/20">
+                          @{u.username}
+                        </Badge>
+                      )}
                       <Badge variant="outline" className="text-xs uppercase font-mono">
                         {u.role}
                       </Badge>
@@ -408,6 +631,17 @@ function AdminUsuariosPage() {
                         </SelectContent>
                       </Select>
                     </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-11 min-h-11 px-3 text-xs font-bold gap-1.5 rounded-lg border-primary/30 text-primary hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary"
+                      onClick={() => handleOpenReclaimModal(u)}
+                      title="Reivindicar @ / Proteger Marca"
+                    >
+                      <AtSign className="size-4" />
+                      Reivindicar @
+                    </Button>
 
                     <Button
                       variant="outline"
@@ -956,7 +1190,143 @@ function AdminUsuariosPage() {
           </div>
         </div>
       </SheetPage>
+
+      {/* SheetPage de Reivindicação Soberana de Handle (@) & Marca */}
+      <SheetPage
+        open={isReclaimModalOpen}
+        onOpenChange={setIsReclaimModalOpen}
+        title="Reivindicação Soberana de Identificador (@) & Marca"
+        size="default"
+        footer={
+          <>
+            <Button
+              variant="outline"
+              onClick={() => setIsReclaimModalOpen(false)}
+              className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleConfirmReclaim}
+              disabled={isReclaimingHandle}
+              className="h-11 min-h-11 px-6 rounded-lg text-xs font-bold focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              {isReclaimingHandle ? "Executando..." : "Confirmar Reivindicação Soberana"}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4 py-2">
+          {/* Dados do Titular Alvo */}
+          {reclaimTargetUser && (
+            <div className="p-4 rounded-lg border border-border/80 bg-muted/30 space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-foreground">
+                  {reclaimTargetUser.full_name || "Membro"}
+                </span>
+                <Badge variant="outline" className="text-xs font-mono font-bold text-primary">
+                  @{reclaimTargetUser.username || "sem_handle"}
+                </Badge>
+              </div>
+              <div className="text-xs text-muted-foreground flex flex-wrap gap-2">
+                <span>Email: {reclaimTargetUser.email}</span>
+                <span>•</span>
+                <span>ID: {reclaimTargetUser.id.slice(0, 8)}...</span>
+              </div>
+            </div>
+          )}
+
+          {/* Tipo de Ação Soberana */}
+          <div className="space-y-1">
+            <Label className="text-xs font-bold">Tipo de Reivindicação / Destino do @ Atual</Label>
+            <Select
+              value={reclaimAction}
+              onValueChange={(val: any) => setReclaimAction(val)}
+            >
+              <SelectTrigger className="h-11 min-h-11 rounded-lg text-xs font-medium">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="reassign_and_reserve">
+                  Reivindicar @ para a Plataforma / Marca Oficial (atribui novo @ ao membro)
+                </SelectItem>
+                <SelectItem value="reassign_and_freeze">
+                  Congelar @ em Quarentena Permanente (bloqueia o @ contra qualquer uso)
+                </SelectItem>
+                <SelectItem value="force_change">
+                  Alterar @ do Membro Diretamente (sem reserva especial)
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Novo Handle para o Membro */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-bold">Novo Identificador (@) Atribuído ao Membro *</Label>
+              <span className="text-xs text-muted-foreground font-mono">3-30 chars [a-z0-9_]</span>
+            </div>
+            <div className="relative flex items-center">
+              <span className="absolute left-3 text-xs font-mono font-bold text-primary select-none">@</span>
+              <Input
+                value={reclaimNewHandle}
+                onChange={(e) => setReclaimNewHandle(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
+                placeholder="novo_identificador"
+                className="h-11 min-h-11 pl-7 text-xs font-mono font-semibold rounded-lg"
+              />
+            </div>
+
+            {/* 5 Sugestões Atômicas Clicáveis */}
+            {reclaimSuggestions.length > 0 && (
+              <div className="space-y-2 pt-1">
+                <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+                  <Sparkles className="size-3 text-primary" />
+                  Sugestões atômicas disponíveis para o membro:
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {reclaimSuggestions.map((sug) => (
+                    <button
+                      key={sug}
+                      type="button"
+                      onClick={() => setReclaimNewHandle(sug)}
+                      className="inline-flex items-center gap-2 h-11 min-h-11 px-4 text-xs font-mono rounded-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      <span>@{sug}</span>
+                      <Check className="size-3" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Motivação / Fundamentação Legal */}
+          <div className="space-y-1">
+            <Label className="text-xs font-bold">Motivação / Fundamentação de Marca *</Label>
+            <Input
+              value={reclaimReason}
+              onChange={(e) => setReclaimReason(e.target.value)}
+              placeholder="ex: Direito de Marca Registrada / Uso Exclusivo da Plataforma Waesy..."
+              className="h-11 min-h-11 text-xs rounded-lg"
+            />
+          </div>
+
+          {/* Notificação Formal ao Membro (Transparência Padrão Meta/X) */}
+          <div className="space-y-1">
+            <Label className="text-xs font-bold">Notificação Formal Enviada ao Membro (In-App)</Label>
+            <Textarea
+              value={reclaimNotice}
+              onChange={(e) => setReclaimNotice(e.target.value)}
+              placeholder="Descreva com clareza o aviso legal que o membro visualizará na central de notificações..."
+              rows={3}
+              className="rounded-lg text-xs"
+            />
+            <p className="text-xs text-muted-foreground">
+              Esta notificação será registrada com timestamp forense e carimbo civil na caixa de entrada do usuário.
+            </p>
+          </div>
+        </div>
+      </SheetPage>
     </div>
   );
 }
-export default AdminUsuariosPage;

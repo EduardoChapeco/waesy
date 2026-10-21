@@ -33,7 +33,12 @@ import { IFoodSquareCategoryButton } from "@/components/home/IFoodSquareCategory
 import { BentoGridTetris } from "@/components/home/BentoGridTetris";
 import { HomePostsShowcase } from "@/components/home/HomePostsShowcase";
 import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
-import type { HomePageSectionDTO, NormalizedShowcasePost } from "@/services/admin-home-cms.functions";
+import { formatStoreCategory } from "@/lib/niches/niche-manifest";
+import {
+  type HomePageSectionDTO,
+  type NormalizedShowcasePost,
+  isHealthyImageUrl,
+} from "@/services/admin-home-cms.functions";
 import type { DirectoryListingDTO } from "@/services/directory.functions";
 import type { NewsArticleDTO } from "@/services/news.functions";
 import type { JobItemDTO } from "@/services/jobs.functions";
@@ -137,116 +142,147 @@ export function HomeMobileNativeApp({
       />
 
       {/* ── 3. HERO BANNER PROMOCIONAL (Proporção 16:9 Idêntica ao Desktop — Zero Corte Divergente) ── */}
-      {heroSection && heroSection.items && heroSection.items.length > 0 ? (
-        <section aria-label={heroSection.title || "Destaques Principais"} className="w-full">
-          {heroSection.show_title && heroSection.title && (
-            <div className="mb-2">
-              <h2 className="text-base font-bold text-foreground tracking-tight break-words text-wrap">
-                {heroSection.title}
-              </h2>
-              {heroSection.show_subtitle && heroSection.subtitle && (
-                <p className="text-xs text-muted-foreground line-clamp-1">{heroSection.subtitle}</p>
+      {(() => {
+        const validHeroItems = (heroSection?.items || []).filter(
+          (it) =>
+            it.is_active !== false &&
+            isHealthyImageUrl(it.image_desktop_url || it.image_mobile_url || it.image_url),
+        );
+        if (validHeroItems.length > 0) {
+          return (
+            <section aria-label={heroSection?.title || "Destaques Principais"} className="w-full">
+              {heroSection?.show_title && heroSection.title && (
+                <div className="mb-2">
+                  <h2 className="text-base font-bold text-foreground tracking-tight break-words text-wrap">
+                    {heroSection.title}
+                  </h2>
+                  {heroSection.show_subtitle && heroSection.subtitle && (
+                    <p className="text-xs text-muted-foreground line-clamp-1">{heroSection.subtitle}</p>
+                  )}
+                </div>
               )}
-            </div>
-          )}
-          <MetamorphicBannerSlider
-            items={heroSection.items}
-            aspectRatio={heroSection.aspect_ratio}
-          />
-        </section>
-      ) : banners && banners.length > 0 ? (
-        <section aria-label="Destaques Principais" className="w-full">
-          <BannerHeroCarousel banners={banners} />
-        </section>
-      ) : null}
+              <MetamorphicBannerSlider
+                items={validHeroItems}
+                aspectRatio={heroSection?.aspect_ratio}
+              />
+            </section>
+          );
+        }
+        if (banners && banners.length > 0) {
+          return (
+            <section aria-label="Destaques Principais" className="w-full">
+              <BannerHeroCarousel banners={banners} />
+            </section>
+          );
+        }
+        return null;
+      })()}
 
-      {/* ── 4. ATALHOS RÁPIDOS NATIVOS (Padrão Noor Horizontal Dock ou iFood Grade 4x2) ── */}
-      {quickCategoriesSection && quickCategoriesSection.items && quickCategoriesSection.items.length > 0 && (
-        <section aria-label={quickCategoriesSection.title || "Categorias Rápidas"} className="w-full">
-          {quickCategoriesSection.show_title && quickCategoriesSection.title && (
-            <div className="mb-2">
-              <h2 className="text-base font-bold text-foreground tracking-tight break-words text-wrap">
-                {quickCategoriesSection.title}
-              </h2>
-              {quickCategoriesSection.show_subtitle && quickCategoriesSection.subtitle && (
-                <p className="text-xs text-muted-foreground line-clamp-1">{quickCategoriesSection.subtitle}</p>
-              )}
-            </div>
-          )}
-          {quickCategoriesSection.layout_variant === "grid_2d" ? (
-            /* design-lint-ignore DL-29 reason:"Grade iFood 4x2 nativa no mobile" expiry:"2027-12-31" */
-            <div className="grid grid-cols-4 gap-2">
-              {quickCategoriesSection.items.map((it) => (
-                <IFoodSquareCategoryButton
-                  key={it.id}
-                  id={it.id}
-                  title={it.title}
-                  imageUrl={it.image_url}
-                  targetUrl={it.target_url}
-                  showText={it.show_text}
-                  badgeText={it.badge_text}
-                />
-              ))}
-            </div>
-          ) : quickCategoriesSection.layout_variant === "bento_grid" ? (
-            <BentoGridTetris items={quickCategoriesSection.items} aspectRatio={quickCategoriesSection.aspect_ratio} />
-          ) : (
-            <NoorNativeCategoryDock items={quickCategoriesSection.items} />
-          )}
-        </section>
-      )}
+      {/* ── 4. ATALHOS RÁPIDOS NATIVOS (Padrão Noor Horizontal Dock ou iFood Grade 4x2 — Omissão se Vazio) ── */}
+      {(() => {
+        const validQuickItems = (quickCategoriesSection?.items || []).filter(
+          (it) =>
+            it.is_active !== false &&
+            isHealthyImageUrl(it.image_desktop_url || it.image_mobile_url || it.image_url),
+        );
+        if (validQuickItems.length === 0) return null;
 
-      {/* ── 5. SEÇÕES MODULARES DO CMS (Grade 4x2 Nativa / Bento / Carrossel) ── */}
-      {customSections.map((sec: HomePageSectionDTO) => (
-        <section key={sec.id} aria-label={sec.title || "Destaques"} className="w-full space-y-2">
-          {sec.show_title && sec.title && (
-            <div>
-              <h2 className="text-base font-bold text-foreground tracking-tight break-words text-wrap">
-                {sec.title}
-              </h2>
-              {sec.show_subtitle && sec.subtitle && (
-                <p className="text-xs text-muted-foreground line-clamp-1">{sec.subtitle}</p>
-              )}
-            </div>
-          )}
-          {sec.layout_variant === "bento_grid" && (
-            <BentoGridTetris items={sec.items} aspectRatio={sec.aspect_ratio} />
-          )}
-          {(sec.layout_variant === "carousel" || sec.layout_variant === "slim_slider") && (
-            <MetamorphicBannerSlider
-              items={sec.items}
-              aspectRatio={sec.layout_variant === "slim_slider" ? "slim_desktop" : sec.aspect_ratio}
-            />
-          )}
-          {sec.layout_variant === "horizontal_scroll" && (
-            <NoorNativeCategoryDock items={sec.items} />
-          )}
-          {(sec.layout_variant === "grid_2d" ||
-            sec.layout_variant === "cards_action_grid" ||
-            sec.layout_variant === "custom_buttons") && (
-            /* design-lint-ignore DL-29 reason:"Grade iFood 4x2 ou cards de ação 2x2 nativa no mobile" expiry:"2027-12-31" */
-            <div
-              className={cn(
-                sec.layout_variant === "cards_action_grid"
-                  ? "grid grid-cols-2 gap-2"
-                  : "grid grid-cols-4 gap-2",
-              )}
-            >
-              {sec.items.map((it) => (
-                <IFoodSquareCategoryButton
-                  key={it.id}
-                  id={it.id}
-                  title={it.title}
-                  imageUrl={it.image_url}
-                  targetUrl={it.target_url}
-                  showText={it.show_text}
-                  badgeText={it.badge_text}
-                />
-              ))}
-            </div>
-          )}
-        </section>
-      ))}
+        return (
+          <section aria-label={quickCategoriesSection?.title || "Categorias Rápidas"} className="w-full">
+            {quickCategoriesSection?.show_title && quickCategoriesSection.title && (
+              <div className="mb-2">
+                <h2 className="text-base font-bold text-foreground tracking-tight break-words text-wrap">
+                  {quickCategoriesSection.title}
+                </h2>
+                {quickCategoriesSection.show_subtitle && quickCategoriesSection.subtitle && (
+                  <p className="text-xs text-muted-foreground line-clamp-1">{quickCategoriesSection.subtitle}</p>
+                )}
+              </div>
+            )}
+            {quickCategoriesSection?.layout_variant === "grid_2d" ? (
+              /* design-lint-ignore DL-29 reason:"Grade iFood 4x2 nativa no mobile" expiry:"2027-12-31" */
+              <div className="grid grid-cols-4 gap-2">
+                {validQuickItems.map((it) => (
+                  <IFoodSquareCategoryButton
+                    key={it.id}
+                    id={it.id}
+                    title={it.title}
+                    imageUrl={it.image_desktop_url || it.image_url || it.image_mobile_url}
+                    targetUrl={it.target_url}
+                    showText={it.show_text === true}
+                    badgeText={it.badge_text}
+                  />
+                ))}
+              </div>
+            ) : quickCategoriesSection?.layout_variant === "bento_grid" ? (
+              <BentoGridTetris items={validQuickItems} aspectRatio={quickCategoriesSection.aspect_ratio} />
+            ) : (
+              <NoorNativeCategoryDock items={validQuickItems} />
+            )}
+          </section>
+        );
+      })()}
+
+      {/* ── 5. SEÇÕES MODULARES DO CMS (Omissão Estrita de Seções Sem Imagens Válidas) ── */}
+      {customSections.map((sec: HomePageSectionDTO) => {
+        const activeSecItems = (sec.items || []).filter(
+          (it) =>
+            it.is_active !== false &&
+            isHealthyImageUrl(it.image_desktop_url || it.image_mobile_url || it.image_url),
+        );
+        if (activeSecItems.length === 0) return null;
+
+        return (
+          <section key={sec.id} aria-label={sec.title || "Destaques"} className="w-full space-y-2">
+            {sec.show_title && sec.title && (
+              <div>
+                <h2 className="text-base font-bold text-foreground tracking-tight break-words text-wrap">
+                  {sec.title}
+                </h2>
+                {sec.show_subtitle && sec.subtitle && (
+                  <p className="text-xs text-muted-foreground line-clamp-1">{sec.subtitle}</p>
+                )}
+              </div>
+            )}
+            {sec.layout_variant === "bento_grid" && (
+              <BentoGridTetris items={activeSecItems} aspectRatio={sec.aspect_ratio} />
+            )}
+            {(sec.layout_variant === "carousel" || sec.layout_variant === "slim_slider") && (
+              <MetamorphicBannerSlider
+                items={activeSecItems}
+                aspectRatio={sec.layout_variant === "slim_slider" ? "slim_desktop" : sec.aspect_ratio}
+              />
+            )}
+            {sec.layout_variant === "horizontal_scroll" && (
+              <NoorNativeCategoryDock items={activeSecItems} />
+            )}
+            {(sec.layout_variant === "grid_2d" ||
+              sec.layout_variant === "cards_action_grid" ||
+              sec.layout_variant === "custom_buttons") && (
+              /* design-lint-ignore DL-29 reason:"Grade iFood 4x2 ou cards de ação 2x2 nativa no mobile" expiry:"2027-12-31" */
+              <div
+                className={cn(
+                  sec.layout_variant === "cards_action_grid"
+                    ? "grid grid-cols-2 gap-2"
+                    : "grid grid-cols-4 gap-2",
+                )}
+              >
+                {activeSecItems.map((it) => (
+                  <IFoodSquareCategoryButton
+                    key={it.id}
+                    id={it.id}
+                    title={it.title}
+                    imageUrl={it.image_desktop_url || it.image_url || it.image_mobile_url}
+                    targetUrl={it.target_url}
+                    showText={it.show_text === true}
+                    badgeText={it.badge_text}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+        );
+      })}
 
       {/* ── 6. HOTPAGES EDITORIAIS (Trilho Full-Bleed Nativo) ── */}
       {editorialHotpages && editorialHotpages.length > 0 && (
@@ -268,10 +304,10 @@ export function HomeMobileNativeApp({
                 return (
                   <div
                     key={item.id}
-                    className="w-72 shrink-0 snap-start group flex flex-col justify-between rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-colors h-68"
+                    className="w-72 sm:w-76 shrink-0 snap-start group flex flex-col justify-between rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-colors duration-300 motion-reduce:transition-none h-80"
                   >
-                    <Link to="/diretorio/$id" params={{ id: item.id }} className="block">
-                      <div className="relative aspect-video w-full overflow-hidden bg-muted/40">
+                    <Link to="/diretorio/$id" params={{ id: item.id }} className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                      <div className="relative aspect-video w-full overflow-hidden bg-muted/40 shrink-0">
                         {coverImage ? (
                           <img
                             src={coverImage}
@@ -287,35 +323,40 @@ export function HomeMobileNativeApp({
                             <Storefront size={28} className="text-muted-foreground/40" />
                           </div>
                         )}
-                        <div className="absolute top-2 right-2">
-                          <Badge variant="secondary" className="bg-background/95 border border-border/40 text-foreground text-xs font-bold">
-                            {item.category}
-                          </Badge>
-                        </div>
                       </div>
 
-                      <div className="p-3 space-y-1">
-                        <div className="flex items-center justify-between gap-2">
-                          <h3 className="font-bold text-sm text-foreground break-words text-wrap group-hover:text-primary transition-colors">
+                      <div className="p-4 space-y-1">
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block truncate">
+                          {formatStoreCategory(item.category || "Comércio Local")}
+                        </span>
+                        <div className="flex items-center justify-between gap-2 h-6">
+                          <h3 className="font-bold text-sm text-foreground truncate group-hover:text-primary transition-colors">
                             {item.business_name}
                           </h3>
                           {item.is_verified && (
-                            <CheckCircle size={15} weight="fill" className="text-info shrink-0" />
+                            <CheckCircle size={15} weight="fill" className="text-primary shrink-0" />
                           )}
                         </div>
                         <p className="text-xs text-muted-foreground line-clamp-1">
-                          {item.address || "Na sua cidade"}
+                          {item.address || "Regional"}
                         </p>
                       </div>
                     </Link>
 
-                    <div className="px-3 py-1 flex items-center justify-between gap-2 border-t border-border/30 mt-auto min-h-11">
-                      <div className="flex items-center gap-1 text-xs font-bold text-amber-500">
-                        <Star size={13} weight="fill" />
-                        <span>{item.rating ? Number(item.rating).toFixed(1) : "Novo"}</span>
+                    <div className="px-4 py-2 flex items-center justify-between gap-2 border-t border-border/40 mt-auto min-h-12">
+                      <div className="flex items-center gap-1 text-xs">
+                        {item.rating && item.reviews_count > 0 ? (
+                          <div className="flex items-center gap-1 font-bold text-amber-500 font-mono">
+                            <Star size={13} weight="fill" />
+                            <span>{Number(item.rating).toFixed(1)}</span>
+                            <span className="text-muted-foreground font-normal">({item.reviews_count})</span>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground/60 font-mono">Comércio Local</span>
+                        )}
                       </div>
 
-                      {(item.contact_whatsapp || item.contact_phone) && (
+                      {(item.contact_whatsapp || item.contact_phone) ? (
                         <button
                           type="button"
                           onClick={() =>
@@ -329,11 +370,20 @@ export function HomeMobileNativeApp({
                               niche: item.category || undefined,
                             })
                           }
-                          className="inline-flex items-center gap-2 h-11 min-h-11 px-3 rounded-md text-xs font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 cursor-pointer transition-colors"
+                          className="inline-flex items-center gap-2 h-11 min-h-11 px-3 rounded-lg text-xs font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 cursor-pointer transition-colors"
                         >
                           <WhatsappLogo size={16} weight="bold" />
                           <span>WhatsApp</span>
                         </button>
+                      ) : (
+                        <Link
+                          to="/diretorio/$id"
+                          params={{ id: item.id }}
+                          className="inline-flex items-center gap-1 h-11 min-h-11 px-3 rounded-lg text-xs font-bold text-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors"
+                        >
+                          <span>Ver</span>
+                          <ArrowRight size={14} weight="bold" />
+                        </Link>
                       )}
                     </div>
                   </div>
@@ -629,7 +679,7 @@ export function HomeMobileNativeApp({
                         }}
                       />
                     )}
-                    {(middleBanners[0].title || middleBanners[0].badge_text) && (
+                    {Boolean((middleBanners[0] as any).show_text) && (middleBanners[0].title || middleBanners[0].badge_text) && (
                       <div className="absolute inset-x-0 bottom-0 p-3 bg-background/90 border-t border-border/40 text-left">
                         <h3 className="text-sm font-bold text-foreground leading-tight line-clamp-1">
                           {middleBanners[0].title}

@@ -142,6 +142,18 @@ export const auditKycVerification = createServerFn({ method: "POST" })
  .single();
 
  if (error) throw new Error(`Falha ao auditar KYC: ${error.message}`);
+
+ // Sincroniza status oficial em profiles para lockdown e exibição de selo
+ if (kyc?.profile_id) {
+  await supabase
+   .from("profiles")
+   .update({
+    is_verified: data.decision === "verified",
+    updated_at: new Date().toISOString(),
+   })
+   .eq("id", kyc.profile_id);
+ }
+
  return kyc;
  });
 

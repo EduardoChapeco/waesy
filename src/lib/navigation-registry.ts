@@ -188,6 +188,7 @@ export const EVENTS_NAV_GROUPS: NavigationGroup[] = [
       { to: "/eventos?category=shows", label: "Shows", icon: Ticket },
       { to: "/eventos?category=gastronomico", label: "Gastronomia", icon: Utensils },
       { to: "/conta/ingressos", label: "Meus Ingressos", icon: Ticket },
+      { to: "/conta/classificados/novo?tipo=evento", label: "Criar Evento", icon: Plus },
     ],
   },
 ];
@@ -206,6 +207,7 @@ export const AGENDA_NAV_GROUPS: NavigationGroup[] = [
       { to: "/agenda?when=weekend", label: "Este Fim de Semana", icon: Sliders },
       { to: "/agenda?when=next7", label: "Próximos 7 Dias", icon: Calendar },
       { to: "/agenda?when=month", label: "Este Mês", icon: Calendar },
+      { to: "/conta/classificados/novo?tipo=evento", label: "Criar Evento", icon: Plus },
     ],
   },
 ];
@@ -318,7 +320,7 @@ export function resolveContextNavigation(pathname: string, session?: any): Conte
  action: {
  label: "Cadastrar Passeio",
  type: "navigate",
- to: "/workspace/agenda/servicos",
+ to: "/conta/classificados/novo?tipo=viagem",
  icon: Plus,
  },
  widthMode: "catalog",
@@ -409,7 +411,7 @@ export function resolveContextNavigation(pathname: string, session?: any): Conte
       action: {
         label: "Publicar Vaga",
         type: "navigate",
-        to: "/workspace/empregos/novo",
+        to: "/conta/classificados/novo?tipo=vaga",
         icon: Plus,
       },
       widthMode: "catalog",
@@ -425,9 +427,9 @@ export function resolveContextNavigation(pathname: string, session?: any): Conte
       subtitle: "Shows, festas, festivais e ingressos",
       groups: EVENTS_NAV_GROUPS,
       action: {
-        label: "Divulgar Evento",
+        label: "Criar Evento",
         type: "navigate",
-        to: "/workspace/eventos",
+        to: "/conta/classificados/novo?tipo=evento",
         icon: Plus,
       },
       widthMode: pathname.startsWith("/evento/") ? "media-detail" : "catalog",
@@ -442,6 +444,12 @@ export function resolveContextNavigation(pathname: string, session?: any): Conte
       title: "Agenda",
       subtitle: "Calendário e programação da cidade",
       groups: AGENDA_NAV_GROUPS,
+      action: {
+        label: "Criar Evento",
+        type: "navigate",
+        to: "/conta/classificados/novo?tipo=evento",
+        icon: Plus,
+      },
       widthMode: "catalog",
       showContextSidebar: true,
     };

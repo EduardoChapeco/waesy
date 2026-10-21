@@ -81,6 +81,8 @@ export interface MobilityRequestDTO {
  property_type?: "ground" | "elevator" | "stairs" | string | null;
  floor_number?: number | null;
  legal_disclaimer_accepted?: boolean;
+ delivery_pin?: string | null;
+ arrived_at?: string | null;
  notes?: string | null;
  created_at: string;
  courier_profiles?: {

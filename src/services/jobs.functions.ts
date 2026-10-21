@@ -48,6 +48,7 @@ export const listPublicJobs = createServerFn({ method: "GET" })
  limit: z.number().int().min(1).max(100).optional(),
 			storeId: z.string().optional(),
 			city: z.string().optional(),
+			source: z.string().optional(),
  })
  .optional(),
  )
@@ -68,7 +69,11 @@ export const listPublicJobs = createServerFn({ method: "GET" })
 		}
 
 		if (data?.category && data.category !== "todos") {
- query = query.eq("category", data.category);
+			if (data?.category === "linkedin" || data?.source === "linkedin") {
+				query = query.or("is_external.eq.true,external_source.eq.linkedin,syndicate_to_linkedin.eq.true");
+			} else {
+				query = query.eq("category", data.category);
+			}
  }
 
  if (data?.contract_type && data.contract_type !== "todos") {

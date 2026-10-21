@@ -204,7 +204,7 @@ function WorkspaceProposalStudioPage() {
  `Olá ${proposal.client_name}! Preparamos a sua proposta personalizada de viagem para ${proposal.destination_city}. Você pode visualizá-la online no link:\n\n${publicUrl}`
  );
 
- const currentTemplate = (proposal as any).template || "editorial-flat";
+ const currentTemplate = proposal.template_theme || (proposal as any).template || "editorial-flat";
  const displayZoom = Math.round((zoomScale !== null ? zoomScale : autoFitScale) * 100);
 
  return (
@@ -245,7 +245,7 @@ function WorkspaceProposalStudioPage() {
  <div className="flex items-center gap-2">
  {/* Seletor de Formato do Canvas */}
  <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-lg border border-border/50">
- {(["a4-portrait", "a4-landscape", "story-916"] as ProposalCanvasFormat[]).map((fmt) => (
+ {(["a4-portrait", "a4-landscape", "story-916", "presentation-169", "letter-portrait"] as ProposalCanvasFormat[]).map((fmt) => (
  <button
  key={fmt}
  type="button"
@@ -260,7 +260,7 @@ function WorkspaceProposalStudioPage() {
  >
  {CANVAS_DIMENSIONS[fmt]?.iconEmoji}{" "}
  <span className="hidden waesy-expanded-flex">
- {fmt === "a4-portrait" ? "A4" : fmt === "a4-landscape" ? "Paisagem" : "Story"}
+ {fmt === "a4-portrait" ? "A4" : fmt === "a4-landscape" ? "Paisagem" : fmt === "story-916" ? "Story" : fmt === "presentation-169" ? "16:9" : "Carta"}
  </span>
  </button>
  ))}
@@ -281,7 +281,7 @@ function WorkspaceProposalStudioPage() {
       <button
         key={tpl.id}
         type="button"
-        onClick={() => handleChange({ template: tpl.id } as any)}
+        onClick={() => handleChange({ template_theme: tpl.id })}
         className={cn(
           "min-h-11 px-2 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
           currentTemplate === tpl.id
@@ -461,6 +461,11 @@ function WorkspaceProposalStudioPage() {
  </div>
  </SheetContent>
  </Sheet>
+ <ProposalShareWhatsappModal
+   isOpen={whatsappModalOpen}
+   onClose={() => setWhatsappModalOpen(false)}
+   proposal={proposal}
+ />
  </div>
  </div>
  );

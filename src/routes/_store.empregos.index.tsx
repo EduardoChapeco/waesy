@@ -3,7 +3,7 @@ import { Tag } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Briefcase, MapPin, Buildings, Laptop, GraduationCap, Heartbeat, Truck, Storefront, WhatsappLogo, ArrowRight, UserCheck, Money, CheckCircle, CalendarDots, Clock, ShareNetwork, ArrowSquareOut, FileText } from "@phosphor-icons/react";
+import { Briefcase, MapPin, Buildings, Laptop, GraduationCap, Heartbeat, Truck, Storefront, WhatsappLogo, ArrowRight, UserCheck, Money, CheckCircle, CalendarDots, Clock, ShareNetwork, ArrowSquareOut, FileText, LinkedinLogo } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
@@ -23,6 +23,7 @@ import { ProfessionSearchDialog } from "@/components/admin/professions/professio
 
 const JOB_CATEGORY_CHIPS: FilterChipOption[] = [
  { id: "todos", label: "Todas", icon: Tag },
+ { id: "linkedin", label: "LinkedIn", icon: LinkedinLogo },
  { id: "clt", label: "Comércio", icon: Storefront },
  { id: "estagio", label: "Estágio", icon: GraduationCap },
  { id: "tech", label: "Tecnologia", icon: Laptop },
@@ -346,6 +347,12 @@ function JobPostCard({ job }: { job: JobItemDTO }) {
               Oficial
             </Badge>
           )}
+          {(job.external_source === "linkedin" || (job as any).syndicate_to_linkedin) && (
+            <Badge className="bg-blue-600 text-primary-foreground text-xs font-bold px-2 py-1 rounded-lg flex items-center gap-1">
+              <LinkedinLogo size={12} weight="bold" />
+              <span>LinkedIn</span>
+            </Badge>
+          )}
         </div>
 
  {/* Badge de Regime de Contrato */}
@@ -520,6 +527,12 @@ function JobListItem({ job }: { job: JobItemDTO }) {
           <Badge variant="outline" className="text-xs font-mono font-bold uppercase px-2 py-0 h-4">
             {job.workplace_type || "Presencial"}
           </Badge>
+          {(job.external_source === "linkedin" || (job as any).syndicate_to_linkedin) && (
+            <Badge className="bg-blue-600 text-primary-foreground text-xs font-bold px-2 py-0 h-4 flex items-center gap-1">
+              <LinkedinLogo size={10} weight="bold" />
+              <span>LinkedIn</span>
+            </Badge>
+          )}
           <span className="text-xs text-muted-foreground font-bold truncate">
             {job.company_name}
           </span>

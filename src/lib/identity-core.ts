@@ -30,6 +30,9 @@ export interface ServerIdentity {
   name?: string | null;
   email?: string | null;
   fullName?: string | null;
+  avatar_url?: string | null;
+  avatarUrl?: string | null;
+  username?: string | null;
   /** @deprecated use (identity.role === "platform_admin") instead */
   isPlatformAdmin?: boolean;
   isCivilContext?: boolean;

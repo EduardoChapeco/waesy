@@ -28,7 +28,10 @@ export type BaseViewModel = {
 export function buildBaseViewModel(p: Proposal, agencyData: any): BaseViewModel {
   const totals = calculateQuoteTotals(p);
   const totalPax =
-    (p.pax_adults || 0) + (p.pax_children || 0) + (p.pax_infants || 0) + (p.pax_seniors || 0);
+    (p.pax_adults ?? (p as any).adults_count ?? 0) +
+    (p.pax_children ?? (p as any).children_count ?? 0) +
+    (p.pax_infants || 0) +
+    (p.pax_seniors || 0);
 
   return {
     p,

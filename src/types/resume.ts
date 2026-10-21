@@ -93,6 +93,9 @@ export interface ResumeDataDTO {
     description?: string;
   }>;
   causes?: string[];
+  custom_template?: string;
+  custom_format?: string;
+  updated_at?: string;
   languages?: Array<{
     id: string;
     name: string;

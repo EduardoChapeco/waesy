@@ -319,3 +319,66 @@ CREATE POLICY "Store members manage crm_universal_spreadsheet_import_batches"
       WHERE sm.store_id = crm_universal_spreadsheet_import_batches.store_id AND sm.profile_id = auth.uid()
     )
   );
+
+-- 6. RPC Transacional ACID para Substituição Atômica de Nós do Omni Builder
+CREATE OR REPLACE FUNCTION public.save_builder_nodes_atomic(
+  p_version_id UUID,
+  p_nodes JSONB
+)
+RETURNS INTEGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_inserted_count INTEGER := 0;
+BEGIN
+  -- 1. Remove nós anteriores da mesma versão dentro da mesma transação ACID
+  DELETE FROM public.experience_nodes
+  WHERE version_id = p_version_id;
+
+  -- 2. Se houver nós no array JSONB, insere em ordem topológica preservada pelo BFF
+  IF p_nodes IS NOT NULL AND jsonb_typeof(p_nodes) = 'array' AND jsonb_array_length(p_nodes) > 0 THEN
+    INSERT INTO public.experience_nodes (
+      id,
+      version_id,
+      parent_id,
+      page_id,
+      node_type,
+      block_type,
+      layout_variant,
+      content,
+      design_tokens,
+      layout_rules,
+      animation_rules,
+      responsive_overrides,
+      data_bindings,
+      action_bindings,
+      sort_order,
+      is_hidden
+    )
+    SELECT
+      (elem->>'id')::uuid,
+      p_version_id,
+      NULLIF(elem->>'parent_id', '')::uuid,
+      NULLIF(elem->>'page_id', '')::uuid,
+      COALESCE(elem->>'node_type', 'block'),
+      COALESCE(elem->>'block_type', 'text'),
+      NULLIF(elem->>'layout_variant', ''),
+      COALESCE(elem->'content', '{}'::jsonb),
+      COALESCE(elem->'design_tokens', '{}'::jsonb),
+      COALESCE(elem->'layout_rules', '{}'::jsonb),
+      COALESCE(elem->'animation_rules', '{}'::jsonb),
+      COALESCE(elem->'responsive_overrides', '{}'::jsonb),
+      COALESCE(elem->'data_bindings', '{}'::jsonb),
+      COALESCE(elem->'action_bindings', '{}'::jsonb),
+      COALESCE((elem->>'sort_order')::integer, 0),
+      COALESCE((elem->>'is_hidden')::boolean, false)
+    FROM jsonb_array_elements(p_nodes) AS elem;
+
+    GET DIAGNOSTICS v_inserted_count = ROW_COUNT;
+  END IF;
+
+  RETURN v_inserted_count;
+END;
+$$;

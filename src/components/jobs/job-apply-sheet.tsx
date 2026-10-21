@@ -3,7 +3,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { CheckCircle, CircleNotch, User, EnvelopeSimple, Phone, LinkSimple, ChatText, Briefcase, Lightning } from "@phosphor-icons/react";
+import { CheckCircle, CircleNotch, User, EnvelopeSimple, Phone, LinkSimple, ChatText, Briefcase, Lightning, LinkedinLogo, ArrowSquareOut } from "@phosphor-icons/react";
 
 export interface JobApplySheetProps {
   isOpen: boolean;
@@ -66,7 +66,8 @@ export function JobApplySheet({
 }: JobApplySheetProps) {
   const handlePrefillWithProfile = () => {
     if (!userProfile) return;
-    if (userProfile.full_name) setCandidateName(userProfile.full_name);
+    const resolvedName = userProfile.fullName || userProfile.full_name || "";
+    if (resolvedName) setCandidateName(resolvedName);
     if (userProfile.email) setCandidateEmail(userProfile.email);
     if (userProfile.phone) setCandidatePhone(userProfile.phone);
     const host = typeof window !== "undefined" ? window.location.origin : "https://usewaesy.pages.dev";
@@ -104,18 +105,37 @@ export function JobApplySheet({
               <Button
                 variant="outline"
                 onClick={() => onOpenChange(false)}
-                className="rounded-lg font-bold text-xs h-10 mt-2"
+                className="rounded-lg font-bold text-xs h-11 min-h-11 mt-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 Fechar
               </Button>
             </div>
           ) : (
             <form onSubmit={onSubmit} className="space-y-4">
+              {(job?.external_source === "linkedin" || job?.is_external) && (
+                <div className="p-3 rounded-lg border border-blue-500/30 bg-blue-500/5 flex items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-2">
+                    <LinkedinLogo size={16} weight="bold" className="text-blue-600 shrink-0" />
+                    <span className="text-muted-foreground">Vaga oficial integrada ao ecossistema</span>
+                  </div>
+                  {job.external_url && (
+                    <a
+                      href={job.external_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1 shrink-0"
+                    >
+                      <span>Ver Original</span>
+                      <ArrowSquareOut size={12} weight="bold" />
+                    </a>
+                  )}
+                </div>
+              )}
               {userProfile && (
                 <button
                   type="button"
                   onClick={handlePrefillWithProfile}
-                  className="w-full py-2 px-3 rounded-lg border border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                  className="w-full h-11 min-h-11 py-2 px-3 rounded-lg border border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   <Lightning size={14} weight="fill" className="text-primary" />
                   <span>Preencher com meu Perfil Waesy</span>
@@ -235,7 +255,7 @@ export function JobApplySheet({
 
                 <div className="space-y-2 pt-1">
                   <div className="flex items-center justify-between">
-                    <label className="text-[11px] font-semibold text-muted-foreground">Como você avalia sua última empresa?</label>
+                    <label className="text-xs font-semibold text-muted-foreground">Como você avalia sua última empresa?</label>
                     <div className="flex items-center gap-1">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button

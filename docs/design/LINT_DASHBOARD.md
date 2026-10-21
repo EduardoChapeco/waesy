@@ -1,31 +1,31 @@
 # LINT_DASHBOARD.md — Painel Canônico de Saúde Visual e Catraca
 
-> Gerado automaticamente pelo Design Lint V2 em: `2026-10-20T17:12:32.820Z`
+> Gerado automaticamente pelo Design Lint V2 em: `2026-10-21T01:13:42.762Z`
 
 ## 1. Resumo Executivo
 
 | Métrica | Atual | Baseline Congelada | Status Catraca |
 | :--- | :--- | :--- | :--- |
-| **Total de Arquivos** | 2172 | 2172 | Estável |
-| **Arquivos com Débito** | 885 | 885 | Monitorado |
-| **Total de Violações** | **12544** | **12544** | PASS (<= Baseline) |
-| **P0 (Bloqueia Entrega)** | **1412** | 1412 | PASS |
-| **P1 (Bloqueia Merge)** | **8531** | 8531 | PASS |
-| **P2 (Fila de Correção)** | 1299 | 1299 | Acompanhamento |
-| **P3 (Polimento)** | 1302 | 1302 | Acompanhamento |
+| **Total de Arquivos** | 2195 | 2195 | Estável |
+| **Arquivos com Débito** | 883 | 883 | Monitorado |
+| **Total de Violações** | **12414** | **12414** | PASS (<= Baseline) |
+| **P0 (Bloqueia Entrega)** | **1396** | 1396 | PASS |
+| **P1 (Bloqueia Merge)** | **8455** | 8455 | PASS |
+| **P2 (Fila de Correção)** | 1270 | 1270 | Acompanhamento |
+| **P3 (Polimento)** | 1293 | 1293 | Acompanhamento |
 
 ## 2. Débito Visual por Módulo
 
 | Módulo | Total | P0 | P1 | P2 | P3 |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `components/app` | 5539 | 562 | 3751 | 680 | 546 |
+| `components/app` | 5480 | 558 | 3701 | 675 | 546 |
 | `routes/workspace` | 2218 | 444 | 1390 | 109 | 275 |
-| `routes/store` | 1527 | 134 | 1020 | 142 | 231 |
-| `components/tourism` | 1109 | 86 | 810 | 150 | 63 |
-| `routes/admin` | 999 | 86 | 745 | 50 | 118 |
+| `routes/store` | 1524 | 132 | 1028 | 139 | 225 |
+| `components/tourism` | 1037 | 76 | 772 | 129 | 60 |
+| `routes/admin` | 1002 | 86 | 748 | 50 | 118 |
 | `components/ui` | 310 | 38 | 219 | 14 | 39 |
 | `lib` | 254 | 1 | 218 | 35 | 0 |
-| `services` | 211 | 0 | 137 | 72 | 2 |
+| `services` | 212 | 0 | 138 | 72 | 2 |
 | `routes/other` | 136 | 10 | 105 | 15 | 6 |
 | `components/builder` | 126 | 42 | 50 | 17 | 17 |
 | `components/chat` | 81 | 4 | 70 | 2 | 5 |
@@ -38,20 +38,20 @@
 
 | Regra | Descrição Sumária | Severidade | Ocorrências |
 | :--- | :--- | :--- | :--- |
-| **DL-02** | Diretriz do Catálogo | `P1` | 3474 |
-| **DL-14** | Diretriz do Catálogo | `P1` | 2123 |
-| **DL-15** | Diretriz do Catálogo | `P0` | 1409 |
-| **DL-18** | Diretriz do Catálogo | `P1` | 1167 |
-| **DL-27** | Diretriz do Catálogo | `P3` | 1045 |
-| **DL-01** | Diretriz do Catálogo | `P1` | 888 |
-| **DL-07** | Diretriz do Catálogo | `P2` | 494 |
-| **DL-03** | Diretriz do Catálogo | `P1` | 396 |
-| **DL-23** | Diretriz do Catálogo | `P2` | 380 |
-| **DL-28** | Diretriz do Catálogo | `P1` | 287 |
+| **DL-02** | Diretriz do Catálogo | `P1` | 3442 |
+| **DL-14** | Diretriz do Catálogo | `P1` | 2108 |
+| **DL-15** | Diretriz do Catálogo | `P0` | 1393 |
+| **DL-18** | Diretriz do Catálogo | `P1` | 1155 |
+| **DL-27** | Diretriz do Catálogo | `P3` | 1036 |
+| **DL-01** | Diretriz do Catálogo | `P1` | 879 |
+| **DL-07** | Diretriz do Catálogo | `P2` | 485 |
+| **DL-03** | Diretriz do Catálogo | `P1` | 392 |
+| **DL-23** | Diretriz do Catálogo | `P2` | 363 |
+| **DL-28** | Diretriz do Catálogo | `P1` | 283 |
 | **DL-30** | Diretriz do Catálogo | `P3` | 257 |
 | **DL-05** | Diretriz do Catálogo | `P1` | 134 |
-| **DL-29** | Diretriz do Catálogo | `P2` | 115 |
-| **DL-08** | Diretriz do Catálogo | `P2` | 104 |
+| **DL-29** | Diretriz do Catálogo | `P2` | 114 |
+| **DL-08** | Diretriz do Catálogo | `P2` | 102 |
 | **DL-09** | Diretriz do Catálogo | `P2` | 90 |
 | **DL-26** | Diretriz do Catálogo | `P2` | 86 |
 | **DL-12** | Diretriz do Catálogo | `P1` | 30 |

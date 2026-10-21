@@ -291,3 +291,38 @@ export function initSecuritySentinel(): () => void {
 export async function reportSecurityEvent(eventType: SecurityEventType, details: Record<string, unknown>) {
  await sendTelemetryBeacon(eventType, details);
 }
+
+/**
+ * Retorna o código único de compliance persistido para o dispositivo local.
+ * Formato padrão: DEV-XXXX-XXXX-XXXX
+ */
+export function getPersistentDeviceCode(): string {
+  if (typeof window === "undefined") return "DEV-9E3F-7A1B-4C2D";
+  try {
+    let id = localStorage.getItem("waesy_device_code");
+    if (!id || id.length < 8) {
+      const rand1 = Math.random().toString(36).substring(2, 6).toUpperCase();
+      const rand2 = Math.random().toString(36).substring(2, 6).toUpperCase();
+      const rand3 = Math.random().toString(36).substring(2, 6).toUpperCase();
+      id = `DEV-${rand1}-${rand2}-${rand3}`;
+      localStorage.setItem("waesy_device_code", id);
+      document.cookie = `waesy_device_code=${id}; path=/; max-age=31536000; SameSite=Lax`;
+    }
+    return id;
+  } catch {
+    return "DEV-9E3F-7A1B-4C2D";
+  }
+}
+
+/**
+ * Formata qualquer fingerprint ou hash em código canônico DEV-XXXX-XXXX-XXXX
+ */
+export function formatDeviceCode(fingerprint?: string | null): string {
+  if (!fingerprint) return getPersistentDeviceCode();
+  if (fingerprint.startsWith("DEV-")) return fingerprint;
+  const clean = fingerprint.replace(/^fp_/, "").replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+  const c1 = clean.slice(0, 4) || "WAES";
+  const c2 = clean.slice(4, 8) || "8F92";
+  const c3 = clean.slice(8, 12) || "4C1A";
+  return `DEV-${c1}-${c2}-${c3}`;
+}

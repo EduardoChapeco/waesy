@@ -16,6 +16,7 @@ import {
   isHealthyImageUrl,
 } from "@/services/admin-home-cms.functions";
 import { RichPostContent } from "@/components/community/rich-post-content";
+import { Quote } from "lucide-react";
 
 function isVideoUrl(url?: string | null): boolean {
   if (!url) return false;
@@ -109,14 +110,14 @@ export function HomePostsShowcase({
               key={post.id || idx}
               to={post.targetUrl as any}
               className={cn(
-                "snap-start shrink-0 w-80 sm:w-96 group flex flex-col justify-between p-4 rounded-lg bg-card border border-border/60",
-                "hover:border-foreground/30 transition-colors duration-200",
+                "snap-start shrink-0 w-80 sm:w-92 group flex flex-col justify-between p-4 rounded-lg bg-card border border-border/60",
+                "hover:border-foreground/30 transition-colors duration-300 motion-reduce:transition-none h-105 select-none",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
               )}
             >
-              <div className="space-y-3">
+              <div className="flex-1 flex flex-col min-h-0 space-y-2">
                 {/* 1. Cabeçalho Minimalista: Avatar Circular + Nome + Verificado + Tempo na mesma linha */}
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 shrink-0">
                   <div className="size-9 rounded-full bg-muted overflow-hidden flex items-center justify-center shrink-0 border border-border/50 relative">
                     <UserCircle size={22} className="text-muted-foreground/60 absolute" />
                     {hasAvatar && (
@@ -134,7 +135,7 @@ export function HomePostsShowcase({
 
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs sm:text-sm font-bold text-foreground break-words text-wrap">
+                      <span className="text-xs sm:text-sm font-bold text-foreground break-words text-wrap truncate">
                         {post.authorName || "Membro da comunidade"}
                       </span>
                       {post.isVerified && (
@@ -147,12 +148,12 @@ export function HomePostsShowcase({
 
                     <div className="flex items-center gap-2 text-xs text-muted-foreground break-words text-wrap">
                       {post.locationName ? (
-                        <span className="inline-flex items-center gap-1 break-words text-wrap">
+                        <span className="inline-flex items-center gap-1 break-words text-wrap truncate">
                           <MapPin size={11} className="text-primary shrink-0" />
-                          <span className="break-words text-wrap">{post.locationName}</span>
+                          <span className="break-words text-wrap truncate">{post.locationName}</span>
                         </span>
                       ) : post.authorHandle ? (
-                        <span className="break-words text-wrap text-muted-foreground/80">
+                        <span className="break-words text-wrap text-muted-foreground/80 truncate">
                           {post.authorHandle.startsWith("@")
                             ? post.authorHandle
                             : `@${post.authorHandle}`}
@@ -164,80 +165,116 @@ export function HomePostsShowcase({
                   </div>
                 </div>
 
-                {/* 2. Texto Principal Formatado com Highlighter Threads + Gatilho Inline "Ler mais" */}
-                <div className="space-y-1">
-                  {isNews && post.title && (
-                    <h3 className="text-sm font-bold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">
-                      {post.title}
-                    </h3>
-                  )}
-                  <div className={cn("text-xs sm:text-sm text-foreground/90 leading-relaxed", mediaList.length > 0 ? "line-clamp-3" : "line-clamp-6")}>
-                    <RichPostContent
-                      content={displayText}
-                      isExpanded={false}
-                      maxCharacters={mediaList.length > 0 ? 180 : 360}
-                    />
-                    <span className="inline-flex items-center gap-1 ml-2 text-xs font-bold text-primary group-hover:underline">
-                      Ler mais
-                    </span>
-                  </div>
-                </div>
+                {/* 2. Conteúdo Condicional: Com Mídia vs Puro Editorial de Texto */}
+                {mediaList.length > 0 ? (
+                  <div className="flex-1 flex flex-col justify-between min-h-0">
+                    {/* Texto Teaser Compacto */}
+                    <div className="space-y-1 shrink-0">
+                      {isNews && post.title && (
+                        <h3 className="text-sm font-bold text-foreground line-clamp-1 leading-snug group-hover:text-primary transition-colors">
+                          {post.title}
+                        </h3>
+                      )}
+                      <div className="text-xs sm:text-sm text-foreground/90 leading-snug line-clamp-2">
+                        <RichPostContent
+                          content={displayText}
+                          isExpanded={false}
+                          maxCharacters={120}
+                        />
+                      </div>
+                    </div>
 
-                {/* 3. Mídia Multi-Formato: Vídeo nativo, Galeria Deslizante ou Imagem Panorâmica (Zero Imagens Fakes) */}
-                {mediaList.length > 1 ? (
-                  <div className="carousel flex gap-2 overflow-x-auto no-scrollbar pb-1">
-                    {mediaList.slice(0, 6).map((mediaUrl, mIdx) => (
-                      <div
-                        key={mIdx}
-                        className="w-36 sm:w-40 aspect-post-portrait rounded-lg overflow-hidden bg-muted/30 border border-border/40 shrink-0 relative"
-                      >
-                        {isVideoUrl(mediaUrl) ? (
-                          <video
-                            src={mediaUrl}
-                            controls={false}
-                            muted
-                            playsInline
-                            loop
-                            preload="metadata"
-                            className="size-full object-cover"
-                          />
+                    {/* Mídia Contida em Altura Canônica Disciplinada (h-52 / 208px) — Zero Explosão de Altura */}
+                    {mediaList.length > 1 ? (
+                      <div className="carousel flex gap-2 overflow-x-auto no-scrollbar pb-1 h-52 shrink-0 mt-2">
+                        {mediaList.slice(0, 6).map((mediaUrl, mIdx) => (
+                          <div
+                            key={mIdx}
+                            className="h-full aspect-3/4 rounded-lg overflow-hidden bg-muted/30 border border-border/40 shrink-0 relative"
+                          >
+                            {isVideoUrl(mediaUrl) ? (
+                              <video
+                                src={mediaUrl}
+                                controls={false}
+                                muted
+                                playsInline
+                                loop
+                                preload="metadata"
+                                className="size-full object-cover"
+                              />
+                            ) : (
+                              <img
+                                src={mediaUrl}
+                                alt={post.title}
+                                loading="lazy"
+                                className="size-full object-cover group-hover:scale-102 transition-transform duration-300 motion-reduce:transition-none"
+                                onError={(e) => {
+                                  (e.currentTarget.parentElement as HTMLElement)?.style.setProperty("display", "none");
+                                }}
+                              />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="relative w-full h-52 rounded-lg overflow-hidden bg-muted/80 border border-border/40 flex items-center justify-center group/media mt-2 shrink-0">
+                        {isVideoUrl(mediaList[0]) ? (
+                          <>
+                            <video
+                              src={mediaList[0]}
+                              aria-hidden="true"
+                              className="absolute inset-0 size-full object-cover blur-xl opacity-20 scale-125 pointer-events-none select-none"
+                            />
+                            <video
+                              src={mediaList[0]}
+                              controls
+                              playsInline
+                              preload="metadata"
+                              className="relative z-10 max-h-full max-w-full h-auto w-auto object-contain mx-auto"
+                            />
+                          </>
                         ) : (
-                          <img
-                            src={mediaUrl}
-                            alt={post.title}
-                            loading="lazy"
-                            className="size-full object-cover group-hover:scale-102 transition-transform duration-300 motion-reduce:transition-none"
-                            onError={(e) => {
-                              (e.currentTarget.parentElement as HTMLElement)?.style.setProperty("display", "none");
-                            }}
-                          />
+                          <>
+                            <img
+                              src={mediaList[0]}
+                              alt=""
+                              aria-hidden="true"
+                              className="absolute inset-0 size-full object-cover blur-xl opacity-25 scale-125 pointer-events-none select-none"
+                            />
+                            <img
+                              src={mediaList[0]}
+                              alt={post.title || ""}
+                              loading="lazy"
+                              className="relative z-10 max-h-full max-w-full h-auto w-auto object-contain mx-auto group-hover/media:scale-102 transition-transform duration-300 motion-reduce:transition-none"
+                              onError={(e) => {
+                                (e.currentTarget.parentElement as HTMLElement)?.style.setProperty("display", "none");
+                              }}
+                            />
+                          </>
                         )}
                       </div>
-                    ))}
-                  </div>
-                ) : mediaList.length === 1 ? (
-                  <div className="relative w-full aspect-post-card rounded-lg overflow-hidden bg-muted/30 border border-border/40">
-                    {isVideoUrl(mediaList[0]) ? (
-                      <video
-                        src={mediaList[0]}
-                        controls
-                        playsInline
-                        preload="metadata"
-                        className="size-full object-cover"
-                      />
-                    ) : (
-                      <img
-                        src={mediaList[0]}
-                        alt={post.title}
-                        loading="lazy"
-                        className="size-full object-cover group-hover:scale-102 transition-transform duration-300 motion-reduce:transition-none"
-                        onError={(e) => {
-                          (e.currentTarget.parentElement as HTMLElement)?.style.setProperty("display", "none");
-                        }}
-                      />
                     )}
                   </div>
-                ) : null}
+                ) : (
+                  /* 3. Card Editorial Textual Elegante (Preenche o Vazio com Tipografia de Alta Classe) */
+                  <div className="flex-1 flex flex-col justify-between rounded-lg bg-muted/20 border border-border/40 p-4 my-1">
+                    <div className="space-y-2">
+                      <Quote className="size-5 text-primary/40 -scale-x-100" />
+                      {isNews && post.title && (
+                        <h3 className="text-sm sm:text-base font-bold text-foreground leading-snug group-hover:text-primary transition-colors">
+                          {post.title}
+                        </h3>
+                      )}
+                      <p className="text-sm sm:text-base text-foreground/90 leading-relaxed line-clamp-6 italic font-serif">
+                        "{displayText}"
+                      </p>
+                    </div>
+                    <span className="text-xs font-semibold text-primary inline-flex items-center gap-1 pt-2 border-t border-border/30">
+                      <span>Ler publicação completa</span>
+                      <ArrowRight size={13} weight="bold" />
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* 4. Barra de Ações Minimalista e Tátil (Piso 44px — Invariante B.30) */}

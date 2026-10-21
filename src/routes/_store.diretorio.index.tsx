@@ -405,14 +405,7 @@ function DirectoryBusinessCard({
           {/* Gradiente de proteção para badges superiores */}
 
 
-          {/* Badge de Categoria no Topo Esquerdo */}
-          <div className="absolute top-2.5 left-2.5">
-            <Badge className="bg-background/90 text-foreground backdrop-blur-md text-xs font-bold px-2 py-1 rounded-lg border border-border/40">
-              {categoryLabel}
-            </Badge>
-          </div>
-
-          {/* Badge de Verificado no Topo Direito (Clean Paradigma) */}
+          {/* Badge de Verificado no Topo Direito (Apenas se verificado) */}
           {item.is_verified && (
             <div className="absolute top-2.5 right-2.5">
               <Badge className="bg-background/90 text-foreground backdrop-blur-md text-xs font-bold px-2 py-1 rounded-lg border border-border/40 flex items-center gap-1 shadow-2xs">
@@ -442,8 +435,11 @@ function DirectoryBusinessCard({
                 )}
               </div>
 
-              <div className="min-w-0 flex-1 pt-1">
-                <h3 className="text-sm font-bold text-foreground truncate leading-tight group-hover:text-primary transition-colors h-5">
+              <div className="min-w-0 flex-1">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block truncate">
+                  {categoryLabel}
+                </span>
+                <h3 className="text-sm font-bold text-foreground truncate leading-tight group-hover:text-primary transition-colors h-5 mt-1">
                   {item.business_name}
                 </h3>
 

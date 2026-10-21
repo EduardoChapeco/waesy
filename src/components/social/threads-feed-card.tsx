@@ -60,6 +60,7 @@ export function CommunityFeedCard({
  const [isHidden, setIsHidden] = useState(false);
  const [pollData, setPollData] = useState(post.poll);
  const [isLiking, setIsLiking] = useState(false);
+ const [avatarError, setAvatarError] = useState(false);
 
  if (isHidden) {
  return null;
@@ -139,12 +140,18 @@ export function CommunityFeedCard({
  params={{ id: post.author.username || post.author.id }}
  className="relative transition-transform active:scale-95 flex-shrink-0"
  >
- <Avatar className="size-10 sm:size-11 rounded-lg ring-2 ring-background bg-muted">
- <AvatarImage src={post.author.avatar_url || ""} alt={post.author.full_name} className="object-cover" />
- <AvatarFallback className="text-xs font-bold bg-muted text-foreground">
- {post.author.full_name?.slice(0, 2)?.toUpperCase() || "WD"}
- </AvatarFallback>
- </Avatar>
+ <div className="size-10 sm:size-11 rounded-lg ring-2 ring-background bg-muted overflow-hidden flex items-center justify-center font-bold text-xs text-foreground">
+  {post.author.avatar_url && !avatarError ? (
+   <img
+    src={post.author.avatar_url}
+    alt={post.author.full_name}
+    className="size-full object-cover"
+    onError={() => setAvatarError(true)}
+   />
+  ) : (
+   <span>{post.author.full_name?.slice(0, 2)?.toUpperCase() || "WD"}</span>
+  )}
+ </div>
  </Link>
 
  {/* Linha vertical de conexão se houver respostas encadeadas */}
@@ -291,7 +298,7 @@ export function CommunityFeedCard({
  <div
  className={cn(
  "mt-3 rounded-lg overflow-hidden border border-border/40",
- post.media_urls.length === 1 ? "max-h-[480px] bg-black/5" : "grid grid-cols-2 gap-2"
+ post.media_urls.length === 1 ? "max-h-140 bg-muted/20 flex items-center justify-center" : "grid grid-cols-2 gap-2"
  )}
  >
  {post.media_urls.map((url, idx) => (
@@ -299,14 +306,14 @@ export function CommunityFeedCard({
  key={idx}
  className={cn(
  "relative cursor-pointer overflow-hidden group/media bg-muted/40",
- post.media_urls!.length === 1 ? "w-full max-h-[480px]" : "aspect-square"
+ post.media_urls!.length === 1 ? "w-full max-h-140 flex items-center justify-center" : "aspect-square"
  )}
  onClick={() => onPreviewMedia && onPreviewMedia(url)}
  >
  <img
  src={url}
  alt="Mídia da publicação"
- className="size-full object-cover transition-transform duration-300 group-hover/media:scale-102"
+ className={cn("transition-transform duration-300 motion-reduce:transition-none group-hover/media:scale-102", post.media_urls!.length === 1 ? "w-full h-auto max-h-140 object-contain mx-auto block" : "size-full object-cover")}
  />
  </div>
  ))}

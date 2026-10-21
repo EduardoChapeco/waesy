@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Ticket, Calendar, MapPin, QrCode } from "lucide-react";
 import { formatMoney } from "@/lib/money";
+import { generateQrCodeDataUri } from "@/lib/qr-code";
 
 interface TicketPreviewProps {
   eventName: string;
@@ -26,8 +27,8 @@ export function TicketPreview({
   qrCodeValue,
 }: TicketPreviewProps) {
   return (
-    <div className="w-full max-w-[340px] mx-auto perspective-1000 select-none">
-      <div className="relative bg-card rounded-lg overflow-hidden shadow-xl border border-border/60 transition-transform hover:scale-[1.02] duration-300">
+    <div className="w-full max-w-xs mx-auto select-none">
+      <div className="relative bg-card rounded-lg overflow-hidden border border-border/60 transition-transform duration-300">
         {/* Upper Section: Event Info */}
         <div className="relative h-44 bg-muted">
           {coverImage ? (
@@ -43,13 +44,13 @@ export function TicketPreview({
           )}
 
           {/* Floating Price Tag */}
-          <div className="absolute top-3 right-3 bg-background/95 backdrop-blur-md px-3 py-2 rounded-lg text-xs font-black tracking-tight shadow-sm text-foreground border border-border/40">
+          <div className="absolute top-3 right-3 bg-background/95 backdrop-blur-md px-3 py-2 rounded-lg text-xs font-black tracking-tight text-foreground border border-border/40">
             {priceCents === 0 ? "Cortesia / Grátis" : formatMoney(priceCents)}
           </div>
 
           {/* Logo Overlay */}
           {logoUrl && (
-            <div className="absolute -bottom-5 left-5 h-11 w-11 rounded-lg bg-card p-1 shadow-md z-10 ring-1 ring-border">
+            <div className="absolute -bottom-5 left-5 h-11 w-11 rounded-lg bg-card p-1 z-10 ring-1 ring-border">
               <img src={logoUrl} alt="Logo" className="w-full h-full object-contain rounded-lg" />
             </div>
           )}
@@ -60,7 +61,7 @@ export function TicketPreview({
           <div>
             <Badge
               variant="secondary"
-              className="mb-2 text-[10px] uppercase font-bold tracking-wider text-muted-foreground"
+              className="mb-2 text-xs uppercase font-bold tracking-wider text-muted-foreground"
             >
               {ticketType || "Ingresso Geral"}
             </Badge>
@@ -81,7 +82,7 @@ export function TicketPreview({
           </div>
 
           {description && (
-            <p className="text-[11px] text-muted-foreground line-clamp-2 bg-muted/30 p-2 rounded-lg border border-border/40">
+            <p className="text-xs text-muted-foreground line-clamp-2 bg-muted/30 p-2 rounded-lg border border-border/40">
               {description}
             </p>
           )}
@@ -96,28 +97,28 @@ export function TicketPreview({
 
         {/* Lower Section: QR Code Pass */}
         <div className="p-5 bg-card flex flex-col items-center justify-center gap-2">
-          <div className="p-3 bg-white rounded-lg shadow-sm border border-border/20 flex flex-col items-center">
+          <div className="p-3 bg-card rounded-lg border border-border flex flex-col items-center">
             {qrCodeValue ? (
               <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=6&data=${encodeURIComponent(qrCodeValue)}`}
+                src={generateQrCodeDataUri(qrCodeValue)}
                 alt={`QR Code ${qrCodeValue}`}
                 className="size-20 object-contain"
                 loading="lazy"
               />
             ) : (
-              <QrCode className="size-20 text-neutral-950" />
+              <QrCode className="size-20 text-foreground" />
             )}
-            <span className="text-[9px] font-mono text-neutral-600 mt-1 uppercase tracking-wider">
+            <span className="text-xs font-mono text-muted-foreground mt-1 uppercase tracking-wider">
               {qrCodeValue ? qrCodeValue.slice(0, 16) : "TKT-VALID-PASS"}
             </span>
           </div>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-mono mt-1">
+          <p className="text-xs text-muted-foreground uppercase tracking-widest font-mono mt-1">
             Validação Portaria Digital
           </p>
         </div>
 
         {/* Decorative Bottom Bar */}
-        <div className="h-1.5 w-full bg-primary/20" />
+        <div className="h-1 w-full bg-primary/20" />
       </div>
     </div>
   );

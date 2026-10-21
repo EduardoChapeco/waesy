@@ -248,6 +248,9 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
   const storeRole = (currentMembership?.role as any) || "customer";
   const finalRole = isPlatformAdmin ? "platform_admin" : storeRole;
 
+  const resolvedAvatarUrl = userProfile?.avatar_url || user.user_metadata?.avatar_url || null;
+  const resolvedUsername = userProfile?.username || user.user_metadata?.username || null;
+
   const resolvedIdentity: ServerIdentity = {
     id: user.id,
     userId: user.id,
@@ -264,6 +267,11 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
       user.user_metadata?.full_name ||
       user.email?.split("@")[0] ||
       "Membro Waesy",
+    avatar_url: resolvedAvatarUrl,
+    avatarUrl: resolvedAvatarUrl,
+    username: resolvedUsername,
+    user: user,
+    profile: userProfile,
   };
 
   if (evt?.context) {

@@ -67,7 +67,10 @@ export const getPublicDirectory = createServerFn({ method: "GET" })
 
     if (data?.city && data.city !== "todos" && data.city !== "Todas" && data.city !== "Global" && data.city !== "all" && data.city !== "Todas as Cidades") {
       const c = data.city.trim();
-      query = query.or(`city.ilike.%${c}%,address.ilike.%${c}%`);
+      const baseCity = c.split(/[-,\/]/)[0].trim();
+      if (baseCity) {
+        query = query.or(`city.ilike.%${baseCity}%,address.ilike.%${baseCity}%`);
+      }
     }
 
     if (data?.search && data.search.trim()) {
@@ -75,7 +78,31 @@ export const getPublicDirectory = createServerFn({ method: "GET" })
       query = query.or(`business_name.ilike.${q},description.ilike.${q},address.ilike.${q}`);
     }
 
-    const { data: rows, error } = await query;
+    let { data: rows, error } = await query;
+
+    // Resiliência de Catálogo: se a cidade ativa não possui estabelecimentos cadastrados ainda,
+    // realiza fallback para todas as empresas ativas da região para não deixar a vitrine vazia.
+    if (!error && (!rows || rows.length === 0) && data?.city) {
+      let fallbackQuery = supabase
+        .from("directory_listings")
+        .select("*, stores:stores!directory_listings_store_id_fkey(id, name, slug, settings, is_hidden_from_directory, access_type)")
+        .eq("status", "active")
+        .order("is_verified", { ascending: false })
+        .order("rating", { ascending: false })
+        .limit(limit);
+
+      if (data?.category && data.category !== "todos") {
+        fallbackQuery = fallbackQuery.eq("category", data.category);
+      }
+      if (data?.search && data.search.trim()) {
+        const q = `%${data.search.trim()}%`;
+        fallbackQuery = fallbackQuery.or(`business_name.ilike.${q},description.ilike.${q},address.ilike.${q}`);
+      }
+      const fallbackRes = await fallbackQuery;
+      if (!fallbackRes.error && fallbackRes.data && fallbackRes.data.length > 0) {
+        rows = fallbackRes.data;
+      }
+    }
 
     if (error) {
       console.error("Erro ao listar diretório no Supabase:", error);

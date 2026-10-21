@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { isHealthyImageUrl } from "@/services/admin-home-cms.functions";
 
 export interface IFoodSquareCategoryButtonProps {
   id?: string;
@@ -18,13 +19,20 @@ export function IFoodSquareCategoryButton({
   title,
   imageUrl,
   targetUrl = "/",
-  showText = true,
+  showText = false,
   badgeText,
   className,
 }: IFoodSquareCategoryButtonProps) {
   const [imageError, setImageError] = useState(false);
-  const isShowTitle = showText && Boolean(title && title.trim().length > 0);
-  const hasValidImage = Boolean(imageUrl && !imageError && !imageUrl.includes("1511707171634-5f897ff02560"));
+  const hasValidImage = Boolean(imageUrl && !imageError && isHealthyImageUrl(imageUrl));
+
+  // Invariante de Omissão Estrita: Se não possui imagem saudável, OMITIR O BOTÃO
+  if (!hasValidImage) {
+    return null;
+  }
+
+  // Título e badge são estritamente desativados por padrão (showText = false)
+  const isShowTitle = showText === true && Boolean(title && title.trim().length > 0);
 
   return (
     <Link
@@ -48,20 +56,13 @@ export function IFoodSquareCategoryButton({
             </Badge>
           </div>
         )}
-        {hasValidImage ? (
-          <img
-            src={imageUrl!}
-            alt=""
-            loading="lazy"
-            className="size-full object-cover group-hover:scale-105 transition-transform duration-200 motion-reduce:transition-none"
-            onError={() => setImageError(true)}
-          />
-        ) : (
-          /* Honest Initial / Vector Badge (Anti-Fake B.8/B.33) */
-          <div className="size-full flex items-center justify-center bg-muted/40 text-muted-foreground font-bold text-sm select-none">
-            {title ? title.slice(0, 2).toUpperCase() : "••"}
-          </div>
-        )}
+        <img
+          src={imageUrl!}
+          alt={isShowTitle ? (title || "") : ""}
+          loading="lazy"
+          className="size-full object-cover group-hover:scale-105 transition-transform duration-200 motion-reduce:transition-none"
+          onError={() => setImageError(true)}
+        />
       </div>
 
       {isShowTitle && (

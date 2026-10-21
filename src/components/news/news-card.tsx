@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from "@tanstack/react-router";
 import { Clock, Eye, ArrowRight, Share2, MapPin, CheckCircle2 } from "lucide-react";
 import { type NewsArticleDTO } from "@/services/news.functions";
@@ -18,6 +19,7 @@ export function NewsCard({
   className = "",
 }: NewsCardProps) {
   const activeVariant = variant || (compact ? "compact" : "grid");
+  const [avatarError, setAvatarError] = useState(false);
 
   const handleShare = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -37,6 +39,7 @@ export function NewsCard({
 
   const sourceName = article.store_name || article.author_name || "Redação Local";
   const sourceInitial = sourceName.trim().charAt(0).toUpperCase() || "R";
+  const isAuthorVerified = Boolean((article as any).is_verified || (article as any).store?.is_verified);
 
   // ── 1. MODO COMPACTO: Projetado para trilhos horizontais sem estouro ou truncamento ──
   if (activeVariant === "compact") {
@@ -65,9 +68,21 @@ export function NewsCard({
 
         <div className="flex-1 min-w-0 flex flex-col justify-between h-full py-1 space-y-1">
           <div className="space-y-1">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <div className="size-5 rounded-full overflow-hidden bg-primary/10 text-primary border border-border/50 flex items-center justify-center shrink-0 font-bold text-xs leading-none">
+                {article.store_avatar && !avatarError ? (
+                  <img
+                    src={article.store_avatar}
+                    alt=""
+                    className="size-full object-cover"
+                    onError={() => setAvatarError(true)}
+                  />
+                ) : (
+                  <span>{sourceInitial}</span>
+                )}
+              </div>
               <span className="font-bold text-foreground truncate">{sourceName}</span>
-              <CheckCircle2 className="size-3 text-primary shrink-0" />
+              {isAuthorVerified && <CheckCircle2 className="size-3 text-primary shrink-0" />}
               <span>•</span>
               <span className="shrink-0">{formattedDate}</span>
             </div>
@@ -101,8 +116,20 @@ export function NewsCard({
       >
         <div className="flex-1 min-w-0 space-y-2">
           <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+            <div className="size-6 rounded-full overflow-hidden bg-primary/10 text-primary border border-border/50 flex items-center justify-center shrink-0 font-bold text-xs leading-none">
+              {article.store_avatar && !avatarError ? (
+                <img
+                  src={article.store_avatar}
+                  alt=""
+                  className="size-full object-cover"
+                  onError={() => setAvatarError(true)}
+                />
+              ) : (
+                <span>{sourceInitial}</span>
+              )}
+            </div>
             <span className="font-bold text-foreground truncate">{sourceName}</span>
-            <CheckCircle2 className="size-3.5 text-primary shrink-0" />
+            {isAuthorVerified && <CheckCircle2 className="size-3.5 text-primary shrink-0" />}
             <span>•</span>
             <span className="shrink-0">{formattedDate}</span>
             {article.category && (
@@ -277,14 +304,12 @@ export function NewsCard({
         <div className="flex items-center justify-between gap-2 mb-3">
           <div className="flex items-center gap-2 min-w-0">
             <div className="size-8 rounded-full overflow-hidden bg-primary/10 text-primary border border-border/50 flex items-center justify-center shrink-0 font-bold text-xs">
-              {article.store_avatar ? (
+              {article.store_avatar && !avatarError ? (
                 <img
                   src={article.store_avatar}
                   alt={sourceName}
                   className="size-full object-cover"
-                  onError={(e) => {
-                    (e.currentTarget as HTMLElement).style.display = "none";
-                  }}
+                  onError={() => setAvatarError(true)}
                 />
               ) : (
                 <span>{sourceInitial}</span>
@@ -292,32 +317,33 @@ export function NewsCard({
             </div>
             <div className="flex items-center gap-2 min-w-0 text-xs">
               <span className="font-bold text-foreground truncate">{sourceName}</span>
-              <CheckCircle2 className="size-3 text-primary fill-primary/15 shrink-0" />
+              {isAuthorVerified && (
+                <CheckCircle2 className="size-3 text-primary fill-primary/15 shrink-0" />
+              )}
               <span className="text-muted-foreground">•</span>
               <span className="text-muted-foreground shrink-0">{formattedDate}</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            {categoryLabel && (
-              <span className="px-2 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20 shrink-0">
-                {categoryLabel}
-              </span>
-            )}
-            <button
-              type="button"
-              onClick={handleShare}
-              className="size-11 min-h-11 min-w-11 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/60 flex items-center justify-center cursor-pointer transition-colors active:scale-95 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              title="Compartilhar notícia"
-              aria-label="Compartilhar notícia"
-            >
-              <Share2 className="size-4" />
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={handleShare}
+            className="size-11 min-h-11 min-w-11 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/60 flex items-center justify-center cursor-pointer transition-colors active:scale-95 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            title="Compartilhar notícia"
+            aria-label="Compartilhar notícia"
+          >
+            <Share2 className="size-4" />
+          </button>
         </div>
 
         {/* 2. Manchete Editorial Limpa */}
         <div className="space-y-2 mb-3">
+          {categoryLabel && (
+            <span className="text-xs font-bold uppercase tracking-wider text-primary block leading-none">
+              {categoryLabel}
+            </span>
+          )}
+
           <Link
             to="/noticias/$slug"
             params={{ slug: article.slug }}
@@ -363,7 +389,7 @@ export function NewsCard({
               />
             )}
             {article.city && (
-              <div className="absolute bottom-2 left-2 px-2 py-1 rounded-md bg-background/90 border border-border/40 text-xs font-medium text-foreground flex items-center gap-1 shadow-sm">
+              <div className="absolute bottom-2 left-2 px-2 py-1 rounded-md bg-background/90 border border-border/40 text-xs font-medium text-foreground flex items-center gap-1">
                 <MapPin className="size-3 text-primary shrink-0" />
                 <span className="truncate">{article.city}</span>
               </div>

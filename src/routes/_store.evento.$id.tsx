@@ -1,6 +1,7 @@
 import { useIsDesktop } from "@/hooks/use-mobile";
 import { EventDetailMobile } from "@/components/events/event-detail-mobile";
 import { EventDetailDesktop } from "@/components/events/event-detail-desktop";
+import { EventClassifiedShowcaseView } from "@/components/classifieds/event-classified-showcase-view";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { formatMoney } from "@/lib/money";
@@ -8,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CalendarBlank, Ticket, WarningCircle, ArrowLeft, MapPin, ArrowSquareOut, Users, CheckCircle, Star, XCircle, Newspaper, PencilSimple } from "@phosphor-icons/react";
 import { toast } from "sonner";
-import { addToCart } from "@/services/cart.functions";
 import { recordUserBehavior, linkEventInteractionToCrmFn } from "@/services/telemetry-affinity.functions";
 import { getEventWithLots } from "@/services/events.functions";
 import { getEventRsvpStatus, toggleEventRsvpAction } from "@/services/events/external-events.functions";
@@ -16,6 +16,7 @@ import { getIdentity } from "@/services/identity.functions";
 import { ContentActionsMenu } from "@/components/common/content-actions-menu";
 import { ActionAuthGuardModal } from "@/components/common/action-auth-guard-modal";
 import { useActionAuthGuard } from "@/hooks/use-action-auth-guard";
+import { TicketPurchaseModal } from "@/components/eventos/ticket-purchase-modal";
 
 export const Route = createFileRoute("/_store/evento/$id")({
   head: ({ loaderData }) => ({
@@ -41,15 +42,18 @@ export const Route = createFileRoute("/_store/evento/$id")({
       ]);
 
       const event = eventData?.event;
+      const classifiedEvent = (eventData as any)?.classifiedEvent || null;
       const isOwner = Boolean(
         identityRes?.id &&
           (identityRes.id === event?.store_id ||
             identityRes.store_id === event?.store_id ||
+            (classifiedEvent?.profile_id && identityRes.id === classifiedEvent.profile_id) ||
             identityRes.role === "admin")
       );
 
       return {
         event,
+        classifiedEvent,
         lots: eventData?.lots || [],
         linkedNews: eventData?.linkedNews || null,
         partners: eventData?.partners || [],
@@ -58,6 +62,7 @@ export const Route = createFileRoute("/_store/evento/$id")({
         surveys: eventData?.surveys || [],
         userRsvp: rsvpRes?.user_status || null,
         isOwner,
+        identity: identityRes,
       };
     } catch (err) {
       console.error("[loader:_store.evento.$id] Unhandled loader error:", err);
@@ -121,49 +126,39 @@ function EventDetailPage() {
     );
   }
 
+  if ((data as any)?.classifiedEvent) {
+    return (
+      <EventClassifiedShowcaseView
+        classified={(data as any).classifiedEvent}
+        isOwner={isOwner}
+        onEditClassified={() =>
+          router.navigate({
+            to: "/conta/classificados/novo",
+            search: { editId: (data as any).classifiedEvent.id } as any,
+          })
+        }
+      />
+    );
+  }
+
   const { requireAuth, modalProps } = useActionAuthGuard();
+
+  const [selectedLotForPurchase, setSelectedLotForPurchase] = useState<any | null>(null);
+  const identity = (data as any)?.identity || null;
 
   const handleBuyTicket = (lot: any) => {
     requireAuth({
       title: "Faça login para emitir ingressos",
       description: `Para emitir seus ingressos com QR Code e segurança nominal para "${event.title}", acesse sua conta Waesy.`,
-      actionContext: `Compra de Ingresso: ${lot.title} (${event.title})`,
+      actionContext: `Compra de Ingresso: ${lot.title || lot.name} (${event.title})`,
       onSuccess: async () => {
-        try {
-          await addToCart({
-            data: {
-              variantId: lot.id,
-              quantity: 1,
-            },
-          });
-          recordUserBehavior({
-            data: {
-              eventType: "add_to_cart",
-              entityType: "event",
-              entityId: event.id,
-              niche: "eventos",
-              metadata: { lot_id: lot.id, price_cents: lot.price_cents },
-            },
-          }).catch(() => {});
-
-          if (event.store_id) {
-            linkEventInteractionToCrmFn({
-              data: {
-                eventId: event.id,
-                storeId: event.store_id,
-                interactionType: "ticket_buy",
-                metadata: { lot_id: lot.id, price_cents: lot.price_cents },
-              },
-            }).catch(() => {});
-          }
-
-          toast.success("Ingresso adicionado ao carrinho!");
-          router.navigate({ to: "/carrinho" });
-        } catch (err: unknown) {
-          toast.error(
-            (err instanceof Error ? err.message : String(err)) || "Erro ao adicionar ingresso."
-          );
-        }
+        setSelectedLotForPurchase({
+          id: lot.id,
+          name: lot.title || lot.name || "Ingresso",
+          price_cents: lot.price_cents ?? 0,
+          capacity: lot.capacity,
+          sold_count: lot.sold_count,
+        });
       },
     });
   };
@@ -261,9 +256,9 @@ function EventDetailPage() {
 
   const isDesktop = useIsDesktop(1024);
 
-  if (!isDesktop) {
-    return (
-      <>
+  return (
+    <>
+      {!isDesktop ? (
         <EventDetailMobile
           event={event}
           lots={lots}
@@ -279,29 +274,44 @@ function EventDetailPage() {
           handleBuyTicket={handleBuyTicket}
           isOwner={isOwner}
         />
-        <ActionAuthGuardModal {...modalProps} />
-      </>
-    );
-  }
-
-  return (
-    <>
-      <EventDetailDesktop
-        event={event}
-        lots={lots}
-        linkedNews={linkedNews}
-        partners={partners}
-        concessions={concessions}
-        products={products}
-        surveys={surveys}
-        userRsvp={userRsvp}
-        rsvpCounts={rsvpCounts}
-        isSubmittingRsvp={isSubmittingRsvp}
-        handleToggleRsvp={handleToggleRsvp}
-        handleBuyTicket={handleBuyTicket}
-        isOwner={isOwner}
-      />
+      ) : (
+        <EventDetailDesktop
+          event={event}
+          lots={lots}
+          linkedNews={linkedNews}
+          partners={partners}
+          concessions={concessions}
+          products={products}
+          surveys={surveys}
+          userRsvp={userRsvp}
+          rsvpCounts={rsvpCounts}
+          isSubmittingRsvp={isSubmittingRsvp}
+          handleToggleRsvp={handleToggleRsvp}
+          handleBuyTicket={handleBuyTicket}
+          isOwner={isOwner}
+        />
+      )}
       <ActionAuthGuardModal {...modalProps} />
+      {selectedLotForPurchase && (
+        <TicketPurchaseModal
+          open={!!selectedLotForPurchase}
+          onOpenChange={(isOpen) => {
+            if (!isOpen) setSelectedLotForPurchase(null);
+          }}
+          event={{
+            id: event.id,
+            title: event.title,
+            event_date: event.event_date || (event as any).start_date,
+            location: event.location,
+          }}
+          lot={selectedLotForPurchase}
+          userProfile={{
+            full_name: identity?.full_name || identity?.name || "",
+            email: identity?.email || "",
+            tax_id: identity?.tax_id || identity?.cpf || "",
+          }}
+        />
+      )}
     </>
   );
 }

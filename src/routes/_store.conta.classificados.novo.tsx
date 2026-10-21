@@ -54,6 +54,7 @@ import { z } from "zod";
 
 const ClassifiedSearchSchema = z.object({
   tipo: z.string().optional(),
+  niche: z.string().optional(),
   sub: z.string().optional(),
   editId: z.string().optional(),
   storeId: z.string().optional(),
@@ -371,7 +372,16 @@ export const CANONICAL_LODGING_AMENITIES = [
 function NovoClassificadoPage() {
   const navigate = Route.useNavigate();
   const search = Route.useSearch();
-  const selectedType = search?.tipo as ClassifiedNicheType | undefined;
+  const rawSearchType = (search?.tipo || search?.niche)?.toLowerCase();
+  const selectedType = (
+    rawSearchType === "event" || rawSearchType === "evento" || rawSearchType === "eventos" || rawSearchType === "show"
+      ? "evento"
+      : rawSearchType === "travel" || rawSearchType === "viagem" || rawSearchType === "turismo"
+      ? "viagem"
+      : rawSearchType === "job" || rawSearchType === "vaga" || rawSearchType === "vagas" || rawSearchType === "emprego"
+      ? "vaga"
+      : search?.tipo || search?.niche
+  ) as ClassifiedNicheType | undefined;
   const editId = search?.editId as string | undefined;
   const storeId = search?.storeId as string | undefined;
 
@@ -2889,6 +2899,7 @@ function SpecializedClassifiedEditor({
       } else if (niche.id === "doacao") {
         attributes.is_donation = true;
       } else if (niche.id === "evento") {
+        attributes.niche = "evento";
         attributes.event_date = eventDate;
         attributes.end_date = eventEndDate || undefined;
         attributes.start_time = eventStartTime;
@@ -2896,10 +2907,19 @@ function SpecializedClassifiedEditor({
         attributes.gates_open_time = eventGatesOpenTime || undefined;
         attributes.venue_name = eventVenueName;
         attributes.venue_address = eventVenueAddress;
+        attributes.city = (structuredLoc?.city || (locationName ? locationName.split(",")[0].trim() : undefined)) || undefined;
+        attributes.state = (structuredLoc?.state || (locationName ? locationName.split("-")[1]?.trim() : undefined)) || undefined;
         attributes.age_rating = eventAgeRating;
         attributes.visibility = eventVisibility;
         attributes.video_url = eventVideoUrl || undefined;
         attributes.banner_image_url = eventBannerUrl || undefined;
+        attributes.story_url = eventStoryUrl.trim() || undefined;
+        attributes.story_auto_open = eventStoryAutoOpen;
+        attributes.pwa_enabled = eventPwaEnabled;
+        attributes.host_name = eventHostName.trim() || undefined;
+        attributes.host_avatar_url = eventHostAvatarUrl.trim() || undefined;
+        attributes.host_phone = eventHostPhone.trim() || whatsapp.trim() || undefined;
+        attributes.host_role = eventHostRole.trim() || undefined;
         attributes.ticket_tiers = eventTicketTiers;
         attributes.schedule = eventSchedule;
         attributes.speakers = eventSpeakers;
@@ -3249,6 +3269,8 @@ function SpecializedClassifiedEditor({
         await Promise.all([
           queryClient.invalidateQueries({ queryKey: ["classifieds-master-list"] }),
           queryClient.invalidateQueries({ queryKey: ["classifieds"] }),
+          queryClient.invalidateQueries({ queryKey: ["public-events-marketplace"] }),
+          queryClient.invalidateQueries({ queryKey: ["agenda-public-events"] }),
         ]).catch(() => null);
         navigate({ to: "/classificados/$id", params: { id: editId } });
       } else {
@@ -3256,6 +3278,8 @@ function SpecializedClassifiedEditor({
         await Promise.all([
           queryClient.invalidateQueries({ queryKey: ["classifieds-master-list"] }),
           queryClient.invalidateQueries({ queryKey: ["classifieds"] }),
+          queryClient.invalidateQueries({ queryKey: ["public-events-marketplace"] }),
+          queryClient.invalidateQueries({ queryKey: ["agenda-public-events"] }),
         ]).catch(() => null);
         navigate({ to: "/classificados/$id", params: { id: res.id } });
       }
@@ -3396,6 +3420,7 @@ function SpecializedClassifiedEditor({
         if (niche.id === "doacao") resolvedCategory = "donation";
         if (niche.id === "negocio") resolvedCategory = "business";
         if (niche.id === "gastronomia") resolvedCategory = "food";
+        if (niche.id === "evento") resolvedCategory = "event";
 
         await upsertClassified({
           data: {

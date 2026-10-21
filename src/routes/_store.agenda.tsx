@@ -386,15 +386,21 @@ function AgendaPadronizadaPage() {
           </h1>
 
           <div className="flex items-center gap-2">
+            <Button asChild variant="outline" size="default" className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+              <Link to="/conta/classificados/novo" search={{ tipo: "evento" }}>
+                <Plus size={14} weight="bold" className="mr-2" />
+                <span>Criar Evento</span>
+              </Link>
+            </Button>
             {!isAuthenticated ? (
-              <Button asChild size="default" className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 focus-visible:ring-2 focus-visible:ring-primary">
+              <Button asChild size="default" className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                 <Link to="/entrar" search={{ returnUrl: "/agenda" }}>
                   <span>Entrar na Conta</span>
                   <ArrowRight size={13} className="ml-2" />
                 </Link>
               </Button>
             ) : (
-              <Button asChild size="default" className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 focus-visible:ring-2 focus-visible:ring-primary">
+              <Button asChild size="default" className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                 <Link to="/servicos">
                   <Plus size={14} weight="bold" className="mr-2" />
                   <span>Agendar Serviço</span>

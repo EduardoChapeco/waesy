@@ -94,8 +94,8 @@ export const listPublicArticles = createServerFn({ method: "GET" })
  title, slug, kicker, subtitle, content_sections,
  cover_media_url, cover_media_type, category, tags, city, state, reading_time_minutes,
  views_count, unique_views_count, status, published_at, created_at,
- stores ( name, avatar_url ),
- profiles ( full_name )
+ stores ( name, logo_url, avatar_url, slug ),
+ profiles ( full_name, avatar_url )
  `,
  )
  .eq("status", "published")
@@ -169,11 +169,14 @@ export const listPublicArticles = createServerFn({ method: "GET" })
       title: a.title,
     });
 
+   const isWaesy = Boolean((a.stores?.name && /waesy/i.test(a.stores.name)) || (a.author_name && /waesy/i.test(a.author_name)));
+   const resolvedStoreAvatar = a.stores?.logo_url || a.stores?.avatar_url || a.profiles?.avatar_url || (isWaesy ? "/brand-logo.png" : null);
+
    return {
      id: a.id,
      store_id: a.store_id,
-     store_name: a.stores?.name || "Portal de Notícias",
-     store_avatar: a.stores?.avatar_url || null,
+     store_name: a.stores?.name || (isWaesy ? "Waesy" : "Portal de Notícias"),
+     store_avatar: resolvedStoreAvatar,
      author_profile_id: a.author_profile_id,
      author_name: a.author_name || a.profiles?.full_name || "Redação",
      title: a.title,
@@ -223,8 +226,8 @@ export const getArticleDetail = createServerFn({ method: "GET" })
  title, slug, kicker, subtitle, content_sections,
  cover_media_url, cover_media_type, category, tags, reading_time_minutes,
  views_count, unique_views_count, status, published_at, created_at,
- stores ( name, avatar_url, slug ),
- profiles ( full_name )
+ stores ( name, logo_url, avatar_url, slug ),
+ profiles ( full_name, avatar_url )
  `,
  )
  .eq("slug", slug)
@@ -259,9 +262,14 @@ export const getArticleDetail = createServerFn({ method: "GET" })
 
  const linkedEvent = (eventRelRes?.data?.[0] as any)?.events || null;
 
+ const isWaesyArticle = Boolean(((articleData as any).stores?.name && /waesy/i.test((articleData as any).stores.name)) || ((articleData as any).author_name && /waesy/i.test((articleData as any).author_name)));
+ const resolvedDetailAvatar = (articleData as any).stores?.logo_url || (articleData as any).stores?.avatar_url || (articleData as any).profiles?.avatar_url || (isWaesyArticle ? "/brand-logo.png" : null);
+
  return {
         article: {
           ...articleData,
+          store_name: (articleData as any).stores?.name || (isWaesyArticle ? "Waesy" : "Portal de Notícias"),
+          store_avatar: resolvedDetailAvatar,
           cover_media_url: resolveCityNewsCover({
             coverUrl: articleData.cover_media_url,
             city: (articleData as any).city,

@@ -548,6 +548,17 @@ export const addToCart = createServerFn({ method: "POST" })
  }
 
  if (!storeId) {
+ // Tenta resolver store_id a partir de lote de ingressos de eventos
+ const { data: lotData } = await supabase
+ .from("ticket_lots")
+ .select("events(store_id)")
+ .eq("id", variantId)
+ .maybeSingle();
+
+ storeId = (lotData?.events as any)?.store_id || null;
+ }
+
+ if (!storeId) {
  return { status: "error" as const, message: "Loja do produto indisponível." };
  }
 

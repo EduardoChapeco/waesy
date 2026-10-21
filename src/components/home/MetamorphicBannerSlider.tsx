@@ -3,7 +3,11 @@ import { Link } from "@tanstack/react-router";
 import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import type { HomeSectionItemDTO, HomeAspectRatio } from "@/services/admin-home-cms.functions";
+import {
+  type HomeSectionItemDTO,
+  type HomeAspectRatio,
+  isHealthyImageUrl,
+} from "@/services/admin-home-cms.functions";
 
 export interface MetamorphicBannerSliderProps {
   items: HomeSectionItemDTO[];
@@ -24,7 +28,12 @@ export function MetamorphicBannerSlider({
   const sliderRef = useRef<HTMLDivElement>(null);
   const isInteractingRef = useRef(false);
 
-  const activeItems = (items || []).filter((item) => item.is_active !== false);
+  // Invariante de Omissão Estrita: Apenas banners com imagem válida são exibidos
+  const activeItems = (items || []).filter(
+    (item) =>
+      item.is_active !== false &&
+      isHealthyImageUrl(item.image_desktop_url || item.image_mobile_url || item.image_url),
+  );
   const total = activeItems.length;
   const useTwoColsDesktop = columnsDesktop === 2 && total >= 2;
 

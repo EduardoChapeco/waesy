@@ -472,6 +472,11 @@ export const listPublicHomePageSections = createServerFn({ method: "GET" })
       const itemsMap = new Map<string, HomeSectionItemDTO[]>();
       (dbItems || []).forEach((item: any) => {
         if (item.ends_at && item.ends_at < now) return;
+        if (
+          !isHealthyImageUrl(item.image_url) &&
+          !isHealthyImageUrl(item.image_desktop_url) &&
+          !isHealthyImageUrl(item.image_mobile_url)
+        ) return;
         if (item.starts_at && item.starts_at > now) return;
 
         const list = itemsMap.get(item.section_id) || [];
@@ -484,7 +489,7 @@ export const listPublicHomePageSections = createServerFn({ method: "GET" })
           image_mobile_url: item.image_mobile_url || null,
           image_desktop_url: item.image_desktop_url || null,
           target_url: item.target_url || "/",
-          show_text: item.show_text ?? false,
+          show_text: item.show_text === true,
           grid_span_x: item.grid_span_x || 1,
           grid_span_y: item.grid_span_y || 1,
           badge_text: item.badge_text,
@@ -514,8 +519,8 @@ export const listPublicHomePageSections = createServerFn({ method: "GET" })
           section_key: sec.section_key,
           title: sec.title,
           subtitle: sec.subtitle,
-          show_title: sec.show_title ?? false,
-          show_subtitle: sec.show_subtitle ?? false,
+          show_title: sec.show_title === true,
+          show_subtitle: sec.show_subtitle === true,
           layout_variant: sec.layout_variant as HomeLayoutVariant,
           aspect_ratio: sec.aspect_ratio as HomeAspectRatio,
           is_active: sec.is_active !== false,
@@ -528,7 +533,7 @@ export const listPublicHomePageSections = createServerFn({ method: "GET" })
           created_at: sec.created_at,
           updated_at: sec.updated_at,
           items: itemsMap.get(sec.id) || [],
-        }));
+        })).filter((sec) => sec.items.length > 0);
     } catch (err) {
       console.warn("[listPublicHomePageSections] Fallback ativado:", err);
       return CANONICAL_DEFAULT_HOME_SECTIONS;
@@ -570,7 +575,7 @@ export const listAdminHomePageSections = createServerFn({ method: "GET" })
           image_mobile_url: item.image_mobile_url || null,
           image_desktop_url: item.image_desktop_url || null,
           target_url: item.target_url || "/",
-          show_text: item.show_text ?? false,
+          show_text: item.show_text === true,
           grid_span_x: item.grid_span_x || 1,
           grid_span_y: item.grid_span_y || 1,
           badge_text: item.badge_text,
@@ -902,7 +907,7 @@ export const getUnifiedShowcasePosts = createServerFn({ method: "GET" })
           id, content_text, media_urls, layout_style, created_at, post_type, city, location_name,
           publish_as_handle, metadata,
           profiles!posts_author_profile_id_fkey(full_name, avatar_url, username),
-          stores(name, settings)
+          stores(name, settings, logo_url)
         `)
         .eq("status", "active")
         .order("created_at", { ascending: false })
@@ -974,12 +979,13 @@ export const getUnifiedShowcasePosts = createServerFn({ method: "GET" })
         if (!cleanText && validMediaUrls.length === 0) return;
 
         const storeSettings = (p.stores?.settings as Record<string, any>) || {};
-        const storeAvatar = storeSettings.avatar_url || storeSettings.logo_url || storeSettings.logoUrl || null;
         const author =
           p.metadata?.creator_name ||
           p.profiles?.full_name ||
           p.stores?.name ||
           "Membro da Comunidade";
+        const isWaesyAuthor = Boolean((author && /waesy/i.test(author)) || (p.stores?.name && /waesy/i.test(p.stores.name)));
+        const storeAvatar = p.stores?.logo_url || storeSettings.avatar_url || storeSettings.logo_url || storeSettings.logoUrl || (isWaesyAuthor ? "/brand-logo.png" : null);
         const handle = p.publish_as_handle
           ? p.publish_as_handle.startsWith("@")
             ? p.publish_as_handle
@@ -988,9 +994,9 @@ export const getUnifiedShowcasePosts = createServerFn({ method: "GET" })
             ? `@${p.profiles.username}`
             : p.stores?.name
               ? `@${p.stores.name.toLowerCase().replace(/\s+/g, "")}`
-              : undefined;
-        const rawAvatar = p.profiles?.avatar_url || storeAvatar;
-        const avatar = isHealthyImageUrl(rawAvatar) ? rawAvatar : null;
+              : (isWaesyAuthor ? "@waesy" : undefined);
+        const rawAvatar = p.profiles?.avatar_url || storeAvatar || (isWaesyAuthor ? "/brand-logo.png" : null);
+        const avatar = isHealthyImageUrl(rawAvatar) || rawAvatar?.startsWith("/") ? rawAvatar : null;
 
         const resolvedLayoutStyle: NormalizedShowcasePost["layoutStyle"] =
           p.post_type === "trilho_horizontal" ||
@@ -1070,9 +1076,9 @@ export const getUnifiedShowcasePosts = createServerFn({ method: "GET" })
             category: art.category || "Notícia",
             publishedAt: art.published_at || new Date().toISOString(),
             targetUrl: `/noticias/${art.slug || art.id}`,
-            authorName: "Redação Local",
-            authorHandle: "@redacaolocal",
-            authorAvatar: null,
+            authorName: "Redação Waesy",
+            authorHandle: "@waesy",
+            authorAvatar: "/brand-logo.png",
             isVerified: true,
             likesCount: 0,
             commentsCount: 0,

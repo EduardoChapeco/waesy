@@ -1,134 +1,163 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "@tanstack/react-router";
-import { Tag, Camera, Briefcase, Plus, Store, X, LogIn } from "lucide-react";
+import { Tag, Camera, Briefcase, Plus, Store, X, Calendar, Compass } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { PostCreationDrawer } from "@/components/community/post-creation-drawer";
 
 interface QuickActionItem {
- id: string;
- title: string;
- subtitle: string;
- icon: React.ElementType;
- iconBg: string;
- iconColor: string;
- borderHover: string;
- badges: string[];
- to?: string;
- onClick?: () => void;
- requiresAuth?: boolean;
+  id: string;
+  title: string;
+  subtitle: string;
+  icon: React.ElementType;
+  badges: string[];
+  to?: string;
+  onClick?: () => void;
+  requiresAuth?: boolean;
 }
 
 export function QuickCreateModal({
- isAuthenticated = false,
- session,
- asNavButton = false,
+  isAuthenticated = false,
+  asNavButton = false,
 }: {
- isAuthenticated?: boolean;
- session?: any;
- /** Quando true, renderiza o trigger como botão quadrado arredondado da bottom nav */
- asNavButton?: boolean;
+  isAuthenticated?: boolean;
+  session?: any;
+  /** Quando true, renderiza o trigger como botão quadrado arredondado da bottom nav */
+  asNavButton?: boolean;
 }) {
- const [open, setOpen] = useState(false);
- const [isPostDrawerOpen, setIsPostDrawerOpen] = useState(false);
- const navigate = useNavigate();
- const location = useLocation();
+  const [open, setOpen] = useState(false);
+  const [isPostDrawerOpen, setIsPostDrawerOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
- const closeSheet = () => setOpen(false);
+  const closeSheet = () => setOpen(false);
 
- const handleOpenPostDrawer = () => {
- closeSheet();
- if (!isAuthenticated) {
- toast.info("Acesse sua conta para publicar no Mural da Comunidade.");
- navigate({ to: "/entrar", search: { returnUrl: "/mural" } });
- return;
- }
- setIsPostDrawerOpen(true);
- };
+  const handleOpenPostDrawer = () => {
+    closeSheet();
+    if (!isAuthenticated) {
+      toast.info("Acesse sua conta para publicar no Mural da Comunidade.");
+      navigate({ to: "/entrar", search: { returnUrl: "/mural" } });
+      return;
+    }
+    setIsPostDrawerOpen(true);
+  };
 
- const handleProtectedNavigate = (toUrl: string, reason: string) => {
- closeSheet();
- if (!isAuthenticated) {
- toast.info(`Acesse sua conta para ${reason}.`);
- navigate({ to: "/entrar", search: { returnUrl: toUrl } });
- return;
- }
- navigate({ to: toUrl as any });
- };
+  const handleProtectedNavigate = (
+    toUrl: string,
+    reason: string,
+    searchParams?: Record<string, string>,
+  ) => {
+    closeSheet();
+    if (!isAuthenticated) {
+      toast.info(`Acesse sua conta para ${reason}.`);
+      const fullReturnUrl = searchParams
+        ? `${toUrl}?${new URLSearchParams(searchParams).toString()}`
+        : toUrl;
+      navigate({ to: "/entrar", search: { returnUrl: fullReturnUrl } });
+      return;
+    }
+    if (searchParams) {
+      navigate({ to: toUrl as any, search: searchParams as any });
+    } else {
+      navigate({ to: toUrl as any });
+    }
+  };
 
- const handleTriggerClick = (e: React.MouseEvent) => {
- if (!isAuthenticated) {
- e.preventDefault();
- e.stopPropagation();
- toast.info("Acesse sua conta para publicar e anunciar no Waesy.");
- navigate({
- to: "/entrar",
- search: { returnUrl: location.pathname || "/" },
- });
- return;
- }
- setOpen(true);
- };
+  const handleTriggerClick = (e: React.MouseEvent) => {
+    if (!isAuthenticated) {
+      e.preventDefault();
+      e.stopPropagation();
+      toast.info("Acesse sua conta para publicar e anunciar no Waesy.");
+      navigate({
+        to: "/entrar",
+        search: { returnUrl: location.pathname || "/" },
+      });
+      return;
+    }
+    setOpen(true);
+  };
 
- const actionItems: QuickActionItem[] = [
- {
- id: "feed",
- title: "Mural da Comunidade",
- subtitle: "Publique fotos, vídeos curtos ou mensagens no feed público da cidade.",
- icon: Camera,
- iconBg: "bg-sky-500/10",
- iconColor: "text-sky-500",
- borderHover: "hover:border-sky-500/50",
- badges: ["Mural", "Fotos & Texto"],
- onClick: handleOpenPostDrawer,
- requiresAuth: true,
- },
- {
- id: "desapego",
- title: "Novo Desapego / Classificado",
- subtitle: "Anuncie itens seminovos, usados, eletrônicos, veículos ou imóveis.",
- icon: Tag,
- iconBg: "bg-amber-500/10",
- iconColor: "text-amber-500",
- borderHover: "hover:border-amber-500/50",
- badges: ["Grátis", "Classificados"],
- onClick: () =>
- handleProtectedNavigate(
- "/conta/classificados/novo",
- "publicar um novo anúncio classificado",
- ),
- requiresAuth: true,
- },
- {
- id: "loja",
- title: "Cadastrar Loja ou Empresa",
- subtitle: "Abra a sua loja digital para vender produtos, alimentação ou serviços.",
- icon: Store,
- iconBg: "bg-rose-500/10",
- iconColor: "text-rose-500",
- borderHover: "hover:border-rose-500/50",
- badges: ["Comércio", "Vitrine & PWA"],
- onClick: () =>
- handleProtectedNavigate("/criar-negocio", "cadastrar uma nova loja ou empresa"),
- requiresAuth: true,
- },
- {
- id: "empregos",
- title: "Vagas e Oportunidades",
- subtitle: "Consulte vagas de trabalho, estágios e oportunidades na região.",
- icon: Briefcase,
- iconBg: "bg-emerald-500/10",
- iconColor: "text-emerald-500",
- borderHover: "hover:border-emerald-500/50",
- badges: ["Empregos", "Carreira"],
- to: "/empregos",
- },
- ];
+  const actionItems: QuickActionItem[] = [
+    {
+      id: "feed",
+      title: "Mural da Comunidade",
+      subtitle: "Publique fotos, vídeos curtos ou mensagens no feed público da cidade.",
+      icon: Camera,
+      badges: ["Mural", "Fotos e Texto"],
+      onClick: handleOpenPostDrawer,
+      requiresAuth: true,
+    },
+    {
+      id: "evento",
+      title: "Criar Evento, Show ou Festa",
+      subtitle: "Divulgue festas, encontros, shows, lotes de ingressos e lista de presença.",
+      icon: Calendar,
+      badges: ["Eventos", "Ingressos"],
+      onClick: () =>
+        handleProtectedNavigate(
+          "/conta/classificados/novo",
+          "criar e divulgar um evento",
+          { tipo: "evento" },
+        ),
+      requiresAuth: true,
+    },
+    {
+      id: "desapego",
+      title: "Novo Desapego ou Classificado",
+      subtitle: "Anuncie itens seminovos, usados, eletrônicos, veículos ou imóveis.",
+      icon: Tag,
+      badges: ["Grátis", "Classificados"],
+      onClick: () =>
+        handleProtectedNavigate(
+          "/conta/classificados/novo",
+          "publicar um novo anúncio classificado",
+        ),
+      requiresAuth: true,
+    },
+    {
+      id: "turismo",
+      title: "Excursão, Passeio ou Roteiro",
+      subtitle: "Publique roteiros turísticos, viagens em grupo, trilhas e experiências.",
+      icon: Compass,
+      badges: ["Turismo", "Viagens"],
+      onClick: () =>
+        handleProtectedNavigate(
+          "/conta/classificados/novo",
+          "publicar uma excursão ou roteiro",
+          { tipo: "viagem" },
+        ),
+      requiresAuth: true,
+    },
+    {
+      id: "empregos",
+      title: "Publicar Vaga ou Oportunidade",
+      subtitle: "Anuncie vagas de trabalho, estágios e oportunidades na região.",
+      icon: Briefcase,
+      badges: ["Empregos", "Carreira"],
+      onClick: () =>
+        handleProtectedNavigate(
+          "/conta/classificados/novo",
+          "publicar uma vaga de emprego",
+          { tipo: "vaga" },
+        ),
+      requiresAuth: true,
+    },
+    {
+      id: "loja",
+      title: "Cadastrar Loja ou Empresa",
+      subtitle: "Abra a sua loja digital para vender produtos, alimentação ou serviços.",
+      icon: Store,
+      badges: ["Comércio", "Vitrine"],
+      onClick: () =>
+        handleProtectedNavigate("/criar-negocio", "cadastrar uma nova loja ou empresa"),
+      requiresAuth: true,
+    },
+  ];
 
- return (
- <>
- <Sheet open={open} onOpenChange={setOpen}>
+  return (
+    <>
+      <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
           <button
             type="button"
@@ -167,13 +196,9 @@ export function QuickCreateModal({
             {actionItems.map((item) => {
               const Icon = item.icon;
               const CardContent = (
-                <div
-                  className={`w-full p-4 rounded-lg bg-card border border-border/60 hover:bg-muted/40 transition-colors duration-200 active:scale-95 flex items-center justify-between gap-3 group cursor-pointer shadow-2xs ${item.borderHover}`}
-                >
+                <div className="w-full p-4 rounded-lg bg-card border border-border/60 hover:border-primary/40 hover:bg-muted/40 transition-colors duration-200 active:scale-95 flex items-center justify-between gap-3 group cursor-pointer shadow-2xs">
                   <div className="flex items-start gap-4 min-w-0">
-                    <div
-                      className={`size-12 rounded-lg ${item.iconBg} ${item.iconColor} flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform`}
-                    >
+                    <div className="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                       <Icon className="size-6 stroke-2" />
                     </div>
 
@@ -230,12 +255,12 @@ export function QuickCreateModal({
             })}
           </div>
         </SheetContent>
- </Sheet>
+      </Sheet>
 
- <PostCreationDrawer
- open={isPostDrawerOpen}
- onOpenChange={setIsPostDrawerOpen}
- />
- </>
- );
+      <PostCreationDrawer
+        open={isPostDrawerOpen}
+        onOpenChange={setIsPostDrawerOpen}
+      />
+    </>
+  );
 }

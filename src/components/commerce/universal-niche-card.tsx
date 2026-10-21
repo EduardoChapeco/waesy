@@ -338,13 +338,13 @@ export function UniversalNicheCard({
   return (
     <div
       className={cn(
-        "group relative flex flex-col justify-between overflow-hidden rounded-lg border border-border/70 bg-card p-3 sm:p-4 hover:border-foreground/30 transition-colors duration-300 h-full",
+        "group relative flex flex-col justify-between overflow-hidden rounded-lg border border-border/60 bg-card p-4 sm:p-5 hover:border-foreground/30 transition-colors duration-300 motion-reduce:transition-none h-full",
         className
       )}
     >
       <div className="flex-1 flex flex-col min-h-0">
-        {/* Foto de Topo com Aspect Ratio Canônico (aspect-video) */}
-        <div className="relative aspect-video w-full overflow-hidden rounded-md bg-muted/30 shrink-0">
+        {/* Foto de Topo com Aspect Ratio Amplo e Bordas Arredondadas (16:10 / 4:3) */}
+        <div className="relative aspect-16/10 sm:aspect-4/3 w-full overflow-hidden rounded-lg bg-muted/30 shrink-0">
           <Link
             to={resolvedLink as any}
             className="block size-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -361,7 +361,7 @@ export function UniversalNicheCard({
                 <img
                   src={img}
                   alt={item.title}
-                  className="relative size-full object-cover group-hover:scale-105 transition-transform duration-300 ease-out"
+                  className="relative size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none ease-out"
                   loading="lazy"
                 />
               </div>
@@ -372,81 +372,74 @@ export function UniversalNicheCard({
             )}
           </Link>
 
-          {/* Floating Pill Superior */}
-          <div className="absolute top-2 left-2 pointer-events-none z-10 flex items-center gap-1 flex-wrap">
-            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-background/90 text-foreground font-mono text-xs font-semibold border border-border/50">
-              {floatingBadgeText}
-            </span>
-          </div>
+          {/* Badge Discreto de Vidro no Canto Superior Direito (Apenas quando houver dado real relevante) */}
+          {floatingBadgeText && floatingBadgeText !== "Destaque" && (
+            <div className="absolute top-3 right-3 pointer-events-none z-10">
+              <span className="inline-flex items-center px-3 py-1 rounded-full bg-background/85 backdrop-blur-md text-foreground border border-border/40 font-medium text-xs">
+                {floatingBadgeText}
+              </span>
+            </div>
+          )}
         </div>
 
-        {/* Corpo Textual */}
-        <div className="pt-3 flex-1 flex flex-col justify-between">
+        {/* Corpo Textual Amplo e Limpo (Zero pills artificiais) */}
+        <div className="pt-4 flex-1 flex flex-col justify-between">
           <div>
-            {/* Linha Geográfica / Eyebrow */}
-            <div className="flex items-center gap-1 text-xs text-muted-foreground font-medium truncate">
-              <MapPin className="size-3 text-primary shrink-0" />
+            {/* Linha Geográfica / Eyebrow Textual Sutil */}
+            <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium truncate">
+              <MapPin className="size-4 text-muted-foreground shrink-0" />
               <span className="truncate">{locationText}</span>
             </div>
 
-            {/* Título Principal de Alto Contraste */}
+            {/* Título Principal Amplo e Legível */}
             <Link
               to={resolvedLink as any}
-              className="block cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md mt-1"
+              className="block cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md mt-2"
             >
-              <h3 className="font-bold text-base sm:text-lg text-foreground leading-snug line-clamp-1 group-hover:text-primary transition-colors">
+              <h3 className="font-bold text-lg sm:text-xl text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors">
                 {item.title}
               </h3>
             </Link>
 
-            {/* Linha de Prova Social Honesta (B.33) */}
-            <div className="mt-1 flex items-center gap-1 min-h-5">
-              {hasRealReviews ? (
-                <div className="flex items-center gap-1 text-xs text-foreground font-medium">
-                  <Star className="size-3 fill-amber-400 text-amber-400 shrink-0" />
-                  <span className="font-bold font-mono">{rating.toFixed(1)}</span>
-                  <span className="text-muted-foreground font-normal">
-                    ({reviewsCount} {reviewsCount === 1 ? "avaliação" : "avaliações"})
-                  </span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <ShieldCheck className="size-3 text-emerald-500 shrink-0" />
-                  <span className="text-xs font-medium text-muted-foreground">
-                    Verificado pelo Waesy
-                  </span>
-                </div>
-              )}
-            </div>
+            {/* Linha de Prova Social Honesta (B.33) — Renderizada Apenas com Dados Reais */}
+            {hasRealReviews && (
+              <div className="mt-2 flex items-center gap-2 text-xs text-foreground font-medium">
+                <Star className="size-4 fill-amber-400 text-amber-400 shrink-0" />
+                <span className="font-bold font-mono">{rating.toFixed(1)}</span>
+                <span className="text-muted-foreground font-normal">
+                  ({reviewsCount} {reviewsCount === 1 ? "avaliação" : "avaliações"})
+                </span>
+              </div>
+            )}
           </div>
 
-          {/* BLOCO HERO: Coluna Dupla de Pílulas (A Assinatura Visual do Card) */}
-          <div className="grid grid-cols-2 gap-2 my-3">
-            {/* Pílula 1 */}
-            <div className="flex items-center gap-2 p-2 rounded-md bg-muted/40 border border-border/40 hover:bg-muted/60 transition-colors min-w-0">
-              <div className="size-8 rounded-full bg-background border border-border/50 flex items-center justify-center text-foreground shrink-0">
-                <pill1.icon className="size-4 text-foreground" />
+          {/* ESPECIFICAÇÕES CANÔNICAS: Texto Puro com Ícone Circular (SEM CAIXAS/PILLS) */}
+          <div className="grid grid-cols-2 gap-3 mt-4 pt-3 border-t border-border/40">
+            {/* Atributo 1 */}
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="size-9 rounded-full bg-muted/60 flex items-center justify-center text-foreground shrink-0">
+                <pill1.icon className="size-4 text-muted-foreground" />
               </div>
               <div className="min-w-0 flex-1">
-                <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold leading-none block truncate">
+                <span className="text-xs text-muted-foreground leading-none block truncate">
                   {pill1.label}
                 </span>
-                <span className="text-xs font-bold text-foreground leading-tight block truncate mt-1">
+                <span className="text-xs sm:text-sm font-semibold text-foreground leading-tight block truncate mt-1">
                   {pill1.value}
                 </span>
               </div>
             </div>
 
-            {/* Pílula 2 */}
-            <div className="flex items-center gap-2 p-2 rounded-md bg-muted/40 border border-border/40 hover:bg-muted/60 transition-colors min-w-0">
-              <div className="size-8 rounded-full bg-background border border-border/50 flex items-center justify-center text-foreground shrink-0">
-                <pill2.icon className="size-4 text-foreground" />
+            {/* Atributo 2 */}
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="size-9 rounded-full bg-muted/60 flex items-center justify-center text-foreground shrink-0">
+                <pill2.icon className="size-4 text-muted-foreground" />
               </div>
               <div className="min-w-0 flex-1">
-                <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold leading-none block truncate">
+                <span className="text-xs text-muted-foreground leading-none block truncate">
                   {pill2.label}
                 </span>
-                <span className="text-xs font-bold text-foreground leading-tight block truncate mt-1">
+                <span className="text-xs sm:text-sm font-semibold text-foreground leading-tight block truncate mt-1">
                   {pill2.value}
                 </span>
               </div>
@@ -456,14 +449,14 @@ export function UniversalNicheCard({
       </div>
 
       {/* Rodapé Comercial: Preço à esquerda + CTA Primário Proeminente à direita */}
-      <div className="pt-3 border-t border-border/40 flex items-center justify-between gap-2 mt-auto">
+      <div className="pt-4 border-t border-border/40 flex items-center justify-between gap-3 mt-4">
         {/* Bloco de Preço */}
         <div className="flex flex-col min-w-0">
           <span className="text-xs text-muted-foreground font-medium leading-none mb-1">
             A partir de
           </span>
           <div className="flex items-baseline gap-1">
-            <span className="text-lg sm:text-xl font-black font-mono text-foreground tracking-tight">
+            <span className="text-xl sm:text-2xl font-bold font-mono text-foreground tracking-tight">
               {priceCents > 0 ? formatMoney(priceCents) : "Consulte"}
             </span>
             {priceSuffix && (
@@ -482,7 +475,7 @@ export function UniversalNicheCard({
               variant="outline"
               size="icon"
               onClick={handleWhatsApp}
-              className="size-11 min-h-11 min-w-11 rounded-md border-border/60 text-foreground hover:bg-muted/50 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring shrink-0"
+              className="size-11 min-h-11 min-w-11 rounded-lg border-border/60 text-foreground hover:bg-muted/50 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring shrink-0"
               title="Conversar no WhatsApp"
             >
               <WhatsappLogo size={18} weight="fill" />
@@ -492,7 +485,7 @@ export function UniversalNicheCard({
           <Button
             asChild
             onClick={handlePrimaryClick}
-            className="h-11 min-h-11 px-4 rounded-md text-xs font-bold bg-foreground text-background hover:bg-foreground/90 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring flex items-center gap-2 shrink-0"
+            className="h-11 min-h-11 px-5 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring flex items-center gap-2 shrink-0"
           >
             <Link to={resolvedLink as any}>
               <span>{resolvedActionLabel}</span>

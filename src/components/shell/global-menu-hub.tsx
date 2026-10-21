@@ -7,7 +7,7 @@
  * - Agrupamento canônico de módulos: Minha Atividade, Serviços Regionais, Negócios e Conta.
  */
 
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ShoppingBag, ShoppingCart, MessageCircle, Tag, Bookmark, Handshake, Compass, Briefcase, CalendarDays, Ticket, MapPin, Coins, Gift, Store, LayoutDashboard, Shield, Settings, LogOut, ChevronRight, User, Bike, Star, Award } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -37,7 +37,8 @@ export function GlobalMenuHub({
   const isAuthenticated = Boolean(session?.user || session?.id);
   const user = session?.user || session;
 
-  const userAvatar = user?.user_metadata?.avatar_url || user?.avatar_url || "";
+  const [avatarError, setAvatarError] = useState(false);
+  const userAvatar = session?.avatarUrl || session?.avatar_url || session?.profile?.avatar_url || user?.user_metadata?.avatar_url || user?.avatar_url || "";
   const userFullName =
     user?.user_metadata?.name ||
     user?.user_metadata?.full_name ||
@@ -177,11 +178,12 @@ export function GlobalMenuHub({
             <div className="rounded-lg border border-border/70 bg-card p-3 space-y-3">
               <div className="flex items-center gap-3">
                 <div className="size-11 rounded-lg bg-muted text-foreground flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden border border-border/50">
-                  {userAvatar ? (
+                  {userAvatar && !avatarError ? (
                     <img
                       src={userAvatar}
                       alt={userFullName}
                       className="size-full object-cover"
+                      onError={() => setAvatarError(true)}
                     />
                   ) : (
                     <span>{userInitials}</span>

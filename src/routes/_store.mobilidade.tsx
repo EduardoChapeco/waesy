@@ -1,14 +1,15 @@
 import { createFileRoute, Link, useNavigate, isRedirect } from "@tanstack/react-router";
 import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Car, Bike, Zap, Truck, Boxes, MapPin, Clock, CheckCircle2, Loader2, Navigation, Crosshair, ChevronDown, ChevronUp, X, CreditCard, QrCode, Banknote, RotateCw, ArrowLeft, Smartphone, Check, Send } from "lucide-react";
+import { Car, Bike, Zap, Truck, Boxes, MapPin, Clock, CheckCircle2, Loader2, Navigation, Crosshair, ChevronDown, ChevronUp, X, CreditCard, QrCode, Banknote, RotateCw, ArrowLeft, Smartphone, Check, Send, AlertTriangle, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getStoredLocation } from "@/components/location/location-master-pill";
 import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/money";
-import { calculateMobilityQuote, createMobilityRequest, type MobilityServiceType, type MobilityRequestDTO, type MobilityQuoteEstimate } from "@/services/mobility.functions";
+import { calculateMobilityQuote, createMobilityRequest, checkCustomerDebtStatus, payCustomerDebt, type MobilityServiceType, type MobilityRequestDTO, type MobilityQuoteEstimate } from "@/services/mobility.functions";
+import { getBrowserClient } from "@/lib/supabase";
 import { MapLibreCanvas, type MapPoint } from "@/components/mobility/maplibre-canvas";
 import { ActionAuthGuardModal } from "@/components/common/action-auth-guard-modal";
 import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
@@ -29,14 +30,19 @@ export const Route = createFileRoute("/_store/mobilidade")({
   loader: async () => {
     try {
       const { getUserSession } = await import("@/services/auth.functions");
-      const [session, surfaceFeed] = await Promise.all([
+      const [session, surfaceFeed, debtStatus] = await Promise.all([
         getUserSession().catch(() => null),
         getModularSurfaceFeed({ data: { surfaceSlug: "mobilidade" } }).catch(() => ({ sections: [], allProducts: [] })),
+        checkCustomerDebtStatus().catch(() => ({ has_debts: false, total_debt_cents: 0, debts: [] })),
       ]);
-      return { session, surfaceFeed };
+      return { session, surfaceFeed, debtStatus };
     } catch (err) {
       console.error("[loader:_store.mobilidade] Unhandled loader error:", err);
-      return { session: null, surfaceFeed: { sections: [], allProducts: [] } };
+      return {
+        session: null,
+        surfaceFeed: { sections: [], allProducts: [] },
+        debtStatus: { has_debts: false, total_debt_cents: 0, debts: [] },
+      };
     }
   },
   component: MobilityPage,
@@ -114,7 +120,7 @@ const PRESET_PLACES = [
 ];
 
 function MobilityPage() {
-  const { session, surfaceFeed } = (Route.useLoaderData?.() as any) || {};
+  const { session, surfaceFeed, debtStatus: initialDebtStatus } = (Route.useLoaderData?.() as any) || {};
   const navigate = useNavigate();
   const [authGuardOpen, setAuthGuardOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<MobilityServiceType>("ride_car");
@@ -141,11 +147,84 @@ function MobilityPage() {
  const [helpersCount, setHelpersCount] = useState<number>(0);
  const [propertyType, setPropertyType] = useState<"ground" | "elevator" | "stairs">("ground");
  const [paymentMethod, setPaymentMethod] = useState<"pix" | "card" | "cash">("pix");
+ const [legalDisclaimerAccepted, setLegalDisclaimerAccepted] = useState(true);
 
  // Flow State: 'input' -> 'quoted' -> 'searching' -> 'confirmed'
  const [activeRequest, setActiveRequest] = useState<MobilityRequestDTO | null>(null);
  const [requestStatus, setRequestStatus] = useState<"idle" | "searching" | "confirmed">("idle");
+ const [driverLocation, setDriverLocation] = useState<{ lat: number; lng: number } | null>(null);
  const [showPwaBanner, setShowPwaBanner] = useState(true);
+
+ // Consulta de Inadimplência Zero-Trust vinculada ao CPF (B.24)
+ const { data: debtStatus, refetch: refetchDebts } = useQuery({
+   queryKey: ["customer-debt-status-mobility"],
+   queryFn: () => checkCustomerDebtStatus(),
+   initialData: initialDebtStatus || { has_debts: false, total_debt_cents: 0, debts: [] },
+   enabled: !!(session?.user?.id || session?.id),
+ });
+
+ const payDebtMutation = useMutation({
+   mutationFn: (debtId: string) => payCustomerDebt({ data: { debtId } }),
+   onSuccess: () => {
+     toast.success("Débito quitado com sucesso! Seus serviços de mobilidade e entregas foram liberados.");
+     refetchDebts();
+   },
+   onError: (err: any) => {
+     toast.error(err?.message || "Erro ao quitar débito.");
+   },
+ });
+
+ // Subscrição Supabase Realtime para Status da Corrida e Telemetria GPS do Motorista
+ useEffect(() => {
+   if (!activeRequest?.id || typeof window === "undefined") return;
+   let supabase: ReturnType<typeof getBrowserClient> | null = null;
+   try {
+     supabase = getBrowserClient();
+   } catch {
+     return;
+   }
+
+   const reqChannel = supabase
+     .channel(`mobility-request:${activeRequest.id}`)
+     .on(
+       "postgres_changes",
+       {
+         event: "UPDATE",
+         schema: "public",
+         table: "mobility_requests",
+         filter: `id=eq.${activeRequest.id}`,
+       },
+       (payload) => {
+         const updated = payload.new as any;
+         setActiveRequest((prev) => (prev ? { ...prev, ...updated } : updated));
+         if (updated.status === "accepted") {
+           toast.success("Motorista parceiro aceitou seu chamado e está a caminho!");
+         } else if (updated.status === "in_progress") {
+           toast.info("Trajeto iniciado em tempo real.");
+         } else if (updated.status === "completed" || updated.status === "delivered") {
+           toast.success("Corrida/Entrega concluída com sucesso!");
+         } else if (updated.status === "cancelled") {
+           toast.error("O chamado foi cancelado.");
+           refetchDebts();
+         }
+       },
+     )
+     .subscribe();
+
+   const gpsChannel = supabase
+     .channel(`mobility-gps:${activeRequest.id}`)
+     .on("broadcast", { event: "driver_location" }, ({ payload }) => {
+       if (payload && typeof payload.lat === "number" && typeof payload.lng === "number") {
+         setDriverLocation({ lat: payload.lat, lng: payload.lng });
+       }
+     })
+     .subscribe();
+
+   return () => {
+     supabase?.removeChannel(reqChannel);
+     supabase?.removeChannel(gpsChannel);
+   };
+ }, [activeRequest?.id, refetchDebts]);
 
  // Distance Calculation
  const routeStats = useMemo(() => {
@@ -280,6 +359,16 @@ function MobilityPage() {
  return;
  }
 
+ if (debtStatus?.has_debts) {
+ toast.error("Existe um débito pendente vinculado ao seu CPF. Quite a pendência acima para solicitar uma nova corrida.");
+ return;
+ }
+
+ if ((selectedService === "moving_truck" || selectedService === "freight_van") && !legalDisclaimerAccepted) {
+ toast.error("É necessário concordar com o Termo de Responsabilidade P2P para fretes e mudanças.");
+ return;
+ }
+
  setRequestStatus("searching");
 
  const payload = {
@@ -295,6 +384,8 @@ function MobilityPage() {
  distance_km: routeStats.distanceKm,
  estimated_price_cents: computedPriceCents || 1500,
  helpers_count: helpersCount,
+ property_type: propertyType,
+ legal_disclaimer_accepted: legalDisclaimerAccepted,
  payment_method: paymentMethod,
  notes: [
  buildingNumber ? `Nº: ${buildingNumber}` : "",
@@ -318,6 +409,19 @@ function MobilityPage() {
  <MapLibreCanvas
  origin={origin}
  destination={destination}
+ markers={
+ driverLocation
+ ? [
+ {
+ id: "live-driver",
+ lat: driverLocation.lat,
+ lng: driverLocation.lng,
+ title: "Motorista Parceiro (Ao Vivo)",
+ kind: "driver",
+ },
+ ]
+ : []
+ }
  pinMode={pinMode}
  onMapClick={handleMapClick}
  className="size-full"
@@ -385,6 +489,30 @@ function MobilityPage() {
  </div>
 
  {/* ── SELETOR DE CATEGORIAS (Pills Horizontais: Corrida, Entrega, Frete, Moto) ── */}
+ {debtStatus?.has_debts && (
+ <div className="p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-destructive space-y-2">
+ <div className="flex items-start gap-2">
+ <AlertTriangle className="size-4 shrink-0 mt-1" />
+ <div className="space-y-1">
+ <span className="font-bold text-xs block">Pendência Financeira no CPF (Waesy Go)</span>
+ <p className="text-xs opacity-90 leading-snug">
+ Consta um débito de {formatMoney(debtStatus.total_debt_cents)} por não-comparecimento dentro da tolerância de 3 minutos.
+ </p>
+ </div>
+ </div>
+ {debtStatus.debts?.[0] && (
+ <Button
+ type="button"
+ onClick={() => payDebtMutation.mutate(debtStatus.debts[0].id)}
+ disabled={payDebtMutation.isPending}
+ className="w-full h-11 min-h-11 rounded-lg text-xs font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90 focus-visible:ring-2 focus-visible:ring-destructive cursor-pointer"
+ >
+ {payDebtMutation.isPending ? "Processando quitação..." : "Quitar Débito e Liberar Conta"}
+ </Button>
+ )}
+ </div>
+ )}
+
  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 ">
  {CATEGORY_TABS.map((tab) => {
  const Icon = tab.icon;
@@ -394,9 +522,9 @@ function MobilityPage() {
  key={tab.id}
  type="button"
  onClick={() => setSelectedService(tab.id)}
- className={`flex items-center gap-2 px-4 h-11 min-h-11 rounded-lg text-xs font-bold whitespace-nowrap transition-all select-none cursor-pointer border focus-visible:ring-2 focus-visible:ring-primary ${
+ className={`flex items-center gap-2 px-4 h-11 min-h-11 rounded-lg text-xs font-bold whitespace-nowrap transition-colors motion-reduce:transition-none select-none cursor-pointer border focus-visible:ring-2 focus-visible:ring-primary ${
  isSelected
- ? "bg-foreground text-background border-foreground shadow-sm"
+ ? "bg-foreground text-background border-foreground"
  : "bg-muted/40 text-muted-foreground border-border/60 hover:text-foreground hover:bg-muted/80"
  }`}
  >
@@ -522,7 +650,7 @@ function MobilityPage() {
  key={mod.service_type}
  type="button"
  onClick={() => setSelectedService(mod.service_type)}
- className={`p-3 rounded-lg border text-left transition-all flex flex-col justify-between select-none cursor-pointer ${
+ className={`p-3 rounded-lg border text-left transition-colors flex flex-col justify-between select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
  isSelected
  ? "bg-primary/10 border-primary text-foreground ring-1 ring-primary"
  : "bg-card border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted/40"
@@ -564,7 +692,7 @@ function MobilityPage() {
  <button
  type="button"
  onClick={() => setPaymentMethod("pix")}
- className={`px-3 h-11 min-h-11 rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
+ className={`px-3 h-11 min-h-11 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
  paymentMethod === "pix"
  ? "bg-foreground text-background"
  : "text-muted-foreground hover:text-foreground"
@@ -576,7 +704,7 @@ function MobilityPage() {
  <button
  type="button"
  onClick={() => setPaymentMethod("card")}
- className={`px-3 h-11 min-h-11 rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
+ className={`px-3 h-11 min-h-11 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
  paymentMethod === "card"
  ? "bg-foreground text-background"
  : "text-muted-foreground hover:text-foreground"
@@ -588,7 +716,7 @@ function MobilityPage() {
  <button
  type="button"
  onClick={() => setPaymentMethod("cash")}
- className={`px-3 h-11 min-h-11 rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
+ className={`px-3 h-11 min-h-11 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
  paymentMethod === "cash"
  ? "bg-foreground text-background"
  : "text-muted-foreground hover:text-foreground"
@@ -661,6 +789,18 @@ function MobilityPage() {
  </button>
  </div>
  </div>
+
+ <label className="flex items-start gap-3 pt-1 cursor-pointer select-none">
+ <input
+ type="checkbox"
+ checked={legalDisclaimerAccepted}
+ onChange={(e) => setLegalDisclaimerAccepted(e.target.checked)}
+ className="mt-1 size-4 rounded border-border accent-primary cursor-pointer"
+ />
+ <span className="text-xs text-muted-foreground leading-snug">
+ Concordo com o Termo de Contratação Direta P2P para transporte de cargas e mudanças, declarando que não há itens ilícitos ou perigosos.
+ </span>
+ </label>
  </div>
  )}
 
@@ -761,14 +901,35 @@ function MobilityPage() {
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
  <CheckCircle2 className="size-4 text-emerald-500" />
- <span className="text-xs font-bold text-foreground">Solicitação Confirmada</span>
+ <span className="text-xs font-bold text-foreground">
+ {activeRequest.status === "accepted"
+ ? "Motorista a Caminho"
+ : activeRequest.status === "in_progress"
+ ? "Em Trajeto (Tempo Real)"
+ : activeRequest.status === "completed" || activeRequest.status === "delivered"
+ ? "Corrida Concluída"
+ : "Buscando Motorista Parceiro"}
+ </span>
  </div>
  <Badge variant="secondary" className="text-xs font-mono">
  #{activeRequest.id.slice(0, 8)}
  </Badge>
  </div>
+ {activeRequest.delivery_pin && (
+ <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-background border border-border/60">
+ <span className="text-xs font-semibold text-muted-foreground flex items-center gap-2">
+ <ShieldCheck className="size-4 text-emerald-500" />
+ <span>PIN de Segurança da Corrida</span>
+ </span>
+ <span className="text-sm font-mono font-black tracking-widest text-foreground">
+ {activeRequest.delivery_pin}
+ </span>
+ </div>
+ )}
  <p className="text-xs text-muted-foreground leading-relaxed">
- Notificando motoristas parceiros próximos. Você pode acompanhar o trajeto ao vivo.
+ {driverLocation
+ ? `Telemetria GPS ativa (${driverLocation.lat.toFixed(4)}, ${driverLocation.lng.toFixed(4)}). Acompanhe o motorista no mapa.`
+ : "Conectado ao canal Realtime. Assim que o condutor aceitar, a posição ao vivo aparecerá no mapa."}
  </p>
  <div className="flex gap-2">
  <Button asChild size="sm" className="flex-1 h-11 min-h-11 rounded-lg text-xs font-bold bg-foreground text-background focus-visible:ring-2 focus-visible:ring-primary">
@@ -780,6 +941,7 @@ function MobilityPage() {
  onClick={() => {
  setRequestStatus("idle");
  setActiveRequest(null);
+ setDriverLocation(null);
  }}
  className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold border-border focus-visible:ring-2 focus-visible:ring-primary"
  >

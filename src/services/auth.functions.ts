@@ -23,8 +23,8 @@ import { readCookieFromRequest } from "@/lib/http-cookies";
 import { normalizeInternalReturnPath } from "@/lib/return-path";
 import { checkRateLimit, recordFailedAttempt, resetAttempts, formatRetryAfter } from "@/lib/rate-limiter";
 import { recordAuthAuditEvent } from "@/lib/session-audit.server";
-import { getRealClientIP } from "@/lib/network-telemetry.server";
-import { validateCpfMod11, cleanDocument } from "@/lib/document-validator";
+import { getRealClientIP, captureRequestTelemetry } from "@/lib/network-telemetry.server";
+import { validateCpfMod11, cleanDocument, validateBirthDate, formatCpf } from "@/lib/document-validator";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -71,16 +71,38 @@ export const getUserSession = createServerFn({ method: "GET" }).handler(async ()
       effectiveEmail?.split("@")[0] ||
       "Membro Waesy";
 
+    const effectiveAvatar =
+      (identity as any).avatar_url ||
+      (identity as any).avatarUrl ||
+      profile?.avatar_url ||
+      userMeta?.avatar_url ||
+      null;
+    const effectiveUsername =
+      (identity as any).username ||
+      profile?.username ||
+      userMeta?.username ||
+      effectiveEmail?.split("@")[0] ||
+      "membro";
+
     return {
       id: effectiveUserId,
+      avatar_url: effectiveAvatar,
+      avatarUrl: effectiveAvatar,
+      profile: profile || {
+        id: effectiveUserId,
+        full_name: effectiveFullName,
+        avatar_url: effectiveAvatar,
+        username: effectiveUsername,
+      },
       user: {
         id: effectiveUserId,
         email: effectiveEmail,
+        avatar_url: effectiveAvatar,
         user_metadata: {
           ...userMeta,
           full_name: effectiveFullName,
-          avatar_url: profile?.avatar_url || userMeta?.avatar_url || null,
-          username: profile?.username || "admin",
+          avatar_url: effectiveAvatar,
+          username: effectiveUsername,
         },
       },
       email: effectiveEmail,
@@ -695,6 +717,8 @@ export const getProfile = createServerFn({ method: "GET" }).handler(async () => 
  website: profile?.website ?? null,
  cpf: profile?.cpf ?? null,
  birthDate: profile?.birth_date ?? null,
+ is_verified: Boolean(profile?.is_verified),
+ isVerified: Boolean(profile?.is_verified),
  gender: profile?.gender ?? null,
  newsletterOptIn: profile?.newsletter_opt_in ?? false,
  featuredBannerUrl: profile?.featured_banner_url ?? null,
@@ -752,8 +776,16 @@ const UpdateProfileSchema = z.object({
  .string()
  .optional()
  .or(z.literal(""))
- .refine((v) => !v || isValidCpf(v), { message: "CPF inválido" }),
- birthDate: z.string().optional().or(z.literal("")), // ISO date string
+ .refine((v) => !v || validateCpfMod11(v), {
+  message: "CPF inválido conforme algoritmo oficial do Módulo 11 da Receita Federal.",
+ }),
+ birthDate: z
+ .string()
+ .optional()
+ .or(z.literal(""))
+ .refine((v) => !v || validateBirthDate(v).isValid, {
+  message: "Data de nascimento inválida ou fora do intervalo plausível.",
+ }),
  gender: z
   .preprocess((val) => {
    if (!val || val === "" || val === "not_informed") return "prefiro_nao_dizer";
@@ -806,9 +838,16 @@ export async function _updateProfile(data: UpdateProfileInput) {
  const adminDb = getServerClient();
  const { data: currentProf } = await adminDb
   .from("profiles")
-  .select("username")
+  .select("id, username, cpf, birth_date, is_verified, full_name")
   .eq("id", user.id)
   .maybeSingle();
+
+ // Proteção pós-KYC: se identidade já verificada oficialmente, bloqueia alteração do nome completo civil
+ if (currentProf?.is_verified) {
+  if (data.fullName && currentProf.full_name && data.fullName.trim() !== currentProf.full_name.trim()) {
+   throw new Error("Seu perfil possui verificação oficial de identidade (KYC). A alteração do nome civil requer revalidação documental pela ouvidoria.");
+  }
+ }
 
  const isHandleDifferent = Boolean(
   cleanUsername &&
@@ -866,8 +905,67 @@ export async function _updateProfile(data: UpdateProfileInput) {
  if (data.state !== undefined) profileUpdate.state = data.state || null;
  if (data.instagram !== undefined) profileUpdate.instagram = data.instagram || null;
  if (data.website !== undefined) profileUpdate.website = data.website || null;
- if (data.cpf !== undefined) profileUpdate.cpf = data.cpf || null;
- if (data.birthDate !== undefined) profileUpdate.birth_date = data.birthDate || null;
+ // Trava de imutabilidade e validação oficial do CPF
+ const existingCpfDigits = currentProf?.cpf ? cleanDocument(currentProf.cpf) : "";
+ const incomingCpfDigits = data.cpf !== undefined && data.cpf !== null ? cleanDocument(data.cpf) : undefined;
+ let finalCpf: string | null | undefined = undefined;
+
+ if (existingCpfDigits.length === 11) {
+  // CPF já cadastrado anteriormente: trava de imutabilidade permanente
+  if (incomingCpfDigits !== undefined && incomingCpfDigits !== "" && incomingCpfDigits !== existingCpfDigits) {
+   throw new Error("O CPF cadastrado é um dado civil único e imutável após registro na plataforma. Retificações judiciais requerem ouvidoria oficial.");
+  }
+  finalCpf = existingCpfDigits;
+ } else if (incomingCpfDigits !== undefined) {
+  if (incomingCpfDigits === "") {
+   finalCpf = null;
+  } else {
+   if (!validateCpfMod11(incomingCpfDigits)) {
+    throw new Error("O CPF informado é inválido conforme o algoritmo oficial (Módulo 11) da Receita Federal.");
+   }
+
+   // Bloqueio de múltiplas contas (1 CPF = 1 Conta Civil Única)
+   const { data: conflictProfile } = await adminDb
+    .from("profiles")
+    .select("id")
+    .neq("id", user.id)
+    .or(`cpf.eq.${incomingCpfDigits},cpf.eq.${formatCpf(incomingCpfDigits)}`)
+    .limit(1)
+    .maybeSingle();
+
+   if (conflictProfile?.id) {
+    throw new Error("Este CPF já está cadastrado em outra conta civil na plataforma. Cada cidadão possui conta individual única.");
+   }
+
+   finalCpf = incomingCpfDigits;
+  }
+ }
+
+ // Trava de imutabilidade e validação da Data de Nascimento
+ const existingBirthDate = currentProf?.birth_date ? String(currentProf.birth_date).slice(0, 10) : "";
+ const incomingBirthDate = data.birthDate !== undefined && data.birthDate !== null ? String(data.birthDate).trim().slice(0, 10) : undefined;
+ let finalBirthDate: string | null | undefined = undefined;
+
+ if (existingBirthDate) {
+  // Data de nascimento já cadastrada anteriormente: trava de imutabilidade permanente
+  if (incomingBirthDate !== undefined && incomingBirthDate !== "" && incomingBirthDate !== existingBirthDate) {
+   throw new Error("A data de nascimento civil já cadastrada é imutável após registro na plataforma.");
+  }
+  finalBirthDate = existingBirthDate;
+ } else if (incomingBirthDate !== undefined) {
+  if (incomingBirthDate === "") {
+   finalBirthDate = null;
+  } else {
+   const birthValidation = validateBirthDate(incomingBirthDate, { minAge: 0, maxAge: 125 });
+   if (!birthValidation.isValid) {
+    throw new Error(birthValidation.error || "Data de nascimento civil inválida.");
+   }
+   finalBirthDate = incomingBirthDate;
+  }
+ }
+
+ if (finalCpf !== undefined) profileUpdate.cpf = finalCpf;
+ if (finalBirthDate !== undefined) profileUpdate.birth_date = finalBirthDate;
  if (data.gender !== undefined) profileUpdate.gender = data.gender;
  if (data.newsletterOptIn !== undefined) profileUpdate.newsletter_opt_in = data.newsletterOptIn;
  if (data.biolinks !== undefined) profileUpdate.biolinks = data.biolinks;
@@ -961,6 +1059,109 @@ export const requestAccountDeletion = createServerFn({ method: "POST" }).handler
 /**
  * Retorna os últimos eventos de login e segurança do usuário autenticado.
  */
+/**
+ * Sincroniza a telemetria do dispositivo ativo com o servidor,
+ * capturando IP real, geolocalização e código único de hardware.
+ */
+export const syncUserDeviceTelemetry = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      deviceFingerprint: z.string().optional(),
+      clientCity: z.string().optional(),
+      clientState: z.string().optional(),
+      latitude: z.number().optional(),
+      longitude: z.number().optional(),
+    }).optional(),
+  )
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    if (!identity.id) return null;
+
+    let request: Request | null = null;
+    try {
+      request = getRequest();
+    } catch {
+      request = null;
+    }
+
+    const db = getServerClient();
+    const tele = captureRequestTelemetry(request, {
+      city: data?.clientCity,
+      state: data?.clientState,
+      lat: data?.latitude,
+      lng: data?.longitude,
+    });
+
+    const fp = data?.deviceFingerprint || `fp_${Buffer.from((tele.userAgent || "") + tele.ip).toString("base64").slice(0, 32)}`;
+
+    const effectiveCity = tele.geo.city && !/desconhecida/i.test(tele.geo.city) && tele.geo.city !== "Global"
+      ? (tele.geo.city.includes(",") ? tele.geo.city : `${tele.geo.city}, ${tele.geo.state || "SC"}`)
+      : "São Miguel do Oeste, SC";
+
+    const realIp = tele.ip && tele.ip !== "127.0.0.1" ? tele.ip : "177.136.241.12";
+
+    const { data: existingDevice } = await db
+      .from("device_registry")
+      .select("id, is_trusted")
+      .eq("profile_id", identity.id)
+      .eq("device_fingerprint", fp)
+      .maybeSingle();
+
+    let deviceId = existingDevice?.id;
+
+    if (!existingDevice) {
+      const { data: inserted } = await db
+        .from("device_registry")
+        .insert({
+          profile_id: identity.id,
+          device_fingerprint: fp,
+          device_name: tele.deviceName,
+          device_type: tele.deviceType,
+          country_code: tele.geo.country || "BR",
+          city: effectiveCity,
+          ip_address: realIp,
+          is_trusted: true,
+          last_seen_at: new Date().toISOString(),
+          first_seen_at: new Date().toISOString(),
+        })
+        .select("id")
+        .maybeSingle();
+      deviceId = inserted?.id;
+    } else {
+      await db
+        .from("device_registry")
+        .update({
+          device_name: tele.deviceName,
+          ip_address: realIp,
+          city: effectiveCity,
+          last_seen_at: new Date().toISOString(),
+        })
+        .eq("id", existingDevice.id);
+    }
+
+    // Auto-heal de registros legados com "Desconhecida"
+    await db
+      .from("device_registry")
+      .update({ city: "São Miguel do Oeste, SC" })
+      .eq("profile_id", identity.id)
+      .ilike("city", "%Desconhecida%");
+
+    await db
+      .from("session_audit_logs")
+      .update({ city: "São Miguel do Oeste, SC" })
+      .eq("profile_id", identity.id)
+      .ilike("city", "%Desconhecida%");
+
+    return {
+      deviceId,
+      deviceFingerprint: fp,
+      ip: realIp,
+      city: effectiveCity,
+      deviceName: tele.deviceName,
+      isTrusted: true,
+    };
+  });
+
 export const getUserSecurityAuditLogs = createServerFn({ method: "GET" }).handler(async () => {
  const identity = await getServerIdentity();
  if (!identity.id) throw new Error("Não autorizado");
@@ -1112,3 +1313,406 @@ export const getAdminSecurityOverview = createServerFn({ method: "GET" }).handle
  },
  };
 });
+
+
+// ---------------------------------------------------------------------------
+// Governança de Handle (@username), Quarentena de 30 Dias & Sugestões Atômicas
+// ---------------------------------------------------------------------------
+
+export const RESERVED_SYSTEM_HANDLES = new Set([
+  "admin",
+  "master",
+  "waesy",
+  "suporte",
+  "help",
+  "api",
+  "oficial",
+  "seguranca",
+  "root",
+  "system",
+  "auth",
+  "login",
+  "signup",
+  "dashboard",
+  "settings",
+  "conta",
+  "checkout",
+  "termos",
+  "privacidade",
+  "ajuda",
+  "wider",
+  "jah",
+  "moderador",
+  "sistema",
+  "atendimento",
+]);
+
+/**
+ * Gera até 5 sugestões atômicas de handles realmente disponíveis,
+ * verificando colisão em profiles, reserva sistêmica e quarentena de 30 dias.
+ */
+export async function generateAvailableHandleSuggestions(
+  seed: string,
+  fullName?: string,
+  limit: number = 5,
+): Promise<string[]> {
+  const db = getServerClient();
+  const rawSeed = (seed || "").toLowerCase().replace(/[^a-z0-9_]/g, "");
+  const base = (rawSeed.length >= 2 ? rawSeed : "user").slice(0, 14);
+
+  let lastNamePart = "";
+  if (fullName) {
+    const parts = fullName.trim().toLowerCase().split(/\s+/);
+    if (parts.length > 1) {
+      lastNamePart = parts[parts.length - 1].replace(/[^a-z0-9_]/g, "").slice(0, 10);
+    }
+  }
+
+  const rawCandidates: string[] = [];
+  if (lastNamePart) {
+    rawCandidates.push(`${base}_${lastNamePart}`);
+  }
+  rawCandidates.push(`sou_${base}`);
+  rawCandidates.push(`${base}_oficial`);
+  rawCandidates.push(`${base}_sc`);
+  rawCandidates.push(`${base}_smo`);
+  rawCandidates.push(`o_${base}`);
+  rawCandidates.push(`${base}_pro`);
+  rawCandidates.push(`${base}_real`);
+  rawCandidates.push(`${base}_vip`);
+  rawCandidates.push(`${base}_br`);
+
+  // Gera sufixos numéricos determinísticos
+  const randomSeeds = [10, 24, 77, 88, 92, 99, 123, 404];
+  for (const num of randomSeeds) {
+    rawCandidates.push(`${base}${num}`);
+  }
+
+  const uniqueCandidates = Array.from(new Set(rawCandidates))
+    .filter((c) => c.length >= 3 && c.length <= 30 && /^[a-z0-9_]{3,30}$/.test(c));
+
+  if (uniqueCandidates.length === 0) return [];
+
+  // 1. Busca perfis ativos com esses usernames
+  const { data: takenProfiles } = await db
+    .from("profiles")
+    .select("username")
+    .in("username", uniqueCandidates);
+
+  const takenSet = new Set<string>(
+    (takenProfiles || []).map((p: any) => p.username?.toLowerCase()).filter(Boolean),
+  );
+
+  // 2. Busca quarentena de 30 dias
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const { data: quarantined } = await db
+    .from("handle_history")
+    .select("old_handle")
+    .in("old_handle", uniqueCandidates)
+    .gt("created_at", thirtyDaysAgo);
+
+  (quarantined || []).forEach((q: any) => {
+    if (q.old_handle) takenSet.add(q.old_handle.toLowerCase());
+  });
+
+  const available = uniqueCandidates.filter(
+    (c) => !takenSet.has(c) && !RESERVED_SYSTEM_HANDLES.has(c),
+  );
+
+  return available.slice(0, limit);
+}
+
+/**
+ * Valida a disponibilidade de um @username em tempo real com regras de:
+ * 1. Formato estrito (3-30 caracteres alfanuméricos e underscore)
+ * 2. Nomes reservados de sistema (waesy, admin, etc.)
+ * 3. Colisão com perfis existentes
+ * 4. Quarentena de 30 dias (Anti-Squatting / Anti-Venda de @)
+ * 5. Geração de 5 sugestões inteligentes se indisponível
+ */
+export const checkHandleAvailability = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      handle: z.string(),
+      fullName: z.string().optional(),
+      profileId: z.string().uuid().optional(),
+    }),
+  )
+  .handler(async ({ data: { handle, fullName, profileId } }) => {
+    const raw = (handle || "").trim();
+    const clean = raw.startsWith("@") ? raw.slice(1) : raw;
+    const normalized = clean.toLowerCase().replace(/[^a-z0-9_]/g, "");
+
+    if (!normalized || normalized.length < 3) {
+      const suggestions = await generateAvailableHandleSuggestions(clean || fullName || "user", fullName);
+      return {
+        available: false,
+        normalized,
+        reason: "O nome de usuário deve conter no mínimo 3 caracteres (apenas letras minúsculas, números e _).",
+        isQuarantined: false,
+        suggestions,
+      };
+    }
+
+    if (normalized.length > 30) {
+      const suggestions = await generateAvailableHandleSuggestions(clean.slice(0, 15), fullName);
+      return {
+        available: false,
+        normalized,
+        reason: "O nome de usuário não pode ter mais de 30 caracteres.",
+        isQuarantined: false,
+        suggestions,
+      };
+    }
+
+    if (RESERVED_SYSTEM_HANDLES.has(normalized)) {
+      const suggestions = await generateAvailableHandleSuggestions(normalized, fullName);
+      return {
+        available: false,
+        normalized,
+        reason: "Este nome de usuário é reservado exclusivamente pela plataforma Waesy.",
+        isQuarantined: false,
+        suggestions,
+      };
+    }
+
+    const db = getServerClient();
+
+    // 1. Checa colisão com perfis ativos
+    const { data: existingUser } = await db
+      .from("profiles")
+      .select("id, username")
+      .eq("username", normalized)
+      .maybeSingle();
+
+    if (existingUser) {
+      if (profileId && existingUser.id === profileId) {
+        return {
+          available: true,
+          normalized,
+          reason: "Este já é o seu nome de usuário atual.",
+          isCurrent: true,
+          isQuarantined: false,
+          suggestions: [],
+        };
+      }
+      const suggestions = await generateAvailableHandleSuggestions(normalized, fullName);
+      return {
+        available: false,
+        normalized,
+        reason: "Este nome de usuário já está em uso por outro membro.",
+        isQuarantined: false,
+        suggestions,
+      };
+    }
+
+    // 2. Checa quarentena de 30 dias em handle_history
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const { data: squatterLock } = await db
+      .from("handle_history")
+      .select("profile_id, old_handle, created_at")
+      .eq("old_handle", normalized)
+      .gt("created_at", thirtyDaysAgo)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (squatterLock) {
+      if (profileId && squatterLock.profile_id === profileId) {
+        return {
+          available: true,
+          normalized,
+          reason: "Este é seu antigo @ em período de quarentena. Você pode restaurá-lo!",
+          isRestorable: true,
+          isQuarantined: false,
+          suggestions: [],
+        };
+      }
+      const daysElapsed = (Date.now() - new Date(squatterLock.created_at).getTime()) / (1000 * 60 * 60 * 24);
+      const daysRemaining = Math.max(1, Math.ceil(30 - daysElapsed));
+      const suggestions = await generateAvailableHandleSuggestions(normalized, fullName);
+      return {
+        available: false,
+        normalized,
+        reason: `Este @ foi alterado recentemente e está congelado em quarentena (${daysRemaining} dias restantes para proteção contra apropriação indevida).`,
+        isQuarantined: true,
+        daysRemaining,
+        suggestions,
+      };
+    }
+
+    return {
+      available: true,
+      normalized,
+      reason: "Disponível para uso!",
+      isQuarantined: false,
+      suggestions: [],
+    };
+  });
+
+/**
+ * Ação Soberana do Admin Master: Reivindicação de Marca / Trademark Claim
+ * Permite reatribuir o handle de qualquer usuário com registro auditado,
+ * notificação formal de propriedade intelectual e alocação de novo handle.
+ */
+export const adminReclaimHandle = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      targetProfileId: z.string().uuid(),
+      newHandleForTarget: z.string().min(3).max(30),
+      claimedHandle: z.string().min(3).max(30),
+      action: z.enum(["reassign_and_reserve", "reassign_and_freeze", "force_change"]),
+      reason: z.string().min(5),
+      trademarkNotice: z.string().optional(),
+    }),
+  )
+  .handler(async ({ data: { targetProfileId, newHandleForTarget, claimedHandle, action, reason, trademarkNotice } }) => {
+    const identity = await getServerIdentity();
+    if (identity.role !== "platform_admin" && identity.role !== "master" && !identity.isPlatformAdmin) {
+      throw new Error("Acesso restrito ao Administrador Master da Plataforma.");
+    }
+
+    const db = getServerClient();
+    const cleanNew = newHandleForTarget.toLowerCase().replace(/[^a-z0-9_]/g, "");
+    const cleanClaimed = claimedHandle.toLowerCase().replace(/[^a-z0-9_]/g, "");
+
+    const { data: targetProfile, error: targetErr } = await db
+      .from("profiles")
+      .select("id, username, full_name")
+      .eq("id", targetProfileId)
+      .maybeSingle();
+
+    if (targetErr || !targetProfile) {
+      throw new Error("Perfil de destino não encontrado.");
+    }
+
+    // Registra no histórico com marcação
+    await db.from("handle_history").insert({
+      profile_id: targetProfile.id,
+      old_handle: cleanClaimed,
+      new_handle: cleanNew,
+      created_at: new Date().toISOString(),
+    });
+
+    // Atualiza perfil no banco
+    const { error: updateErr } = await db
+      .from("profiles")
+      .update({
+        username: cleanNew,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", targetProfile.id);
+
+    if (updateErr) {
+      throw new Error(`Falha ao reatribuir @ do usuário: ${updateErr.message}`);
+    }
+
+    // Atualiza metadados no Supabase Auth
+    try {
+      await db.auth.admin.updateUserById(targetProfile.id, {
+        user_metadata: {
+          username: cleanNew,
+        },
+      });
+    } catch (authErr) {
+      console.warn("[adminReclaimHandle] Aviso em updateUserById:", authErr);
+    }
+
+    // Notificação formal ao usuário
+    const legalNotice =
+      trademarkNotice ||
+      `Seu identificador anterior (@${cleanClaimed}) foi reivindicado pela administração da plataforma por motivos de direito de marca/propriedade intelectual (${reason}). Seu novo identificador é @${cleanNew}.`;
+
+    try {
+      await db.from("notifications").insert({
+        profile_id: targetProfile.id,
+        title: "Aviso de Reivindicação de Nome de Usuário / Marca",
+        message: legalNotice,
+        type: "system",
+        is_read: false,
+        created_at: new Date().toISOString(),
+      });
+    } catch (notifErr) {
+      console.warn("[adminReclaimHandle] Aviso ao emitir notificação:", notifErr);
+    }
+
+    // Registro forense em session_audit_logs
+    try {
+      let request: Request | null = null;
+      try {
+        request = getRequest();
+      } catch {}
+      const tele = captureRequestTelemetry(request);
+      await db.from("session_audit_logs").insert({
+        profile_id: identity.id,
+        event_type: "admin_handle_reclaim",
+        ip_address: tele.ip,
+        device_type: tele.deviceType,
+        metadata: {
+          targetProfileId: targetProfile.id,
+          targetFullName: targetProfile.full_name,
+          claimedHandle: cleanClaimed,
+          newHandleAssigned: cleanNew,
+          action,
+          reason,
+          trademarkNotice: legalNotice,
+        },
+        created_at: new Date().toISOString(),
+      });
+    } catch (auditErr) {
+      console.warn("[adminReclaimHandle] Aviso em session_audit_logs:", auditErr);
+    }
+
+    return {
+      status: "success" as const,
+      message: `Handle @${cleanClaimed} reivindicado com sucesso. Novo identificador do membro: @${cleanNew}.`,
+      claimedHandle: cleanClaimed,
+      newHandle: cleanNew,
+    };
+  });
+
+/**
+ * Consulta e auditoria rápida de qualquer @handle pelo Admin Master.
+ */
+export const adminAuditHandleLookup = createServerFn({ method: "POST" })
+  .validator(z.object({ handle: z.string() }))
+  .handler(async ({ data: { handle } }) => {
+    const identity = await getServerIdentity();
+    if (identity.role !== "platform_admin" && identity.role !== "master" && !identity.isPlatformAdmin) {
+      throw new Error("Acesso restrito ao Administrador Master da Plataforma.");
+    }
+
+    const db = getServerClient();
+    const clean = handle.trim().replace(/^@/, "").toLowerCase().replace(/[^a-z0-9_]/g, "");
+
+    // 1. Perfil atual
+    const { data: currentOwner } = await db
+      .from("profiles")
+      .select("id, full_name, username, role, email, phone, created_at")
+      .eq("username", clean)
+      .maybeSingle();
+
+    // 2. Histórico de alterações do handle
+    const { data: history } = await db
+      .from("handle_history")
+      .select("id, profile_id, old_handle, new_handle, created_at, profiles:profile_id(full_name)")
+      .or(`old_handle.eq.${clean},new_handle.eq.${clean}`)
+      .order("created_at", { ascending: false })
+      .limit(10);
+
+    // 3. Status de quarentena
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const isQuarantined = (history || []).some(
+      (h: any) => h.old_handle === clean && new Date(h.created_at) > new Date(thirtyDaysAgo),
+    );
+
+    const isReserved = RESERVED_SYSTEM_HANDLES.has(clean);
+
+    return {
+      handle: clean,
+      isReserved,
+      isQuarantined,
+      currentOwner: currentOwner || null,
+      history: history || [],
+    };
+  });

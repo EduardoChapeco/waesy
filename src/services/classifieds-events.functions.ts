@@ -1,7 +1,65 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
+import { signTicketPayload } from "@/lib/ticket-crypto";
 import { getIdentity } from "./identity.functions";
+
+function buildEmvPixCopyPaste(params: {
+  pixKey: string;
+  merchantName: string;
+  merchantCity: string;
+  amountCents: number;
+  txid: string;
+}): string {
+  const formatField = (id: string, value: string) =>
+    `${id}${String(value.length).padStart(2, "0")}${value}`;
+
+  const cleanName = params.merchantName
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9 ]/g, "")
+    .slice(0, 25)
+    .toUpperCase() || "WAESY EVENTOS";
+  const cleanCity = params.merchantCity
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9 ]/g, "")
+    .slice(0, 15)
+    .toUpperCase() || "CHAPECO";
+  const cleanTxid = params.txid.replace(/[^a-zA-Z0-9]/g, "").slice(0, 25) || "WAESYTKT";
+  const amountStr = (Math.max(0, params.amountCents) / 100).toFixed(2);
+
+  const gui = formatField("00", "br.gov.bcb.pix");
+  const key = formatField("01", params.pixKey.trim());
+  const merchantAccount = formatField("26", `${gui}${key}`);
+
+  const payloadWithoutCrc = [
+    formatField("00", "01"),
+    merchantAccount,
+    formatField("52", "0000"),
+    formatField("53", "986"),
+    ...(params.amountCents > 0 ? [formatField("54", amountStr)] : []),
+    formatField("58", "BR"),
+    formatField("59", cleanName),
+    formatField("60", cleanCity),
+    formatField("62", formatField("05", cleanTxid)),
+    "6304",
+  ].join("");
+
+  let crc = 0xffff;
+  for (let i = 0; i < payloadWithoutCrc.length; i++) {
+    crc ^= payloadWithoutCrc.charCodeAt(i) << 8;
+    for (let j = 0; j < 8; j++) {
+      if ((crc & 0x8000) !== 0) {
+        crc = ((crc << 1) ^ 0x1021) & 0xffff;
+      } else {
+        crc = (crc << 1) & 0xffff;
+      }
+    }
+  }
+  const crcHex = crc.toString(16).toUpperCase().padStart(4, "0");
+  return `${payloadWithoutCrc}${crcHex}`;
+}
 
 /**
  * classifieds-events.functions.ts — Camada BFF para Gestão de Eventos em Classificados
@@ -45,20 +103,49 @@ export const registerClassifiedEventLead = createServerFn({ method: "POST" })
       ? `Ingresso: ${input.ticketTierName}`
       : "Inscrição no Evento";
 
-    // 2. Gravação de Lead em classified_applications (Zero Mocks / 100% Real)
+    const provisionalTicketId = crypto.randomUUID();
+    const ownerProfileId = identity?.id || classified.author_profile_id;
+    const signedTicket = signTicketPayload({
+      ticketId: provisionalTicketId,
+      eventId: input.classifiedId,
+      lotId: input.ticketTierId || "classified-default-lot",
+      ownerProfileId,
+    });
+
+    const priceCents = Number(input.ticketTierPriceCents || 0);
+    const attrs = (classified.attributes || {}) as Record<string, any>;
+    const pixKey = String(attrs.pix_key || attrs.organizer_pix || "eventos@waesy.com.br");
+    const pixCopyPaste =
+      priceCents > 0
+        ? buildEmvPixCopyPaste({
+            pixKey,
+            merchantName: classified.title || "WAESY EVENTOS",
+            merchantCity: String(attrs.city || "CHAPECO"),
+            amountCents: priceCents,
+            txid: signedTicket.humanCode.replace(/-/g, ""),
+          })
+        : null;
+
+    // 2. Gravação de Lead + Bilhete Criptográfico WCTS-1 em classified_applications
     const { data: appData, error: appErr } = await supabase
       .from("classified_applications")
       .insert({
+        id: provisionalTicketId,
         classified_id: input.classifiedId,
-        applicant_id: identity?.id || classified.author_profile_id,
+        applicant_id: ownerProfileId,
         name: input.name.trim(),
         phone: input.whatsapp.trim(),
         email: input.email?.trim() || null,
         candidate_role: roleLabel,
-        cover_letter: input.notes
-          ? `${roleLabel} | Nota: ${input.notes.trim()}`
-          : `${roleLabel} | Inscrição confirmada`,
-        status: "confirmed",
+        cover_letter: [
+          roleLabel,
+          `Código WCTS-1: ${signedTicket.humanCode}`,
+          `QR: ${signedTicket.qrPayload}`,
+          input.notes ? `Nota: ${input.notes.trim()}` : null,
+        ]
+          .filter(Boolean)
+          .join(" | "),
+        status: priceCents > 0 ? "pending_payment" : "confirmed",
       })
       .select()
       .single();
@@ -80,8 +167,8 @@ export const registerClassifiedEventLead = createServerFn({ method: "POST" })
           source: "site",
           lead_source_detail: "Classificados / Eventos",
           status: "new",
-          tags: ["Classificados", "Evento", input.ticketTierName || "Geral"],
-          notes: `Participante inscrito no evento ${classified.title}. Lote: ${input.ticketTierName || "Padrão"}. Preço: ${input.ticketTierPriceCents ? `R$ ${(input.ticketTierPriceCents / 100).toFixed(2)}` : "Gratuito"}.`,
+          tags: ["Classificados", "Evento", input.ticketTierName || "Geral", signedTicket.humanCode],
+          notes: `Participante inscrito no evento ${classified.title}. Lote: ${input.ticketTierName || "Padrão"}. Bilhete: ${signedTicket.humanCode}. Preço: ${priceCents > 0 ? `R$ ${(priceCents / 100).toFixed(2)}` : "Gratuito"}.`,
         });
       } catch (crmErr: any) {
         console.warn("[classifieds-events] leads_crm sync fallback:", crmErr);
@@ -90,8 +177,13 @@ export const registerClassifiedEventLead = createServerFn({ method: "POST" })
 
     return {
       success: true,
-      leadId: appData?.id || crypto.randomUUID(),
-      message: "Inscrição confirmada com sucesso!",
+      leadId: appData?.id || provisionalTicketId,
+      ticketCode: signedTicket.humanCode,
+      qrPayload: signedTicket.qrPayload,
+      signature: signedTicket.signature,
+      pixCopyPaste,
+      amountCents: priceCents,
+      message: "Inscrição e bilhete criptográfico gerados com sucesso!",
     };
   });
 

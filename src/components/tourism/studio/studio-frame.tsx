@@ -5,11 +5,11 @@ export const CANVAS_DIMENSIONS: Record<
  ProposalCanvasFormat,
  { width: string; minHeight: string; label: string; iconEmoji: string }
 > = {
- "a4-portrait": { width: "794px", minHeight: "1123px", label: "A4 Retrato (PDF)", iconEmoji: "📄" },
- "a4-landscape": { width: "1123px", minHeight: "794px", label: "A4 Paisagem (Lâmina)", iconEmoji: "📑" },
- "story-916": { width: "1080px", minHeight: "1920px", label: "Story 9:16 (WhatsApp/Insta)", iconEmoji: "📱" },
- "presentation-169": { width: "1920px", minHeight: "1080px", label: "Apresentação 16:9 (Slide)", iconEmoji: "🖥️" },
- "letter-portrait": { width: "816px", minHeight: "1056px", label: "Carta (US Letter)", iconEmoji: "✉️" },
+ "a4-portrait": { width: "794px", minHeight: "1123px", label: "A4 Retrato (PDF)", iconEmoji: "A4" },
+ "a4-landscape": { width: "1123px", minHeight: "794px", label: "A4 Paisagem (Lâmina)", iconEmoji: "A4L" },
+ "story-916": { width: "1080px", minHeight: "1920px", label: "Story 9:16 (WhatsApp/Insta)", iconEmoji: "9:16" },
+ "presentation-169": { width: "1920px", minHeight: "1080px", label: "Apresentação 16:9 (Slide)", iconEmoji: "16:9" },
+ "letter-portrait": { width: "816px", minHeight: "1056px", label: "Carta (US Letter)", iconEmoji: "US" },
 };
 
 interface StudioFrameProps {

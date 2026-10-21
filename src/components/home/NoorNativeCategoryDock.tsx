@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { IFoodSquareCategoryButton } from "./IFoodSquareCategoryButton";
-import type { HomeSectionItemDTO } from "@/services/admin-home-cms.functions";
+import {
+  type HomeSectionItemDTO,
+  isHealthyImageUrl,
+} from "@/services/admin-home-cms.functions";
 
 export interface NoorNativeCategoryDockProps {
   items: HomeSectionItemDTO[];
@@ -16,7 +18,13 @@ export function NoorNativeCategoryDock({
   className,
   variant = "square",
 }: NoorNativeCategoryDockProps) {
-  if (!items || items.length === 0) return null;
+  // Invariante de Omissão Estrita: Filtrar apenas itens com imagem válida
+  const validItems = (items || []).filter(
+    (item) =>
+      item.is_active !== false &&
+      isHealthyImageUrl(item.image_desktop_url || item.image_mobile_url || item.image_url),
+  );
+  if (validItems.length === 0) return null;
 
   return (
     <div
@@ -27,7 +35,7 @@ export function NoorNativeCategoryDock({
       role="region"
       aria-label="Menu Rápido de Categorias"
     >
-      {items.map((item) => {
+      {validItems.map((item) => {
         if (variant === "compact_squircle") {
           return <CompactCategoryPill key={item.id} item={item} />;
         }
@@ -37,9 +45,9 @@ export function NoorNativeCategoryDock({
             <IFoodSquareCategoryButton
               id={item.id}
               title={item.title}
-              imageUrl={item.image_url}
+              imageUrl={item.image_desktop_url || item.image_url || item.image_mobile_url}
               targetUrl={item.target_url}
-              showText={item.show_text}
+              showText={item.show_text === true}
               badgeText={item.badge_text}
             />
           </div>
@@ -51,7 +59,15 @@ export function NoorNativeCategoryDock({
 
 function CompactCategoryPill({ item }: { item: HomeSectionItemDTO }) {
   const [imageError, setImageError] = useState(false);
-  const hasValidImage = Boolean(item.image_url && !imageError);
+  const imageUrl = item.image_desktop_url || item.image_url || item.image_mobile_url;
+  const hasValidImage = Boolean(imageUrl && !imageError && isHealthyImageUrl(imageUrl));
+
+  // Invariante de Omissão Estrita: Se não possui imagem saudável, OMITIR
+  if (!hasValidImage) {
+    return null;
+  }
+
+  const isShowTitle = item.show_text === true && Boolean(item.title && item.title.trim().length > 0);
 
   return (
     <Link
@@ -61,21 +77,16 @@ function CompactCategoryPill({ item }: { item: HomeSectionItemDTO }) {
         "flex items-center gap-2 active:scale-95 transition-transform duration-150",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
       )}
+      aria-label={item.title || "Categoria"}
     >
-      {hasValidImage ? (
-        <img
-          src={item.image_url!}
-          alt=""
-          loading="lazy"
-          className="size-7 object-contain"
-          onError={() => setImageError(true)}
-        />
-      ) : (
-        <span className="size-7 rounded-md bg-primary/10 flex items-center justify-center text-primary shrink-0">
-          <Sparkles className="size-3.5" />
-        </span>
-      )}
-      {item.show_text && item.title && (
+      <img
+        src={imageUrl!}
+        alt={isShowTitle ? (item.title || "") : ""}
+        loading="lazy"
+        className="size-7 object-contain"
+        onError={() => setImageError(true)}
+      />
+      {isShowTitle && (
         <span className="text-xs font-semibold text-foreground whitespace-nowrap">
           {item.title}
         </span>

@@ -40,8 +40,9 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { formatMoney } from "@/lib/money";
-import { createTravelProposal, type TravelProposalDTO } from "@/services/travel-proposal.functions";
+import { createTravelProposal, type TravelProposalDTO, type ProposalCanvasFormat } from "@/services/travel-proposal.functions";
 import { createAgencyTravelQuote } from "@/services/tourism.functions";
+import { listCustomers, createCustomer } from "@/services/crm.functions";
 import { listHotelsBank } from "@/services/travel-catalog.functions";
 import { parseUniversalDocumentOCR } from "@/services/multimodal-ocr.functions";
 import {
@@ -56,6 +57,7 @@ import {
   type InfoTravelOperatorSlug,
 } from "@/services/infotravel";
 import { ProposalShareWhatsappModal } from "@/components/tourism/studio/proposal-share-whatsapp-modal";
+import { TRAVEL_PACKAGE_TEMPLATES } from "@/lib/tourism/tourism-templates";
 
 export interface UnifiedProposalWorkspaceLead {
   id: string;
@@ -159,7 +161,94 @@ export function UnifiedProposalWorkspace({
   const [clientName, setClientName] = useState(lead?.fullName || initialClientName);
   const [clientPhone, setClientPhone] = useState(lead?.phone || initialClientPhone);
   const [clientEmail, setClientEmail] = useState(lead?.email || initialClientEmail);
+  const [clientDocument, setClientDocument] = useState("");
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
+  const [isCreatingInlineCustomer, setIsCreatingInlineCustomer] = useState(false);
+  const [customTitle, setCustomTitle] = useState(sourcePackageTitle || "");
+  const [canvasFormat, setCanvasFormat] = useState<ProposalCanvasFormat>("a4-portrait");
+  const [templateTheme, setTemplateTheme] = useState<string>("editorial-flat");
+  const [currency, setCurrency] = useState<string>("BRL");
+  const [validUntilDays, setValidUntilDays] = useState<number>(7);
+  const [selectedPackageTemplateId, setSelectedPackageTemplateId] = useState<string | null>(null);
+  const [showOcrTextModal, setShowOcrTextModal] = useState(false);
+  const [ocrPastedText, setOcrPastedText] = useState("");
   const [originCity, setOriginCity] = useState("Chapecó (XAP)");
+
+  const { data: crmCustomersRes, refetch: refetchCustomers } = useQuery({
+    queryKey: ["crm-customers-proposal-workspace"],
+    queryFn: () => listCustomers({ data: {} }).catch(() => ({ customers: [] })),
+    enabled: open,
+  });
+  const crmCustomers: any[] = Array.isArray((crmCustomersRes as any)?.customers)
+    ? (crmCustomersRes as any).customers
+    : Array.isArray(crmCustomersRes)
+      ? (crmCustomersRes as any)
+      : [];
+
+  const handleQuickCreateCustomer = async () => {
+    if (!clientName.trim()) {
+      toast.error("Informe o nome do passageiro antes de salvar no CRM.");
+      return;
+    }
+    setIsCreatingInlineCustomer(true);
+    try {
+      const created = await createCustomer({
+        data: {
+          full_name: clientName.trim(),
+          phone: clientPhone.trim() || undefined,
+          email: clientEmail.trim() || undefined,
+          document_number: clientDocument.trim() || undefined,
+        } as any,
+      });
+      if ((created as any)?.id) {
+        setSelectedCustomerId((created as any).id);
+      }
+      await refetchCustomers();
+      toast.success(`Cliente "${clientName.trim()}" cadastrado e vinculado no CRM!`);
+    } catch (err: any) {
+      toast.error(err?.message || "Não foi possível cadastrar o cliente no CRM.");
+    } finally {
+      setIsCreatingInlineCustomer(false);
+    }
+  };
+
+  const handleParsePastedOcrText = () => {
+    const raw = ocrPastedText.trim();
+    if (!raw) {
+      toast.error("Cole o texto do orçamento, GDS ou WhatsApp para extrair os dados.");
+      return;
+    }
+    const priceMatch = raw.match(/R\$\s*([\d.]+(?:,\d{2})?)/i);
+    if (priceMatch?.[1]) {
+      const parsedVal = parseFloat(priceMatch[1].replace(/\./g, "").replace(",", "."));
+      if (!isNaN(parsedVal) && parsedVal > 0) {
+        const perAdultCents = Math.round((parsedVal * 100) / 2);
+        setRooms((prev) =>
+          prev.map((r, i) => (i === 0 ? { ...r, baseAdultPriceCents: perAdultCents } : r)),
+        );
+        setBundleOptions((prev) =>
+          prev.map((o, i) => (i === 0 ? { ...o, adultPriceCents: perAdultCents } : o)),
+        );
+      }
+    }
+    const dateMatches = raw.match(/\b(\d{4}-\d{2}-\d{2}|\d{2}\/\d{2}\/\d{4})\b/g);
+    if (dateMatches && dateMatches.length >= 1) {
+      const toIso = (d: string) =>
+        d.includes("/") ? d.split("/").reverse().join("-") : d;
+      setDepartureDate(toIso(dateMatches[0]));
+      if (dateMatches[1]) setReturnDate(toIso(dateMatches[1]));
+    }
+    const matchedTpl = TRAVEL_PACKAGE_TEMPLATES.find((t) =>
+      raw.toLowerCase().includes(t.destinationCity.split(",")[0].toLowerCase()),
+    );
+    if (matchedTpl) {
+      setDestinationQuery(matchedTpl.destinationCity);
+    }
+    setNotes((prev) => (prev ? `${prev}\n${raw.slice(0, 400)}` : raw.slice(0, 400)));
+    setShowOcrTextModal(false);
+    setOcrPastedText("");
+    toast.success("Texto analisado e tarifas/datas aplicadas à proposta!");
+  };
   const [destinationQuery, setDestinationQuery] = useState(lead?.destination || initialDestination || "Buenos Aires");
   const [departureDate, setDepartureDate] = useState("2027-01-09");
   const [returnDate, setReturnDate] = useState("2027-01-14");
@@ -523,12 +612,22 @@ export function UnifiedProposalWorkspace({
         }
       }
 
-      // Salva a proposta canônica
+      // Salva a proposta canônica (incluindo roteiro, transfers, passeios e tema do template selecionado)
+      const matchedPkgTemplate = TRAVEL_PACKAGE_TEMPLATES.find(
+        (t) =>
+          t.id === selectedPackageTemplateId ||
+          t.destinationCity.toLowerCase() === destinationQuery.toLowerCase(),
+      );
+      const effectiveTitle =
+        customTitle.trim() ||
+        (sourcePackageTitle
+          ? `${sourcePackageTitle} — ${destinationQuery}`
+          : matchedPkgTemplate?.title ||
+            `Proposta ${destinationQuery} (${calculation.rooms.length} Quarto${calculation.rooms.length > 1 ? "s" : ""})`);
+
       const propRes = await createTravelProposal({
         data: {
-          title: sourcePackageTitle
-            ? `${sourcePackageTitle} — ${destinationQuery}`
-            : `Proposta ${destinationQuery} (${calculation.rooms.length} Quarto${calculation.rooms.length > 1 ? "s" : ""})`,
+          title: effectiveTitle,
           destinationCity: destinationQuery,
           travelStartDate: departureDate || undefined,
           travelEndDate: returnDate || undefined,
@@ -537,72 +636,172 @@ export function UnifiedProposalWorkspace({
           clientName: clientName || "Cliente Convidado",
           clientWhatsapp: clientPhone || undefined,
           clientEmail: clientEmail || undefined,
+          clientDocument: clientDocument || undefined,
+          customerId: selectedCustomerId || undefined,
           leadId: effectiveLeadId && effectiveLeadId.length === 36 ? effectiveLeadId : undefined,
-          canvasFormat: "a4-portrait",
-          templateTheme: "editorial-flat",
+          currency,
+          validUntilDays,
+          canvasFormat,
+          templateTheme,
+          templateId: matchedPkgTemplate?.id,
+          coverPhotoUrl:
+            lead?.cover_image_url ||
+            lead?.cover_image ||
+            matchedPkgTemplate?.coverImageUrl ||
+            undefined,
           initialNotes: fullSummary,
-          flights: [
-            {
-              id: "fl-ida",
-              type: "outbound",
-              airline: "Voo Regular Confirmado",
-              flight_number: "G3 / LA",
-              origin_code: originCity.match(/\(([A-Z]{3})\)/)?.[1] || "XAP",
-              origin_city: originCity,
-              destination_code: gatewayResolution?.primaryAirportIata || "DEST",
-              destination_city: destinationQuery,
-              departure_date: departureDate,
-              departure_time: "09:00",
-              arrival_date: departureDate,
-              arrival_time: "14:30",
-              baggage: "1 item pessoal + 1 mala de mão 10kg + bagagem despachada conforme contrato",
-              stops: 1,
-            },
-          ],
+          flights:
+            matchedPkgTemplate?.flights && matchedPkgTemplate.flights.length > 0
+              ? matchedPkgTemplate.flights.map((f) => ({
+                  ...f,
+                  departure_date: departureDate,
+                }))
+              : [
+                  {
+                    id: "fl-ida",
+                    type: "outbound",
+                    airline: "Voo Regular Confirmado",
+                    airline_name: "Voo Regular Confirmado",
+                    flight_number: "G3 / LA",
+                    origin: originCity.match(/\(([A-Z]{3})\)/)?.[1] || "XAP",
+                    origin_iata: originCity.match(/\(([A-Z]{3})\)/)?.[1] || "XAP",
+                    origin_city: originCity,
+                    destination: gatewayResolution?.primaryAirportIata || "DEST",
+                    destination_iata: gatewayResolution?.primaryAirportIata || "DEST",
+                    destination_city: destinationQuery,
+                    departure_date: departureDate,
+                    departure_time: "09:00",
+                    arrival_time: "14:30",
+                    baggage_included:
+                      "1 item pessoal + 1 mala de mão 10kg + bagagem despachada conforme contrato",
+                    stops_count: 1,
+                    stops: 1,
+                  },
+                ],
           hotels: bundleOptions.map((opt, idx) => ({
             id: `ht-${idx + 1}`,
+            hotel_name: opt.hotelName,
             name: opt.hotelName,
-            stars: 4,
-            location: destinationQuery,
+            stars: matchedPkgTemplate?.hotels?.[0]?.stars || 4,
+            destination: destinationQuery,
+            checkin_date: departureDate,
+            checkout_date: returnDate,
             check_in: departureDate,
             check_out: returnDate,
-            nights: 5,
+            nights_count: 5,
             room_type: calculation.rooms.map((r) => r.roomLabel).join(" | "),
             board_basis: calculation.rooms[0]?.mealPlan || "Café da Manhã",
-            description: `${opt.optionLabel} · ${opt.airlineDesc}`,
-            photos: [],
+            image_url: matchedPkgTemplate?.hotels?.[0]?.image_url || matchedPkgTemplate?.coverImageUrl,
+            amenities: matchedPkgTemplate?.hotels?.[0]?.amenities || ["Wi-Fi", "Piscina", "Café da Manhã"],
+          })),
+          itinerary: matchedPkgTemplate?.itinerary || [],
+          transfers: (matchedPkgTemplate?.transfers as any) || [],
+          tours: matchedPkgTemplate?.tours || [],
+          rooms: calculation.rooms.map((r) => ({
+            id: `room-${r.roomNumber}`,
+            roomNumber: r.roomNumber,
+            roomType: r.roomLabel,
+            adults: r.adultsCount,
+            children: r.childrenCount,
+            childrenAges: r.childrenAges,
           })),
           pricing: {
-            currency: "BRL",
+            currency,
             base_price_cents: calculation.grandBaseCents,
-            taxes_cents: calculation.grandAddonsCents,
+            boarding_tax_cents: calculation.grandAddonsCents,
+            other_taxes_cents: 0,
             discount_cents: 0,
             total_price_cents: calculation.grandTotalCents,
-            price_per_person_cents: Math.round(
-              calculation.grandTotalCents / Math.max(1, calculation.totalPassengers)
-            ),
-            installments_max: activeCampaign.maxBoletoInstallments,
-            installment_value_cents: calculation.campaignSummary.boletoMonthlyInstallmentCents,
-            pix_discount_percent: activeCampaign.pixCashDiscountPct,
-            payment_notes:
+            total_cents: calculation.grandTotalCents,
+            installments_options: [
+              {
+                installments_count: 1,
+                installment_value_cents: Math.round(
+                  calculation.grandTotalCents * (1 - activeCampaign.pixCashDiscountPct / 100),
+                ),
+                method: "pix",
+                has_interest: false,
+              },
+              {
+                installments_count: activeCampaign.maxCardInstallments,
+                installment_value_cents: calculation.campaignSummary.cardMonthlyInstallmentCents,
+                method: "credit_card",
+                has_interest: false,
+              },
+              {
+                installments_count: activeCampaign.maxBoletoInstallments,
+                installment_value_cents: calculation.campaignSummary.boletoMonthlyInstallmentCents,
+                method: "boleto",
+                has_interest: false,
+              },
+            ],
+            payment_terms:
               `Campanha ${activeCampaign.operatorDisplayName}: ` +
               `Entrada de ${formatMoney(calculation.campaignSummary.boletoDownpaymentCents)} + ` +
               `${activeCampaign.maxBoletoInstallments - 1}x de ${formatMoney(calculation.campaignSummary.boletoMonthlyInstallmentCents)} no Boleto, ` +
               `ou até ${activeCampaign.maxCardInstallments}x de ${formatMoney(calculation.campaignSummary.cardMonthlyInstallmentCents)} no Cartão.`,
-            supplier_net_cost_cents: Math.round(
-              (calculation.grandTotalCents * supplierNetCostPct) / 100
-            ),
-          } as any,
+          },
           includes: selectedInclusions,
-          excludes: [
+          excludes: matchedPkgTemplate?.excludes || [
             "Despesas de caráter pessoal (frigobar, lavanderia e telefonemas)",
             "Taxas turísticas municipais e governamentais cobradas diretamente no check-in",
           ],
         },
       });
 
+      const hydratedProposal: TravelProposalDTO = {
+        id: propRes.id,
+        quote_id: createdQuoteId || propRes.id,
+        public_token: propRes.publicToken,
+        agency_name: "Agência de Viagens",
+        title: effectiveTitle,
+        client_name: clientName || "Cliente Convidado",
+        client_whatsapp: clientPhone || "",
+        client_email: clientEmail || null,
+        adults_count: calculation.totalAdults,
+        children_count: calculation.totalChildren,
+        canvas_format: canvasFormat,
+        template_theme: templateTheme,
+        destination_city: destinationQuery,
+        travel_start_date: departureDate || null,
+        travel_end_date: returnDate || null,
+        flights: [
+          {
+            airline_name: "Voo Regular Confirmado",
+            origin_iata: originCity.match(/\(([A-Z]{3})\)/)?.[1] || "XAP",
+            destination_iata: gatewayResolution?.primaryAirportIata || "DEST",
+          },
+        ],
+        hotels: bundleOptions.map((opt) => ({
+          hotel_name: opt.hotelName,
+        })),
+        itinerary: matchedPkgTemplate?.itinerary || [],
+        transfers: (matchedPkgTemplate?.transfers || []).map((t: any) => ({
+          type: t.type || "Privativo",
+          vehicle: t.vehicle || t.vehicle_type || "Van / Executivo",
+          date: t.date,
+          notes: t.notes || t.description,
+        })),
+        tours: matchedPkgTemplate?.tours || [],
+        rooms: [],
+        includes: selectedInclusions,
+        excludes: [],
+        pricing: {
+          currency,
+          base_price_cents: calculation.grandBaseCents,
+          boarding_tax_cents: calculation.grandAddonsCents,
+          other_taxes_cents: 0,
+          discount_cents: 0,
+          total_price_cents: calculation.grandTotalCents,
+          installments_options: [],
+        },
+        status: "draft",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
       return {
-        proposal: propRes,
+        proposal: hydratedProposal,
         quoteId: createdQuoteId,
         openStudioAfterSave,
       };
@@ -680,10 +879,54 @@ export function UnifiedProposalWorkspace({
                   ) : (
                     <Upload className="size-3.5 text-primary" />
                   )}
-                  <span>{isScanningOcr ? "Lendo..." : "Importar OCR"}</span>
+                  <span className="hidden sm:inline">Importar OCR</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowOcrTextModal((prev) => !prev)}
+                  className="h-11 min-h-11 px-3 text-xs gap-2 font-medium"
+                  title="Colar texto bruto de orçamento WhatsApp, GDS ou Operadora"
+                >
+                  <FileText className="size-3.5 text-primary" />
+                  <span className="hidden sm:inline">Colar Texto</span>
                 </Button>
               </div>
             </div>
+
+            {showOcrTextModal && (
+              <div className="mt-3 p-3 rounded-lg bg-muted/40 border border-border/60 space-y-2">
+                <Label className="text-xs font-bold text-foreground">
+                  Colar Texto de Orçamento (WhatsApp, GDS Amadeus/Sabre ou Operadora)
+                </Label>
+                <Textarea
+                  value={ocrPastedText}
+                  onChange={(e) => setOcrPastedText(e.target.value)}
+                  placeholder="Cole aqui o texto copiado do WhatsApp ou portal da operadora (ex: destino, datas, valores em R$, voos)..."
+                  className="h-20 text-xs rounded-lg resize-none bg-background"
+                />
+                <div className="flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setShowOcrTextModal(false)}
+                    className="h-11 text-xs"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleParsePastedOcrText}
+                    className="h-11 text-xs font-bold"
+                  >
+                    Extrair Dados do Texto
+                  </Button>
+                </div>
+              </div>
+            )}
 
             {/* Abas do Fluxo Canônico */}
             <div className="flex items-center gap-1 mt-4 overflow-x-auto no-scrollbar border-b border-border/30 pb-2">
@@ -746,8 +989,58 @@ export function UnifiedProposalWorkspace({
             {/* ETAPA 1: DESTINO & DATAS */}
             {stepTab === "destino" && (
               <div className="space-y-4">
+                {/* Vínculo Inteligente com CRM + Criação Inline de Cliente */}
+                <div className="p-3 rounded-lg bg-muted/30 border border-border/60 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <Label className="text-xs font-bold text-foreground flex items-center gap-2">
+                      <Users className="size-3.5 text-primary" />
+                      <span>Passageiro / Cliente CRM</span>
+                    </Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleQuickCreateCustomer}
+                      disabled={isCreatingInlineCustomer}
+                      className="h-11 px-3 text-xs font-semibold gap-1"
+                    >
+                      {isCreatingInlineCustomer ? (
+                        <Loader2 className="size-3 animate-spin" />
+                      ) : (
+                        <Plus className="size-3" />
+                      )}
+                      <span>Salvar Cliente no CRM</span>
+                    </Button>
+                  </div>
+
+                  {crmCustomers.length > 0 && (
+                    <select
+                      value={selectedCustomerId || ""}
+                      onChange={(e) => {
+                        const cid = e.target.value;
+                        setSelectedCustomerId(cid || null);
+                        const found = crmCustomers.find((c: any) => c.id === cid);
+                        if (found) {
+                          setClientName(found.full_name || found.name || "");
+                          setClientPhone(found.phone || found.whatsapp || "");
+                          setClientEmail(found.email || "");
+                          setClientDocument(found.document_number || found.cpf || "");
+                        }
+                      }}
+                      className="w-full h-11 rounded-lg bg-background border border-border px-3 text-xs text-foreground"
+                    >
+                      <option value="">Selecionar cliente existente do CRM ou preencher abaixo...</option>
+                      {crmCustomers.slice(0, 60).map((c: any) => (
+                        <option key={c.id} value={c.id}>
+                          {c.full_name || c.name} {c.phone ? `· ${c.phone}` : ""}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs font-medium text-foreground">Nome do Passageiro Principal / Lead</Label>
                     <Input
                       value={clientName}
@@ -757,7 +1050,7 @@ export function UnifiedProposalWorkspace({
                     />
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs font-medium text-foreground">WhatsApp com DDD</Label>
                     <Input
                       value={clientPhone}
@@ -766,10 +1059,41 @@ export function UnifiedProposalWorkspace({
                       className="h-11 min-h-11 rounded-lg text-xs"
                     />
                   </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-xs font-medium text-foreground">E-mail do Cliente</Label>
+                    <Input
+                      type="email"
+                      value={clientEmail}
+                      onChange={(e) => setClientEmail(e.target.value)}
+                      placeholder="cliente@email.com"
+                      className="h-11 min-h-11 rounded-lg text-xs"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-xs font-medium text-foreground">CPF / Documento (Opcional)</Label>
+                    <Input
+                      value={clientDocument}
+                      onChange={(e) => setClientDocument(e.target.value)}
+                      placeholder="000.000.000-00"
+                      className="h-11 min-h-11 rounded-lg text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-foreground">Título Personalizado da Proposta</Label>
+                  <Input
+                    value={customTitle}
+                    onChange={(e) => setCustomTitle(e.target.value)}
+                    placeholder={`Ex: Proposta Exclusiva — ${destinationQuery || "Viagem"}`}
+                    className="h-11 min-h-11 rounded-lg text-xs"
+                  />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs font-medium text-foreground">Origem do Voo</Label>
                     <Input
                       value={originCity}
@@ -779,7 +1103,7 @@ export function UnifiedProposalWorkspace({
                     />
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs font-medium text-foreground">Cidade / Destino</Label>
                     <Input
                       value={destinationQuery}
@@ -787,11 +1111,54 @@ export function UnifiedProposalWorkspace({
                       placeholder="Ex: Buenos Aires, Maceió, Santiago..."
                       className="h-11 min-h-11 rounded-lg text-xs font-semibold"
                     />
+                    <div className="flex flex-wrap gap-1 pt-1">
+                      {TRAVEL_PACKAGE_TEMPLATES.map((tpl) => (
+                        <button
+                          key={tpl.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedPackageTemplateId(tpl.id);
+                            setDestinationQuery(tpl.destinationCity);
+                            setCustomTitle(tpl.title);
+                            setCanvasFormat(tpl.canvasFormat);
+                            setTemplateTheme(tpl.templateTheme);
+                            if (tpl.includes?.length) setSelectedInclusions(tpl.includes);
+                            if (tpl.suggestedPriceCents > 0) {
+                              const perAdult = Math.round(tpl.suggestedPriceCents / 2);
+                              setRooms((prev) =>
+                                prev.map((r, i) =>
+                                  i === 0 ? { ...r, baseAdultPriceCents: perAdult } : r,
+                                ),
+                              );
+                              setBundleOptions((prev) =>
+                                prev.map((o, i) =>
+                                  i === 0
+                                    ? {
+                                        ...o,
+                                        hotelName: tpl.hotels?.[0]?.hotel_name || o.hotelName,
+                                        adultPriceCents: perAdult,
+                                      }
+                                    : o,
+                                ),
+                              );
+                            }
+                            toast.success(`Template "${tpl.destinationCity}" aplicado com roteiro, hotel e valores!`);
+                          }}
+                          className={`h-11 min-h-11 px-3 rounded-lg text-xs font-medium transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer ${
+                            selectedPackageTemplateId === tpl.id
+                              ? "bg-primary text-primary-foreground font-bold"
+                              : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          {tpl.destinationCity}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs font-medium text-foreground">Data de Embarque (Ida)</Label>
                     <Input
                       type="date"
@@ -801,7 +1168,7 @@ export function UnifiedProposalWorkspace({
                     />
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs font-medium text-foreground">Data de Retorno (Volta)</Label>
                     <Input
                       type="date"
@@ -841,7 +1208,7 @@ export function UnifiedProposalWorkspace({
                     variant="outline"
                     size="sm"
                     onClick={handleAddRoom}
-                    className="h-11 min-h-11 px-3 text-xs gap-1.5 font-medium"
+                    className="h-11 min-h-11 px-3 text-xs gap-2 font-medium"
                   >
                     <Plus className="size-3.5" />
                     <span>Adicionar Quarto</span>
@@ -986,7 +1353,7 @@ export function UnifiedProposalWorkspace({
                     {/* Add-ons Opcionais do Quarto */}
                     <div className="pt-2 border-t border-border/20">
                       <Label className="text-xs text-muted-foreground">Adicionais Opcionais para este Quarto:</Label>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1.5">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
                         {CANONICAL_ROOM_ADDONS.map((addon) => {
                           const isChecked = room.addons.some((a) => a.code === addon.code);
                           return (
@@ -1018,7 +1385,7 @@ export function UnifiedProposalWorkspace({
             {stepTab === "opcoes" && (
               <div className="space-y-4">
                 {/* Autocomplete de Hotéis */}
-                <div className="space-y-1.5 relative">
+                <div className="space-y-2 relative">
                   <Label className="text-xs font-medium text-foreground">Buscar no Banco de Hotéis Parceiros</Label>
                   <Input
                     value={hotelQuery}
@@ -1105,7 +1472,7 @@ export function UnifiedProposalWorkspace({
                           key={tag}
                           type="button"
                           onClick={() => toggleInclusionTag(tag)}
-                          className={`h-11 min-h-11 px-3 rounded-lg text-xs font-medium transition-colors border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring flex items-center gap-1.5 ${
+                          className={`h-11 min-h-11 px-3 rounded-lg text-xs font-medium transition-colors border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring flex items-center gap-2 ${
                             isSelected
                               ? "bg-primary text-primary-foreground border-primary"
                               : "border-border/60 hover:bg-muted/40 text-muted-foreground"
@@ -1124,7 +1491,7 @@ export function UnifiedProposalWorkspace({
             {/* ETAPA 4: CONDIÇÕES & OPERADORA */}
             {stepTab === "pagamento" && (
               <div className="space-y-4">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label className="text-xs font-medium text-foreground">Regra Comercial da Operadora / Fornecedor</Label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {CANONICAL_OPERATOR_CAMPAIGNS.map((camp) => (
@@ -1148,7 +1515,7 @@ export function UnifiedProposalWorkspace({
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs font-medium text-foreground">Comissão da Agência (%)</Label>
                     <Input
                       type="number"
@@ -1158,13 +1525,72 @@ export function UnifiedProposalWorkspace({
                     />
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs font-medium text-foreground">Observações / Condições Especiais</Label>
                     <Input
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
                       placeholder="Ex: Cotação sujeita a disponibilidade tarifária"
                       className="h-11 min-h-11 rounded-lg text-xs"
+                    />
+                  </div>
+                </div>
+
+                {/* Personalização de Design, Moeda e Validade */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 rounded-lg bg-muted/30 border border-border/60">
+                  <div className="space-y-1">
+                    <Label className="text-xs font-medium text-muted-foreground">Template Visual</Label>
+                    <select
+                      value={templateTheme}
+                      onChange={(e) => setTemplateTheme(e.target.value)}
+                      className="w-full h-11 rounded-lg bg-background border border-border px-2 text-xs text-foreground"
+                    >
+                      <option value="editorial-flat">Clean Apple</option>
+                      <option value="dark-premium">Dark Luxo</option>
+                      <option value="executivo-b2b">Executivo B2B</option>
+                      <option value="landscape-presentation">Paisagem</option>
+                      <option value="vertical-premium">Vertical Premium</option>
+                      <option value="group-catalog">Catálogo Grupo</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-xs font-medium text-muted-foreground">Formato Canvas</Label>
+                    <select
+                      value={canvasFormat}
+                      onChange={(e) => setCanvasFormat(e.target.value as ProposalCanvasFormat)}
+                      className="w-full h-11 rounded-lg bg-background border border-border px-2 text-xs text-foreground"
+                    >
+                      <option value="a4-portrait">A4 Retrato</option>
+                      <option value="a4-landscape">A4 Paisagem</option>
+                      <option value="story-916">Story 9:16</option>
+                      <option value="presentation-169">Slide 16:9</option>
+                      <option value="letter-portrait">Carta (Letter)</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-xs font-medium text-muted-foreground">Moeda</Label>
+                    <select
+                      value={currency}
+                      onChange={(e) => setCurrency(e.target.value)}
+                      className="w-full h-11 rounded-lg bg-background border border-border px-2 text-xs text-foreground"
+                    >
+                      <option value="BRL">BRL (R$)</option>
+                      <option value="USD">USD (US$)</option>
+                      <option value="EUR">EUR (€)</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-xs font-medium text-muted-foreground">Validade (Dias)</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      max={60}
+                      value={validUntilDays}
+                      onChange={(e) => setValidUntilDays(Math.max(1, Number(e.target.value) || 7))}
+                      className="h-11 rounded-lg text-xs font-mono"
                     />
                   </div>
                 </div>
@@ -1195,7 +1621,7 @@ export function UnifiedProposalWorkspace({
                     </div>
                   </div>
 
-                  <div className="p-2.5 rounded bg-muted/40 border border-border/40 text-[11px] text-muted-foreground space-y-1">
+                  <div className="p-3 rounded bg-muted/40 border border-border/40 text-[11px] text-muted-foreground space-y-1">
                     <div>
                       <strong className="text-foreground">Opção Boleto:</strong> Entrada de {formatMoney(calculation.campaignSummary.boletoDownpaymentCents)} + {activeCampaign.maxBoletoInstallments - 1}x de {formatMoney(calculation.campaignSummary.boletoMonthlyInstallmentCents)}
                     </div>
@@ -1237,7 +1663,7 @@ export function UnifiedProposalWorkspace({
                     else if (stepTab === "quartos") setStepTab("opcoes");
                     else if (stepTab === "opcoes") setStepTab("pagamento");
                   }}
-                  className="h-11 min-h-11 px-4 text-xs font-semibold gap-1.5"
+                  className="h-11 min-h-11 px-4 text-xs font-semibold gap-2"
                 >
                   <span>Próximo</span>
                   <ArrowRight className="size-3.5" />

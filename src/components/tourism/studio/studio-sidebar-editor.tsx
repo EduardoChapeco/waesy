@@ -5,8 +5,11 @@ import type {
  FlightSegmentDTO,
  HotelOptionDTO,
  ItineraryDayDTO,
+ ProposalRoomItem,
 } from "@/services/travel-proposal.functions";
 import { listHotelsBank } from "@/services/travel-catalog.functions";
+import { listCustomers } from "@/services/crm.functions";
+import { listGroupTours } from "@/services/group-tours.functions";
 import { CANONICAL_DESTINATIONS } from "@/lib/destinations-catalog";
 import { FAMOUS_HOTEL_PRESETS, type HotelPreset } from "@/lib/hotel-presets";
 import { Button } from "@/components/ui/button";
@@ -18,8 +21,7 @@ import { ImageUpload } from "@/components/ui/image-upload";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { Plus, Minus, Trash, Plane, Building2, Calendar, DollarSign, Info, CheckCircle, MapPin, Clock, Compass, Zap, BedDouble } from "lucide-react";
-import type { ProposalRoomItem } from "../new-travel-proposal-sheet";
+import { Plus, Minus, Trash, Plane, Building2, Calendar, DollarSign, Info, CheckCircle, MapPin, Clock, Compass, Zap, BedDouble, Car, Sparkles, Users, LayoutTemplate, Check, X } from "lucide-react";
 
 interface StudioSidebarEditorProps {
  proposal: TravelProposalDTO;
@@ -33,6 +35,35 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  });
 
  // Estado local para input de preço em Reais amigável
+ const { data: customersRes } = useQuery({
+   queryKey: ["crm-customers-studio"],
+   queryFn: () => listCustomers({ data: {} }).catch(() => ({ customers: [] })),
+ });
+ const crmCustomers: any[] = Array.isArray((customersRes as any)?.customers)
+   ? (customersRes as any).customers
+   : Array.isArray(customersRes)
+     ? (customersRes as any)
+     : [];
+
+ const { data: groupTours = [] } = useQuery({
+   queryKey: ["group-tours-studio"],
+   queryFn: () => listGroupTours({ data: {} }).catch(() => []),
+ });
+
+ const [newIncludeText, setNewIncludeText] = useState("");
+ const [newExcludeText, setNewExcludeText] = useState("");
+ const [basePriceReais, setBasePriceReais] = useState<string>(() => {
+   const cents = proposal.pricing?.base_price_cents || proposal.pricing?.total_price_cents || 0;
+   return cents > 0 ? (cents / 100).toFixed(2) : "";
+ });
+ const [boardingTaxReais, setBoardingTaxReais] = useState<string>(() => {
+   const cents = proposal.pricing?.boarding_tax_cents || 0;
+   return cents > 0 ? (cents / 100).toFixed(2) : "";
+ });
+ const [discountReais, setDiscountReais] = useState<string>(() => {
+   const cents = proposal.pricing?.discount_cents || 0;
+   return cents > 0 ? (cents / 100).toFixed(2) : "";
+ });
  const [priceInputReais, setPriceInputReais] = useState<string>(() => {
  const cents = proposal.pricing?.total_price_cents || 0;
  return cents > 0 ? (cents / 100).toFixed(2) : "";
@@ -218,7 +249,15 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  const handleFlightChange = (id: string | undefined, field: keyof FlightSegmentDTO, val: any) => {
  if (!id) return;
  onChange({
- flights: proposal.flights.map((f) => (f.id === id ? { ...f, [field]: val } : f)),
+ flights: proposal.flights.map((f) => {
+   if (f.id !== id) return f;
+   const next: FlightSegmentDTO = { ...f, [field]: val };
+   if (field === "airline_name") next.airline = val;
+   if (field === "origin_iata") next.origin = val;
+   if (field === "destination_iata") next.destination = val;
+   if (field === "stops_count") next.stops = Number(val) || 0;
+   return next;
+ }),
  });
  };
 
@@ -246,7 +285,15 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  const handleHotelChange = (id: string | undefined, field: keyof HotelOptionDTO, val: any) => {
  if (!id) return;
  onChange({
- hotels: proposal.hotels.map((h) => (h.id === id ? { ...h, [field]: val } : h)),
+ hotels: proposal.hotels.map((h) => {
+   if (h.id !== id) return h;
+   const next: any = { ...h, [field]: val };
+   if (field === "hotel_name") next.name = val;
+   if (field === "checkin_date") next.checkin = val;
+   if (field === "checkout_date") next.checkout = val;
+   if (field === "image_url") next.images = val ? [val] : [];
+   return next;
+ }),
  });
  };
 
@@ -300,6 +347,140 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  }
  };
 
+ // Helpers de Transfers (Receptivo) e Passeios (Experiências)
+ const currentTransfers = Array.isArray(proposal.transfers) ? proposal.transfers : [];
+ const currentTours = Array.isArray(proposal.tours) ? proposal.tours : [];
+ const currentIncludes = Array.isArray(proposal.includes) ? proposal.includes : [];
+ const currentExcludes = Array.isArray(proposal.excludes) ? proposal.excludes : [];
+
+ const handleAddTransfer = () => {
+   const nextTransfer = {
+     type: "private",
+     description: `Transfer Aeroporto ↔ Hotel (${proposal.destination_city || "Destino"})`,
+     vehicle: "Van Executiva",
+     date: proposal.travel_start_date || "",
+     notes: "Receptivo privativo com placa nominal",
+   };
+   onChange({ transfers: [...currentTransfers, nextTransfer as any] });
+ };
+
+ const handleUpdateTransfer = (idx: number, patch: Record<string, any>) => {
+   const next = currentTransfers.map((t, i) => (i === idx ? { ...t, ...patch } : t));
+   onChange({ transfers: next as any });
+ };
+
+ const handleRemoveTransfer = (idx: number) => {
+   onChange({ transfers: currentTransfers.filter((_, i) => i !== idx) });
+ };
+
+ const handleAddTour = () => {
+   const nextTour = {
+     id: `tour_${Date.now()}`,
+     title: `City Tour & Principais Atrações (${proposal.destination_city || "Destino"})`,
+     description: `City Tour & Principais Atrações (${proposal.destination_city || "Destino"})`,
+     duration: "Dia inteiro (8h)",
+     price_cents: 0,
+     included: true,
+     is_included: true,
+   };
+   onChange({ tours: [...currentTours, nextTour] });
+ };
+
+ const handleUpdateTour = (idx: number, patch: Record<string, any>) => {
+   const next = currentTours.map((t: any, i: number) => {
+     if (i !== idx) return t;
+     const merged = { ...t, ...patch };
+     if (patch.title !== undefined) merged.description = patch.title;
+     return merged;
+   });
+   onChange({ tours: next });
+ };
+
+ const handleRemoveTour = (idx: number) => {
+   onChange({ tours: currentTours.filter((_, i) => i !== idx) });
+ };
+
+ const handleImportGroupTour = (groupId: string) => {
+   const gt = (groupTours as any[]).find((g) => g.id === groupId);
+   if (!gt) return;
+   const importedTour = {
+     id: `gt_${gt.id}`,
+     title: `${gt.title} (${gt.destination})`,
+     description: `${gt.title} (${gt.destination})`,
+     duration: gt.departure_date || "Excursão em Grupo",
+     price_cents: Number(gt.price_cents || 0),
+     included: true,
+     is_included: true,
+   };
+   onChange({ tours: [...currentTours, importedTour] });
+   toast.success(`Excursão "${gt.title}" importada para os serviços da proposta!`);
+ };
+
+ const handleSuggestIncludesExcludes = () => {
+   const suggestedInc = new Set<string>(currentIncludes);
+   if (proposal.flights.length > 0) {
+     suggestedInc.add("Passagens aéreas de ida e volta com taxas inclusas");
+   }
+   if (proposal.hotels.length > 0) {
+     const h0 = proposal.hotels[0];
+     const regimeLabel =
+       h0.board_basis === "all_inclusive"
+         ? "sistema All Inclusive"
+         : h0.board_basis === "full_board"
+           ? "pensão completa"
+           : h0.board_basis === "half_board"
+             ? "meia pensão"
+             : "café da manhã incluso";
+     suggestedInc.add(`Hospedagem em ${h0.hotel_name || "hotel selecionado"} com ${regimeLabel}`);
+   }
+   if (currentTransfers.length > 0) {
+     suggestedInc.add("Traslados de chegada e saída (Aeroporto / Hotel / Aeroporto)");
+   }
+   if (currentTours.length > 0) {
+     suggestedInc.add("Passeios e experiências descritos no roteiro");
+   }
+   suggestedInc.add("Seguro viagem completo com cobertura médica e bagagem");
+   suggestedInc.add("Suporte e acompanhamento especializado da agência antes e durante a viagem");
+
+   const suggestedExc = new Set<string>(currentExcludes);
+   suggestedExc.add("Despesas de caráter pessoal, bebidas e refeições não mencionadas");
+   suggestedExc.add("Passeios opcionais não descritos como inclusos");
+   suggestedExc.add("Taxas turísticas locais ou de preservação ambiental cobradas no destino");
+
+   onChange({
+     includes: Array.from(suggestedInc),
+     excludes: Array.from(suggestedExc),
+   });
+   toast.success("Inclusões e exclusões inteligentes sincronizadas com o pacote!");
+ };
+
+ const recomputePricingFromBreakdown = (
+   nextBaseStr: string,
+   nextTaxStr: string,
+   nextDiscStr: string,
+ ) => {
+   const parseCents = (s: string) => {
+     const n = parseFloat(s.replace(/[^\d.,]/g, "").replace(",", "."));
+     return !isNaN(n) && n >= 0 ? Math.round(n * 100) : 0;
+   };
+   const baseCents = parseCents(nextBaseStr);
+   const taxCents = parseCents(nextTaxStr);
+   const discCents = parseCents(nextDiscStr);
+   const totalCents = Math.max(0, baseCents + taxCents - discCents);
+   setPriceInputReais(totalCents > 0 ? (totalCents / 100).toFixed(2) : "");
+   onChange({
+     pricing: {
+       ...proposal.pricing,
+       base_price_cents: baseCents,
+       boarding_tax_cents: taxCents,
+       discount_cents: discCents,
+       total_price_cents: totalCents,
+       total_cents: totalCents,
+     },
+   });
+ 
+ };
+
  return (
  <div className="w-full h-full flex flex-col overflow-hidden bg-card">
  <div className="p-4 px-4 border-b border-border/80 shrink-0 bg-muted/20 flex items-center justify-between">
@@ -308,7 +489,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  <Compass className="size-3.5 text-primary" />
  <span>Editor TravelOS</span>
  </h3>
- <p className="text-[10px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  Alterações sincronizadas com o canvas em tempo real
  </p>
  </div>
@@ -316,12 +497,14 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
 
  <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4">
  <Tabs defaultValue="dados" className="space-y-4">
- <TabsList className="grid grid-cols-5 h-9 p-1 rounded-lg bg-muted/50 text-[11px]">
- <TabsTrigger value="dados" className="text-[10px] rounded-lg font-bold">Geral</TabsTrigger>
- <TabsTrigger value="voos" className="text-[10px] rounded-lg font-bold">Voos</TabsTrigger>
- <TabsTrigger value="hotel" className="text-[10px] rounded-lg font-bold">Hotel</TabsTrigger>
- <TabsTrigger value="roteiro" className="text-[10px] rounded-lg font-bold">Roteiro</TabsTrigger>
- <TabsTrigger value="preco" className="text-[10px] rounded-lg font-bold">Preço</TabsTrigger>
+ <TabsList className="flex flex-nowrap overflow-x-auto no-scrollbar w-full justify-start gap-1 h-11 p-1 rounded-lg bg-muted/50 text-xs">
+ <TabsTrigger value="dados" className="text-xs px-3 rounded-lg font-bold shrink-0">Geral</TabsTrigger>
+ <TabsTrigger value="voos" className="text-xs px-3 rounded-lg font-bold shrink-0">Voos</TabsTrigger>
+ <TabsTrigger value="hotel" className="text-xs px-3 rounded-lg font-bold shrink-0">Hotel</TabsTrigger>
+ <TabsTrigger value="roteiro" className="text-xs px-3 rounded-lg font-bold shrink-0">Roteiro</TabsTrigger>
+ <TabsTrigger value="servicos" className="text-xs px-3 rounded-lg font-bold shrink-0">Serviços</TabsTrigger>
+ <TabsTrigger value="inclusoes" className="text-xs px-3 rounded-lg font-bold shrink-0">Inclusões</TabsTrigger>
+ <TabsTrigger value="preco" className="text-xs px-3 rounded-lg font-bold shrink-0">Preço</TabsTrigger>
  </TabsList>
 
  {/* ── ABA 1: DADOS GERAIS & CLIENTE ── */}
@@ -557,7 +740,96 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  </div>
 
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Validade da Proposta</Label>
+ <Label className="text-xs font-bold">Subtítulo / Chamada Comercial</Label>
+ <Input
+   value={proposal.subtitle || ""}
+   onChange={(e) => onChange({ subtitle: e.target.value })}
+   placeholder="Ex: Roteiro Exclusivo 7 Dias • All Inclusive"
+   className="h-11 text-xs rounded-lg mb-2"
+ />
+
+ {crmCustomers.length > 0 && (
+   <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-2 mb-2">
+     <Label className="text-xs font-bold text-primary flex items-center gap-2">
+       <Users className="size-3.5" />
+       <span>Importar Cliente do CRM da Agência</span>
+     </Label>
+     <select
+       defaultValue=""
+       onChange={(e) => {
+         const cust = crmCustomers.find((c: any) => c.id === e.target.value);
+         if (cust) {
+           onChange({
+             client_name: cust.full_name || cust.name || proposal.client_name,
+             client_whatsapp: cust.phone || cust.whatsapp || proposal.client_whatsapp,
+             client_email: cust.email || proposal.client_email,
+           });
+           toast.success(`Dados de ${cust.full_name || cust.name} vinculados à proposta!`);
+         }
+         e.target.value = "";
+       }}
+       className="w-full h-11 text-xs rounded-lg bg-background border border-border px-2 text-foreground"
+     >
+       <option value="" disabled>Buscar cliente cadastrado no CRM...</option>
+       {crmCustomers.slice(0, 50).map((c: any) => (
+         <option key={c.id} value={c.id}>
+           {c.full_name || c.name} {c.phone ? `(${c.phone})` : ""}
+         </option>
+       ))}
+     </select>
+   </div>
+ )}
+
+ <div className="space-y-1 mb-2">
+   <Label className="text-xs font-bold">E-mail do Passageiro</Label>
+   <Input
+     type="email"
+     value={proposal.client_email || ""}
+     onChange={(e) => onChange({ client_email: e.target.value })}
+     placeholder="cliente@email.com"
+     className="h-11 text-xs rounded-lg"
+   />
+ </div>
+
+ <div className="p-3 rounded-lg border border-border/70 bg-muted/20 space-y-3 mb-2">
+   <div className="flex items-center gap-2 text-xs font-bold text-foreground">
+     <LayoutTemplate className="size-3.5 text-primary" />
+     <span>Design & Formato do Documento</span>
+   </div>
+   <div className="grid grid-cols-2 gap-2">
+     <div className="space-y-1">
+       <Label className="text-xs font-semibold text-muted-foreground">Template Visual</Label>
+       <select
+         value={proposal.template_theme || (proposal as any).template || "editorial-flat"}
+         onChange={(e) => onChange({ template_theme: e.target.value })}
+         className="w-full h-11 text-xs rounded-lg bg-background border border-border px-2 text-foreground"
+       >
+         <option value="editorial-flat">Clean Apple (Editorial)</option>
+         <option value="dark-premium">Dark Luxo</option>
+         <option value="executivo-b2b">Executivo B2B</option>
+         <option value="landscape-presentation">Apresentação Paisagem</option>
+         <option value="vertical-premium">Vertical Premium</option>
+         <option value="group-catalog">Catálogo de Grupo</option>
+       </select>
+     </div>
+     <div className="space-y-1">
+       <Label className="text-xs font-semibold text-muted-foreground">Formato da Página</Label>
+       <select
+         value={proposal.canvas_format || "a4-portrait"}
+         onChange={(e) => onChange({ canvas_format: e.target.value as any })}
+         className="w-full h-11 text-xs rounded-lg bg-background border border-border px-2 text-foreground"
+       >
+         <option value="a4-portrait">A4 Retrato (PDF)</option>
+         <option value="a4-landscape">A4 Paisagem</option>
+         <option value="story-916">Story 9:16 (Mobile)</option>
+         <option value="presentation-169">Slide 16:9 (TV/Reunião)</option>
+         <option value="letter-portrait">Carta (US Letter)</option>
+       </select>
+     </div>
+   </div>
+ </div>
+
+ <Label className="text-xs font-bold">Validade da Proposta</Label>
  <Input
  value={proposal.valid_until || ""}
  onChange={(e) => onChange({ valid_until: e.target.value })}
@@ -656,6 +928,23 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  onChange={(e) => handleFlightChange(f.id, "baggage_included", e.target.value)}
  className="h-8 text-xs rounded-lg"
  />
+ <div className="grid grid-cols-2 gap-2">
+   <Input
+     type="date"
+     value={f.departure_date || (f as any).date || ""}
+     onChange={(e) => handleFlightChange(f.id, "departure_date", e.target.value)}
+     className="h-8 text-xs rounded-lg"
+   />
+   <select
+     value={f.stops_count ?? f.stops ?? 0}
+     onChange={(e) => handleFlightChange(f.id, "stops_count", Number(e.target.value))}
+     className="h-8 text-xs rounded-lg bg-background border border-border px-2"
+   >
+     <option value={0}>Voo Direto</option>
+     <option value={1}>1 Parada / Conexão</option>
+     <option value={2}>2+ Paradas</option>
+   </select>
+ </div>
  </div>
  ))}
  </TabsContent>
@@ -716,7 +1005,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  onClick={() => handleImportPresetHotel(p)}
  className="px-2 py-1 rounded-md bg-background border border-border/60 hover:border-primary/50 text-[10px] font-semibold text-foreground cursor-pointer transition-colors"
  >
- ⚡ {p.name.split(" ")[0]}
+ {p.name.split(" ")[0]}
  </button>
  ))}
  </div>
@@ -768,6 +1057,26 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  <option value="breakfast">Café da Manhã</option>
  <option value="none">Sem Alimentação</option>
  </select>
+ </div>
+ <div className="grid grid-cols-2 gap-2">
+   <div>
+     <label className="text-[9px] font-mono uppercase text-muted-foreground">Check-in</label>
+     <Input
+       type="date"
+       value={h.checkin_date || h.check_in || ""}
+       onChange={(e) => handleHotelChange(h.id, "checkin_date", e.target.value)}
+       className="h-8 text-xs rounded-lg mt-1"
+     />
+   </div>
+   <div>
+     <label className="text-[9px] font-mono uppercase text-muted-foreground">Check-out</label>
+     <Input
+       type="date"
+       value={h.checkout_date || h.check_out || ""}
+       onChange={(e) => handleHotelChange(h.id, "checkout_date", e.target.value)}
+       className="h-8 text-xs rounded-lg mt-1"
+     />
+   </div>
  </div>
 
  {/* Seleção de Quartos Cadastrados no Banco */}
@@ -875,12 +1184,370 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  onChange={(e) => handleItineraryChange(day.id, "description", e.target.value)}
  className="h-16 text-xs rounded-lg resize-none"
  />
+ <div className="grid grid-cols-2 gap-2">
+   <Input
+     placeholder="Local / Cidade (Ex: Maragogi)"
+     value={day.location || (day as any).city || ""}
+     onChange={(e) => handleItineraryChange(day.id, "location", e.target.value)}
+     className="h-8 text-xs rounded-lg"
+   />
+   <Input
+     placeholder="Refeições (Ex: Café, Almoço)"
+     value={(day.included_meals || (day as any).meals || []).join(", ")}
+     onChange={(e) =>
+       handleItineraryChange(
+         day.id,
+         "included_meals",
+         e.target.value
+           .split(",")
+           .map((m) => m.trim())
+           .filter(Boolean),
+       )
+     }
+     className="h-8 text-xs rounded-lg"
+   />
+ </div>
  </div>
  ))
  )}
  </TabsContent>
 
- {/* ── ABA 5: PREÇOS & PARCELAMENTO ── */}
+ {/* ── ABA 5: SERVIÇOS TERRESTRES (TRANSFERS & PASSEIOS) ── */}
+ <TabsContent value="servicos" className="space-y-4">
+   {/* Bloco 1: Traslados / Receptivo */}
+   <div className="space-y-2">
+     <div className="flex items-center justify-between">
+       <span className="text-xs font-bold text-foreground flex items-center gap-2">
+         <Car className="size-3.5 text-primary" />
+         <span>Traslados / Receptivo ({currentTransfers.length})</span>
+       </span>
+       <Button
+         type="button"
+         size="sm"
+         variant="outline"
+         onClick={handleAddTransfer}
+         className="h-11 text-xs rounded-lg gap-1"
+       >
+         <Plus className="size-3.5" /> Traslado
+       </Button>
+     </div>
+
+     {currentTransfers.length === 0 ? (
+       <div className="p-3 text-center rounded-lg bg-muted/30 border border-dashed border-border/60 text-xs text-muted-foreground">
+         Nenhum traslado adicionado.
+       </div>
+     ) : (
+       currentTransfers.map((tr: any, idx: number) => (
+         <div key={idx} className="p-3 rounded-lg bg-muted/40 border border-border/40 space-y-2">
+           <div className="flex items-center justify-between text-xs font-bold">
+             <span>Traslado #{idx + 1}</span>
+             <Button
+               type="button"
+               variant="ghost"
+               size="sm"
+               onClick={() => handleRemoveTransfer(idx)}
+               className="h-11 size-11 p-0 text-destructive"
+             >
+               <Trash className="size-3.5" />
+             </Button>
+           </div>
+           <Input
+             placeholder="Descrição (Ex: Aeroporto ↔ Resort Privativo)"
+             value={tr.description || tr.type || ""}
+             onChange={(e) => handleUpdateTransfer(idx, { description: e.target.value })}
+             className="h-11 text-xs rounded-lg"
+           />
+           <div className="grid grid-cols-3 gap-2">
+             <select
+               value={tr.type === "shared" ? "shared" : "private"}
+               onChange={(e) => handleUpdateTransfer(idx, { type: e.target.value })}
+               className="h-11 text-xs rounded-lg bg-background border border-border px-2"
+             >
+               <option value="private">Privativo</option>
+               <option value="shared">Regular / Compartilhado</option>
+             </select>
+             <select
+               value={tr.vehicle || "Van Executiva"}
+               onChange={(e) => handleUpdateTransfer(idx, { vehicle: e.target.value })}
+               className="h-11 text-xs rounded-lg bg-background border border-border px-2"
+             >
+               <option value="Van Executiva">Van Executiva</option>
+               <option value="Sedan Executivo">Sedan Executivo</option>
+               <option value="SUV Blindado / Luxo">SUV Luxo</option>
+               <option value="Micro-ônibus">Micro-ônibus</option>
+               <option value="Ônibus Turismo">Ônibus</option>
+               <option value="Lancha / Catamarã">Lancha / Barco</option>
+             </select>
+             <Input
+               type="date"
+               value={tr.date || ""}
+               onChange={(e) => handleUpdateTransfer(idx, { date: e.target.value })}
+               className="h-11 text-xs rounded-lg"
+             />
+           </div>
+           <Input
+             placeholder="Observações (Ex: Placa nominal no desembarque)"
+             value={tr.notes || ""}
+             onChange={(e) => handleUpdateTransfer(idx, { notes: e.target.value })}
+             className="h-11 text-xs rounded-lg"
+           />
+         </div>
+       ))
+     )}
+   </div>
+
+   {/* Bloco 2: Passeios & Experiências */}
+   <div className="space-y-2 pt-3 border-t border-border/60">
+     <div className="flex items-center justify-between">
+       <span className="text-xs font-bold text-foreground flex items-center gap-2">
+         <Compass className="size-3.5 text-primary" />
+         <span>Passeios & Experiências ({currentTours.length})</span>
+       </span>
+       <Button
+         type="button"
+         size="sm"
+         variant="outline"
+         onClick={handleAddTour}
+         className="h-11 text-xs rounded-lg gap-1"
+       >
+         <Plus className="size-3.5" /> Passeio
+       </Button>
+     </div>
+
+     {/* Importar de Excursões / Grupos da Agência */}
+     {Array.isArray(groupTours) && groupTours.length > 0 && (
+       <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
+         <span className="text-xs font-bold text-primary block">
+           Importar Excursão / Promoção da Agência
+         </span>
+         <select
+           defaultValue=""
+           onChange={(e) => {
+             if (e.target.value) {
+               handleImportGroupTour(e.target.value);
+               e.target.value = "";
+             }
+           }}
+           className="w-full h-11 text-xs rounded-lg bg-background border border-border px-2 text-foreground"
+         >
+           <option value="" disabled>Selecionar excursão ou pacote de grupo...</option>
+           {groupTours.map((gt: any) => (
+             <option key={gt.id} value={gt.id}>
+               {gt.title} ({gt.destination} — {formatMoney(gt.price_cents || 0)})
+             </option>
+           ))}
+         </select>
+       </div>
+     )}
+
+     {currentTours.length === 0 ? (
+       <div className="p-3 text-center rounded-lg bg-muted/30 border border-dashed border-border/60 text-xs text-muted-foreground">
+         Nenhum passeio ou ingresso cadastrado.
+       </div>
+     ) : (
+       currentTours.map((tour: any, idx: number) => (
+         <div key={tour.id || idx} className="p-3 rounded-lg bg-muted/40 border border-border/40 space-y-2">
+           <div className="flex items-center justify-between text-xs font-bold">
+             <span>Passeio #{idx + 1}</span>
+             <Button
+               type="button"
+               variant="ghost"
+               size="sm"
+               onClick={() => handleRemoveTour(idx)}
+               className="h-11 size-11 p-0 text-destructive"
+             >
+               <Trash className="size-3.5" />
+             </Button>
+           </div>
+           <Input
+             placeholder="Nome do Passeio (Ex: Catamarã Maragogi + Mergulho)"
+             value={tour.title || tour.description || ""}
+             onChange={(e) => handleUpdateTour(idx, { title: e.target.value })}
+             className="h-11 text-xs rounded-lg"
+           />
+           <div className="grid grid-cols-2 gap-2">
+             <Input
+               placeholder="Duração / Data (Ex: Dia inteiro)"
+               value={tour.duration || tour.date || ""}
+               onChange={(e) => handleUpdateTour(idx, { duration: e.target.value })}
+               className="h-11 text-xs rounded-lg"
+             />
+             <select
+               value={tour.included === false ? "optional" : "included"}
+               onChange={(e) =>
+                 handleUpdateTour(idx, {
+                   included: e.target.value === "included",
+                   is_included: e.target.value === "included",
+                 })
+               }
+               className="h-11 text-xs rounded-lg bg-background border border-border px-2"
+             >
+               <option value="included">Incluso no Pacote</option>
+               <option value="optional">Opcional Sugerido</option>
+             </select>
+           </div>
+         </div>
+       ))
+     )}
+   </div>
+ </TabsContent>
+
+ {/* ── ABA 6: INCLUSÕES, EXCLUSÕES & OBSERVAÇÕES ── */}
+ <TabsContent value="inclusoes" className="space-y-4">
+   <Button
+     type="button"
+     variant="outline"
+     onClick={handleSuggestIncludesExcludes}
+     className="w-full h-11 rounded-lg text-xs font-bold gap-2 border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 cursor-pointer"
+   >
+     <Sparkles className="size-3.5" />
+     <span>Sincronizar Inclusões e Exclusões com o Pacote</span>
+   </Button>
+
+   {/* O que inclui */}
+   <div className="space-y-2 p-3 rounded-lg bg-card border border-border/70">
+     <Label className="text-xs font-bold text-foreground flex items-center gap-2">
+       <Check className="size-3.5 text-emerald-600" />
+       <span>O que inclui ({currentIncludes.length})</span>
+     </Label>
+     <div className="flex gap-2">
+       <Input
+         value={newIncludeText}
+         onChange={(e) => setNewIncludeText(e.target.value)}
+         onKeyDown={(e) => {
+           if (e.key === "Enter" && newIncludeText.trim()) {
+             e.preventDefault();
+             onChange({ includes: [...currentIncludes, newIncludeText.trim()] });
+             setNewIncludeText("");
+           }
+         }}
+         placeholder="Adicionar item incluso..."
+         className="h-11 text-xs rounded-lg flex-1"
+       />
+       <Button
+         type="button"
+         size="sm"
+         onClick={() => {
+           if (!newIncludeText.trim()) return;
+           onChange({ includes: [...currentIncludes, newIncludeText.trim()] });
+           setNewIncludeText("");
+         }}
+         className="h-11 px-3 text-xs rounded-lg font-bold"
+       >
+         Adicionar
+       </Button>
+     </div>
+     <div className="flex flex-wrap gap-1 pt-1">
+       {[
+         "Passagens aéreas ida e volta",
+         "Transfer Aeroporto / Hotel",
+         "Seguro viagem completo",
+         "Bagagem despachada 23kg",
+         "Conciergerie 24h",
+       ].map((chip) => (
+         <button
+           key={chip}
+           type="button"
+           onClick={() => {
+             if (!currentIncludes.includes(chip)) {
+               onChange({ includes: [...currentIncludes, chip] });
+             }
+           }}
+           className="min-h-11 px-3 py-1 rounded bg-muted/60 hover:bg-emerald-500/10 text-xs text-muted-foreground hover:text-emerald-700 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+         >
+           + {chip}
+         </button>
+       ))}
+     </div>
+     <div className="space-y-2 pt-2">
+       {currentIncludes.map((item, idx) => (
+         <div
+           key={idx}
+           className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-muted/30 border border-border/40 text-xs"
+         >
+           <span className="text-foreground flex-1 break-words">{item}</span>
+           <button
+             type="button"
+             onClick={() =>
+               onChange({ includes: currentIncludes.filter((_, i) => i !== idx) })
+             }
+             className="min-h-11 min-w-11 flex items-center justify-center text-muted-foreground hover:text-destructive p-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+           >
+             <X className="size-3.5" />
+           </button>
+         </div>
+       ))}
+     </div>
+   </div>
+
+   {/* O que não inclui */}
+   <div className="space-y-2 p-3 rounded-lg bg-card border border-border/70">
+     <Label className="text-xs font-bold text-foreground flex items-center gap-2">
+       <X className="size-3.5 text-destructive" />
+       <span>O que não inclui ({currentExcludes.length})</span>
+     </Label>
+     <div className="flex gap-2">
+       <Input
+         value={newExcludeText}
+         onChange={(e) => setNewExcludeText(e.target.value)}
+         onKeyDown={(e) => {
+           if (e.key === "Enter" && newExcludeText.trim()) {
+             e.preventDefault();
+             onChange({ excludes: [...currentExcludes, newExcludeText.trim()] });
+             setNewExcludeText("");
+           }
+         }}
+         placeholder="Adicionar item não incluso..."
+         className="h-11 text-xs rounded-lg flex-1"
+       />
+       <Button
+         type="button"
+         size="sm"
+         variant="outline"
+         onClick={() => {
+           if (!newExcludeText.trim()) return;
+           onChange({ excludes: [...currentExcludes, newExcludeText.trim()] });
+           setNewExcludeText("");
+         }}
+         className="h-11 px-3 text-xs rounded-lg font-bold"
+       >
+         Adicionar
+       </Button>
+     </div>
+     <div className="space-y-2 pt-2">
+       {currentExcludes.map((item, idx) => (
+         <div
+           key={idx}
+           className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-muted/30 border border-border/40 text-xs"
+         >
+           <span className="text-muted-foreground flex-1 break-words">{item}</span>
+           <button
+             type="button"
+             onClick={() =>
+               onChange({ excludes: currentExcludes.filter((_, i) => i !== idx) })
+             }
+             className="min-h-11 min-w-11 flex items-center justify-center text-muted-foreground hover:text-destructive p-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+           >
+             <X className="size-3.5" />
+           </button>
+         </div>
+       ))}
+     </div>
+   </div>
+
+   {/* Observações & Termos */}
+   <div className="space-y-2">
+     <Label className="text-xs font-bold">Observações & Condições Gerais</Label>
+     <Textarea
+       value={proposal.special_notes || ""}
+       onChange={(e) => onChange({ special_notes: e.target.value })}
+       placeholder="Tarifas sujeitas a disponibilidade e alteração sem aviso prévio até a emissão..."
+       className="h-20 text-xs rounded-lg resize-none"
+     />
+   </div>
+ </TabsContent>
+
+ {/* ── ABA 7: PREÇOS & PARCELAMENTO ── */}
  <TabsContent value="preco" className="space-y-3">
  <div className="space-y-2 p-3 rounded-lg bg-card border border-border/70 shadow-2xs">
  <Label className="text-[11px] font-bold text-foreground flex items-center justify-between">
@@ -904,6 +1571,68 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  <p className="text-[10px] text-muted-foreground">
  Digite o valor real em Reais (ex: 4500 ou 4500,00). O sistema converte automaticamente para centavos seguros.
  </p>
+ <div className="pt-2 border-t border-border/50 space-y-2">
+   <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
+     Decomposição Financeira & Moeda
+   </span>
+   <div className="grid grid-cols-2 gap-2">
+     <div className="space-y-1">
+       <Label className="text-xs text-muted-foreground">Moeda</Label>
+       <select
+         value={proposal.pricing?.currency || "BRL"}
+         onChange={(e) =>
+           onChange({
+             pricing: { ...proposal.pricing, currency: e.target.value },
+           })
+         }
+         className="w-full h-11 text-xs rounded-lg bg-background border border-border px-2"
+       >
+         <option value="BRL">BRL (R$)</option>
+         <option value="USD">USD (US$)</option>
+         <option value="EUR">EUR (€)</option>
+       </select>
+     </div>
+     <div className="space-y-1">
+       <Label className="text-xs text-muted-foreground">Tarifa Base (R$)</Label>
+       <Input
+         type="text"
+         value={basePriceReais}
+         onChange={(e) => {
+           setBasePriceReais(e.target.value);
+           recomputePricingFromBreakdown(e.target.value, boardingTaxReais, discountReais);
+         }}
+         placeholder="0,00"
+         className="h-11 text-xs font-mono rounded-lg"
+       />
+     </div>
+     <div className="space-y-1">
+       <Label className="text-xs text-muted-foreground">Taxas de Embarque (R$)</Label>
+       <Input
+         type="text"
+         value={boardingTaxReais}
+         onChange={(e) => {
+           setBoardingTaxReais(e.target.value);
+           recomputePricingFromBreakdown(basePriceReais, e.target.value, discountReais);
+         }}
+         placeholder="0,00"
+         className="h-11 text-xs font-mono rounded-lg"
+       />
+     </div>
+     <div className="space-y-1">
+       <Label className="text-xs text-emerald-600 font-semibold">Desconto / PIX (R$)</Label>
+       <Input
+         type="text"
+         value={discountReais}
+         onChange={(e) => {
+           setDiscountReais(e.target.value);
+           recomputePricingFromBreakdown(basePriceReais, boardingTaxReais, e.target.value);
+         }}
+         placeholder="0,00"
+         className="h-11 text-xs font-mono rounded-lg"
+       />
+     </div>
+   </div>
+ </div>
  </div>
 
  <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-3">

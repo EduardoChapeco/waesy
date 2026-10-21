@@ -61,6 +61,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
+import { getBrowserClient } from "@/lib/supabase";
 
 export const Route = createFileRoute("/_store/conta/entregador")({
   head: () => ({
@@ -293,6 +294,42 @@ function CourierDriverHubPage() {
 
     return () => clearInterval(interval);
   }, [rideStartedTimerAt]);
+
+  // Telemetria GPS em Tempo Real (Broadcast para o passageiro via Supabase Realtime)
+  useEffect(() => {
+    if (!activeRide?.id || typeof window === "undefined" || !navigator.geolocation) return;
+    let supabase: ReturnType<typeof getBrowserClient> | null = null;
+    try {
+      supabase = getBrowserClient();
+    } catch {
+      return;
+    }
+
+    const channel = supabase.channel(`mobility-gps:${activeRide.id}`);
+    channel.subscribe();
+
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        channel.send({
+          type: "broadcast",
+          event: "driver_location",
+          payload: {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            heading: pos.coords.heading,
+            updatedAt: new Date().toISOString(),
+          },
+        });
+      },
+      () => null,
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 },
+    );
+
+    return () => {
+      navigator.geolocation.clearWatch(watchId);
+      supabase?.removeChannel(channel);
+    };
+  }, [activeRide?.id]);
 
   // Se não tiver perfil de condutor aprovado
   if (!profile) {

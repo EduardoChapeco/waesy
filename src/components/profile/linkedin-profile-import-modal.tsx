@@ -1,12 +1,32 @@
 import React, { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { CheckCircle2, AlertCircle, Building2, GraduationCap, FileCode2, Linkedin, Loader2, ArrowRight, Check } from "lucide-react";
-import { getLinkedInAuthRedirectUrl, parseAndImportLinkedInJson } from "@/services/linkedin-integrations.functions";
+import {
+  CheckCircle2,
+  AlertCircle,
+  Building2,
+  GraduationCap,
+  FileCode2,
+  Linkedin,
+  Loader2,
+  ShieldCheck,
+  Check,
+  Info,
+} from "lucide-react";
+import {
+  getLinkedInAuthRedirectUrl,
+  parseAndImportLinkedInJson,
+} from "@/services/linkedin-integrations.functions";
 
 export interface LinkedInImportResult {
   headline?: string;
@@ -76,7 +96,7 @@ export function LinkedInProfileImportModal({
 
   const handleProcessJson = async () => {
     if (!jsonText.trim()) {
-      toast.error("Cole o JSON do perfil para importar.");
+      toast.error("Cole o arquivo ou JSON do perfil para importar.");
       return;
     }
 
@@ -98,12 +118,12 @@ export function LinkedInProfileImportModal({
             id: exp.id || `exp_${Date.now()}_${Math.random()}`,
             title: exp.title,
             company: exp.company,
-            start_date: exp.start_date || ((exp as any).start_year ? `${(exp as any).start_month || 1}/${(exp as any).start_year}` : undefined),
-            end_date: exp.is_current ? "Atual" : exp.end_date || ((exp as any).end_year ? `${(exp as any).end_month || 12}/${(exp as any).end_year}` : undefined),
+            start_date: exp.start_date,
+            end_date: exp.is_current ? "Atual" : exp.end_date,
             is_current: exp.is_current,
             description: exp.description,
           })),
-          educations: (tr.educations || []).map((edu) => ({
+          educations: (tr.educations || []).map((edu: any) => ({
             id: edu.id || `edu_${Date.now()}_${Math.random()}`,
             school: edu.school,
             degree: edu.degree,
@@ -115,7 +135,9 @@ export function LinkedInProfileImportModal({
         };
 
         setParsedResult(normalized);
-        toast.success(`Perfil analisado! ${res.stats.experiencesCount} experiências e ${res.stats.skillsCount} competências encontradas.`);
+        toast.success(
+          `Perfil analisado com sucesso! ${normalized.experiences.length} experiências e ${normalized.skills.length} competências encontradas.`
+        );
       }
     } catch (err: any) {
       console.error("[LinkedInProfileImportModal] Erro de parse:", err);
@@ -128,7 +150,7 @@ export function LinkedInProfileImportModal({
   const handleApply = () => {
     if (!parsedResult) return;
     onImport(parsedResult);
-    toast.success("Dados do LinkedIn incorporados ao currículo!");
+    toast.success("Dados incorporados ao currículo com sucesso!");
     onOpenChange(false);
     resetState();
   };
@@ -137,28 +159,18 @@ export function LinkedInProfileImportModal({
     const schemaExamplePayload = {
       name: "Candidato Waesy",
       headline: "Especialista em Gestão e Operações Comerciais",
-      summary: "Profissional com mais de 8 anos de experiência em gestão de equipes, otimização de processos de varejo e expansão comercial multicanal.",
+      summary: "Profissional com mais de 8 anos de experiência em gestão de equipes e operações de varejo.",
       location: { name: "São Miguel do Oeste, SC" },
       positions: [
         {
           title: "Gerente de Operações Comerciais",
           companyName: "Grupo Varejista Regional",
           employmentType: "Full-time",
-          location: "Chapecó, SC",
+          location: "São Miguel do Oeste, SC",
           isCurrent: true,
           startDate: { month: 2, year: 2022 },
           endDate: null,
-          description: "Supervisão de 14 filiais, liderança de 45 colaboradores e aumento de 28% no faturamento médio.",
-        },
-        {
-          title: "Coordenador de Vendas",
-          companyName: "Distribuidora do Oeste",
-          employmentType: "CLT",
-          location: "São Miguel do Oeste, SC",
-          isCurrent: false,
-          startDate: { month: 5, year: 2018 },
-          endDate: { month: 1, year: 2022 },
-          description: "Gestão da carteira de clientes B2B e implementação de novo sistema de metas por comissão.",
+          description: "Supervisão de filiais, liderança de equipe e implementação de novos processos.",
         },
       ],
       educations: [
@@ -170,7 +182,7 @@ export function LinkedInProfileImportModal({
           endDate: { year: 2018 },
         },
       ],
-      skills: ["Gestão de Equipes", "Planejamento Estratégico", "Vendas B2B", "Negociação", "ERP", "CRM"],
+      skills: ["Gestão de Equipes", "Planejamento Estratégico", "Vendas B2B", "Negociação"],
     };
     setJsonText(JSON.stringify(schemaExamplePayload, null, 2));
     toast.info("Exemplo carregado. Clique em 'Validar e Processar'.");
@@ -187,12 +199,16 @@ export function LinkedInProfileImportModal({
       <DialogContent className="sm:max-w-xl sm:rounded-lg p-0 overflow-hidden bg-background border border-border">
         <DialogHeader className="p-6 pb-4 border-b border-border/40">
           <div className="flex items-center gap-3">
-            <div className="size-10 rounded-lg bg-[#0A66C2] text-white flex items-center justify-center shrink-0 shadow-xs">
+            <div className="size-10 rounded-lg bg-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-xs">
               <Linkedin className="size-5 fill-current" />
             </div>
             <div>
-              <DialogTitle className="text-base font-bold text-foreground">Importar do LinkedIn</DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground mt-1">Sincronize experiências e formação diretamente para o seu currículo.</DialogDescription>
+              <DialogTitle className="text-base font-bold text-foreground">
+                Integração Oficial LinkedIn
+              </DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground mt-1">
+                Conexão transparente e segura em conformidade com as diretrizes Microsoft / LinkedIn.
+              </DialogDescription>
             </div>
           </div>
         </DialogHeader>
@@ -202,128 +218,146 @@ export function LinkedInProfileImportModal({
           <button
             type="button"
             onClick={() => setActiveTab("oauth")}
-            className={`px-4 py-3 text-xs font-bold border-b-2 transition-colors cursor-pointer ${
+            className={`px-4 py-3 text-xs font-bold border-b-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
               activeTab === "oauth"
-                ? "border-[#0A66C2] text-[#0A66C2]"
+                ? "border-primary text-primary"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
-            Conexão Direta (OAuth 2.0)
+            Identidade Oficial (OpenID Connect)
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("json")}
-            className={`px-4 py-3 text-xs font-bold border-b-2 transition-colors cursor-pointer ${
+            className={`px-4 py-3 text-xs font-bold border-b-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
               activeTab === "json"
-                ? "border-[#0A66C2] text-[#0A66C2]"
+                ? "border-primary text-primary"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
-            Colar Dados / JSON
+            Exportação de Dados / Arquivo
           </button>
         </div>
 
-        <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto no-scrollbar">
+        <div className="p-6 space-y-4 max-h-96 overflow-y-auto no-scrollbar">
           {activeTab === "oauth" ? (
-            <div className="space-y-4 text-center py-4">
-              <div className="size-16 rounded-lg bg-[#0A66C2]/10 text-[#0A66C2] flex items-center justify-center mx-auto border border-[#0A66C2]/20">
-                <Linkedin className="size-8 fill-current" />
-              </div>
-              <div className="space-y-2 max-w-sm mx-auto">
-                <h4 className="text-sm font-semibold text-foreground">Conectar Perfil</h4>
-              <p className="text-xs text-muted-foreground">Importe seus dados profissionais com 1 clique via LinkedIn.</p>
-              </div>
+            <div className="space-y-4 py-2">
+              <div className="p-4 rounded-lg bg-muted/40 border border-border/60 space-y-3">
+                <div className="flex items-start gap-2">
+                  <ShieldCheck className="size-5 text-emerald-500 shrink-0 mt-1" />
+                  <div className="space-y-1 text-xs">
+                    <span className="font-bold text-foreground">Escopos Autorizados (OpenID Connect)</span>
+                    <p className="text-muted-foreground leading-relaxed">
+                      O login oficial self-service do LinkedIn fornece com segurança seus dados de identidade básica:
+                      <strong> Nome completo, Foto de Perfil, E-mail verificado e Headline</strong>.
+                    </p>
+                  </div>
+                </div>
 
-              
+                <div className="p-3 rounded-md bg-background border border-border/40 text-xs text-muted-foreground flex items-start gap-2">
+                  <Info className="size-4 text-blue-500 shrink-0 mt-1" />
+                  <span>
+                    Conforme os termos oficiais do LinkedIn, o histórico detalhado de empregos não é exposto por APIs públicas genéricas. Para importar seu histórico completo com experiências e cursos, utilize a aba <strong>Exportação de Dados / Arquivo</strong> ao lado.
+                  </span>
+                </div>
+              </div>
 
               <Button
                 type="button"
                 onClick={handleStartOAuth}
                 disabled={isConnecting}
-                className="w-full h-11 rounded-lg font-bold text-xs gap-2 bg-[#0A66C2] hover:bg-[#084e96] text-white shadow-xs cursor-pointer"
+                className="w-full h-11 rounded-lg font-bold text-xs gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 {isConnecting ? (
                   <>
-                    <Loader2 className="size-4 animate-spin" />
+                    <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                     <span>Conectando ao LinkedIn...</span>
                   </>
                 ) : (
                   <>
                     <Linkedin className="size-4 fill-current" />
-                    <span>Entrar com LinkedIn</span>
+                    <span>Conectar e Sincronizar Identidade</span>
                   </>
                 )}
               </Button>
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label className="text-xs font-bold text-foreground">JSON do Perfil</Label>
-                <button
-                  type="button"
-                  onClick={handleLoadExampleTemplate}
-                  className="text-[11px] font-semibold text-primary hover:underline cursor-pointer"
-                >
-                  Carregar exemplo para teste
-                </button>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-foreground">
+                    Dados Exportados do LinkedIn (JSON / Texto Estruturado)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleLoadExampleTemplate}
+                    className="text-xs text-primary hover:underline font-semibold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    Carregar Exemplo
+                  </button>
+                </div>
+                <Textarea
+                  value={jsonText}
+                  onChange={(e) => setJsonText(e.target.value)}
+                  placeholder="Cole aqui o conteúdo JSON do seu perfil do LinkedIn..."
+                  rows={6}
+                  className="font-mono text-xs rounded-lg"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Você pode obter este arquivo nas configurações de privacidade do seu LinkedIn em <em>Configurações → Privacidade de Dados → Obter uma cópia dos seus dados</em>.
+                </p>
               </div>
 
-              <Textarea
-                value={jsonText}
-                onChange={(e) => {
-                  setJsonText(e.target.value);
-                  setParsedResult(null);
-                }}
-                placeholder="Cole o JSON exportado do LinkedIn..."
-                className="h-32 text-xs font-mono rounded-lg bg-background border-border resize-none"
-              />
+              <Button
+                type="button"
+                onClick={handleProcessJson}
+                disabled={isProcessing || !jsonText.trim()}
+                variant="outline"
+                className="w-full h-11 rounded-lg font-bold text-xs gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
+                    <span>Analisando estrutura...</span>
+                  </>
+                ) : (
+                  <>
+                    <FileCode2 className="size-4" />
+                    <span>Validar e Extrair Informações</span>
+                  </>
+                )}
+              </Button>
 
-              {!parsedResult ? (
-                <Button
-                  type="button"
-                  onClick={handleProcessJson}
-                  disabled={isProcessing || !jsonText.trim()}
-                  className="w-full h-10 rounded-lg font-bold text-xs gap-2 bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
-                >
-                  {isProcessing ? (
-                    <>
-                      <Loader2 className="size-4 animate-spin" />
-                      <span>Validando com Zod...</span>
-                    </>
-                  ) : (
-                    <>
-                      <FileCode2 className="size-4" />
-                      <span>Validar e Processar Dados</span>
-                    </>
-                  )}
-                </Button>
-              ) : (
-                <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/30 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Check className="size-4 text-emerald-600" />
-                      <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
-                        Estrutura Reconhecida com Sucesso!
-                      </span>
-                    </div>
-                    <Badge variant="outline" className="text-[10px] border-emerald-500/40 text-emerald-600 font-mono">
-                      {parsedResult.experiences.length} experiências
-                    </Badge>
+              {/* Pré-visualização do resultado parseado */}
+              {parsedResult && (
+                <div className="p-4 rounded-lg bg-muted/40 border border-emerald-500/30 space-y-3 animate-fade-in text-xs">
+                  <div className="flex items-center gap-2 text-emerald-600 font-bold">
+                    <CheckCircle2 className="size-4" />
+                    <span>Dados Prontos para Incorporação</span>
                   </div>
 
-                  <div className="text-xs text-muted-foreground space-y-1">
-                    <p><strong>Cargo Atual / Headline:</strong> {parsedResult.headline || "Não especificado"}</p>
-                    <p><strong>Competências:</strong> {parsedResult.skills.slice(0, 5).join(", ")}...</p>
-                    <p><strong>Formação:</strong> {parsedResult.educations[0]?.school || "Não informada"}</p>
+                  <div className="space-y-1 text-slate-700 dark:text-slate-300">
+                    <div>
+                      <strong>Headline:</strong> {parsedResult.headline || "—"}
+                    </div>
+                    <div>
+                      <strong>Experiências encontradas:</strong> {parsedResult.experiences.length}
+                    </div>
+                    <div>
+                      <strong>Formações encontradas:</strong> {parsedResult.educations.length}
+                    </div>
+                    <div>
+                      <strong>Competências:</strong> {parsedResult.skills.join(", ") || "—"}
+                    </div>
                   </div>
 
                   <Button
                     type="button"
                     onClick={handleApply}
-                    className="w-full h-10 rounded-lg font-bold text-xs gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer"
+                    className="w-full h-11 rounded-lg font-bold text-xs gap-2 bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
-                    <ArrowRight className="size-4" />
-                    <span>Aplicar ao Meu Currículo</span>
+                    <Check className="size-4" />
+                    <span>Confirmar e Incorporar ao Currículo</span>
                   </Button>
                 </div>
               )}
@@ -331,13 +365,12 @@ export function LinkedInProfileImportModal({
           )}
         </div>
 
-        <DialogFooter className="p-4 border-t border-border/40 bg-muted/10 flex justify-end">
+        <DialogFooter className="p-4 border-t border-border/40 bg-muted/10">
           <Button
             type="button"
-            variant="outline"
-            size="sm"
+            variant="ghost"
             onClick={() => onOpenChange(false)}
-            className="rounded-lg text-xs h-9"
+            className="h-11 min-h-11 px-4 text-xs font-semibold cursor-pointer"
           >
             Fechar
           </Button>

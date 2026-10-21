@@ -273,10 +273,19 @@ export function EventClassifiedShowcaseView({
   }, [surveys, classified.id]);
 
   // Abertura do Modal de Inscrição
+  const [issuedTicket, setIssuedTicket] = useState<{
+    ticketCode: string;
+    qrPayload: string;
+    signature: string;
+    pixCopyPaste: string | null;
+    amountCents: number;
+  } | null>(null);
+
   const handleOpenSignup = (tier?: EventTicketTier) => {
     setSelectedTicketForSignup(tier || null);
     setIsSignupModalOpen(true);
     setLeadSuccess(false);
+    setIssuedTicket(null);
   };
 
   const handleSubmitLead = async (e: React.FormEvent) => {
@@ -292,7 +301,7 @@ export function EventClassifiedShowcaseView({
 
     setIsSubmittingLead(true);
     try {
-      await registerClassifiedEventLead({
+      const res = await registerClassifiedEventLead({
         data: {
           classifiedId: classified.id,
           name: leadName.trim(),
@@ -305,8 +314,17 @@ export function EventClassifiedShowcaseView({
         },
       });
 
+      if (res?.ticketCode) {
+        setIssuedTicket({
+          ticketCode: res.ticketCode,
+          qrPayload: res.qrPayload,
+          signature: res.signature,
+          pixCopyPaste: res.pixCopyPaste || null,
+          amountCents: res.amountCents || 0,
+        });
+      }
       setLeadSuccess(true);
-      toast.success("Inscrição confirmada com sucesso!");
+      toast.success("Inscrição e bilhete criptográfico gerados com sucesso!");
     } catch (err: any) {
       toast.error(err?.message || "Não foi possível confirmar a sua inscrição.");
     } finally {
@@ -1446,15 +1464,73 @@ export function EventClassifiedShowcaseView({
           </DialogHeader>
 
           {leadSuccess ? (
-            <div className="py-6 space-y-4 text-center">
-              <div className="size-16 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto">
-                <Check className="size-8" />
+            <div className="py-4 space-y-4 text-center">
+              <div className="size-12 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto">
+                <Check className="size-6" />
               </div>
               <p className="text-sm text-foreground font-semibold">
-                Parabéns, {leadName}! Sua vaga está garantida.
+                Parabéns, {leadName}! Seu ingresso foi emitido.
               </p>
+
+              {issuedTicket && (
+                <div className="p-4 rounded-lg bg-muted/40 border border-border/80 text-left space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-semibold text-muted-foreground flex items-center gap-2">
+                      <ShieldCheck className="size-4 text-emerald-600" />
+                      <span>Bilhete Criptográfico WCTS-1</span>
+                    </span>
+                    <Badge variant="outline" className="text-xs font-mono">
+                      HMAC-SHA256
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-background border border-border">
+                    <span className="text-sm font-mono font-bold text-foreground tracking-wider">
+                      {issuedTicket.ticketCode}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (typeof navigator !== "undefined" && navigator.clipboard) {
+                          navigator.clipboard.writeText(issuedTicket.qrPayload);
+                          toast.success("Token criptográfico do ingresso copiado!");
+                        }
+                      }}
+                      className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold text-primary hover:bg-primary/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+                    >
+                      Copiar Token QR
+                    </button>
+                  </div>
+
+                  {issuedTicket.pixCopyPaste && issuedTicket.amountCents > 0 && (
+                    <div className="pt-2 border-t border-border/60 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-foreground">
+                          Pagamento PIX ({formatMoney(issuedTicket.amountCents)})
+                        </span>
+                        <Badge variant="secondary" className="text-xs">
+                          BRCode EMV
+                        </Badge>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          if (typeof navigator !== "undefined" && navigator.clipboard && issuedTicket.pixCopyPaste) {
+                            navigator.clipboard.writeText(issuedTicket.pixCopyPaste);
+                            toast.success("Código PIX Copia e Cola copiado!");
+                          }
+                        }}
+                        className="w-full rounded-lg h-11 min-h-11 text-xs font-bold border-primary/40 text-primary hover:bg-primary/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        Copiar Código PIX Copia e Cola
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <p className="text-xs text-muted-foreground leading-relaxed max-w-xs mx-auto">
-                Enviamos os detalhes para seu WhatsApp ({leadWhatsapp}). Você também pode adicionar o evento à sua agenda agora mesmo.
+                Guarde o código do seu bilhete ({issuedTicket?.ticketCode || "Confirmado"}). Você também pode adicionar o evento à sua agenda agora mesmo.
               </p>
 
               <div className="pt-2 flex flex-col gap-2">

@@ -55,6 +55,15 @@ export interface HotelDTO {
 
 export type HotelOptionDTO = HotelDTO;
 
+export interface ProposalRoomItem {
+  id: string;
+  roomNumber: number;
+  roomType?: string;
+  adults: number;
+  children: number;
+  childrenAges: number[];
+}
+
 export interface ItineraryDayDTO {
   id?: string;
   day_number: number;

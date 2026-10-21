@@ -377,7 +377,7 @@ export const getMuralFeed = createServerFn({ method: "GET" })
         metadata, reference_type, reference_id, created_at,
         author_profile_id, author_store_id,
         profiles!posts_author_profile_id_fkey(full_name, avatar_url),
-        stores(name, settings)
+        stores(name, settings, logo_url)
         `,
       )
       .eq("status", "active");
@@ -521,7 +521,10 @@ export const getMuralFeed = createServerFn({ method: "GET" })
       const is_store = !!p.author_store_id && !!p.stores;
       const prof = p.profiles as any;
       const store = p.stores as any;
-      const storeLogo = store?.settings?.avatar_url || store?.settings?.logo_url || null;
+      const isWaesyStore = Boolean(store?.name && /waesy/i.test(store.name));
+      const isWaesyUser = Boolean(prof?.full_name && /waesy/i.test(prof.full_name));
+      const storeLogo = store?.logo_url || store?.settings?.avatar_url || store?.settings?.logo_url || (isWaesyStore ? "/brand-logo.png" : null);
+      const userAvatar = prof?.avatar_url || (isWaesyUser ? "/brand-logo.png" : null);
 
       let reference_data: any = null;
       if (p.reference_type === "product" && p.reference_id)
@@ -537,7 +540,7 @@ export const getMuralFeed = createServerFn({ method: "GET" })
         author: {
           id: p.author_store_id || p.author_profile_id,
           name: is_store ? store.name : (prof?.full_name || "").trim() || "Membro da Waesy",
-          avatar_url: is_store ? storeLogo : (prof?.avatar_url ?? null),
+          avatar_url: is_store ? storeLogo : (userAvatar ?? null),
           is_store,
         },
         content_text: p.content_text,
@@ -2513,7 +2516,8 @@ export const getPostById = createServerFn({ method: "GET" })
         ),
         stores(
           name,
-          settings
+          settings,
+          logo_url
         )
       `)
       .eq("id", postId)
@@ -2628,7 +2632,10 @@ export const getPostById = createServerFn({ method: "GET" })
     const isStore = Boolean(post.author_store_id && post.stores);
     const prof = (Array.isArray(post.profiles) ? post.profiles[0] : post.profiles) as any;
     const store = (Array.isArray(post.stores) ? post.stores[0] : post.stores) as any;
-    const storeLogo = store?.settings?.avatar_url || store?.settings?.logo_url || null;
+    const isWaesyStore = Boolean(store?.name && /waesy/i.test(store.name));
+    const isWaesyUser = Boolean(prof?.full_name && /waesy/i.test(prof.full_name));
+    const storeLogo = store?.logo_url || store?.settings?.avatar_url || store?.settings?.logo_url || (isWaesyStore ? "/brand-logo.png" : null);
+    const userAvatar = prof?.avatar_url || (isWaesyUser ? "/brand-logo.png" : null);
 
     const item: MuralFeedItem = {
       type: "post",
@@ -2658,7 +2665,7 @@ export const getPostById = createServerFn({ method: "GET" })
         id: post.author_store_id || post.author_profile_id || prof?.id || "unknown",
         name: isStore ? store.name : (prof?.full_name || "").trim() || "Membro da Comunidade",
         is_store: isStore,
-        avatar_url: isStore ? storeLogo : (prof?.avatar_url || null),
+        avatar_url: isStore ? storeLogo : (userAvatar || null),
         username: prof?.username || null,
       } as any,
       reference_data: referenceData,

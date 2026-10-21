@@ -711,12 +711,98 @@ async function _getEventWithLots(eventId: string) {
 
       return {
         event,
+        classifiedEvent: null as any,
         lots: lots || [],
         linkedNews,
         partners: partners || [],
         concessions: subpanels || [],
         products: products || [],
         surveys: surveys || [],
+      };
+    }
+
+    // Fallback bidirecional: Eventos Civis / Luma criados em classifieds (category = 'event')
+    const { data: classifiedRow } = await supabase
+      .from("classifieds")
+      .select("*, profiles:profile_id(id, full_name, avatar_url, phone), stores:store_id(id, name, slug, logo_url)")
+      .eq("id", eventId)
+      .maybeSingle();
+
+    if (
+      classifiedRow &&
+      (classifiedRow.category === "event" ||
+        (classifiedRow.attributes as any)?.niche === "evento")
+    ) {
+      const attrs = (classifiedRow.attributes || {}) as Record<string, any>;
+      const rawDate = attrs.event_date
+        ? String(attrs.event_date).includes("T")
+          ? String(attrs.event_date)
+          : String(attrs.event_date) + "T" + (attrs.start_time || "19:00") + ":00"
+        : classifiedRow.created_at;
+      const tiers = Array.isArray(attrs.ticket_tiers) ? attrs.ticket_tiers : [];
+      const mappedLots = tiers.map((t: any, idx: number) => ({
+        id: t.id || "tier-" + idx,
+        event_id: classifiedRow.id,
+        title: t.name || t.title || "Lote " + (idx + 1),
+        description: t.description || "",
+        price_cents: Number(t.price_cents ?? t.price ?? 0),
+        quantity_total: Number(t.quantity ?? 100),
+        quantity_sold: Number(t.sold ?? 0),
+        status: "active",
+      }));
+
+      const mappedEvent = {
+        id: classifiedRow.id,
+        store_id: classifiedRow.store_id || null,
+        title: classifiedRow.title,
+        description: classifiedRow.content || "",
+        event_date: rawDate,
+        end_date: attrs.end_date || null,
+        location: attrs.venue_address || classifiedRow.location_name || attrs.city || "",
+        venue: attrs.venue_name || classifiedRow.location_name || "",
+        city: attrs.city || classifiedRow.location_name || "",
+        state: attrs.state || "",
+        cover_image:
+          attrs.banner_image_url ||
+          (Array.isArray(classifiedRow.images) && classifiedRow.images[0]) ||
+          null,
+        status: "published",
+        category: attrs.event_category || classifiedRow.sub_category || "shows",
+        is_free:
+          classifiedRow.price_cents === 0 ||
+          (mappedLots.length > 0 && mappedLots.every((l: any) => l.price_cents === 0)),
+        is_external: false,
+        external_source: null,
+        is_external_ticket: false,
+        external_ticket_url: null,
+        organizer_name:
+          attrs.host_name ||
+          (classifiedRow as any).stores?.name ||
+          (classifiedRow as any).profiles?.full_name ||
+          "Organizador Verificado",
+        price_min_cents:
+          mappedLots.length > 0
+            ? Math.min(...mappedLots.map((l: any) => l.price_cents))
+            : classifiedRow.price_cents ?? 0,
+        price_max_cents:
+          mappedLots.length > 0
+            ? Math.max(...mappedLots.map((l: any) => l.price_cents))
+            : classifiedRow.price_cents ?? 0,
+        rsvp_going_count: Number(attrs.rsvp_going_count || 0),
+        rsvp_interested_count: Number(attrs.rsvp_interested_count || 0),
+        rsvp_not_going_count: Number(attrs.rsvp_not_going_count || 0),
+        created_at: classifiedRow.created_at,
+      };
+
+      return {
+        event: mappedEvent as any,
+        classifiedEvent: classifiedRow as any,
+        lots: mappedLots as any[],
+        linkedNews: null,
+        partners: [],
+        concessions: [],
+        products: [],
+        surveys: Array.isArray(attrs.surveys) ? attrs.surveys : [],
       };
     }
  } catch (err) {
@@ -788,11 +874,127 @@ async function _getPublicEvents(opts: {
       );
     }
 
-    const { data: events, error } = await query;
+    let classifiedsQuery = supabase
+      .from("classifieds")
+      .select(
+        "id, store_id, profile_id, title, content, price_cents, location_name, sub_category, images, attributes, status, visibility, created_at",
+      )
+      .eq("category", "event")
+      .eq("status", "active")
+      .eq("visibility", "public")
+      .order("created_at", { ascending: false })
+      .limit(limit);
 
-    if (!error && events) {
-      return events;
+    if (opts.searchQuery) {
+      const q = opts.searchQuery;
+      classifiedsQuery = classifiedsQuery.or(
+        "title.ilike.%" + q + "%,content.ilike.%" + q + "%,location_name.ilike.%" + q + "%",
+      );
     }
+
+    const [{ data: events, error }, { data: classifiedEvents }] = await Promise.all([
+      query,
+      classifiedsQuery.then((res) => res, () => ({ data: [] as any[] })),
+    ]);
+
+    const baseEvents = !error && Array.isArray(events) ? [...events] : [];
+    const todayKey = new Date().toISOString().split("T")[0];
+
+    const mappedClassifieds = (Array.isArray(classifiedEvents) ? classifiedEvents : [])
+      .map((c: any) => {
+        const attrs = (c.attributes || {}) as Record<string, any>;
+        const rawDateStr = attrs.event_date ? String(attrs.event_date) : "";
+        const datePart = rawDateStr ? rawDateStr.split("T")[0] : "";
+        const isoEventDate = rawDateStr
+          ? rawDateStr.includes("T")
+            ? rawDateStr
+            : rawDateStr + "T" + (attrs.start_time || "19:00") + ":00"
+          : c.created_at;
+
+        const tiers = Array.isArray(attrs.ticket_tiers) ? attrs.ticket_tiers : [];
+        const tierPrices = tiers
+          .map((t: any) => Number(t.price_cents ?? t.price ?? 0))
+          .filter((n: number) => !Number.isNaN(n) && n >= 0);
+
+        const minPrice =
+          tierPrices.length > 0
+            ? Math.min(...tierPrices)
+            : c.price_cents !== null && c.price_cents !== undefined
+            ? Number(c.price_cents)
+            : 0;
+        const maxPrice =
+          tierPrices.length > 0
+            ? Math.max(...tierPrices)
+            : minPrice;
+
+        return {
+          id: c.id,
+          store_id: c.store_id || null,
+          title: c.title,
+          description: c.content || "",
+          event_date: isoEventDate,
+          end_date: attrs.end_date || null,
+          location: attrs.venue_address || c.location_name || attrs.city || "",
+          venue: attrs.venue_name || c.location_name || "",
+          city: attrs.city || c.location_name || "",
+          state: attrs.state || "",
+          cover_image:
+            attrs.banner_image_url ||
+            (Array.isArray(c.images) && c.images[0]) ||
+            null,
+          status: "published",
+          category: attrs.event_category || c.sub_category || "shows",
+          is_free: minPrice === 0 && maxPrice === 0,
+          is_external: false,
+          external_source: null,
+          is_external_ticket: false,
+          external_ticket_url: null,
+          organizer_name: attrs.host_name || "Organizador da Comunidade",
+          price_min_cents: minPrice,
+          price_max_cents: maxPrice,
+          rsvp_going_count: Number(attrs.rsvp_going_count || 0),
+          rsvp_interested_count: Number(attrs.rsvp_interested_count || 0),
+          rsvp_not_going_count: Number(attrs.rsvp_not_going_count || 0),
+          created_at: c.created_at,
+          _datePart: datePart,
+        };
+      })
+      .filter((ev: any) => {
+        if (ev._datePart && ev._datePart < todayKey) return false;
+        if (opts.dateFrom && ev._datePart && ev._datePart < opts.dateFrom) return false;
+        if (opts.dateTo && ev._datePart && ev._datePart > opts.dateTo) return false;
+        if (opts.category && opts.category !== "todos") {
+          if (opts.category === "gratis" && !ev.is_free) return false;
+          if (opts.category !== "gratis" && ev.category !== opts.category) return false;
+        }
+        if (
+          opts.city &&
+          opts.city !== "todos" &&
+          opts.city !== "Todas" &&
+          opts.city !== "Global" &&
+          opts.city !== "all" &&
+          opts.city !== "Todas as Cidades"
+        ) {
+          const needle = opts.city.trim().toLowerCase();
+          const hay = ((ev.city || "") + " " + (ev.location || "")).toLowerCase();
+          if (hay.trim() && !hay.includes(needle)) return false;
+        }
+        return true;
+      });
+
+    const seenIds = new Set(baseEvents.map((e: any) => e.id));
+    for (const ce of mappedClassifieds) {
+      if (!seenIds.has(ce.id)) {
+        const { _datePart, ...cleanEv } = ce;
+        baseEvents.push(cleanEv as any);
+      }
+    }
+
+    baseEvents.sort((a: any, b: any) =>
+      String(a.event_date || "").localeCompare(String(b.event_date || "")),
+    );
+
+    return baseEvents.slice(0, limit);
   } catch (err) {
     console.warn("[events] Erro ao listar eventos:", err);
   }
@@ -1895,172 +2097,17 @@ export const getEventAuditLogs = createServerFn({ method: "GET" })
   });
 
 // ---------------------------------------------------------------------------
-// CUSTOMER TICKETS — Área Pessoal /conta/ingressos
+// CUSTOMER TICKETS — Área Pessoal /conta/ingressos & Ciclo de Vida WCTS-1
 // ---------------------------------------------------------------------------
 
-/**
- * Lista os ingressos de eventos comprados pelo usuário autenticado.
- * Usa fallback defensivo para compatibilidade com diferentes schemas.
- */
-export const listCustomerEventTickets = createServerFn({ method: "GET" }).handler(async () => {
-  try {
-    const { getSSRClient } = await import("@/lib/server-access");
-    const ssrClient = await getSSRClient();
-    const {
-      data: { user },
-    } = await ssrClient.auth.getUser();
-
-    if (!user) return [];
-
-    // 1. Busca pedidos com itens de ingresso
-    const { data: orders, error } = await ssrClient
-      .from("orders")
-      .select(
-        `id, status, created_at, total_cents,
-        order_items(id, item_type, product_title, quantity, unit_price_cents, metadata)`
-      )
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.warn("[events.functions] listCustomerEventTickets error:", error.message);
-    }
-
-    const ticketOrders = (orders || []).filter((o: any) =>
-      o.order_items?.some(
-        (i: any) =>
-          i.item_type === "ticket" ||
-          i.item_type === "event" ||
-          i.product_title?.toLowerCase().includes("ingresso")
-      )
-    );
-
-    const orderTickets: CustomerEventTicketDTO[] = ticketOrders.map((order: any) => {
-      const ticketItem = order.order_items?.find(
-        (i: any) =>
-          i.item_type === "ticket" ||
-          i.item_type === "event" ||
-          i.product_title?.toLowerCase().includes("ingresso")
-      );
-      const meta = ticketItem?.metadata || {};
-      return {
-        id: ticketItem?.id || order.id,
-        orderId: order.id,
-        eventTitle: ticketItem?.product_title || meta.event_title || "Ingresso",
-        eventDate: meta.event_date || null,
-        eventLocation: meta.event_location || meta.venue || null,
-        lotName: meta.lot_name || meta.batch || null,
-        quantity: ticketItem?.quantity || 1,
-        priceCents: order.total_cents,
-        status: order.status as string,
-        qrHash: meta.qr_hash || meta.qr_code || `W${order.id.slice(0, 8).toUpperCase()}`,
-        coverUrl: meta.event_cover_url || null,
-        isUsed: meta.is_used === true || order.status === "delivered",
-        accessCode: meta.access_code || order.id.slice(0, 8).toUpperCase(),
-        createdAt: order.created_at,
-        classifiedId: null,
-      };
-    });
-
-    // 2. Busca inscrições em eventos de classificados feitas pelo usuário autenticado
-    let classifiedTickets: CustomerEventTicketDTO[] = [];
-    try {
-      const { data: userProfile } = await ssrClient
-        .from("profiles")
-        .select("phone, email")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      const userPhone = userProfile?.phone || (user as any).phone;
-      const userEmail = userProfile?.email || user.email;
-
-      let appQuery = ssrClient
-        .from("classified_applications")
-        .select(
-          `id, classified_id, name, phone, email, candidate_role, status, created_at,
-          classified:classifieds (
-            id, title, category, location_name, images, attributes
-          )`
-        )
-        .not("candidate_role", "like", "survey_vote:%")
-        .order("created_at", { ascending: false });
-
-      if (user.id) {
-        appQuery = appQuery.or(
-          `applicant_id.eq.${user.id}${userPhone ? `,phone.eq.${userPhone}` : ""}${userEmail ? `,email.eq.${userEmail}` : ""}`
-        );
-      }
-
-      const { data: applications, error: appErr } = await appQuery;
-
-      if (!appErr && applications) {
-        classifiedTickets = applications
-          .filter((app: any) => {
-            const cat = app.classified?.category;
-            const niche = app.classified?.attributes?.niche;
-            return cat === "event" || niche === "evento";
-          })
-          .map((app: any) => {
-            const classified = app.classified;
-            const attrs = classified?.attributes || {};
-            const lotLabel = app.candidate_role?.startsWith("Ingresso: ")
-              ? app.candidate_role.replace("Ingresso: ", "")
-              : app.candidate_role || "Inscrição Confirmada";
-
-            const accessCode = `WAESY-${app.id.slice(0, 8).toUpperCase()}`;
-
-            return {
-              id: app.id,
-              orderId: app.id,
-              eventTitle: classified?.title || "Evento",
-              eventDate: attrs.event_date || null,
-              eventLocation: attrs.venue_name || classified?.location_name || null,
-              lotName: lotLabel,
-              quantity: 1,
-              priceCents: attrs.ticket_price_cents || 0,
-              status: app.status === "confirmed" ? "completed" : (app.status || "completed"),
-              qrHash: accessCode,
-              coverUrl: classified?.images?.[0] || null,
-              isUsed: app.status === "used",
-              accessCode,
-              createdAt: app.created_at,
-              classifiedId: classified?.id || app.classified_id,
-            };
-          });
-      }
-    } catch (classifiedErr) {
-      console.warn("[events.functions] classified tickets fetch notice:", classifiedErr);
-    }
-
-    const allTickets = [...orderTickets, ...classifiedTickets].sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-
-    return allTickets;
-  } catch (e) {
-    console.warn("[events.functions] listCustomerEventTickets fallback:", e);
-    return [];
-  }
-});
-
-export type CustomerEventTicketDTO = {
-  id: string;
-  orderId: string;
-  eventTitle: string;
-  eventDate: string | null;
-  eventLocation: string | null;
-  lotName: string | null;
-  quantity: number;
-  priceCents: number;
-  status: string;
-  qrHash: string;
-  coverUrl: string | null;
-  isUsed: boolean;
-  accessCode: string;
-  createdAt: string;
-  classifiedId?: string | null;
-  eventId?: string | null;
-};
+export {
+  listCustomerEventTickets,
+  getEventTicketDetails,
+  purchaseEventTicketsInstant,
+  transferEventTicket,
+  cancelEventTicket,
+  type CustomerEventTicketDTO,
+} from "./event-tickets.functions";
 
 // ---------------------------------------------------------------------------
 // EVENT CREDENTIALS (Crachás com QR Code & Acesso de Staff/VIP/Imprensa)

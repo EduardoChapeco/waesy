@@ -655,23 +655,23 @@ export function MemberPublicProfileView({
  {/* Botões de Ação & Biolinks (Banners Gráficos ou Botões Limpos) */}
  {Array.isArray(profile.biolinks) && profile.biolinks.length > 0 && (
  <div className="space-y-3 pt-2 max-w-xl">
- {/* Mini-Banners Gráficos com Imagem (16:9 Fiel e Delicado) */}
+ {/* Mini-Banners Gráficos com Imagem (3:1 Fiel e Discreto) */}
  {profile.biolinks.some((b: any) => !!b.imageUrl) && (
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md">
  {profile.biolinks.filter((b: any) => !!b.imageUrl).map((link: any, idx: number) => (
  <a
  key={link.id || idx}
  href={link.url}
  target="_blank"
  rel="noopener noreferrer"
- className="block w-full aspect-video rounded-lg overflow-hidden border border-border/60 relative group hover:border-border transition-colors motion-reduce:transition-none select-none"
+ className="block w-full aspect-[3/1] rounded-lg overflow-hidden border border-border/60 relative group hover:border-border transition-colors motion-reduce:transition-none select-none"
  >
  <img
  src={link.imageUrl}
  alt={link.label || "Banner"}
  className="size-full object-cover group-hover:scale-102 transition-transform duration-300"
  />
- <div className="absolute inset-0 bg-background/80 from-black/75 via-black/25 to-transparent flex flex-col justify-end p-3">
+ <div className="absolute inset-0 bg-background/80 from-black/75 via-black/25 to-transparent flex flex-col justify-end p-2">
  <span className="text-xs font-bold text-primary-foreground break-words text-wrap leading-tight flex items-center justify-between gap-1">
  <span>{link.label || link.title || "Acessar"}</span>
  <ExternalLink className="size-3 text-primary-foreground/80 shrink-0" />
@@ -702,21 +702,21 @@ export function MemberPublicProfileView({
   </div>
 )}
 
- {/* Mini-Banner de Destaque Delicado & Proporcional (16:9 Fiel ao Recorte) */}
+ {/* Mini-Banner de Destaque Delicado & Proporcional (3:1 Fiel ao Recorte) */}
  {profile.featured_banner_url && (
- <div className="pt-2 max-w-xs sm:max-w-sm">
+ <div className="pt-2 max-w-56 sm:max-w-64">
  <a
  href={profile.featured_banner_link || "#"}
  target={profile.featured_banner_link ? "_blank" : undefined}
  rel="noopener noreferrer"
- className="block w-full aspect-video rounded-lg overflow-hidden border border-border/60 relative group select-none hover:border-border transition-colors motion-reduce:transition-none"
+ className="block w-full aspect-[3/1] rounded-lg overflow-hidden border border-border/60 relative group select-none hover:border-border transition-colors motion-reduce:transition-none"
  >
  <img
  src={profile.featured_banner_url}
  alt="Destaque"
  className="size-full object-cover group-hover:scale-102 transition-transform duration-300"
  />
- <div className="absolute inset-0 bg-background/80 from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
+ <div className="absolute inset-0 bg-background/80 from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
  <span className="text-xs font-bold text-primary-foreground flex items-center gap-1">
  <span>Acessar</span>
  <ExternalLink className="size-3" />

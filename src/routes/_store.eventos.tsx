@@ -578,9 +578,15 @@ function EventosPage() {
       {/* ── Cabeçalho Inpage Desktop (Apple HIG) ── */}
       <div className="hidden md:flex items-center justify-between pt-4 pb-3 border-b border-border/40">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">Eventos & Agenda Cultural</h1>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">Eventos e Agenda Cultural</h1>
           <p className="text-xs text-muted-foreground mt-1">Shows, festivais, palestras e atrações na sua cidade e região</p>
         </div>
+        <Button asChild className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+          <Link to="/conta/classificados/novo" search={{ tipo: "evento" }}>
+            <CalendarDots size={16} weight="bold" className="mr-2" />
+            <span>Criar Evento</span>
+          </Link>
+        </Button>
       </div>
       <div className="space-y-4 pt-2 sm:pt-4">
       {/* ── 1. Top Universal Banner Hero Carousel (Canônico & Editável no Admin) ── */}
@@ -725,8 +731,8 @@ function EventosPage() {
           <h2 className="text-sm font-semibold text-foreground">
             Nenhum evento encontrado
           </h2>
-          {(selectedDateFilter !== "all" || selectedCategory !== "todos" || searchQuery.trim()) && (
-            <div className="pt-2">
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+            {(selectedDateFilter !== "all" || selectedCategory !== "todos" || searchQuery.trim()) && (
               <Button
                 variant="outline"
                 size="sm"
@@ -735,12 +741,23 @@ function EventosPage() {
                   setSelectedCategory("todos");
                   setSearchQuery("");
                 }}
-                className="rounded-lg text-xs font-semibold h-11 px-4 cursor-pointer focus-visible:ring-2"
+                className="rounded-lg text-xs font-semibold h-11 min-h-11 px-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 Limpar filtros
               </Button>
-            </div>
-          )}
+            )}
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="rounded-lg text-xs font-bold h-11 min-h-11 px-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <Link to="/conta/classificados/novo" search={{ tipo: "evento" }}>
+                <CalendarDots size={16} weight="bold" className="mr-2" />
+                <span>Criar Evento</span>
+              </Link>
+            </Button>
+          </div>
         </div>
       )}
 

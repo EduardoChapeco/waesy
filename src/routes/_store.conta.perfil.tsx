@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { useState, useRef } from "react";
-import { getProfile, updateProfile, requestAccountDeletion } from "@/services/auth.functions";
+import { useState, useRef, useEffect } from "react";
+import { getProfile, updateProfile, requestAccountDeletion, checkHandleAvailability } from "@/services/auth.functions";
+import { validateCpfMod11, cleanDocument, validateBirthDate } from "@/lib/document-validator";
 import { uploadProfileMediaDirect } from "@/services/storage.functions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { User, Camera, ExternalLink, Loader2, Image as ImageIcon, Trash2, Check, Briefcase, Link as LinkIcon, ShieldCheck, Eye, EyeOff, Building2, ShieldAlert, Phone, Calendar, Lock, Plus, Sparkles, Info } from "lucide-react";
+import { User, Camera, ExternalLink, Loader2, Image as ImageIcon, Trash2, Check, Briefcase, Link as LinkIcon, ShieldCheck, Eye, EyeOff, Building2, ShieldAlert, Phone, Calendar, Lock, Plus, Sparkles, Info, CheckCircle2, AlertCircle } from "lucide-react";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Switch } from "@/components/ui/switch";
 import { ProfessionalResumeEditor, ResumeDataDTO } from "@/components/profile/professional-resume-editor";
@@ -83,22 +84,24 @@ function ProfileCivilPage() {
 
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
-  const biolinkImageInputRef = useRef<HTMLInputElement>(null);
 
   // Estados de Recorte de Imagem (1:1 Avatar, 21:9 Capa)
   const [cropperOpen, setCropperOpen] = useState(false);
   const [cropperSrc, setCropperSrc] = useState<string | null>(null);
   const [cropperType, setCropperType] = useState<"avatar" | "cover">("avatar");
   const [isUploadingMedia, setIsUploadingMedia] = useState(false);
-  const [isUploadingBiolinkImage, setIsUploadingBiolinkImage] = useState(false);
 
   const initialResume = profile?.resume_data || {};
+  const isCpfLocked = Boolean(profile?.cpf && cleanDocument(profile.cpf).length === 11);
+  const isBirthDateLocked = Boolean(profile?.birthDate || profile?.birth_date);
+  const isProfileVerified = Boolean(profile?.isVerified || profile?.is_verified);
+
   const [formData, setFormData] = useState({
     fullName: profile?.fullName || "",
     username:
       profile?.username ||
-      (profile?.email ? profile.email.split("@")[0].toLowerCase().replace(/[^a-z0-9._]/g, "") : "") ||
-      (profile?.fullName ? profile.fullName.toLowerCase().replace(/\s+/g, ".").replace(/[^a-z0-9._]/g, "") : "") ||
+      (profile?.email ? profile.email.split("@")[0].toLowerCase().replace(/[^a-z0-9_]/g, "") : "") ||
+      (profile?.fullName ? profile.fullName.toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, "") : "") ||
       "",
     phone: profile?.phone ? maskPhone(profile.phone) : "",
     avatarUrl: profile?.avatarUrl || profile?.avatar_url || "",
@@ -118,6 +121,69 @@ function ProfileCivilPage() {
     featuredBannerUrl: profile?.featured_banner_url || profile?.featuredBannerUrl || "",
     featuredBannerLink: profile?.featured_banner_link || profile?.featuredBannerLink || "",
   });
+
+  const cleanInputCpf = cleanDocument(formData?.cpf);
+  const isCpfComplete = cleanInputCpf.length === 11;
+  const isCpfValid = isCpfComplete ? validateCpfMod11(cleanInputCpf) : null;
+
+  // Governança de Handle (@username), Quarentena de 30 Dias e Sugestões em Tempo Real
+  const [isCheckingHandle, setIsCheckingHandle] = useState(false);
+  const [handleStatus, setHandleStatus] = useState<{
+    available: boolean;
+    normalized?: string;
+    reason?: string;
+    isCurrent?: boolean;
+    isRestorable?: boolean;
+    isQuarantined?: boolean;
+    daysRemaining?: number;
+    suggestions?: string[];
+  } | null>(null);
+  const [handleSuggestions, setHandleSuggestions] = useState<string[]>([]);
+
+  useEffect(() => {
+    const rawInput = (formData.username || "").trim();
+    const cleanInput = rawInput.replace(/^@/, "").toLowerCase().replace(/[^a-z0-9_]/g, "");
+    const initialClean = (profile?.username || "").toLowerCase().trim();
+
+    if (!cleanInput) {
+      setHandleStatus(null);
+      setHandleSuggestions([]);
+      return;
+    }
+
+    if (initialClean && cleanInput === initialClean) {
+      setHandleStatus({
+        available: true,
+        normalized: cleanInput,
+        isCurrent: true,
+        reason: "Este já é o seu identificador (@) atual.",
+        suggestions: [],
+      });
+      setHandleSuggestions([]);
+      return;
+    }
+
+    setIsCheckingHandle(true);
+    const timer = setTimeout(async () => {
+      try {
+        const res = await checkHandleAvailability({
+          data: {
+            handle: cleanInput,
+            fullName: formData.fullName,
+            profileId: profile?.id,
+          },
+        });
+        setHandleStatus(res);
+        setHandleSuggestions(res?.suggestions || []);
+      } catch (err) {
+        console.warn("[perfil] Erro na verificação do @:", err);
+      } finally {
+        setIsCheckingHandle(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [formData.username, formData.fullName, profile?.username, profile?.id]);
 
   // Perfil Profissional / Currículo (Padrão Executivo Waesy)
   const [resumeData, setResumeData] = useState<ResumeDataDTO>({
@@ -211,37 +277,6 @@ function ProfileCivilPage() {
     e.target.value = "";
   };
 
-  const handleBiolinkImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setIsUploadingBiolinkImage(true);
-    try {
-      const base64Data = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-
-      const res = await uploadProfileMediaDirect({
-        data: {
-          fileName: `biolink_${Date.now()}.${file.name.split(".").pop() || "png"}`,
-          fileType: file.type || "image/png",
-          base64Data,
-          target: "biolink_banner",
-        },
-      });
-
-      setNewLinkImage(res.publicUrl);
-      toast.success("Imagem de fundo do link enviada com sucesso!");
-    } catch (err: unknown) {
-      toast.error((err instanceof Error ? err.message : String(err)) || "Erro no upload do banner.");
-    } finally {
-      setIsUploadingBiolinkImage(false);
-      e.target.value = "";
-    }
-  };
-
   const handleCropComplete = async (croppedBlob: Blob) => {
     setCropperOpen(false);
     setIsUploadingMedia(true);
@@ -281,6 +316,24 @@ function ProfileCivilPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
+
+    if (!isCpfLocked && formData.cpf) {
+      const cleanDigits = cleanDocument(formData.cpf);
+      if (cleanDigits.length > 0) {
+        if (!validateCpfMod11(cleanDigits)) {
+          toast.error("O CPF informado é inválido conforme o algoritmo oficial (Módulo 11) da Receita Federal.");
+          return;
+        }
+      }
+    }
+
+    if (!isBirthDateLocked && formData.birthDate) {
+      const birthCheck = validateBirthDate(formData.birthDate, { minAge: 0, maxAge: 125 });
+      if (!birthCheck.isValid) {
+        toast.error(birthCheck.error || "Data de nascimento civil inválida.");
+        return;
+      }
+    }
 
     const cleanUser = formData.username.trim().toLowerCase().replace(/[^a-z0-9_]/g, "");
     if (!cleanUser || cleanUser.length < 3) {
@@ -557,17 +610,17 @@ function ProfileCivilPage() {
                   />
                 </div>
 
-                {/* Capa Panorâmica Canônica 21:9 ao lado */}
-                <div className="flex-1 min-w-0 h-20 sm:h-28 md:h-32 rounded-lg bg-muted/20 relative overflow-hidden flex items-center group border border-border/40">
+                {/* Mini-Banner Discreto Canônico 3:1 */}
+                <div className="flex-1 min-w-0 h-16 sm:h-20 rounded-lg bg-muted/20 relative overflow-hidden flex items-center group border border-border/40">
                   {formData.coverUrl ? (
                     <img
                       src={formData.coverUrl}
-                      alt="Capa do Perfil"
+                      alt="Mini-Banner do Perfil"
                       className="size-full object-cover select-none"
                     />
                   ) : (
-                    <div className="size-full bg-gradient-to-r from-primary/10 via-muted/40 to-primary/15 flex items-center justify-center text-muted-foreground p-3 text-center">
-                      <span className="text-xs font-medium">Sem imagem de capa (Proporção 21:9)</span>
+                    <div className="size-full bg-muted/40 flex items-center justify-center text-muted-foreground p-3 text-center">
+                      <span className="text-xs font-medium">Sem banner (Proporção 3:1 Compacta & Discreta)</span>
                     </div>
                   )}
 
@@ -575,11 +628,11 @@ function ProfileCivilPage() {
                     type="button"
                     onClick={() => coverInputRef.current?.click()}
                     disabled={isUploadingMedia}
-                    className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 bg-background/85 hover:bg-background backdrop-blur-md border border-border/80 text-foreground px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs transition-transform active:scale-95"
-                    title="Alterar Capa (21:9)"
+                    className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 bg-background/85 hover:bg-background backdrop-blur-md border border-border/80 text-foreground px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs transition-transform active:scale-95"
+                    title="Alterar Banner (3:1)"
                   >
                     <Camera className="size-3.5" />
-                    <span className="hidden sm:inline">Alterar Capa (21:9)</span>
+                    <span className="hidden sm:inline">Banner (3:1)</span>
                   </button>
                   <input
                     ref={coverInputRef}
@@ -613,18 +666,60 @@ function ProfileCivilPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-xs font-semibold text-foreground">Nome Completo *</Label>
+                  <div className="flex items-center justify-between gap-2">
+                    <Label className="text-xs font-semibold text-foreground">Nome Completo *</Label>
+                    {isProfileVerified && (
+                      <Badge variant="outline" className="gap-1 text-xs font-medium border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">
+                        <ShieldCheck className="size-3" /> Verificado Oficial (KYC)
+                      </Badge>
+                    )}
+                  </div>
                   <Input
                     required
                     value={formData.fullName}
                     onChange={(e) => set("fullName", e.target.value)}
+                    disabled={isProfileVerified}
+                    readOnly={isProfileVerified}
                     placeholder="Seu nome completo"
-                    className="h-11 rounded-lg text-base sm:text-xs bg-background"
+                    className={cn(
+                      "h-11 rounded-lg text-base sm:text-xs bg-background",
+                      isProfileVerified && "bg-muted/50 text-muted-foreground cursor-not-allowed opacity-90 border-dashed"
+                    )}
                   />
+                  {isProfileVerified && (
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Lock className="size-3 text-muted-foreground shrink-0" />
+                      <span>Nome oficial verificado por documento. Para retificação, contate a ouvidoria com nova comprovação.</span>
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-xs font-semibold text-foreground">Nome de Usuário (@) *</Label>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-semibold text-foreground">Nome de Usuário (@) *</Label>
+                    {isCheckingHandle ? (
+                      <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                        <Loader2 className="size-3 animate-spin text-primary" />
+                        <span>Verificando @...</span>
+                      </span>
+                    ) : handleStatus?.isCurrent ? (
+                      <span className="flex items-center gap-1 text-xs font-semibold text-primary">
+                        <CheckCircle2 className="size-3" />
+                        <span>Seu @ atual</span>
+                      </span>
+                    ) : handleStatus?.available ? (
+                      <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                        <CheckCircle2 className="size-3" />
+                        <span>Disponível</span>
+                      </span>
+                    ) : handleStatus && !handleStatus.available ? (
+                      <span className="flex items-center gap-1 text-xs font-semibold text-rose-600 dark:text-rose-400">
+                        <AlertCircle className="size-3" />
+                        <span>Indisponível</span>
+                      </span>
+                    ) : null}
+                  </div>
+
                   <div className="relative flex items-center">
                     <span className="absolute left-3 text-xs font-mono font-bold text-primary select-none">@</span>
                     <Input
@@ -632,31 +727,130 @@ function ProfileCivilPage() {
                       value={formData.username}
                       onChange={(e) => set("username", e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
                       placeholder="seunome"
-                      className="h-11 rounded-lg text-base sm:text-xs pl-7 font-mono font-semibold bg-background"
+                      className={cn(
+                        "h-11 min-h-11 rounded-lg text-base sm:text-xs pl-7 pr-10 font-mono font-semibold bg-background",
+                        handleStatus && !handleStatus.available && !handleStatus.isCurrent && "border-rose-500 focus-visible:ring-rose-500",
+                        handleStatus?.available && !handleStatus.isCurrent && "border-emerald-500 focus-visible:ring-emerald-500",
+                      )}
                     />
+                    <div className="absolute right-3 flex items-center pointer-events-none">
+                      {isCheckingHandle && <Loader2 className="size-4 animate-spin text-muted-foreground" />}
+                      {!isCheckingHandle && handleStatus?.isCurrent && (
+                        <CheckCircle2 className="size-4 text-primary" />
+                      )}
+                      {!isCheckingHandle && handleStatus?.available && !handleStatus.isCurrent && (
+                        <CheckCircle2 className="size-4 text-emerald-500" />
+                      )}
+                      {!isCheckingHandle && handleStatus && !handleStatus.available && (
+                        <AlertCircle className="size-4 text-rose-500" />
+                      )}
+                    </div>
                   </div>
-                  <p className="text-[10px] text-muted-foreground">
-                    Seu identificador único na rede comunitária.
-                  </p>
+
+                  {/* Mensagem descritiva de status */}
+                  {handleStatus?.reason && !handleStatus.isCurrent && (
+                    <p
+                      className={cn(
+                        "text-xs font-medium leading-tight",
+                        handleStatus.available
+                          ? "text-emerald-600 dark:text-emerald-400"
+                          : handleStatus.isQuarantined
+                          ? "text-amber-600 dark:text-amber-400"
+                          : "text-rose-600 dark:text-rose-400",
+                      )}
+                    >
+                      {handleStatus.reason}
+                    </p>
+                  )}
+
+                  {/* 5 Sugestões Atômicas Clicáveis */}
+                  {handleSuggestions.length > 0 && (
+                    <div className="space-y-2 pt-1">
+                      <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
+                        <Sparkles className="size-3 text-primary" />
+                        <span>Sugestões disponíveis para você:</span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {handleSuggestions.map((sug) => (
+                          <button
+                            key={sug}
+                            type="button"
+                            onClick={() => set("username", sug)}
+                            className="inline-flex items-center gap-2 h-11 min-h-11 px-4 text-xs font-mono font-medium rounded-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          >
+                            <span>@{sug}</span>
+                            <Check className="size-3" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Card Institucional de Governança e Quarentena de 30 Dias */}
+                  <div className="p-4 rounded-lg border border-border/70 bg-muted/30 space-y-2 text-muted-foreground">
+                    <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
+                      <ShieldCheck className="size-4 text-primary" />
+                      <span>Governança do @ e Proteção de 30 Dias</span>
+                    </div>
+                    <p className="text-xs leading-relaxed">
+                      Seu @ é seu identificador único na rede comunitária para login, menções e recibos.
+                      Caso você o altere, seu @ anterior permanecerá <strong>congelado e reservado exclusivamente para você por 30 dias</strong> (impedindo apropriação ou venda de identificadores por terceiros).
+                    </p>
+                  </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                {/* CPF com Máscara e Validação */}
+                {/* CPF com Máscara e Validação Oficial Módulo 11 */}
                 <div className="space-y-2">
-                  <Label className="text-xs font-semibold text-foreground">
-                    <span>CPF (Pessoa Física)</span>
-                  </Label>
+                  <div className="flex items-center justify-between gap-2">
+                    <Label className="text-xs font-semibold text-foreground flex items-center gap-1">
+                      <span>CPF (Pessoa Física)</span>
+                    </Label>
+                    {isCpfLocked ? (
+                      <Badge variant="outline" className="gap-1 text-xs font-medium border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">
+                        <Lock className="size-3" /> Dado Civil Imutável
+                      </Badge>
+                    ) : isCpfComplete ? (
+                      isCpfValid ? (
+                        <Badge variant="outline" className="gap-1 text-xs font-medium border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">
+                          <CheckCircle2 className="size-3" /> Módulo 11 Válido
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="gap-1 text-xs font-medium border-rose-500/30 text-rose-600 dark:text-rose-400 bg-rose-500/10">
+                          <AlertCircle className="size-3" /> CPF Inválido
+                        </Badge>
+                      )
+                    ) : null}
+                  </div>
                   <Input
                     value={formData.cpf}
                     onChange={(e) => set("cpf", maskCpf(e.target.value))}
+                    disabled={isCpfLocked}
+                    readOnly={isCpfLocked}
                     placeholder="000.000.000-00"
                     maxLength={14}
-                    className="h-11 rounded-lg text-base sm:text-xs font-mono bg-background"
+                    className={cn(
+                      "h-11 rounded-lg text-base sm:text-xs font-mono bg-background",
+                      isCpfLocked && "bg-muted/50 text-muted-foreground cursor-not-allowed opacity-90 select-all border-dashed",
+                      !isCpfLocked && isCpfComplete && !isCpfValid && "border-rose-500 focus-visible:ring-rose-500"
+                    )}
                   />
-                  <p className="text-[10px] text-muted-foreground">
-                    Necessário para emissão de notas fiscais, ingressos nominais e assinatura de contratos.
-                  </p>
+                  {isCpfLocked ? (
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Lock className="size-3 text-muted-foreground shrink-0" />
+                      <span>Documento oficial vinculado à sua conta civil única. Para retificações judiciais, contate o suporte.</span>
+                    </p>
+                  ) : isCpfComplete && !isCpfValid ? (
+                    <p className="text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                      <AlertCircle className="size-3 text-rose-600 dark:text-rose-400 shrink-0" />
+                      <span>Dígitos verificadores do CPF inválidos pela Receita Federal.</span>
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      Necessário para emissão de notas fiscais, ingressos nominais e assinatura de contratos.
+                    </p>
+                  )}
                 </div>
 
                 {/* Telefone / WhatsApp */}
@@ -672,7 +866,7 @@ function ProfileCivilPage() {
                     maxLength={15}
                     className="h-11 rounded-lg text-base sm:text-xs font-mono bg-background"
                   />
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Para confirmação de entregas e códigos de verificação em dois fatores.
                   </p>
                 </div>
@@ -681,16 +875,38 @@ function ProfileCivilPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                 {/* Data de Nascimento */}
                 <div className="space-y-2">
-                  <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
-                    <Calendar className="size-3 text-primary" />
-                    <span>Data de Nascimento</span>
-                  </Label>
+                  <div className="flex items-center justify-between gap-2">
+                    <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
+                      <Calendar className="size-3 text-primary" />
+                      <span>Data de Nascimento</span>
+                    </Label>
+                    {isBirthDateLocked && (
+                      <Badge variant="outline" className="gap-1 text-xs font-medium border-muted-foreground/30 text-muted-foreground bg-muted/20">
+                        <Lock className="size-3" /> Registro Civil Bloqueado
+                      </Badge>
+                    )}
+                  </div>
                   <Input
                     type="date"
                     value={formData.birthDate}
                     onChange={(e) => set("birthDate", e.target.value)}
-                    className="h-11 rounded-lg text-base sm:text-xs bg-background"
+                    disabled={isBirthDateLocked}
+                    readOnly={isBirthDateLocked}
+                    className={cn(
+                      "h-11 rounded-lg text-base sm:text-xs bg-background",
+                      isBirthDateLocked && "bg-muted/50 text-muted-foreground cursor-not-allowed opacity-90 border-dashed"
+                    )}
                   />
+                  {isBirthDateLocked ? (
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Lock className="size-3 text-muted-foreground shrink-0" />
+                      <span>Data de nascimento confirmada no registro civil. Não pode ser alterada na interface.</span>
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      Utilizada para verificação de maioridade legal e segurança de transações financeiras.
+                    </p>
+                  )}
                 </div>
 
                 {/* Gênero */}
@@ -856,49 +1072,20 @@ function ProfileCivilPage() {
 
               <div className="space-y-2">
                 <Label className="text-xs font-semibold text-foreground">
-                  Imagem de Fundo / Banner do Botão (Opcional - Proporção 21:9)
+                  Mini-Banner do Botão (Opcional - Proporção 3:1 Discreto)
                 </Label>
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                  {newLinkImage ? (
-                    <div className="relative h-14 w-32 rounded-lg overflow-hidden border border-border/60 bg-muted shrink-0 group">
-                      <img src={newLinkImage} alt="Banner" className="size-full object-cover" />
-                      <button
-                        type="button"
-                        onClick={() => setNewLinkImage("")}
-                        className="absolute inset-0 bg-black/60 text-white flex items-center justify-center text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                      >
-                        Remover
-                      </button>
-                    </div>
-                  ) : null}
-                  <div className="flex-1 flex items-center gap-2">
-                    <Input
-                      value={newLinkImage}
-                      onChange={(e) => setNewLinkImage(e.target.value)}
-                      placeholder="Cole o endereço da imagem ou envie do seu dispositivo..."
-                      className="h-11 rounded-lg text-base sm:text-xs bg-background font-mono flex-1"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      disabled={isUploadingBiolinkImage}
-                      onClick={() => biolinkImageInputRef.current?.click()}
-                      className="h-11 px-4 rounded-lg text-xs font-semibold shrink-0 cursor-pointer gap-2"
-                    >
-                      <Camera className="size-3.5" />
-                      <span>{isUploadingBiolinkImage ? "Enviando..." : "Enviar Imagem"}</span>
-                    </Button>
-                    <input
-                      ref={biolinkImageInputRef}
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleBiolinkImageUpload}
-                    />
-                  </div>
+                <div className="max-w-md">
+                  <ImageUpload
+                    value={newLinkImage}
+                    onChange={(url) => setNewLinkImage(url)}
+                    onRemove={() => setNewLinkImage("")}
+                    aspectPreset="compact_banner"
+                    bucket="banners"
+                    helperText="Mini-banner discreto para destacar o link (3:1)"
+                  />
                 </div>
-                <p className="text-[10px] text-muted-foreground">
-                  Se adicionada, o link será exibido como um card visual destacado no topo do perfil público.
+                <p className="text-xs text-muted-foreground">
+                  Se adicionada, o link será exibido como um card visual compacto no perfil público.
                 </p>
               </div>
 
@@ -1000,26 +1187,26 @@ function ProfileCivilPage() {
                   <Sparkles className="size-4 text-primary shrink-0" />
                   <span>Banner de Destaque / Evento</span>
                 </div>
-                <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary">
-                  Panorâmico 21:9
+                <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary">
+                  Discreto 3:1
                 </Badge>
               </div>
 
               <div className="space-y-3">
                 <p className="text-xs text-muted-foreground">
-                  Exibido em posição nobre abaixo da sua bio no perfil público, ideal para divulgar uma campanha, evento, portfólio ou comunicado especial.
+                  Exibido em posição nobre abaixo da sua bio no perfil público, ideal para divulgar uma campanha, evento, portfólio ou comunicado especial de forma compacta e discreta.
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
                   <div className="space-y-1">
-                    <Label className="text-xs font-semibold text-foreground">Imagem do Banner (21:9)</Label>
+                    <Label className="text-xs font-semibold text-foreground">Imagem do Banner (3:1 Discreto)</Label>
                     <ImageUpload
                       value={formData.featuredBannerUrl}
                       onChange={(url) => set("featuredBannerUrl", url)}
                       onRemove={() => set("featuredBannerUrl", "")}
-                      aspectPreset="banner"
+                      aspectPreset="compact_banner"
                       bucket="banners"
-                      helperText="Banner promocional oficial (21:9)"
+                      helperText="Mini-banner promocional discreto (3:1)"
                     />
                   </div>
                   <div className="space-y-3">
@@ -1035,7 +1222,7 @@ function ProfileCivilPage() {
                     {formData.featuredBannerUrl && (
                       <div className="p-3 rounded-lg bg-muted/20 border border-border/50 text-xs text-muted-foreground space-y-1">
                         <p className="font-semibold text-foreground">Banner Configurado</p>
-                        <p className="text-[11px]">Salve o perfil para que este banner passe a aparecer na sua página pública.</p>
+                        <p className="text-xs">Salve o perfil para que este banner passe a aparecer na sua página pública.</p>
                       </div>
                     )}
                   </div>
@@ -1044,36 +1231,36 @@ function ProfileCivilPage() {
             </div>
 
             {/* Prévia Fiel ao Perfil Público */}
-            {biolinks.length > 0 && (
+            {(biolinks.length > 0 || formData.featuredBannerUrl) && (
               <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
                 <div className="flex items-center justify-between pb-3 border-b border-border/40">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <Eye className="size-4 text-primary shrink-0" />
                     <span>Prévia</span>
                   </div>
-                  <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary">
+                  <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary">
                     Visualização Pública
                   </Badge>
                 </div>
 
-                <div className="p-4 rounded-lg bg-muted/20 border border-border/40 space-y-3">
-                  {/* Banners 16:9 */}
+                <div className="p-4 rounded-lg bg-muted/20 border border-border/40 space-y-3 max-w-xl">
+                  {/* Banners 3:1 */}
                   {biolinks.some((b) => !!b.imageUrl) && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md">
                       {biolinks.filter((b) => !!b.imageUrl).map((link, idx) => (
                         <div
                           key={link.id || idx}
-                          className="block w-full aspect-video rounded-lg overflow-hidden border border-border/60 relative select-none"
+                          className="block w-full aspect-[3/1] rounded-lg overflow-hidden border border-border/60 relative select-none"
                         >
                           <img
                             src={link.imageUrl}
                             alt={link.label}
                             className="size-full object-cover"
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent flex flex-col justify-end p-3">
-                            <span className="text-xs font-bold text-white truncate flex items-center justify-between gap-1">
+                          <div className="absolute inset-0 bg-background/80 from-black/75 via-black/25 to-transparent flex flex-col justify-end p-2">
+                            <span className="text-xs font-bold text-primary-foreground truncate flex items-center justify-between gap-1">
                               <span>{link.label || link.title}</span>
-                              <ExternalLink className="size-3 text-white/80 shrink-0" />
+                              <ExternalLink className="size-3 text-primary-foreground/80 shrink-0" />
                             </span>
                           </div>
                         </div>
@@ -1087,12 +1274,31 @@ function ProfileCivilPage() {
                       {biolinks.filter((b) => !b.imageUrl).map((link, idx) => (
                         <div
                           key={link.id || idx}
-                          className="inline-flex items-center gap-2 h-8 px-3 rounded-lg text-xs font-semibold shrink-0 bg-transparent text-foreground border border-border/50"
+                          className="inline-flex items-center gap-2 h-11 min-h-11 px-3 rounded-lg text-xs font-semibold shrink-0 bg-transparent text-foreground border border-border/50"
                         >
                           <span>{link.label || link.title}</span>
                           <ExternalLink className="size-3 text-muted-foreground" />
                         </div>
                       ))}
+                    </div>
+                  )}
+
+                  {/* Mini-Banner de Destaque na Prévia */}
+                  {formData.featuredBannerUrl && (
+                    <div className="pt-2 max-w-56 sm:max-w-64">
+                      <div className="block w-full aspect-[3/1] rounded-lg overflow-hidden border border-border/60 relative select-none">
+                        <img
+                          src={formData.featuredBannerUrl}
+                          alt="Destaque"
+                          className="size-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-background/80 from-black/60 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity flex items-end p-2">
+                          <span className="text-xs font-bold text-primary-foreground flex items-center gap-1">
+                            <span>Acessar</span>
+                            <ExternalLink className="size-3" />
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -1318,13 +1524,13 @@ function ProfileCivilPage() {
             if (!v) setCropperOpen(false);
           }}
           imageSrc={cropperSrc}
-          aspect={cropperType === "avatar" ? 1 : 21 / 9}
+          aspect={cropperType === "avatar" ? 1 : 3}
           cropShape="rect"
           lockAspect={true}
           title={
             cropperType === "avatar"
               ? "Recortar Foto de Perfil (1:1)"
-              : "Recortar Capa do Perfil (Panorâmica 21:9)"
+              : "Recortar Banner do Perfil (Proporção 3:1 Discreta)"
           }
           onCropComplete={handleCropComplete}
         />
