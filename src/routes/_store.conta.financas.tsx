@@ -323,7 +323,7 @@ function PersonalFinancePage() {
         });
 
         toast.success("Transferência realizada com sucesso!");
-        setActiveReceipt(result.receipt);
+        setActiveReceipt(result.receipt ?? null);
         setIsTransferOpen(false);
         setTransferAmountStr("");
         setTransferRecipientId("");
