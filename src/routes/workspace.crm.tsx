@@ -221,7 +221,7 @@ export default function WorkspaceCrmPage() {
             activeTab === "clientes"
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-          }`}
+          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
         >
           <Users className="size-3.5" />
           <span>Clientes</span>
@@ -234,7 +234,7 @@ export default function WorkspaceCrmPage() {
             activeTab === "funil"
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-          }`}
+          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
         >
           <Kanban className="size-3.5" />
           <span>Funil de Vendas</span>
@@ -247,7 +247,7 @@ export default function WorkspaceCrmPage() {
             activeTab === "personas"
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-          }`}
+          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
         >
           <Brain className="size-3.5" />
           <span>Personas</span>
@@ -355,7 +355,7 @@ export default function WorkspaceCrmPage() {
             <button
               type="button"
               onClick={() => setSearch("")}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               title="Limpar busca"
             >
               <X className="size-3.5" />

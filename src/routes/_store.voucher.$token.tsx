@@ -249,7 +249,7 @@ function PublicTravelVoucherPage() {
           <button
             type="button"
             onClick={() => setViewMode("stories")}
-            className={cn(
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer",
               viewMode === "stories"
                 ? "bg-background text-foreground shadow-xs"
@@ -262,7 +262,7 @@ function PublicTravelVoucherPage() {
           <button
             type="button"
             onClick={() => setViewMode("a4")}
-            className={cn(
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer",
               viewMode === "a4"
                 ? "bg-background text-foreground shadow-xs"

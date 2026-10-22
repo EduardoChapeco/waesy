@@ -100,6 +100,42 @@ describe("calculateSaleFinancials — 8-Block Travel Agency Financial Engine", (
     expect(result.agency_revenue_cents).toBe(60_000);
     expect(result.net_result_cents).toBe(60_000);
   });
+
+  it("handles Scenario B: Direct counter cash commission (no operator invoice required)", () => {
+    // Cliente pagou R$ 1.500 de comissão + over no balcão (Pix da loja)
+    const result = calculateSaleFinancials({
+      gross_sale_cents: 1000_000, // R$ 10.000
+      non_commissionable_cents_direct: 100_000,
+      commission_mode: "amount",
+      commission_amount_cents: 100_000, // R$ 1.000 comissão
+      over_gross_cents: 50_000, // R$ 500 over
+      over_deductions: [],
+      settlement_method: "comissao_balcao_a_vista",
+    });
+
+    expect(result.agency_revenue_cents).toBe(150_000); // R$ 1.500
+    expect(result.retained_cash_amount_cents).toBe(150_000); // Retido 100% no balcão
+    expect(result.operator_balance_cents).toBe(0); // Quitado com a operadora
+    expect(result.is_cash_settled).toBe(true);
+    expect(result.requires_operator_invoice).toBe(false); // NÃO emite NF para a operadora
+  });
+
+  it("handles Scenario C: Negative operator balance due to excessive cash retention (future invoice offset)", () => {
+    // Agência reteve R$ 2.000 no caixa, mas sua comissão legítima era de apenas R$ 1.200
+    // Ficou devendo R$ 800 para a operadora (saldo negativo para abater em faturas futuras)
+    const result = calculateSaleFinancials({
+      gross_sale_cents: 1000_000,
+      commission_mode: "amount",
+      commission_amount_cents: 120_000, // R$ 1.200 comissão
+      retained_cash_amount_cents: 200_000, // R$ 2.000 retidos no balcão
+      settlement_method: "fatura_abatida",
+    });
+
+    expect(result.agency_revenue_cents).toBe(120_000);
+    expect(result.retained_cash_amount_cents).toBe(200_000);
+    expect(result.operator_balance_cents).toBe(-80_000); // Saldo devedor: -R$ 800,00
+    expect(result.requires_operator_invoice).toBe(false); // Saldo negativo, nada a receber da operadora
+  });
 });
 
 describe("resolveClassifiedDetailedSpecs — Anti-Leakage Guard for Travel & Non-Food Niches", () => {

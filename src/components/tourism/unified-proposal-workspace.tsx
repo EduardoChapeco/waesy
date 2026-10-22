@@ -1414,7 +1414,7 @@ export function UnifiedProposalWorkspace({
                             setIsHotelDropdownOpen(false);
                             toast.success(`Hotel "${h.name}" selecionado!`);
                           }}
-                          className="w-full h-11 min-h-11 px-3 text-xs text-left hover:bg-muted/60 flex items-center justify-between border-b border-border/20 last:border-0"
+                          className="w-full h-11 min-h-11 px-3 text-xs text-left hover:bg-muted/60 flex items-center justify-between border-b border-border/20 last:border-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           <span className="font-semibold text-foreground truncate">{h.name}</span>
                           <span className="text-[11px] text-muted-foreground">{h.city} · {h.stars}★</span>

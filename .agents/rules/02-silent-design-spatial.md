@@ -1,6 +1,6 @@
 ---
 description: Regras de Design Silencioso, Spatial UI e Erradicação de AI-Smell
-globs: ["src/components/**", "src/routes/**", "src/styles.css"]
+globs: "src/components/**,src/routes/**,src/styles.css"
 ---
 
 # 02 — Design Silencioso & Spatial UI (Waesy Standard)

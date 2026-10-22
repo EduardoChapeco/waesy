@@ -176,6 +176,32 @@ Retorne ESTRITAMENTE um JSON compatível com o schema OperatorQuoteExtractionRes
 
     const validated = OperatorQuoteExtractionResultSchema.parse(rawJson);
 
+    // Persistência no Banco Histórico Perpétuo de Preços (travel_price_observations)
+    // Tabela imutável para identificação futura de temperatura, padrões tarifários e sazonalidade
+    try {
+      const { getServerClient } = await import("@/lib/supabase");
+      const supabase = getServerClient();
+      if (validated.gross_price_cents && validated.destination) {
+        const routeFingerprint = `${(validated.operator_name || "operadora").toLowerCase()}:${validated.destination.toLowerCase().replace(/\s+/g, "-")}`;
+        const travelStartDate = validated.travel_start || new Date().toISOString().slice(0, 10);
+        await supabase.from("travel_price_observations").insert({
+          product_type: "package",
+          route_fingerprint: routeFingerprint,
+          travel_start_date: travelStartDate,
+          travel_end_date: validated.travel_end || null,
+          advance_days: 30,
+          provider_code: (validated.operator_name || "operadora_b2b").toLowerCase(),
+          fare_family: validated.cancellation_rules ? "flexivel" : "padrao",
+          price_cents: validated.gross_price_cents,
+          currency: validated.currency || "BRL",
+          search_context_hash: `ocr:${Date.now()}:${validated.quote_reference_number || "quote"}`,
+          availability_state: "available",
+        });
+      }
+    } catch {
+      // Falha de persistência analítica é tolerada defensivamente
+    }
+
     return {
       success: true,
       data: validated,

@@ -267,7 +267,7 @@ Hash de Verificação: SHA256-${Math.random().toString(36).substring(2, 15)}
             activeMainTab === "maintenance"
               ? "bg-foreground text-background shadow-xs"
               : "bg-card text-muted-foreground hover:text-foreground border border-border/60"
-          }`}
+          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
         >
           <Wrench className="size-3.5" />
           <span>Chamados de Manutenção</span>
@@ -283,7 +283,7 @@ Hash de Verificação: SHA256-${Math.random().toString(36).substring(2, 15)}
             activeMainTab === "inspections_and_receipts"
               ? "bg-foreground text-background shadow-xs"
               : "bg-card text-muted-foreground hover:text-foreground border border-border/60"
-          }`}
+          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
         >
           <ClipboardCheck className="size-3.5" />
           <span>Vistorias & Comprovantes de Aluguel</span>

@@ -315,7 +315,7 @@ export default function WorkspaceSocialStudioPage() {
               <button
                 type="button"
                 onClick={() => setTemplate("product")}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "p-3 rounded-lg border text-left transition-all cursor-pointer flex flex-col gap-2",
                   template === "product"
                     ? "border-primary bg-primary/5 text-primary font-bold shadow-xs"
@@ -332,7 +332,7 @@ export default function WorkspaceSocialStudioPage() {
                   setTemplate("carousel");
                   setRatio("1:1");
                 }}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "p-3 rounded-lg border text-left transition-all cursor-pointer flex flex-col gap-2",
                   template === "carousel"
                     ? "border-primary bg-primary/5 text-primary font-bold shadow-xs"
@@ -349,7 +349,7 @@ export default function WorkspaceSocialStudioPage() {
                   setTemplate("presentation");
                   setRatio("16:9");
                 }}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "p-3 rounded-lg border text-left transition-all cursor-pointer flex flex-col gap-2",
                   template === "presentation"
                     ? "border-primary bg-primary/5 text-primary font-bold shadow-xs"
@@ -363,7 +363,7 @@ export default function WorkspaceSocialStudioPage() {
               <button
                 type="button"
                 onClick={() => setTemplate("travel")}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "p-3 rounded-lg border text-left transition-all cursor-pointer flex flex-col gap-2",
                   template === "travel"
                     ? "border-primary bg-primary/5 text-primary font-bold shadow-xs"
@@ -377,7 +377,7 @@ export default function WorkspaceSocialStudioPage() {
               <button
                 type="button"
                 onClick={() => setTemplate("quote")}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "p-3 rounded-lg border text-left transition-all cursor-pointer flex flex-col gap-2",
                   template === "quote"
                     ? "border-primary bg-primary/5 text-primary font-bold shadow-xs"
@@ -462,7 +462,7 @@ export default function WorkspaceSocialStudioPage() {
                     key={idx}
                     type="button"
                     onClick={() => setActiveSlideIndex(idx)}
-                    className={cn(
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "py-2 px-1 rounded-lg text-center border text-xs font-semibold transition-all cursor-pointer",
                       activeSlideIndex === idx
                         ? "border-primary bg-primary text-primary-foreground shadow-xs"

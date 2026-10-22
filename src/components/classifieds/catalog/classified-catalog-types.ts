@@ -9,6 +9,10 @@ import {
   Gift,
   Briefcase,
   FileText,
+  Ticket,
+  Tractor,
+  HeartPulse,
+  UserCheck,
 } from "lucide-react";
 import type { FilterChipOption } from "@/components/commerce/discovery-control-bar";
 
@@ -42,6 +46,33 @@ export const CLASSIFIEDS_HOTPAGES = [
   },
   {
     id: "hp-class-4",
+    title: "Agro e Campo",
+    slug: "agri",
+    cover_image_url: "",
+    badge_label: "Agro",
+    show_title: false,
+    show_overlay: false,
+  },
+  {
+    id: "hp-class-5",
+    title: "Eventos",
+    slug: "event",
+    cover_image_url: "",
+    badge_label: "Ingressos",
+    show_title: false,
+    show_overlay: false,
+  },
+  {
+    id: "hp-class-6",
+    title: "Negócios",
+    slug: "business",
+    cover_image_url: "",
+    badge_label: "Empresas",
+    show_title: false,
+    show_overlay: false,
+  },
+  {
+    id: "hp-class-7",
     title: "Desapego",
     slug: "sale",
     cover_image_url: "",
@@ -55,7 +86,11 @@ export const CLASSIFIED_CHIPS: FilterChipOption[] = [
   { id: "todos", label: "Todos", icon: Tag },
   { id: "real_estate", label: "Imóveis", icon: Home },
   { id: "vehicle", label: "Veículos", icon: CarIcon },
+  { id: "agri", label: "Agro & Campo", icon: Tractor },
+  { id: "event", label: "Eventos", icon: Ticket },
   { id: "business", label: "Negócios", icon: Briefcase },
+  { id: "job", label: "Vagas", icon: UserCheck },
+  { id: "pharmacy", label: "Saúde & Drogaria", icon: HeartPulse },
   { id: "travel", label: "Viagens", icon: Plane },
   { id: "food", label: "Gastronomia", icon: Utensils },
   { id: "sale", label: "Desapego", icon: LaptopIcon },
@@ -166,4 +201,37 @@ export const SERVICE_SUBNICHE_OPTIONS = [
   { id: "crm", label: "Saúde" },
   { id: "crc", label: "Contabilidade" },
   { id: "tech", label: "Tecnologia" },
+];
+
+export const AGRI_SUBNICHE_OPTIONS = [
+  { id: "todos", label: "Todo o Agro" },
+  { id: "trator", label: "Tratores" },
+  { id: "colheitadeira", label: "Colheitadeiras" },
+  { id: "implemento", label: "Implementos & Plantadeiras" },
+  { id: "fazenda", label: "Sítios, Fazendas & Áreas" },
+  { id: "gado", label: "Pecuária & Animais" },
+];
+
+export const AGRI_TRACTION_OPTIONS = [
+  { id: "todos", label: "Todas Trações" },
+  { id: "4x4", label: "Tração 4x4" },
+  { id: "4x2", label: "Tração 4x2" },
+  { id: "esteira", label: "Esteira" },
+];
+
+export const PHARMACY_SUBNICHE_OPTIONS = [
+  { id: "todos", label: "Toda Saúde & Farmácia" },
+  { id: "medicamentos", label: "Medicamentos" },
+  { id: "suplementos", label: "Suplementos & Vitaminas" },
+  { id: "dermocosmeticos", label: "Dermocosméticos" },
+  { id: "ortopedia", label: "Ortopedia & Aparelhos" },
+  { id: "higiene", label: "Cuidados Pessoais" },
+];
+
+export const EVENT_TYPE_OPTIONS = [
+  { id: "todos", label: "Todos os Eventos" },
+  { id: "show", label: "Shows & Festivais" },
+  { id: "curso", label: "Cursos & Workshops" },
+  { id: "esportivo", label: "Esportivo & Lazer" },
+  { id: "corporativo", label: "Congressos & Palestras" },
 ];

@@ -180,7 +180,7 @@ export function MultimodalOcrUploader({
               selectedNiche === n.id
                 ? "bg-primary text-primary-foreground shadow-2xs"
                 : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             {n.label}
           </button>
@@ -228,7 +228,7 @@ export function MultimodalOcrUploader({
             <button
               type="button"
               onClick={() => setFiles([])}
-              className="text-[11px] text-muted-foreground hover:text-destructive cursor-pointer"
+              className="text-[11px] text-muted-foreground hover:text-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               Limpar todos
             </button>
@@ -266,7 +266,7 @@ export function MultimodalOcrUploader({
                     e.stopPropagation();
                     removeFile(f.id);
                   }}
-                  className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer shrink-0 transition-colors"
+                  className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <Trash2 className="size-3.5" />
                 </button>

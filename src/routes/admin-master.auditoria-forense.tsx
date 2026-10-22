@@ -240,7 +240,7 @@ function AdminMasterAuditoriaForensePage() {
           <button
             type="button"
             onClick={() => setActiveTab("ledger")}
-            className={cn(
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer select-none active:scale-98 shadow-2xs",
               activeTab === "ledger"
                 ? "bg-foreground text-background border-foreground font-bold shadow-xs"
@@ -252,7 +252,7 @@ function AdminMasterAuditoriaForensePage() {
           <button
             type="button"
             onClick={() => setActiveTab("events")}
-            className={cn(
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer select-none active:scale-98 shadow-2xs",
               activeTab === "events"
                 ? "bg-foreground text-background border-foreground font-bold shadow-xs"
@@ -264,7 +264,7 @@ function AdminMasterAuditoriaForensePage() {
           <button
             type="button"
             onClick={() => setActiveTab("defense")}
-            className={cn(
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer select-none active:scale-98 shadow-2xs",
               activeTab === "defense"
                 ? "bg-foreground text-background border-foreground font-bold shadow-xs"
@@ -342,7 +342,7 @@ function AdminMasterAuditoriaForensePage() {
                             <button
                               type="button"
                               onClick={() => handleCopy(e.entry_hash, "Hash")}
-                              className="text-muted-foreground hover:text-foreground cursor-pointer p-1"
+                              className="text-muted-foreground hover:text-foreground cursor-pointer p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
                               <Copy className="size-3" />
                             </button>

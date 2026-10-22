@@ -50,7 +50,7 @@ export function ContextualStoriesRail({
  {showCreateButton && (
  <button
  onClick={onCreateStory}
- className="flex flex-col items-center gap-2 shrink-0 group focus:outline-none"
+ className="flex flex-col items-center gap-2 shrink-0 group focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  aria-label="Criar novo story"
  >
  <div className="relative size-16 sm:size-18 rounded-full p-1 border-2 border-dashed border-border group-hover:border-primary transition-colors flex items-center justify-center bg-card">
@@ -87,7 +87,7 @@ export function ContextualStoriesRail({
  <button
  key={group.groupId}
  onClick={() => setSelectedGroupIndex(idx)}
- className="flex flex-col items-center gap-2 shrink-0 group focus:outline-none cursor-pointer select-none transition-transform duration-200 active:scale-95"
+ className="flex flex-col items-center gap-2 shrink-0 group focus:outline-none cursor-pointer select-none transition-transform duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  aria-label={`Ver stories de ${group.entityName}`}
  >
  <div

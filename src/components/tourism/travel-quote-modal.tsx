@@ -11,36 +11,35 @@ import { requestTravelQuote, type TravelTripType } from "@/services/tourism.func
 import { toast } from "sonner";
 
 interface TravelQuoteModalProps {
-  open: boolean;
-  onOpenChange?: (open: boolean) => void;
-  onClose?: () => void;
-  defaultDestination?: string;
-  initialDestination?: string;
-  defaultTripType?: TravelTripType;
+ open: boolean;
+ onOpenChange?: (open: boolean) => void;
+ onClose?: () => void;
+ defaultDestination?: string;
+ initialDestination?: string;
+ defaultTripType?: TravelTripType;
 }
 
 export function TravelQuoteModal({
-  open,
-  onOpenChange,
-  onClose,
-  defaultDestination = "",
-  initialDestination,
-  defaultTripType = "air_package",
+ open,
+ onOpenChange,
+ onClose,
+ defaultDestination = "",
+ initialDestination = "",
+ defaultTripType = "air_package",
 }: TravelQuoteModalProps) {
-  const handleOpenChange = (isOpen: boolean) => {
-    onOpenChange?.(isOpen);
-    if (!isOpen) {
-      onClose?.();
-    }
-  };
+ const handleOpenChange = (nextOpen: boolean) => {
+  if (!nextOpen && onClose) onClose();
+  if (onOpenChange) onOpenChange(nextOpen);
+ };
+ const effectiveDestination = initialDestination || defaultDestination;
 
-  // Wizard steps: 1: Origem & Destino, 2: Datas, 3: Quartos & Idades, 4: Contato & Envio
+ // Wizard steps: 1: Origem & Destino, 2: Datas, 3: Quartos & Idades, 4: Contato & Envio
  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
 
  // Form states
  const [origin, setOrigin] = useState("");
  const [originIata, setOriginIata] = useState("");
- const [destination, setDestination] = useState(defaultDestination || initialDestination || "");
+ const [destination, setDestination] = useState(effectiveDestination);
  const [destinationIata, setDestinationIata] = useState("");
 
  const [departureDate, setDepartureDate] = useState("");
@@ -186,7 +185,7 @@ export function TravelQuoteModal({
  {step === 1 && (
  <div className="space-y-4">
  {/* Seletor de Origem com Combobox Inteligente */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <AirportCombobox
                   label="Aeroporto / Cidade de Origem"
                   value={originIata}
@@ -216,7 +215,7 @@ export function TravelQuoteModal({
               </div>
 
               {/* Seletor de Destino com Combobox Inteligente */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <AirportCombobox
                   label="Aeroporto / Cidade de Destino"
                   value={destinationIata}
@@ -244,7 +243,7 @@ export function TravelQuoteModal({
  key={d}
  type="button"
  onClick={() => setDestination(d)}
- className="px-3 py-1 rounded-lg bg-muted/60 hover:bg-muted text-[11px] font-semibold text-foreground transition-colors cursor-pointer"
+ className="px-3 py-1 rounded-lg bg-muted/60 hover:bg-muted text-[11px] font-semibold text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {d}
  </button>
@@ -438,7 +437,7 @@ export function TravelQuoteModal({
  tripType === t.id
  ? "bg-primary/10 border-primary text-primary font-bold "
  : "bg-muted/30 border-border text-muted-foreground hover:text-foreground"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <p className="text-xs font-bold">{t.label}</p>
  <p className="text-[10px] opacity-80">{t.desc}</p>

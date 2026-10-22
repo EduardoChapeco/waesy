@@ -241,7 +241,7 @@ function CustomerDetailPage() {
   return (
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-12 overflow-x-hidden">
       {/* ── Header ── */}
-      <PageHeader
+      <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         title={data.profile.name}
         actions={
           <div className="flex items-center gap-2">

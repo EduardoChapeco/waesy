@@ -68,7 +68,7 @@ export function RichPostContent({
                     href={token}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-primary font-medium hover:underline inline-block break-all"
+                    className="text-primary font-medium hover:underline inline-block break-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     onClick={(e) => e.stopPropagation()}
                   >
                     {token.replace(/^https?:\/\/(www\.)?/, "").slice(0, 30)}
@@ -85,7 +85,7 @@ export function RichPostContent({
                     key={subIndex}
                     to="/u/$username"
                     params={{ username: handle }}
-                    className="font-bold text-primary hover:underline"
+                    className="font-bold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     onClick={(e) => e.stopPropagation()}
                   >
                     {token}

@@ -30,6 +30,7 @@ import { cn } from "@/lib/utils";
 import { ProfessionalLicenseEditSheet } from "@/components/profile/professional-resume-editor";
 import { RichBioContent } from "@/components/profile/RichBioContent";
 import { ProfileInPageEditor } from "@/components/profile/ProfileInPageEditor";
+import { TetrisActionGrid } from "@/components/layout/tetris-action-grid";
 
 export type MembroSearchParams = {
  modo?: "social" | "profissional" | "comercial";
@@ -408,7 +409,7 @@ export function MemberPublicProfileView({
 
       {/* ── 2. Modo de Edição In-Page (Zero Modais / Zero Popups) ── */}
       {isOwner && (isProfileInPageEditorOpen || (isCreator && editingSection === "creator_profile")) ? (
-        <div className="w-full max-w-5xl mx-auto space-y-6 bg-card rounded-2xl border border-border/70 p-4 sm:p-6 md:p-8 shadow-xs animate-in fade-in duration-200">
+        <div className="w-full max-w-5xl mx-auto space-y-6 bg-card rounded-lg border border-border/70 p-4 sm:p-6 md:p-8 shadow-xs animate-in fade-in duration-200">
           <ProfileInPageEditor
             isOpen={true}
             onClose={() => {
@@ -494,71 +495,74 @@ export function MemberPublicProfileView({
               )}
             </div>
 
-            {/* Ações do Topo Alinhadas com o Avatar */}
-            <div className="flex items-center gap-2 self-start sm:self-end">
-              {isOwner ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setEditorInitialTab("identidade");
-                    setIsProfileInPageEditorOpen(true);
-                  }}
-                  className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold border-border/70 hover:bg-muted/40 text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                >
-                  <Edit3 className="size-3.5 mr-2" />
-                  <span>{isBrandPersonaView ? "Editar Marca" : "Editar Perfil"}</span>
-                </Button>
-              ) : (
-                <>
+            {/* Ações do Topo Alinhadas com o Avatar (Ergonômico TetrisActionGrid) */}
+            <div className="w-full sm:w-auto">
+              <TetrisActionGrid className="pt-0">
+                {isOwner ? (
                   <Button
-                    className={cn(
-                      "h-11 min-h-11 px-4 rounded-lg font-bold text-xs gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors",
-                      isFollowing
-                        ? "bg-transparent border border-border/60 text-muted-foreground hover:bg-muted/40 hover:text-foreground"
-                        : "bg-primary text-primary-foreground"
-                    )}
-                    onClick={handleToggleFollow}
-                    disabled={isFollowLoading}
-                  >
-                    {isFollowing ? (
-                      <>
-                        <Check className="size-3.5" />
-                        <span>Seguindo</span>
-                      </>
-                    ) : (
-                      <>
-                        <Plus className="size-3.5" />
-                        <span>Seguir</span>
-                      </>
-                    )}
-                  </Button>
-                  {profile.phone && (
-                    <Button
-                      asChild
-                      variant="outline"
-                      className="h-11 min-h-11 px-3 rounded-lg font-semibold text-xs gap-2 border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                    >
-                      <a
-                        href={`https://wa.me/${profile.phone.replace(/\D/g, "")}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <MessageCircle className="size-3.5 text-emerald-500" />
-                        <span>Mensagem</span>
-                      </a>
-                    </Button>
-                  )}
-                  <Button
+                    type="button"
                     variant="outline"
-                    className="h-11 min-h-11 size-11 p-0 rounded-lg text-muted-foreground hover:text-foreground border border-border/50 bg-transparent hover:bg-muted/40 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                    onClick={handleShare}
-                    aria-label="Compartilhar Perfil"
+                    onClick={() => {
+                      setEditorInitialTab("identidade");
+                      setIsProfileInPageEditorOpen(true);
+                    }}
+                    className="w-full h-11 min-h-11 px-4 rounded-lg text-xs font-bold border-border/70 hover:bg-muted/40 text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary inline-flex items-center justify-center gap-2"
                   >
-                    <Share2 className="size-3.5" />
+                    <Edit3 className="size-3.5 shrink-0" />
+                    <span>{isBrandPersonaView ? "Editar Marca" : "Editar Perfil"}</span>
                   </Button>
-                </>
-              )}
+                ) : (
+                  <>
+                    <Button
+                      className={cn(
+                        "w-full h-11 min-h-11 px-4 rounded-lg font-bold text-xs gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors inline-flex items-center justify-center",
+                        isFollowing
+                          ? "bg-transparent border border-border/60 text-muted-foreground hover:bg-muted/40 hover:text-foreground"
+                          : "bg-primary text-primary-foreground"
+                      )}
+                      onClick={handleToggleFollow}
+                      disabled={isFollowLoading}
+                    >
+                      {isFollowing ? (
+                        <>
+                          <Check className="size-3.5 shrink-0" />
+                          <span>Seguindo</span>
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="size-3.5 shrink-0" />
+                          <span>Seguir</span>
+                        </>
+                      )}
+                    </Button>
+                    {profile.phone && (
+                      <Button
+                        asChild
+                        variant="outline"
+                        className="w-full h-11 min-h-11 px-3 rounded-lg font-semibold text-xs gap-2 border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary inline-flex items-center justify-center"
+                      >
+                        <a
+                          href={`https://wa.me/${profile.phone.replace(/\D/g, "")}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <MessageCircle className="size-3.5 text-emerald-500 shrink-0" />
+                          <span>Mensagem</span>
+                        </a>
+                      </Button>
+                    )}
+                    <Button
+                      variant="outline"
+                      className="w-full h-11 min-h-11 px-3 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground border border-border/50 bg-transparent hover:bg-muted/40 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary inline-flex items-center justify-center gap-2"
+                      onClick={handleShare}
+                      aria-label="Compartilhar Perfil"
+                    >
+                      <Share2 className="size-3.5 shrink-0" />
+                      <span>Compartilhar</span>
+                    </Button>
+                  </>
+                )}
+              </TetrisActionGrid>
             </div>
           </div>
 

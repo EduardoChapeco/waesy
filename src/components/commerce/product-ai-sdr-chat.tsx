@@ -202,10 +202,10 @@ export function ProductAiSdrChat({
           <Button
             type="button"
             variant="outline"
-            className={`h-11 px-3 rounded-lg text-xs font-medium border-border flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer ${className}`}
+            className={`w-full h-11 min-h-11 px-3 rounded-lg text-xs font-semibold bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-2 shadow-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer ${className}`}
           >
-            <ChatCircleDots className="size-3.5 text-primary" weight="fill" />
-            <span>Duvidas com SDR</span>
+            <ChatCircleDots className="size-3.5 text-primary shrink-0" weight="fill" />
+            <span className="whitespace-nowrap">Dúvidas</span>
           </Button>
         ) : (
           <Button

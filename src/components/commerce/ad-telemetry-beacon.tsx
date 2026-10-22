@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { recordAdTelemetry } from "@/services/telemetry.functions";
+import { cn } from "@/lib/utils";
 
 export interface AdTelemetryBeaconProps {
   children: React.ReactNode;
@@ -116,8 +117,11 @@ export function AdTelemetryBeacon({
   return (
     <div
       ref={containerRef}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleClick(e as any); } } : undefined}
       onClick={handleClick}
-      className={className}
+      className={cn(className, onClick && "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary")}
     >
       {children}
     </div>

@@ -226,7 +226,7 @@ export default function TableReservationsPage() {
  store={store}
  >
  <div className="w-full space-y-6">
- <PageHeader
+ <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  title="Reservas"
  actions={
  <div className="flex items-center gap-2">
@@ -379,7 +379,7 @@ export default function TableReservationsPage() {
  gridColumn: isWide ? "span 1" : "span 1",
  gridRow: "span 1",
  }}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "relative flex flex-col items-center justify-center gap-2 rounded-lg border-2 transition-all cursor-pointer group",
  "p-4 min-h-28 text-center",
  style.border,
@@ -848,10 +848,10 @@ function ReservationForm({
  {isDropdownOpen && searchResults.length > 0 && (
  <div className="absolute left-0 right-0 top-full mt-1 z-30 bg-card border border-border/80 rounded-lg shadow-xs max-h-48 overflow-y-auto no-scrollbar divide-y divide-border/40">
  {searchResults.map((c: any) => (
- <div
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  key={c.id}
  onClick={() => handleSelectCustomer(c)}
- className="p-3 hover:bg-muted/40 transition-colors cursor-pointer text-xs flex items-center justify-between"
+ className="p-3 hover:bg-muted/40 transition-colors cursor-pointer text-xs flex items-center justify-between focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div>
  <p className="font-bold text-foreground">{c.fullName || c.name}</p>

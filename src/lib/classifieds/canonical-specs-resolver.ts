@@ -342,6 +342,31 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
     if (Array.isArray(attrs.provenance) && attrs.provenance.length > 0) {
       list.push({ label: "Procedência", value: attrs.provenance.join(", "), category: "technical" });
     }
+
+    if (attrs.fipe_price_cents) {
+      const fipePrice = Number(attrs.fipe_price_cents);
+      const fipeFormatted = `R$ ${(fipePrice / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      list.push({
+        label: "Referência FIPE",
+        value: attrs.fipe_reference_month ? `${fipeFormatted} (${attrs.fipe_reference_month})` : fipeFormatted,
+        category: "commercial",
+        highlight: true,
+      });
+      if (attrs.fipe_delta_percent !== undefined && attrs.fipe_delta_percent !== null) {
+        const delta = Number(attrs.fipe_delta_percent);
+        const deltaLabel = delta < 0
+          ? `${Math.abs(delta).toFixed(1)}% abaixo da FIPE`
+          : delta === 0
+          ? "No valor da FIPE"
+          : `${delta.toFixed(1)}% acima da FIPE`;
+        list.push({
+          label: "Variação FIPE",
+          value: deltaLabel,
+          category: "commercial",
+          highlight: delta <= 0,
+        });
+      }
+    }
   }
 
   // ── 3. IMÓVEIS & HOSPEDAGEM (Estritamente para propriedades e temporada) ──

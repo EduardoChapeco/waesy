@@ -428,7 +428,7 @@ function MasterFaturasPage() {
                 <button
                   key={tab.id}
                   onClick={() => setStatusFilter(tab.id)}
-                  className={cn(
+                  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                     "px-3 py-1 rounded-lg text-xs transition-colors cursor-pointer",
                     statusFilter === tab.id
                       ? "bg-primary text-primary-foreground font-semibold"
@@ -493,7 +493,7 @@ function MasterFaturasPage() {
                         <button
                           onClick={() => handleToggleDebtBlock(inv.stores)}
                           disabled={loadingAction === `debt-${inv.stores?.id}`}
-                          className="text-[10px] text-muted-foreground hover:text-foreground underline block mt-1"
+                          className="text-[10px] text-muted-foreground hover:text-foreground underline block mt-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           {isStoreBlocked ? "Desbloquear conta" : "Bloquear por inadimplência"}
                         </button>

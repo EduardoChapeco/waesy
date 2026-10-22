@@ -32,6 +32,8 @@ export interface HarvestedPlace {
   rating?: number;
   reviewsCount?: number;
   workingHours?: Record<string, string>;
+  contactEmail?: string;
+  externalId?: string;
   source: string;
 }
 
@@ -325,6 +327,8 @@ export async function harvestAndPersistPlaces(params: {
   state?: string;
   storeId?: string;
   authorProfileId?: string;
+  /** Lugares já coletados por fonte externa (ex.: scraper Google Maps via VPS/Docker). */
+  prefetchedPlaces?: HarvestedPlace[];
 }): Promise<PlacesHarvestResult> {
   const resolvedGeo = resolveCityAndState(params.city, params.state);
   const city = resolvedGeo.city || params.city || getDefaultCity();
@@ -332,8 +336,10 @@ export async function harvestAndPersistPlaces(params: {
   const startTime = Date.now();
 
   // 1. Tentar Overpass API (rápido e rico em dados comerciais), com fallback para Nominatim
-  let places = state ? await queryOverpassPlaces(params.query, city, state) : [];
-  if (places.length === 0) {
+  let places = params.prefetchedPlaces && params.prefetchedPlaces.length > 0
+    ? params.prefetchedPlaces
+    : state ? await queryOverpassPlaces(params.query, city, state) : [];
+  if (places.length === 0 && !params.prefetchedPlaces) {
     places = await queryNominatimPlaces(params.query, city, state);
   }
 
@@ -346,7 +352,7 @@ export async function harvestAndPersistPlaces(params: {
       // Checa duplicidade por nome + cidade
       const { data: existing } = await supabase
         .from("directory_listings")
-        .select("id, avatar_url, banner_url, description, photos, cnpj")
+        .select("id, avatar_url, banner_url, description, photos, cnpj, metadata, contact_email")
         .eq("business_name", place.businessName)
         .eq("city", place.city)
         .maybeSingle();
@@ -392,6 +398,9 @@ export async function harvestAndPersistPlaces(params: {
         longitude: place.longitude,
         contact_phone: place.contactPhone || null,
         contact_whatsapp: place.contactWhatsapp || null,
+        contact_email: place.contactEmail || existing?.contact_email || null,
+        external_id: place.externalId || null,
+        metadata: { ...((existing?.metadata as Record<string, unknown> | null) || {}), ...(place.externalId ? { gmaps_cid: place.externalId } : {}) },
         website_url: place.websiteUrl || null,
         avatar_url: existing?.avatar_url || derivedAvatar,
         banner_url: existing?.banner_url || null,

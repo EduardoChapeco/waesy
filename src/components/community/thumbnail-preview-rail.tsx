@@ -20,7 +20,7 @@ export function ThumbnailPreviewRail({ items = [], onSelectPost }: ThumbnailPrev
  <button
  key={post.id}
  onClick={() => onSelectPost?.(post)}
- className="group relative flex flex-col justify-end w-[110px] h-[78px] squircle-media squircle-hover bg-muted shrink-0 hover:border-primary transition-all text-left"
+ className="group relative flex flex-col justify-end w-[110px] h-[78px] squircle-media squircle-hover bg-muted shrink-0 hover:border-primary transition-all text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <img
  src={post.media_urls[0]}

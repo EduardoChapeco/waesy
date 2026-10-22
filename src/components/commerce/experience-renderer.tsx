@@ -582,9 +582,9 @@ function ExperienceNodeRenderer({
     }
     const isSelected = selectedNodeId === node.id;
     return (
-      <div
+      <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
         id={(node as any).section_anchor_id}
-        className={cn(
+        className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
           "relative group cursor-pointer transition-all outline-none",
           isSelected
             ? "ring-2 ring-primary ring-inset z-10"

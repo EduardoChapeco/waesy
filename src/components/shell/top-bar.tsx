@@ -61,7 +61,7 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
             type="button"
             onClick={() => setBetaModalOpen(true)}
             title="Versão Beta"
-            className="hidden sm:inline-flex items-center px-2 py-1 rounded-md text-xs font-mono font-medium tracking-wider uppercase text-muted-foreground hover:text-foreground border border-border/50 bg-muted/20 hover:bg-muted/50 transition-colors cursor-pointer shrink-0"
+            className="hidden sm:inline-flex items-center px-2 py-1 rounded-md text-xs font-mono font-medium tracking-wider uppercase text-muted-foreground hover:text-foreground border border-border/50 bg-muted/20 hover:bg-muted/50 transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             BETA
           </button>

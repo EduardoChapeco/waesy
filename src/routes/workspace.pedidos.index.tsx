@@ -370,7 +370,7 @@ function AdminOrdersPage() {
  isActive
  ? "bg-card text-foreground shadow-xs"
  : "text-muted-foreground hover:text-foreground"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <Icon className={`size-3.5 ${isActive ? "text-primary" : ""}`} />
  <span>{mode.label}</span>
@@ -1396,25 +1396,25 @@ function AdminOrdersPage() {
                             {isTourism ? "Imprimir Contrato / Voucher" : "Imprimir Recibo / Comprovante"}
                           </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setSelectedShippingLabelOrderId(order.id)}>
+                        <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => setSelectedShippingLabelOrderId(order.id)}>
                           <Printer className="size-3.5 mr-2 text-primary" />
                           {isTourism ? "Emitir Voucher / Etiqueta" : "Etiqueta de Envio & Declaração"}
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleGenerateContract(order.id)}>
+                        <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => handleGenerateContract(order.id)}>
                           <FileText className="size-3.5 mr-2 text-indigo-600 dark:text-indigo-400" />
                           Gerar Contrato e Assinatura Digital
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
 
                         {order.status === "awaiting_payment" && (
-                          <DropdownMenuItem onClick={() => handleQuickApprove(order.id)}>
+                          <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => handleQuickApprove(order.id)}>
                             <CheckCircle2 className="size-3.5 mr-2 text-success" />
                             {isTourism ? "Aprovar Pagamento da Reserva" : "Aprovar Pagamento"}
                           </DropdownMenuItem>
                         )}
 
                         {(order.status === "paid" || order.status === "processing") && (
-                          <DropdownMenuItem
+                          <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                             onClick={() => handleStatusChange(order.id, "ready_for_pickup")}
                           >
                             <CheckCircle2 className="size-3.5 mr-2 text-primary" />
@@ -1423,7 +1423,7 @@ function AdminOrdersPage() {
                         )}
 
                         {(order.status === "shipped" || order.status === "ready_for_pickup") && (
-                          <DropdownMenuItem
+                          <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                             onClick={() => handleStatusChange(order.id, "delivered")}
                           >
                             <PackageCheck className="size-3.5 mr-2 text-success" />
@@ -1432,7 +1432,7 @@ function AdminOrdersPage() {
                         )}
 
                         {order.status !== "cancelled" && order.status !== "delivered" && (
-                          <DropdownMenuItem
+                          <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                             onClick={() => handleStatusChange(order.id, "cancelled")}
                             className="text-destructive focus:text-destructive"
                           >
@@ -1557,25 +1557,25 @@ function AdminOrdersPage() {
                                   {isTourism ? "Imprimir Contrato / Voucher" : "Imprimir Recibo / Comprovante"}
                                 </Link>
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setSelectedShippingLabelOrderId(order.id)}>
+                              <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => setSelectedShippingLabelOrderId(order.id)}>
                                 <Printer className="size-3.5 mr-2 text-primary" />
                                 {isTourism ? "Emitir Voucher / Etiqueta" : "Etiqueta de Envio & Declaração"}
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleGenerateContract(order.id)}>
+                              <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => handleGenerateContract(order.id)}>
                                 <FileText className="size-3.5 mr-2 text-indigo-600 dark:text-indigo-400" />
                                 Gerar Contrato e Assinatura Digital
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
 
                               {order.status === "awaiting_payment" && (
-                                <DropdownMenuItem onClick={() => handleQuickApprove(order.id)}>
+                                <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => handleQuickApprove(order.id)}>
                                   <CheckCircle2 className="size-3.5 mr-2 text-success" />
                                   {isTourism ? "Aprovar Pagamento da Reserva" : "Aprovar Pagamento"}
                                 </DropdownMenuItem>
                               )}
 
                               {(order.status === "paid" || order.status === "processing") && (
-                                <DropdownMenuItem
+                                <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                                   onClick={() => handleStatusChange(order.id, "ready_for_pickup")}
                                 >
                                   <CheckCircle2 className="size-3.5 mr-2 text-primary" />
@@ -1584,7 +1584,7 @@ function AdminOrdersPage() {
                               )}
 
                               {(order.status === "shipped" || order.status === "ready_for_pickup") && (
-                                <DropdownMenuItem
+                                <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                                   onClick={() => handleStatusChange(order.id, "delivered")}
                                 >
                                   <PackageCheck className="size-3.5 mr-2 text-success" />
@@ -1593,7 +1593,7 @@ function AdminOrdersPage() {
                               )}
 
                               {order.status !== "cancelled" && order.status !== "delivered" && (
-                                <DropdownMenuItem
+                                <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                                   onClick={() => handleStatusChange(order.id, "cancelled")}
                                   className="text-destructive focus:text-destructive"
                                 >

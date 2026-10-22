@@ -497,11 +497,11 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
         </div>
 
         {/* ── Bloco Assistente de Preenchimento com IA (Opcional & Recolhível) ── */}
-        <div className="rounded-lg bg-card border border-border/80 shadow-2xs overflow-hidden">
+        <div className="rounded-2xl sm:rounded-3xl bg-card border border-border/80 shadow-2xs overflow-hidden">
           <button
             type="button"
             onClick={() => setShowAiAssistant((prev) => !prev)}
-            className="w-full p-4 flex items-center justify-between text-left hover:bg-muted/30 transition-colors cursor-pointer"
+            className="w-full p-4 flex items-center justify-between text-left hover:bg-muted/30 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <div className="flex items-center gap-2.5">
               <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
@@ -569,7 +569,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
           )}
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 rounded-lg bg-card border border-border/80 shadow-sm space-y-6">
+        <form onSubmit={handleSubmit} className="p-6 sm:p-8 rounded-2xl sm:rounded-3xl bg-card border border-border/80 shadow-sm space-y-6">
           {/* ── ETAPA 1: IDENTIFICAÇÃO COMERCIAL ── */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 border-b border-border/40 pb-2">
@@ -585,7 +585,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Ex: Prime Eventos, Serra Sol Turismo, Restaurante Central..."
-                className="h-11 min-h-11 rounded-lg text-xs sm:text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="h-11 min-h-11 rounded-lg text-base md:text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 required
               />
             </div>
@@ -601,7 +601,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                   value={cnpj}
                   onChange={(e) => setCnpj(formatCnpj(e.target.value))}
                   placeholder="00.000.000/0000-00"
-                  className="h-11 min-h-11 rounded-lg text-xs font-mono focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="h-11 min-h-11 rounded-lg text-base md:text-sm font-mono focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   maxLength={18}
                 />
                 <Button
@@ -644,8 +644,8 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                     key={c.id}
                     type="button"
                     onClick={() => setCategory(c.id)}
-                    className={cn(
-                      "p-3.5 rounded-lg border text-left transition-all flex items-start gap-3 cursor-pointer min-h-11",
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                      "p-3.5 rounded-xl border text-left transition-all flex items-start gap-3 cursor-pointer min-h-11",
                       isSelected
                         ? "border-primary bg-primary/5 text-foreground shadow-xs ring-1 ring-primary"
                         : "border-border/60 bg-background/50 hover:bg-muted/40 text-muted-foreground hover:text-foreground"
@@ -661,7 +661,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                     </div>
                     <div className="min-w-0">
                       <span className="text-xs font-bold block text-foreground truncate">{c.label}</span>
-                      <span className="text-[11px] text-muted-foreground line-clamp-1 leading-tight">
+                      <span className="text-[11px] text-muted-foreground break-words text-wrap leading-tight">
                         {c.description}
                       </span>
                     </div>
@@ -695,7 +695,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                       }
                     }}
                     placeholder="00000-000"
-                    className="h-11 min-h-11 rounded-lg text-xs font-mono focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    className="h-11 min-h-11 rounded-lg text-base md:text-sm font-mono focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     maxLength={9}
                   />
                   <Button
@@ -731,7 +731,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                 value={street}
                 onChange={(e) => setStreet(e.target.value)}
                 placeholder="Ex: Av. Getúlio Vargas, Rua Marechal Deodoro..."
-                className="h-11 min-h-11 rounded-lg text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="h-11 min-h-11 rounded-lg text-base md:text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               />
             </div>
 
@@ -743,7 +743,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                   value={number}
                   onChange={(e) => setNumber(e.target.value)}
                   placeholder="Ex: 120 ou S/N"
-                  className="h-11 min-h-11 rounded-lg text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="h-11 min-h-11 rounded-lg text-base md:text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 />
               </div>
 
@@ -753,7 +753,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                   value={complement}
                   onChange={(e) => setComplement(e.target.value)}
                   placeholder="Ex: Sala 402, Bloco B"
-                  className="h-11 min-h-11 rounded-lg text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="h-11 min-h-11 rounded-lg text-base md:text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 />
               </div>
 
@@ -763,7 +763,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                   value={neighborhood}
                   onChange={(e) => setNeighborhood(e.target.value)}
                   placeholder="Ex: Centro, Jardim..."
-                  className="h-11 min-h-11 rounded-lg text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="h-11 min-h-11 rounded-lg text-base md:text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 />
               </div>
             </div>
@@ -805,7 +805,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="(49) 99999-9999"
-                className="h-11 min-h-11 rounded-lg text-xs sm:text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="h-11 min-h-11 rounded-lg text-base md:text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 required
               />
             </div>
@@ -834,7 +834,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
                   placeholder="https://suaempresa.com.br"
-                  className="h-11 min-h-11 rounded-lg text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="h-11 min-h-11 rounded-lg text-base md:text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 />
               </div>
 
@@ -847,7 +847,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                   value={instagram}
                   onChange={(e) => setInstagram(e.target.value)}
                   placeholder="@suaempresa"
-                  className="h-11 min-h-11 rounded-lg text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="h-11 min-h-11 rounded-lg text-base md:text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 />
               </div>
             </div>
@@ -892,7 +892,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-12 min-h-12 rounded-lg text-xs sm:text-sm font-black gap-2 bg-foreground text-background hover:bg-foreground/90 shadow-md active:scale-[0.99] transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="w-full h-12 min-h-12 rounded-lg text-xs sm:text-sm font-black gap-2 bg-foreground text-background hover:bg-foreground/90 shadow-xs active:scale-[0.99] transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               {isSubmitting ? (
                 <>
@@ -942,7 +942,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                 {bannerUrl ? (
                   <img src={bannerUrl} alt="Capa da empresa" className="size-full object-cover select-none" />
                 ) : (
-                  <div className="size-full bg-gradient-to-r from-primary/10 via-muted/40 to-primary/15 flex items-center justify-center p-2 text-center">
+                  <div className="size-full bg-muted/40 flex items-center justify-center p-2 text-center">
                     <Store className="size-6 text-primary/30" />
                   </div>
                 )}

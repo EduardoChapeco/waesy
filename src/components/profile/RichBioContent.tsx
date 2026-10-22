@@ -22,7 +22,8 @@ export function RichBioContent({ content, className }: RichBioContentProps) {
   }
 
   // Limite estrito defensivo de 150 caracteres
-  const text = content.slice(0, 150);
+  // Renderização integral da biografia conforme Invariante B.35
+  const text = content.trim();
 
   // Regex unificada para capturar tokens sem permitir HTML
   const tokens = parseRichBioTokens(text);

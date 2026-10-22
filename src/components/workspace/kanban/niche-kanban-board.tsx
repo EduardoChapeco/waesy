@@ -120,7 +120,7 @@ export function NicheKanbanBoard({
 
             {/* Linha de Ações de Transição Rápida */}
             {allowedTransitions.length > 0 && (
-              <div
+              <div /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */
                 className="flex items-center gap-1 pt-1 border-t border-border/40 mt-1"
                 onClick={(e) => e.stopPropagation()}
               >

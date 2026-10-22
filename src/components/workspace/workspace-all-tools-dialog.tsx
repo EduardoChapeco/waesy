@@ -558,7 +558,7 @@ export function WorkspaceAllToolsDialog({
                 type="button"
                 onClick={handleToggleVoice}
                 title={isListeningVoice ? "Ouvindo... clique para parar" : "Falar comando por voz"}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "size-7 rounded-lg flex items-center justify-center transition-all cursor-pointer",
                   isListeningVoice
                     ? "bg-rose-500 text-white animate-pulse"
@@ -575,7 +575,7 @@ export function WorkspaceAllToolsDialog({
                     setSearchQuery("");
                     setMcpBlock(null);
                   }}
-                  className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
+                  className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <X className="size-3.5" />
                 </button>
@@ -585,9 +585,9 @@ export function WorkspaceAllToolsDialog({
 
           {/* Destaque Spotlight para Ação de IA em Linguagem Natural */}
           {searchQuery.trim().length >= 3 && !mcpBlock && !isOrchestrating && (
-            <div
+            <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
               onClick={() => handleExecuteAiCommand()}
-              className="p-3 px-3 rounded-lg border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors flex items-center justify-between cursor-pointer group animate-in fade-in"
+              className="p-3 px-3 rounded-lg border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors flex items-center justify-between cursor-pointer group animate-in fade-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <div className="flex items-center gap-2 min-w-0">
                 <div className="size-6 rounded-lg bg-primary/20 text-primary flex items-center justify-center shrink-0">
@@ -638,7 +638,7 @@ export function WorkspaceAllToolsDialog({
                   <button
                     type="button"
                     onClick={() => setMcpBlock(null)}
-                    className="text-xs text-muted-foreground hover:text-foreground font-semibold cursor-pointer"
+                    className="text-xs text-muted-foreground hover:text-foreground font-semibold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     Voltar para Ferramentas
                   </button>
@@ -674,7 +674,7 @@ export function WorkspaceAllToolsDialog({
  key={tool.path}
  to={tool.path}
  onClick={() => onOpenChange(false)}
- className="group flex flex-col items-center justify-center p-3 rounded-lg border border-border/60 bg-card hover:border-primary/40 hover:bg-primary/5 transition-all text-center gap-2 shadow-2xs cursor-pointer active:scale-98"
+ className="group flex flex-col items-center justify-center p-3 rounded-lg border border-border/60 bg-card hover:border-primary/40 hover:bg-primary/5 transition-all text-center gap-2 shadow-2xs cursor-pointer active:scale-98 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center group-hover:scale-105 transition-transform">
  <Icon className="size-5" />
@@ -718,7 +718,7 @@ export function WorkspaceAllToolsDialog({
  key={tool.path}
  to={tool.path}
  onClick={() => onOpenChange(false)}
- className="flex items-center justify-between p-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors group cursor-pointer"
+ className="flex items-center justify-between p-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="flex items-center gap-2 min-w-0">
  <Icon className="size-3.5 text-muted-foreground group-hover:text-primary shrink-0 transition-colors" />
@@ -763,7 +763,7 @@ export function WorkspaceAllToolsDialog({
  <Link
  to="/workspace/configuracoes"
  onClick={() => onOpenChange(false)}
- className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1"
+ className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <span>Configurações do Espaço</span>
  <ArrowRight className="size-3" />

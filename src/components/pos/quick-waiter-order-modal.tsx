@@ -211,7 +211,7 @@ export function QuickWaiterOrderModal({
  <button
  type="button"
  onClick={() => setSelectedCategory("all")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-3 py-1 rounded-lg font-bold text-[11px] whitespace-nowrap transition-colors cursor-pointer",
  selectedCategory === "all"
  ? "bg-primary text-primary-foreground"
@@ -225,7 +225,7 @@ export function QuickWaiterOrderModal({
  key={cat}
  type="button"
  onClick={() => setSelectedCategory(cat)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-3 py-1 rounded-lg font-bold text-[11px] whitespace-nowrap transition-colors cursor-pointer",
  selectedCategory === cat
  ? "bg-primary text-primary-foreground"

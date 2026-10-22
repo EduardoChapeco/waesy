@@ -133,7 +133,7 @@ export function StudioCanvas({ onExportToHero, className = '', aspectRatio, back
  type="button"
  onClick={() => setAspect(r)}
  className={'px-3 py-2 rounded-lg text-xs font-bold transition-all ' + (
- aspect === r ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
+ aspect === r ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
  {r}
@@ -198,7 +198,7 @@ export function StudioCanvas({ onExportToHero, className = '', aspectRatio, back
  )}
  >
  {layers.map((l) => (
- <div
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  key={l.id}
  onClick={() => setSelectedLayerId(l.id)}
  style={{
@@ -209,7 +209,7 @@ export function StudioCanvas({ onExportToHero, className = '', aspectRatio, back
  fontSize: l.fontSize,
  }}
  className={'cursor-pointer p-1 border rounded transition-all ' + (
- selectedLayerId === l.id ? 'border-primary bg-primary/10' : 'border-transparent'
+ selectedLayerId === l.id ? 'border-primary bg-primary/10' : 'border-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
  {l.text}

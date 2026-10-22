@@ -160,7 +160,7 @@ export function FacetedSearchSheet({
                       isSelected
                         ? "bg-primary/10 border-primary text-primary font-bold shadow-2xs"
                         : "bg-card border-border/60 text-muted-foreground hover:text-foreground hover:border-border"
-                    }`}
+                    } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                   >
                     <span>{opt.label}</span>
                     {isSelected && <Check className="size-3.5" />}
@@ -224,7 +224,7 @@ export function FacetedSearchSheet({
                         isSelected
                           ? "bg-primary text-primary-foreground font-semibold shadow-2xs"
                           : "bg-muted/50 border border-border/50 text-foreground hover:bg-muted"
-                      }`}
+                      } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                     >
                       <span>{niche.label}</span>
                       <Badge
@@ -258,7 +258,7 @@ export function FacetedSearchSheet({
                         isSelected
                           ? "bg-primary text-primary-foreground font-semibold shadow-2xs"
                           : "bg-card border border-border/60 text-muted-foreground hover:text-foreground"
-                      }`}
+                      } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                     >
                       <span>{cat.label}</span>
                       <span className="text-[10px] opacity-70">({cat.count})</span>
@@ -322,7 +322,7 @@ export function FacetedSearchSheet({
                       isSelected
                         ? "bg-primary/10 border-primary text-primary font-bold shadow-2xs"
                         : "bg-card border-border/60 text-muted-foreground hover:text-foreground hover:border-border"
-                    }`}
+                    } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                   >
                     <span>{opt.label}</span>
                     {isSelected && <Check className="size-4" />}
@@ -386,7 +386,7 @@ export function FacetedSearchSheet({
                         isSelected
                           ? "bg-primary text-primary-foreground font-semibold shadow-2xs"
                           : "bg-muted/50 border border-border/50 text-foreground hover:bg-muted"
-                      }`}
+                      } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                     >
                       <span>{niche.label}</span>
                       <Badge
@@ -420,7 +420,7 @@ export function FacetedSearchSheet({
                         isSelected
                           ? "bg-primary text-primary-foreground font-semibold shadow-2xs"
                           : "bg-card border border-border/60 text-muted-foreground hover:text-foreground"
-                      }`}
+                      } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                     >
                       <span>{cat.label}</span>
                       <span className="text-[10px] opacity-70">({cat.count})</span>

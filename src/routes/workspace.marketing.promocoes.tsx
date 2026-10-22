@@ -203,7 +203,7 @@ function WorkspacePromotionsPage() {
   return (
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── PageHeader Canônico ── */}
-      <PageHeader
+      <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         eyebrow="Marketing"
         title="Promoções"
         actions={
@@ -233,7 +233,7 @@ function WorkspacePromotionsPage() {
             activeTab === "promotions"
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
-          }`}
+          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
         >
           <Flame className="size-3.5" />
           <span>Ofertas e Promoções</span>
@@ -249,7 +249,7 @@ function WorkspacePromotionsPage() {
             activeTab === "coupons"
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
-          }`}
+          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
         >
           <Ticket className="size-3.5" />
           <span>Cupons de Desconto</span>
@@ -498,7 +498,7 @@ function WorkspacePromotionsPage() {
       )}
 
       {/* ── SHEET: NOVA OFERTA ──────────────────────────────────────────────── */}
-      <SheetPage
+      <SheetPage /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         open={isPromoOpen}
         onOpenChange={setIsPromoOpen}
         title="Nova Promoção ou Oferta"
@@ -636,7 +636,7 @@ function WorkspacePromotionsPage() {
       </SheetPage>
 
       {/* ── SHEET: NOVO CUPOM DE DESCONTO ───────────────────────────────────── */}
-      <SheetPage
+      <SheetPage /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         open={isCouponOpen}
         onOpenChange={setIsCouponOpen}
         title="Novo Cupom de Desconto"

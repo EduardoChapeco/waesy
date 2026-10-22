@@ -193,7 +193,7 @@ export function PublishMomentModal({
  isSelected
  ? "bg-foreground text-background border-foreground font-bold "
  : "bg-background border-border text-muted-foreground hover:text-foreground hover:bg-muted/70"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <Icon size={14} weight={isSelected ? "fill" : "regular"} />
  <span>{v.label}</span>
@@ -213,7 +213,7 @@ export function PublishMomentModal({
  type="button"
  onClick={handleGetLocation}
  disabled={isLocating}
- className="text-[11px] font-bold text-primary flex items-center gap-1 hover:underline cursor-pointer"
+ className="text-[11px] font-bold text-primary flex items-center gap-1 hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Crosshair size={12} weight="bold" />
  <span>{isLocating ? "Pegando GPS..." : "Usar meu GPS"}</span>
@@ -261,7 +261,7 @@ export function PublishMomentModal({
  tableSize === num
  ? "bg-foreground text-background border-foreground"
  : "bg-background border-border text-muted-foreground hover:text-foreground"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  {num}
  </button>

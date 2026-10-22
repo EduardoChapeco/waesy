@@ -401,11 +401,14 @@ export function NewTravelContractSheet({
  {agencyProposals.map((prop: any) => {
  const price = prop.pricing?.total_price_cents || 0;
  return (
- <div
- key={prop.id}
- onClick={() => handleSelectProposal(prop)}
- className="p-4 rounded-lg border border-border/70 bg-card hover:border-primary/50 hover:bg-muted/30 transition-all cursor-pointer group flex items-center justify-between gap-3 shadow-xs"
- >
+                    <div
+                      key={prop.id}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleSelectProposal(prop); } }}
+                      onClick={() => handleSelectProposal(prop)}
+                      className="p-4 rounded-lg border border-border/70 bg-card hover:border-primary/50 hover:bg-muted/30 transition-colors cursor-pointer group flex items-center justify-between gap-3 shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    >
  <div className="space-y-1 min-w-0">
  <div className="flex items-center gap-2">
  <span className="font-bold text-foreground group-hover:text-primary transition-colors truncate">
@@ -480,9 +483,17 @@ export function NewTravelContractSheet({
  </div>
  ) : (
  crmCustomers.map((c: any) => (
- <div
- key={c.id}
- onClick={() => {
+                      <div
+                        key={c.id}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleSelectCustomer(c); setActiveTab("manual"); } }}
+                        onClick={() => {
+                          handleSelectCustomer(c);
+                          setActiveTab("manual");
+                        }}
+                        className="p-3 rounded-lg border border-border/60 bg-card hover:bg-muted/40 transition-colors cursor-pointer flex items-center justify-between gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
  handleSelectCustomer(c);
  setActiveTab("manual");
  }}
@@ -874,7 +885,7 @@ export function NewTravelContractSheet({
  key={preset}
  type="button"
  onClick={() => applyPaymentPreset(preset)}
- className="text-xs font-medium px-3 py-1 rounded-lg bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+ className="text-xs font-medium px-3 py-1 rounded-lg bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {preset}
  </button>
@@ -899,7 +910,7 @@ export function NewTravelContractSheet({
  <button
  type="button"
  onClick={() => setShowClauses(!showClauses)}
- className="w-full flex items-center justify-between p-4 text-xs font-bold hover:bg-muted/30 transition-colors text-foreground"
+ className="w-full flex items-center justify-between p-4 text-xs font-bold hover:bg-muted/30 transition-colors text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <span className="flex items-center gap-2">
  <Scale className="size-4 text-primary" />

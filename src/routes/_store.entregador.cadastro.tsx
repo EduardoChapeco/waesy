@@ -263,7 +263,7 @@ function CourierOnboardingPage() {
             onClick={() => setStep(1)}
             className={`text-left text-xs font-mono transition-colors ${
               step === 1 ? "text-primary font-bold" : "text-muted-foreground"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             1. Veículo e CNH
           </button>
@@ -274,7 +274,7 @@ function CourierOnboardingPage() {
             }}
             className={`text-left text-xs font-mono transition-colors ${
               step === 2 ? "text-primary font-bold" : "text-muted-foreground"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             2. Biometria e Prova de Vida
           </button>
@@ -285,7 +285,7 @@ function CourierOnboardingPage() {
             }}
             className={`text-left text-xs font-mono transition-colors ${
               step === 3 ? "text-primary font-bold" : "text-muted-foreground"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             3. Autonomia e Termos
           </button>
@@ -323,7 +323,7 @@ function CourierOnboardingPage() {
                         form.vehicleType === m.id
                           ? "border-primary bg-primary/10 text-primary font-bold shadow-xs"
                           : "border-border/60 bg-muted/20 text-muted-foreground hover:text-foreground"
-                      }`}
+                      } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                     >
                       <m.icon size={22} weight="bold" className="mb-1" />
                       <span>{m.label}</span>

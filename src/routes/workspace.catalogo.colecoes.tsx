@@ -171,7 +171,7 @@ function WorkspaceCollectionsPage() {
   return (
     <div className="w-full space-y-6 pb-24 font-sans text-foreground">
       {/* ── 1. Top Header ── */}
-      <PageHeader
+      <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         eyebrow="Catálogo"
         title="Coleções de Produtos"
         actions={
@@ -439,7 +439,7 @@ function WorkspaceCollectionsPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="h-9 rounded-lg text-xs font-medium">Cancelar</AlertDialogCancel>
-            <AlertDialogAction
+            <AlertDialogAction /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
               onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
               className="h-9 rounded-lg text-xs font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >

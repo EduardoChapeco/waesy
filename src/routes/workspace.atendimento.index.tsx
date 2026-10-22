@@ -496,7 +496,7 @@ function WorkspaceAtendimentoPage() {
             <button
               type="button"
               onClick={() => setAgentPresence("online")}
-              className={cn(
+              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                 "px-2 py-1 rounded text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer",
                 agentPresence === "online"
                   ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-bold"
@@ -509,7 +509,7 @@ function WorkspaceAtendimentoPage() {
             <button
               type="button"
               onClick={() => setAgentPresence("busy")}
-              className={cn(
+              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                 "px-2 py-1 rounded text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer",
                 agentPresence === "busy"
                   ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 font-bold"
@@ -522,7 +522,7 @@ function WorkspaceAtendimentoPage() {
             <button
               type="button"
               onClick={() => setAgentPresence("away")}
-              className={cn(
+              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                 "px-2 py-1 rounded text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer",
                 agentPresence === "away"
                   ? "bg-muted text-muted-foreground font-bold"
@@ -541,7 +541,7 @@ function WorkspaceAtendimentoPage() {
           <button
             type="button"
             onClick={() => setActiveHubTab("live")}
-            className={cn(
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0",
               activeHubTab === "live"
                 ? "bg-primary text-primary-foreground shadow-xs font-bold"
@@ -561,7 +561,7 @@ function WorkspaceAtendimentoPage() {
           <button
             type="button"
             onClick={() => setActiveHubTab("sdr")}
-            className={cn(
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0",
               activeHubTab === "sdr"
                 ? "bg-primary text-primary-foreground shadow-xs font-bold"
@@ -581,7 +581,7 @@ function WorkspaceAtendimentoPage() {
           <button
             type="button"
             onClick={() => setActiveHubTab("metrics")}
-            className={cn(
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0",
               activeHubTab === "metrics"
                 ? "bg-primary text-primary-foreground shadow-xs font-bold"
@@ -596,7 +596,7 @@ function WorkspaceAtendimentoPage() {
           <button
             type="button"
             onClick={() => setActiveHubTab("whatsapp")}
-            className={cn(
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0",
               activeHubTab === "whatsapp"
                 ? "bg-primary text-primary-foreground shadow-xs font-bold"
@@ -611,7 +611,7 @@ function WorkspaceAtendimentoPage() {
           <button
             type="button"
             onClick={() => setActiveHubTab("hours")}
-            className={cn(
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0",
               activeHubTab === "hours"
                 ? "bg-primary text-primary-foreground shadow-xs font-bold"
@@ -659,7 +659,7 @@ function WorkspaceAtendimentoPage() {
                     key={chip.id}
                     type="button"
                     onClick={() => setStatusFilter(chip.id as any)}
-                    className={cn(
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer shrink-0",
                       statusFilter === chip.id
                         ? "bg-primary text-primary-foreground font-bold shadow-2xs"
@@ -708,7 +708,7 @@ function WorkspaceAtendimentoPage() {
                     <button
                       key={t.id}
                       onClick={() => setActiveThreadId(t.id)}
-                      className={cn(
+                      className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                         "w-full p-4 text-left flex items-start gap-3 transition-colors cursor-pointer border-l-4",
                         isActive
                           ? "bg-muted/70 border-primary"
@@ -1084,7 +1084,7 @@ function WorkspaceAtendimentoPage() {
                       key={macro.cmd}
                       type="button"
                       onClick={() => setText(macro.text)}
-                      className="px-2 py-1 rounded-md text-xs font-mono font-medium bg-muted/50 hover:bg-muted border border-border/60 text-muted-foreground hover:text-foreground shrink-0 transition-colors cursor-pointer"
+                      className="px-2 py-1 rounded-md text-xs font-mono font-medium bg-muted/50 hover:bg-muted border border-border/60 text-muted-foreground hover:text-foreground shrink-0 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       {macro.cmd} <span className="text-xs opacity-75">({macro.label})</span>
                     </button>
@@ -1239,7 +1239,7 @@ function WorkspaceAtendimentoPage() {
                   key={pill.id}
                   type="button"
                   onClick={() => setSdrIntentFilter(pill.id)}
-                  className={cn(
+                  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                     "px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer flex items-center gap-1",
                     sdrIntentFilter === pill.id
                       ? "bg-primary text-primary-foreground font-bold shadow-2xs"

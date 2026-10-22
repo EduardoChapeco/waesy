@@ -288,7 +288,7 @@ export function StoreVitrineSectionsEditor({
                     setIsEditingCardOpen(false);
                     setEditingCard(null);
                   }}
-                  className="text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                  className="text-xs text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   Cancelar
                 </button>

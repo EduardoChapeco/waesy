@@ -73,7 +73,7 @@ export function FlightSearchWidget({
           <button
             type="button"
             onClick={() => setIsRoundTrip(true)}
-            className={cn(
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "px-3 py-1 rounded-md font-medium transition-colors cursor-pointer",
               isRoundTrip ? "bg-card text-foreground font-semibold shadow-xs" : "text-muted-foreground"
             )}
@@ -83,7 +83,7 @@ export function FlightSearchWidget({
           <button
             type="button"
             onClick={() => setIsRoundTrip(false)}
-            className={cn(
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "px-3 py-1 rounded-md font-medium transition-colors cursor-pointer",
               !isRoundTrip ? "bg-card text-foreground font-semibold shadow-xs" : "text-muted-foreground"
             )}

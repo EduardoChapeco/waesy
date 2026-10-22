@@ -92,7 +92,7 @@ function StoreRouteError({ error }: { error: unknown }) {
  onClick={() => {
  if (typeof window !== "undefined") window.location.reload();
  }}
- className="w-full sm:w-auto h-10 px-5 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors cursor-pointer"
+ className="w-full sm:w-auto h-10 px-5 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  Tentar novamente
  </button>

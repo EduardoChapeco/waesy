@@ -8,7 +8,6 @@ import {
   Ticket,
   Share2,
   ShieldCheck,
-  Sparkles,
   CheckCircle2,
   Users,
   Mic,
@@ -37,8 +36,10 @@ import {
   Navigation,
   Building2,
 } from "lucide-react";
+import { formatCanonicalAddress } from "@/lib/format-address";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { MapLibreCanvas } from "@/components/mobility/maplibre-canvas";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -64,61 +65,14 @@ import {
   verifyClassifiedTicketByCode,
 } from "@/services/classifieds-events.functions";
 
-export interface EventTicketTier {
-  id: string;
-  name: string;
-  price_cents?: number;
-  price?: number;
-  external_url?: string;
-  purchase_url?: string;
-  batch?: string;
-  description?: string;
-  status?: "available" | "active" | "sold_out" | "coming_soon";
-  included_items?: string[];
-}
-
-export interface EventScheduleItem {
-  id: string;
-  time: string;
-  end_time?: string;
-  stage_or_room?: string;
-  stage?: string;
-  title: string;
-  description?: string;
-  speaker_name?: string;
-  speaker_role?: string;
-  speaker_photo?: string;
-  is_break?: boolean;
-}
-
-export interface EventSpeaker {
-  id: string;
-  name: string;
-  role: string;
-  photo_url?: string;
-  avatar_url?: string;
-  company?: string;
-  bio?: string;
-  social_link?: string;
-  social_url?: string;
-}
-
-export interface EventSponsor {
-  id: string;
-  name: string;
-  tier: "master" | "ouro" | "prata" | "apoio";
-  logo_url?: string;
-  website_url?: string;
-}
-
-export interface EventSurvey {
-  id: string;
-  question: string;
-  options: string[];
-  allow_anonymous?: boolean;
-  is_active?: boolean;
-  active?: boolean;
-}
+export type {
+  EventTicketTier,
+  EventScheduleItem,
+  EventSpeaker,
+  EventSponsor,
+  EventSurvey,
+  EventPollOptionNormalized,
+} from "@/lib/classifieds/event-domain";
 
 export interface EventClassifiedShowcaseViewProps {
   classified: any;
@@ -154,6 +108,8 @@ export function EventClassifiedShowcaseView({
   const defaultTierId =
     event.active_ticket_tiers[0]?.id || event.ticket_tiers[0]?.id || null;
   const [selectedTierId, setSelectedTierId] = useState<string | null>(defaultTierId);
+  const [heroImageFailed, setHeroImageFailed] = useState(false);
+  const canonicalVenueAddress = formatCanonicalAddress(event.venue_address, event.city, event.state);
 
   useEffect(() => {
     const nextDefault =
@@ -419,10 +375,11 @@ export function EventClassifiedShowcaseView({
       {/* 1. CLEAN WIDE HERO BANNER (ZERO HEAVY SHADOW OVERLAY, CONTROLLABLE FOCAL POINT) */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-4 sm:pt-6">
         <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] rounded-lg overflow-hidden border border-border/60 bg-muted">
-          {event.hero_image_url ? (
+          {event.hero_image_url && !heroImageFailed ? (
             <img
               src={event.hero_image_url}
               alt={event.title}
+              onError={() => setHeroImageFailed(true)}
               className={`w-full h-full object-cover ${
                 event.hero_focal_point === "top"
                   ? "object-top"
@@ -478,7 +435,7 @@ export function EventClassifiedShowcaseView({
         </div>
 
         {/* 2. FULL-WIDTH EVENT HEADER & STRUCTURED SUMMARY BAR (ZERO TRUNCATION) */}
-        <header className="mt-6 bg-card rounded-lg border border-border/60 p-5 sm:p-6">
+        <header className="mt-4 sm:mt-6 sm:bg-card sm:rounded-lg sm:border sm:border-border/60 py-2 sm:p-6">
           <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
             {/* Left: Date Tile + Full-Width Title + Separated Schedule & Metadata */}
             <div className="flex items-start gap-4 flex-1 min-w-0">
@@ -577,9 +534,10 @@ export function EventClassifiedShowcaseView({
                         {event.venue_name}
                       </p>
                       <p className="text-xs text-muted-foreground break-words">
-                        {[event.venue_address, `${event.city} - ${event.state}`]
-                          .filter(Boolean)
-                          .join(" • ")}
+                        {canonicalVenueAddress?.display ||
+                          [event.venue_address, `${event.city} - ${event.state}`]
+                            .filter(Boolean)
+                            .join(" • ")}
                       </p>
                     </div>
                   </button>
@@ -603,7 +561,7 @@ export function EventClassifiedShowcaseView({
                 </Button>
 
                 {calendarMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-60 rounded-lg border border-border bg-card p-2 shadow-lg z-30 space-y-1">
+                  <div className="absolute right-0 mt-2 w-60 rounded-lg border border-border bg-card p-2 z-30 space-y-1">
                     <a
                       href={calendarLinks.googleCalendarUrl}
                       target="_blank"
@@ -669,7 +627,7 @@ export function EventClassifiedShowcaseView({
                 <span>{sec.label}</span>
                 {typeof sec.count === "number" && sec.count > 0 && (
                   <span
-                    className={`px-2 py-0.5 rounded-full text-xs font-extrabold ${
+                    className={`px-2 py-1 rounded-full text-xs font-extrabold ${
                       isActive
                         ? "bg-primary-foreground/20 text-primary-foreground"
                         : "bg-muted text-foreground"
@@ -709,11 +667,14 @@ export function EventClassifiedShowcaseView({
                       <img
                         src={card.image_url}
                         alt={card.title}
+                        onError={(e) => {
+                          (e.currentTarget as HTMLElement).style.display = "none";
+                        }}
                         className="size-12 rounded-lg object-cover shrink-0 border border-border/50"
                       />
                     ) : (
                       <div className="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                        <Sparkles className="size-5" />
+                        <Ticket className="size-5" />
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
@@ -734,9 +695,9 @@ export function EventClassifiedShowcaseView({
 
             {/* SECTION: SOBRE O EVENTO + CUSTOM CMS SECTIONS */}
             <section id="section-sobre" className="scroll-mt-20 space-y-6">
-              <div className="bg-card rounded-lg border border-border/60 p-6 space-y-4">
+              <div className="py-2 sm:bg-card sm:rounded-lg sm:border sm:border-border/60 sm:p-6 space-y-4">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="size-5 text-primary shrink-0" />
+                  <Info className="size-5 text-primary shrink-0" />
                   <h2 className="text-xl font-black tracking-tight text-foreground">
                     Sobre o Evento
                   </h2>
@@ -810,7 +771,7 @@ export function EventClassifiedShowcaseView({
               event.external_ticket_url ||
               event.participation_mode === "FREE") && (
               <section id="section-ingressos" className="scroll-mt-20 space-y-4">
-                <div className="bg-card rounded-lg border border-border/60 p-6 space-y-5">
+                <div className="py-2 sm:bg-card sm:rounded-lg sm:border sm:border-border/60 sm:p-6 space-y-5">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <Ticket className="size-5 text-primary shrink-0" />
@@ -842,13 +803,13 @@ export function EventClassifiedShowcaseView({
                               <div className="flex items-center justify-between gap-2 flex-wrap">
                                 <Badge
                                   variant="secondary"
-                                  className="text-xs font-bold px-2 py-0.5 rounded-md"
+                                  className="text-xs font-bold px-2 py-1 rounded-md"
                                 >
                                   {tier.category_label}
                                 </Badge>
                                 <Badge
                                   variant={tier.is_purchasable ? "default" : "outline"}
-                                  className={`text-xs font-bold px-2 py-0.5 rounded-md ${
+                                  className={`text-xs font-bold px-2 py-1 rounded-md ${
                                     tier.lifecycle_state === "SOLD_OUT" ||
                                     tier.lifecycle_state === "ENDED"
                                       ? "border-destructive/40 text-destructive"
@@ -937,7 +898,7 @@ export function EventClassifiedShowcaseView({
             {/* SECTION: PROGRAMAÇÃO & CRONOGRAMA MULTI-DIA COM PALESTRANTES VINCULADOS */}
             {event.schedule.length > 0 && (
               <section id="section-programacao" className="scroll-mt-20 space-y-4">
-                <div className="bg-card rounded-lg border border-border/60 p-6 space-y-5">
+                <div className="py-2 sm:bg-card sm:rounded-lg sm:border sm:border-border/60 sm:p-6 space-y-5">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
                       <Clock className="size-5 text-primary shrink-0" />
@@ -1050,7 +1011,7 @@ export function EventClassifiedShowcaseView({
             {/* SECTION: PALESTRANTES, CONVIDADOS & ATRAÇÕES (ZERO BIO TRUNCATION) */}
             {event.speakers.length > 0 && (
               <section id="section-palestrantes" className="scroll-mt-20 space-y-4">
-                <div className="bg-card rounded-lg border border-border/60 p-6 space-y-5">
+                <div className="py-2 sm:bg-card sm:rounded-lg sm:border sm:border-border/60 sm:p-6 space-y-5">
                   <div className="flex items-center gap-2">
                     <Mic className="size-5 text-primary shrink-0" />
                     <h2 className="text-xl font-black tracking-tight text-foreground">
@@ -1124,7 +1085,7 @@ export function EventClassifiedShowcaseView({
             {/* SECTION: MÍDIA, GALERIA EXCLUSIVA DO EVENTO & VÍDEO */}
             {(event.gallery_images.length > 0 || event.video_url || event.story_url) && (
               <section id="section-midia" className="scroll-mt-20 space-y-4">
-                <div className="bg-card rounded-lg border border-border/60 p-6 space-y-5">
+                <div className="py-2 sm:bg-card sm:rounded-lg sm:border sm:border-border/60 sm:p-6 space-y-5">
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     <div className="flex items-center gap-2">
                       <ImageIcon className="size-5 text-primary shrink-0" />
@@ -1200,7 +1161,7 @@ export function EventClassifiedShowcaseView({
             {/* SECTION: ENQUETES INTERATIVAS COM AGENDAMENTO */}
             {event.surveys.length > 0 && (
               <section id="section-enquetes" className="scroll-mt-20 space-y-4">
-                <div className="bg-card rounded-lg border border-border/60 p-6 space-y-5">
+                <div className="py-2 sm:bg-card sm:rounded-lg sm:border sm:border-border/60 sm:p-6 space-y-5">
                   <div className="flex items-center gap-2">
                     <BarChart3 className="size-5 text-primary shrink-0" />
                     <h2 className="text-xl font-black tracking-tight text-foreground">
@@ -1287,7 +1248,7 @@ export function EventClassifiedShowcaseView({
 
             {/* SECTION: LOCALIZAÇÃO, MAPA & MÚLTIPLOS PONTOS DE ACESSO */}
             <section id="section-local" className="scroll-mt-20 space-y-4">
-              <div className="bg-card rounded-lg border border-border/60 p-6 space-y-5">
+              <div className="py-2 sm:bg-card sm:rounded-lg sm:border sm:border-border/60 sm:p-6 space-y-5">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
                     <MapPin className="size-5 text-primary shrink-0" />
@@ -1307,22 +1268,39 @@ export function EventClassifiedShowcaseView({
                 </div>
 
                 {/* Primary Venue Card */}
-                <div className="p-4 rounded-lg border border-border/60 bg-background space-y-2">
+                <div className="py-3 border-t border-border/40 sm:p-4 sm:rounded-lg sm:border sm:border-border/60 sm:bg-background space-y-2">
                   <Badge variant="secondary" className="text-xs font-bold">
                     Local Principal
                   </Badge>
                   <h3 className="text-base font-bold text-foreground break-words">
                     {event.venue_name}
                   </h3>
-                  {event.venue_address && (
-                    <p className="text-sm text-muted-foreground break-words">
-                      {event.venue_address}
-                    </p>
-                  )}
-                  <p className="text-xs font-semibold text-muted-foreground">
-                    {event.city} - {event.state}
+                  <p className="text-sm text-muted-foreground break-words">
+                    {canonicalVenueAddress?.display ||
+                      [event.venue_address, `${event.city} - ${event.state}`]
+                        .filter(Boolean)
+                        .join(" • ")}
                   </p>
                 </div>
+
+                {/* Mapa real do local (coordenadas persistidas do evento) */}
+                {typeof event.latitude === "number" && typeof event.longitude === "number" && (
+                  <div className="w-full aspect-[16/9] sm:aspect-[21/9] rounded-lg overflow-hidden border border-border/60 bg-muted/20">
+                    <MapLibreCanvas
+                      initialCenter={[event.longitude, event.latitude]}
+                      initialZoom={15}
+                      markers={[
+                        {
+                          id: "event-venue",
+                          lat: event.latitude,
+                          lng: event.longitude,
+                          title: event.venue_name,
+                        },
+                      ]}
+                      className="size-full"
+                    />
+                  </div>
+                )}
 
                 {/* Multiple Access Points (Credenciamento, Estacionamento, Entrada VIP, PCD) */}
                 {event.access_points.length > 0 && (
@@ -1373,7 +1351,7 @@ export function EventClassifiedShowcaseView({
                 {(event.policies.parking_info || event.policies.accessibility_info) && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                     {event.policies.parking_info && (
-                      <div className="p-4 rounded-lg bg-muted/30 border border-border/50 space-y-1">
+                      <div className="py-3 border-t border-border/40 sm:p-4 sm:rounded-lg sm:bg-muted/30 sm:border sm:border-border/50 space-y-1">
                         <div className="flex items-center gap-2 text-xs font-bold text-foreground">
                           <Car className="size-4 text-primary shrink-0" />
                           <span>Estacionamento</span>
@@ -1384,7 +1362,7 @@ export function EventClassifiedShowcaseView({
                       </div>
                     )}
                     {event.policies.accessibility_info && (
-                      <div className="p-4 rounded-lg bg-muted/30 border border-border/50 space-y-1">
+                      <div className="py-3 border-t border-border/40 sm:p-4 sm:rounded-lg sm:bg-muted/30 sm:border sm:border-border/50 space-y-1">
                         <div className="flex items-center gap-2 text-xs font-bold text-foreground">
                           <Accessibility className="size-4 text-primary shrink-0" />
                           <span>Acessibilidade (PCD)</span>
@@ -1402,7 +1380,7 @@ export function EventClassifiedShowcaseView({
             {/* SECTION: PARCEIROS, PATROCINADORES & APOIO (RECTANGULAR CONTAIN LOGOS) */}
             {event.sponsors.length > 0 && (
               <section id="section-parceiros" className="scroll-mt-20 space-y-4">
-                <div className="bg-card rounded-lg border border-border/60 p-6 space-y-6">
+                <div className="py-2 sm:bg-card sm:rounded-lg sm:border sm:border-border/60 sm:p-6 space-y-6">
                   <div className="flex items-center gap-2">
                     <Award className="size-5 text-primary shrink-0" />
                     <h2 className="text-xl font-black tracking-tight text-foreground">
@@ -1466,7 +1444,7 @@ export function EventClassifiedShowcaseView({
             {/* SECTION: POLÍTICAS E DIRETRIZES OFICIAIS */}
             {event.has_policies && (
               <section id="section-politicas" className="scroll-mt-20 space-y-4">
-                <div className="bg-card rounded-lg border border-border/60 p-6 space-y-4">
+                <div className="py-2 sm:bg-card sm:rounded-lg sm:border sm:border-border/60 sm:p-6 space-y-4">
                   <div className="flex items-center gap-2">
                     <Info className="size-5 text-primary shrink-0" />
                     <h2 className="text-xl font-black tracking-tight text-foreground">
@@ -1476,7 +1454,7 @@ export function EventClassifiedShowcaseView({
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {event.policies.refund_policy && (
-                      <div className="p-4 rounded-lg border border-border/60 bg-background space-y-2">
+                      <div className="py-3 border-t border-border/40 sm:p-4 sm:rounded-lg sm:border sm:border-border/60 sm:bg-background space-y-2">
                         <div className="flex items-center gap-2 text-xs font-bold text-foreground">
                           <RefreshCcw className="size-4 text-primary shrink-0" />
                           <span>Cancelamento e Reembolso</span>
@@ -1487,7 +1465,7 @@ export function EventClassifiedShowcaseView({
                       </div>
                     )}
                     {event.policies.half_price_policy && (
-                      <div className="p-4 rounded-lg border border-border/60 bg-background space-y-2">
+                      <div className="py-3 border-t border-border/40 sm:p-4 sm:rounded-lg sm:border sm:border-border/60 sm:bg-background space-y-2">
                         <div className="flex items-center gap-2 text-xs font-bold text-foreground">
                           <BadgePercent className="size-4 text-primary shrink-0" />
                           <span>Meia-Entrada e Benefícios</span>
@@ -1498,7 +1476,7 @@ export function EventClassifiedShowcaseView({
                       </div>
                     )}
                     {event.policies.accessibility_info && (
-                      <div className="p-4 rounded-lg border border-border/60 bg-background space-y-2">
+                      <div className="py-3 border-t border-border/40 sm:p-4 sm:rounded-lg sm:border sm:border-border/60 sm:bg-background space-y-2">
                         <div className="flex items-center gap-2 text-xs font-bold text-foreground">
                           <Accessibility className="size-4 text-primary shrink-0" />
                           <span>Acessibilidade</span>
@@ -1509,7 +1487,7 @@ export function EventClassifiedShowcaseView({
                       </div>
                     )}
                     {event.policies.parking_info && (
-                      <div className="p-4 rounded-lg border border-border/60 bg-background space-y-2">
+                      <div className="py-3 border-t border-border/40 sm:p-4 sm:rounded-lg sm:border sm:border-border/60 sm:bg-background space-y-2">
                         <div className="flex items-center gap-2 text-xs font-bold text-foreground">
                           <Car className="size-4 text-primary shrink-0" />
                           <span>Estacionamento e Acesso</span>
@@ -1526,7 +1504,7 @@ export function EventClassifiedShowcaseView({
 
             {/* MURAL DE PARTICIPANTES & DEPOIMENTOS */}
             {(totalConfirmed > 0 || testimonials.length > 0) && (
-              <section className="bg-card rounded-lg border border-border/60 p-6 space-y-4">
+              <section className="py-2 sm:bg-card sm:rounded-lg sm:border sm:border-border/60 sm:p-6 space-y-4">
                 <div className="flex items-center justify-between gap-2 flex-wrap">
                   <div className="flex items-center gap-2">
                     <Users className="size-5 text-primary shrink-0" />
@@ -1565,7 +1543,7 @@ export function EventClassifiedShowcaseView({
                     {testimonials.map((t: any) => (
                       <div
                         key={t.id}
-                        className="p-4 rounded-lg border border-border/60 bg-background space-y-2"
+                        className="py-3 border-t border-border/40 sm:p-4 sm:rounded-lg sm:border sm:border-border/60 sm:bg-background space-y-2"
                       >
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-bold text-foreground">
@@ -1600,7 +1578,7 @@ export function EventClassifiedShowcaseView({
             }
           >
             {/* Ticket Conversion Card */}
-            <div className="bg-card rounded-lg border border-border/60 p-6 space-y-5">
+            <div className="py-2 sm:bg-card sm:rounded-lg sm:border sm:border-border/60 sm:p-6 space-y-5">
               <div className="flex items-center justify-between border-b border-border/50 pb-4">
                 <div>
                   <span className="text-xs font-bold uppercase tracking-wider text-primary block">
@@ -1707,7 +1685,7 @@ export function EventClassifiedShowcaseView({
             </div>
 
             {/* Multiple Organizers & Realizers Card (Honest Verification - Rule B.33) */}
-            <div className="bg-card rounded-lg border border-border/60 p-5 space-y-4">
+            <div className="py-2 sm:bg-card sm:rounded-lg sm:border sm:border-border/60 sm:p-6 space-y-4">
               <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Realização e Organização
               </h4>

@@ -581,19 +581,6 @@ export function ClassifiedDetailMobile({
                 <Badge variant="outline" className="text-xs font-semibold text-primary border-primary/30 bg-primary/10">
                   {niche.shortLabel || niche.title}
                 </Badge>
-                <Badge variant="secondary" data-template-badge={templateStyle} className="text-xs font-semibold">
-                  {templateStyle === "automotivo"
-                    ? "Showroom Automotivo"
-                    : templateStyle === "imobiliario"
-                    ? "Ficha Patrimonial"
-                    : templateStyle === "resort_hotel"
-                    ? "Estadia & Hospitalidade"
-                    : templateStyle === "servicos_agenda"
-                    ? "Agenda & Serviços"
-                    : templateStyle === "editorial"
-                    ? "Dossiê Editorial"
-                    : "Vitrine Padrão"}
-                </Badge>
                 {classified.condition && !["hospitality_stay", "real_estate_sale", "real_estate_rent", "service", "job", "event", "travel", "digital", "subscription", "business"].includes(niche.id) && (
                   <Badge variant="secondary" className="text-xs font-medium">
                     {classified.condition === "new" ? "Novo" : classified.condition === "refurbished" ? "Revisado" : "Usado"}
@@ -610,13 +597,13 @@ export function ClassifiedDetailMobile({
               <div className="pt-1">
                 {isDonation ? (
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-extrabold text-emerald-600 font-mono">Gratuito</span>
+                    <span className="text-2xl font-extrabold text-emerald-600 font-mono whitespace-nowrap tabular-nums">Gratuito</span>
                     <span className="text-xs text-muted-foreground">Doação sem custo</span>
                   </div>
                 ) : isInvestmentOpportunity ? (
                   <div className="space-y-1">
                     <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider block">Aporte Solicitado</span>
-                    <span className="text-2xl font-extrabold text-foreground font-mono">
+                    <span className="text-2xl font-extrabold text-foreground font-mono whitespace-nowrap tabular-nums">
                       {targetInvestment > 0 ? formatMoney(targetInvestment) : (priceCents > 0 ? formatMoney(priceCents) : "A combinar")}
                     </span>
                     {offeredEquity && <span className="text-xs text-primary font-semibold block">{offeredEquity} de participação</span>}
@@ -624,15 +611,15 @@ export function ClassifiedDetailMobile({
                 ) : (
                   <div className="space-y-1">
                     <div className="flex items-baseline gap-2">
-                      <span className="text-2xl sm:text-3xl font-extrabold text-foreground font-mono">
+                      <span className="text-2xl sm:text-3xl font-extrabold text-foreground font-mono whitespace-nowrap tabular-nums">
                         {priceCents > 0 ? formatMoney(priceCents) : "Consulte o anunciante"}
                       </span>
                       {niche.priceSuffix && (
-                        <span className="text-xs text-muted-foreground font-normal">{niche.priceSuffix}</span>
+                        <span className="text-xs text-muted-foreground font-normal whitespace-nowrap">{niche.priceSuffix}</span>
                       )}
                     </div>
                     {priceCents > 0 && maxInstallments > 1 && acceptsCard && (
-                      <p className="text-xs text-muted-foreground font-mono">
+                      <p className="text-xs text-muted-foreground font-mono whitespace-nowrap tabular-nums">
                         ou até {maxInstallments}x de {formatMoney(installmentCents)} {cardInterestFree ? "sem juros" : ""}
                       </p>
                     )}
@@ -753,7 +740,7 @@ export function ClassifiedDetailMobile({
             {isTravelOrHospitality && (
               <div className="space-y-4">
                 {/* ── CARD 1: Destino & Localização ── */}
-                <div className="rounded-lg border border-border/60 bg-card p-4 space-y-3">
+                <div className="border-t border-border/40 pt-4 space-y-3">
                   <div className="flex items-center gap-2 text-xs font-bold text-foreground">
                     <MapPin className="size-4 text-primary shrink-0" />
                     <span className="uppercase tracking-wider">Destino & Localização</span>
@@ -789,7 +776,7 @@ export function ClassifiedDetailMobile({
                 </div>
 
                 {/* ── CARD 2: Hospedagem & Hotel ── */}
-                <div className="rounded-lg border border-border/60 bg-card p-4 space-y-3">
+                <div className="border-t border-border/40 pt-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-xs font-bold text-foreground">
                       <Hotel className="size-4 text-primary shrink-0" />
@@ -870,7 +857,7 @@ export function ClassifiedDetailMobile({
                 </div>
 
                 {/* ── CARD 3: O que inclui o pacote ── */}
-                <div className="rounded-lg border border-border/60 bg-card p-4 space-y-3">
+                <div className="border-t border-border/40 pt-4 space-y-3">
                   <div className="flex items-center gap-2 text-xs font-bold text-foreground">
                     <Package className="size-4 text-primary shrink-0" />
                     <span className="uppercase tracking-wider">O Que Inclui o Pacote</span>
@@ -941,7 +928,7 @@ export function ClassifiedDetailMobile({
                 <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   Descrição
                 </h2>
-                <div className="rounded-lg border border-border/50 bg-card p-4 space-y-2 text-sm sm:text-base text-foreground/90 leading-relaxed">
+                <div className="border-t border-border/40 pt-4 space-y-2 text-sm sm:text-base text-foreground/90 leading-relaxed">
                   <p className={isDescExpanded ? "whitespace-pre-line" : "whitespace-pre-line line-clamp-4"}>
                     {classified.content}
                   </p>
@@ -967,7 +954,7 @@ export function ClassifiedDetailMobile({
                   </h2>
                   <span className="text-xs text-muted-foreground font-mono">Condições</span>
                 </div>
-                <div className="rounded-lg border border-border/50 bg-card p-4 space-y-3">
+                <div className="border-t border-border/40 pt-4 space-y-3">
                   <div className="flex flex-wrap gap-2">
                     {paymentMethodsList.map((pm) => (
                       <span
@@ -1076,7 +1063,7 @@ export function ClassifiedDetailMobile({
         {/* ABA 3: Anunciante / Empresa */}
         {activeTab === "seller" && (
           <div className="space-y-4 animate-in fade-in duration-150">
-            <div className="rounded-lg border border-border/60 bg-card p-4 space-y-4">
+            <div className="border-t border-border/40 pt-4 space-y-4">
               <div className="flex items-center gap-3">
                 <div className="size-12 rounded-lg bg-muted flex items-center justify-center font-bold text-muted-foreground text-sm overflow-hidden shrink-0 border border-border/40">
                   {author?.avatar_url ? (

@@ -262,7 +262,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
             filterType === "all"
               ? "bg-primary text-primary-foreground shadow-2xs"
               : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
-          }`}
+          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
         >
           Todas ({total})
         </button>
@@ -278,7 +278,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
                 isSelected
                   ? "bg-primary text-primary-foreground shadow-2xs"
                   : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
-              }`}
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
             >
               {t.label} ({count})
             </button>
@@ -300,10 +300,10 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
             const Icon = typeConfig?.icon || Users;
 
             return (
-              <div
+              <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                 key={c.id}
                 onClick={() => setSelectedBadge(c)}
-                className="p-3 rounded-lg bg-card border border-border/60 flex items-center justify-between gap-3 shadow-2xs active:bg-muted/40 cursor-pointer"
+                className="p-3 rounded-lg bg-card border border-border/60 flex items-center justify-between gap-3 shadow-2xs active:bg-muted/40 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="size-10 rounded-lg bg-muted/50 flex items-center justify-center shrink-0 border border-border/40">

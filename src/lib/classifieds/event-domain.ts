@@ -82,6 +82,9 @@ export interface EventTicketTierNormalized {
   lifecycle_state: EventTicketLotLifecycleState;
   lifecycle_badge_label: string;
   is_purchasable: boolean;
+  status?: "available" | "sold_out" | "coming_soon" | string;
+  purchase_url?: string;
+  batch?: string;
 }
 
 export interface EventSpeakerNormalized {
@@ -112,6 +115,7 @@ export interface EventScheduleItemNormalized {
   speaker_id?: string;
   speaker_name?: string;
   linked_speaker?: EventSpeakerNormalized;
+  is_break?: boolean;
 }
 
 export interface EventScheduleDayGroup {
@@ -123,6 +127,7 @@ export interface EventScheduleDayGroup {
 
 export type EventPartnerTier =
   | "realizacao"
+  | "master"
   | "ouro"
   | "prata"
   | "apoio"

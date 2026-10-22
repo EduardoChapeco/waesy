@@ -47,7 +47,7 @@ export function AiCurationUpgradeModal({
           <Link
             to="/workspace/configuracoes/inteligencia-artificial"
             onClick={onClose}
-            className="flex items-start gap-3 p-4 rounded-lg border border-border/70 hover:border-primary/50 bg-muted/20 hover:bg-muted/40 transition-all cursor-pointer group"
+            className="flex items-start gap-3 p-4 rounded-lg border border-border/70 hover:border-primary/50 bg-muted/20 hover:bg-muted/40 transition-all cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <div className="size-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0 mt-1">
               <Key className="size-4" />
@@ -69,7 +69,7 @@ export function AiCurationUpgradeModal({
           <Link
             to="/workspace/configuracoes"
             onClick={onClose}
-            className="flex items-start gap-3 p-4 rounded-lg border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-all cursor-pointer group"
+            className="flex items-start gap-3 p-4 rounded-lg border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-all cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
               <Zap className="size-4" />

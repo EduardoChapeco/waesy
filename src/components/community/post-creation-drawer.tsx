@@ -450,7 +450,7 @@ export function PostCreationDrawer({
  <div className="flex items-center gap-3">
  <button
  onClick={() => onOpenChange(false)}
- className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center hover:bg-muted active:scale-95 transition-all text-muted-foreground hover:text-foreground cursor-pointer"
+ className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center hover:bg-muted active:scale-95 transition-all text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  aria-label="Fechar"
  >
  <X size={20} weight="bold" />
@@ -491,7 +491,7 @@ export function PostCreationDrawer({
  isActive
  ? "bg-foreground text-background shadow-xs scale-102"
  : "bg-card text-muted-foreground hover:text-foreground hover:bg-card/80 border border-border/50"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <Icon size={16} weight={isActive ? "fill" : "bold"} className={isActive ? "" : fmt.color} />
  <span>{fmt.label}</span>
@@ -569,7 +569,7 @@ export function PostCreationDrawer({
  <button
  type="button"
  onClick={() => handleRemoveMedia(idx)}
- className="absolute top-1.5 right-1.5 size-8 min-h-8 min-w-8 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-destructive transition-colors cursor-pointer"
+ className="absolute top-1.5 right-1.5 size-8 min-h-8 min-w-8 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-destructive transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  aria-label="Remover mídia"
  >
  <Trash size={12} weight="bold" />
@@ -588,7 +588,7 @@ export function PostCreationDrawer({
  key={ratio}
  type="button"
  onClick={() => setAspectRatio(ratio)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-3 py-1 text-xs font-bold rounded-md transition-colors cursor-pointer",
  aspectRatio === ratio
  ? "bg-background text-foreground shadow-xs"
@@ -624,7 +624,7 @@ export function PostCreationDrawer({
  <button
  type="button"
  onClick={() => handleRemoveThreadNode(index)}
- className="text-muted-foreground hover:text-destructive text-xs cursor-pointer p-1"
+ className="text-muted-foreground hover:text-destructive text-xs cursor-pointer p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Trash size={14} />
  </button>

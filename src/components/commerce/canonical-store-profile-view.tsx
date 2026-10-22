@@ -42,6 +42,8 @@ import { PromotionalFlyersRail } from "@/components/commerce/flyers/promotional-
 import { listActiveStoreFlyers, type PromotionalFlyerDTO } from "@/services/store-flyers.functions";
 import { ClaimBusinessModal } from "@/components/commerce/claim-business-modal";
 import { ProductAiSdrChat } from "@/components/commerce/product-ai-sdr-chat";
+import { TetrisActionGrid } from "@/components/layout/tetris-action-grid";
+import { formatCanonicalAddress } from "@/lib/format-address";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -160,7 +162,7 @@ export function CanonicalStoreProfileView({
     settings.logoUrl ||
     settings.logo_url ||
     null;
-
+
   // Modal de Orçamento
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
   const [quoteName, setQuoteName] = useState("");
@@ -578,62 +580,11 @@ function cleanAddressSegment(text: string): string {
     );
     if (isHidden) return null;
 
-    let raw = store.address || store.settings?.address || store.location || "";
-    let street = "";
-    let neighborhood = (store.neighborhood || store.settings?.neighborhood || "").trim();
-
-    if (Array.isArray(raw)) {
-      raw = raw.filter(Boolean).join(", ");
-    } else if (typeof raw === "object" && raw !== null) {
-      neighborhood = (raw.neighborhood || neighborhood).trim();
-      raw = [raw.street, raw.number].filter(Boolean).join(", ");
-    }
-
-    if (typeof raw === "string") {
-      street = cleanAddressSegment(raw);
-    }
-
+    const raw = store.address || store.settings?.address || store.location || "";
     const city = (store.city || store.settings?.city || "").trim();
     const state = (store.state || store.settings?.state || "").trim();
 
-    // Elimina pontuações órfãs ou ", S/N" solto no início
-    street = street.replace(/^[,\s-]+/, "");
-
-    const segments: string[] = [];
-    if (street) {
-      segments.push(street);
-    }
-
-    if (neighborhood) {
-      const alreadyHasNeighborhood = segments.some((s) =>
-        s.toLowerCase().includes(neighborhood.toLowerCase())
-      );
-      if (!alreadyHasNeighborhood) {
-        segments.push(neighborhood);
-      }
-    }
-
-    const cityStateParts = [city, state].filter(Boolean);
-    if (cityStateParts.length > 0) {
-      const cityState = cityStateParts.join(" - ");
-      const alreadyHasCity = segments.some((s) =>
-        city && s.toLowerCase().includes(city.toLowerCase())
-      );
-      if (!alreadyHasCity) {
-        segments.push(cityState);
-      }
-    }
-
-    const cleanSegments = segments
-      .map(cleanAddressSegment)
-      .filter((s) => s.length > 0);
-
-    if (cleanSegments.length === 0) return null;
-
-    return {
-      display: cleanSegments.join(" • "),
-      mapsQuery: cleanSegments.join(", "),
-    };
+    return formatCanonicalAddress(raw, city, state);
   }, [store]);
 
     const hasSponsors = sponsors && sponsors.length > 0;
@@ -641,7 +592,7 @@ function cleanAddressSegment(text: string): string {
   return (
     <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-5 pb-20 md:pb-12 animate-in fade-in duration-200">
             {/* ── 1. NATIVE MOBILE HEADER CANÔNICO (Apple HIG / Safe Area) ── */}
-      <NativeMobileHeader
+      <NativeMobileHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         fallbackHref={backUrl}
         title={
           <div className="flex items-center gap-2 font-bold text-sm text-foreground">
@@ -863,7 +814,7 @@ function cleanAddressSegment(text: string): string {
                 <button
                   type="button"
                   onClick={() => setActiveTab("avaliacoes")}
-                  className="inline-flex items-center gap-1 font-bold text-foreground hover:text-primary transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1 font-bold text-foreground hover:text-primary transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <Star className="size-4 fill-amber-500 text-amber-500 shrink-0" />
                   <span>{realRatingAverage.toFixed(1)}</span>
@@ -915,7 +866,7 @@ function cleanAddressSegment(text: string): string {
                 <button
                   type="button"
                   onClick={() => setIsBioExpanded(!isBioExpanded)}
-                  className="text-xs font-bold text-primary hover:underline cursor-pointer inline-flex items-center gap-1"
+                  className="text-xs font-bold text-primary hover:underline cursor-pointer inline-flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {isBioExpanded ? "Ver menos" : "...mais"}
                 </button>
@@ -975,13 +926,13 @@ function cleanAddressSegment(text: string): string {
           </div>
 
           {/* ── BOTÕES DE AÇÃO ERGONÔMICOS (PADRÃO INSTAGRAM / APPLE HIG) — Imediatamente Abaixo da Bio ── */}
-          <div className="flex items-center gap-2 pt-2 w-full">
+          <TetrisActionGrid>
             {isOwner ? (
               <>
                 <Button
                   asChild
                   variant="outline"
-                  className="flex-1 h-9 sm:h-10 px-3 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-2 shadow-none"
+                  className="w-full h-11 min-h-11 px-3 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-2 shadow-none"
                 >
                   <Link to="/workspace" search={{ storeId: store.id }}>
                     <Store className="size-4" />
@@ -991,7 +942,7 @@ function cleanAddressSegment(text: string): string {
                 <Button
                   variant="outline"
                   onClick={() => setIsEditCompanyModalOpen(true)}
-                  className="flex-1 h-9 sm:h-10 px-3 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-2 shadow-none cursor-pointer"
+                  className="w-full h-11 min-h-11 px-3 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-2 shadow-none cursor-pointer"
                 >
                   <Edit3 className="size-4" />
                   <span>Editar</span>
@@ -999,7 +950,7 @@ function cleanAddressSegment(text: string): string {
                 <Button
                   variant="outline"
                   onClick={() => setIsSocialStudioOpen(true)}
-                  className="size-9 sm:size-10 p-0 sm:px-3 sm:w-auto rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center shrink-0 shadow-none cursor-pointer"
+                  className="w-full h-11 min-h-11 px-3 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center shrink-0 shadow-none cursor-pointer"
                   title="Social Studio"
                 >
                   <SlidersHorizontal className="size-4" />
@@ -1009,7 +960,7 @@ function cleanAddressSegment(text: string): string {
                   variant="outline"
                   onClick={handleShare}
                   aria-label="Compartilhar Perfil"
-                  className="size-9 sm:size-10 p-0 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center shrink-0 shadow-none cursor-pointer"
+                  className="w-full h-11 min-h-11 px-3 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-2 shadow-none cursor-pointer"
                 >
                   <Share2 className="size-4 text-muted-foreground" />
                 </Button>
@@ -1030,7 +981,7 @@ function cleanAddressSegment(text: string): string {
                         customMessage: `Olá! Vi o perfil oficial de ${store.name || store.business_name} no Waesy e gostaria de mais informações.`,
                       })
                     }
-                    className="flex-1 h-9 sm:h-10 px-2 sm:px-3 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-2 shadow-none cursor-pointer"
+                    className="w-full h-11 min-h-11 px-3 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-2 shadow-none cursor-pointer"
                   >
                     <WhatsappLogo size={15} weight="bold" className="text-emerald-600 dark:text-emerald-400 shrink-0" />
                     <span>WhatsApp</span>
@@ -1041,7 +992,7 @@ function cleanAddressSegment(text: string): string {
                   <Button
                     asChild
                     variant="outline"
-                    className="flex-1 h-9 sm:h-10 px-2 sm:px-3 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-2 shadow-none"
+                    className="w-full h-11 min-h-11 px-3 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-2 shadow-none"
                   >
                     <a href={`tel:${phoneCallNumber}`}>
                       <Phone size={14} className="text-primary shrink-0" />
@@ -1061,7 +1012,7 @@ function cleanAddressSegment(text: string): string {
                   <DialogTrigger asChild>
                     <Button
                       variant="outline"
-                      className="flex-1 h-9 sm:h-10 px-2 sm:px-3 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-2 shadow-none cursor-pointer"
+                      className="w-full h-11 min-h-11 px-3 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-2 shadow-none cursor-pointer"
                     >
                       <PaperPlaneTilt size={14} weight="bold" className="text-muted-foreground shrink-0" />
                       <span>Orçamento</span>
@@ -1165,25 +1116,26 @@ function cleanAddressSegment(text: string): string {
                   variant="outline"
                   onClick={handleShare}
                   aria-label="Compartilhar Perfil"
-                  className="size-9 sm:size-10 p-0 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center shrink-0 shadow-none cursor-pointer"
+                  className="w-full h-11 min-h-11 px-3 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-2 shadow-none cursor-pointer"
                 >
-                  <Share2 className="size-4 text-muted-foreground" />
+                  <Share2 className="size-4 text-muted-foreground shrink-0" />
+                  <span className="truncate">Compartilhar</span>
                 </Button>
               </>
             )}
-          </div>
+          </TetrisActionGrid>
         </div>
       </div>
 
 {/* ── 3. NAVEGAÇÃO POR ABAS SILENCIOSA COM FÍSICA DE SCROLL (Apple HIG) ── */}
       <div className="space-y-6 pt-2">
         <div className="relative w-full">
-          <div className="flex items-center gap-2 p-1 rounded-lg bg-muted/40 text-xs font-semibold overflow-x-auto snap-x snap-mandatory scrollbar-hide border border-border/40 scroll-smooth">
+          <div className="tab-list flex items-center gap-2 p-1 rounded-lg bg-muted/40 text-xs font-semibold overflow-x-auto snap-x snap-mandatory scrollbar-hide border border-border/40 scroll-smooth">
             {/* Aba 1: Vitrine / Início */}
             <button
               type="button"
               onClick={() => setActiveTab("vitrine")}
-              className={cn(
+              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                 "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                 activeTab === "vitrine"
                   ? "bg-background text-foreground font-bold shadow-2xs"
@@ -1198,7 +1150,7 @@ function cleanAddressSegment(text: string): string {
             {catalog.length > 0 && <button
               type="button"
               onClick={() => setActiveTab("catalogo")}
-              className={cn(
+              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                 "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                 activeTab === "catalogo"
                   ? "bg-background text-foreground font-bold shadow-2xs"
@@ -1218,7 +1170,7 @@ function cleanAddressSegment(text: string): string {
             {hasAboutData && <button
               type="button"
               onClick={() => setActiveTab("sobre")}
-              className={cn(
+              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                 "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                 activeTab === "sobre"
                   ? "bg-background text-foreground font-bold shadow-2xs"
@@ -1233,7 +1185,7 @@ function cleanAddressSegment(text: string): string {
             {posts.length > 0 && <button
               type="button"
               onClick={() => setActiveTab("posts")}
-              className={cn(
+              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                 "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                 activeTab === "posts"
                   ? "bg-background text-foreground font-bold shadow-2xs"
@@ -1253,7 +1205,7 @@ function cleanAddressSegment(text: string): string {
             {reviews.length > 0 && <button
               type="button"
               onClick={() => setActiveTab("avaliacoes")}
-              className={cn(
+              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                 "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                 activeTab === "avaliacoes"
                   ? "bg-background text-foreground font-bold shadow-2xs"
@@ -1273,7 +1225,7 @@ function cleanAddressSegment(text: string): string {
             {jobs.length > 0 && <button
               type="button"
               onClick={() => setActiveTab("vagas")}
-              className={cn(
+              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                 "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                 activeTab === "vagas"
                   ? "bg-background text-foreground font-bold shadow-2xs"
@@ -1294,7 +1246,7 @@ function cleanAddressSegment(text: string): string {
               <button
                 type="button"
                 onClick={() => setActiveTab("classificados")}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                   activeTab === "classificados"
                     ? "bg-background text-foreground font-bold shadow-2xs"
@@ -1314,7 +1266,7 @@ function cleanAddressSegment(text: string): string {
               <button
                 type="button"
                 onClick={() => setActiveTab("concursos")}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                   activeTab === "concursos"
                     ? "bg-background text-foreground font-bold shadow-2xs"
@@ -1419,7 +1371,7 @@ function cleanAddressSegment(text: string): string {
                             <button
                               type="button"
                               onClick={() => setIsSectionsEditorOpen(true)}
-                              className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                              className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
                               <Edit3 className="size-3" />
                               <span>Editar Cards</span>
@@ -1450,10 +1402,10 @@ function cleanAddressSegment(text: string): string {
                             };
 
                             return (
-                              <div
+                              <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                                 key={card.id}
                                 onClick={handleCardClick}
-                                className="group rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all cursor-pointer flex flex-col justify-between"
+                                className="group rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all cursor-pointer flex flex-col justify-between focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                               >
                                 {card.imageUrl ? (
                                   <div className="aspect-[21/9] w-full overflow-hidden bg-muted/30 relative">
@@ -1513,7 +1465,7 @@ function cleanAddressSegment(text: string): string {
                           <button
                             type="button"
                             onClick={() => setActiveTab("catalogo")}
-                            className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                            className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             <span>Ver Catálogo Completo</span>
                             <ChevronRight className="size-3" />
@@ -1639,7 +1591,7 @@ function cleanAddressSegment(text: string): string {
                   <button
                     type="button"
                     onClick={() => setPostViewMode("grid")}
-                    className={cn(
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "size-8 rounded-lg flex items-center justify-center transition-all cursor-pointer",
                       postViewMode === "grid"
                         ? "bg-background text-foreground "
@@ -1652,7 +1604,7 @@ function cleanAddressSegment(text: string): string {
                   <button
                     type="button"
                     onClick={() => setPostViewMode("feed")}
-                    className={cn(
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "size-8 rounded-lg flex items-center justify-center transition-all cursor-pointer",
                       postViewMode === "feed"
                         ? "bg-background text-foreground "
@@ -1757,7 +1709,7 @@ function cleanAddressSegment(text: string): string {
                       <button
                         type="button"
                         onClick={() => setSelectedCategory("todas")}
-                        className={cn(
+                        className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                           "px-3 py-2 rounded-lg text-xs font-semibold transition-all shrink-0 cursor-pointer",
                           selectedCategory === "todas"
                             ? "bg-foreground text-background font-bold"
@@ -1771,7 +1723,7 @@ function cleanAddressSegment(text: string): string {
                           key={cat.id}
                           type="button"
                           onClick={() => setSelectedCategory(cat.id)}
-                          className={cn(
+                          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                             "px-3 py-2 rounded-lg text-xs font-semibold transition-all shrink-0 cursor-pointer",
                             selectedCategory === cat.id
                               ? "bg-foreground text-background font-bold"

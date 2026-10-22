@@ -71,7 +71,7 @@ function NovoOrcamentoRouterPage() {
  <button
  type="button"
  onClick={() => setActiveMode("commercial")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-4 py-2 rounded-lg font-bold text-xs transition-all cursor-pointer",
  activeMode === "commercial"
  ? "bg-background text-foreground shadow-xs"
@@ -83,7 +83,7 @@ function NovoOrcamentoRouterPage() {
  <button
  type="button"
  onClick={() => setActiveMode("travelos")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-4 py-2 rounded-lg font-bold text-xs transition-all cursor-pointer flex items-center gap-2",
  activeMode === "travelos"
  ? "bg-primary text-primary-foreground shadow-xs"
@@ -571,7 +571,7 @@ function NovoOrcamentoTravelosPage() {
  key={dest.id}
  type="button"
  onClick={() => handleSelectCanonicalDestination(dest)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "text-xs font-medium px-3 py-1 rounded-lg border transition-all cursor-pointer flex items-center gap-2",
  destinationIata === dest.iata || proposalData.destinationCity === dest.name
  ? "bg-primary text-primary-foreground border-primary font-bold shadow-2xs"
@@ -1253,7 +1253,7 @@ function NovoOrcamentoTravelosPage() {
  window.open(`https://wa.me/?text=${msg}`, '_blank');
  }
  }}
- className="h-10 px-5 rounded-lg text-xs font-bold flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground transition-colors cursor-pointer shadow-xs"
+ className="h-10 px-5 rounded-lg text-xs font-bold flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground transition-colors cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <span></span>
  <span>Enviar Proposta via WhatsApp</span>
@@ -1279,7 +1279,7 @@ function NovoOrcamentoTravelosPage() {
  navigator.clipboard?.writeText(text);
  toast.success('Texto copiado! Cole no WhatsApp, e-mail ou onde quiser.');
  }}
- className="h-10 px-4 rounded-lg text-xs font-bold flex items-center gap-2 bg-muted hover:bg-muted/80 text-foreground border border-border/60 transition-colors cursor-pointer"
+ className="h-10 px-4 rounded-lg text-xs font-bold flex items-center gap-2 bg-muted hover:bg-muted/80 text-foreground border border-border/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <span></span>
  <span>Copiar Resumo</span>
@@ -1605,7 +1605,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
 
  return (
  <div className="space-y-6 max-w-6xl mx-auto pb-16 animate-in fade-in duration-200">
- <PageHeader
+ <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  eyebrow="Vendas & Propostas Comerciais"
  title="Novo Orçamento Comercial"
  actions={
@@ -1678,7 +1678,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  <button
  type="button"
  onClick={() => setIsClientDropdownOpen(false)}
- className="text-xs hover:text-foreground cursor-pointer px-1"
+ className="text-xs hover:text-foreground cursor-pointer px-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  Fechar
  </button>
@@ -1694,7 +1694,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  key={c.id}
  type="button"
  onClick={() => handleSelectCustomer(c)}
- className="w-full text-left p-3 rounded-lg hover:bg-muted/60 transition-colors flex items-center justify-between gap-3 cursor-pointer group"
+ className="w-full text-left p-3 rounded-lg hover:bg-muted/60 transition-colors flex items-center justify-between gap-3 cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="space-y-1 min-w-0">
  <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors truncate">
@@ -1971,7 +1971,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  key={preset.label}
  type="button"
  onClick={() => applyConditionPreset(preset.text)}
- className="text-xs font-medium px-3 py-1 rounded-lg bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors border border-border/50"
+ className="text-xs font-medium px-3 py-1 rounded-lg bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors border border-border/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {preset.label}
  </button>
@@ -2067,7 +2067,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  {customerData.phone && totalCents > 0 && (
  <button
  type="button"
- className="w-full h-11 mt-2 rounded-lg font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-xs"
+ className="w-full h-11 mt-2 rounded-lg font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  onClick={() => {
    let msg = `*Orçamento Comercial*\n\n`;
    items.forEach(item => {
@@ -2116,7 +2116,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  <button
  type="button"
  onClick={() => setCatalogCategory("all")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-3 py-1 rounded-lg font-bold text-xs text-muted-foreground/75 whitespace-nowrap transition-colors cursor-pointer",
  catalogCategory === "all"
  ? "bg-primary text-primary-foreground"
@@ -2130,7 +2130,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  key={cat}
  type="button"
  onClick={() => setCatalogCategory(cat)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-3 py-1 rounded-lg font-bold text-xs text-muted-foreground/75 whitespace-nowrap transition-colors cursor-pointer",
  catalogCategory === cat
  ? "bg-primary text-primary-foreground"

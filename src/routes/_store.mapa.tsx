@@ -226,9 +226,9 @@ function FullscreenMapaPage() {
  )}
  >
  {/* Drag Handle Mobile */}
- <div
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  onClick={() => setIsExpandedMobile(!isExpandedMobile)}
- className="w-full flex sm:hidden items-center justify-center pt-3 pb-1 cursor-pointer select-none"
+ className="w-full flex sm:hidden items-center justify-center pt-3 pb-1 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
  </div>
@@ -246,7 +246,7 @@ function FullscreenMapaPage() {
  <button
  type="button"
  onClick={() => setIsExpandedMobile(!isExpandedMobile)}
- className="sm:hidden text-muted-foreground p-1"
+ className="sm:hidden text-muted-foreground p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {isExpandedMobile ? <CaretDown size={16} /> : <CaretUp size={16} />}
  </button>
@@ -268,7 +268,7 @@ function FullscreenMapaPage() {
  <button
  type="button"
  onClick={() => setSearchQuery("")}
- className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+ className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <X size={12} />
  </button>
@@ -285,7 +285,7 @@ function FullscreenMapaPage() {
  key={f.id}
  type="button"
  onClick={() => setActiveVibe(f.id)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "h-7 px-3 rounded-lg text-[11px] font-bold shrink-0 transition-all border cursor-pointer flex items-center gap-2",
  isSelected
  ? "bg-primary/10 text-primary border-primary/30 font-bold"
@@ -332,7 +332,7 @@ function FullscreenMapaPage() {
  key={m.id}
  type="button"
  onClick={() => handleSelectMoment(m)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "w-full p-3 rounded-lg text-left transition-all border flex items-start gap-3 cursor-pointer",
  isSelected
  ? "bg-primary/10 border-primary text-foreground ring-1 ring-primary "

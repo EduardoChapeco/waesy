@@ -871,7 +871,7 @@ function AdminMiningHubPage() {
                             <button
                               type="button"
                               onClick={() => handleToggleSource(source.id, source.is_active)}
-                              className={cn(
+                              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                                 "p-2 rounded-lg transition-colors cursor-pointer",
                                 source.is_active ? "text-emerald-500 hover:bg-emerald-500/10" : "text-muted-foreground hover:bg-muted"
                               )}
@@ -936,7 +936,7 @@ function AdminMiningHubPage() {
                     onClick={() => handleGenerateCarousel("noticias", focusedArticle)}
                     disabled={isGeneratingCarousel}
                     id="btn-generate-carousel-studio"
-                    className="inline-flex items-center gap-2 rounded-lg bg-sky-500/10 border border-sky-500/30 px-3 py-1 text-xs font-bold text-sky-600 dark:text-sky-400 hover:bg-sky-500/20 disabled:opacity-50 transition-colors"
+                    className="inline-flex items-center gap-2 rounded-lg bg-sky-500/10 border border-sky-500/30 px-3 py-1 text-xs font-bold text-sky-600 dark:text-sky-400 hover:bg-sky-500/20 disabled:opacity-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     {isGeneratingCarousel ? (
                       <SpinnerGap className="h-3.5 w-3.5 animate-spin" />
@@ -949,7 +949,7 @@ function AdminMiningHubPage() {
               </div>
               <button
                 onClick={() => setFocusedArticle(null)}
-                className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground text-xs font-bold"
+                className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 × Fechar
               </button>
@@ -1076,7 +1076,7 @@ function AdminMiningHubPage() {
                     onClick={handleApprove}
                     disabled={curatingId === focusedArticle.id}
                     id="btn-approve-mined-article"
-                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-xs font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-xs font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     {curatingId === focusedArticle.id ? <SpinnerGap className="h-4 w-4 animate-spin" /> : <ThumbsUp className="h-4 w-4" />}
                     Aprovar & Publicar
@@ -1085,7 +1085,7 @@ function AdminMiningHubPage() {
                     onClick={handleReject}
                     disabled={curatingId === focusedArticle.id}
                     id="btn-reject-mined-article"
-                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-destructive/10 border border-destructive/30 px-4 py-3 text-xs font-bold text-destructive hover:bg-destructive/20 disabled:opacity-50 transition-colors"
+                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-destructive/10 border border-destructive/30 px-4 py-3 text-xs font-bold text-destructive hover:bg-destructive/20 disabled:opacity-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <ThumbsDown className="h-4 w-4" />
                     Rejeitar
@@ -1105,7 +1105,7 @@ function AdminMiningHubPage() {
  onClick={() => setMinedFilter(f)}
  className={`rounded-lg px-3 py-2 text-xs font-semibold transition-all ${
  minedFilter === f ? "bg-primary text-primary-foreground" : "bg-card border border-border text-muted-foreground hover:text-foreground"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  {f === "all" ? "Todos" : f === "pending_review" ? "Pendentes" : f === "published" ? "Publicados" : "Rejeitados"}
  </button>
@@ -1215,7 +1215,7 @@ function AdminMiningHubPage() {
  <button
  id={`btn-curate-${article.id}`}
  onClick={() => handleCurate(article)}
- className="shrink-0 inline-flex items-center gap-2 rounded-lg bg-primary/10 border border-primary/30 px-3 py-2 text-xs font-bold text-primary hover:bg-primary hover:text-primary-foreground transition-all"
+ className="shrink-0 inline-flex items-center gap-2 rounded-lg bg-primary/10 border border-primary/30 px-3 py-2 text-xs font-bold text-primary hover:bg-primary hover:text-primary-foreground transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Eye className="h-3.5 w-3.5" />
  Curar
@@ -1252,7 +1252,7 @@ function AdminMiningHubPage() {
  <button
  onClick={handleReprocessFailedQueue}
  disabled={isReprocessingQueue}
- className="inline-flex items-center gap-2 rounded-lg bg-destructive/10 border border-destructive/30 px-3 py-2 text-xs font-bold text-destructive hover:bg-destructive hover:text-white transition-all disabled:opacity-50"
+ className="inline-flex items-center gap-2 rounded-lg bg-destructive/10 border border-destructive/30 px-3 py-2 text-xs font-bold text-destructive hover:bg-destructive hover:text-white transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {isReprocessingQueue ? (
  <SpinnerGap className="h-4 w-4 animate-spin" />
@@ -1300,7 +1300,7 @@ function AdminMiningHubPage() {
   {item.status === "failed" && (
   <button
   onClick={() => handleReprocessSingle(item)}
-  className="inline-flex items-center gap-1 rounded-lg bg-primary/10 border border-primary/20 px-2 py-1 text-[10px] font-bold text-primary hover:bg-primary hover:text-primary-foreground transition-all"
+  className="inline-flex items-center gap-1 rounded-lg bg-primary/10 border border-primary/20 px-2 py-1 text-[10px] font-bold text-primary hover:bg-primary hover:text-primary-foreground transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
   title="Re-extrair mecanicamente com headers stealth"
   >
   <ArrowsClockwise className="h-3 w-3" />
@@ -1347,7 +1347,7 @@ function AdminMiningHubPage() {
   <button
   type="submit"
   disabled={isMiningEvent || !eventInputUrl}
-  className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-all shrink-0"
+  className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
   >
   {isMiningEvent ? (
   <>
@@ -1589,7 +1589,7 @@ function AdminMiningHubPage() {
             <button
               type="submit"
               disabled={isMiningJob}
-              className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-xs font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-all"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-xs font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {isMiningJob ? <SpinnerGap className="h-4 w-4 animate-spin" /> : <Briefcase className="h-4 w-4" />}
               Minerar & Publicar Vaga
@@ -1655,7 +1655,7 @@ function AdminMiningHubPage() {
                           <button
                             onClick={() => handleGenerateCarousel("empregos", job)}
                             disabled={isGeneratingCarousel}
-                            className="inline-flex items-center gap-1 rounded-lg border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:bg-sky-500/20 transition-all"
+                            className="inline-flex items-center gap-1 rounded-lg border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:bg-sky-500/20 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             title="Gerar Carrossel de Vaga para Instagram"
                           >
                             <Star className="h-3 w-3" />
@@ -1689,7 +1689,7 @@ function AdminMiningHubPage() {
   <button
   onClick={handleSyncPncpContracts}
   disabled={isSyncingPncp}
-  className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-3 text-xs font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-all"
+  className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-3 text-xs font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
   >
   {isSyncingPncp ? (
   <SpinnerGap className="h-4 w-4 animate-spin" />
@@ -1780,7 +1780,7 @@ function AdminMiningHubPage() {
       <button
         onClick={() => handleCreateNewsFromPncp(item)}
         disabled={convertingPncpId === item.numeroControlePNCP}
-        className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-600 hover:bg-emerald-600 hover:text-white transition-colors disabled:opacity-50"
+        className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-600 hover:bg-emerald-600 hover:text-white transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         title="Gerar Pauta"
       >
         {convertingPncpId === item.numeroControlePNCP ? (
@@ -1793,7 +1793,7 @@ function AdminMiningHubPage() {
       <button
         onClick={() => handleGenerateCarousel("licitacoes", item)}
         disabled={isGeneratingCarousel}
-        className="inline-flex items-center gap-1 rounded-lg bg-sky-500/10 border border-sky-500/20 px-3 py-1 text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:bg-sky-500/20 transition-all disabled:opacity-50"
+        className="inline-flex items-center gap-1 rounded-lg bg-sky-500/10 border border-sky-500/20 px-3 py-1 text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:bg-sky-500/20 transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         title="Gerar Carrossel para Redes Sociais"
       >
         <Star className="h-3.5 w-3.5" />
@@ -1827,7 +1827,7 @@ function AdminMiningHubPage() {
  </div>
  <button
  onClick={() => handleToggleFeed(feed.id, feed.is_active)}
- className="shrink-0 mt-1"
+ className="shrink-0 mt-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  title={feed.is_active ? "Desativar feed" : "Ativar feed"}
  >
  {feed.is_active
@@ -1855,7 +1855,7 @@ function AdminMiningHubPage() {
  id={`btn-fetch-rss-${feed.id}`}
  onClick={() => handleFetchRss(feed.id)}
  disabled={fetchingFeedId === feed.id || !feed.is_active}
- className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary/10 border border-primary/20 py-2 text-xs font-bold text-primary hover:bg-primary hover:text-primary-foreground disabled:opacity-50 transition-all"
+ className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary/10 border border-primary/20 py-2 text-xs font-bold text-primary hover:bg-primary hover:text-primary-foreground disabled:opacity-50 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {fetchingFeedId === feed.id
  ? <SpinnerGap className="h-3.5 w-3.5 animate-spin" />
@@ -1890,7 +1890,7 @@ function AdminMiningHubPage() {
  <button
  type="submit"
  disabled={isPending}
- className="rounded-lg bg-primary px-4 py-3 text-sm font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-all"
+ className="rounded-lg bg-primary px-4 py-3 text-sm font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {isPending ? "Cadastrando..." : "Cadastrar Feed"}
  </button>
@@ -2040,7 +2040,7 @@ function AdminMiningHubPage() {
  type="submit"
  disabled={isImporting || !importUrl}
  id="btn-import-url-ai"
- className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary py-3 text-sm font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-all"
+ className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary py-3 text-sm font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {isImporting ? (
  <>

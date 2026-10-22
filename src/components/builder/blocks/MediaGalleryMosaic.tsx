@@ -81,12 +81,12 @@ export const MediaGalleryMosaic: React.FC<MediaGalleryMosaicProps> = ({
           {items.map((item, index) => {
             const isFeatured = index === 0;
             return (
-              <div
+              <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                 key={item.id}
                 onClick={() => setSelectedImage(item.imageUrl)}
                 className={`group relative overflow-hidden ${radiusClass} border border-border/60 bg-muted/20 cursor-pointer transition-all duration-300 hover:shadow-lg hover:border-foreground/20 ${
-                  isFeatured ? "sm:col-span-2 lg:col-span-2 aspect-[16/10]" : "aspect-square"
-                }`}
+                  isFeatured ? "sm:col-span-2 lg:col-span-2 aspect-[16/9]" : "aspect-square"
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 <img
                   src={item.imageUrl}
@@ -115,19 +115,18 @@ export const MediaGalleryMosaic: React.FC<MediaGalleryMosaicProps> = ({
       {/* Lightbox Modal */}
       {selectedImage && (
         <div
-          onClick={() => setSelectedImage(null)}
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+          role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Escape" || e.key === "Enter" || e.key === " ") setSelectedImage(null); }} onClick={() => setSelectedImage(null)} className="fixed inset-0 z-50 bg-background/90 backdrop-blur-md flex items-center justify-center p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           <button
             onClick={() => setSelectedImage(null)}
-            className="absolute top-6 right-6 size-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+            className="absolute top-6 right-6 size-11 min-h-11 min-w-11 rounded-full bg-muted/80 hover:bg-muted text-foreground flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <X className="size-5" />
           </button>
           <img
             src={selectedImage}
             alt="Visualização ampliada"
-            className="max-w-full max-h-[85vh] rounded-lg object-contain shadow-2xl"
+            className="max-w-full max-h-screen rounded-lg object-contain shadow-2xl"
           />
         </div>
       )}

@@ -1,8 +1,8 @@
 import { createFileRoute, useNavigate, useSearch, Link, redirect } from "@tanstack/react-router";
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Tag, Car, Home as HomeIcon, Tractor, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Building2, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Wand2, Bot, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, Clock, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal, Store as StoreIcon, Star, Lock, ShieldAlert, FileSpreadsheet, Receipt, BookOpenCheck, Zap, Apple, Flame, Croissant, Milk, Wine, Palette, Ticket, Mic, Coffee, HelpCircle, Sparkles } from 'lucide-react';
+import { Tag, Car, Home as HomeIcon, Tractor, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Building2, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Wand2, Bot, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, Clock, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal, Store as StoreIcon, Star, Lock, ShieldAlert, FileSpreadsheet, Receipt, BookOpenCheck, Zap, Apple, Flame, Croissant, Milk, Wine, Palette, Ticket, Mic, Coffee, HelpCircle, Sparkles, ExternalLink, Film } from 'lucide-react';
 import { StoryHighlightUploader, type StoryHighlight } from "@/components/classifieds/story-highlight-uploader";
 import { ItineraryDayEditor, type ItineraryDay } from "@/components/classifieds/itinerary-day-editor";
 import { WeatherWidget } from "@/components/classifieds/weather-widget";
@@ -18,6 +18,7 @@ import {
   type EventSpeaker,
   type EventSponsor,
   type EventSurvey,
+  type EventPollOptionNormalized,
 } from "@/components/classifieds/event-classified-showcase-view";
 import { uploadClassifiedMedia, uploadClassifiedDocument } from "@/lib/classifieds/upload-classified-media";
 import { CANONICAL_AIRPORTS, CANONICAL_AIRLINES, CANONICAL_TRANSPORT_TYPES, CANONICAL_BUS_CATEGORIES, CANONICAL_GUIDE_SERVICES, CANONICAL_TRANSFER_VEHICLES, DEPARTURE_STATUS_CONFIG, airportLabel, type DepartureOption, type DepartureStatus } from "@/lib/classifieds/canonical-airports";
@@ -25,6 +26,7 @@ import { AirportCombobox } from "@/components/ui/airport-combobox";
 import { cn } from "@/lib/utils";
 import { ClassifiedTemplateStyle, ClassifiedDisplayMode, CivilInquiryQuestion, CivilInquiryConfig } from "@/types/unified-ad-engine";
 import { TravelPromoFlyerModal } from "@/components/tourism/promotional-flyer/travel-promo-flyer-modal";
+import { FipeVehicleSelector } from "@/components/classifieds/fipe-vehicle-selector";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -44,6 +46,7 @@ import { DigitalFileDropzone } from "@/components/classifieds/digital-file-dropz
 import { ChoiceCard } from "@/components/ui/choice-card";
 import { SquircleCard } from "@/components/ui/squircle-card";
 import { CityCombobox, type StructuredLocationValue } from "@/components/ui/city-combobox";
+import { resolveStorageMediaUrl } from "@/lib/classifieds/storage-media";
 import { upsertClassified, getPublicClassifiedById, refineClassifiedWithAI } from "@/services/classifieds.functions";
 import { getMyStoresList } from "@/services/store.functions";
 import { getProfile, getUserSession } from "@/services/auth.functions";
@@ -864,7 +867,7 @@ function CreateTypePicker({
               <Wand2 className="size-4 text-primary" />
             )}
             <span>{isAiGenerating ? "Gerando..." : "Criar com IA"}</span>
-            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground bg-muted/60 px-2 py-0.5 rounded border border-border/50">
+            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground bg-muted/60 px-2 py-1 rounded border border-border/50">
               Copilot
             </span>
           </Button>
@@ -1115,6 +1118,7 @@ function SpecializedClassifiedEditor({
  const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState<2 | 3 | 4 | 5>(2);
   const [previewDevice, setPreviewDevice] = useState<"mobile" | "desktop">("mobile");
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
 
   // Identidade do Anúncio (Perfil Pessoal vs Loja Oficial)
   const [selectedStoreId, setSelectedStoreId] = useState<string | null>(
@@ -1147,7 +1151,6 @@ function SpecializedClassifiedEditor({
 
   const [isCustomCommercialOpen, setIsCustomCommercialOpen] = useState(false);
   const [draftInfo, setDraftInfo] = useState<{ step: number; savedAt: string } | null>(null);
-  const [mobileTab, setMobileTab] = useState<"edit" | "preview">("edit");
  const [jobWorkSchedule, setJobWorkSchedule] = useState("integral_44h");
  const [jobAcceptedMethods, setJobAcceptedMethods] = useState<string[]>([
  "perfil_waesy",
@@ -1847,6 +1850,10 @@ const [aiInstructions, setAiInstructions] = useState("");
   const [vehicleTransmission, setVehicleTransmission] = useState("Automático");
   const [vehicleColor, setVehicleColor] = useState("");
   const [vehicleFeatures, setVehicleFeatures] = useState<string[]>([]);
+  const [vehicleFipeCode, setVehicleFipeCode] = useState("");
+  const [vehicleFipePriceCents, setVehicleFipePriceCents] = useState<number | undefined>(undefined);
+  const [vehicleFipeReferenceMonth, setVehicleFipeReferenceMonth] = useState("");
+  const [vehicleFipeDeltaPercent, setVehicleFipeDeltaPercent] = useState<number | undefined>(undefined);
 
   // Specialized: Desapego & Itens Gerais
   const [desapegoCategory, setDesapegoCategory] = useState<
@@ -2473,13 +2480,23 @@ const [aiInstructions, setAiInstructions] = useState("");
     if (initialData.attributes?.delivery_mode) setDeliveryMode(initialData.attributes.delivery_mode as any);
     if (initialData.attributes?.hide_location !== undefined) setHideLocation(!!initialData.attributes.hide_location);
     if (initialData.contact_whatsapp || initialData.whatsapp) setWhatsapp(initialData.contact_whatsapp || initialData.whatsapp);
-    if (Array.isArray(initialData.images)) setImages(initialData.images);
+    if (Array.isArray(initialData.images) && initialData.images.length > 0) {
+      setImages(initialData.images.filter(Boolean).map((img: string) => resolveStorageMediaUrl(img, "post-media")));
+    } else if (Array.isArray(initialData.photos) && initialData.photos.length > 0) {
+      setImages(initialData.photos.filter(Boolean).map((img: string) => resolveStorageMediaUrl(img, "post-media")));
+    } else if (Array.isArray(initialData.attributes?.gallery_images) && initialData.attributes.gallery_images.length > 0) {
+      setImages(initialData.attributes.gallery_images.filter(Boolean).map((img: string) => resolveStorageMediaUrl(img, "post-media")));
+    } else if (initialData.attributes?.banner_image_url) {
+      setImages([resolveStorageMediaUrl(initialData.attributes.banner_image_url, "post-media")]);
+    } else if (initialData.image_url) {
+      setImages([resolveStorageMediaUrl(initialData.image_url, "post-media")]);
+    }
     if (Array.isArray(initialData.feed_media) && initialData.feed_media.length > 0) {
-      setFeedMedia(initialData.feed_media);
+      setFeedMedia(initialData.feed_media.filter(Boolean).map((m: string) => resolveStorageMediaUrl(m, "post-media")));
     } else if (Array.isArray(initialData.attributes?.feed_media) && initialData.attributes.feed_media.length > 0) {
-      setFeedMedia(initialData.attributes.feed_media);
+      setFeedMedia(initialData.attributes.feed_media.filter(Boolean).map((m: string) => resolveStorageMediaUrl(m, "post-media")));
     } else if (Array.isArray(initialData.attributes?.feed_images) && initialData.attributes.feed_images.length > 0) {
-      setFeedMedia(initialData.attributes.feed_images);
+      setFeedMedia(initialData.attributes.feed_images.filter(Boolean).map((m: string) => resolveStorageMediaUrl(m, "post-media")));
     }
 
     const loadedPs = initialData.payment_settings || initialData.attributes?.payment_settings;
@@ -2798,6 +2815,10 @@ const [aiInstructions, setAiInstructions] = useState("");
       if (initialData.attributes.transmission) setVehicleTransmission(initialData.attributes.transmission);
       if (initialData.attributes.color) setVehicleColor(initialData.attributes.color);
       if (Array.isArray(initialData.attributes.features)) setVehicleFeatures(initialData.attributes.features);
+      if (initialData.attributes.fipe_code) setVehicleFipeCode(initialData.attributes.fipe_code);
+      if (initialData.attributes.fipe_price_cents) setVehicleFipePriceCents(Number(initialData.attributes.fipe_price_cents));
+      if (initialData.attributes.fipe_reference_month) setVehicleFipeReferenceMonth(initialData.attributes.fipe_reference_month);
+      if (initialData.attributes.fipe_delta_percent !== undefined) setVehicleFipeDeltaPercent(Number(initialData.attributes.fipe_delta_percent));
     }
 
     if (initialData.sub_category || initialData.attributes?.desapego_subcategory) {
@@ -3120,6 +3141,10 @@ const [aiInstructions, setAiInstructions] = useState("");
         attributes.color = vehicleColor;
         attributes.features = vehicleFeatures;
         attributes.provenance = vehicleProvenance;
+        if (vehicleFipeCode) attributes.fipe_code = vehicleFipeCode;
+        if (vehicleFipePriceCents) attributes.fipe_price_cents = vehicleFipePriceCents;
+        if (vehicleFipeReferenceMonth) attributes.fipe_reference_month = vehicleFipeReferenceMonth;
+        if (vehicleFipeDeltaPercent !== undefined) attributes.fipe_delta_percent = vehicleFipeDeltaPercent;
       } else if (niche.id === "servico") {
         attributes.modality = serviceModality;
         attributes.service_area = serviceArea;
@@ -3339,7 +3364,19 @@ const [aiInstructions, setAiInstructions] = useState("");
             payment_instructions: paymentInstructions.trim(),
           } : undefined,
           price_cents:
-            pricingType === "free" || niche.id === "doacao"
+            niche.id === "evento"
+              ? (eventTicketTiers.length > 0
+                  ? Math.min(
+                      ...eventTicketTiers.map((t: any) => {
+                        const c =
+                          typeof t.price_cents === "number" && (t.price_cents > 0 || !t.price)
+                            ? t.price_cents
+                            : Math.round((Number(t.price) || 0) * 100);
+                        return c >= 0 ? c : 0;
+                      })
+                    )
+                  : 0)
+              : pricingType === "free" || niche.id === "doacao"
               ? 0
               : pricingType === "on_quote" || pricingType === "exchange_only"
               ? null
@@ -3580,7 +3617,20 @@ const [aiInstructions, setAiInstructions] = useState("");
             content: description.trim() || "Rascunho em preenchimento...",
             status: "draft",
             images,
-            price_cents: priceCents ?? null,
+            price_cents:
+              niche.id === "evento"
+                ? (eventTicketTiers.length > 0
+                    ? Math.min(
+                        ...eventTicketTiers.map((t: any) => {
+                          const c =
+                            typeof t.price_cents === "number" && (t.price_cents > 0 || !t.price)
+                              ? t.price_cents
+                              : Math.round((Number(t.price) || 0) * 100);
+                          return c >= 0 ? c : 0;
+                        })
+                      )
+                    : 0)
+                : (priceCents ?? null),
             location_name: locationName.trim() || undefined,
             attributes: {
               draft_step: currentStep,
@@ -3604,7 +3654,19 @@ const [aiInstructions, setAiInstructions] = useState("");
 
   const livePreviewClassified = useMemo(() => {
     const computedPriceCents =
-      pricingType === "free" || niche.id === "doacao"
+      niche.id === "evento"
+        ? (eventTicketTiers.length > 0
+            ? Math.min(
+                ...eventTicketTiers.map((t: any) => {
+                  const c =
+                    typeof t.price_cents === "number" && (t.price_cents > 0 || !t.price)
+                      ? t.price_cents
+                      : Math.round((Number(t.price) || 0) * 100);
+                  return c >= 0 ? c : 0;
+                })
+              )
+            : 0)
+        : pricingType === "free" || niche.id === "doacao"
         ? 0
         : pricingType === "on_quote" || pricingType === "exchange_only"
         ? null
@@ -3689,9 +3751,9 @@ const [aiInstructions, setAiInstructions] = useState("");
       content: description || "",
       description: description || "",
       price_cents: computedPriceCents,
-      images: images || [],
-      feed_media: feedMedia || [],
-      feed_images: feedMedia || [],
+      images: (images || []).map((img) => resolveStorageMediaUrl(img, "post-media")),
+      feed_media: (feedMedia || []).map((m) => resolveStorageMediaUrl(m, "post-media")),
+      feed_images: (feedMedia || []).map((m) => resolveStorageMediaUrl(m, "post-media")),
       payment_settings: {
         pix_key: pixKey.trim(),
         pix_key_type: pixKeyType,
@@ -3699,8 +3761,8 @@ const [aiInstructions, setAiInstructions] = useState("");
         payment_link: paymentLink.trim(),
         payment_instructions: paymentInstructions.trim(),
       },
-      photos: images || [],
-      media: images || [],
+      photos: (images || []).map((img) => resolveStorageMediaUrl(img, "post-media")),
+      media: (images || []).map((img) => resolveStorageMediaUrl(img, "post-media")),
       city: hideLocation ? "" : (structuredLoc?.city || (locationName ? locationName.split(",")[0].trim() : "Chapecó")),
       neighborhood: hideLocation ? "" : ((locationName && locationName.split("-")[1]?.trim()) || ""),
       location_name: hideLocation ? "" : (locationName || ""),
@@ -4082,6 +4144,21 @@ const [aiInstructions, setAiInstructions] = useState("");
     pitchDeckUrl,
   ]);
 
+  const handleOpenLivePreview = useCallback(() => {
+    if (typeof window !== "undefined") {
+      try {
+        sessionStorage.setItem("waesy_preview_payload", JSON.stringify(livePreviewClassified));
+        const previewUrl = `/classificados/${editId || "preview-live"}?preview=true`;
+        const win = window.open(previewUrl, "_blank");
+        if (!win) {
+          setIsPreviewModalOpen(true);
+        }
+      } catch {
+        setIsPreviewModalOpen(true);
+      }
+    }
+  }, [editId, livePreviewClassified]);
+
  return (
  <div className="space-y-4">
  {/* ── Topbar Operacional Compacta & Sticky no Mobile ────────── */}
@@ -4107,38 +4184,23 @@ const [aiInstructions, setAiInstructions] = useState("");
           </div>
         </div>
 
-        {/* Mobile Switcher & Publicar / Salvar Action */}
+        {/* Ações Globais: Visualizar Prévia Real e Publicar / Salvar */}
         <div className="flex items-center gap-2">
-          <div className="flex md:hidden bg-muted p-1 rounded-lg text-xs font-semibold">
-            <button
-              type="button"
-              onClick={() => setMobileTab("edit")}
-              className={`px-3 py-2 rounded-lg min-h-11 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                mobileTab === "edit"
-                  ? "bg-card text-foreground font-bold "
-                  : "text-muted-foreground"
-              }`}
-            >
-              Editar
-            </button>
-            <button
-              type="button"
-              onClick={() => setMobileTab("preview")}
-              className={`px-3 py-2 rounded-lg min-h-11 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                mobileTab === "preview"
-                  ? "bg-card text-foreground font-bold "
-                  : "text-muted-foreground"
-              }`}
-            >
-              Prévia ({images.length})
-            </button>
-          </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleOpenLivePreview}
+            className="rounded-lg text-xs font-bold gap-2 border-border/80 hover:bg-muted h-11 min-h-11 px-3 sm:px-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary text-foreground"
+          >
+            <Eye className="size-4 text-primary shrink-0" />
+            <span>Visualizar Prévia</span>
+          </Button>
 
           <Button
             onClick={handlePublish}
             disabled={isSubmitting || isUploadingMedia}
             size="sm"
-            className="rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground h-11 min-h-11 px-4"
+            className="rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground h-11 min-h-11 px-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             {isSubmitting ? (
               <>
@@ -4164,10 +4226,24 @@ const [aiInstructions, setAiInstructions] = useState("");
             { step: 3, label: "Informações", short: "Info" },
             {
               step: 4,
-              label: niche.id === "vaga" ? "Remuneração" : niche.id === "doacao" ? "Disponibilidade" : "Preço e Pagamento",
-              short: niche.id === "vaga" ? "Salário" : niche.id === "doacao" ? "Doação" : "Preço",
+              label:
+                niche.id === "evento"
+                  ? "Ingressos e Lotes"
+                  : niche.id === "vaga"
+                  ? "Remuneração"
+                  : niche.id === "doacao"
+                  ? "Disponibilidade"
+                  : "Preço e Pagamento",
+              short:
+                niche.id === "evento"
+                  ? "Ingressos"
+                  : niche.id === "vaga"
+                  ? "Salário"
+                  : niche.id === "doacao"
+                  ? "Doação"
+                  : "Preço",
             },
-            { step: 5, label: "Prévia e Publicar", short: "Publicar" },
+            { step: 5, label: "Visualizar Prévia", short: "Prévia" },
           ].map((s) => {
             const isCurrent = currentStep === s.step;
             const isPast = currentStep > s.step;
@@ -4177,6 +4253,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                 type="button"
                 onClick={() => {
                   if (s.step === 1) onBack();
+                  else if (s.step === 5) handleOpenLivePreview();
                   else setCurrentStep(s.step as any);
                 }}
                 className={cn(
@@ -4256,235 +4333,42 @@ const [aiInstructions, setAiInstructions] = useState("");
         </span>
       </div>
 
-      {currentStep === 5 ? (
-        <div className="space-y-4 max-w-5xl mx-auto">
-          {/* Header do Preview com Alternador de Layout e Dispositivo */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-lg bg-card border border-border/60">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-bold text-foreground uppercase tracking-wider">
-                Visualização do Comprador
-              </span>
-              <div className="flex items-center gap-1 bg-muted p-0.5 rounded-lg text-xs">
-                {allowedTemplatesForNiche.map((t) => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => setTemplateStyle(t.id as any)}
-                    className={cn(
-                      "px-2.5 py-1 text-xs font-semibold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                      templateStyle === t.id
-                        ? "bg-primary text-primary-foreground font-bold shadow-xs"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Alternador Limpo: Mobile vs Desktop (Sem Emojis) */}
-            <div className="flex items-center self-end sm:self-auto bg-muted p-1 rounded-lg text-xs font-semibold">
-              <button
-                type="button"
-                onClick={() => setPreviewDevice("mobile")}
-                className={cn(
-                  "px-3 py-2 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                  previewDevice === "mobile"
-                    ? "bg-card text-foreground font-bold "
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                Mobile (390px)
-              </button>
-              <button
-                type="button"
-                onClick={() => setPreviewDevice("desktop")}
-                className={cn(
-                  "px-3 py-2 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                  previewDevice === "desktop"
-                    ? "bg-card text-foreground font-bold "
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                Desktop
-              </button>
-            </div>
-          </div>
-
-          {/* Container da Prévia Real */}
-          <div className="flex justify-center">
-            <div
-              className={cn(
-                "w-full transition-colors duration-300",
-                previewDevice === "mobile"
-                  ? "max-w-sm border border-border/80 rounded-lg p-1 bg-background  overflow-hidden"
-                  : "max-w-5xl"
-              )}
-            >
-              {templateStyle === "conveniencia" ? (
-                <ConvenienceShowcaseView
-                  classified={livePreviewClassified}
-                  previewData={{
-                    title: title || "Produto de Mercado",
-                    description: description,
-                    priceCents: priceCents || 0,
-                    images: images || [],
-                    locationName: locationName || "São Miguel do Oeste e Região",
-                    whatsapp,
-                    storeName: selectedStore?.name,
-                    storeSlug: selectedStore?.slug,
-                    storeLogo: selectedStore?.logo_url,
-                    authorName: !selectedStore ? (userProfile?.full_name || "Você") : undefined,
-                    authorAvatar: !selectedStore ? (userProfile?.avatar_url || undefined) : undefined,
-                    authorId: !selectedStore ? userProfile?.id : undefined,
-                    volume: convenienceVolume,
-                    unitType: groceryUnitType,
-                    department: groceryDepartment,
-                    temperature: groceryTemperature,
-                    isAlcoholic: groceryIsAlcoholic,
-                    containsGluten: groceryContainsGluten ?? undefined,
-                    containsLactose: groceryContainsLactose ?? undefined,
-                    isOrganic: groceryIsOrganic,
-                    brand: groceryBrand,
-                    barcodeEan: groceryBarcodeEan,
-                    ingredients: groceryIngredients,
-                    prepOptions: groceryPrepOptions,
-                    deliveryEstimate: groceryDeliveryEstimate,
-                    deliveryFeeCents: groceryDeliveryFeeCents,
-                    readyDelivery: readyDelivery,
-                    acceptsPix,
-                    pixDiscountPercent,
-                    acceptsCard,
-                    maxInstallments,
-                    cardInterestFree,
-                    acceptsCash,
-                    groceryFreshPricing: grocerySupportsFreshPricing ? {
-                      supports_fresh_pricing: true,
-                      default_pricing_mode: groceryDefaultPricingMode,
-                      avg_piece_weight_grams: groceryAvgPieceWeightGrams,
-                      price_per_kg_cents: groceryPricePerKgCents,
-                      price_per_unit_cents: priceCents,
-                    } : undefined,
-                    groceryRipenessConfig: groceryRipenessEnabled ? {
-                      enabled: true,
-                      stages: groceryRipenessStages,
-                      default_stage: "maduro",
-                    } : undefined,
-                    progressiveDiscountTiers: groceryProgressiveDiscountsEnabled ? groceryDiscountTiers : undefined,
-                    orderBumpOffer: groceryOrderBumpEnabled && groceryOrderBumpTitle.trim() ? {
-                      enabled: true,
-                      mode: "manual",
-                      target_title: groceryOrderBumpTitle.trim(),
-                      special_price_cents: groceryOrderBumpSpecialPriceCents,
-                      original_price_cents: groceryOrderBumpOriginalPriceCents,
-                      badge_text: groceryOrderBumpBadge,
-                    } : undefined,
-                  }}
-                  isOwner={true}
-                  previewDevice={previewDevice}
-                  compact={previewDevice === "mobile"}
-                  onEdit={() => setCurrentStep(2)}
-                />
-              ) : niche.id === "viagem" && (templateStyle === "editorial" || (templateStyle as string) === "instagram" || (templateStyle as string) === "instagram_resort" || !templateStyle) ? (
-                <EditorialShowcaseView
-                  classified={livePreviewClassified}
-                  isOwner={true}
-                  previewViewport={previewDevice}
-                  onOpenBookingModal={() => toast.info("Modo de Pré-visualização: As reservas estarão ativas após a publicação do anúncio.")}
-                  onOpenProposalModal={() => toast.info("Modo de Pré-visualização: O envio de propostas estará ativo após a publicação do anúncio.")}
-                  onEditClassified={() => setCurrentStep(2)}
-                />
-              ) : (
-                <UniversalClassifiedShowcase
-                  classified={livePreviewClassified}
-                  previewViewport={previewDevice}
-                  isOwner={true}
-                  canManage={true}
-                  onOpenBookingModal={() => toast.info("Modo de Pré-visualização: As reservas estarão ativas após a publicação do anúncio.")}
-                  onOpenProposalModal={() => toast.info("Modo de Pré-visualização: O envio de propostas estará ativo após a publicação do anúncio.")}
-                  onEdit={() => setCurrentStep(2)}
-                />
-              )}
-
-            </div>
-          </div>
-
-          {/* Sticky Thumb Zone Action Bar no Step 5 */}
-          <div className="sticky bottom-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/80 p-3 sm:p-4 -mx-4 sm:mx-0 sm:rounded-lg sm:border flex items-center justify-between gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setCurrentStep(4)}
-              className="rounded-lg h-11 px-4 text-xs font-semibold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              <ArrowLeft className="size-4" />
-              <span>Ajustar Condições</span>
-            </Button>
-
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={handleSaveDraft}
-                disabled={isSubmitting}
-                className="rounded-lg h-11 px-3 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              >
-                Salvar Rascunho
-              </Button>
-
-              <Button
-                type="button"
-                onClick={handlePublish}
-                disabled={isSubmitting || isUploadingMedia}
-                className="rounded-lg h-11 px-6 text-sm font-bold bg-primary text-primary-foreground active:scale-98 transition-colors gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
-                    <span>Publicando...</span>
-                  </>
-                ) : (
-                  <>
-                    <Check className="size-4 stroke-2" />
-                    <span>{editId ? "Salvar Alterações" : "Publicar Anúncio"}</span>
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : (
-        /* ── Grid Principal: Editor (42%) + Truthful Preview (58%) ── */
- <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
- {/* Painel Esquerdo: Formulário Especializado com Scroll Dedicado */}
- <aside
- className={`md:col-span-5 space-y-6 ${mobileTab === "edit" ? "block" : "hidden md:block"} `}
- >
+        {/* Formulário de Edição Unificado & Confortável (Sem Mockup Embutido) */}
+        <div className="w-full max-w-4xl mx-auto space-y-6">
           <div className="space-y-6">
-            {/* Section 1: Fotos do Topo & Galeria Exclusiva do Feed */}
-            <div className="bg-card rounded-lg p-4 sm:p-5 space-y-5 border border-border/60">
+            {/* Section 1: Mídias do Anúncio (Capa de Topo & Mural do Feed da Cidade) */}
+            <div className="bg-card rounded-lg p-5 sm:p-6 space-y-6 border border-border/60 shadow-xs">
               <div className="flex items-center justify-between pb-3 border-b border-border/40">
                 <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                   <ImagePlus className="size-4 text-primary shrink-0" />
-                  <span>1. Mídias do Anúncio</span>
+                  <span>Mídias e Identidade Visual</span>
                 </div>
+                <Badge variant="outline" className="text-xs font-mono text-muted-foreground">
+                  {images.length + feedMedia.length} mídia(s)
+                </Badge>
               </div>
 
-              {/* 1.1 Fotos de Destaque / Carrossel Superior */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
-                    <span>Fotos do Topo (Carrossel Hero)</span>
-                    <Badge variant="outline" className="text-xs py-0 px-2 font-mono">Até 10 fotos</Badge>
-                  </Label>
-                  <span className="text-xs text-muted-foreground/75 font-mono text-muted-foreground">
-                    {images.length}/10 adicionada(s)
-                  </span>
+              {/* 1.1 Fotos de Capa e Destaque (Topo do Anúncio) */}
+              <SquircleCard variant="media" className="p-5 sm:p-6 space-y-4 border border-border/60 bg-muted/20">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                  <div className="space-y-2 min-w-0">
+                    <Label className="text-sm font-bold text-foreground flex items-center gap-2">
+                      <ImagePlus className="size-4 text-primary shrink-0" />
+                      <span>Fotos de Capa e Topo (Visualização Principal)</span>
+                    </Label>
+                    <p className="text-xs text-muted-foreground leading-relaxed break-words text-wrap">
+                      Estas fotos aparecem no cabeçalho do anúncio, no banner principal e nos cards das vitrines de busca da cidade. A 1ª foto será a capa oficial do anúncio.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                    <Badge variant="outline" className="text-xs py-1 px-3 font-mono">
+                      4:3 Horizontal
+                    </Badge>
+                    <Badge className="bg-primary/10 text-primary border-primary/20 text-xs py-1 px-3 font-mono font-bold">
+                      {images.length}/10 adicionada(s)
+                    </Badge>
+                  </div>
                 </div>
-                <p className="text-xs text-muted-foreground/75 text-muted-foreground leading-relaxed">
-                  Imagens principais exibidas no carrossel de topo do anúncio (formato 4:3 com recorte).
-                </p>
                 <MediaUploader
                   value={images}
                   onChange={setImages}
@@ -4496,22 +4380,29 @@ const [aiInstructions, setAiInstructions] = useState("");
                   lockAspect={true}
                   maxFiles={10}
                 />
-              </div>
+              </SquircleCard>
 
-              {/* 1.2 Galeria Exclusiva do Feed */}
-              <div className="pt-3 border-t border-border/40 space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
-                    <span>Galeria Exclusiva do Feed</span>
-                    <Badge className="bg-primary/10 text-primary border-primary/20 text-xs py-0 px-2 font-bold">Até 12 mídias</Badge>
-                  </Label>
-                  <span className="text-xs text-muted-foreground/75 font-mono text-muted-foreground">
-                    {feedMedia.length}/12 adicionada(s)
-                  </span>
+              {/* 1.2 Mídias do Feed da Cidade e Galeria */}
+              <SquircleCard variant="media" className="p-5 sm:p-6 space-y-4 border border-border/60 bg-muted/20">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                  <div className="space-y-2 min-w-0">
+                    <Label className="text-sm font-bold text-foreground flex items-center gap-2">
+                      <Layers className="size-4 text-primary shrink-0" />
+                      <span>Mídias do Feed da Cidade e Galeria</span>
+                    </Label>
+                    <p className="text-xs text-muted-foreground leading-relaxed break-words text-wrap">
+                      Fotos e vídeos curtos publicados no Feed da Cidade dos membros e na grade visual quadrada do anúncio. Formato quadrado 1:1 nativo.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                    <Badge variant="outline" className="text-xs py-1 px-3 font-mono">
+                      1:1 Quadrado
+                    </Badge>
+                    <Badge className="bg-primary/10 text-primary border-primary/20 text-xs py-1 px-3 font-mono font-bold">
+                      {feedMedia.length}/12 adicionada(s)
+                    </Badge>
+                  </div>
                 </div>
-                <p className="text-xs text-muted-foreground/75 text-muted-foreground leading-relaxed">
-                  Mídias que aparecem exclusivamente no feed e grid do anúncio. Aceita Fotos, GIFs animados e Vídeos curtos (MP4/WebM). <strong>Não duplica as fotos do topo.</strong>
-                </p>
                 <MediaUploader
                   value={feedMedia}
                   onChange={setFeedMedia}
@@ -4523,7 +4414,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                   maxFiles={12}
                   accept="all"
                 />
-              </div>
+              </SquircleCard>
             </div>
 
             {/* Section 2: Informações Básicas (Design Silencioso V121) */}
@@ -4561,6 +4452,8 @@ const [aiInstructions, setAiInstructions] = useState("");
                     ? "Ex: Manutenção Elétrica Residencial & Comercial"
                     : niche.id === "vaga"
                     ? "Ex: Analista Financeiro Sênior (Híbrido)"
+                    : niche.id === "evento"
+                    ? "Ex: Festival de Inverno 2026 - Música & Gastronomia"
                     : "Ex: iPhone 15 Pro Max 256GB Impecável na Caixa"
                 }
                 className="h-11 rounded-lg text-xs bg-background font-medium"
@@ -4588,6 +4481,8 @@ const [aiInstructions, setAiInstructions] = useState("");
                 placeholder={
                   niche.id === "hospedagem"
                     ? "Descreva a atmosfera do espaço, comodidades, localização, distâncias de pontos turísticos e regras de convivência..."
+                    : niche.id === "evento"
+                    ? "Descreva a programação, atrações principais, estrutura do evento, classificação e orientações aos participantes..."
                     : "Descreva todos os detalhes, histórico, diferenciais e informações importantes..."
                 }
                 className="rounded-lg text-xs bg-background resize-y leading-relaxed"
@@ -4605,7 +4500,8 @@ const [aiInstructions, setAiInstructions] = useState("");
             </div>
 
             {/* Motor de Precificação Dinâmica & Avisos */}
-            <div className="space-y-3 pt-1 border-t border-border/40">
+            {niche.id !== "evento" ? (
+              <div className="space-y-3 pt-1 border-t border-border/40">
               <div className="space-y-2">
                 <Label className="text-xs text-foreground font-semibold">
                   Modalidade de Preço
@@ -4856,9 +4752,20 @@ const [aiInstructions, setAiInstructions] = useState("");
                 )}
               </div>
             </div>
- </div>
+          ) : (
+            <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 flex items-start gap-3 mt-4">
+              <Ticket className="size-5 text-primary shrink-0 mt-1" />
+              <div className="space-y-1 text-xs">
+                <p className="font-bold text-foreground">Precificação Direta nos Ingressos e Lotes</p>
+                <p className="text-muted-foreground leading-relaxed">
+                  Eventos não utilizam preço geral no topo do anúncio. Seus valores são cadastrados individualmente por lote e tipo de ingresso na Seção 3. O menor valor ativo será exibido na capa como &quot;A partir de R$...&quot; (ou Entrada Franca se gratuito).
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
 
- {/* Seção 2: Especificações Técnicas do Anúncio */}
+            {/* Seção 3: Especificações Técnicas do Anúncio */}
             {/* Viagens, Turismo & Resorts */}
             {niche.id === "viagem" && (
               <div className="bg-card rounded-lg p-4 sm:p-5 space-y-6 border border-border/60">
@@ -4866,7 +4773,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                 <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border/40 w-full">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <Plane className="size-4 text-primary shrink-0" />
-                    <span>2. Detalhes da Viagem</span>
+                    <span>3. Detalhes da Viagem</span>
                   </div>
                   <Button
                     type="button"
@@ -6020,26 +5927,26 @@ const [aiInstructions, setAiInstructions] = useState("");
 
             {/* Eventos, Festivais & Congressos */}
             {niche.id === "evento" && (
-              <div className="bg-card rounded-lg p-4 sm:p-5 space-y-6 border border-border/60">
+              <div className="bg-card rounded-lg p-5 sm:p-6 space-y-6 border border-border/60 shadow-xs">
                 <div className="flex items-center justify-between pb-3 border-b border-border/40">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <Calendar className="size-4 text-primary shrink-0" />
-                    <span>2. Gestão Completa do Evento</span>
+                    <span>3. Detalhes do Evento</span>
                   </div>
                   <Badge variant="outline" className="text-xs font-mono text-muted-foreground">
                     Classificado / Eventos
                   </Badge>
                 </div>
 
-                {/* 2.1 — Datas, Horários & Visibilidade */}
+                {/* 3.1 — Datas, Horários & Visibilidade */}
                 <div className="space-y-4">
                   <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <Clock className="size-4 text-primary" />
-                    <span>Datas, Horários e Acesso</span>
+                    <span>3.1 Datas, Horários e Acesso</span>
                   </p>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-date" className="text-xs font-medium text-foreground">
                         Data de Início *
                       </Label>
@@ -6052,7 +5959,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                       />
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-end-date" className="text-xs font-medium text-foreground">
                         Data de Término (Opcional)
                       </Label>
@@ -6067,7 +5974,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-start-time" className="text-xs font-medium text-foreground">
                         Horário de Início
                       </Label>
@@ -6080,7 +5987,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                       />
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-end-time" className="text-xs font-medium text-foreground">
                         Horário de Encerramento
                       </Label>
@@ -6093,7 +6000,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                       />
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-gates-open" className="text-xs font-medium text-foreground">
                         Abertura dos Portões
                       </Label>
@@ -6108,7 +6015,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-age-rating" className="text-xs font-medium text-foreground">
                         Classificação Indicativa
                       </Label>
@@ -6127,7 +6034,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                       </Select>
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-visibility" className="text-xs font-medium text-foreground">
                         Visibilidade do Evento
                       </Label>
@@ -6139,23 +6046,23 @@ const [aiInstructions, setAiInstructions] = useState("");
                           <SelectValue placeholder="Visibilidade" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="public">Público (Listado na busca e marketplace)</SelectItem>
-                          <SelectItem value="unlisted">Não Listado (Acesso somente via link)</SelectItem>
+                          <SelectItem value="public">Público (Listado na busca e vitrines)</SelectItem>
+                          <SelectItem value="unlisted">Não Listado (Acesso restrito via link)</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
                 </div>
 
-                {/* 2.2 — Local & Espaço */}
+                {/* 3.2 — Local & Espaço */}
                 <div className="space-y-4 pt-4 border-t border-border/40">
                   <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <MapPin className="size-4 text-primary" />
-                    <span>Local e Espaço do Evento</span>
+                    <span>3.2 Local e Espaço do Evento</span>
                   </p>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-venue-name" className="text-xs font-medium text-foreground">
                         Nome do Local / Pavilhão
                       </Label>
@@ -6163,12 +6070,12 @@ const [aiInstructions, setAiInstructions] = useState("");
                         id="event-venue-name"
                         value={eventVenueName}
                         onChange={(e) => setEventVenueName(e.target.value)}
-                        placeholder="Ex: Centro de Convenções, Parque de Exposições"
+                        placeholder="Ex: Centro de Eventos, Pavilhão Central"
                         className="h-11 rounded-lg text-xs sm:text-sm bg-background border-border"
                       />
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-venue-address" className="text-xs font-medium text-foreground">
                         Endereço Completo do Local
                       </Label>
@@ -6182,7 +6089,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                     </div>
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label htmlFor="event-parking-info" className="text-xs font-medium text-foreground">
                       Estacionamento e Acessibilidade do Local
                     </Label>
@@ -6190,34 +6097,34 @@ const [aiInstructions, setAiInstructions] = useState("");
                       id="event-parking-info"
                       value={eventParkingInfo}
                       onChange={(e) => setEventParkingInfo(e.target.value)}
-                      placeholder="Ex: Estacionamento gratuito no local com 500 vagas e rampas de acesso"
+                      placeholder="Ex: Estacionamento gratuito com vagas PCD e rampas de acesso"
                       className="h-11 rounded-lg text-xs sm:text-sm bg-background border-border"
                     />
                   </div>
                 </div>
 
-                {/* 2.3 — Anfitrião & Organizador (Estilo Luma "Hosted By") */}
+                {/* 3.3 — Anfitrião & Realização */}
                 <div className="space-y-4 pt-4 border-t border-border/40">
                   <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <Users className="size-4 text-primary" />
-                    <span>Anfitrião e Organizador do Evento</span>
+                    <span>Anfitrião e Realização</span>
                   </p>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-host-name" className="text-xs font-medium text-foreground">
-                        Nome do Anfitrião ou Entidade
+                        Nome do Anfitrião ou Entidade Organizadora
                       </Label>
                       <Input
                         id="event-host-name"
                         value={eventHostName}
                         onChange={(e) => setEventHostName(e.target.value)}
-                        placeholder="Ex: Ana Souza ou Associação Comercial"
+                        placeholder="Ex: Associação Empresarial ou Produtora Alpha"
                         className="h-11 rounded-lg text-xs sm:text-sm bg-background border-border"
                       />
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-host-role" className="text-xs font-medium text-foreground">
                         Papel / Título do Anfitrião
                       </Label>
@@ -6225,7 +6132,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                         id="event-host-role"
                         value={eventHostRole}
                         onChange={(e) => setEventHostRole(e.target.value)}
-                        placeholder="Ex: Curador do Evento, Organizador Principal"
+                        placeholder="Ex: Organizador Oficial, Realizador"
                         className="h-11 rounded-lg text-xs sm:text-sm bg-background border-border"
                       />
                     </div>
@@ -6245,7 +6152,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                               eventHostEntityType === "ORGANIZATION"
                                 ? "bg-background text-foreground shadow-xs"
                                 : "text-muted-foreground"
-                            }`}
+                            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                           >
                             Logo (Retangular)
                           </button>
@@ -6256,7 +6163,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                               eventHostEntityType === "PERSON"
                                 ? "bg-background text-foreground shadow-xs"
                                 : "text-muted-foreground"
-                            }`}
+                            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                           >
                             Pessoa (Circular)
                           </button>
@@ -6272,11 +6179,6 @@ const [aiInstructions, setAiInstructions] = useState("");
                         cropShape={eventHostEntityType === "PERSON" ? "round" : "rect"}
                         accept="image"
                         showExternalUrlOption={true}
-                        label={
-                          eventHostEntityType === "PERSON"
-                            ? "Foto do Anfitrião (Upload, Ctrl+V ou URL)"
-                            : "Logo da Organização / Entidade (Upload, Ctrl+V ou URL)"
-                        }
                       />
                     </div>
 
@@ -6295,16 +6197,16 @@ const [aiInstructions, setAiInstructions] = useState("");
                   </div>
                 </div>
 
-                {/* 2.4 — Story 9:16 & Aplicativo PWA */}
+                {/* 3.4 — Story Vertical & Atalho no Celular */}
                 <div className="space-y-4 pt-4 border-t border-border/40">
                   <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                    <Sparkles className="size-4 text-primary" />
-                    <span>Story 9:16 e Experiência Mobile</span>
+                    <Film className="size-4 text-primary" />
+                    <span>Story Vertical</span>
                   </p>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label htmlFor="event-story-url" className="text-xs font-medium text-foreground">
-                      Mídia do Story 9:16 (Vídeo ou Foto Vertical)
+                      Mídia do Story Vertical 9:16 (Vídeo ou Foto)
                     </Label>
                     <MediaUploader
                       value={eventStoryUrl ? [eventStoryUrl] : []}
@@ -6315,21 +6217,20 @@ const [aiInstructions, setAiInstructions] = useState("");
                       aspect={9 / 16}
                       accept="all"
                       showExternalUrlOption={true}
-                      label="Mídia Vertical 9:16 (Upload, Ctrl+V ou URL)"
                     />
                     <p className="text-xs text-muted-foreground">
-                      Vídeos curtos ou teasers verticais abrem em formato imersivo full-screen para engajamento instantâneo.
+                      Teaser vertical exibido em formato imersivo full-screen para engajamento instantâneo.
                     </p>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                    <div className="flex items-center justify-between p-3.5 rounded-lg border border-border/60 bg-muted/20 gap-3">
-                      <div className="space-y-0.5">
+                    <div className="flex items-center justify-between p-4 rounded-lg border border-border/60 bg-muted/20 gap-3">
+                      <div className="space-y-1">
                         <Label htmlFor="story-auto-open" className="text-xs font-bold text-foreground cursor-pointer">
-                          Abertura Automática do Story
+                          Exibir Story ao Abrir o Anúncio
                         </Label>
                         <p className="text-xs text-muted-foreground">
-                          Apresenta o story automaticamente ao visitante na primeira visita
+                          Apresenta o story automaticamente na primeira visita
                         </p>
                       </div>
                       <Switch
@@ -6339,13 +6240,13 @@ const [aiInstructions, setAiInstructions] = useState("");
                       />
                     </div>
 
-                    <div className="flex items-center justify-between p-3.5 rounded-lg border border-border/60 bg-muted/20 gap-3">
-                      <div className="space-y-0.5">
+                    <div className="flex items-center justify-between p-4 rounded-lg border border-border/60 bg-muted/20 gap-3">
+                      <div className="space-y-1">
                         <Label htmlFor="event-pwa-enabled" className="text-xs font-bold text-foreground cursor-pointer">
-                          Habilitar App PWA do Evento
+                          Atalho no Celular (Adicionar à Tela de Início)
                         </Label>
                         <p className="text-xs text-muted-foreground">
-                          Exibe convite para o participante salvar o evento na tela de início do celular
+                          Convida o participante a salvar o evento como aplicativo na tela inicial
                         </p>
                       </div>
                       <Switch
@@ -6357,13 +6258,18 @@ const [aiInstructions, setAiInstructions] = useState("");
                   </div>
                 </div>
 
-                {/* 2.5 — Ingressos & Lotes */}
+                {/* 3.5 — Ingressos & Lotes */}
                 <div className="space-y-4 pt-4 border-t border-border/40">
                   <div className="flex items-center justify-between">
-                    <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                      <Ticket className="size-4 text-primary" />
-                      <span>Ingressos e Lotes</span>
-                    </p>
+                    <div className="space-y-1">
+                      <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                        <Ticket className="size-4 text-primary" />
+                        <span>3.5 Ingressos e Lotes</span>
+                      </p>
+                      <p className="text-xs text-muted-foreground hidden sm:block">
+                        Defina os lotes e valores. O menor valor ativo será a precificação oficial do anúncio.
+                      </p>
+                    </div>
                     <Button
                       type="button"
                       variant="outline"
@@ -6378,7 +6284,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                         };
                         setEventTicketTiers([...eventTicketTiers, newTier]);
                       }}
-                      className="h-9 px-3 text-xs gap-1.5 border-dashed"
+                      className="h-11 min-h-11 px-3 text-xs gap-2 border-dashed"
                     >
                       <Plus className="size-3.5" />
                       Adicionar Lote
@@ -6392,7 +6298,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                   ) : (
                     <div className="space-y-3">
                       {eventTicketTiers.map((tier, idx) => (
-                        <div key={tier.id} className="p-3.5 rounded-lg border border-border/60 bg-muted/20 space-y-3">
+                        <div key={tier.id} className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-bold text-foreground">Lote #{idx + 1}</span>
                             <Button
@@ -6400,7 +6306,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                               variant="ghost"
                               size="sm"
                               onClick={() => setEventTicketTiers(eventTicketTiers.filter((_, i) => i !== idx))}
-                              className="size-8 p-0 text-muted-foreground hover:text-destructive"
+                              className="size-11 min-h-11 min-w-11 p-0 text-muted-foreground hover:text-destructive"
                             >
                               <Trash2 className="size-4" />
                             </Button>
@@ -6503,12 +6409,12 @@ const [aiInstructions, setAiInstructions] = useState("");
                   )}
                 </div>
 
-                {/* 2.4 — Programação Completa */}
+                {/* 3.6 — Programação e Cronograma */}
                 <div className="space-y-4 pt-4 border-t border-border/40">
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                       <Clock className="size-4 text-primary" />
-                      <span>Programação e Cronograma</span>
+                      <span>Programação do Evento</span>
                     </p>
                     <Button
                       type="button"
@@ -6524,9 +6430,9 @@ const [aiInstructions, setAiInstructions] = useState("");
                         };
                         setEventSchedule([...eventSchedule, newItem]);
                       }}
-                      className="h-9 px-3 text-xs gap-1.5 border-dashed"
+                      className="h-11 min-h-11 px-3 text-xs gap-2 border-dashed"
                     >
-                      <Plus className="size-3.5" />
+                      <Plus className="size-4" />
                       Adicionar Atividade
                     </Button>
                   </div>
@@ -6538,7 +6444,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                   ) : (
                     <div className="space-y-3">
                       {eventSchedule.map((item, idx) => (
-                        <div key={item.id} className="p-3.5 rounded-lg border border-border/60 bg-muted/20 space-y-3">
+                        <div key={item.id} className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <span className="text-xs font-bold text-foreground">Horário #{idx + 1}</span>
@@ -6553,7 +6459,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                               variant="ghost"
                               size="sm"
                               onClick={() => setEventSchedule(eventSchedule.filter((_, i) => i !== idx))}
-                              className="size-8 p-0 text-muted-foreground hover:text-destructive"
+                              className="size-11 min-h-11 min-w-11 p-0 text-muted-foreground hover:text-destructive"
                             >
                               <Trash2 className="size-4" />
                             </Button>
@@ -6651,7 +6557,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                   )}
                 </div>
 
-                {/* 2.5 — Palestrantes & Atrações */}
+                {/* 3.7 — Palestrantes & Atrações */}
                 <div className="space-y-4 pt-4 border-t border-border/40">
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
@@ -6672,9 +6578,9 @@ const [aiInstructions, setAiInstructions] = useState("");
                         };
                         setEventSpeakers([...eventSpeakers, newSpeaker]);
                       }}
-                      className="h-9 px-3 text-xs gap-1.5 border-dashed"
+                      className="h-11 min-h-11 px-3 text-xs gap-2 border-dashed"
                     >
-                      <Plus className="size-3.5" />
+                      <Plus className="size-4" />
                       Adicionar Palestrante
                     </Button>
                   </div>
@@ -6686,7 +6592,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                   ) : (
                     <div className="space-y-3">
                       {eventSpeakers.map((speaker, idx) => (
-                        <div key={speaker.id} className="p-3.5 rounded-lg border border-border/60 bg-muted/20 space-y-3">
+                        <div key={speaker.id} className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-bold text-foreground">Palestrante #{idx + 1}</span>
                             <Button
@@ -6694,7 +6600,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                               variant="ghost"
                               size="sm"
                               onClick={() => setEventSpeakers(eventSpeakers.filter((_, i) => i !== idx))}
-                              className="size-8 p-0 text-muted-foreground hover:text-destructive"
+                              className="size-11 min-h-11 min-w-11 p-0 text-muted-foreground hover:text-destructive"
                             >
                               <Trash2 className="size-4" />
                             </Button>
@@ -6742,7 +6648,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div className="space-y-1">
-                              <Label className="text-xs text-muted-foreground">Foto do Palestrante (Upload, Ctrl+V ou URL)</Label>
+                              <Label className="text-xs text-muted-foreground">Foto do Palestrante</Label>
                               <MediaUploader
                                 value={speaker.avatar_url ? [speaker.avatar_url] : []}
                                 onChange={(urls) => {
@@ -6762,7 +6668,6 @@ const [aiInstructions, setAiInstructions] = useState("");
                                 cropShape="rect"
                                 accept="image"
                                 showExternalUrlOption={true}
-                                label="Foto do Palestrante (Upload, Ctrl+V ou URL)"
                               />
                             </div>
                             <div className="space-y-1">
@@ -6802,7 +6707,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                   )}
                 </div>
 
-                {/* 2.6 — Patrocinadores & Parceiros */}
+                {/* 3.8 — Patrocinadores & Parceiros */}
                 <div className="space-y-4 pt-4 border-t border-border/40">
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
@@ -6821,9 +6726,9 @@ const [aiInstructions, setAiInstructions] = useState("");
                         };
                         setEventSponsors([...eventSponsors, newSponsor]);
                       }}
-                      className="h-9 px-3 text-xs gap-1.5 border-dashed"
+                      className="h-11 min-h-11 px-3 text-xs gap-2 border-dashed"
                     >
-                      <Plus className="size-3.5" />
+                      <Plus className="size-4" />
                       Adicionar Patrocinador
                     </Button>
                   </div>
@@ -6835,7 +6740,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                   ) : (
                     <div className="space-y-3">
                       {eventSponsors.map((sponsor, idx) => (
-                        <div key={sponsor.id} className="p-3.5 rounded-lg border border-border/60 bg-muted/20 space-y-3">
+                        <div key={sponsor.id} className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-bold text-foreground">Marca #{idx + 1}</span>
                             <Button
@@ -6843,7 +6748,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                               variant="ghost"
                               size="sm"
                               onClick={() => setEventSponsors(eventSponsors.filter((_, i) => i !== idx))}
-                              className="size-8 p-0 text-muted-foreground hover:text-destructive"
+                              className="size-11 min-h-11 min-w-11 p-0 text-muted-foreground hover:text-destructive"
                             >
                               <Trash2 className="size-4" />
                             </Button>
@@ -6898,7 +6803,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                             </div>
                           </div>
                           <div className="space-y-1">
-                            <Label className="text-xs text-muted-foreground">Logomarca (Upload, Ctrl+V ou URL)</Label>
+                            <Label className="text-xs text-muted-foreground">Logomarca do Patrocinador</Label>
                             <MediaUploader
                               value={sponsor.logo_url ? [sponsor.logo_url] : []}
                               onChange={(urls) => {
@@ -6914,7 +6819,6 @@ const [aiInstructions, setAiInstructions] = useState("");
                               cropShape="rect"
                               accept="image"
                               showExternalUrlOption={true}
-                              label="Logomarca do Patrocinador (Upload, Ctrl+V ou URL)"
                             />
                           </div>
                         </div>
@@ -6923,12 +6827,12 @@ const [aiInstructions, setAiInstructions] = useState("");
                   )}
                 </div>
 
-                {/* 2.7 — Enquetes & Interatividade ao Vivo */}
+                {/* 3.9 — Enquetes & Interatividade ao Vivo */}
                 <div className="space-y-4 pt-4 border-t border-border/40">
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                       <HelpCircle className="size-4 text-primary" />
-                      <span>Enquetes e Interatividade ao Vivo</span>
+                      <span>Enquetes e Interatividade</span>
                     </p>
                     <Button
                       type="button"
@@ -6938,14 +6842,20 @@ const [aiInstructions, setAiInstructions] = useState("");
                         const newSurvey: EventSurvey = {
                           id: `srv_${Date.now()}`,
                           question: "",
-                          options: ["Opção A", "Opção B"],
-                          active: true,
+                          options: [
+                            { id: `opt_${Date.now()}_1`, text: "Opção A", votes: 0 },
+                            { id: `opt_${Date.now()}_2`, text: "Opção B", votes: 0 },
+                          ],
+                          is_active: true,
+                          lifecycle_state: "OPEN",
+                          lifecycle_label: "Aberta",
+                          total_votes: 0,
                         };
                         setEventSurveys([...eventSurveys, newSurvey]);
                       }}
-                      className="h-9 px-3 text-xs gap-1.5 border-dashed"
+                      className="h-11 min-h-11 px-3 text-xs gap-2 border-dashed"
                     >
-                      <Plus className="size-3.5" />
+                      <Plus className="size-4" />
                       Adicionar Enquete
                     </Button>
                   </div>
@@ -6957,7 +6867,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                   ) : (
                     <div className="space-y-3">
                       {eventSurveys.map((survey, idx) => (
-                        <div key={survey.id} className="p-3.5 rounded-lg border border-border/60 bg-muted/20 space-y-3">
+                        <div key={survey.id} className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-bold text-foreground">Enquete #{idx + 1}</span>
                             <Button
@@ -6965,7 +6875,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                               variant="ghost"
                               size="sm"
                               onClick={() => setEventSurveys(eventSurveys.filter((_, i) => i !== idx))}
-                              className="size-8 p-0 text-muted-foreground hover:text-destructive"
+                              className="size-11 min-h-11 min-w-11 p-0 text-muted-foreground hover:text-destructive"
                             >
                               <Trash2 className="size-4" />
                             </Button>
@@ -6980,24 +6890,24 @@ const [aiInstructions, setAiInstructions] = useState("");
                                 setEventSurveys(updated);
                               }}
                               placeholder="Ex: Qual tema você quer ver aprofundado na sessão da tarde?"
-                              className="h-10 text-xs bg-background"
+                              className="h-11 text-xs bg-background"
                             />
                           </div>
                           <div className="space-y-2">
                             <Label className="text-xs text-muted-foreground">Opções de Resposta</Label>
-                            {survey.options.map((opt: string, optIdx: number) => (
-                              <div key={optIdx} className="flex items-center gap-2">
+                            {survey.options.map((opt: EventPollOptionNormalized, optIdx: number) => (
+                              <div key={opt.id || optIdx} className="flex items-center gap-2">
                                 <Input
-                                  value={opt}
+                                  value={opt.text}
                                   onChange={(e) => {
                                     const updated = [...eventSurveys];
                                     const opts = [...updated[idx].options];
-                                    opts[optIdx] = e.target.value;
+                                    opts[optIdx] = { ...opts[optIdx], text: e.target.value };
                                     updated[idx] = { ...updated[idx], options: opts };
                                     setEventSurveys(updated);
                                   }}
                                   placeholder={`Opção ${optIdx + 1}`}
-                                  className="h-9 text-xs bg-background"
+                                  className="h-11 text-xs bg-background"
                                 />
                                 {survey.options.length > 2 && (
                                   <Button
@@ -7006,13 +6916,13 @@ const [aiInstructions, setAiInstructions] = useState("");
                                     size="sm"
                                     onClick={() => {
                                       const updated = [...eventSurveys];
-                                      const opts = updated[idx].options.filter((_: string, i: number) => i !== optIdx);
+                                      const opts = updated[idx].options.filter((_, i: number) => i !== optIdx);
                                       updated[idx] = { ...updated[idx], options: opts };
                                       setEventSurveys(updated);
                                     }}
-                                    className="size-8 p-0 text-muted-foreground hover:text-destructive"
+                                    className="size-11 min-h-11 min-w-11 p-0 text-muted-foreground hover:text-destructive"
                                   >
-                                    <Trash2 className="size-3.5" />
+                                    <Trash2 className="size-4" />
                                   </Button>
                                 )}
                               </div>
@@ -7024,13 +6934,17 @@ const [aiInstructions, setAiInstructions] = useState("");
                                 size="sm"
                                 onClick={() => {
                                   const updated = [...eventSurveys];
-                                  const opts = [...updated[idx].options, `Opção ${updated[idx].options.length + 1}`];
+                                  const nextIdx = updated[idx].options.length + 1;
+                                  const opts: EventPollOptionNormalized[] = [
+                                    ...updated[idx].options,
+                                    { id: `opt_${Date.now()}_${nextIdx}`, text: `Opção ${nextIdx}`, votes: 0 },
+                                  ];
                                   updated[idx] = { ...updated[idx], options: opts };
                                   setEventSurveys(updated);
                                 }}
-                                className="h-8 px-2.5 text-xs gap-1 border-dashed mt-1"
+                                className="h-11 min-h-11 px-3 text-xs gap-2 border-dashed mt-1"
                               >
-                                <Plus className="size-3" />
+                                <Plus className="size-4" />
                                 Adicionar Opção
                               </Button>
                             )}
@@ -7041,15 +6955,15 @@ const [aiInstructions, setAiInstructions] = useState("");
                   )}
                 </div>
 
-                {/* 2.8 — Políticas e Regras do Evento */}
+                {/* 3.10 — Políticas e Regras do Evento */}
                 <div className="space-y-4 pt-4 border-t border-border/40">
                   <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <ShieldCheck className="size-4 text-primary" />
-                    <span>Políticas e Informações Importantes</span>
+                    <span>3.10 Políticas e Informações</span>
                   </p>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-refund-policy" className="text-xs font-medium text-foreground">
                         Política de Cancelamento e Reembolso
                       </Label>
@@ -7062,7 +6976,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                       />
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-half-price" className="text-xs font-medium text-foreground">
                         Regras de Meia-Entrada e Benefícios
                       </Label>
@@ -7076,7 +6990,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                     </div>
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label htmlFor="event-accessibility" className="text-xs font-medium text-foreground">
                       Acessibilidade e Inclusão no Local
                     </Label>
@@ -7116,7 +7030,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                 <div className="flex items-center justify-between pb-3 border-b border-border/40">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <Wrench className="size-4 text-primary shrink-0" />
-                    <span>2. Equipamento</span>
+                    <span>3. Equipamento</span>
                   </div>
                   <Badge variant="outline" className="text-xs font-mono text-muted-foreground">
                     Aluguel / Eventos
@@ -7157,7 +7071,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                 <div className="flex items-center justify-between pb-3 border-b border-border/40">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <Key className="size-4 text-primary shrink-0" />
- <span>2. Hospedagem</span>
+                    <span>3. Hospedagem</span>
  </div>
  <Badge variant="outline" className="text-xs font-mono text-muted-foreground">
  Temporada / Diária
@@ -7371,7 +7285,7 @@ const [aiInstructions, setAiInstructions] = useState("");
               <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
                 <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-3 border-b border-border/40">
                   <HomeIcon className="size-4 text-primary shrink-0" />
- <span>2. Imóvel</span>
+                  <span>3. Imóvel</span>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -7532,7 +7446,7 @@ const [aiInstructions, setAiInstructions] = useState("");
             <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Car className="size-4 text-primary" />
- <span>2. Veículo</span>
+ <span>3. Veículo</span>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -7616,6 +7530,27 @@ const [aiInstructions, setAiInstructions] = useState("");
  </Select>
  </div>
  </div>
+
+ {/* Consulta e Referência Tabela FIPE */}
+ <FipeVehicleSelector
+ currentBrand={vehicleBrand}
+ currentModel={vehicleModel}
+ currentYearModel={vehicleYearModel}
+ currentFuel={vehicleFuel}
+ currentPriceCents={priceCents || 0}
+ initialFipeCode={vehicleFipeCode}
+ initialFipePriceCents={vehicleFipePriceCents}
+ onSelectVehicle={(data) => {
+ if (data.brand) setVehicleBrand(data.brand);
+ if (data.model) setVehicleModel(data.model);
+ if (data.yearModel) setVehicleYearModel(data.yearModel);
+ if (data.fuel) setVehicleFuel(data.fuel);
+ if (data.fipeCode) setVehicleFipeCode(data.fipeCode);
+ if (data.fipePriceCents) setVehicleFipePriceCents(data.fipePriceCents);
+ if (data.referenceMonth) setVehicleFipeReferenceMonth(data.referenceMonth);
+ if (data.fipeDeltaPercent !== undefined) setVehicleFipeDeltaPercent(data.fipeDeltaPercent);
+ }}
+ />
 
  {/* Opcionais & Diferenciais do Veículo */}
  <div className="rounded-lg border border-border/60 bg-muted/20 p-4 space-y-3 pt-2">
@@ -8938,7 +8873,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                   <div className="flex items-center justify-between pb-2 border-b border-border/40">
                     <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
                       <Briefcase className="size-4 text-primary" />
-                      <span>2. Parâmetros do Negócio</span>
+                      <span>3. Parâmetros do Negócio</span>
                     </div>
                     <Badge variant="outline" className="text-xs font-semibold text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10">
                       Negócios
@@ -9520,7 +9455,7 @@ const [aiInstructions, setAiInstructions] = useState("");
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Tag className="size-4 text-primary" />
- <span>2. Especificações</span>
+ <span>3. Especificações</span>
  </div>
  
  </div>
@@ -9811,7 +9746,7 @@ const [aiInstructions, setAiInstructions] = useState("");
             <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Wrench className="size-4 text-primary" />
- <span>2. Atendimento</span>
+ <span>3. Atendimento</span>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -10126,7 +10061,7 @@ const [aiInstructions, setAiInstructions] = useState("");
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <FileArchive className="size-4 text-primary" />
- <span>2. Arquivo Digital</span>
+ <span>3. Arquivo Digital</span>
  </div>
  <Badge variant="outline" className="text-xs font-mono text-muted-foreground">
  Download Imediato
@@ -10465,12 +10400,12 @@ const [aiInstructions, setAiInstructions] = useState("");
               )}
 
               {/* Formas de Pagamento (LISTA ESTRUTURADA ESPAÇOSA - ZERO TRUNCATION - 1x = À VISTA) */}
-              {isPaymentAllowed && (
+              {isPaymentAllowed && niche.id !== "evento" && (
                 <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
                   <div className="flex items-center justify-between pb-3 border-b border-border/40">
                     <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                       <CreditCard className="size-4 text-primary shrink-0" />
-                      <span>Formas de Pagamento Aceitas</span>
+                      <span>Formas de Pagamento</span>
                     </div>
                     <span className="text-xs text-muted-foreground font-mono">Ative as opções aceitas</span>
                   </div>
@@ -10986,7 +10921,7 @@ const [aiInstructions, setAiInstructions] = useState("");
               <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
                 <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-3 border-b border-border/40">
                   <MapPin className="size-4 text-primary shrink-0" />
-                  <span>Localização</span>
+                  <span>5. Localização e Contato</span>
                 </div>
 
  <CityCombobox
@@ -11318,7 +11253,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                 <div className="flex items-center justify-between pb-3 border-b border-blue-500/15">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <Bot className="size-4 text-blue-500 shrink-0" />
-                    <span>6. Agente Vendedor (SDR)</span>
+                    <span>6. Assistente de Vendas (IA)</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
@@ -11485,168 +11420,245 @@ const [aiInstructions, setAiInstructions] = useState("");
                     </div>
                   </div>
                 )}
+              {/* Barra Inferior Confortável de Ações do Formulário */}
+              <div className="pt-6 border-t border-border/40 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleOpenLivePreview}
+                  className="w-full sm:w-auto rounded-lg h-11 min-h-11 px-5 text-xs font-bold gap-2 border-border/80 hover:bg-muted cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary text-foreground"
+                >
+                  <Eye className="size-4 text-primary shrink-0" />
+                  <span>Visualizar Prévia Real</span>
+                </Button>
+
+                <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={handleSaveDraft}
+                    disabled={isSubmitting}
+                    className="rounded-lg h-11 min-h-11 px-4 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    Salvar Rascunho
+                  </Button>
+
+                  <Button
+                    type="button"
+                    onClick={handlePublish}
+                    disabled={isSubmitting || isUploadingMedia}
+                    className="rounded-lg h-11 min-h-11 px-6 text-xs sm:text-sm font-bold bg-primary text-primary-foreground active:scale-98 transition-colors gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
+                        <span>{editId ? "Salvando..." : "Publicando..."}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Check className="size-4 stroke-2" />
+                        <span>{editId ? "Salvar Alterações" : "Publicar Anúncio"}</span>
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        {/* Modal Canônico de Prévia Isolada (Mobile & Desktop) */}
+        <Dialog open={isPreviewModalOpen} onOpenChange={setIsPreviewModalOpen}>
+          <DialogContent className="max-w-5xl w-full max-h-screen p-0 flex flex-col overflow-hidden bg-background border-border/80">
+            <DialogHeader className="px-4 py-3 sm:px-6 sm:py-4 border-b border-border/60 bg-muted/30 flex flex-row items-center justify-between space-y-0 gap-3">
+              <div className="flex items-center gap-2">
+                <Eye className="size-4 text-primary" />
+                <div>
+                  <DialogTitle className="text-sm font-bold text-foreground">
+                    Prévia do Anúncio
+                  </DialogTitle>
+                  <DialogDescription className="sr-only">
+                    Visualização em tempo real do anúncio em mobile e desktop
+                  </DialogDescription>
+                </div>
               </div>
 
- </aside>
+              <div className="flex items-center gap-2 mr-6 sm:mr-8">
+                {/* Seletor de Modelo Visual (quando houver mais de 1) */}
+                {allowedTemplatesForNiche.length > 1 && (
+                  <div className="hidden sm:flex items-center gap-1 bg-background/80 p-1 rounded-lg border border-border/50">
+                    {allowedTemplatesForNiche.map((tpl) => (
+                      <button
+                        key={tpl.id}
+                        type="button"
+                        onClick={() => setTemplateStyle(tpl.id as any)}
+                        className={cn(
+                          "px-2 py-1 text-xs font-semibold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                          templateStyle === tpl.id
+                            ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        {tpl.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
 
-
- {/* Painel Direito: Live Truthful Preview (Visualização Padrão) */}
- <main
- className={`md:col-span-7 ${mobileTab === "preview" ? "block" : "hidden md:block"} sticky top-0`}
- >
-        <div className="bg-card rounded-lg overflow-hidden border border-border/60">
-          <div className="bg-muted/40 px-3 py-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 border-b border-border/40 text-xs">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="font-semibold flex items-center gap-1.5 text-foreground shrink-0">
-                <Eye className="size-4 text-primary" />
-                <span>Prévia ao vivo</span>
-              </span>
-              <div className="flex items-center gap-1 bg-background/80 p-0.5 rounded-lg border border-border/50">
-                {allowedTemplatesForNiche.map((tpl) => (
+                {/* Seletor de Dispositivo (Mobile / Desktop) */}
+                <div className="flex items-center gap-1 bg-background p-1 rounded-lg border border-border/50">
                   <button
-                    key={tpl.id}
                     type="button"
-                    onClick={() => setTemplateStyle(tpl.id as any)}
+                    onClick={() => setPreviewDevice("mobile")}
                     className={cn(
-                      "px-2 py-0.5 text-xs font-semibold rounded transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                      templateStyle === tpl.id
-                        ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                      "px-3 py-1 text-xs font-bold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      previewDevice === "mobile"
+                        ? "bg-primary text-primary-foreground shadow-xs"
                         : "text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    {tpl.label}
+                    Mobile
                   </button>
-                ))}
+                  <button
+                    type="button"
+                    onClick={() => setPreviewDevice("desktop")}
+                    className={cn(
+                      "px-3 py-1 text-xs font-bold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      previewDevice === "desktop"
+                        ? "bg-primary text-primary-foreground shadow-xs"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Desktop
+                  </button>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      try {
+                        sessionStorage.setItem("waesy_preview_payload", JSON.stringify(livePreviewClassified));
+                        const previewUrl = editId ? `/classificados/${editId}?preview=true` : `/classificados/preview-live`;
+                        window.open(previewUrl, "_blank");
+                      } catch {
+                        toast.info("Prévia interativa carregada na tela.");
+                      }
+                    }
+                  }}
+                  className="hidden md:flex items-center gap-2 h-11 min-h-11 text-xs font-semibold px-3 rounded-lg border-border/70 hover:bg-muted text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <ExternalLink className="size-3.5 text-muted-foreground" />
+                  <span>Nova Aba</span>
+                </Button>
+              </div>
+            </DialogHeader>
+
+            {/* Área com rolagem independente do preview (Contenção CSS anti-leak) */}
+            <div className="flex-1 overflow-y-auto bg-muted/20 p-2 sm:p-6 pb-20">
+              <div
+                data-preview-device={previewDevice}
+                className={cn(
+                  "transition-colors duration-200 mx-auto",
+                  previewDevice === "mobile"
+                    ? "w-full max-w-sm rounded-lg border border-border/80 bg-background relative overflow-hidden min-h-96"
+                    : "w-full max-w-5xl rounded-lg border border-border/80 bg-background relative overflow-hidden"
+                )}
+              >
+                {templateStyle === "conveniencia" ? (
+                  <ConvenienceShowcaseView
+                    classified={livePreviewClassified}
+                    previewData={{
+                      title: title || "Produto de Mercado / Conveniência",
+                      description: description,
+                      priceCents: priceCents || 0,
+                      images: images,
+                      locationName: locationName || "São Miguel do Oeste - SC",
+                      whatsapp: whatsapp,
+                      storeName: selectedStore?.name || "Sua Loja",
+                      storeSlug: selectedStore?.slug,
+                      storeLogo: selectedStore?.logo_url,
+                      authorName: !selectedStore ? (userProfile?.full_name || "Você") : undefined,
+                      authorAvatar: !selectedStore ? (userProfile?.avatar_url || undefined) : undefined,
+                      authorId: !selectedStore ? userProfile?.id : undefined,
+                      volume: convenienceVolume,
+                      unitType: groceryUnitType,
+                      estimatedWeightPerUnit: groceryEstimatedWeightPerUnit,
+                      department: CANONICAL_GROCERY_DEPARTMENTS.find((d) => d.id === groceryDepartment)?.label || "Mercado & Varejo",
+                      subCategory: grocerySubCategory,
+                      temperature: groceryTemperature,
+                      isAlcoholic: groceryIsAlcoholic,
+                      containsGluten: groceryContainsGluten ?? undefined,
+                      containsLactose: groceryContainsLactose ?? undefined,
+                      isOrganic: groceryIsOrganic,
+                      brand: groceryBrand,
+                      barcodeEan: groceryBarcodeEan,
+                      ingredients: groceryIngredients,
+                      prepOptions: groceryPrepOptions,
+                      deliveryEstimate: groceryDeliveryEstimate,
+                      deliveryFeeCents: groceryDeliveryFeeCents,
+                      readyDelivery: readyDelivery,
+                      acceptsPix,
+                      pixDiscountPercent,
+                      acceptsCard,
+                      maxInstallments,
+                      cardInterestFree,
+                      acceptsCash,
+                      groceryFreshPricing: grocerySupportsFreshPricing ? {
+                        supports_fresh_pricing: true,
+                        default_pricing_mode: groceryDefaultPricingMode,
+                        avg_piece_weight_grams: groceryAvgPieceWeightGrams,
+                        price_per_kg_cents: groceryPricePerKgCents || ((priceCents || 0) > 0 ? (priceCents || 0) * 2 : 990),
+                        price_per_unit_cents: priceCents || 0,
+                      } : undefined,
+                      groceryRipenessConfig: groceryRipenessEnabled ? {
+                        enabled: true,
+                        stages: groceryRipenessStages,
+                        default_stage: "maduro",
+                      } : undefined,
+                      progressiveDiscountTiers: groceryProgressiveDiscountsEnabled && groceryDiscountTiers.length > 0 ? groceryDiscountTiers : undefined,
+                      orderBumpOffer: groceryOrderBumpEnabled && groceryOrderBumpTitle.trim() ? {
+                        enabled: true,
+                        mode: "manual",
+                        target_title: groceryOrderBumpTitle.trim(),
+                        special_price_cents: groceryOrderBumpSpecialPriceCents,
+                        original_price_cents: groceryOrderBumpOriginalPriceCents,
+                        badge_text: groceryOrderBumpBadge || "Oferta Relâmpago",
+                      } : undefined,
+                    }}
+                    isOwner={true}
+                    previewDevice={previewDevice}
+                    compact={previewDevice === "mobile"}
+                    onEdit={() => {
+                      setIsPreviewModalOpen(false);
+                      setCurrentStep(2);
+                    }}
+                  />
+                ) : niche.id === "viagem" && (templateStyle === "editorial" || (templateStyle as string) === "instagram" || (templateStyle as string) === "instagram_resort" || !templateStyle) ? (
+                  <EditorialShowcaseView
+                    classified={livePreviewClassified}
+                    isOwner={false}
+                    previewViewport={previewDevice}
+                  />
+                ) : (
+                  <UniversalClassifiedShowcase
+                    classified={livePreviewClassified}
+                    previewViewport={previewDevice}
+                    isOwner={true}
+                    canManage={true}
+                    onOpenBookingModal={() => toast.info("Modo de Pré-visualização: As reservas estarão ativas após a publicação do anúncio.")}
+                    onOpenProposalModal={() => toast.info("Modo de Pré-visualização: O envio de propostas estará ativo após a publicação do anúncio.")}
+                    onEdit={() => {
+                      setIsPreviewModalOpen(false);
+                      setCurrentStep(2);
+                    }}
+                  />
+                )}
               </div>
             </div>
-
-            <div className="flex items-center gap-1 bg-background p-0.5 rounded-lg border border-border/50 self-end sm:self-auto">
-              <button
-                type="button"
-                onClick={() => setPreviewDevice("mobile")}
-                className={cn(
-                  "px-2.5 py-1 text-xs font-bold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                  previewDevice === "mobile"
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                Mobile
-              </button>
-              <button
-                type="button"
-                onClick={() => setPreviewDevice("desktop")}
-                className={cn(
-                  "px-2.5 py-1 text-xs font-bold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                  previewDevice === "desktop"
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                Desktop
-              </button>
-            </div>
-          </div>
-
-          <div className="max-h-[calc(100vh-140px)] overflow-y-auto bg-muted/20">
-            <div
-              data-preview-device={previewDevice}
-              className={cn(
-                "w-full transition-colors duration-200",
-                previewDevice === "mobile"
-                  ? "max-w-sm mx-auto border-x border-border/70 bg-background shadow-xs"
-                  : "w-full bg-background"
-              )}
-            >
-            {templateStyle === "conveniencia" ? (
-              <ConvenienceShowcaseView
-                classified={livePreviewClassified}
-                previewData={{
-                  title: title || "Produto de Mercado / Conveniência",
-                  description: description,
-                  priceCents: priceCents || 0,
-                  images: images,
-                  locationName: locationName || "São Miguel do Oeste - SC",
-                  whatsapp: whatsapp,
-                  storeName: selectedStore?.name || "Sua Loja",
-                  storeSlug: selectedStore?.slug,
-                  storeLogo: selectedStore?.logo_url,
-                  authorName: !selectedStore ? (userProfile?.full_name || "Você") : undefined,
-                  authorAvatar: !selectedStore ? (userProfile?.avatar_url || undefined) : undefined,
-                  authorId: !selectedStore ? userProfile?.id : undefined,
-                  volume: convenienceVolume,
-                  unitType: groceryUnitType,
-                  estimatedWeightPerUnit: groceryEstimatedWeightPerUnit,
-                  department: CANONICAL_GROCERY_DEPARTMENTS.find((d) => d.id === groceryDepartment)?.label || "Mercado & Varejo",
-                  subCategory: grocerySubCategory,
-                  temperature: groceryTemperature,
-                  isAlcoholic: groceryIsAlcoholic,
-                  containsGluten: groceryContainsGluten ?? undefined,
-                  containsLactose: groceryContainsLactose ?? undefined,
-                  isOrganic: groceryIsOrganic,
-                  brand: groceryBrand,
-                  barcodeEan: groceryBarcodeEan,
-                  ingredients: groceryIngredients,
-                  prepOptions: groceryPrepOptions,
-                  deliveryEstimate: groceryDeliveryEstimate,
-                  deliveryFeeCents: groceryDeliveryFeeCents,
-                  readyDelivery: readyDelivery,
-                  acceptsPix,
-                  pixDiscountPercent,
-                  acceptsCard,
-                  maxInstallments,
-                  cardInterestFree,
-                  acceptsCash,
-                  groceryFreshPricing: grocerySupportsFreshPricing ? {
-                    supports_fresh_pricing: true,
-                    default_pricing_mode: groceryDefaultPricingMode,
-                    avg_piece_weight_grams: groceryAvgPieceWeightGrams,
-                    price_per_kg_cents: groceryPricePerKgCents || ((priceCents || 0) > 0 ? (priceCents || 0) * 2 : 990),
-                    price_per_unit_cents: priceCents || 0,
-                  } : undefined,
-                  groceryRipenessConfig: groceryRipenessEnabled ? {
-                    enabled: true,
-                    stages: groceryRipenessStages,
-                    default_stage: "maduro",
-                  } : undefined,
-                  progressiveDiscountTiers: groceryProgressiveDiscountsEnabled && groceryDiscountTiers.length > 0 ? groceryDiscountTiers : undefined,
-                  orderBumpOffer: groceryOrderBumpEnabled && groceryOrderBumpTitle.trim() ? {
-                    enabled: true,
-                    mode: "manual",
-                    target_title: groceryOrderBumpTitle.trim(),
-                    special_price_cents: groceryOrderBumpSpecialPriceCents,
-                    original_price_cents: groceryOrderBumpOriginalPriceCents,
-                    badge_text: groceryOrderBumpBadge || "Oferta Relâmpago",
-                  } : undefined,
-                }}
-                isOwner={true}
-                previewDevice={previewDevice}
-                compact={previewDevice === "mobile"}
-                onEdit={() => setCurrentStep(2)}
-              />
-            ) : niche.id === "viagem" && (templateStyle === "editorial" || (templateStyle as string) === "instagram" || (templateStyle as string) === "instagram_resort" || !templateStyle) ? (
-              <EditorialShowcaseView
-                classified={livePreviewClassified}
-                isOwner={false}
-                previewViewport={previewDevice}
-              />
-            ) : (
-              <UniversalClassifiedShowcase
-                classified={livePreviewClassified}
-                previewViewport={previewDevice}
-                isOwner={true}
-                canManage={true}
-                onOpenBookingModal={() => toast.info("Modo de Pré-visualização: As reservas estarão ativas após a publicação do anúncio.")}
-                onOpenProposalModal={() => toast.info("Modo de Pré-visualização: O envio de propostas estará ativo após a publicação do anúncio.")}
-                onEdit={() => setCurrentStep(2)}
-              />
-            )}
-            </div>
-          </div>
-        </div>
- </main>
- </div>
-      )}
+          </DialogContent>
+        </Dialog>
       {/* Superfície Editorial Bidirecional do Copilot de Conteúdo */}
       <AiWritingCopilotSheet
         open={copilotModalOpen}

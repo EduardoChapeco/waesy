@@ -26,6 +26,7 @@ export function GroceryProductCard({
 }: GroceryProductCardProps) {
  const { cart, refreshCart, updateQty } = useCart();
  const [isAdding, setIsAdding] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
  // Find if this product (or its primary variant) is already in the active cart
  const cartItem = cart?.items.find((item) => {
@@ -114,11 +115,12 @@ export function GroceryProductCard({
           search={product.variantId ? { v: product.variantId } : undefined}
           className="absolute inset-y-0 left-0 w-28 sm:w-36 rounded-l-lg bg-muted/40 overflow-hidden block focus-visible:outline-none"
         >
-          {product.coverUrl ? (
+          {product.coverUrl && !imgError ? (
             <img
               src={product.coverUrl}
               alt={product.coverAlt || product.title}
               loading="lazy"
+              onError={() => setImgError(true)}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
           ) : (
@@ -188,7 +190,7 @@ export function GroceryProductCard({
                   type="button"
                   onClick={handleDecrement}
                   disabled={isAdding}
-                  className="size-5 rounded-md bg-background hover:bg-background/80 text-primary flex items-center justify-center transition-colors cursor-pointer"
+                  className="size-5 rounded-md bg-background hover:bg-background/80 text-primary flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   aria-label="Diminuir quantidade"
                 >
                   <Minus className="size-2.5" />
@@ -202,7 +204,7 @@ export function GroceryProductCard({
                   type="button"
                   onClick={handleIncrement}
                   disabled={isAdding}
-                  className="size-5 rounded-md bg-background hover:bg-background/80 text-primary flex items-center justify-center transition-colors cursor-pointer"
+                  className="size-5 rounded-md bg-background hover:bg-background/80 text-primary flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   aria-label="Aumentar quantidade"
                 >
                   <Plus className="size-2.5" />
@@ -253,11 +255,12 @@ export function GroceryProductCard({
  search={product.variantId ? { v: product.variantId } : undefined}
  className="relative aspect-square w-full overflow-hidden bg-muted/40 block focus-visible:outline-none shrink-0"
  >
- {product.coverUrl ? (
+ {product.coverUrl && !imgError ? (
  <img
  src={product.coverUrl}
  alt={product.coverAlt || product.title}
  loading="lazy"
+ onError={() => setImgError(true)}
  className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
  />
  ) : (
@@ -335,7 +338,7 @@ export function GroceryProductCard({
  type="button"
  onClick={handleDecrement}
  disabled={isAdding}
- className="size-6 rounded-lg bg-background hover:bg-background/80 text-primary flex items-center justify-center transition-colors cursor-pointer"
+ className="size-6 rounded-lg bg-background hover:bg-background/80 text-primary flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  aria-label="Diminuir quantidade"
  >
  <Minus className="size-3" />
@@ -349,7 +352,7 @@ export function GroceryProductCard({
  type="button"
  onClick={handleIncrement}
  disabled={isAdding}
- className="size-6 rounded-lg bg-background hover:bg-background/80 text-primary flex items-center justify-center transition-colors cursor-pointer"
+ className="size-6 rounded-lg bg-background hover:bg-background/80 text-primary flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  aria-label="Aumentar quantidade"
  >
  <Plus className="size-3" />

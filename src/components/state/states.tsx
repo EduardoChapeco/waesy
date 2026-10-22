@@ -98,7 +98,7 @@ export function ErrorState({
  onRetry?: () => void;
 }) {
  return (
- <StateShell
+ <StateShell /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  icon={AlertTriangle}
  tone="destructive"
  title={title}

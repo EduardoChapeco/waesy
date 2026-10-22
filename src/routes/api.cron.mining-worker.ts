@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { dispatchScheduledMiningJobFn } from "@/services/mining.functions";
 import { z } from "zod";
+import { enrichListingContacts } from "@/services/mining/contact-enrichment";
 
 import type {} from "@tanstack/react-start";
 export const cronBodySchema = z.object({
@@ -17,6 +18,7 @@ export const cronBodySchema = z.object({
     "publish-approved",
     "events-harvest",
     "full-daily-pipeline",
+    "contact-enrichment",
   ]),
   triggeredAt: z.string().optional(),
   source: z.string().optional(),
@@ -52,7 +54,10 @@ export async function handleCronWorker(request: Request): Promise<Response> {
     console.info(`[cron-mining-worker] Dispatching job="${jobType}" triggered_at="${triggeredAt}" source="${source}"`);
 
     const startTime = Date.now();
-    const result = await dispatchScheduledMiningJobFn({ data: { jobType } });
+    const result =
+      jobType === "contact-enrichment"
+        ? await enrichListingContacts({ limit: 15 }).then((r) => ({ success: true, result: r as unknown }))
+        : await dispatchScheduledMiningJobFn({ data: { jobType } });
     const durationMs = Date.now() - startTime;
 
     console.info(`[cron-mining-worker] Job "${jobType}" completed in ${durationMs}ms. Success=${result.success}`);

@@ -275,7 +275,7 @@ function FocusGroupPage() {
                     isSelected
                       ? 'bg-card border-border shadow-xs text-foreground ring-1 ring-primary/30'
                       : 'bg-muted/30 border-transparent text-muted-foreground opacity-60'
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   <span className="truncate max-w-28">{p.display_name}</span>
                   <Badge variant="secondary" className="text-xs py-0 px-2 rounded-sm">
@@ -312,7 +312,7 @@ function FocusGroupPage() {
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0" onClick={() => handleTogglePersona(p)}>
+                    <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} className="flex-1 min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" onClick={() => handleTogglePersona(p)}>
                       <p className="text-xs font-semibold text-foreground truncate">{p.display_name}</p>
                       <p className="text-xs text-muted-foreground truncate mt-1">
                         {profession}
@@ -333,7 +333,7 @@ function FocusGroupPage() {
                     <button
                       type="button"
                       onClick={() => handleTogglePersona(p)}
-                      className="text-xs text-primary font-medium hover:underline"
+                      className="text-xs text-primary font-medium hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       {isSelected ? 'Desmarcar' : 'Incluir na Bancada'}
                     </button>
@@ -343,7 +343,7 @@ function FocusGroupPage() {
                         e.stopPropagation();
                         setInspectingPersona(p);
                       }}
-                      className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
+                      className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <FileText className="size-3" />
                       <span>Dossiê 360°</span>
@@ -393,7 +393,7 @@ function FocusGroupPage() {
                             <button
                               type="button"
                               onClick={() => setInspectingPersona(matchedPersona)}
-                              className="text-xs text-muted-foreground hover:text-primary underline flex items-center gap-1"
+                              className="text-xs text-muted-foreground hover:text-primary underline flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
                           <span>ver perfil e proveniência</span>
                             </button>
@@ -518,7 +518,7 @@ function FocusGroupPage() {
                     keyProvider === 'gemini' 
                       ? 'bg-primary text-primary-foreground border-primary' 
                       : 'bg-muted/40 border-border/80 text-muted-foreground'
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   Google Gemini
                 </button>
@@ -529,7 +529,7 @@ function FocusGroupPage() {
                     keyProvider === 'groq' 
                       ? 'bg-primary text-primary-foreground border-primary' 
                       : 'bg-muted/40 border-border/80 text-muted-foreground'
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   Groq (Llama)
                 </button>
@@ -540,7 +540,7 @@ function FocusGroupPage() {
                     keyProvider === 'openai' 
                       ? 'bg-primary text-primary-foreground border-primary' 
                       : 'bg-muted/40 border-border/80 text-muted-foreground'
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   OpenAI
                 </button>

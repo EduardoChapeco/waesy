@@ -102,11 +102,11 @@ function PublicHotelDetailPage() {
         <p className="text-sm text-muted-foreground">
           O hotel ou resort solicitado não foi localizado no catálogo ou teve seu endereço alterado.
         </p>
-        <Link to={"/turismo" as any}>
-          <Button className="h-11 min-h-11 rounded-lg font-semibold px-6 cursor-pointer">
+        <Button asChild className="h-11 min-h-11 rounded-lg font-semibold px-6 cursor-pointer">
+          <Link to={"/turismo" as any}>
             Voltar para Turismo
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </div>
     );
   }
@@ -138,7 +138,7 @@ function PublicHotelDetailPage() {
         <div className="mx-auto max-w-6xl px-4 h-14 flex items-center justify-between">
           <Link
             to={"/turismo" as any}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground h-11 min-h-11 px-2 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground h-11 min-h-11 px-2 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             aria-label="Voltar para Turismo"
           >
             <ChevronLeft className="size-4" />
@@ -172,7 +172,7 @@ function PublicHotelDetailPage() {
               {hotel.name}
             </h1>
             {hotel.stars > 0 && (
-              <span className="inline-flex items-center gap-1 text-sm font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-md">
+              <span className="inline-flex items-center gap-1 text-sm font-bold text-amber-500 bg-amber-500/10 px-2 py-1 rounded-md">
                 <Star className="size-4 fill-amber-500" />
                 {hotel.stars} Estrelas
               </span>
@@ -185,7 +185,7 @@ function PublicHotelDetailPage() {
             )}
           </div>
 
-          <p className="text-sm text-muted-foreground flex items-center gap-1.5 flex-wrap">
+          <p className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
             <MapPin className="size-4 text-primary shrink-0" />
             <span>{hotel.city}, {hotel.state} • {hotel.country}</span>
             {hotel.address && <span className="text-xs text-muted-foreground">({hotel.address})</span>}
@@ -195,11 +195,11 @@ function PublicHotelDetailPage() {
         {/* Galeria de Fotos em Alta Resolução */}
         {allPhotos.length > 0 && (
           <div className="space-y-3">
-            <div className="relative aspect-[16/9] sm:aspect-[21/9] w-full overflow-hidden rounded-xl bg-muted border border-border/80">
+            <div className="relative aspect-video sm:aspect-[21/9] w-full overflow-hidden rounded-lg bg-muted border border-border/80">
               <img
                 src={allPhotos[selectedPhotoIndex] || allPhotos[0]}
                 alt={hotel.name}
-                className="h-full w-full object-cover transition-all duration-300"
+                className="h-full w-full object-cover transition-colors duration-300"
               />
               <div className="absolute bottom-3 right-3 rounded-lg bg-background/80 backdrop-blur-md px-3 py-1 text-xs font-semibold text-foreground border border-border/50">
                 Foto {selectedPhotoIndex + 1} de {allPhotos.length}
@@ -208,14 +208,14 @@ function PublicHotelDetailPage() {
 
             {/* Trilho de Miniaturas */}
             {allPhotos.length > 1 && (
-              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+              <div className="tab-list flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
                 {allPhotos.map((photoUrl, idx) => (
                   <button
                     key={photoUrl}
                     type="button"
                     onClick={() => setSelectedPhotoIndex(idx)}
                     className={cn(
-                      "relative size-16 shrink-0 overflow-hidden rounded-lg border-2 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      "relative size-16 shrink-0 overflow-hidden rounded-lg border-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       selectedPhotoIndex === idx
                         ? "border-primary scale-105"
                         : "border-transparent opacity-70 hover:opacity-100",
@@ -256,7 +256,7 @@ function PublicHotelDetailPage() {
               Políticas & Regras
             </TabsTrigger>
             {videoMedias.length > 0 && (
-              <TabsTrigger value="videos" className="h-9 px-4 text-xs font-bold rounded-md flex items-center gap-1.5">
+              <TabsTrigger value="videos" className="h-9 px-4 text-xs font-bold rounded-md flex items-center gap-2">
                 <VideoIcon className="size-3.5" />
                 Vídeos ({videoMedias.length})
               </TabsTrigger>
@@ -266,7 +266,7 @@ function PublicHotelDetailPage() {
           {/* Aba 1: Visão Geral */}
           <TabsContent value="visao_geral" className="space-y-6 m-0">
             {hotel.description && (
-              <div className="space-y-3 rounded-xl border border-border/70 bg-card p-5">
+              <div className="space-y-3 rounded-lg border border-border/70 bg-card p-5">
                 <h2 className="text-base font-bold text-foreground">Sobre o Estabelecimento</h2>
                 <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
                   {hotel.description}
@@ -275,12 +275,12 @@ function PublicHotelDetailPage() {
             )}
 
             {hotel.bio_bullets && hotel.bio_bullets.length > 0 && (
-              <div className="space-y-3 rounded-xl border border-border/70 bg-card p-5">
+              <div className="space-y-3 rounded-lg border border-border/70 bg-card p-5">
                 <h2 className="text-base font-bold text-foreground">Diferenciais em Destaque</h2>
                 <ul className="space-y-2">
                   {hotel.bio_bullets.map((bullet) => (
-                    <li key={bullet} className="flex items-start gap-2.5 text-sm text-foreground">
-                      <Check className="size-4 text-primary shrink-0 mt-0.5" />
+                    <li key={bullet} className="flex items-start gap-3 text-sm text-foreground">
+                      <Check className="size-4 text-primary shrink-0 mt-1" />
                       <span>{bullet}</span>
                     </li>
                   ))}
@@ -290,7 +290,7 @@ function PublicHotelDetailPage() {
 
             {/* Regimes Alimentares */}
             {hotel.regime_options && hotel.regime_options.length > 0 && (
-              <div className="space-y-3 rounded-xl border border-border/70 bg-card p-5">
+              <div className="space-y-3 rounded-lg border border-border/70 bg-card p-5">
                 <h2 className="text-base font-bold text-foreground flex items-center gap-2">
                   <Coffee className="size-4 text-primary" />
                   Regimes de Alimentação Suportados
@@ -299,7 +299,7 @@ function PublicHotelDetailPage() {
                   {hotel.regime_options.map((regime) => (
                     <span
                       key={regime}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary font-semibold text-xs border border-primary/20"
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/10 text-primary font-semibold text-xs border border-primary/20"
                     >
                       <Utensils className="size-3.5" />
                       {regime}
@@ -317,7 +317,7 @@ function PublicHotelDetailPage() {
                 {hotel.room_categories.map((room) => (
                   <div
                     key={room.id}
-                    className="flex flex-col justify-between rounded-xl border border-border/80 bg-card overflow-hidden"
+                    className="flex flex-col justify-between rounded-lg border border-border/80 bg-card overflow-hidden"
                   >
                     {room.cover_photo_url && (
                       <div className="relative aspect-video w-full overflow-hidden bg-muted">
@@ -325,7 +325,7 @@ function PublicHotelDetailPage() {
                       </div>
                     )}
                     <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <h3 className="text-base font-bold text-foreground leading-snug break-words">
                           {room.name}
                         </h3>
@@ -363,7 +363,7 @@ function PublicHotelDetailPage() {
                 ))}
               </div>
             ) : (
-              <div className="rounded-xl border border-border/70 bg-card p-8 text-center text-muted-foreground space-y-2">
+              <div className="rounded-lg border border-border/70 bg-card p-8 text-center text-muted-foreground space-y-2">
                 <BedDouble className="size-8 mx-auto text-muted-foreground/60" />
                 <p className="text-sm font-semibold">Consulte acomodações sob medida</p>
                 <p className="text-xs">
@@ -376,7 +376,7 @@ function PublicHotelDetailPage() {
           {/* Aba 3: Estrutura & Lazer */}
           <TabsContent value="lazer" className="space-y-4 m-0">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="rounded-xl border border-border/70 bg-card p-4 space-y-2">
+              <div className="rounded-lg border border-border/70 bg-card p-4 space-y-2">
                 <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
                   <Waves className="size-4 text-primary" />
                   Complexo Aquático & Praia
@@ -391,7 +391,7 @@ function PublicHotelDetailPage() {
                 ) : null}
               </div>
 
-              <div className="rounded-xl border border-border/70 bg-card p-4 space-y-2">
+              <div className="rounded-lg border border-border/70 bg-card p-4 space-y-2">
                 <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
                   <Sparkles className="size-4 text-primary" />
                   Família, Crianças & Bem-Estar
@@ -413,8 +413,8 @@ function PublicHotelDetailPage() {
           {/* Aba 4: Políticas & Regras */}
           <TabsContent value="politicas" className="space-y-4 m-0">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="rounded-xl border border-border/70 bg-card p-4 space-y-2">
-                <span className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">
+              <div className="rounded-lg border border-border/70 bg-card p-4 space-y-2">
+                <span className="text-xs font-bold text-muted-foreground flex items-center gap-2">
                   <Clock className="size-3.5 text-primary" />
                   Horários Canônicos
                 </span>
@@ -426,7 +426,7 @@ function PublicHotelDetailPage() {
                 </p>
               </div>
 
-              <div className="rounded-xl border border-border/70 bg-card p-4 space-y-2">
+              <div className="rounded-lg border border-border/70 bg-card p-4 space-y-2">
                 <span className="text-xs font-bold text-muted-foreground">Animais de Estimação</span>
                 <p className="text-sm font-semibold text-foreground">
                   {hotel.policies?.pet_friendly ? "Aceita Pets (consulte condições)" : "Não aceita animais de estimação"}
@@ -445,12 +445,12 @@ function PublicHotelDetailPage() {
             <TabsContent value="videos" className="space-y-4 m-0">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {videoMedias.map((video) => (
-                  <div key={video.id} className="rounded-xl border border-border/80 bg-card overflow-hidden">
+                  <div key={video.id} className="rounded-lg border border-border/80 bg-card overflow-hidden">
                     <video
                       controls
                       playsInline
                       src={video.url}
-                      className="w-full aspect-video object-cover bg-black"
+                      className="w-full aspect-video object-cover bg-background/80"
                     />
                     {video.caption && (
                       <div className="p-3">
@@ -480,16 +480,16 @@ function PublicHotelDetailPage() {
               {hotel.related_packages.map((pkg: any) => (
                 <div
                   key={pkg.id}
-                  className="rounded-xl border border-border/80 bg-card overflow-hidden flex flex-col justify-between"
+                  className="rounded-lg border border-border/80 bg-card overflow-hidden flex flex-col justify-between"
                 >
                   {pkg.cover_image && (
-                    <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
+                    <div className="aspect-4/3 w-full overflow-hidden bg-muted">
                       <img src={pkg.cover_image} alt={pkg.title} className="h-full w-full object-cover" />
                     </div>
                   )}
                   <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
                     <div className="space-y-1">
-                      <span className="text-[11px] font-semibold text-primary">
+                      <span className="text-xs font-semibold text-primary">
                         {pkg.agency_name}
                       </span>
                       <h3 className="text-sm font-bold text-foreground line-clamp-2">
@@ -500,7 +500,7 @@ function PublicHotelDetailPage() {
                     <div className="pt-2 border-t border-border/60 flex items-center justify-between">
                       {pkg.price_cents > 0 ? (
                         <div>
-                          <span className="text-[10px] text-muted-foreground block">A partir de</span>
+                          <span className="text-xs text-muted-foreground block">A partir de</span>
                           <span className="text-sm font-extrabold text-foreground">
                             {formatMoney(pkg.price_cents)}
                           </span>
@@ -512,7 +512,7 @@ function PublicHotelDetailPage() {
                       <Button
                         size="sm"
                         onClick={() => setIsQuoteModalOpen(true)}
-                        className="h-9 px-3 rounded-lg text-xs font-bold cursor-pointer"
+                        className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold cursor-pointer"
                       >
                         Ver Detalhes
                       </Button>

@@ -311,7 +311,7 @@ export function CarouselStudioEditor({
                   currentSlideIndex === idx
                     ? "bg-background text-foreground shadow-xs border border-border"
                     : "text-muted-foreground hover:text-foreground"
-                }`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 Slide {idx + 1}
               </button>
@@ -338,7 +338,7 @@ export function CarouselStudioEditor({
                   aspectRatio === opt.id
                     ? "bg-background text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
-                }`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 {opt.label}
               </button>
@@ -676,7 +676,7 @@ export function CarouselStudioEditor({
                       aiTone === t.id
                         ? "bg-primary text-primary-foreground shadow-xs"
                         : "bg-muted text-muted-foreground hover:text-foreground"
-                    }`}
+                    } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                   >
                     {t.label}
                   </button>

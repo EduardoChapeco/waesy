@@ -52,7 +52,7 @@ function RelatoriosPage() {
   return (
     <div className="w-full space-y-6 pb-12">
       {/* ── Header ── */}
-      <PageHeader
+      <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         title="Relatórios de Desempenho"
         description="Visão analítica em tempo real do seu negócio."
         actions={

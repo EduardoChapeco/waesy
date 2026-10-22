@@ -40,8 +40,8 @@ describe("Adversarial Stress Test: NativeMobileHeader", () => {
       );
       expect(html).toContain('aria-label="Voltar"');
       // Verify button has 44px classes
-      expect(html).toMatch(/<button[^>]*aria-label="Voltar"[^>]*>/);
-      const buttonHtml = html.match(/<button[^>]*aria-label="Voltar"[^>]*>/)?.[0] || "";
+      expect(html).toMatch(/<button className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"[^>]*aria-label="Voltar"[^>]*>/);
+      const buttonHtml = html.match(/<button className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"[^>]*aria-label="Voltar"[^>]*>/)?.[0] || "";
       expect(buttonHtml).toContain("size-11");
       expect(buttonHtml).toContain("min-h-11");
       expect(buttonHtml).toContain("min-w-11");
@@ -108,7 +108,7 @@ describe("Adversarial Stress Test: NativeMobileHeader", () => {
       const html = renderToStaticMarkup(
         <NativeMobileHeader title="Teste" showBack={true} />
       );
-      const buttonHtml = html.match(/<button[^>]*aria-label="Voltar"[^>]*>/)?.[0] || "";
+      const buttonHtml = html.match(/<button className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"[^>]*aria-label="Voltar"[^>]*>/)?.[0] || "";
       expect(buttonHtml).toContain("focus-visible:ring-2");
       expect(buttonHtml).toContain("focus-visible:ring-primary");
     });

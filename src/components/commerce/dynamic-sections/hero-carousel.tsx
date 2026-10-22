@@ -175,7 +175,7 @@ export function HeroCarousel({
                         className="bg-white/95 text-black hover:bg-white border border-transparent hover:scale-[1.02] transition-all font-medium rounded-full px-6 sm:px-8 h-10 sm:h-12 text-xs sm:text-sm"
                         asChild
                       >
-                        <Link
+                        <Link className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           to={button_link as never}
                           onClick={() => trackClick({ index, title, link: button_link })}
                         >
@@ -196,14 +196,14 @@ export function HeroCarousel({
         <>
           <button
             onClick={scrollPrev}
-            className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-black/20 p-2 text-white backdrop-blur hover:bg-black/40 z-20 hidden @md:block transition-all cursor-pointer"
+            className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-black/20 p-2 text-white backdrop-blur hover:bg-black/40 z-20 hidden @md:block transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Anterior"
           >
             <ChevronLeft className="size-6" />
           </button>
           <button
             onClick={scrollNext}
-            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-black/20 p-2 text-white backdrop-blur hover:bg-black/40 z-20 hidden @md:block transition-all cursor-pointer"
+            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-black/20 p-2 text-white backdrop-blur hover:bg-black/40 z-20 hidden @md:block transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Próximo"
           >
             <ChevronRight className="size-6" />

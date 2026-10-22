@@ -428,7 +428,7 @@ export function ClassifiedBookingDialog({
                       key={slot}
                       type="button"
                       onClick={() => setServiceAppointmentTime?.(slot)}
-                      className={cn(
+                      className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                         "h-10 rounded-lg text-xs font-mono font-semibold transition-colors border cursor-pointer",
                         serviceAppointmentTime === slot
                           ? "bg-primary text-primary-foreground border-primary font-bold shadow-sm"

@@ -409,7 +409,7 @@ export function AdminShell({
  className="w-full text-xs font-semibold bg-primary/10 hover:bg-primary/20 text-primary border-transparent"
  asChild
  >
- <Link to="/workspace" onClick={() => setViewMode("modules")}>
+ <Link className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" to="/workspace" onClick={() => setViewMode("modules")}>
  {collapsed ? <Grid className="size-4" /> : "← Voltar aos Módulos"}
  </Link>
  </Button>
@@ -468,7 +468,7 @@ export function AdminShell({
  <li key={mod.path}>
  <Link
  to={mod.path}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground",
  isCurrent && "bg-sidebar-accent/50 text-sidebar-foreground",
  collapsed && "justify-center",
@@ -573,7 +573,7 @@ export function AdminShell({
  className="h-8 px-2 text-nav font-semibold text-primary"
  asChild
  >
- <Link to="/workspace" onClick={() => setViewMode("modules")}>
+ <Link className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" to="/workspace" onClick={() => setViewMode("modules")}>
  ← Módulos
  </Link>
  </Button>
@@ -612,7 +612,7 @@ export function AdminShell({
  <li key={mod.path}>
  <Link
  to={mod.path}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground",
  isCurrent && "bg-sidebar-accent/50 text-sidebar-foreground",
  )}

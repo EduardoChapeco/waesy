@@ -162,7 +162,7 @@ export default function WorkspaceMarketingStoriesPage() {
           <button
             type="button"
             onClick={() => setFormat("story_9_16")}
-            className={cn(
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all",
               format === "story_9_16"
                 ? "bg-background text-foreground shadow-xs"
@@ -175,7 +175,7 @@ export default function WorkspaceMarketingStoriesPage() {
           <button
             type="button"
             onClick={() => setFormat("feed_1_1")}
-            className={cn(
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all",
               format === "feed_1_1"
                 ? "bg-background text-foreground shadow-xs"
@@ -188,7 +188,7 @@ export default function WorkspaceMarketingStoriesPage() {
           <button
             type="button"
             onClick={() => setFormat("banner_16_9")}
-            className={cn(
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all",
               format === "banner_16_9"
                 ? "bg-background text-foreground shadow-xs"
@@ -305,7 +305,7 @@ export default function WorkspaceMarketingStoriesPage() {
                     <button
                       type="button"
                       onClick={() => setTheme("dark")}
-                      className={cn(
+                      className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                         "h-11 rounded-lg border text-xs font-bold transition-colors cursor-pointer",
                         theme === "dark"
                           ? "border-primary bg-primary/10 text-primary"
@@ -317,7 +317,7 @@ export default function WorkspaceMarketingStoriesPage() {
                     <button
                       type="button"
                       onClick={() => setTheme("light")}
-                      className={cn(
+                      className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                         "h-11 rounded-lg border text-xs font-bold transition-colors cursor-pointer",
                         theme === "light"
                           ? "border-primary bg-primary/10 text-primary"
@@ -329,7 +329,7 @@ export default function WorkspaceMarketingStoriesPage() {
                     <button
                       type="button"
                       onClick={() => setTheme("swiss")}
-                      className={cn(
+                      className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                         "h-11 rounded-lg border text-xs font-bold transition-colors cursor-pointer",
                         theme === "swiss"
                           ? "border-primary bg-primary/10 text-primary"
@@ -341,7 +341,7 @@ export default function WorkspaceMarketingStoriesPage() {
                     <button
                       type="button"
                       onClick={() => setTheme("cyber")}
-                      className={cn(
+                      className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                         "h-11 rounded-lg border text-xs font-bold transition-colors cursor-pointer",
                         theme === "cyber"
                           ? "border-primary bg-primary/10 text-primary"
@@ -353,7 +353,7 @@ export default function WorkspaceMarketingStoriesPage() {
                     <button
                       type="button"
                       onClick={() => setTheme("gourmet")}
-                      className={cn(
+                      className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                         "h-11 rounded-lg border text-xs font-bold transition-colors cursor-pointer",
                         theme === "gourmet"
                           ? "border-primary bg-primary/10 text-primary"

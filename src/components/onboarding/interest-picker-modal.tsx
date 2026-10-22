@@ -196,7 +196,7 @@ export function InterestPickerModal() {
  isSelected
  ? "bg-primary text-primary-foreground border-primary scale-[1.02]"
  : "bg-card text-foreground border-border/80 hover:border-primary/40 hover:bg-muted/40"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <div
  className={`size-8 rounded-lg flex items-center justify-center mb-2 transition-transform group-hover:scale-110 ${
@@ -219,7 +219,7 @@ export function InterestPickerModal() {
  <button
  type="button"
  onClick={() => handleClose(false)}
- className="text-xs text-muted-foreground hover:text-foreground font-semibold"
+ className="text-xs text-muted-foreground hover:text-foreground font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  Pular por enquanto
  </button>

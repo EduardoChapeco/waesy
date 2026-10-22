@@ -211,7 +211,7 @@ function MemberMetricsPage() {
  <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-lg text-[10px] font-bold">
  <button
  onClick={() => setSelectedPeriod("7d")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-2 py-1 rounded-lg transition-all cursor-pointer",
  selectedPeriod === "7d" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground"
  )}
@@ -220,7 +220,7 @@ function MemberMetricsPage() {
  </button>
  <button
  onClick={() => setSelectedPeriod("30d")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-2 py-1 rounded-lg transition-all cursor-pointer",
  selectedPeriod === "30d" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground"
  )}

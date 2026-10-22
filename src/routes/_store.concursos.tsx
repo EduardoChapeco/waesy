@@ -235,7 +235,7 @@ function ConcursosPublicPage() {
                           to="/diretorio/$id"
                           params={{ id: raffle.storeId }}
                           onClick={(e) => e.stopPropagation()}
-                          className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-black/70 hover:bg-black/90 text-white text-[10px] backdrop-blur-md transition-all active:scale-95 cursor-pointer"
+                          className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-black/70 hover:bg-black/90 text-white text-[10px] backdrop-blur-md transition-all active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           <Store className="size-3" />
                           <span>{raffle.storeName}</span>

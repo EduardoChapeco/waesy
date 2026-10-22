@@ -312,7 +312,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
             Conta Pessoal (Root)
           </span>
 
-          <DropdownMenuItem
+          <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
             onClick={handleSwitchToCivil}
             className={cn(
               "p-3 rounded-lg cursor-pointer flex items-center justify-between gap-3 transition-colors",
@@ -362,7 +362,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
                 (activeProfileId === persona.id || creatorHandle === persona.handle);
 
               return (
-                <DropdownMenuItem
+                <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                   key={persona.id}
                   onClick={() => handleSwitchToCreator(persona)}
                   className={cn(
@@ -419,7 +419,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
                 (currentStoreId === store.store_id || activeProfileId === store.store_id);
 
               return (
-                <DropdownMenuItem
+                <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                   key={store.store_id}
                   onClick={() => handleSwitchToStore(store)}
                   className={cn(
@@ -466,7 +466,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
             Waesy Go • Logística & Mobilidade
           </span>
 
-          <DropdownMenuItem
+          <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
             onClick={handleSwitchToCourier}
             className={cn(
               "p-3 rounded-lg cursor-pointer flex items-center justify-between gap-3 transition-colors",
@@ -512,7 +512,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
             4. AÇÕES DE EXPANSÃO DE ENTIDADE (CRIAR LOJA OU PERSONA)
         ══════════════════════════════════════════════════════════════ */}
         <div className="space-y-1 pt-1">
-          <DropdownMenuItem
+          <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
             onClick={() => {
               navigate({ to: "/criar-negocio" });
               setIsOpen(false);
@@ -523,7 +523,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
             <span>+ Criar Nova Empresa ou Loja</span>
           </DropdownMenuItem>
 
-          <DropdownMenuItem
+          <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
             onClick={() => {
               navigate({ to: "/conta/criadores" });
               setIsOpen(false);

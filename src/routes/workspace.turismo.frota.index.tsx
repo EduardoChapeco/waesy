@@ -434,7 +434,7 @@ function VehicleLayoutsListPage() {
           >
             Cancelar
           </AlertDialogCancel>
-          <AlertDialogAction
+          <AlertDialogAction /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
             onClick={(e) => {
               e.preventDefault();
               confirmDelete();

@@ -145,7 +145,7 @@ export function LeadCard({
         </div>
 
         {/* Menu de Ações e WhatsApp */}
-        <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+        <div /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */ className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
           {whatsappUrl && (
             <a
               href={whatsappUrl}
@@ -169,24 +169,24 @@ export function LeadCard({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="text-xs w-52 p-2 rounded-lg">
-              <DropdownMenuItem onClick={() => onOpenDetails?.(lead)} className="cursor-pointer font-medium">
+              <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => onOpenDetails?.(lead)} className="cursor-pointer font-medium">
                 <Edit3 className="size-3.5 mr-2" />
                 Abrir Ficha 360°
               </DropdownMenuItem>
               {onGenerateProposal && (
-                <DropdownMenuItem onClick={() => onGenerateProposal(lead)} className="cursor-pointer font-medium text-primary">
+                <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => onGenerateProposal(lead)} className="cursor-pointer font-medium text-primary">
                   <FileText className="size-3.5 mr-2" />
                   Gerar Proposta Visual
                 </DropdownMenuItem>
               )}
               {onCalculateCommission && (
-                <DropdownMenuItem onClick={() => onCalculateCommission(lead)} className="cursor-pointer font-medium text-amber-500">
+                <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => onCalculateCommission(lead)} className="cursor-pointer font-medium text-amber-500">
                   <Calculator className="size-3.5 mr-2" />
                   Calcular Comissão
                 </DropdownMenuItem>
               )}
               {onOpenFlightGrid && (
-                <DropdownMenuItem onClick={() => onOpenFlightGrid(lead)} className="cursor-pointer font-medium text-sky-500">
+                <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => onOpenFlightGrid(lead)} className="cursor-pointer font-medium text-sky-500">
                   <Plane className="size-3.5 mr-2" />
                   Malha Aérea e Voos
                 </DropdownMenuItem>
@@ -201,7 +201,7 @@ export function LeadCard({
                   {stages
                     .filter((s) => s.id !== currentStageId)
                     .map((s) => (
-                      <DropdownMenuItem
+                      <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                         key={s.id}
                         onClick={() => onStageChange(lead.id, s.id)}
                         className="cursor-pointer text-[11px]"
@@ -215,7 +215,7 @@ export function LeadCard({
               {onPromote && (
                 <>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem
+                  <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                     onClick={() => onPromote(lead.id)}
                     className="text-emerald-600 font-bold cursor-pointer"
                   >
@@ -226,7 +226,7 @@ export function LeadCard({
               )}
 
               {onDelete && (
-                <DropdownMenuItem
+                <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                   onClick={() => onDelete(lead.id)}
                   className="text-rose-600 font-medium cursor-pointer"
                 >
@@ -321,7 +321,7 @@ export function LeadCard({
         </div>
 
         {/* Ações de Avanço Rápido no Funil */}
-        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+        <div /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */ className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
           {prevStageId && (
             <Button
               variant="ghost"

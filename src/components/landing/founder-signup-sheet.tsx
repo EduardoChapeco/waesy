@@ -216,7 +216,7 @@ export function FounderSignupSheet({
                     city === c
                       ? "bg-primary text-primary-foreground border-primary"
                       : "bg-muted/30 text-muted-foreground border-border/60 hover:border-primary/40"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   {c}
                 </button>

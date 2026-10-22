@@ -386,6 +386,7 @@ export default function AgencyCorporateCockpitPage() {
                             <Button
                               variant="outline"
                               size="sm"
+                              onClick={() => toast.info(`Conta Corporativa: ${acc.company_name || "Empresa"} | Autonomia: ${acc.autonomy_matrix?.air_domestic || "SELF_BOOK"}`)}
                               className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer"
                             >
                               Configurar

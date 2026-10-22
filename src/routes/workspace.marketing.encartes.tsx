@@ -451,7 +451,7 @@ export default function WorkspaceMarketingEncartesPage() {
                         <button
                           type="button"
                           onClick={() => setPreviewFlyer(flyer)}
-                          className="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer"
+                          className="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           title="Pré-visualizar na Vitrine"
                         >
                           <Eye className="size-5" />
@@ -584,9 +584,9 @@ export default function WorkspaceMarketingEncartesPage() {
                   Estilo Visual do Encarte
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                  <div
+                  <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                     onClick={() => setFormTheme("retro_mercado")}
-                    className={cn(
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "p-3 rounded-lg border-2 cursor-pointer transition-all flex items-start gap-3",
                       formTheme === "retro_mercado"
                         ? "border-red-600 bg-amber-100/60 dark:bg-amber-950/30 text-red-950 dark:text-amber-100"
@@ -606,9 +606,9 @@ export default function WorkspaceMarketingEncartesPage() {
                     </div>
                   </div>
 
-                  <div
+                  <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                     onClick={() => setFormTheme("clean")}
-                    className={cn(
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "p-3 rounded-lg border-2 cursor-pointer transition-all flex items-start gap-3",
                       formTheme === "clean"
                         ? "border-primary bg-primary/5 text-foreground"
@@ -726,12 +726,12 @@ export default function WorkspaceMarketingEncartesPage() {
                   {/* Canvas Interativo do Encarte */}
                   <div className="relative inline-block mx-auto max-w-full overflow-hidden rounded-lg border border-border/80 bg-black/90 p-2 sm:p-4 select-none cursor-crosshair">
                     <div className="relative inline-block">
-                      <img
+                      <img role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                         ref={imageCanvasRef}
                         src={formImageUrl}
                         alt="Canvas de marcação de hotspots"
                         onClick={handleImageClick}
-                        className="max-h-[500px] w-auto object-contain rounded-lg select-none"
+                        className="max-h-[500px] w-auto object-contain rounded-lg select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       />
 
                       {/* Pins já posicionados */}
@@ -757,7 +757,7 @@ export default function WorkspaceMarketingEncartesPage() {
                                 e.stopPropagation();
                                 handleRemoveHotspot(spot.id);
                               }}
-                              className="text-red-400 hover:text-red-200 cursor-pointer ml-1"
+                              className="text-red-400 hover:text-red-200 cursor-pointer ml-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
                               <Trash2 className="size-3" />
                             </button>

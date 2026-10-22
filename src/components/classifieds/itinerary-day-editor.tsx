@@ -136,7 +136,7 @@ export function ItineraryDayEditor({
             <button
               type="button"
               onClick={() => setExpandedIndex(isExpanded ? null : index)}
-              className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors"
+              className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <div className="flex items-center gap-3">
                 <div className="size-7 rounded-lg bg-foreground text-background flex items-center justify-center text-xs font-black shrink-0">
@@ -159,7 +159,7 @@ export function ItineraryDayEditor({
                       e.stopPropagation();
                       removeDay(index);
                     }}
-                    className="size-6 rounded-lg text-destructive hover:bg-destructive/10 flex items-center justify-center transition-colors"
+                    className="size-6 rounded-lg text-destructive hover:bg-destructive/10 flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     aria-label={`Remover dia ${day.day_number}`}
                   >
                     <Trash className="size-3.5" />
@@ -237,7 +237,7 @@ export function ItineraryDayEditor({
                           type="button"
                           disabled={readOnly}
                           onClick={() => toggleMeal(index, meal)}
-                          className={cn(
+                          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                             "px-3 py-2 rounded-lg text-[11px] font-semibold border transition-all",
                             included
                               ? "bg-primary/10 border-primary/40 text-primary"
@@ -308,7 +308,7 @@ export function ItineraryDayEditor({
                       <button
                         type="button"
                         onClick={() => addActivity(index)}
-                        className="h-9 px-3 rounded-lg bg-primary/10 text-primary border border-primary/30 text-xs font-semibold hover:bg-primary/20 transition-colors"
+                        className="h-9 px-3 rounded-lg bg-primary/10 text-primary border border-primary/30 text-xs font-semibold hover:bg-primary/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         + Adicionar
                       </button>
@@ -324,7 +324,7 @@ export function ItineraryDayEditor({
                             <button
                               type="button"
                               onClick={() => removeActivity(index, act)}
-                              className="size-3.5 rounded-md hover:bg-destructive/20 flex items-center justify-center"
+                              className="size-3.5 rounded-md hover:bg-destructive/20 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
                               ×
                             </button>
@@ -353,7 +353,7 @@ export function ItineraryDayEditor({
                           <button
                             type="button"
                             onClick={() => removeImage(index, imgIdx)}
-                            className="absolute -top-1.5 -right-1.5 size-5 rounded-md bg-destructive text-destructive-foreground flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="absolute -top-1.5 -right-1.5 size-5 rounded-md bg-destructive text-destructive-foreground flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             <span className="text-[10px] font-bold">×</span>
                           </button>
@@ -375,7 +375,7 @@ export function ItineraryDayEditor({
                           type="button"
                           onClick={() => fileRefs.current[index]?.click()}
                           disabled={uploadingDayIndex === index}
-                          className="size-16 sm:size-20 rounded-lg border-2 border-dashed border-border/50 hover:border-primary/60 bg-muted/20 flex items-center justify-center transition-all active:scale-95"
+                          className="size-16 sm:size-20 rounded-lg border-2 border-dashed border-border/50 hover:border-primary/60 bg-muted/20 flex items-center justify-center transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           aria-label="Adicionar foto ao dia"
                         >
                           {uploadingDayIndex === index ? (
@@ -399,7 +399,7 @@ export function ItineraryDayEditor({
         <button
           type="button"
           onClick={addDay}
-          className="w-full h-11 rounded-lg border-2 border-dashed border-border/50 hover:border-primary/60 bg-transparent hover:bg-muted/20 flex items-center justify-center gap-2 text-xs font-semibold text-muted-foreground hover:text-primary transition-all active:scale-[0.99]"
+          className="w-full h-11 rounded-lg border-2 border-dashed border-border/50 hover:border-primary/60 bg-transparent hover:bg-muted/20 flex items-center justify-center gap-2 text-xs font-semibold text-muted-foreground hover:text-primary transition-all active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <Plus className="size-4" weight="bold" />
           Adicionar Dia

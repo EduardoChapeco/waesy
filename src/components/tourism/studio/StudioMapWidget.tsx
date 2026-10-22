@@ -226,7 +226,7 @@ export function StudioMapWidget({
               <button
                 type="button"
                 onClick={() => removeWaypoint(wp.id)}
-                className="text-muted-foreground hover:text-destructive ml-1"
+                className="text-muted-foreground hover:text-destructive ml-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label={`Remover ${wp.label}`}
               >
                 <X className="size-3" />

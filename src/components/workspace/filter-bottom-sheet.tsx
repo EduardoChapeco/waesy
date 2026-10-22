@@ -106,7 +106,7 @@ export function FilterBottomSheet({
                     <button
                       type="button"
                       onClick={() => filter.onChange(filter.defaultValue || "all")}
-                      className="text-[11px] font-medium text-primary hover:underline cursor-pointer"
+                      className="text-[11px] font-medium text-primary hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       Restaurar
                     </button>
@@ -124,7 +124,7 @@ export function FilterBottomSheet({
                         key={opt.value}
                         type="button"
                         onClick={() => filter.onChange(opt.value)}
-                        className={cn(
+                        className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                           "flex items-center justify-between px-4 py-3 rounded-lg text-xs font-semibold transition-all border text-left cursor-pointer min-h-11",
                           isSelected
                             ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"

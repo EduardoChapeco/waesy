@@ -77,42 +77,42 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
             <button
               type="button"
               onClick={() => scrollToSection("ecossistema")}
-              className="px-3 py-2 rounded-lg hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
+              className="px-3 py-2 rounded-lg hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               Ecossistema
             </button>
             <button
               type="button"
               onClick={() => scrollToSection("workspace")}
-              className="px-3 py-2 rounded-lg hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
+              className="px-3 py-2 rounded-lg hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               Workspace ERP
             </button>
             <button
               type="button"
               onClick={() => scrollToSection("builder")}
-              className="px-3 py-2 rounded-lg hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
+              className="px-3 py-2 rounded-lg hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               Construtor Omni
             </button>
             <button
               type="button"
               onClick={() => scrollToSection("ia")}
-              className="px-3 py-2 rounded-lg hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
+              className="px-3 py-2 rounded-lg hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               Inteligência Artificial
             </button>
             <button
               type="button"
               onClick={() => scrollToSection("conexoes")}
-              className="px-3 py-2 rounded-lg hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
+              className="px-3 py-2 rounded-lg hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               Canais e Google
             </button>
             <button
               type="button"
               onClick={() => scrollToSection("circuito")}
-              className="px-3 py-2 rounded-lg hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
+              className="px-3 py-2 rounded-lg hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               Circuito 2027
             </button>
@@ -193,7 +193,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
               <SheetTrigger asChild>
                 <button
                   type="button"
-                  className="lg:hidden size-11 min-h-11 rounded-lg border border-border/70 flex items-center justify-center text-foreground hover:bg-muted/60 transition-colors"
+                  className="lg:hidden size-11 min-h-11 rounded-lg border border-border/70 flex items-center justify-center text-foreground hover:bg-muted/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   aria-label="Abrir menu de navegação"
                 >
                   <Menu className="size-4.5" />
@@ -212,42 +212,42 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
                     <button
                       type="button"
                       onClick={() => scrollToSection("ecossistema")}
-                      className="text-left py-3 px-3 rounded-lg hover:bg-muted/60 text-sm font-semibold text-foreground transition-colors"
+                      className="text-left py-3 px-3 rounded-lg hover:bg-muted/60 text-sm font-semibold text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       Ecossistema
                     </button>
                     <button
                       type="button"
                       onClick={() => scrollToSection("workspace")}
-                      className="text-left py-3 px-3 rounded-lg hover:bg-muted/60 text-sm font-semibold text-foreground transition-colors"
+                      className="text-left py-3 px-3 rounded-lg hover:bg-muted/60 text-sm font-semibold text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       Workspace ERP e Operações
                     </button>
                     <button
                       type="button"
                       onClick={() => scrollToSection("builder")}
-                      className="text-left py-3 px-3 rounded-lg hover:bg-muted/60 text-sm font-semibold text-foreground transition-colors"
+                      className="text-left py-3 px-3 rounded-lg hover:bg-muted/60 text-sm font-semibold text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       Construtor Omni
                     </button>
                     <button
                       type="button"
                       onClick={() => scrollToSection("ia")}
-                      className="text-left py-3 px-3 rounded-lg hover:bg-muted/60 text-sm font-semibold text-foreground transition-colors"
+                      className="text-left py-3 px-3 rounded-lg hover:bg-muted/60 text-sm font-semibold text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       Inteligência Artificial
                     </button>
                     <button
                       type="button"
                       onClick={() => scrollToSection("conexoes")}
-                      className="text-left py-3 px-3 rounded-lg hover:bg-muted/60 text-sm font-semibold text-foreground transition-colors"
+                      className="text-left py-3 px-3 rounded-lg hover:bg-muted/60 text-sm font-semibold text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       Conexões e Google
                     </button>
                     <button
                       type="button"
                       onClick={() => scrollToSection("circuito")}
-                      className="text-left py-3 px-3 rounded-lg hover:bg-muted/60 text-sm font-semibold text-foreground transition-colors"
+                      className="text-left py-3 px-3 rounded-lg hover:bg-muted/60 text-sm font-semibold text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       Circuito 2027
                     </button>

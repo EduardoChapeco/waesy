@@ -145,7 +145,7 @@ export function EmployeeDocumentsPanel({
                 key={key}
                 type="button"
                 onClick={() => setSelectedCategory(key)}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "min-h-9 px-3 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer",
                   active
                     ? "bg-background text-foreground shadow-xs"

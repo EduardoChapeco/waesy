@@ -100,7 +100,7 @@ export function MotionStudioPropsPanel({
                 isActive
                   ? "bg-card text-foreground shadow-xs border border-border/80"
                   : "text-muted-foreground hover:text-foreground"
-              }`}
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
             >
               <Icon className="size-3" />
               <span>{tab.label}</span>

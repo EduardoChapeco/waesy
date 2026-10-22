@@ -422,7 +422,7 @@ function ProfileCivilPage() {
   return (
     <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0 animate-in fade-in duration-200">
       {/* ── 1. Canonical Navigation Header ── */}
-      <NativeMobileHeader
+      <NativeMobileHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         title="Perfil"
         fallbackHref="/conta"
         rightActions={
@@ -595,7 +595,7 @@ function ProfileCivilPage() {
                     type="button"
                     onClick={() => avatarInputRef.current?.click()}
                     disabled={isUploadingMedia}
-                    className="absolute inset-0 bg-black/40 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-xs font-semibold gap-1 cursor-pointer"
+                    className="absolute inset-0 bg-black/40 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-xs font-semibold gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     title="Alterar Foto de Perfil (1:1)"
                   >
                     <Camera className="size-4 sm:size-5" />
@@ -628,7 +628,7 @@ function ProfileCivilPage() {
                     type="button"
                     onClick={() => coverInputRef.current?.click()}
                     disabled={isUploadingMedia}
-                    className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 bg-background/85 hover:bg-background backdrop-blur-md border border-border/80 text-foreground px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs transition-transform active:scale-95"
+                    className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 bg-background/85 hover:bg-background backdrop-blur-md border border-border/80 text-foreground px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs transition-transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     title="Alterar Banner (3:1)"
                   >
                     <Camera className="size-3.5" />
@@ -649,7 +649,7 @@ function ProfileCivilPage() {
                   <button
                     type="button"
                     onClick={() => set("coverUrl", "")}
-                    className="text-[11px] text-destructive hover:underline cursor-pointer"
+                    className="text-[11px] text-destructive hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     Remover Imagem de Capa
                   </button>
@@ -1456,7 +1456,7 @@ function ProfileCivilPage() {
                       <AlertDialogCancel className="rounded-lg text-xs font-semibold h-10">
                         Cancelar
                       </AlertDialogCancel>
-                      <AlertDialogAction
+                      <AlertDialogAction /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                         onClick={handleDeleteAccount}
                         disabled={deleteConfirm !== "EXCLUIR" || isDeleting}
                         className="rounded-lg text-xs font-bold h-10 bg-destructive text-destructive-foreground hover:bg-destructive/90"

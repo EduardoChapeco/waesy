@@ -215,7 +215,7 @@ function EditCollectionPage() {
  collectionType === "manual"
  ? "border-primary bg-primary/5 ring-1 ring-primary"
  : "border-border/60 bg-muted/20 hover:bg-muted/40"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <div className="flex items-center justify-between mb-2">
  <span className="text-xs font-bold text-foreground">Curadoria Manual</span>
@@ -233,7 +233,7 @@ function EditCollectionPage() {
  collectionType === "automated"
  ? "border-primary bg-primary/5 ring-1 ring-primary"
  : "border-border/60 bg-muted/20 hover:bg-muted/40"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <div className="flex items-center justify-between mb-2">
  <span className="text-xs font-bold text-foreground flex items-center gap-2">

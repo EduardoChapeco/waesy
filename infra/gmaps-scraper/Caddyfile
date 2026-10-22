@@ -1,0 +1,6 @@
+{$DOMAIN} {
+	@unauthorized not header Authorization "Bearer {$SCRAPER_TOKEN}"
+	respond @unauthorized 401
+
+	reverse_proxy scraper:8080
+}

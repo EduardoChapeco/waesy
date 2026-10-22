@@ -253,7 +253,7 @@ function SeatButton({ seat, onClick }: { seat: BusSeatDTO; onClick: () => void }
  isOccupied
  ? "bg-slate-900 text-white font-black ring-1 ring-slate-800"
  : "bg-emerald-50 hover:bg-emerald-100 text-emerald-950 font-bold border border-emerald-300"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  title={isOccupied ? `Ocupado: ${seat.passenger_name}` : `Poltrona ${seat.seat_number} Livre`}
  >
  <span className="text-xs font-black">{seat.seat_number}</span>

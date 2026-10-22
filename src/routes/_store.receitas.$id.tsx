@@ -365,7 +365,7 @@ function RecipeDetailPage() {
                     key={idx}
                     type="button"
                     onClick={() => toggleIngredient(idx)}
-                    className={cn(
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "w-full text-left p-3 flex items-start gap-3 transition-colors cursor-pointer select-none",
                       isChecked ? "bg-muted/30" : "hover:bg-muted/20"
                     )}
@@ -423,10 +423,10 @@ function RecipeDetailPage() {
               {recipe.instructions.map((step: any, idx: number) => {
                 const isStepCompleted = !!completedSteps[idx];
                 return (
-                  <div
+                  <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                     key={idx}
                     onClick={() => toggleStep(idx)}
-                    className={cn(
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "p-4 rounded-lg border transition-all cursor-pointer select-none space-y-2",
                       isStepCompleted
                         ? "border-emerald-500/30 bg-emerald-500/5 text-muted-foreground"

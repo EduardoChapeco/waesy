@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Waesy Sync • Infotravel</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    body {
+      width: 380px;
+      background: #090d16;
+      color: #f1f5f9;
+      padding: 16px;
+      font-size: 13px;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .brand-logo {
+      width: 24px;
+      height: 24px;
+      background: linear-gradient(135deg, #3b82f6, #06b6d4);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 14px;
+      color: white;
+    }
+    .brand-title {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-online {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .badge-offline {
+      background: rgba(245, 158, 11, 0.15);
+      color: #f59e0b;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+    .grid-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .stat-card {
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .stat-label {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-bottom: 4px;
+    }
+    .stat-value {
+      font-size: 16px;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+    .stat-value.primary { color: #38bdf8; }
+    .stat-value.success { color: #34d399; }
+
+    .control-group {
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 14px;
+    }
+    .control-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .pacing-badge {
+      color: #38bdf8;
+      font-weight: normal;
+    }
+    .pacing-slider {
+      width: 100%;
+      accent-color: #38bdf8;
+      margin-bottom: 6px;
+      height: 6px;
+      border-radius: 4px;
+    }
+    .pacing-slider:focus-visible {
+      outline: 2px solid #38bdf8;
+      outline-offset: 2px;
+    }
+    .pacing-hint {
+      font-size: 11px;
+      color: #64748b;
+      line-height: 1.3;
+    }
+
+    .action-btn {
+      width: 100%;
+      min-height: 44px;
+      height: 44px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+      border: none;
+      margin-bottom: 8px;
+    }
+    .action-btn:focus-visible {
+      outline: 2px solid #38bdf8;
+      outline-offset: 2px;
+    }
+    .btn-primary {
+      background: #2563eb;
+      color: white;
+    }
+    .btn-primary:hover {
+      background: #1d4ed8;
+    }
+    .btn-primary:disabled {
+      background: #1e293b;
+      color: #64748b;
+      cursor: not-allowed;
+    }
+    .btn-danger {
+      background: #dc2626;
+      color: white;
+    }
+    .btn-danger:hover {
+      background: #b91c1c;
+    }
+    .btn-secondary {
+      background: #1e293b;
+      color: #e2e8f0;
+      border: 1px solid #334155;
+    }
+    .btn-secondary:hover {
+      background: #334155;
+    }
+
+    .export-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .export-btn {
+      min-height: 44px;
+      height: 44px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #e2e8f0;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .export-btn:focus-visible {
+      outline: 2px solid #38bdf8;
+      outline-offset: 2px;
+    }
+    .export-btn:hover {
+      background: #334155;
+      color: white;
+    }
+
+    .log-box {
+      background: #020617;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 8px;
+      height: 100px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 11px;
+      color: #94a3b8;
+      line-height: 1.4;
+    }
+    .log-line {
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .log-line.success { color: #34d399; }
+    .log-line.warn { color: #fbbf24; }
+    .log-line.error { color: #f87171; }
+
+    .footer {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 11px;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="brand">
+      <div class="brand-logo">W</div>
+      <div>
+        <div class="brand-title">Waesy Sync</div>
+        <div style="font-size: 10px; color: #64748b;">Operadoras e Infotravel</div>
+      </div>
+    </div>
+    <div id="statusBadge" class="badge badge-offline">
+      <span class="pulse-dot"></span>
+      <span id="statusText">Aguardando Portal</span>
+    </div>
+  </div>
+
+  <div class="grid-stats">
+    <div class="stat-card">
+      <div class="stat-label">Reservas Coletadas</div>
+      <div id="statReservas" class="stat-value primary">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Passageiros (Pax)</div>
+      <div id="statPassageiros" class="stat-value success">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Volume Total Vendas</div>
+      <div id="statVendas" class="stat-value">R$ 0,00</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Comissão Estimada</div>
+      <div id="statComissao" class="stat-value">R$ 0,00</div>
+    </div>
+  </div>
+
+  <div class="control-group">
+    <div class="control-title">
+      <span>Ritmo Humano (Anti-Rate Limit)</span>
+      <span id="pacingLabel" class="pacing-badge">1.5s a 5.0s</span>
+    </div>
+    <input id="pacingSlider" type="range" min="1" max="6" value="3" class="pacing-slider" aria-label="Ritmo Humano">
+    <div class="pacing-hint">
+      Variação randômica automática a cada requisição para segurança total e prevenção contra detecção de bot.
+    </div>
+  </div>
+
+  <button id="toggleSyncBtn" class="action-btn btn-primary" aria-label="Alternar sincronização em segundo plano">
+    <span id="toggleSyncText">Iniciar Sincronização em Segundo Plano</span>
+  </button>
+
+  <div class="export-row">
+    <button id="exportCsvBtn" class="export-btn" title="Baixar CSV formatado com ponto e vírgula e BOM UTF-8 para Excel" aria-label="Baixar CSV para Excel">
+      Exportar CSV (Excel)
+    </button>
+    <button id="exportJsonBtn" class="export-btn" title="Baixar JSON completo com passageiros e financeiro" aria-label="Baixar JSON completo">
+      Exportar JSON
+    </button>
+  </div>
+
+  <div style="margin-bottom: 6px; font-size: 11px; color: #94a3b8; font-weight: 600;">
+    Registro de Atividade em Tempo Real:
+  </div>
+  <div id="logBox" class="log-box">
+    <div class="log-line">Extensão carregada. Aguardando comando...</div>
+  </div>
+
+  <div class="footer">
+    Waesy Operacional • Sincronização Segura de Turismo
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

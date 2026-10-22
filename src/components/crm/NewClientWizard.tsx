@@ -261,7 +261,7 @@ export function NewClientWizard({
  kind === "individual"
  ? "border-primary bg-primary/5 text-primary shadow-xs"
  : "border-border hover:border-primary/40 bg-card text-muted-foreground"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <User className="size-7 mb-2" />
  <span className="font-bold text-sm">Pessoa Física (B2C)</span>
@@ -275,7 +275,7 @@ export function NewClientWizard({
  kind === "company"
  ? "border-primary bg-primary/5 text-primary shadow-xs"
  : "border-border hover:border-primary/40 bg-card text-muted-foreground"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <Building2 className="size-7 mb-2" />
  <span className="font-bold text-sm">Empresa (PJ / B2B)</span>
@@ -556,7 +556,7 @@ export function NewClientWizard({
  key={st}
  type="button"
  onClick={() => handleAddTag(st)}
- className="text-xs px-2 py-1 rounded-full bg-muted/60 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer"
+ className="text-xs px-2 py-1 rounded-full bg-muted/60 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  + {st}
  </button>

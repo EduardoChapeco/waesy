@@ -108,7 +108,7 @@ export function StorePersonasMatrix() {
                 isSelected
                   ? "border-primary bg-primary/5 shadow-xs"
                   : "border-border/60 bg-card hover:bg-muted/40"
-              }`}
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
             >
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-semibold text-muted-foreground truncate">

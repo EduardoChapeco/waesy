@@ -824,7 +824,7 @@ export function TravelPackageForm({
                   <button
                     type="button"
                     onClick={() => setShowNewDestModal(false)}
-                    className="size-5 flex items-center justify-center text-muted-foreground hover:text-foreground"
+                    className="size-5 flex items-center justify-center text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <X className="size-3.5" />
                   </button>
@@ -1291,7 +1291,7 @@ export function TravelPackageForm({
                   <button
                     type="button"
                     onClick={() => setShowNewHotelModal(false)}
-                    className="size-5 flex items-center justify-center text-muted-foreground hover:text-foreground"
+                    className="size-5 flex items-center justify-center text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <X className="size-3.5" />
                   </button>
@@ -1456,7 +1456,7 @@ export function TravelPackageForm({
                       <button
                         type="button"
                         onClick={() => removeBadge(idx)}
-                        className="size-4 rounded-full flex items-center justify-center hover:bg-destructive/20 text-muted-foreground hover:text-destructive"
+                        className="size-4 rounded-full flex items-center justify-center hover:bg-destructive/20 text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <X className="size-3" />
                       </button>
@@ -1734,7 +1734,7 @@ export function TravelPackageForm({
                           <button
                             type="button"
                             onClick={() => handleRemoveGateway(gw)}
-                            className="size-4 hover:bg-destructive/20 rounded flex items-center justify-center ml-1 text-primary hover:text-destructive cursor-pointer"
+                            className="size-4 hover:bg-destructive/20 rounded flex items-center justify-center ml-1 text-primary hover:text-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             <X className="size-2.5" />
                           </button>

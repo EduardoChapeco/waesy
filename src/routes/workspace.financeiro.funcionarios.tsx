@@ -188,7 +188,7 @@ function HrFinancePage() {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
-      <PageHeader
+      <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         eyebrow="Financeiro"
         title="Folha de Pagamento"
         description="Acompanhe saldos líquidos da equipe, controle adiantamentos (vales) e emita o extrato individual para cada colaborador."
@@ -280,7 +280,7 @@ function HrFinancePage() {
               roleFilter === "all"
                 ? "bg-background text-foreground shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             Todos ({staffBalances.length})
           </button>
@@ -291,7 +291,7 @@ function HrFinancePage() {
               roleFilter === "seller"
                 ? "bg-background text-foreground shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             Vendedores ({staffBalances.filter((s) => s.role === "seller").length})
           </button>
@@ -302,7 +302,7 @@ function HrFinancePage() {
               roleFilter === "manager"
                 ? "bg-background text-foreground shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             Gerentes ({staffBalances.filter((s) => s.role === "manager").length})
           </button>
@@ -505,7 +505,7 @@ function HrFinancePage() {
       </SheetPage>
 
       {/* ── MODAL DE NOVO LANÇAMENTO (VALE OU BÔNUS) ── */}
-      <SheetPage
+      <SheetPage /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         open={modalOpen}
         onOpenChange={setModalOpen}
         title="Lançamento de Folha"

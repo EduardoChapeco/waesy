@@ -255,7 +255,7 @@ function StudioWorkspacePage() {
  studioMode === "graphic"
  ? "bg-foreground text-background"
  : "text-muted-foreground hover:text-foreground"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <Palette className="size-3.5" />
  <span>Design Gráfico</span>
@@ -267,7 +267,7 @@ function StudioWorkspacePage() {
  studioMode === "video"
  ? "bg-foreground text-background"
  : "text-muted-foreground hover:text-foreground"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <Video className="size-3.5" />
  <span>Video Studio</span>
@@ -282,7 +282,7 @@ function StudioWorkspacePage() {
  <button
  type="button"
  onClick={() => setZoom((z) => Math.max(0.5, z - 0.1))}
- className="p-1 hover:text-foreground text-muted-foreground"
+ className="p-1 hover:text-foreground text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <ZoomOut className="size-3.5" />
  </button>
@@ -290,7 +290,7 @@ function StudioWorkspacePage() {
  <button
  type="button"
  onClick={() => setZoom((z) => Math.min(2, z + 0.1))}
- className="p-1 hover:text-foreground text-muted-foreground"
+ className="p-1 hover:text-foreground text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <ZoomIn className="size-3.5" />
  </button>
@@ -347,7 +347,7 @@ function StudioWorkspacePage() {
  aspectRatio === ar
  ? "bg-foreground text-background border-foreground"
  : "bg-muted/40 border-border/60 text-muted-foreground hover:text-foreground"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  {ar}
  </button>
@@ -480,7 +480,7 @@ function StudioWorkspacePage() {
  selectedTemplateCategory === cat.id
  ? "bg-primary text-primary-foreground"
  : "bg-muted/60 text-muted-foreground hover:text-foreground"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  {cat.label}
  </button>
@@ -489,10 +489,10 @@ function StudioWorkspacePage() {
 
  <div className="space-y-2 max-h-64 overflow-y-auto no-scrollbar pr-1">
  {filteredTemplates.map((tpl) => (
- <div
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  key={tpl.id}
  onClick={() => handleApplyTemplate(tpl)}
- className="p-3 rounded-lg border border-border/70 bg-card hover:bg-muted/50 cursor-pointer transition-all space-y-1"
+ className="p-3 rounded-lg border border-border/70 bg-card hover:bg-muted/50 cursor-pointer transition-all space-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-foreground truncate">{tpl.title}</span>

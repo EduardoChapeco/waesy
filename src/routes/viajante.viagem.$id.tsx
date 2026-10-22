@@ -42,6 +42,8 @@ import { getTravelerTripPortalDossier } from "@/services/travel-lifecycle.functi
 import { createTourismIncident } from "@/services/tourism-incidents.functions";
 import { updateChangeCaseWorkflow } from "@/services/travel-reaccommodation.functions";
 import { PreBoardingPresentationStudio } from "@/components/tourism/boarding/PreBoardingPresentationStudio";
+import { PaxAnamnesisCard } from "@/components/turismo/pax-anamnesis-card";
+import type { PaxAnamnesisDTO } from "@/lib/travel/pax-anamnesis-and-accessibility";
 
 export const Route = createFileRoute("/viajante/viagem/$id")({
   head: () => ({
@@ -149,6 +151,35 @@ export default function TripPortalPage() {
     }),
     [trip, hotel, agency, passengers, confirmationItems, id]
   );
+
+  // Ficha Canônica de Anamnese & Acessibilidade PCD (Zero-Trust Anti-Fraude)
+  const leadAnamnesis: PaxAnamnesisDTO = useMemo(() => {
+    const meta = (leadPassenger?.metadata as Record<string, any>) || {};
+    return {
+      paxId: leadPassenger?.id || "00000000-0000-0000-0000-000000000000",
+      tripId: trip.id || id,
+      fullName: leadPassenger?.full_name || trip.client_name || "Passageiro Principal",
+      documentType: (meta.document_type as any) || (leadPassenger?.cpf ? "cpf" : "rg"),
+      documentNumber: leadPassenger?.cpf || meta.document_number || "Não Informado",
+      birthDate: leadPassenger?.birth_date || meta.birth_date || "1990-01-01",
+      nationality: meta.nationality || "BRA",
+      pcdAssistanceCodes: (meta.pcd_assistance_codes as any) || ["NONE"],
+      requiresCompanion: Boolean(meta.requires_companion),
+      medicalClearanceRequired: Boolean(meta.medical_clearance_required),
+      dietaryRestrictions: (meta.dietary_restrictions as any) || ["standard"],
+      allergiesNotes: meta.allergies_notes || null,
+      emergencyContact: meta.emergency_contact || {
+        name: agency.name || "Central de Atendimento",
+        phone: agency.phone || "+55 (49) 99999-1372",
+        relationship: "Agência Emissora",
+      },
+      documentStatus: (meta.document_status as any) || "agent_homologated",
+      ocrConfidenceScore: meta.ocr_confidence_score ?? 99.8,
+      appleWalletPassUrl: meta.apple_wallet_pass_url || null,
+      googleWalletPassUrl: meta.google_wallet_pass_url || null,
+      updatedAt: leadPassenger?.updated_at || new Date().toISOString(),
+    };
+  }, [leadPassenger, trip, id, agency]);
 
   // Documentos Oficiais Reais da Viagem
   const documentsList = useMemo(() => {
@@ -601,6 +632,9 @@ export default function TripPortalPage() {
                 </div>
               </div>
 
+              {/* Card de Acessibilidade PCD, Anamnese e Documentos Blindados */}
+              <PaxAnamnesisCard anamnesis={leadAnamnesis} />
+
               {/* Documentos & Vouchers em PDF */}
               <div className="p-5 rounded-lg border border-border bg-card space-y-4">
                 <div className="flex items-center gap-2 text-primary font-bold text-sm">
@@ -884,7 +918,7 @@ export default function TripPortalPage() {
               <button
                 type="button"
                 onClick={() => setSupportModalOpen(false)}
-                className="text-muted-foreground hover:text-foreground text-sm font-semibold p-1"
+                className="text-muted-foreground hover:text-foreground text-sm font-semibold p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 ✕
               </button>

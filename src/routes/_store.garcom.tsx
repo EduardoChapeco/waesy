@@ -160,7 +160,7 @@ function GarcomTerminalPage() {
  : isBilling 
  ? "bg-purple-500/10 border-purple-500/30 text-purple-600 dark:text-purple-400"
  : "bg-card border-border hover:border-primary/50 text-foreground"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <div className="flex items-center justify-between">
  <span className="font-black text-lg">Mesa {table.table_number}</span>

@@ -160,7 +160,7 @@ export function BuilderLeftPanel({
  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
  <button
  type="button"
- className="p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
+ className="p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  onClick={(e) => moveNode(node.id, -1, e)}
  title="Mover para cima"
  >
@@ -168,7 +168,7 @@ export function BuilderLeftPanel({
  </button>
  <button
  type="button"
- className="p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
+ className="p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  onClick={(e) => moveNode(node.id, 1, e)}
  title="Mover para baixo"
  >
@@ -176,7 +176,7 @@ export function BuilderLeftPanel({
  </button>
  <button
  type="button"
- className="p-1 rounded-lg hover:bg-destructive/10 text-destructive cursor-pointer"
+ className="p-1 rounded-lg hover:bg-destructive/10 text-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  onClick={(e) => deleteNode(node.id, e)}
  title="Excluir bloco"
  >
@@ -198,7 +198,7 @@ export function BuilderLeftPanel({
  <button
  type="button"
  onClick={() => setActivePanel("layers")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "flex-1 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer",
  activePanel === "layers"
  ? "bg-background text-foreground font-bold shadow-2xs"
@@ -212,7 +212,7 @@ export function BuilderLeftPanel({
  <button
  type="button"
  onClick={() => setActivePanel("blocks")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "flex-1 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer",
  activePanel === "blocks"
  ? "bg-background text-foreground font-bold shadow-2xs"
@@ -277,7 +277,7 @@ export function BuilderLeftPanel({
  type="button"
  key={cat.id}
  onClick={() => setBlockCategory(cat.id)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "flex items-center gap-2 p-3 rounded-lg text-xs transition-all text-left cursor-pointer border",
  blockCategory === cat.id
  ? "bg-primary/10 border-primary/30 text-primary font-bold shadow-2xs"
@@ -307,7 +307,7 @@ export function BuilderLeftPanel({
  type="button"
  key={blockType}
  onClick={() => insertBlock(blockType)}
- className="flex items-center justify-between p-3 bg-muted/20 hover:bg-muted/60 border border-border/50 hover:border-primary/40 rounded-lg transition-all text-left cursor-pointer group"
+ className="flex items-center justify-between p-3 bg-muted/20 hover:bg-muted/60 border border-border/50 hover:border-primary/40 rounded-lg transition-all text-left cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="space-y-1 min-w-0 flex-1 pr-2">
  <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors truncate">

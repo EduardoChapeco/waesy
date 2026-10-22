@@ -46,6 +46,7 @@ describe("Adversarial Stress Test: checkHasCustomPageMobileHeader", () => {
         "/conta/curriculo",
         "/conta/empresa",
         "/conta/ingressos",
+        "/conta/contratos",
         "/conta/notificacoes",
         "/conta/pedidos",
       ];

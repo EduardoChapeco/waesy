@@ -54,7 +54,7 @@ export function CareersJobFilters({
  <button
  key={dept}
  onClick={() => onSelectDepartment?.(key)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-4 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all min-h-11 border",
  isSelected
  ? "bg-primary text-primary-foreground border-primary shadow-sm"

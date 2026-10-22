@@ -106,7 +106,7 @@ function RichTextInspectorField({
           type="button"
           onClick={() => insertFormatting("**", "**")}
           title="Negrito (**texto**)"
-          className="size-6 flex items-center justify-center rounded hover:bg-muted font-black text-xs cursor-pointer text-foreground"
+          className="size-6 flex items-center justify-center rounded hover:bg-muted font-black text-xs cursor-pointer text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           B
         </button>
@@ -114,7 +114,7 @@ function RichTextInspectorField({
           type="button"
           onClick={() => insertFormatting("*", "*")}
           title="Itálico (*texto*)"
-          className="size-6 flex items-center justify-center rounded hover:bg-muted italic font-serif text-xs cursor-pointer text-foreground"
+          className="size-6 flex items-center justify-center rounded hover:bg-muted italic font-serif text-xs cursor-pointer text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           I
         </button>
@@ -123,7 +123,7 @@ function RichTextInspectorField({
           type="button"
           onClick={() => insertFormatting("## ")}
           title="Título Principal (H2)"
-          className="px-2 h-6 flex items-center justify-center rounded hover:bg-muted font-bold text-[10px] cursor-pointer text-foreground"
+          className="px-2 h-6 flex items-center justify-center rounded hover:bg-muted font-bold text-[10px] cursor-pointer text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           H2
         </button>
@@ -131,7 +131,7 @@ function RichTextInspectorField({
           type="button"
           onClick={() => insertFormatting("### ")}
           title="Subtítulo (H3)"
-          className="px-2 h-6 flex items-center justify-center rounded hover:bg-muted font-semibold text-[10px] cursor-pointer text-foreground"
+          className="px-2 h-6 flex items-center justify-center rounded hover:bg-muted font-semibold text-[10px] cursor-pointer text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           H3
         </button>
@@ -140,7 +140,7 @@ function RichTextInspectorField({
           type="button"
           onClick={() => insertFormatting("- ")}
           title="Lista com marcadores (- item)"
-          className="size-6 flex items-center justify-center rounded hover:bg-muted text-xs cursor-pointer text-foreground"
+          className="size-6 flex items-center justify-center rounded hover:bg-muted text-xs cursor-pointer text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           •
         </button>
@@ -148,7 +148,7 @@ function RichTextInspectorField({
           type="button"
           onClick={() => insertFormatting("> ")}
           title="Citação (> destaque)"
-          className="size-6 flex items-center justify-center rounded hover:bg-muted text-xs cursor-pointer text-foreground"
+          className="size-6 flex items-center justify-center rounded hover:bg-muted text-xs cursor-pointer text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           ”
         </button>
@@ -156,7 +156,7 @@ function RichTextInspectorField({
           type="button"
           onClick={() => insertFormatting("[link](", ")")}
           title="Inserir Link ([texto](url))"
-          className="px-1 h-6 flex items-center justify-center rounded hover:bg-muted text-[10px] font-mono cursor-pointer text-primary"
+          className="px-1 h-6 flex items-center justify-center rounded hover:bg-muted text-[10px] font-mono cursor-pointer text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         ><Link className="size-3" /></button>
       </div>
 
@@ -312,7 +312,7 @@ export function BuilderInspector({
  <button
  type="button"
  onClick={() => setSelectedNodeId(anc.id)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "hover:text-primary transition-colors cursor-pointer truncate max-w-[100px]",
  anc.id === selectedNode.id
  ? "font-bold text-foreground underline underline-offset-2 decoration-primary"
@@ -332,7 +332,7 @@ export function BuilderInspector({
  <button
  type="button"
  onClick={() => setInspectorTab("content")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1",
  inspectorTab === "content"
  ? "bg-background text-foreground font-bold shadow-2xs"
@@ -346,7 +346,7 @@ export function BuilderInspector({
  <button
  type="button"
  onClick={() => setInspectorTab("layout")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1",
  inspectorTab === "layout"
  ? "bg-background text-foreground font-bold shadow-2xs"
@@ -360,7 +360,7 @@ export function BuilderInspector({
  <button
  type="button"
  onClick={() => setInspectorTab("design")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1",
  inspectorTab === "design"
  ? "bg-background text-foreground font-bold shadow-2xs"
@@ -374,7 +374,7 @@ export function BuilderInspector({
  <button
  type="button"
  onClick={() => setInspectorTab("animation")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1",
  inspectorTab === "animation"
  ? "bg-background text-foreground font-bold shadow-2xs"
@@ -388,7 +388,7 @@ export function BuilderInspector({
  <button
  type="button"
  onClick={() => setInspectorTab("connection")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1",
  inspectorTab === "connection"
  ? "bg-background text-foreground font-bold shadow-2xs"
@@ -462,7 +462,7 @@ export function BuilderInspector({
  key={sug}
  type="button"
  onClick={() => handleContentChange(field.name, sug)}
- className="text-[10px] font-mono px-2 py-1 rounded-md bg-background border border-border/80 hover:border-amber-500 text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+ className="text-[10px] font-mono px-2 py-1 rounded-md bg-background border border-border/80 hover:border-amber-500 text-muted-foreground hover:text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {sug}
  </button>
@@ -502,7 +502,7 @@ export function BuilderInspector({
  <button
  type="button"
  onClick={() => handleContentChange(field.name, "#produtos")}
- className="text-[10px] px-2 py-1 rounded-md bg-background border border-border/80 hover:border-primary text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+ className="text-[10px] px-2 py-1 rounded-md bg-background border border-border/80 hover:border-primary text-muted-foreground hover:text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  #produtos
  </button>
@@ -512,7 +512,7 @@ export function BuilderInspector({
  key={p.id || p.slug}
  type="button"
  onClick={() => handleContentChange(field.name, p.slug === "home" ? "/" : `/${p.slug}`)}
- className="text-[10px] px-2 py-1 rounded-md bg-background border border-border/80 hover:border-primary text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+ className="text-[10px] px-2 py-1 rounded-md bg-background border border-border/80 hover:border-primary text-muted-foreground hover:text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  /{p.slug}
  </button>
@@ -522,14 +522,14 @@ export function BuilderInspector({
  <button
  type="button"
  onClick={() => handleContentChange(field.name, "/campanhas/ofertas")}
- className="text-[10px] px-2 py-1 rounded-md bg-background border border-border/80 hover:border-primary text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+ className="text-[10px] px-2 py-1 rounded-md bg-background border border-border/80 hover:border-primary text-muted-foreground hover:text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  /campanhas
  </button>
  <button
  type="button"
  onClick={() => handleContentChange(field.name, "/turismo")}
- className="text-[10px] px-2 py-1 rounded-md bg-background border border-border/80 hover:border-primary text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+ className="text-[10px] px-2 py-1 rounded-md bg-background border border-border/80 hover:border-primary text-muted-foreground hover:text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  /turismo
  </button>
@@ -774,7 +774,7 @@ export function BuilderInspector({
  <button
  type="button"
  onClick={() => handleLayoutChange("sizingMode", "fluid")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "py-2 rounded-lg text-xs font-semibold transition-all border cursor-pointer",
  (layout.sizingMode || "fluid") === "fluid"
  ? "bg-primary text-primary-foreground font-bold shadow-2xs border-primary"
@@ -786,7 +786,7 @@ export function BuilderInspector({
  <button
  type="button"
  onClick={() => handleLayoutChange("sizingMode", "fixed")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "py-2 rounded-lg text-xs font-semibold transition-all border cursor-pointer",
  layout.sizingMode === "fixed"
  ? "bg-primary text-primary-foreground font-bold shadow-2xs border-primary"
@@ -1061,7 +1061,7 @@ export function BuilderInspector({
  const currAnim = (selectedNode.design_tokens as any)?.animation || {};
  updateNode(selectedNode.id, "design_tokens", "animation", { ...currAnim, speed: speed.id });
  }}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "py-2 px-2 rounded-lg text-[11px] font-semibold border transition-all",
  currentSpeed === speed.id
  ? "border-primary bg-primary/10 text-primary"
@@ -1094,7 +1094,7 @@ export function BuilderInspector({
  const currAnim = (selectedNode.design_tokens as any)?.animation || {};
  updateNode(selectedNode.id, "design_tokens", "animation", { ...currAnim, hover: hov.id });
  }}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "py-2 px-3 rounded-lg text-xs font-semibold border text-left transition-all",
  currentHov === hov.id
  ? "border-primary bg-primary/10 text-primary"

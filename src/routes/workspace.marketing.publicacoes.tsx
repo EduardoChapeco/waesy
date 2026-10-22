@@ -154,7 +154,7 @@ function SocialPublicacoesPage() {
           <button
             key={key}
             onClick={() => setFilterStatus(key)}
-            className={cn(
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "text-xs font-medium px-3 py-2 rounded-lg border transition-colors",
               filterStatus === key
                 ? "bg-foreground text-background border-foreground"
@@ -292,7 +292,7 @@ function SocialPublicacoesPage() {
                     <button
                       key={net}
                       onClick={() => toggleNetwork(net)}
-                      className={cn(
+                      className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                         "flex items-center gap-2 text-xs font-medium px-3 py-2 rounded-lg border transition-colors min-h-11",
                         selected
                           ? "bg-foreground text-background border-foreground"

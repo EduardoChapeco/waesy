@@ -23,7 +23,7 @@ export function ThemeSelector({ className }: { className?: string }) {
  key={opt.mode}
  type="button"
  onClick={() => setTheme(opt.mode)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg border text-xs font-medium transition-all",
  isSelected
  ? "bg-primary text-primary-foreground border-primary shadow-xs font-semibold"

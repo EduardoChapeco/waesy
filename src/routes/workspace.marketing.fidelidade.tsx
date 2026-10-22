@@ -150,7 +150,7 @@ export default function LoyaltyDashboardPage() {
 
  return (
  <div className="w-full space-y-6">
- <PageHeader
+ <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  title="Programa de Fidelidade Digital"
  actions={
  <div className="flex items-center gap-2">
@@ -356,7 +356,7 @@ export default function LoyaltyDashboardPage() {
  key={item.id}
  type="button"
  onClick={() => setStampIcon(item.id)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold border transition-all",
  isSelected
  ? "bg-primary text-primary-foreground border-primary shadow-xs"

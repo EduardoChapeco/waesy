@@ -189,7 +189,7 @@ function AdminMasterCarnesPage() {
           <button
             type="button"
             onClick={() => setActiveFilter("all")}
-            className={cn(
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "px-3 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap",
               activeFilter === "all"
                 ? "bg-background text-foreground shadow-xs"
@@ -201,7 +201,7 @@ function AdminMasterCarnesPage() {
           <button
             type="button"
             onClick={() => setActiveFilter("active")}
-            className={cn(
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "px-3 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap",
               activeFilter === "active"
                 ? "bg-background text-foreground shadow-xs"
@@ -213,7 +213,7 @@ function AdminMasterCarnesPage() {
           <button
             type="button"
             onClick={() => setActiveFilter("overdue")}
-            className={cn(
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "px-3 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap",
               activeFilter === "overdue"
                 ? "bg-background text-foreground shadow-xs"
@@ -225,7 +225,7 @@ function AdminMasterCarnesPage() {
           <button
             type="button"
             onClick={() => setActiveFilter("pending_conciliation")}
-            className={cn(
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "px-3 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap flex items-center gap-2",
               activeFilter === "pending_conciliation"
                 ? "bg-background text-foreground shadow-xs"
@@ -242,7 +242,7 @@ function AdminMasterCarnesPage() {
           <button
             type="button"
             onClick={() => setActiveFilter("settled")}
-            className={cn(
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "px-3 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap",
               activeFilter === "settled"
                 ? "bg-background text-foreground shadow-xs"

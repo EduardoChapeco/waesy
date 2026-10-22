@@ -115,7 +115,7 @@ function WorkspaceNewMuralPostPage() {
                     isSelected
                       ? "bg-primary/10 border-primary text-foreground font-bold shadow-xs"
                       : "bg-background border-border/50 text-muted-foreground hover:bg-muted/40"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   <Icon className={`size-4 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
                   <span className="text-xs">{t.label}</span>
@@ -180,7 +180,7 @@ function WorkspaceNewMuralPostPage() {
                   <button
                     type="button"
                     onClick={() => handleRemoveMedia(idx)}
-                    className="absolute top-1 right-1 size-6 rounded-full bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                    className="absolute top-1 right-1 size-6 rounded-full bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     ×
                   </button>

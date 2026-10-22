@@ -10,9 +10,9 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, windowVariant = "auto", ...props }, ref) => {
     const variantClasses = {
-      compact: "p-4 rounded-lg border border-border/60",
-      expanded: "p-6 rounded-lg border border-border/50",
-      auto: "p-4 sm:p-5 lg:p-6 rounded-lg sm:rounded-lg border border-border/50",
+      compact: "p-4 rounded-2xl border border-border/60",
+      expanded: "p-6 rounded-3xl border border-border/50",
+      auto: "p-4 sm:p-5 lg:p-6 rounded-2xl sm:rounded-3xl border border-border/50",
     }[windowVariant];
 
     return (
@@ -56,9 +56,9 @@ export interface CardTitleProps extends React.HTMLAttributes<HTMLHeadingElement>
 const CardTitle = React.forwardRef<HTMLHeadingElement, CardTitleProps>(
   ({ className, windowVariant = "auto", ...props }, ref) => {
     const variantTypography = {
-      compact: "text-base font-semibold leading-tight tracking-tight",
-      expanded: "text-2xl font-bold leading-none tracking-tight",
-      auto: "text-base sm:text-xl lg:text-2xl font-bold leading-tight sm:leading-none tracking-tight",
+      compact: "text-base font-semibold leading-tight tracking-tight break-words text-wrap whitespace-normal",
+      expanded: "text-2xl font-bold leading-none tracking-tight break-words text-wrap whitespace-normal",
+      auto: "text-base sm:text-xl lg:text-2xl font-bold leading-tight sm:leading-none tracking-tight break-words text-wrap whitespace-normal",
     }[windowVariant];
 
     return (
@@ -80,7 +80,7 @@ const CardDescription = React.forwardRef<HTMLParagraphElement, CardDescriptionPr
   ({ className, windowVariant = "auto", ...props }, ref) => (
     <p
       ref={ref}
-      className={cn("text-xs sm:text-sm text-muted-foreground", className)}
+      className={cn("text-xs sm:text-sm text-muted-foreground break-words whitespace-normal leading-relaxed", className)}
       {...props}
     />
   )

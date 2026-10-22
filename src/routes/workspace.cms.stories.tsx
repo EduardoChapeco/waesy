@@ -145,7 +145,7 @@ function CmsStoriesPage() {
 
  return (
  <div className="p-6 max-w-6xl mx-auto space-y-6">
- <PageHeader
+ <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  eyebrow="CMS"
  title="Stories"
  actions={
@@ -170,7 +170,7 @@ function CmsStoriesPage() {
 
  <TabsContent value="stories" className="space-y-4">
  {stories.length === 0 ? (
- <EmptyState
+ <EmptyState /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  title="Nenhum story ativo"
  description="Publique vídeos ou fotos de até 60s com links para seus produtos e alcance clientes no topo da vitrine."
  action={

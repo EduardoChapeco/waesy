@@ -176,7 +176,7 @@ export function DataJudMiningPanel() {
           <button
             type="button"
             onClick={() => setProcessNumber("0001234-56.2024.8.24.0018")}
-            className="underline hover:text-foreground text-primary font-mono"
+            className="underline hover:text-foreground text-primary font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             0001234-56.2024.8.24.0018 (TJSC Chapecó)
           </button>
@@ -184,7 +184,7 @@ export function DataJudMiningPanel() {
           <button
             type="button"
             onClick={() => setProcessNumber("1000123-45.2023.8.26.0100")}
-            className="underline hover:text-foreground text-primary font-mono"
+            className="underline hover:text-foreground text-primary font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             1000123-45.2023.8.26.0100 (TJSP Capital)
           </button>
@@ -354,7 +354,7 @@ export function PlacesMiningPanel() {
               key={n}
               type="button"
               onClick={() => setQueryTerm(n)}
-              className="px-2 py-1 rounded-md bg-muted/50 hover:bg-muted text-foreground text-[10px]"
+              className="px-2 py-1 rounded-md bg-muted/50 hover:bg-muted text-foreground text-[10px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {n}
             </button>

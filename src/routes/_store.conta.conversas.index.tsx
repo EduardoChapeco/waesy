@@ -373,7 +373,7 @@ function CustomerConversationsIndexPage() {
         <button
           type="button"
           onClick={() => setShowSearch((s) => !s)}
-          className="size-10 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
+          className="size-10 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           aria-label="Buscar conversa"
         >
           <Search className="size-5" />
@@ -397,7 +397,7 @@ function CustomerConversationsIndexPage() {
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground hover:text-foreground"
+                className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <X className="size-3.5" />
               </button>
@@ -419,7 +419,7 @@ function CustomerConversationsIndexPage() {
                 isSelected
                   ? "bg-primary/15 text-primary font-bold"
                   : "bg-muted/40 hover:bg-muted/70 text-muted-foreground hover:text-foreground"
-              }`}
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
             >
               {tab.label}
             </button>
@@ -462,7 +462,7 @@ function CustomerConversationsIndexPage() {
         type="button"
         onClick={() => setNewChatOpen(true)}
         aria-label="Nova Conversa"
-        className="fixed bottom-20 md:bottom-8 right-4 md:right-8 z-40 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:opacity-95 active:scale-95 transition-all flex items-center justify-center cursor-pointer"
+        className="fixed bottom-20 md:bottom-8 right-4 md:right-8 z-40 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-xs hover:opacity-95 active:scale-95 transition-all flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <MessageSquarePlus className="size-6 stroke-[2.2]" />
       </button>
@@ -484,7 +484,7 @@ function CustomerConversationsIndexPage() {
               <button
                 type="button"
                 onClick={() => handleTogglePin(contextMenuTarget.id)}
-                className="w-full h-11 flex items-center gap-3 px-2 text-xs font-semibold text-foreground hover:bg-muted/40 rounded-lg transition-colors cursor-pointer"
+                className="w-full h-11 flex items-center gap-3 px-2 text-xs font-semibold text-foreground hover:bg-muted/40 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Pin className="size-4 text-muted-foreground" />
                 <span>
@@ -495,7 +495,7 @@ function CustomerConversationsIndexPage() {
               <button
                 type="button"
                 onClick={() => handleToggleMute(contextMenuTarget.id)}
-                className="w-full h-11 flex items-center gap-3 px-2 text-xs font-semibold text-foreground hover:bg-muted/40 rounded-lg transition-colors cursor-pointer"
+                className="w-full h-11 flex items-center gap-3 px-2 text-xs font-semibold text-foreground hover:bg-muted/40 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <BellOff className="size-4 text-muted-foreground" />
                 <span>
@@ -513,7 +513,7 @@ function CustomerConversationsIndexPage() {
                     contextMenuTarget.unreadCount || 0
                   )
                 }
-                className="w-full h-11 flex items-center gap-3 px-2 text-xs font-semibold text-foreground hover:bg-muted/40 rounded-lg transition-colors cursor-pointer"
+                className="w-full h-11 flex items-center gap-3 px-2 text-xs font-semibold text-foreground hover:bg-muted/40 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <MailOpen className="size-4 text-muted-foreground" />
                 <span>
@@ -529,7 +529,7 @@ function CustomerConversationsIndexPage() {
                   handleArchiveThread(contextMenuTarget.id);
                   setContextMenuTarget(null);
                 }}
-                className="w-full h-11 flex items-center gap-3 px-2 text-xs font-semibold text-foreground hover:bg-muted/40 rounded-lg transition-colors cursor-pointer"
+                className="w-full h-11 flex items-center gap-3 px-2 text-xs font-semibold text-foreground hover:bg-muted/40 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Archive className="size-4 text-muted-foreground" />
                 <span>
@@ -542,7 +542,7 @@ function CustomerConversationsIndexPage() {
               <button
                 type="button"
                 onClick={() => handleClearHistory(contextMenuTarget.id)}
-                className="w-full h-11 flex items-center gap-3 px-2 text-xs font-semibold text-foreground hover:bg-muted/40 rounded-lg transition-colors cursor-pointer"
+                className="w-full h-11 flex items-center gap-3 px-2 text-xs font-semibold text-foreground hover:bg-muted/40 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Eraser className="size-4 text-muted-foreground" />
                 <span>Limpar histórico</span>
@@ -551,7 +551,7 @@ function CustomerConversationsIndexPage() {
               <button
                 type="button"
                 onClick={() => handleDeleteThread(contextMenuTarget.id)}
-                className="w-full h-11 flex items-center gap-3 px-2 text-xs font-bold text-destructive hover:bg-destructive/10 rounded-lg transition-colors cursor-pointer"
+                className="w-full h-11 flex items-center gap-3 px-2 text-xs font-bold text-destructive hover:bg-destructive/10 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Trash2 className="size-4 text-destructive" />
                 <span>Apagar conversa</span>
@@ -595,10 +595,10 @@ function CustomerConversationsIndexPage() {
                   ) : (
                     <div className="space-y-1">
                       {contactsData.contacts.map((c: any) => (
-                        <div
+                        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                           key={c.id}
                           onClick={() => setSelectedTarget(c)}
-                          className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/60 transition-colors cursor-pointer select-none"
+                          className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/60 transition-colors cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           <div className="size-9 rounded-full bg-muted border border-border/40 flex items-center justify-center overflow-hidden shrink-0">
                             {c.avatar_url ? (
@@ -628,10 +628,10 @@ function CustomerConversationsIndexPage() {
                   ) : (
                     <div className="space-y-1">
                       {contactsData.stores.map((s: any) => (
-                        <div
+                        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                           key={s.id}
                           onClick={() => setSelectedTarget(s)}
-                          className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/60 transition-colors cursor-pointer select-none"
+                          className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/60 transition-colors cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           <div className="size-9 rounded-full bg-muted border border-border/40 flex items-center justify-center overflow-hidden shrink-0">
                             {s.avatar_url ? (
@@ -674,7 +674,7 @@ function CustomerConversationsIndexPage() {
                 <button
                   type="button"
                   onClick={() => setSelectedTarget(null)}
-                  className="text-xs text-primary font-bold hover:underline cursor-pointer"
+                  className="text-xs text-primary font-bold hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   Alterar
                 </button>

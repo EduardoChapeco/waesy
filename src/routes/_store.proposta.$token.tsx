@@ -188,7 +188,7 @@ function PublicTravelProposalPage() {
                     isSelected
                       ? "border-emerald-600 bg-emerald-500/10 "
                       : "border-border/60 bg-background hover:bg-muted/40"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <span className="text-xs font-bold text-foreground line-clamp-1">{opt.name || `Opção ${idx + 1}`}</span>
@@ -425,7 +425,7 @@ function PublicTravelProposalPage() {
                 <button
                   type="button"
                   onClick={() => handleSendMessage("Qual a diferença principal entre as opções cotadas e qual vale mais a pena?")}
-                  className="text-[11px] px-3 py-1 rounded-lg border border-border/60 bg-background hover:bg-muted text-foreground cursor-pointer transition-colors"
+                  className="text-[11px] px-3 py-1 rounded-lg border border-border/60 bg-background hover:bg-muted text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   Comparar as Opções
                 </button>
@@ -433,14 +433,14 @@ function PublicTravelProposalPage() {
               <button
                 type="button"
                 onClick={() => handleSendMessage("Como é a localização do hotel e a distância da praia ou centro?")}
-                className="text-[11px] px-3 py-1 rounded-lg border border-border/60 bg-background hover:bg-muted text-foreground cursor-pointer transition-colors"
+                className="text-[11px] px-3 py-1 rounded-lg border border-border/60 bg-background hover:bg-muted text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 Localização do Hotel
               </button>
               <button
                 type="button"
                 onClick={() => handleSendMessage("Como é o clima nesta época do ano no destino e o que levar?")}
-                className="text-[11px] px-3 py-1 rounded-lg border border-border/60 bg-background hover:bg-muted text-foreground cursor-pointer transition-colors"
+                className="text-[11px] px-3 py-1 rounded-lg border border-border/60 bg-background hover:bg-muted text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 Clima e Bagagem
               </button>

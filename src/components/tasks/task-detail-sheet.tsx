@@ -287,7 +287,7 @@ export function TaskDetailSheet({
               <button
                 type="button"
                 onClick={() => handleStatusChange(isDone ? "todo" : "done")}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "size-8 rounded-lg border flex items-center justify-center transition-all cursor-pointer shrink-0",
                   isDone
                     ? "bg-primary border-primary text-primary-foreground"
@@ -305,7 +305,7 @@ export function TaskDetailSheet({
                   <button
                     type="button"
                     onClick={handleCopyCode}
-                    className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted text-[11px] font-mono font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer shrink-0"
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted text-[11px] font-mono font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     title="Copiar código"
                   >
                     <Copy className="size-3" />
@@ -321,7 +321,7 @@ export function TaskDetailSheet({
                 type="button"
                 onClick={handleMyDayToggle}
                 title={currentTask?.is_my_day ? "Remover de Meu Dia" : "Adicionar a Meu Dia"}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "size-9 flex items-center justify-center rounded-lg transition-colors cursor-pointer",
                   currentTask?.is_my_day
                     ? "text-amber-500 hover:bg-amber-500/10"
@@ -336,7 +336,7 @@ export function TaskDetailSheet({
                 type="button"
                 onClick={() => setArchiveDialogOpen(true)}
                 title="Arquivar atividade"
-                className="size-9 flex items-center justify-center rounded-lg text-muted-foreground/60 hover:text-amber-600 hover:bg-amber-500/10 transition-colors cursor-pointer"
+                className="size-9 flex items-center justify-center rounded-lg text-muted-foreground/60 hover:text-amber-600 hover:bg-amber-500/10 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Archive className="size-4" />
               </button>
@@ -528,10 +528,10 @@ export function TaskDetailSheet({
 
               <div className="space-y-2">
                 {checklists.map((item) => (
-                  <div
+                  <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                     key={item.id}
                     onClick={() => handleToggleChecklist(item)}
-                    className="flex items-center gap-3 p-3 rounded-lg border border-border/60 bg-card hover:bg-muted/10 transition-colors cursor-pointer"
+                    className="flex items-center gap-3 p-3 rounded-lg border border-border/60 bg-card hover:bg-muted/10 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <div className={cn(
                       "size-5 rounded border flex items-center justify-center transition-all shrink-0",
@@ -643,7 +643,7 @@ export function TaskDetailSheet({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
+            <AlertDialogAction /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
               onClick={handleArchiveTask}
               className="bg-amber-600 hover:bg-amber-700 text-white"
             >
@@ -667,7 +667,7 @@ export function TaskDetailSheet({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmResetTimer}>
+            <AlertDialogAction /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={handleConfirmResetTimer}>
               Zerar
             </AlertDialogAction>
           </AlertDialogFooter>

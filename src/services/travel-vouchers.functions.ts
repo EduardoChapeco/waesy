@@ -135,3 +135,129 @@ export const deleteTravelVoucher = createServerFn({ method: 'POST' })
     if (error) throw new Error('Erro ao remover voucher: ' + error.message);
     return { success: true };
   });
+
+export const EnrichVoucherWithAgentPnrsSchema = z.object({
+  voucherId: z.string().uuid(),
+  pnrCode: z.string().optional(),
+  eTicketNumber: z.string().optional(),
+  hotelConfirmationCode: z.string().optional(),
+  flightData: z.record(z.any()).optional(),
+  hotelData: z.record(z.any()).optional(),
+  transferData: z.record(z.any()).optional(),
+  agentNotes: z.string().max(2000).optional(),
+});
+
+export const enrichVoucherWithAgentPnrs = createServerFn({ method: 'POST' })
+  .validator(EnrichVoucherWithAgentPnrsSchema)
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    const storeId = identity.store_id;
+    if (!storeId) throw new Error("Loja não selecionada.");
+    assertStoreAccess(identity);
+
+    const db = getServerClient();
+    const { data: voucher, error: fetchErr } = await db
+      .from('travel_vouchers')
+      .select('*')
+      .eq('id', data.voucherId)
+      .eq('store_id', storeId)
+      .single();
+
+    if (fetchErr || !voucher) {
+      throw new Error("Voucher não encontrado nesta agência.");
+    }
+
+    const updatedFlightData = {
+      ...(voucher.flight_data || {}),
+      ...(data.flightData || {}),
+      ...(data.pnrCode ? { pnr: data.pnrCode } : {}),
+      ...(data.eTicketNumber ? { e_ticket: data.eTicketNumber } : {}),
+    };
+
+    const updatedHotelData = {
+      ...(voucher.hotel_data || {}),
+      ...(data.hotelData || {}),
+      ...(data.hotelConfirmationCode ? { confirmation_code: data.hotelConfirmationCode } : {}),
+    };
+
+    const updatedTransferData = {
+      ...(voucher.transfer_data || {}),
+      ...(data.transferData || {}),
+    };
+
+    const { data: updated, error: updErr } = await db
+      .from('travel_vouchers')
+      .update({
+        flight_data: updatedFlightData,
+        hotel_data: updatedHotelData,
+        transfer_data: updatedTransferData,
+        status: 'agent_enriched',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', data.voucherId)
+      .eq('store_id', storeId)
+      .select('*')
+      .single();
+
+    if (updErr) throw new Error("Erro ao enriquecer voucher com dados do agente: " + updErr.message);
+
+    return {
+      success: true,
+      voucher: updated,
+    };
+  });
+
+export const ReleaseTripVouchersSchema = z.object({
+  tripId: z.string().uuid(),
+  releaseNotes: z.string().optional(),
+});
+
+export const releaseTripVouchersToTraveler = createServerFn({ method: 'POST' })
+  .validator(ReleaseTripVouchersSchema)
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    const storeId = identity.store_id;
+    if (!storeId) throw new Error("Loja não selecionada.");
+    assertStoreAccess(identity);
+
+    const db = getServerClient();
+
+    // Atualiza todos os vouchers da viagem para liberado
+    const { data: releasedVouchers, error: relErr } = await db
+      .from('travel_vouchers')
+      .update({
+        status: 'released_to_traveler',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('trip_id', data.tripId)
+      .eq('store_id', storeId)
+      .select('*');
+
+    if (relErr) {
+      throw new Error("Erro ao liberar vouchers para o viajante: " + relErr.message);
+    }
+
+    // Registra evento canônico na timeline
+    await db.from('travel_timeline_events').insert({
+      store_id: storeId,
+      trip_id: data.tripId,
+      lead_id: null,
+      proposal_id: null,
+      budget_id: null,
+      sale_id: null,
+      event_type: "vouchers.released_to_traveler",
+      actor_profile_id: identity.id,
+      payload: {
+        total_vouchers: (releasedVouchers || []).length,
+        notes: data.releaseNotes || null,
+        released_at: new Date().toISOString(),
+      },
+    });
+
+    return {
+      success: true,
+      releasedCount: (releasedVouchers || []).length,
+      releasedVouchers: releasedVouchers || [],
+    };
+  });
+

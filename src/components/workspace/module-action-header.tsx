@@ -124,7 +124,7 @@ export function ModuleActionHeader({
                     key={v.id}
                     type="button"
                     onClick={() => onViewModeChange(v.id)}
-                    className={cn(
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all",
                       isActive
                         ? "bg-background text-foreground shadow-sm"

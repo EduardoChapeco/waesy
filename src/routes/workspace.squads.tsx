@@ -88,7 +88,7 @@ function SquadsPage() {
                 isSelected
                   ? "bg-card border-primary shadow-sm ring-1 ring-primary/20"
                   : "bg-card/50 border-border/60 hover:border-border hover:bg-card"
-              }`}
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-foreground">{squad.name}</span>

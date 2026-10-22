@@ -94,11 +94,11 @@ function PublicDestinationDetailPage() {
         <p className="text-sm text-muted-foreground">
           O destino turístico informado não consta em nossa base oficial ou foi renomeado.
         </p>
-        <Link to={"/turismo" as any}>
-          <Button className="h-11 min-h-11 rounded-lg font-semibold px-6 cursor-pointer">
+        <Button asChild className="h-11 min-h-11 rounded-lg font-semibold px-6 cursor-pointer">
+          <Link to={"/turismo" as any}>
             Voltar para Turismo
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </div>
     );
   }
@@ -123,7 +123,7 @@ function PublicDestinationDetailPage() {
         <div className="mx-auto max-w-6xl px-4 h-14 flex items-center justify-between">
           <Link
             to={"/turismo" as any}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground h-11 min-h-11 px-2 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground h-11 min-h-11 px-2 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             aria-label="Voltar para Turismo"
           >
             <ChevronLeft className="size-4" />
@@ -151,7 +151,7 @@ function PublicDestinationDetailPage() {
 
       <main className="mx-auto max-w-6xl px-4 pt-6 space-y-8">
         {/* Banner Hero */}
-        <div className="relative aspect-[16/9] sm:aspect-[21/9] w-full overflow-hidden rounded-xl bg-muted border border-border/80">
+        <div className="relative aspect-video sm:aspect-[21/9] w-full overflow-hidden rounded-lg bg-muted border border-border/80">
           {destination.cover_image_url ? (
             <img
               src={destination.cover_image_url}
@@ -159,10 +159,11 @@ function PublicDestinationDetailPage() {
               className="h-full w-full object-cover"
             />
           ) : (
-            <div className="h-full w-full flex items-center justify-center bg-gradient-to-tr from-muted/80 to-muted">
+            <div className="h-full w-full flex items-center justify-center bg-muted/40">
               <Compass className="size-16 text-muted-foreground/40" />
             </div>
           )}
+          {/* design-lint-ignore DL-08 reason:"Scrim fotografico para contraste sobre imagem per B.32" expiry:"2027-12-31" */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-6 sm:p-8 space-y-2">
             <div className="flex items-center gap-2 flex-wrap">
               <Badge className="bg-primary text-primary-foreground border-none font-bold text-xs">
@@ -172,18 +173,18 @@ function PublicDestinationDetailPage() {
                 <Link
                   to={"/aeroporto/$iata" as any}
                   params={{ iata: destination.iata_gateway } as any}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-background/80 hover:bg-background backdrop-blur-md text-foreground font-mono text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-background/80 hover:bg-background backdrop-blur-md text-foreground font-mono text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   <Plane className="size-3.5" />
                   Aeroporto {destination.iata_gateway} — Ver Detalhes
                 </Link>
               )}
             </div>
-            <h1 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
+            <h1 className="text-3xl sm:text-5xl font-extrabold text-foreground tracking-tight">
               {destination.name}
             </h1>
-            <p className="text-sm sm:text-base text-white/80 flex items-center gap-1.5">
-              <MapPin className="size-4 shrink-0 text-white" />
+            <p className="text-sm sm:text-base text-foreground/80 flex items-center gap-2">
+              <MapPin className="size-4 shrink-0 text-foreground" />
               <span>{destination.city}, {destination.state} • {destination.country}</span>
             </p>
           </div>
@@ -192,8 +193,8 @@ function PublicDestinationDetailPage() {
         {/* Ficha Rápida do Destino */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {destination.best_season && (
-            <div className="rounded-xl border border-border/80 bg-card p-4 space-y-1.5">
-              <span className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">
+            <div className="rounded-lg border border-border/80 bg-card p-4 space-y-2">
+              <span className="text-xs font-bold text-muted-foreground flex items-center gap-2">
                 <Calendar className="size-3.5 text-primary" />
                 Melhor Época para Visitar
               </span>
@@ -204,8 +205,8 @@ function PublicDestinationDetailPage() {
           )}
 
           {destination.climate_type && (
-            <div className="rounded-xl border border-border/80 bg-card p-4 space-y-1.5">
-              <span className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">
+            <div className="rounded-lg border border-border/80 bg-card p-4 space-y-2">
+              <span className="text-xs font-bold text-muted-foreground flex items-center gap-2">
                 <Sun className="size-3.5 text-amber-500" />
                 Clima Predominante
               </span>
@@ -216,8 +217,8 @@ function PublicDestinationDetailPage() {
           )}
 
           {destination.gastronomy_tip && (
-            <div className="rounded-xl border border-border/80 bg-card p-4 space-y-1.5">
-              <span className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">
+            <div className="rounded-lg border border-border/80 bg-card p-4 space-y-2">
+              <span className="text-xs font-bold text-muted-foreground flex items-center gap-2">
                 <Utensils className="size-3.5 text-primary" />
                 Dica Gastronômica
               </span>
@@ -230,7 +231,7 @@ function PublicDestinationDetailPage() {
 
         {/* Descrição e Highlights */}
         {destination.description && (
-          <div className="rounded-xl border border-border/80 bg-card p-6 space-y-4">
+          <div className="rounded-lg border border-border/80 bg-card p-6 space-y-4">
             <h2 className="text-lg font-bold text-foreground">Sobre o Destino</h2>
             <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
               {destination.description}
@@ -271,10 +272,10 @@ function PublicDestinationDetailPage() {
                 <Link
                   key={h.id}
                   to={"/turismo" as any}
-                  className="rounded-xl border border-border/80 bg-card overflow-hidden hover:border-primary/50 transition-colors flex flex-col justify-between group"
+                  className="rounded-lg border border-border/80 bg-card overflow-hidden hover:border-primary/50 transition-colors flex flex-col justify-between group"
                 >
                   {h.cover_photo_url && (
-                    <div className="aspect-[16/10] w-full overflow-hidden bg-muted">
+                    <div className="aspect-video w-full overflow-hidden bg-muted">
                       <img
                         src={h.cover_photo_url}
                         alt={h.name}
@@ -286,7 +287,7 @@ function PublicDestinationDetailPage() {
                     <div>
                       <div className="flex items-center gap-1 text-amber-500 text-xs font-semibold">
                         <Star className="size-3 fill-amber-500" />
-                        <span>{h.stars}★</span>
+                        <span>{h.stars}</span>
                         <span className="text-muted-foreground ml-1">
                           • {h.regime_options?.[0] || "Hospedagem"}
                         </span>
@@ -298,9 +299,9 @@ function PublicDestinationDetailPage() {
 
                     <div className="pt-2 border-t border-border/60 flex items-center justify-between">
                       <span className="text-xs text-muted-foreground">Ver Detalhes</span>
-                      <Button size="sm" className="h-8 px-3 text-xs font-semibold rounded-lg">
+                      <span className="inline-flex items-center justify-center h-8 px-3 text-xs font-semibold rounded-lg bg-primary text-primary-foreground">
                         Conhecer
-                      </Button>
+                      </span>
                     </div>
                   </div>
                 </Link>

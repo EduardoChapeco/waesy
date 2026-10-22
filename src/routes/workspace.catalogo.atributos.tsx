@@ -200,7 +200,7 @@ function OptionGroupsPage() {
 
  return (
  <div className="space-y-6">
- <PageHeader
+ <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  eyebrow="Catálogo"
  title={semantics.modifiersLabel}
  actions={
@@ -317,7 +317,7 @@ function OptionGroupsPage() {
  </div>
 
  {/* SheetPage de Criação / Edição de Grupo de Opções */}
- <SheetPage
+ <SheetPage /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  open={open}
  onOpenChange={setOpen}
  title={form.watch("id") ? "Editar Grupo de Opções" : "Novo Grupo de Opções"}
@@ -371,7 +371,7 @@ function OptionGroupsPage() {
  key={preset.name}
  type="button"
  onClick={() => applyPreset(preset)}
- className="flex flex-col items-start p-3 rounded-lg border border-border/80 bg-background hover:bg-muted/40 hover:border-primary/40 transition-all text-left cursor-pointer group"
+ className="flex flex-col items-start p-3 rounded-lg border border-border/80 bg-background hover:bg-muted/40 hover:border-primary/40 transition-all text-left cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="flex items-center gap-2 w-full mb-1">
  <Icon className="size-3.5 text-primary shrink-0" />
@@ -625,7 +625,7 @@ function OptionItemCard({
  <button
  type="button"
  onClick={() => fileInputRef.current?.click()}
- className="p-1 rounded-md text-white hover:bg-white/20"
+ className="p-1 rounded-md text-white hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  title="Trocar Foto"
  >
  <Edit className="size-3" />
@@ -633,7 +633,7 @@ function OptionItemCard({
  <button
  type="button"
  onClick={() => form.setValue(`values.${index}.image_url`, null)}
- className="p-1 rounded-md text-destructive hover:bg-destructive/20"
+ className="p-1 rounded-md text-destructive hover:bg-destructive/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  title="Remover Foto"
  >
  <X className="size-3" />
@@ -645,7 +645,7 @@ function OptionItemCard({
  type="button"
  onClick={() => fileInputRef.current?.click()}
  disabled={isUploading}
- className="size-14 rounded-lg border border-dashed border-border/80 bg-muted/20 hover:bg-muted/50 flex flex-col items-center justify-center text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+ className="size-14 rounded-lg border border-dashed border-border/80 bg-muted/20 hover:bg-muted/50 flex flex-col items-center justify-center text-muted-foreground hover:text-foreground transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {isUploading ? (
  <Loader2 className="size-4 animate-spin text-primary" />
@@ -759,7 +759,7 @@ function OptionGroupTableRow({
  <button
  type="button"
  onClick={() => setIsExpanded(!isExpanded)}
- className="p-1 rounded-md text-muted-foreground hover:text-foreground"
+ className="p-1 rounded-md text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {isExpanded ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
  </button>
@@ -810,7 +810,7 @@ function OptionGroupTableRow({
  </div>
  <button
  type="button"
- className="text-xs text-muted-foreground hover:text-foreground font-semibold cursor-pointer"
+ className="text-xs text-muted-foreground hover:text-foreground font-semibold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  onClick={() => setIsExpanded(!isExpanded)}
  >
  {values.length} opções

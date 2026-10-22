@@ -120,7 +120,7 @@ export function ManualAppointmentModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-lg bg-card border border-border">
+      <DialogContent className="max-w-xl max-h-screen overflow-y-auto p-4 sm:p-6 rounded-lg bg-card border border-border">
         <DialogHeader className="space-y-1 text-left pb-3 border-b border-border/40">
           <DialogTitle className="text-base font-bold text-foreground">
             Novo Agendamento Manual (Recepção / Walk-in)
@@ -133,7 +133,7 @@ export function ManualAppointmentModal({
         <div className="space-y-4 py-2 text-xs">
           {/* Dados do Cliente */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold text-foreground">Nome do Cliente *</Label>
               <div className="relative">
                 <User className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
@@ -146,7 +146,7 @@ export function ManualAppointmentModal({
               </div>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold text-foreground">WhatsApp / Telefone *</Label>
               <div className="relative">
                 <Phone className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
@@ -162,7 +162,7 @@ export function ManualAppointmentModal({
 
           {/* Seleção do Serviço e Profissional */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold text-foreground">Serviço *</Label>
               <select
                 value={selectedServiceId}
@@ -180,7 +180,7 @@ export function ManualAppointmentModal({
               </select>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold text-foreground">Profissional / Recurso</Label>
               <select
                 value={selectedResourceId}
@@ -215,7 +215,7 @@ export function ManualAppointmentModal({
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold text-foreground block">Horário Disponível *</Label>
               {isLoadingSlots ? (
                 <div className="p-4 text-center text-xs text-muted-foreground">
@@ -226,7 +226,7 @@ export function ManualAppointmentModal({
                   Nenhum horário livre encontrado para este dia.
                 </div>
               ) : (
-                <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 max-h-36 overflow-y-auto no-scrollbar p-1">
+                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2 max-h-36 overflow-y-auto no-scrollbar p-1">
                   {slots.map((slotIso: string) => {
                     const slotTime = new Date(slotIso).toLocaleTimeString("pt-BR", {
                       hour: "2-digit",
@@ -239,8 +239,8 @@ export function ManualAppointmentModal({
                         key={slotIso}
                         type="button"
                         onClick={() => setSelectedSlot(slotIso)}
-                        className={cn(
-                          "h-9 rounded-lg text-xs font-mono font-bold border transition-all cursor-pointer flex items-center justify-center",
+                        className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                          "h-11 min-h-11 rounded-lg text-xs font-mono font-bold border transition-colors cursor-pointer flex items-center justify-center",
                           isSelected
                             ? "bg-primary text-primary-foreground border-primary shadow-xs"
                             : "bg-background border-border/60 text-foreground hover:bg-muted/50"
@@ -257,7 +257,7 @@ export function ManualAppointmentModal({
 
           {/* Pagamento & Observações */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold text-foreground">Status do Pagamento</Label>
               <select
                 value={paymentStatus}
@@ -269,7 +269,7 @@ export function ManualAppointmentModal({
               </select>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold text-foreground">Observações / Detalhes</Label>
               <Input
                 placeholder="Ex: Cliente tem alergia a xampu mentolado..."
@@ -287,7 +287,7 @@ export function ManualAppointmentModal({
             variant="outline"
             size="sm"
             onClick={handleClose}
-            className="h-10 rounded-lg text-xs font-semibold"
+            className="h-11 min-h-11 rounded-lg text-xs font-semibold"
           >
             Cancelar
           </Button>
@@ -296,7 +296,7 @@ export function ManualAppointmentModal({
             size="sm"
             disabled={!guestName.trim() || !guestPhone.trim() || !selectedSlot || createMutation.isPending}
             onClick={() => createMutation.mutate()}
-            className="h-10 rounded-lg text-xs font-bold bg-primary text-primary-foreground"
+            className="h-11 min-h-11 rounded-lg text-xs font-bold bg-primary text-primary-foreground"
           >
             {createMutation.isPending ? "Cadastrando..." : "Confirmar Agendamento"}
           </Button>

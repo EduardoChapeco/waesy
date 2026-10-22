@@ -142,7 +142,7 @@ export const SlideRendererEscamas: React.FC<SlideRendererEscamasProps> = ({
         .map((layer) => {
           const isSelected = selectedLayerId === layer.id;
           return (
-            <div
+            <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
               key={layer.id}
               onClick={(e) => {
                 e.stopPropagation();
@@ -150,7 +150,7 @@ export const SlideRendererEscamas: React.FC<SlideRendererEscamasProps> = ({
               }}
               className={`absolute cursor-pointer transition-all ${
                 isSelected ? "ring-4 ring-sky-400 shadow-2xl z-50 scale-105" : ""
-              }`}
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               style={{
                 left: `${layer.x}%`,
                 top: `${layer.y}%`,

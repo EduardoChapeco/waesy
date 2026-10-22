@@ -194,7 +194,7 @@ function CustomerSupportPage() {
                     onClick={() => setSelectedTicketId(t.id)}
                     className={`w-full text-left p-4 hover:bg-muted/40 active:bg-muted/60 transition-colors cursor-pointer ${
                       selectedTicketId === t.id ? "bg-muted/60 border-l-2 border-l-primary" : "border-l-2 border-l-transparent"
-                    }`}
+                    } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                   >
                     <div className="flex justify-between items-start mb-1">
                       <span className="font-semibold text-xs text-foreground truncate pr-2">{t.subject}</span>

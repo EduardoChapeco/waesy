@@ -134,10 +134,10 @@ export function BookingCalendar({ content }: BookingCalendarProps) {
  ) : (
  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
  {services.map((svc) => (
- <div
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  key={svc.id}
  onClick={() => setSelectedService(svc.id)}
- className={`p-4 border cursor-pointer transition-all ${selectedService === svc.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
+ className={`p-4 border cursor-pointer transition-all ${selectedService === svc.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <h3 className="font-semibold text-lg">{svc.title}</h3>
  <p className="text-sm text-muted-foreground mt-1 line-clamp-2">

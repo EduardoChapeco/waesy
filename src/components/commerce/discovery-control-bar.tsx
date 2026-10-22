@@ -177,7 +177,7 @@ export function DiscoveryControlBar({
             <button
               type="button"
               onClick={() => onSearchChange("")}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/80 transition-colors cursor-pointer"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/80 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label="Limpar busca"
             >
               <X size={14} weight="bold" />
@@ -237,7 +237,7 @@ export function DiscoveryControlBar({
               <button
                 type="button"
                 onClick={() => onViewModeChange("feed")}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "h-full px-3 rounded-md text-xs font-semibold transition-colors cursor-pointer flex items-center justify-center",
                   viewMode === "feed"
                     ? "bg-card text-foreground shadow-xs"
@@ -254,7 +254,7 @@ export function DiscoveryControlBar({
               <button
                 type="button"
                 onClick={() => onViewModeChange("grid")}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "h-full px-3 rounded-md text-xs font-semibold transition-colors cursor-pointer flex items-center justify-center",
                   viewMode === "grid"
                     ? "bg-card text-foreground shadow-xs"
@@ -271,7 +271,7 @@ export function DiscoveryControlBar({
               <button
                 type="button"
                 onClick={() => onViewModeChange("list")}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "h-full px-3 rounded-md text-xs font-semibold transition-colors cursor-pointer flex items-center justify-center",
                   viewMode === "list"
                     ? "bg-card text-foreground shadow-xs"
@@ -293,8 +293,9 @@ export function DiscoveryControlBar({
           role="dialog"
           aria-modal="true"
           aria-label="Filtros e Visualização"
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-xs animate-in fade-in duration-150"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-foreground/60 backdrop-blur-xs animate-in fade-in duration-150 motion-reduce:animate-none"
         >
+          /* design-lint-ignore DL-07 reason:"Sombra de elevação de diálogo modal per B.8" expiry:"2027-12-31" */
           <div className="w-full h-dvh sm:h-auto sm:max-h-full sm:max-w-lg bg-background sm:rounded-lg flex flex-col overflow-hidden shadow-2xl">
             <div className="px-4 h-14 border-b border-border/60 flex items-center justify-between shrink-0">
               <span className="text-base font-bold text-foreground">
@@ -304,7 +305,7 @@ export function DiscoveryControlBar({
                 type="button"
                 onClick={() => setIsMlFilterOpen(false)}
                 aria-label="Fechar filtros"
-                className="size-11 rounded-lg inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted"
+                className="size-11 rounded-lg inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <X size={20} weight="bold" />
               </button>
@@ -326,7 +327,7 @@ export function DiscoveryControlBar({
                           key={mode}
                           type="button"
                           onClick={() => onViewModeChange(mode)}
-                          className={cn(
+                          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                             "h-11 rounded-lg border text-xs font-semibold flex items-center justify-center gap-2 transition-colors",
                             active
                               ? "border-primary bg-primary/10 text-primary font-bold"
@@ -359,7 +360,7 @@ export function DiscoveryControlBar({
                           key={cat.id}
                           type="button"
                           onClick={() => onSelectCategory(cat.id)}
-                          className={cn(
+                          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                             "h-11 px-3 rounded-lg border text-xs font-semibold flex items-center gap-2 text-left transition-colors truncate",
                             isActive
                               ? "border-primary bg-primary/10 text-primary font-bold"
@@ -387,7 +388,7 @@ export function DiscoveryControlBar({
                         key={f.id}
                         type="button"
                         onClick={f.onToggle}
-                        className={cn(
+                        className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                           "h-11 px-4 rounded-lg border text-xs font-semibold transition-colors",
                           f.active
                             ? "border-primary bg-primary/10 text-primary font-bold"
@@ -432,7 +433,7 @@ export function DiscoveryControlBar({
         <div className="relative -mx-2 px-2 sm:mx-0 sm:px-0">
           <div
             ref={tabsContainerRef}
-            className="flex items-center overflow-x-auto snap-x snap-mandatory scrollbar-hide no-scrollbar touch-pan-x gap-2 py-1 pr-6 w-full focus:outline-none"
+            className="tab-list flex items-center overflow-x-auto snap-x snap-mandatory scrollbar-hide no-scrollbar touch-pan-x gap-2 py-1 pr-6 w-full focus:outline-none"
           >
             {categories.map((chip) => {
               const isActive = activeCategory === chip.id || (!activeCategory && chip.id === "todos");
@@ -446,6 +447,7 @@ export function DiscoveryControlBar({
                     ref={isActive ? (el) => { activeTabRef.current = el as any; } : undefined}
                     className="snap-start shrink-0"
                   >
+                    {/* design-lint-ignore DL-15 reason:"Componente de chip de mídia que encapsula anel de foco interno" expiry:"2027-12-31" */}
                     <DynamicMediaChip
                       id={chip.id}
                       label={cleanLabel}
@@ -474,7 +476,7 @@ export function DiscoveryControlBar({
                   type="button"
                   onClick={() => onSelectCategory(chip.id)}
                   className={cn(
-                    "snap-start h-9 px-3 rounded-lg border text-xs font-medium shrink-0 flex items-center gap-2 transition-colors cursor-pointer select-none whitespace-nowrap active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                    "snap-start h-11 min-h-11 px-4 rounded-lg border text-xs font-medium shrink-0 flex items-center gap-2 transition-colors motion-reduce:transition-none cursor-pointer select-none whitespace-nowrap active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                     isActive
                       ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                       : "bg-muted/60 hover:bg-muted text-foreground/80 hover:text-foreground border-transparent"
@@ -513,7 +515,7 @@ export function DiscoveryControlBar({
       {/* ── 3. FILTROS RÁPIDOS ADICIONAIS (Frete Grátis, Ofertas Relâmpago, etc.) ── */}
       {fastFilters.length > 0 && (
         <div className="relative -mx-2 px-2 sm:mx-0 sm:px-0">
-          <div className="flex items-center overflow-x-auto snap-x snap-mandatory scrollbar-hide no-scrollbar gap-2 pt-1 pr-6">
+          <div className="tab-list flex items-center overflow-x-auto snap-x snap-mandatory scrollbar-hide no-scrollbar gap-2 pt-1 pr-6">
             {fastFilters.map((filter) => {
               const Icon = filter.icon;
               const cleanFilterLabel = filter.label.replace(/\s+&\s+/g, " e ");
@@ -523,7 +525,7 @@ export function DiscoveryControlBar({
                   type="button"
                   onClick={filter.onToggle}
                   className={cn(
-                    "snap-start h-9 sm:h-10 px-3 sm:px-4 rounded-lg text-xs font-semibold shrink-0 transition-colors flex items-center gap-2 cursor-pointer whitespace-nowrap border active:scale-98 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                    "snap-start h-11 min-h-11 px-4 rounded-lg text-xs font-semibold shrink-0 transition-colors motion-reduce:transition-none flex items-center gap-2 cursor-pointer whitespace-nowrap border active:scale-98 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                     filter.active
                       ? "bg-primary/10 border-primary/30 text-primary font-bold"
                       : "bg-muted/60 border-transparent text-muted-foreground hover:text-foreground"

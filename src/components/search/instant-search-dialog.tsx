@@ -125,7 +125,7 @@ export function InstantSearchDialog({ open, onOpenChange }: InstantSearchDialogP
  <button
  type="button"
  onClick={() => setQuery("")}
- className="p-1 rounded-full text-muted-foreground hover:bg-muted"
+ className="p-1 rounded-full text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <X className="size-4" />
  </button>
@@ -144,7 +144,7 @@ export function InstantSearchDialog({ open, onOpenChange }: InstantSearchDialogP
  <button
  type="button"
  onClick={handleClearHistory}
- className="text-[11px] text-muted-foreground hover:text-foreground"
+ className="text-[11px] text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  Limpar
  </button>
@@ -155,7 +155,7 @@ export function InstantSearchDialog({ open, onOpenChange }: InstantSearchDialogP
  key={term}
  type="button"
  onClick={() => handleSelectTerm(term)}
- className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-border/60 bg-muted/30 text-xs text-foreground hover:bg-muted/70 transition-colors"
+ className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-border/60 bg-muted/30 text-xs text-foreground hover:bg-muted/70 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Clock className="size-3 text-muted-foreground" />
  <span>{term}</span>
@@ -178,7 +178,7 @@ export function InstantSearchDialog({ open, onOpenChange }: InstantSearchDialogP
  key={cat.label}
  to={cat.to as any}
  onClick={() => onOpenChange(false)}
- className="p-3 rounded-lg border border-border/60 bg-muted/20 hover:bg-muted/60 transition-all text-xs font-semibold text-foreground text-center"
+ className="p-3 rounded-lg border border-border/60 bg-muted/20 hover:bg-muted/60 transition-all text-xs font-semibold text-foreground text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {cat.label}
  </Link>
@@ -205,7 +205,7 @@ export function InstantSearchDialog({ open, onOpenChange }: InstantSearchDialogP
  saveRecentSearch(store.name);
  onOpenChange(false);
  }}
- className="p-3 rounded-lg border border-border/60 hover:bg-muted/40 transition-colors flex items-center gap-3"
+ className="p-3 rounded-lg border border-border/60 hover:bg-muted/40 transition-colors flex items-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="size-10 rounded-lg overflow-hidden bg-muted shrink-0 flex items-center justify-center">
  {store.logo_url ? (
@@ -253,7 +253,7 @@ export function InstantSearchDialog({ open, onOpenChange }: InstantSearchDialogP
  saveRecentSearch(prod.title);
  onOpenChange(false);
  }}
- className="p-2 rounded-lg hover:bg-muted/40 transition-colors flex items-center justify-between gap-3"
+ className="p-2 rounded-lg hover:bg-muted/40 transition-colors flex items-center justify-between gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="flex items-center gap-3 min-w-0">
  <div className="size-10 rounded-lg overflow-hidden bg-muted shrink-0 flex items-center justify-center">

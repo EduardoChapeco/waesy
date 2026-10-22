@@ -92,7 +92,7 @@ export function ReviewModal({
  key={star}
  type="button"
  onClick={() => setRating(star)}
- className="p-1 transition-transform hover:scale-115 cursor-pointer focus:outline-none"
+ className="p-1 transition-transform hover:scale-115 cursor-pointer focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  aria-label={`Nota ${star} estrelas`}
  >
  <Star

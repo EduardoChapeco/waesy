@@ -82,7 +82,7 @@ export function DestinationPicker({
  <button
  type="button"
  onClick={() => setCustomMode(!customMode)}
- className="text-[11px] font-semibold text-primary hover:underline cursor-pointer"
+ className="text-[11px] font-semibold text-primary hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {customMode ? "Escolher Página Pronta" : "Digitar Link Customizado"}
  </button>

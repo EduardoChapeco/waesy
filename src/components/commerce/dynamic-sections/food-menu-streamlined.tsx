@@ -135,7 +135,7 @@ export function FoodMenuStreamlinedSection({
  key={cat}
  type="button"
  onClick={() => setActiveCategory(cat)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-4 py-2 rounded-full text-xs font-semibold transition-all shrink-0 cursor-pointer",
  isSelected
  ? "bg-primary text-primary-foreground shadow-2xs"
@@ -193,7 +193,7 @@ export function FoodMenuStreamlinedSection({
  e.stopPropagation();
  handleAddItem(item);
  }}
- className="absolute bottom-1.5 right-1.5 size-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center cursor-pointer shadow-md hover:scale-110 active:scale-95 transition-all"
+ className="absolute bottom-1.5 right-1.5 size-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center cursor-pointer shadow-md hover:scale-110 active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  title="Adicionar ao Pedido"
  >
  <Plus className="size-3.5" />

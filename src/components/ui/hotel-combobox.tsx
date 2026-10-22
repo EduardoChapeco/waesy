@@ -199,7 +199,7 @@ function HotelPickerPanel({
             <button
               type="button"
               onClick={() => setSearchQuery("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 size-6 rounded flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer"
+              className="absolute right-3 top-1/2 -translate-y-1/2 size-6 rounded flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label="Limpar busca"
             >
               <X className="size-3.5" />
@@ -209,7 +209,7 @@ function HotelPickerPanel({
       </div>
 
       {/* Chips Rápidos de Filtro */}
-      <div className="px-4 flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
+      <div className="px-4 flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
         {[
           { id: "all", label: "Todos" },
           { id: "all_inclusive", label: "All Inclusive" },
@@ -221,7 +221,7 @@ function HotelPickerPanel({
             type="button"
             onClick={() => setActiveFilter(chip.id)}
             className={cn(
-              "shrink-0 h-8 px-2.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+              "shrink-0 h-8 px-3 rounded-lg text-xs font-medium border transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
               activeFilter === chip.id
                 ? "bg-primary text-primary-foreground border-primary"
                 : "bg-muted/30 text-muted-foreground border-border/60 hover:text-foreground",
@@ -275,7 +275,7 @@ function HotelPickerPanel({
                   onClose();
                 }}
                 className={cn(
-                  "w-full min-h-11 flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-left cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  "w-full min-h-11 flex items-center justify-between gap-3 px-3 py-3 rounded-lg text-left cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   isSelected
                     ? "bg-primary/10 text-primary border border-primary/30"
                     : "hover:bg-muted/70 text-foreground border border-transparent",
@@ -293,20 +293,20 @@ function HotelPickerPanel({
                     <HotelIcon className="size-4" />
                   </div>
                   <div className="flex flex-col min-w-0">
-                    <div className="flex items-center gap-1.5 flex-wrap">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-semibold truncate leading-tight">
                         {hotel.name}
                       </span>
                       {hotel.stars > 0 && (
                         <span className="inline-flex items-center text-[11px] font-semibold text-amber-500">
-                          <Star className="size-3 fill-amber-500 mr-0.5" />
+                          <Star className="size-3 fill-amber-500 mr-1" />
                           {hotel.stars}★
                         </span>
                       )}
                       {hotel.is_canonical && (
                         <Badge
                           variant="secondary"
-                          className="text-[9px] px-1.5 py-0 h-4 bg-primary/10 text-primary border-primary/20"
+                          className="text-[9px] px-2 py-0 h-4 bg-primary/10 text-primary border-primary/20"
                         >
                           Oficial
                         </Badge>
@@ -483,13 +483,13 @@ export function HotelCombobox({
   };
 
   return (
-    <div className={cn("flex flex-col gap-1.5 w-full", className)}>
+    <div className={cn("flex flex-col gap-2 w-full", className)}>
       {label && (
         <Label
           htmlFor={id}
           className="text-xs font-semibold text-foreground flex items-center justify-between"
         >
-          <span className="flex items-center gap-1.5">
+          <span className="flex items-center gap-2">
             <Sliders className="size-3 text-primary" />
             <span>{label}</span>
             {required && <span className="text-destructive">*</span>}
@@ -521,10 +521,10 @@ export function HotelCombobox({
             disabled && "opacity-50 cursor-not-allowed bg-muted",
           )}
         >
-          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
             <HotelIcon className="size-4 shrink-0 text-muted-foreground" />
             {selectedHotel ? (
-              <div className="flex items-center gap-1.5 min-w-0">
+              <div className="flex items-center gap-2 min-w-0">
                 <span className="text-sm font-semibold text-foreground truncate">
                   {selectedHotel.name}
                 </span>
@@ -574,7 +574,7 @@ export function HotelCombobox({
         {!isMobile && isOpen && (
           <div
             ref={popoverRef}
-            className="absolute z-50 left-0 right-0 top-12 mt-1 rounded-lg border border-border/80 bg-popover text-popover-foreground shadow-xl animate-in fade-in-0 zoom-in-95"
+            className="absolute z-50 left-0 right-0 top-12 mt-1 rounded-lg border border-border/80 bg-popover text-popover-foreground shadow-xs animate-in fade-in-0 zoom-in-95"
             style={{ minWidth: "340px" }}
           >
             <HotelPickerPanel

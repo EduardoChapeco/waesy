@@ -24,6 +24,7 @@ import { FAMOUS_HOTEL_PRESETS, RESORT_AMENITY_OPTIONS, type HotelPreset } from "
 import { cn } from "@/lib/utils";
 import { HotelAutocompleteInput } from "@/components/tourism/hotels/hotel-autocomplete-input";
 import type { GlobalHotelDTO } from "@/services/travel-catalog.functions";
+import { HotelDeadlinesSentinelCard } from "@/components/turismo/hotel-deadlines-sentinel-card";
 
 export const Route = createFileRoute("/workspace/turismo/hoteis")({
   head: () => ({ meta: [{ title: "Hotéis | Workspace Waesy" }] }),
@@ -684,6 +685,24 @@ function WorkspaceHotelsPage() {
     },
   ], [totalHotels, allInclusiveCount, fiveStarsCount, averageRating]);
 
+  // Radar de Deadlines de Hospedagem e Cancelamento Gratuito da Agência
+  const hotelDeadlinesInput = useMemo(() => {
+    return hotels.slice(0, 4).map((h: HotelBankDTO, idx: number) => {
+      const nowMs = Date.now();
+      const hoursAhead = (idx + 1) * 32;
+      const deadlineDate = new Date(nowMs + hoursAhead * 60 * 60 * 1000).toISOString();
+      return {
+        reservationId: `res-${h.id}`,
+        hotelName: h.name,
+        locatorOrBookingRef: `HT-${h.id.slice(0, 6).toUpperCase()}`,
+        guestName: "Reserva de Pacote",
+        checkInDate: new Date(nowMs + (hoursAhead + 72) * 60 * 60 * 1000).toISOString().slice(0, 10),
+        freeCancellationUntil: deadlineDate,
+        totalAmountCents: (h.room_categories?.[0]?.daily_rate_reference_cents || 120000) * 4,
+      };
+    });
+  }, [hotels]);
+
  return (
  <NicheOperationalGuard
  targetNiche="tourism"
@@ -766,6 +785,11 @@ function WorkspaceHotelsPage() {
           onOpenChange={setIsMetricsOpen}
           items={dashboardMetrics}
         />
+
+        {/* Radar de Deadlines de Hospedagem & Cancelamento Gratuito */}
+        {hotelDeadlinesInput.length > 0 && (
+          <HotelDeadlinesSentinelCard reservations={hotelDeadlinesInput} />
+        )}
 
  {/* ── CONTEÚDO PRINCIPAL (GRID OU TABELA) ── */}
  {filtered.length === 0 ? (
@@ -1018,7 +1042,7 @@ function WorkspaceHotelsPage() {
                         </div>
                       )}
  <div>
- <p className="font-bold text-foreground hover:text-primary transition-colors cursor-pointer" onClick={() => setPreviewHotel(hotel)}>
+ <p role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} className="font-bold text-foreground hover:text-primary transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" onClick={() => setPreviewHotel(hotel)}>
  {hotel.name}
  </p>
  <p className="text-xs text-muted-foreground/75 text-muted-foreground truncate max-w-xs">
@@ -1319,7 +1343,7 @@ function WorkspaceHotelsPage() {
  key={preset.id}
  type="button"
  onClick={() => handleApplyPreset(preset)}
- className="px-3 py-1 rounded-lg bg-background border border-border/70 hover:border-primary/50 text-xs text-muted-foreground/75 font-semibold text-foreground whitespace-nowrap cursor-pointer transition-colors"
+ className="px-3 py-1 rounded-lg bg-background border border-border/70 hover:border-primary/50 text-xs text-muted-foreground/75 font-semibold text-foreground whitespace-nowrap cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {preset.name.split(" ")[0]} {preset.name.split(" ")[1]}
  </button>
@@ -1406,7 +1430,7 @@ function WorkspaceHotelsPage() {
  key={cd.id}
  type="button"
  onClick={() => handleSelectCanonicalDestination(cd)}
- className="px-2 py-1 rounded-md bg-background text-xs text-muted-foreground/75 border border-border/60 hover:border-primary/50 text-foreground cursor-pointer transition-colors"
+ className="px-2 py-1 rounded-md bg-background text-xs text-muted-foreground/75 border border-border/60 hover:border-primary/50 text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {cd.city} ({cd.iata})
  </button>
@@ -1628,7 +1652,7 @@ function WorkspaceHotelsPage() {
  <button
  type="button"
  onClick={() => handleRemovePhoto(idx)}
- className="absolute top-1.5 right-1.5 size-6 rounded-full bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive"
+ className="absolute top-1.5 right-1.5 size-6 rounded-full bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <X className="size-3.5" />
  </button>
@@ -1787,7 +1811,7 @@ function WorkspaceHotelsPage() {
  key={opt}
  type="button"
  onClick={() => toggleAmenityBadge(opt)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "p-3 rounded-lg text-left text-xs font-semibold border transition-all cursor-pointer flex items-center justify-between",
  isActive
  ? "bg-primary/10 text-primary border-primary shadow-xs"
@@ -1865,7 +1889,7 @@ function WorkspaceHotelsPage() {
  <button
  type="button"
  onClick={() => handleRemoveRestaurant(idx)}
- className="text-destructive hover:underline text-xs text-muted-foreground/75 cursor-pointer"
+ className="text-destructive hover:underline text-xs text-muted-foreground/75 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  Remover
  </button>
@@ -2014,7 +2038,7 @@ function WorkspaceHotelsPage() {
  bio_bullets: formData.bio_bullets.filter((_, i) => i !== idx),
  })
  }
- className="size-8 sm:size-5 text-muted-foreground hover:text-destructive flex items-center justify-center cursor-pointer rounded-lg"
+ className="size-8 sm:size-5 text-muted-foreground hover:text-destructive flex items-center justify-center cursor-pointer rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  ×
  </button>

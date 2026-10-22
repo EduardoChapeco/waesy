@@ -346,7 +346,7 @@ function KDSDashboard() {
  key={f}
  type="button"
  onClick={() => setOriginFilter(f)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-3 py-1 rounded-lg transition-colors cursor-pointer",
  originFilter === f
  ? "bg-background text-foreground shadow-2xs"
@@ -376,7 +376,7 @@ function KDSDashboard() {
  key={station.id}
  type="button"
  onClick={() => setStationFilter(station.id)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "flex items-center gap-2 px-3 py-1 rounded-lg border text-xs font-bold transition-all cursor-pointer",
  isActive
  ? "bg-background border-border shadow-2xs text-foreground"
@@ -712,7 +712,7 @@ function KitchenTicketCard({
  type="button"
  onClick={(e) => { e.stopPropagation(); onPrint(); }}
  title="Imprimir comanda térmica"
- className="size-10 sm:size-8 rounded-lg bg-white/15 hover:bg-white/30 flex items-center justify-center text-white transition-colors cursor-pointer"
+ className="size-10 sm:size-8 rounded-lg bg-white/15 hover:bg-white/30 flex items-center justify-center text-white transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Printer className="size-4" />
  </button>
@@ -779,7 +779,7 @@ function KitchenTicketCard({
  <div className="flex items-start gap-3">
  <button
  type="button"
- className="p-1 -m-1 text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
+ className="p-1 -m-1 text-muted-foreground hover:text-foreground cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  onClick={(e) => { e.stopPropagation(); onToggleCheck(itemKey); }}
  aria-label="Marcar item preparado"
  >

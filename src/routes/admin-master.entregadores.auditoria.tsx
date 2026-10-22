@@ -132,7 +132,7 @@ function AdminCourierAuditPage() {
               selectedStatus === tab.id
                 ? "bg-foreground text-background font-bold shadow-xs"
                 : "bg-muted/40 text-muted-foreground hover:text-foreground"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             {tab.label}
           </button>

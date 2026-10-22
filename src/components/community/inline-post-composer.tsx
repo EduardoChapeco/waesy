@@ -491,7 +491,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
               <button
                 type="button"
                 onClick={() => setPostAsCreator(false)}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "h-7 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer",
                   !postAsCreator
                     ? "bg-background text-foreground shadow-2xs font-bold"
@@ -503,7 +503,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
               <button
                 type="button"
                 onClick={() => setPostAsCreator(true)}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "h-7 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1",
                   postAsCreator
                     ? "bg-background text-foreground shadow-2xs font-bold"
@@ -524,7 +524,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
                 setIsExpanded(false);
               }
             }}
-            className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors cursor-pointer"
+            className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             title="Fechar editor"
           >
             <X size={16} />
@@ -542,7 +542,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
               key={opt.id}
               type="button"
               onClick={() => setSelectedTemplate(opt.id)}
-              className={cn(
+              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                 "h-8 px-3 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-2 select-none",
                 isActive
                   ? "bg-foreground text-background font-bold shadow-2xs"
@@ -696,7 +696,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
               <button
                 type="button"
                 onClick={() => removeMedia(index)}
-                className="absolute top-1.5 right-1.5 size-6 bg-black/80 text-white rounded-lg flex items-center justify-center hover:bg-black z-30 transition-all hover:scale-110 cursor-pointer"
+                className="absolute top-1.5 right-1.5 size-6 bg-black/80 text-white rounded-lg flex items-center justify-center hover:bg-black z-30 transition-all hover:scale-110 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label="Remover mídia"
               >
                 <X size={12} weight="bold" />

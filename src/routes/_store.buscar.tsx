@@ -710,7 +710,7 @@ function SearchPage() {
                         setInput(term);
                         handleSearch(term);
                       }}
-                      className="cursor-pointer"
+                      className="cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       {term}
                     </button>
@@ -720,7 +720,7 @@ function SearchPage() {
                         e.stopPropagation();
                         removeRecentSearch(term);
                       }}
-                      className="size-4 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer"
+                      className="size-4 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       title="Remover termo"
                     >
                       <X className="size-3" />
@@ -749,7 +749,7 @@ function SearchPage() {
                         setInput(tagLabel);
                         handleSearch(tagLabel);
                       }}
-                      className="px-3 py-2 rounded-lg text-xs font-semibold bg-muted/40 text-foreground border border-border/40 hover:bg-muted transition-all cursor-pointer select-none active:scale-95"
+                      className="px-3 py-2 rounded-lg text-xs font-semibold bg-muted/40 text-foreground border border-border/40 hover:bg-muted transition-all cursor-pointer select-none active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       #{tagLabel}
                     </button>
@@ -775,7 +775,7 @@ function SearchPage() {
                       setInput(term);
                       handleSearch(term);
                     }}
-                    className="px-4 py-2 rounded-lg text-xs font-semibold bg-card border border-border/60 hover:border-primary/40 hover:text-primary text-foreground transition-all cursor-pointer select-none active:scale-95"
+                    className="px-4 py-2 rounded-lg text-xs font-semibold bg-card border border-border/60 hover:border-primary/40 hover:text-primary text-foreground transition-all cursor-pointer select-none active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     {term}
                   </button>

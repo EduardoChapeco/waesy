@@ -235,7 +235,20 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
     navigate({ to: "/copilot" as any });
   };
 
-  if (currentPath.startsWith("/copilot")) return null;
+  const isCopilotPage = currentPath.startsWith("/copilot");
+  const isDetailPage =
+    (currentPath.startsWith("/agendar/") && currentPath !== "/agendar") ||
+    (currentPath.startsWith("/classificados/") && !currentPath.includes("/novo")) ||
+    currentPath.startsWith("/produto/") ||
+    currentPath.startsWith("/evento/") ||
+    (currentPath.startsWith("/hospedagem/") && currentPath !== "/hospedagem") ||
+    (currentPath.startsWith("/turismo/") && currentPath !== "/turismo") ||
+    currentPath.startsWith("/imoveis/") ||
+    currentPath.startsWith("/veiculos/") ||
+    currentPath.startsWith("/vagas/") ||
+    (currentPath.startsWith("/empregos/") && currentPath !== "/empregos");
+
+  if (isCopilotPage || isDetailPage) return null;
 
   return (
     <>

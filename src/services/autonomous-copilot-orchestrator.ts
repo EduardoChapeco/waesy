@@ -15,6 +15,7 @@ import { getServerIdentity } from "@/lib/server-access";
 import { harvestAndPersistPlaces } from "./mining/places-harvester";
 import { harvestAndPersistDataJudProcess } from "./mining/datajud-harvester";
 import { enrichCnpj } from "@/lib/mining/cnpj-enrichment.engine";
+import { runWebTask } from "./web-agent.functions";
 import { executeAutomatedNewsHarvest } from "./mining/automated-harvest";
 import { resolveCityAndState } from "@/lib/mining/geo-resolver";
 import {
@@ -45,6 +46,7 @@ export type CopilotTaskDomain =
   | "builder_composition"
   | "sheet_generator"
   | "document_pdf"
+  | "web_research"
   | "general_curation";
 
 export interface FragmentedPromptTask {
@@ -57,6 +59,8 @@ export interface FragmentedPromptTask {
   archetype?: "site" | "landing" | "biolink" | "document" | "presentation";
   requestedFormat: "spreadsheet" | "dashboard" | "document" | "builder" | "text";
   rawPrompt: string;
+  /** URL pública citada no prompt (domínio web_research). */
+  startUrl?: string;
 }
 
 export interface AutonomousCopilotResult {
@@ -109,6 +113,18 @@ export function fragmentAndOptimizePrompt(
 
   // Extração de Número de Processo CNJ (NNNNNNN-DD.AAAA.J.TR.OOOO)
   const cnjMatch = clean.match(/\b\d{7}-?\d{2}\.?\d{4}\.?\d\.?\d{2}\.?\d{4}\b/);
+
+  // URL pública no prompt (sem CNPJ/CNJ): pesquisa web guiada pelo agente de leitura.
+  const urlMatch = clean.match(/https?:\/\/[^\s<>"')]+/i);
+  if (urlMatch && !cnpjMatch && !cnjMatch) {
+    return {
+      domain: "web_research",
+      targetQuery: clean.replace(urlMatch[0], "").trim() || clean,
+      startUrl: urlMatch[0],
+      requestedFormat: "text",
+      rawPrompt: clean,
+    };
+  }
 
   // Extração de Cidade
   const ignoredWords = new Set([
@@ -835,6 +851,29 @@ export async function executeAutonomousCopilotTask(
 
     summaryMessage = `Localizei ${rows.length} estabelecimentos em ${task.city} para "${task.targetQuery}". Estruturei a planilha abaixo com os contatos e endereços para você conferir:`;
     tokensSaved = rows.length * 150;
+  } else if (task.domain === "web_research" && task.startUrl) {
+    steps.push({
+      id: `step-3-${taskId.slice(0, 8)}`,
+      type: "tool",
+      label: "Leitura de Página Web",
+      detail: `Lendo ${task.startUrl} dentro da política de domínios`,
+      status: "running",
+      startedAt: new Date().toISOString(),
+    });
+
+    if (!identity?.id) {
+      steps[steps.length - 1].status = "failed";
+      summaryMessage = "Entre na sua conta para usar a pesquisa web.";
+    } else {
+      const web = await runWebTask(task.targetQuery || task.rawPrompt, task.startUrl, 4);
+      steps[steps.length - 1].status = web.status === "finished" ? "completed" : "failed";
+      steps[steps.length - 1].completedAt = new Date().toISOString();
+      summaryMessage =
+        web.status === "finished" && web.answer
+          ? web.answer
+          : web.error || "Não encontrei a informação nas páginas permitidas.";
+      tokensSaved = 0;
+    }
   } else if (task.domain === "cnpj_company" && task.cnpj) {
     steps.push({
       id: `step-3-${taskId.slice(0, 8)}`,

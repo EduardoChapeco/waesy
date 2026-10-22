@@ -583,7 +583,7 @@ function CarteiraClientesPage() {
                             <button
                               type="button"
                               onClick={() => openWhatsApp(c.phone, c.fullName)}
-                              className="font-mono text-xs text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 cursor-pointer"
+                              className="font-mono text-xs text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                               title="Conversar no WhatsApp"
                             >
                               <MessageCircle className="size-3.5 shrink-0" />

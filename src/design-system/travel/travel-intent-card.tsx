@@ -46,7 +46,7 @@ export function TravelIntentCard({
           <button
             type="button"
             onClick={onEdit}
-            className="text-2xs font-medium text-primary hover:underline cursor-pointer"
+            className="text-2xs font-medium text-primary hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             Editar Critérios
           </button>

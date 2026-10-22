@@ -232,7 +232,7 @@ export function DigitalCompanionCard({
               activeTab === "visual"
                 ? "bg-card text-foreground "
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             <FileText className="size-4" />
             <span>Ficha Visual (9:16)</span>
@@ -245,7 +245,7 @@ export function DigitalCompanionCard({
               activeTab === "rules"
                 ? "bg-card text-foreground "
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             <Info className="size-4" />
             <span>Orientações e Regras</span>
@@ -258,7 +258,7 @@ export function DigitalCompanionCard({
               activeTab === "emergency"
                 ? "bg-card text-foreground "
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             <Siren className="size-4 text-rose-500" />
             <span>Contatos e Apoio</span>
@@ -271,7 +271,7 @@ export function DigitalCompanionCard({
               activeTab === "whatsapp"
                 ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-bold border border-emerald-500/20"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             <WhatsappLogo className="size-4" weight="fill" />
             <span>WhatsApp</span>

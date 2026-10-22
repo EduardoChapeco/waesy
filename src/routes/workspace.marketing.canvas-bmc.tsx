@@ -274,7 +274,7 @@ export function BusinessModelCanvasPage() {
                   <button
                     type="button"
                     onClick={() => handleRemoveItem(key, item.id)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-muted-foreground hover:text-destructive"
+                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     title="Remover item"
                   >
                     <Trash2 className="h-3.5 w-3.5" />

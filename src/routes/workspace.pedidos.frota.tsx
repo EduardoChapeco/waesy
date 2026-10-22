@@ -226,7 +226,7 @@ function FrotaEntregasPage() {
  activeTab === "dispatches"
  ? "bg-background text-foreground "
  : "text-muted-foreground hover:text-foreground"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  Despachos Ativos
  </button>
@@ -237,7 +237,7 @@ function FrotaEntregasPage() {
  activeTab === "pricing"
  ? "bg-background text-foreground "
  : "text-muted-foreground hover:text-foreground"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  Tabelas de Tarifas ({priceTables.length})
  </button>

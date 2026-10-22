@@ -1336,7 +1336,7 @@ function AnunciosWorkspacePage() {
                   isListeningVoice
                     ? "bg-destructive text-destructive-foreground"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                }`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 {isListeningVoice ? <MicOff className="size-4" /> : <Mic className="size-4" />}
               </button>
@@ -1693,7 +1693,7 @@ function AnunciosWorkspacePage() {
                         formFormat === fmt.id
                           ? "border-primary bg-primary/5 text-primary font-bold"
                           : "border-border/60 hover:bg-muted/30 text-muted-foreground"
-                      }`}
+                      } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                     >
                       <p className="text-xs">{fmt.title}</p>
                     </button>

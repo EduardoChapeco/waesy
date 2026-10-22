@@ -323,14 +323,14 @@ function WmsExpedicaoPage() {
             {batches.map((batch: any) => {
               const isSelected = selectedBatch?.id === batch.id;
               return (
-                <div 
+                <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} 
                   key={batch.id} 
                   onClick={() => setSelectedBatchId(batch.id)}
                   className={`p-4 rounded-lg border transition-all cursor-pointer select-none space-y-3 ${
                     isSelected 
                       ? "bg-primary/5 border-primary shadow-xs ring-2 ring-primary/20" 
                       : "bg-muted/40 border-border hover:border-primary/40"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-mono font-bold text-sm text-primary">{batch.batch_code}</span>
@@ -401,7 +401,7 @@ function WmsExpedicaoPage() {
                 onClick={() => setChannelFilter(ch)}
                 className={`h-10 sm:h-8 px-4 rounded-lg sm:rounded-lg text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
                   channelFilter === ch ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:text-foreground"
-                }`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 {ch === "all" ? "Todos" : ch === "mercadolivre" ? "Mercado Livre" : ch === "ifood" ? "iFood" : "Shopee"}
               </button>
@@ -464,7 +464,7 @@ function WmsExpedicaoPage() {
               <button
                 type="button"
                 onClick={toggleSelectAllOrders}
-                className="text-primary hover:underline cursor-pointer"
+                className="text-primary hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {selectedOrderIdsForBatch.length === pendingOrdersForPicking.length
                   ? "Desmarcar Todos"
@@ -481,12 +481,12 @@ function WmsExpedicaoPage() {
                 pendingOrdersForPicking.map((ord: any) => {
                   const isChecked = selectedOrderIdsForBatch.includes(ord.id);
                   return (
-                    <div
+                    <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                       key={ord.id}
                       onClick={() => toggleOrderSelection(ord.id)}
                       className={`p-3 rounded-lg flex items-center justify-between cursor-pointer transition-colors ${
                         isChecked ? "bg-primary/10 border border-primary/30" : "hover:bg-muted/50"
-                      }`}
+                      } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                     >
                       <div className="flex items-center gap-3">
                         <div

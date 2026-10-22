@@ -147,7 +147,7 @@ export function ChatListItem({
             setOffsetX(0);
             onArchive(item.id);
           }}
-          className="flex-1 bg-muted-foreground/80 hover:bg-muted-foreground text-primary-foreground flex flex-col items-center justify-center gap-1 text-[11px] font-semibold cursor-pointer transition-colors"
+          className="flex-1 bg-muted-foreground/80 hover:bg-muted-foreground text-primary-foreground flex flex-col items-center justify-center gap-1 text-[11px] font-semibold cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           aria-label="Arquivar conversa"
         >
           <Archive className="size-4" />
@@ -160,7 +160,7 @@ export function ChatListItem({
             setOffsetX(0);
             onDelete(item.id);
           }}
-          className="flex-1 bg-destructive hover:bg-destructive/90 text-white flex flex-col items-center justify-center gap-1 text-[11px] font-semibold cursor-pointer transition-colors"
+          className="flex-1 bg-destructive hover:bg-destructive/90 text-white flex flex-col items-center justify-center gap-1 text-[11px] font-semibold cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           aria-label="Apagar conversa"
         >
           <Trash2 className="size-4" />
@@ -169,14 +169,14 @@ export function ChatListItem({
       </div>
 
       {/* Superfície Principal Deslizante (Grelha Matemática WhatsApp) */}
-      <div
+      <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onClick={handleRowClick}
         onContextMenu={handleContextMenu}
         style={{ transform: `translate3d(${offsetX}px, 0, 0)` }}
-        className={cn(
+        className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
           "relative z-10 flex items-center gap-4 px-4 sm:px-4 py-3 border-l-4 transition-colors duration-150 cursor-pointer",
           isSelected
             ? "bg-muted/70 border-primary"
@@ -192,6 +192,9 @@ export function ChatListItem({
                 alt={item.title}
                 className="size-full object-cover"
                 loading="lazy"
+                onError={(e) => {
+                  (e.currentTarget as HTMLElement).style.display = "none";
+                }}
               />
             ) : item.isP2P ? (
               <User className="size-5 text-muted-foreground" />

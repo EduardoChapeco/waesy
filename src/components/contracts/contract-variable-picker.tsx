@@ -125,7 +125,7 @@ export function ContractVariablePicker({
                 key={group.id}
                 type="button"
                 onClick={() => setActiveNiche(group.id)}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer border",
                   isActive
                     ? cn("shadow-xs ring-1 ring-primary/20", colors.bg, colors.text, colors.border)
@@ -159,7 +159,7 @@ export function ContractVariablePicker({
                     <button
                       type="button"
                       onClick={() => handleSelect(variable)}
-                      className={cn(
+                      className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                         "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium border transition-all cursor-pointer min-h-9",
                         colors.bg,
                         colors.text,

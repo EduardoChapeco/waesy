@@ -124,7 +124,7 @@ export function StoryHighlightUploader({
                   type="button"
                   onClick={() => handleImageClick(hl.id)}
                   disabled={readOnly}
-                  className={cn(
+                  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                     "size-16 rounded-full overflow-hidden border-2 transition-all",
                     hl.image
                       ? "border-primary/40 hover:border-primary"
@@ -162,7 +162,7 @@ export function StoryHighlightUploader({
                   <button
                     type="button"
                     onClick={() => handleRemove(hl.id)}
-                    className="absolute -top-1 -right-1 size-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                    className="absolute -top-1 -right-1 size-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     aria-label={`Remover destaque ${hl.title}`}
                   >
                     <X className="size-3" />
@@ -194,7 +194,7 @@ export function StoryHighlightUploader({
                       setEditTitle(hl.title);
                     }
                   }}
-                  className={cn(
+                  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                     "text-[11px] font-medium text-foreground tracking-tight max-w-[64px] truncate",
                     !readOnly && "hover:text-primary transition-colors cursor-pointer"
                   )}
@@ -212,7 +212,7 @@ export function StoryHighlightUploader({
             <button
               type="button"
               onClick={handleAddNew}
-              className="size-16 rounded-full border-2 border-dashed border-border/50 hover:border-primary/60 bg-muted/20 hover:bg-muted/40 flex items-center justify-center transition-all active:scale-95"
+              className="size-16 rounded-full border-2 border-dashed border-border/50 hover:border-primary/60 bg-muted/20 hover:bg-muted/40 flex items-center justify-center transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label="Adicionar novo destaque"
             >
               <Plus className="size-5 text-muted-foreground" weight="bold" />

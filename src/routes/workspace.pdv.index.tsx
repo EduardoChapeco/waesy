@@ -125,7 +125,7 @@ function QuickOpenRegisterInlineCard() {
  initialAmountStr === val
  ? "bg-primary text-primary-foreground border-primary"
  : "bg-muted/40 text-muted-foreground hover:text-foreground border-border/40"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  R$ {val}
  </button>
@@ -1086,7 +1086,7 @@ function PdvTerminal() {
  isSelected
  ? "bg-primary text-primary-foreground shadow-xs"
  : "text-muted-foreground hover:text-foreground"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <span>{mode.label}</span>
  </button>
@@ -1238,7 +1238,7 @@ function PdvTerminal() {
  selectedCategory === "all"
  ? "bg-foreground text-background shadow-xs"
  : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/70 border border-border/40"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  Todos ({flatProducts.length})
  </button>
@@ -1253,7 +1253,7 @@ function PdvTerminal() {
  selectedCategory === cat
  ? "bg-primary text-primary-foreground shadow-xs"
  : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/70 border border-border/40"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  {cat} ({count})
  </button>
@@ -1282,12 +1282,12 @@ function PdvTerminal() {
  .reduce((acc, i) => acc + i.qty, 0);
 
  return (
- <div
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  key={`${product.id}-${variant.id || "def"}`}
  onClick={() => handleProductClick(product, variant)}
  className={`relative rounded-lg bg-card border transition-all cursor-pointer flex flex-col justify-between overflow-hidden group select-none hover:shadow-xs hover:border-primary/50 active:scale-[0.98] ${
  inCartQty > 0 ? "border-primary ring-1 ring-primary/40" : "border-border/80"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  {/* Foto 1:1 do Produto */}
  <div className="relative aspect-square w-full bg-muted/40 overflow-hidden flex items-center justify-center">
@@ -1424,7 +1424,7 @@ function PdvTerminal() {
                       isSelected
                         ? "bg-primary/10 border-primary text-primary shadow-xs ring-2 ring-primary/20"
                         : "bg-card border-border/70 hover:border-primary/50 hover:bg-muted/30 text-foreground"
-                    }`}
+                    } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                   >
                     <Armchair className={`size-6 mb-2 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
                     <span className="font-bold text-xs">{table.label}</span>
@@ -1492,7 +1492,7 @@ function PdvTerminal() {
  splitCount === count
  ? "bg-primary text-primary-foreground border-primary shadow-xs"
  : "bg-card border-border/70 hover:bg-muted text-muted-foreground hover:text-foreground"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  {count === 1 ? "1x (Total)" : `${count}x`}
  </button>
@@ -1519,7 +1519,7 @@ function PdvTerminal() {
  active
  ? "border-primary bg-primary/10 text-primary shadow-xs"
  : "border-border/70 hover:bg-muted/40 text-foreground"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <Icon className="size-4" />
  <span>{m.label}</span>
@@ -1558,7 +1558,7 @@ function PdvTerminal() {
                     key={val}
                     type="button"
                     onClick={() => setPaymentAmountInput(`${val},00`)}
-                    className="flex-1 h-10 sm:h-9 rounded-lg border border-border/80 text-xs font-bold font-mono hover:bg-muted active:scale-95 transition-all flex items-center justify-center cursor-pointer"
+                    className="flex-1 h-10 sm:h-9 rounded-lg border border-border/80 text-xs font-bold font-mono hover:bg-muted active:scale-95 transition-all flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     R$ {val}
                   </button>

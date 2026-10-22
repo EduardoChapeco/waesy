@@ -670,7 +670,7 @@ function WorkspaceComercialPage() {
                 const el = document.getElementById(`kanban-col-${s.id}`);
                 el?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
               }}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap shrink-0 snap-start bg-card border border-border/70 text-foreground hover:bg-muted active:scale-95 transition-all cursor-pointer min-h-11"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap shrink-0 snap-start bg-card border border-border/70 text-foreground hover:bg-muted active:scale-95 transition-all cursor-pointer min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <span className={cn("size-2 rounded-full", s.dotColor)} />
               <span>{s.title}</span>
@@ -1023,7 +1023,7 @@ function WorkspaceComercialPage() {
                           key={tagStr}
                           type="button"
                           onClick={() => handleToggleNewLeadTag(tagStr)}
-                          className={cn(
+                          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                             "text-xs font-bold uppercase px-2 py-1 rounded-md transition-all cursor-pointer border",
                             isSelected
                               ? "text-white border-transparent shadow-xs"
@@ -1181,7 +1181,7 @@ function WorkspaceComercialPage() {
                   <button
                     type="button"
                     onClick={() => setActiveTabDetail("viagem")}
-                    className={cn(
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "pb-2 text-xs font-bold border-b-2 transition-colors cursor-pointer",
                       activeTabDetail === "viagem"
                         ? "border-primary text-primary"
@@ -1194,7 +1194,7 @@ function WorkspaceComercialPage() {
                   <button
                     type="button"
                     onClick={() => setActiveTabDetail("cliente360")}
-                    className={cn(
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "pb-2 text-xs font-bold border-b-2 transition-colors cursor-pointer shrink-0 flex items-center gap-1",
                       activeTabDetail === "cliente360"
                         ? "border-primary text-primary"
@@ -1208,7 +1208,7 @@ function WorkspaceComercialPage() {
                   <button
                     type="button"
                     onClick={() => setActiveTabDetail("contratos")}
-                    className={cn(
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "pb-2 text-xs font-bold border-b-2 transition-colors cursor-pointer shrink-0 flex items-center gap-1",
                       activeTabDetail === "contratos"
                         ? "border-primary text-primary"
@@ -1227,7 +1227,7 @@ function WorkspaceComercialPage() {
                   <button
                     type="button"
                     onClick={() => setActiveTabDetail("telemetria")}
-                    className={cn(
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "pb-2 text-xs font-bold border-b-2 transition-colors cursor-pointer shrink-0 flex items-center gap-1",
                       activeTabDetail === "telemetria"
                         ? "border-primary text-primary"
@@ -1240,7 +1240,7 @@ function WorkspaceComercialPage() {
                   <button
                     type="button"
                     onClick={() => setActiveTabDetail("checklist")}
-                    className={cn(
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "pb-2 text-xs font-bold border-b-2 transition-colors cursor-pointer flex items-center gap-1",
                       activeTabDetail === "checklist"
                         ? "border-primary text-primary"
@@ -1255,7 +1255,7 @@ function WorkspaceComercialPage() {
                   <button
                     type="button"
                     onClick={() => setActiveTabDetail("comercial")}
-                    className={cn(
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "pb-2 text-xs font-bold border-b-2 transition-colors cursor-pointer",
                       activeTabDetail === "comercial"
                         ? "border-primary text-primary"
@@ -1267,7 +1267,7 @@ function WorkspaceComercialPage() {
                   <button
                     type="button"
                     onClick={() => setActiveTabDetail("notas")}
-                    className={cn(
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "pb-2 text-xs font-bold border-b-2 transition-colors cursor-pointer",
                       activeTabDetail === "notas"
                         ? "border-primary text-primary"
@@ -1703,7 +1703,7 @@ function WorkspaceComercialPage() {
                           <button
                             type="button"
                             onClick={() => handleToggleChecklist(item.id)}
-                            className="flex items-center gap-3 text-left flex-1 cursor-pointer"
+                            className="flex items-center gap-3 text-left flex-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             {item.done ? (
                               <CheckSquare className="size-4 text-emerald-500 shrink-0" />
@@ -1718,7 +1718,7 @@ function WorkspaceComercialPage() {
                           <button
                             type="button"
                             onClick={() => handleRemoveChecklistItem(item.id)}
-                            className="text-muted-foreground/40 hover:text-rose-500 transition-colors p-1"
+                            className="text-muted-foreground/40 hover:text-rose-500 transition-colors p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             <X className="size-3" />
                           </button>
@@ -1830,7 +1830,7 @@ function WorkspaceComercialPage() {
                               key={tagStr}
                               type="button"
                               onClick={() => handleToggleTag(tagStr)}
-                              className={cn(
+                              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                                 "text-xs font-bold uppercase px-2 py-1 rounded-md transition-all cursor-pointer border",
                                 isSelected
                                   ? "text-white border-transparent shadow-xs"

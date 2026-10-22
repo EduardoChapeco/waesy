@@ -132,7 +132,7 @@ describe("Anti-Jank & Runtime Performance Suite (Prompt 16)", () => {
       expect(loadingContent).not.toContain("aspect-[4/5]");
     });
 
-    it("garante zero ocorrências de !important em rotas e views de interface", () => {
+    it("garante zero ocorrências de !important em rotas e views de interface", () => { // design-lint-ignore DL-04 reason:"Teste de regressao que afirma a AUSENCIA de !important; nao ha uso real" expiry:"2027-12-31"
       const pedidosGestor = fs.readFileSync(
         path.resolve("src/routes/workspace.pedidos.gestor.tsx"),
         "utf8"
@@ -142,8 +142,8 @@ describe("Anti-Jank & Runtime Performance Suite (Prompt 16)", () => {
         "utf8"
       );
 
-      expect(pedidosGestor).not.toContain("display: none !important");
-      expect(pedidosRecibo).not.toContain("!important");
+      expect(pedidosGestor).not.toContain("display: none !important"); // design-lint-ignore DL-04 reason:"Teste de regressao que afirma a AUSENCIA de !important; nao ha uso real" expiry:"2027-12-31"
+      expect(pedidosRecibo).not.toContain("!important"); // design-lint-ignore DL-04 reason:"Teste de regressao que afirma a AUSENCIA de !important; nao ha uso real" expiry:"2027-12-31"
     });
   });
 

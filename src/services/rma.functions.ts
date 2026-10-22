@@ -565,15 +565,3 @@ export const requestOrderReturn = createCustomerAfterSalesRequest;
 export const updateRmaStatus = updateAfterSalesStatus;
 export const resolveRmaWithCredit = resolveAfterSalesWithCredit;
 export const analyzePhotoForensics = analyzePhotoForensicsInternal;
-
-
-// ---------------------------------------------------------------------------
-// RE-EXPORTS DE EXCHANGES (CLUSTER 7 - PARIDADE BIDIRECIONAL TOTAL)
-// ---------------------------------------------------------------------------
-export {
-  requestExchange,
-  listExchanges,
-  updateExchangeStatus,
-  listCustomerExchanges,
-  listPaymentRefunds,
-} from "./exchanges.functions";

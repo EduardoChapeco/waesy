@@ -1380,7 +1380,7 @@ export function TravelPromoFlyerModal({
                                   setMealPlanInput(cand.entity.defaultMealPlans[0]);
                                 }
                               }}
-                              className="w-full h-11 min-h-11 px-2 rounded-lg bg-background border border-border/60 text-left font-medium hover:bg-muted cursor-pointer"
+                              className="w-full h-11 min-h-11 px-2 rounded-lg bg-background border border-border/60 text-left font-medium hover:bg-muted cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
                               Usar {cand.entity.canonicalName}
                             </button>

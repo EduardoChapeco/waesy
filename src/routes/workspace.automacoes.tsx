@@ -198,7 +198,7 @@ function AutomacoesWorkflowsPage() {
   return (
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── Header ── */}
-      <PageHeader
+      <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         title="Automações Visuais"
         description="Réguas de relacionamento, disparos e integrações automáticas."
         actions={

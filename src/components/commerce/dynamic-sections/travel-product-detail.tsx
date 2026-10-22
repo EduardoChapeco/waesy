@@ -61,8 +61,8 @@ export const TravelProductDetail: React.FC<TravelProductDetailProps> = ({
   mainPhotoUrl = "",
   galleryPhotos = [],
   nightsCount = 7,
-  departureFlightText = "GRU 22:30 ➔ MCZ 01:25 (Direto)",
-  returnFlightText = "MCZ 03:50 ➔ GRU 06:55 (Direto)",
+  departureFlightText = "GRU 22:30 -> MCZ 01:25 (Direto)",
+  returnFlightText = "MCZ 03:50 -> GRU 06:55 (Direto)",
   amenities = [
     "Wi-Fi grátis nas áreas comuns",
     "Café da manhã incluso",
@@ -107,20 +107,20 @@ export const TravelProductDetail: React.FC<TravelProductDetailProps> = ({
     <div className="w-full bg-background space-y-6 py-4 sm:py-8">
       {/* ── 1. BARRA DE RESUMO SUPERIOR DA RESERVA (ESTILO DECOLAR DETALHES) ── */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="rounded-2xl border border-border/80 bg-card p-3 sm:p-4 shadow-sm grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+        <div className="rounded-lg border border-border/80 bg-card p-3 sm:p-4 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
           {/* Box Hospedagem */}
           <div className="md:col-span-4 flex items-center gap-3 min-w-0 border-b md:border-b-0 md:border-r border-border/60 pb-3 md:pb-0 md:pr-4">
-            <div className="size-14 rounded-xl overflow-hidden bg-muted shrink-0 border border-border/60">
+            <div className="size-14 rounded-lg overflow-hidden bg-muted shrink-0 border border-border/60">
               <img src={mainPhotoUrl} alt={hotelName} className="size-full object-cover" />
             </div>
             <div className="min-w-0">
-              <span className="text-[10px] font-bold uppercase text-emerald-600 dark:text-emerald-400 block">
+              <span className="text-xs font-bold uppercase text-emerald-600 dark:text-emerald-400 block">
                 Café da manhã incluso
               </span>
               <h3 className="text-xs font-bold text-foreground truncate">{hotelName}</h3>
-              <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <span className="font-bold text-foreground">{reviewScore.toFixed(1)}</span>
-                <span>★</span>
+                <span>/ 5</span>
                 <span>• {nightsCount} noites</span>
               </div>
             </div>
@@ -128,21 +128,21 @@ export const TravelProductDetail: React.FC<TravelProductDetailProps> = ({
 
           {/* Box Voo */}
           <div className="md:col-span-4 space-y-1 min-w-0 border-b md:border-b-0 md:border-r border-border/60 pb-3 md:pb-0 md:pr-4 text-xs">
-            <div className="flex items-center gap-1.5 font-bold text-foreground">
+            <div className="flex items-center gap-2 font-bold text-foreground">
               <Plane className="size-3.5 text-primary" />
               <span>Voos Inclusos</span>
             </div>
-            <p className="text-[11px] text-muted-foreground truncate">{departureFlightText}</p>
-            <p className="text-[11px] text-muted-foreground truncate">{returnFlightText}</p>
+            <p className="text-xs text-muted-foreground truncate">{departureFlightText}</p>
+            <p className="text-xs text-muted-foreground truncate">{returnFlightText}</p>
           </div>
 
           {/* Box Preço & Botão Comprar */}
           <div className="md:col-span-4 flex items-center justify-between gap-3">
-            <div className="space-y-0.5">
+            <div className="space-y-1">
               {savedAmountCents > 0 && (
                 <Badge
                   variant="secondary"
-                  className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px] font-bold px-1.5 py-0.2"
+                  className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-bold px-2 py-1"
                 >
                   Economize {formatMoney(savedAmountCents)}
                 </Badge>
@@ -150,7 +150,7 @@ export const TravelProductDetail: React.FC<TravelProductDetailProps> = ({
               <div className="text-xs text-muted-foreground">
                 Por pessoa: <strong className="text-foreground">{formatMoney(pricePerPersonCents)}</strong>
               </div>
-              <div className="text-[11px] text-muted-foreground">
+              <div className="text-xs text-muted-foreground">
                 Total 2 pessoas: {formatMoney(totalPriceCents)}
               </div>
             </div>
@@ -158,7 +158,7 @@ export const TravelProductDetail: React.FC<TravelProductDetailProps> = ({
             <Button
               type="button"
               onClick={handleBook}
-              className="h-11 min-h-11 px-6 rounded-xl text-xs font-black bg-primary text-primary-foreground hover:bg-primary/90 transition-all cursor-pointer shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shrink-0"
+              className="h-11 min-h-11 px-6 rounded-lg text-xs font-black bg-primary text-primary-foreground hover:bg-primary/90 transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shrink-0"
             >
               Comprar
             </Button>
@@ -168,14 +168,16 @@ export const TravelProductDetail: React.FC<TravelProductDetailProps> = ({
 
       {/* ── 2. GALERIA MASONRY DE FOTOS ── */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 h-[280px] sm:h-[420px] rounded-2xl overflow-hidden border border-border/80 relative">
+        /* design-lint-ignore DL-02 reason:"Altura panorâmica de 280px mobile e 420px desktop para galeria de fotos de hotel" expiry:"2027-12-31" */
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 h-[280px] sm:h-[420px] rounded-lg overflow-hidden border border-border/80 relative">
           {/* Foto Principal Esquerda (7 colunas) */}
           <div className="md:col-span-7 h-full relative group cursor-pointer overflow-hidden">
             <img
               src={mainPhotoUrl}
               alt={hotelName}
-              className="size-full object-cover group-hover:scale-103 transition-transform duration-500"
+              className="size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
             />
+            {/* design-lint-ignore DL-08 reason:"Scrim fotográfico sobre galeria de hotel per B.32" expiry:"2027-12-31" */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
           </div>
 
@@ -186,7 +188,7 @@ export const TravelProductDetail: React.FC<TravelProductDetailProps> = ({
                 <img
                   src={photo}
                   alt={`Foto ${idx + 1}`}
-                  className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
                 />
               </div>
             ))}
@@ -199,7 +201,7 @@ export const TravelProductDetail: React.FC<TravelProductDetailProps> = ({
               variant="secondary"
               size="sm"
               onClick={() => setSelectedImage(mainPhotoUrl || galleryPhotos[0] || null)}
-              className="h-9 px-3 rounded-xl text-xs font-bold bg-background/90 hover:bg-background text-foreground backdrop-blur-md shadow-md gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold bg-background/90 hover:bg-background text-foreground backdrop-blur-md border border-border/60 gap-2 cursor-pointer transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <Maximize2 className="size-3.5" />
               <span>Ver todas as fotos</span>
@@ -237,11 +239,11 @@ export const TravelProductDetail: React.FC<TravelProductDetailProps> = ({
             </div>
 
             {/* Score de Avaliação */}
-            <div className="p-4 rounded-2xl border border-border/70 bg-card flex items-center gap-4">
-              <div className="size-12 rounded-xl bg-primary text-primary-foreground font-black text-lg flex items-center justify-center shrink-0">
+            <div className="p-4 rounded-lg border border-border/70 bg-card flex items-center gap-4">
+              <div className="size-12 rounded-lg bg-primary text-primary-foreground font-black text-lg flex items-center justify-center shrink-0">
                 {reviewScore.toFixed(1)}
               </div>
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 <h4 className="text-sm font-bold text-foreground">Muito bom</h4>
                 <p className="text-xs text-muted-foreground">
                   Com base em {reviewCount} avaliações verificadas de viajantes
@@ -252,11 +254,11 @@ export const TravelProductDetail: React.FC<TravelProductDetailProps> = ({
             {/* A Hospedagem Oferece (Comodidades) */}
             <div className="space-y-3 pt-2">
               <h3 className="text-base font-bold text-foreground">A hospedagem oferece</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {amenities.map((amenity, i) => (
                   <div
                     key={i}
-                    className="p-3 rounded-xl border border-border/60 bg-muted/20 flex items-center gap-2 text-xs text-foreground font-medium"
+                    className="p-3 rounded-lg border border-border/60 bg-muted/20 flex items-center gap-2 text-xs text-foreground font-medium"
                   >
                     <Check className="size-4 text-emerald-500 shrink-0" />
                     <span className="truncate">{amenity}</span>
@@ -276,7 +278,7 @@ export const TravelProductDetail: React.FC<TravelProductDetailProps> = ({
             {/* Explore a Vizinhança */}
             <div className="space-y-3 pt-2">
               <h3 className="text-base font-bold text-foreground">Explore a vizinhança</h3>
-              <div className="rounded-2xl border border-border/70 bg-card p-4 space-y-2.5">
+              <div className="rounded-lg border border-border/70 bg-card p-4 space-y-3">
                 {neighborhoodPoints.map((point, idx) => (
                   <div
                     key={idx}
@@ -295,12 +297,12 @@ export const TravelProductDetail: React.FC<TravelProductDetailProps> = ({
 
           {/* Coluna Sticky Sidebar (4 colunas ~ 30%) */}
           <div className="lg:col-span-4 sticky top-24 space-y-4">
-            <div className="rounded-2xl border border-border/80 bg-card p-5 space-y-4 shadow-md">
+            <div className="rounded-lg border border-border/80 bg-card p-5 space-y-4">
               {savedAmountCents > 0 && (
                 <div className="inline-block">
                   <Badge
                     variant="secondary"
-                    className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-bold px-2 py-0.5"
+                    className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-bold px-2 py-1"
                   >
                     Economize {formatMoney(savedAmountCents)}
                   </Badge>
@@ -317,7 +319,7 @@ export const TravelProductDetail: React.FC<TravelProductDetailProps> = ({
                 <span className="text-xs text-muted-foreground block">
                   Preço por pessoa • Total 2 pessoas {formatMoney(totalPriceCents)}
                 </span>
-                <span className="text-[11px] text-muted-foreground block">
+                <span className="text-xs text-muted-foreground block">
                   Taxas e impostos inclusos
                 </span>
               </div>
@@ -326,13 +328,13 @@ export const TravelProductDetail: React.FC<TravelProductDetailProps> = ({
                 <Button
                   type="button"
                   onClick={handleBook}
-                  className="w-full h-11 min-h-11 rounded-xl text-xs font-black bg-primary text-primary-foreground hover:bg-primary/90 transition-all cursor-pointer shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="w-full h-11 min-h-11 rounded-lg text-xs font-black bg-primary text-primary-foreground hover:bg-primary/90 transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   Ver Quartos & Reservar
                 </Button>
               </div>
 
-              <div className="pt-2 border-t border-border/60 space-y-2 text-[11px] text-muted-foreground">
+              <div className="pt-2 border-t border-border/60 space-y-2 text-xs text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="size-4 text-emerald-500 shrink-0" />
                   <span>Reserva segura com confirmação imediata</span>
@@ -352,13 +354,17 @@ export const TravelProductDetail: React.FC<TravelProductDetailProps> = ({
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 bg-background/80 flex items-center justify-center p-4 backdrop-blur-sm"
+          aria-label="Foto ampliada da acomodação"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Escape') setSelectedImage(null); }}
+          className="fixed inset-0 z-50 bg-background/80 flex items-center justify-center p-4 backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           onClick={() => setSelectedImage(null)}
         >
-          <div
+          <div /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */
             className="relative max-w-4xl max-h-screen overflow-hidden rounded-lg bg-card border border-border"
             onClick={(e) => e.stopPropagation()}
           >
+            {/* design-lint-ignore DL-02 reason:"Teto de visualização de 80vh para modal de foto de hotel" expiry:"2027-12-31" */}
             <img src={selectedImage} alt={hotelName} className="w-full h-auto object-contain max-h-[80vh]" />
             <button
               type="button"

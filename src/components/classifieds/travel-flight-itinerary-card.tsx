@@ -97,6 +97,13 @@ function resolveAirportMeta(iata: string, fallbackCity?: string, fallbackName?: 
   };
 }
 
+function formatFlightDuration(dur?: string): string {
+  if (!dur) return "Duração prevista";
+  const trimmed = dur.trim();
+  if (/^\d+$/.test(trimmed)) return `${trimmed}h`;
+  return trimmed;
+}
+
 function buildSynthesizedLegs(segment: FlightDirectionSegment): FlightLegItem[] {
   if (Array.isArray(segment.legs) && segment.legs.length > 0) {
     return segment.legs;
@@ -414,10 +421,10 @@ export function TravelFlightItineraryCard({
               </div>
 
               {/* Barra Visual de Horários: 09:50 XAP ----(1 parada / 4h 25m)----> 14:15 BPS */}
-              <div className="grid grid-cols-1 sm:grid-cols-12 items-center gap-2 sm:gap-4 p-3 sm:p-4 rounded-lg bg-muted/20 border border-border/40">
+              <div className="flex items-center justify-between gap-2 sm:gap-4 p-3 sm:p-4 rounded-lg bg-muted/20 border border-border/40">
                 {/* Partida */}
-                <div className="col-span-4 sm:col-span-3 text-left">
-                  <p className="text-lg sm:text-xl font-black tracking-tight text-foreground font-mono">
+                <div className="w-20 sm:w-28 shrink-0 text-left">
+                  <p className="text-base sm:text-xl font-black tracking-tight text-foreground font-mono">
                     {seg.departure_time || "09:50"}
                   </p>
                   <p className="text-xs font-bold text-foreground font-mono">{depMeta.code}</p>
@@ -425,9 +432,9 @@ export function TravelFlightItineraryCard({
                 </div>
 
                 {/* Linha Central com Indicador de Paradas e Duração */}
-                <div className="col-span-4 sm:col-span-6 flex flex-col items-center justify-center px-2">
-                  <span className="text-xs font-medium text-muted-foreground mb-1">
-                    {seg.total_duration || "Duração prevista"}
+                <div className="flex-1 min-w-0 flex flex-col items-center justify-center px-1 sm:px-2">
+                  <span className="text-xs font-medium text-muted-foreground mb-1 text-center">
+                    {formatFlightDuration(seg.total_duration)}
                   </span>
                   <div className="w-full flex items-center gap-1">
                     <span className="size-2 rounded-full bg-primary shrink-0" />
@@ -444,7 +451,7 @@ export function TravelFlightItineraryCard({
                     <Plane className="size-3.5 text-primary shrink-0" />
                   </div>
                   <span
-                    className={`text-xs font-bold mt-1 ${
+                    className={`text-xs font-bold mt-1 text-center ${
                       stopsCount === 0
                         ? "text-emerald-600 dark:text-emerald-400"
                         : "text-amber-600 dark:text-amber-400"
@@ -461,8 +468,8 @@ export function TravelFlightItineraryCard({
                 </div>
 
                 {/* Chegada */}
-                <div className="col-span-4 sm:col-span-3 text-right">
-                  <p className="text-lg sm:text-xl font-black tracking-tight text-foreground font-mono">
+                <div className="w-20 sm:w-28 shrink-0 text-right">
+                  <p className="text-base sm:text-xl font-black tracking-tight text-foreground font-mono">
                     {seg.arrival_time || "14:15"}
                   </p>
                   <p className="text-xs font-bold text-foreground font-mono">{arrMeta.code}</p>

@@ -39,7 +39,7 @@ export function CartItemEditDrawer({
  const [quantity, setQuantity] = useState<number>(1);
 
  // Fetch complete product details (variants, option groups, values)
- const { data: product, isLoading } = useQuery({
+ const { data: product, isLoading, isError } = useQuery({
  queryKey: ["product-detail-for-cart-edit", item?.productSlug],
  queryFn: () => getProductBySlug({ data: { slug: item!.productSlug } }),
  enabled: Boolean(open && item?.productSlug),
@@ -68,7 +68,7 @@ export function CartItemEditDrawer({
  }, [product, item, selectedVariantId]);
 
  const activeVariant = useMemo(() => {
- if (!product?.variants) return null;
+ if (!product?.variants || product.variants.length === 0) return null;
  return product.variants.find((v) => v.id === selectedVariantId) || product.variants[0];
  }, [product, selectedVariantId]);
 
@@ -154,7 +154,7 @@ export function CartItemEditDrawer({
  {/* Cabeçalho Fixo */}
  <SheetHeader className="px-6 py-4 bg-card/60 backdrop-blur-md shrink-0">
  <div className="flex items-center gap-2">
- <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+ <div className="size-11 min-h-11 min-w-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
  <SlidersHorizontal className="size-4" />
  </div>
  <div>
@@ -180,7 +180,7 @@ export function CartItemEditDrawer({
  className="size-full object-cover"
  />
  ) : (
- <Package className="size-8 text-muted-foreground" />
+ <Package className="size-11 min-h-11 min-w-11 text-muted-foreground" />
  )}
  </div>
  <div className="flex-1 min-w-0 space-y-1">
@@ -191,7 +191,7 @@ export function CartItemEditDrawer({
  {formatMoney(unitTotalCents)} / un
  </p>
  {activeVariant?.displayName && (
- <Badge variant="outline" className="text-[10px] font-medium">
+ <Badge variant="outline" className="text-xs font-medium">
  {activeVariant.displayName}
  </Badge>
  )}
@@ -200,19 +200,19 @@ export function CartItemEditDrawer({
 
  {isLoading ? (
  <div className="py-12 flex flex-col items-center justify-center gap-3 text-muted-foreground">
- <Loader2 className="size-6 animate-spin text-primary" />
+ <Loader2 className="size-6 animate-spin motion-reduce:animate-none text-primary" />
  <span className="text-xs">Carregando complementos e variações...</span>
  </div>
  ) : (
  <>
  {/* ── 1. SELEÇÃO DE VARIANTES (Ex: Tamanhos, Cores) ── */}
- {product?.variants && product.variants.length > 1 && (
+ {product?.variants && product.variants.length > 1 && product.variants.length !== 0 && (
  <div className="space-y-3">
  <div className="flex items-center justify-between">
  <label className="text-xs font-bold text-foreground uppercase tracking-wider">
  Opção / Variação
  </label>
- <span className="text-[11px] text-muted-foreground">Obrigatório</span>
+ <span className="text-xs text-muted-foreground">Obrigatório</span>
  </div>
 
  <div className="grid grid-cols-2 gap-2">
@@ -227,8 +227,8 @@ export function CartItemEditDrawer({
  key={v.id}
  type="button"
  onClick={() => setSelectedVariantId(v.id)}
- className={cn(
- "p-3 rounded-lg border text-left transition-all flex flex-col justify-between cursor-pointer",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "p-3 rounded-lg border text-left transition-colors flex flex-col justify-between cursor-pointer",
  isSelected
  ? "bg-primary/5 border-primary text-foreground "
  : "bg-card border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted/40",
@@ -240,7 +240,7 @@ export function CartItemEditDrawer({
  </span>
  {isSelected && <Check className="size-3.5 text-primary shrink-0" />}
  </div>
- <span className="text-[11px] font-mono text-muted-foreground mt-1">
+ <span className="text-xs font-mono text-muted-foreground mt-1">
  {formatMoney(v.effectivePriceCents)}
  </span>
  </button>
@@ -267,7 +267,7 @@ export function CartItemEditDrawer({
  <h4 className="text-xs font-bold text-foreground">
  {group.displayName}
  </h4>
- <p className="text-[10px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  {isSingle
  ? "Escolha 1 opção"
  : group.maxSelections
@@ -276,7 +276,7 @@ export function CartItemEditDrawer({
  </p>
  </div>
  {group.isRequired && (
- <Badge variant="secondary" className="text-[9px] font-bold">
+ <Badge variant="secondary" className="text-xs font-bold">
  Obrigatório
  </Badge>
  )}
@@ -297,8 +297,8 @@ export function CartItemEditDrawer({
  ? handleSelectSingleOption(group.id, val.id)
  : handleToggleMultipleOption(group.id, val.id, group.maxSelections)
  }
- className={cn(
- "w-full px-4 py-3 rounded-lg border text-left transition-all flex items-center justify-between cursor-pointer",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "w-full px-4 py-3 rounded-lg border text-left transition-colors flex items-center justify-between cursor-pointer",
  isSelected
  ? "bg-primary/5 border-primary/60 text-foreground"
  : "bg-background border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted/30",
@@ -307,14 +307,14 @@ export function CartItemEditDrawer({
  <div className="flex items-center gap-3">
  <div
  className={cn(
- "size-4 rounded flex items-center justify-center border transition-all",
+ "size-4 rounded flex items-center justify-center border transition-colors",
  isSingle && "rounded-full",
  isSelected
  ? "bg-primary border-primary text-primary-foreground"
  : "border-muted-foreground/40 bg-card",
  )}
  >
- {isSelected && <Check className="size-2.5 stroke-[3]" />}
+ {isSelected && <Check className="size-2.5 stroke-2" />}
  </div>
  <span className="text-xs font-medium text-foreground">
  {val.label}
@@ -326,7 +326,7 @@ export function CartItemEditDrawer({
  +{formatMoney(val.priceModifierCents)}
  </span>
  ) : (
- <span className="text-[10px] text-muted-foreground">Grátis</span>
+ <span className="text-xs text-muted-foreground">Grátis</span>
  )}
  </button>
  );
@@ -344,7 +344,7 @@ export function CartItemEditDrawer({
  <span className="text-xs font-bold text-foreground block">
  Quantidade
  </span>
- <span className="text-[11px] text-muted-foreground">
+ <span className="text-xs text-muted-foreground">
  Ajuste o número de unidades
  </span>
  </div>
@@ -354,7 +354,7 @@ export function CartItemEditDrawer({
  type="button"
  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
  disabled={quantity <= 1}
- className="size-8 rounded-lg flex items-center justify-center text-foreground hover:bg-muted active:scale-95 disabled:opacity-40 transition-all cursor-pointer"
+ className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-foreground hover:bg-muted active:scale-95 disabled:opacity-40 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  aria-label="Diminuir quantidade"
  >
  <Minus className="size-3.5" />
@@ -365,7 +365,7 @@ export function CartItemEditDrawer({
  <button
  type="button"
  onClick={() => setQuantity((q) => q + 1)}
- className="size-8 rounded-lg flex items-center justify-center text-foreground hover:bg-muted active:scale-95 transition-all cursor-pointer"
+ className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-foreground hover:bg-muted active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  aria-label="Aumentar quantidade"
  >
  <Plus className="size-3.5" />
@@ -380,7 +380,7 @@ export function CartItemEditDrawer({
  <div className=" bg-card/90 backdrop-blur-md p-5 pb-safe space-y-3 shrink-0">
  <div className="flex items-center justify-between">
  <div>
- <span className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider">
+ <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">
  Total Atualizado
  </span>
  <div className="text-xl font-black text-foreground font-mono">
@@ -402,11 +402,11 @@ export function CartItemEditDrawer({
  size="lg"
  onClick={handleSave}
  disabled={isCartUpdating || isLoading}
- className="w-full h-12 rounded-lg bg-foreground text-background font-bold text-sm hover:bg-foreground/90 transition-all cursor-pointer flex items-center justify-center gap-2"
+ className="w-full h-12 rounded-lg bg-foreground text-background font-bold text-sm hover:bg-foreground/90 transition-colors cursor-pointer flex items-center justify-center gap-2"
  >
  {isCartUpdating ? (
  <>
- <Loader2 className="size-4 animate-spin" />
+ <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
  <span>Atualizando carrinho...</span>
  </>
  ) : (

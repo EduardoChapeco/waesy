@@ -607,7 +607,7 @@ function ConfirmationPage() {
             {/* Botão de Acesso / Download */}
             <div className="pt-1 flex flex-col sm:flex-row gap-3">
               <Button asChild className="flex-1 w-full h-11 rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground cursor-pointer">
-                <a
+                <a className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   href={order.checkout_niche_metadata?.digitalDeliveryUrl || "#"}
                   target={order.checkout_niche_metadata?.digitalDeliveryUrl ? "_blank" : undefined}
                   rel="noreferrer"

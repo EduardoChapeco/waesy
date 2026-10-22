@@ -31,6 +31,10 @@ export function useClassifiedCatalog({
     if (raw === "veiculos" || raw === "vehicle") return "vehicle";
     if (raw === "servicos" || raw === "service") return "service";
     if (raw === "turismo" || raw === "travel") return "travel";
+    if (raw === "evento" || raw === "eventos" || raw === "event" || raw === "ingressos") return "event";
+    if (raw === "agro" || raw === "agronegocio" || raw === "agri" || raw === "rural") return "agri";
+    if (raw === "farmacia" || raw === "drogaria" || raw === "saude" || raw === "pharmacy") return "pharmacy";
+    if (raw === "vagas" || raw === "vaga" || raw === "empregos" || raw === "emprego" || raw === "job" || raw === "jobs") return "job";
     return raw;
   })();
 
@@ -69,6 +73,12 @@ export function useClassifiedCatalog({
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>("todos");
   const [selectedServiceModality, setSelectedServiceModality] = useState<string>("todos");
   const [selectedJobRegime, setSelectedJobRegime] = useState<string>("todos");
+  // Facetas Especializadas de Agro, Farmácia e Eventos
+  const [agriSubcategory, setAgriSubcategory] = useState<string>("todos");
+  const [agriTraction, setAgriTraction] = useState<string>("todos");
+  const [pharmacySubniche, setPharmacySubniche] = useState<string>("todos");
+  const [onlyPrescription, setOnlyPrescription] = useState<boolean>(false);
+  const [eventType, setEventType] = useState<string>("todos");
   const [onlyBoosted, setOnlyBoosted] = useState<boolean>(false);
   const [mobileFilterSheetOpen, setMobileFilterSheetOpen] = useState<boolean>(false);
 
@@ -120,6 +130,11 @@ export function useClassifiedCatalog({
     if (serviceAudience !== "todos") count++;
     if (serviceSubniche !== "todos") count++;
     if (onlyInstantDigital) count++;
+    if (agriSubcategory !== "todos") count++;
+    if (agriTraction !== "todos") count++;
+    if (pharmacySubniche !== "todos") count++;
+    if (onlyPrescription) count++;
+    if (eventType !== "todos") count++;
     return count;
   }, [
     selectedCity,
@@ -141,6 +156,16 @@ export function useClassifiedCatalog({
     serviceAudience,
     serviceSubniche,
     onlyInstantDigital,
+    agriSubcategory,
+    setAgriSubcategory,
+    agriTraction,
+    setAgriTraction,
+    pharmacySubniche,
+    setPharmacySubniche,
+    onlyPrescription,
+    setOnlyPrescription,
+    eventType,
+    setEventType,
   ]);
 
   const handleClearAllFilters = () => {
@@ -163,6 +188,11 @@ export function useClassifiedCatalog({
     setServiceAudience("todos");
     setServiceSubniche("todos");
     setOnlyInstantDigital(false);
+    setAgriSubcategory("todos");
+    setAgriTraction("todos");
+    setPharmacySubniche("todos");
+    setOnlyPrescription(false);
+    setEventType("todos");
   };
 
   const { data: classifieds } = useQuery({
@@ -272,6 +302,62 @@ export function useClassifiedCatalog({
           const sub = (item.attributes?.service_subniche || item.attributes?.professional_council || "").toLowerCase();
           if (Boolean(sub.includes(serviceSubniche.toLowerCase())) === false) return false;
         }
+      } else if (selectedCategory === "agri") {
+        const isAgri =
+          item.category === "agri" ||
+          item.category === "agro" ||
+          item.attributes?.niche === "agri" ||
+          item.attributes?.niche === "agro";
+        if (Boolean(isAgri) === false) return false;
+
+        if (agriSubcategory !== "todos") {
+          const sub = String(item.attributes?.subniche || item.attributes?.implement_type || item.title || "").toLowerCase();
+          if (!sub.includes(agriSubcategory.toLowerCase())) return false;
+        }
+        if (agriTraction !== "todos") {
+          const tr = String(item.attributes?.traction || item.attributes?.tracao || "").toLowerCase();
+          if (!tr.includes(agriTraction.toLowerCase())) return false;
+        }
+      } else if (selectedCategory === "pharmacy") {
+        const isPharm =
+          item.category === "pharmacy" ||
+          item.category === "farmacia" ||
+          item.attributes?.niche === "pharmacy" ||
+          item.attributes?.niche === "farmacia";
+        if (Boolean(isPharm) === false) return false;
+
+        if (pharmacySubniche !== "todos") {
+          const sub = String(item.attributes?.subniche || item.title || "").toLowerCase();
+          if (!sub.includes(pharmacySubniche.toLowerCase())) return false;
+        }
+        if (onlyPrescription) {
+          const req = Boolean(item.attributes?.requires_prescription || item.attributes?.retem_receita);
+          if (!req) return false;
+        }
+      } else if (selectedCategory === "event") {
+        const isEvent =
+          item.category === "event" ||
+          item.category === "eventos" ||
+          item.attributes?.niche === "event" ||
+          item.attributes?.niche === "eventos";
+        if (Boolean(isEvent) === false) return false;
+
+        if (eventType !== "todos") {
+          const evt = String(item.attributes?.event_type || item.title || "").toLowerCase();
+          if (!evt.includes(eventType.toLowerCase())) return false;
+        }
+      } else if (selectedCategory === "job") {
+        const isJob =
+          item.category === "job" ||
+          item.category === "job_offer" ||
+          item.category === "vagas" ||
+          item.attributes?.niche === "job";
+        if (Boolean(isJob) === false) return false;
+
+        if (selectedJobRegime !== "todos") {
+          const reg = String(item.attributes?.contract_regime || item.attributes?.regime || "").toLowerCase();
+          if (!reg.includes(selectedJobRegime.toLowerCase())) return false;
+        }
       } else if (selectedCategory !== "todos" && item.category !== selectedCategory) {
         return false;
       }
@@ -376,6 +462,16 @@ export function useClassifiedCatalog({
     serviceAudience,
     serviceSubniche,
     onlyInstantDigital,
+    agriSubcategory,
+    setAgriSubcategory,
+    agriTraction,
+    setAgriTraction,
+    pharmacySubniche,
+    setPharmacySubniche,
+    onlyPrescription,
+    setOnlyPrescription,
+    eventType,
+    setEventType,
   ]);
 
   return {
@@ -418,6 +514,16 @@ export function useClassifiedCatalog({
     serviceSubniche,
     setServiceSubniche,
     onlyInstantDigital,
+    agriSubcategory,
+    setAgriSubcategory,
+    agriTraction,
+    setAgriTraction,
+    pharmacySubniche,
+    setPharmacySubniche,
+    onlyPrescription,
+    setOnlyPrescription,
+    eventType,
+    setEventType,
     setOnlyInstantDigital,
     selectedSubcategory,
     setSelectedSubcategory,

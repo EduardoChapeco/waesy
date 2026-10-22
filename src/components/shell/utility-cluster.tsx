@@ -219,7 +219,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
         <NotificationsPopover session={session} />
 
         {/* 4. Alternador de Tema Dark/Light (Desktop >= 768px) */}
-        <ThemeToggle className="hidden md:inline-flex size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" />
+        {/* Tema gerenciado nas preferências */}
 
         <div className="hidden md:block h-4 w-px bg-border/60 mx-1" />
 

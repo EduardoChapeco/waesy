@@ -405,7 +405,7 @@ function AdminMasterHotpagesPage() {
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-2 rounded-lg bg-muted/40 border border-border/60">
  <button
  onClick={() => setActiveMainTab("hero_module")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-all",
  activeMainTab === "hero_module"
  ? "bg-background text-foreground shadow-sm border border-border/60"
@@ -418,7 +418,7 @@ function AdminMasterHotpagesPage() {
 
  <button
  onClick={() => setActiveMainTab("category_hub")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-all",
  activeMainTab === "category_hub"
  ? "bg-background text-foreground shadow-sm border border-border/60"
@@ -431,7 +431,7 @@ function AdminMasterHotpagesPage() {
 
  <button
  onClick={() => setActiveMainTab("editorial_card")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-all",
  activeMainTab === "editorial_card"
  ? "bg-background text-foreground shadow-sm border border-border/60"
@@ -483,7 +483,7 @@ function AdminMasterHotpagesPage() {
  <button
  key={tab.id}
  onClick={() => setSelectedModuleTab(tab.id)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-2",
  isSelected
  ? "bg-foreground text-background shadow-xs font-bold"
@@ -1081,7 +1081,7 @@ function AdminMasterHotpagesPage() {
  key={c}
  type="button"
  onClick={() => setBgColor(c)}
- className="size-6 rounded-md border border-border/60 transition-transform hover:scale-110 active:scale-95 shrink-0"
+ className="size-6 rounded-md border border-border/60 transition-transform hover:scale-110 active:scale-95 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  style={{ backgroundColor: c }}
  title={c}
  />
@@ -1101,7 +1101,7 @@ function AdminMasterHotpagesPage() {
                         <button
                           type="button"
                           onClick={() => setTextColor("")}
-                          className="text-xs text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
+                          className="text-xs text-muted-foreground hover:text-destructive transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           Restaurar Padrão
                         </button>
@@ -1128,7 +1128,7 @@ function AdminMasterHotpagesPage() {
                             key={c}
                             type="button"
                             onClick={() => setTextColor(c)}
-                            className="size-6 rounded-md border border-border/60 transition-transform hover:scale-110 active:scale-95 shrink-0 cursor-pointer"
+                            className="size-6 rounded-md border border-border/60 transition-transform hover:scale-110 active:scale-95 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             style={{ backgroundColor: c }}
                             title={`Título em ${c}`}
                           />

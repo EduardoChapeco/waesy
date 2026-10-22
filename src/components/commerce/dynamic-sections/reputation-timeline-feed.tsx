@@ -40,13 +40,13 @@ export function ReputationTimelineFeed({ content, design_tokens }: ReputationTim
           <p className="text-xs text-muted-foreground">Registros conectados ao perfil; ausência de itens não significa ausência de manifestações.</p>
         </div>
         <div className="flex items-center gap-2 bg-muted/50 p-1 rounded-lg border border-border/50">
-          <button onClick={() => setFilter("all")} className={cn("px-3 py-2 rounded-lg text-xs font-medium transition-all min-h-9", filter === "all" ? "bg-card text-foreground shadow-xs font-semibold" : "text-muted-foreground")}>
+          <button onClick={() => setFilter("all")} className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", "px-3 py-2 rounded-lg text-xs font-medium transition-all min-h-9", filter === "all" ? "bg-card text-foreground shadow-xs font-semibold" : "text-muted-foreground")}>
             Registros ({complaints.length})
           </button>
-          <button onClick={() => setFilter("resolved")} className={cn("px-3 py-2 rounded-lg text-xs font-medium transition-all min-h-9", filter === "resolved" ? "bg-card text-foreground shadow-xs font-semibold" : "text-muted-foreground")}>
+          <button onClick={() => setFilter("resolved")} className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", "px-3 py-2 rounded-lg text-xs font-medium transition-all min-h-9", filter === "resolved" ? "bg-card text-foreground shadow-xs font-semibold" : "text-muted-foreground")}>
             Resolvidos
           </button>
-          <button onClick={() => setFilter("open")} className={cn("px-3 py-2 rounded-lg text-xs font-medium transition-all min-h-9", filter === "open" ? "bg-card text-foreground shadow-xs font-semibold" : "text-muted-foreground")}>
+          <button onClick={() => setFilter("open")} className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", "px-3 py-2 rounded-lg text-xs font-medium transition-all min-h-9", filter === "open" ? "bg-card text-foreground shadow-xs font-semibold" : "text-muted-foreground")}>
             Em aberto
           </button>
         </div>

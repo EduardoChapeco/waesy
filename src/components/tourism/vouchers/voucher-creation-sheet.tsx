@@ -171,7 +171,7 @@ export function VoucherCreationSheet({
               <button
                 type="button"
                 onClick={() => setVoucherType("flight")}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "p-3 rounded-lg border flex flex-col items-center gap-2 transition-all cursor-pointer text-center",
                   voucherType === "flight"
                     ? "border-primary bg-primary/10 text-primary font-bold shadow-2xs"
@@ -185,7 +185,7 @@ export function VoucherCreationSheet({
               <button
                 type="button"
                 onClick={() => setVoucherType("hotel")}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "p-3 rounded-lg border flex flex-col items-center gap-2 transition-all cursor-pointer text-center",
                   voucherType === "hotel"
                     ? "border-primary bg-primary/10 text-primary font-bold shadow-2xs"
@@ -199,7 +199,7 @@ export function VoucherCreationSheet({
               <button
                 type="button"
                 onClick={() => setVoucherType("transfer")}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "p-3 rounded-lg border flex flex-col items-center gap-2 transition-all cursor-pointer text-center",
                   voucherType === "transfer"
                     ? "border-primary bg-primary/10 text-primary font-bold shadow-2xs"

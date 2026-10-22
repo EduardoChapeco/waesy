@@ -167,7 +167,7 @@ export function SectionFlights({ draft, save }: Props) {
                       : "border-blue-500/40 bg-blue-500/10 text-blue-800 dark:text-blue-200"
                 }`}
               >
-                <AlertTriangle className="size-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+                <AlertTriangle className="size-4 shrink-0 mt-1 text-amber-600 dark:text-amber-400" />
                 <span>{connectionAlert.message}</span>
               </div>
             )}
@@ -183,7 +183,7 @@ export function SectionFlights({ draft, save }: Props) {
               />
             </L>
           </div>
-          <div className="grid grid-cols-3 gap-2 mb-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2">
             <L label="Data">
               <Inp value={f.date} onChange={(v) => upd(i, { date: v })} type="date" ph="" />
             </L>
@@ -285,7 +285,7 @@ export function SectionFlights({ draft, save }: Props) {
 
       {infotravelOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay p-4">
-          <div
+          <div /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */
             className="w-full max-w-lg rounded-lg border border-border bg-surface p-5 flex flex-col max-h-[85vh] overflow-hidden shadow-none"
             onClick={(e) => e.stopPropagation()}
           >

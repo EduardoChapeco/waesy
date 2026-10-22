@@ -46,7 +46,7 @@ export function VideoStudioEditor({
  type="button"
  onClick={() => setAspect('9:16')}
  className={'px-3 py-1 rounded-lg text-xs font-bold ' + (
- aspect === '9:16' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
+ aspect === '9:16' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
  9:16 (Reels/TikTok)
@@ -55,7 +55,7 @@ export function VideoStudioEditor({
  type="button"
  onClick={() => setAspect('16:9')}
  className={'px-3 py-1 rounded-lg text-xs font-bold ' + (
- aspect === '16:9' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
+ aspect === '16:9' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
  16:9 (Vitrine/YT)

@@ -98,7 +98,7 @@ export function ModuleTourModal({
             <button
               type="button"
               onClick={handleClose}
-              className="text-muted-foreground/60 hover:text-foreground p-1 rounded-lg transition-colors cursor-pointer"
+              className="text-muted-foreground/60 hover:text-foreground p-1 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               title="Fechar tour"
             >
               <X className="size-4" />

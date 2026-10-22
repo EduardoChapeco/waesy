@@ -124,7 +124,7 @@ export function OccupationAutocomplete({
               key={p.id}
               type="button"
               onClick={() => handleSelect(p)}
-              className="w-full text-left p-3 rounded-lg hover:bg-muted/70 transition-colors flex items-center justify-between gap-3 group cursor-pointer"
+              className="w-full text-left p-3 rounded-lg hover:bg-muted/70 transition-colors flex items-center justify-between gap-3 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <div className="min-w-0 space-y-1">
                 <div className="flex items-center gap-2">

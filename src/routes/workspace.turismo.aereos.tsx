@@ -669,7 +669,7 @@ export default function FlightsPage() {
                       <button
                         type="button"
                         onClick={() => copyToClipboard(primarySeg.record_locator!, 'Localizador PNR')}
-                        className="inline-flex items-center gap-2 px-3 py-2 min-h-11 sm:min-h-9 sm:min-h-9 sm:min-h-8 rounded-lg text-xs font-mono font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-2 px-3 py-2 min-h-11 sm:min-h-9 sm:min-h-9 sm:min-h-8 rounded-lg text-xs font-mono font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         title="Clique para copiar localizador"
                       >
                         <Hash className="size-3.5" />

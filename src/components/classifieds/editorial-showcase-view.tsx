@@ -694,7 +694,7 @@ export function EditorialShowcaseView({
         <button
           type="button"
           onClick={() => navigate({ to: "/classificados", search: {} as any })}
-          className="p-2 -ml-1 text-foreground hover:bg-muted rounded-lg transition-colors active:scale-95"
+          className="p-2 -ml-1 text-foreground hover:bg-muted rounded-lg transition-colors active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           aria-label="Voltar"
         >
           <ArrowLeft className="size-5" />
@@ -712,7 +712,7 @@ export function EditorialShowcaseView({
             <button
               type="button"
               onClick={handleEditClick}
-              className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors active:scale-95 cursor-pointer"
+              className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               title="Editar Anúncio"
               aria-label="Editar Anúncio"
             >
@@ -724,7 +724,7 @@ export function EditorialShowcaseView({
             <button
               type="button"
               onClick={onOpenCompanionCard}
-              className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors active:scale-95 cursor-pointer"
+              className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               title="Guia Digital 9:16 (WhatsApp)"
               aria-label="Guia Digital 9:16"
             >
@@ -737,7 +737,7 @@ export function EditorialShowcaseView({
             <button
               type="button"
               onClick={() => setIsPromoFlyerOpen(true)}
-              className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors active:scale-95 cursor-pointer"
+              className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               title="Gerar Story 9:16 com IA"
               aria-label="Gerar Story 9:16"
             >
@@ -748,7 +748,7 @@ export function EditorialShowcaseView({
           <button
             type="button"
             onClick={handleShare}
-            className="p-2 text-foreground hover:bg-muted rounded-lg transition-colors active:scale-95"
+            className="p-2 text-foreground hover:bg-muted rounded-lg transition-colors active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Compartilhar"
           >
             <Share2 className="size-4.5" />
@@ -782,7 +782,7 @@ export function EditorialShowcaseView({
           <button
             type="button"
             onClick={() => navigate({ to: "/classificados", search: {} as any })}
-            className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors group cursor-pointer"
+            className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <ArrowLeft className="size-4 group-hover:-translate-x-0.5 transition-transform" />
             <span>Voltar aos Classificados</span>
@@ -856,10 +856,10 @@ export function EditorialShowcaseView({
             {images.length > 0 && (
               <div className="w-full space-y-2">
                 <div className="relative w-full aspect-[4/3] sm:aspect-[16/10] rounded-none sm:rounded-lg overflow-hidden bg-muted/30 border-0 sm:border sm:border-border/40 group">
-                  <img
+                  <img role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                     src={images[activeImageIndex] || images[0]}
                     alt={classified.title}
-                    className="size-full object-cover object-center cursor-pointer group-hover:scale-[1.01] transition-transform duration-300"
+                    className="size-full object-cover object-center cursor-pointer group-hover:scale-[1.01] transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     onClick={() => setFullscreenImage(images[activeImageIndex] || images[0])}
                   />
                   <div className="absolute top-3 right-3 flex items-center gap-2">
@@ -870,7 +870,7 @@ export function EditorialShowcaseView({
                   <button
                     type="button"
                     onClick={() => setFullscreenImage(images[activeImageIndex] || images[0])}
-                    className="absolute bottom-4 right-4 px-3 py-2 rounded-lg bg-background/85 hover:bg-background text-foreground text-xs font-semibold backdrop-blur-md border border-border/50 flex items-center gap-2 transition-colors"
+                    className="absolute bottom-4 right-4 px-3 py-2 rounded-lg bg-background/85 hover:bg-background text-foreground text-xs font-semibold backdrop-blur-md border border-border/50 flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <Maximize2 className="size-3.5" />
                     <span>Expandir</span>
@@ -1027,7 +1027,7 @@ export function EditorialShowcaseView({
                 key={hl.id || index}
                 type="button"
                 onClick={() => setActiveStoryModal(hl)}
-                className="flex flex-col items-center gap-2 shrink-0 group active:scale-95 transition-colors"
+                className="flex flex-col items-center gap-2 shrink-0 group active:scale-95 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <div className="size-16 rounded-lg p-1 bg-border hover:bg-gradient-to-tr hover:from-amber-500 hover:via-rose-500 hover:to-purple-600 transition-colors">
                   <img
@@ -1081,9 +1081,9 @@ export function EditorialShowcaseView({
                     const isGif = /\.gif(\?.*)?$/i.test(rawUrl) || item?.type === "gif";
 
                     return (
-                      <div
+                      <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                         key={i}
-                        className="relative aspect-square bg-muted/60 rounded-lg overflow-hidden group cursor-pointer border border-border/30"
+                        className="relative aspect-square bg-muted/60 rounded-lg overflow-hidden group cursor-pointer border border-border/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         onClick={() => {
                           if (isVideo) {
                             setSelectedVideoUrl(rawUrl);
@@ -2203,10 +2203,10 @@ export function EditorialShowcaseView({
                       const optId = opt.id || String(i);
                       const isSelected = selectedDepartureId === optId || (!selectedDepartureId && i === 0);
                       return (
-                        <div
+                        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                           key={opt.id || i}
                           onClick={() => setSelectedDepartureId(selectedDepartureId === optId ? null : optId)}
-                          className={cn(
+                          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                             "flex items-center justify-between p-2 rounded-lg border transition-colors cursor-pointer text-left",
                             isSelected
                               ? "border-primary ring-2 ring-primary/25 bg-primary/5"
@@ -2388,7 +2388,7 @@ export function EditorialShowcaseView({
                       <button
                         type="button"
                         onClick={() => setShowDesktopInstallments(!showDesktopInstallments)}
-                        className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer pt-1"
+                        className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer pt-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <span>{showDesktopInstallments ? "Ocultar tabela" : `Ver parcelas em até ${maxInstallments}x`}</span>
                         <ChevronDown className={cn("size-3 transition-transform", showDesktopInstallments && "rotate-180")} />
@@ -2564,7 +2564,7 @@ export function EditorialShowcaseView({
           <button
             type="button"
             onClick={() => setIsContactModalOpen(true)}
-            className="flex flex-col text-left min-w-0 flex-1 cursor-pointer group active:opacity-80 transition-opacity"
+            className="flex flex-col text-left min-w-0 flex-1 cursor-pointer group active:opacity-80 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             title="Ver opções de pagamento e atendimento"
           >
             {pricingType === "on_quote" ? (
@@ -2674,7 +2674,7 @@ export function EditorialShowcaseView({
               <button
                 type="button"
                 onClick={() => setFullscreenImage(null)}
-                className="size-9 rounded-lg bg-black/70 hover:bg-black/90 text-white flex items-center justify-center backdrop-blur-md border border-white/10 transition-colors pointer-events-auto cursor-pointer"
+                className="size-9 rounded-lg bg-black/70 hover:bg-black/90 text-white flex items-center justify-center backdrop-blur-md border border-white/10 transition-colors pointer-events-auto cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 title="Fechar (Esc)"
                 aria-label="Fechar ampliação"
               >
@@ -2701,7 +2701,7 @@ export function EditorialShowcaseView({
                       setActiveImageIndex(prevIdx);
                       setFullscreenImage(images[prevIdx]);
                     }}
-                    className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 size-11 rounded-lg bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md border border-white/20 transition-colors cursor-pointer hover:scale-105 active:scale-95"
+                    className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 size-11 rounded-lg bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md border border-white/20 transition-colors cursor-pointer hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     title="Foto anterior (Seta esquerda)"
                     aria-label="Foto anterior"
                   >
@@ -2716,7 +2716,7 @@ export function EditorialShowcaseView({
                       setActiveImageIndex(nextIdx);
                       setFullscreenImage(images[nextIdx]);
                     }}
-                    className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 size-11 rounded-lg bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md border border-white/20 transition-colors cursor-pointer hover:scale-105 active:scale-95"
+                    className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 size-11 rounded-lg bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md border border-white/20 transition-colors cursor-pointer hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     title="Próxima foto (Seta direita)"
                     aria-label="Próxima foto"
                   >
@@ -2737,7 +2737,7 @@ export function EditorialShowcaseView({
                       setActiveImageIndex(idx);
                       setFullscreenImage(img);
                     }}
-                    className={cn(
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "size-12 rounded-lg overflow-hidden border shrink-0 transition-colors cursor-pointer",
                       activeImageIndex === idx
                         ? "border-primary ring-2 ring-primary scale-105 opacity-100"
@@ -2814,7 +2814,7 @@ export function EditorialShowcaseView({
                     <button
                       type="button"
                       onClick={() => setShowAllInstallments(!showAllInstallments)}
-                      className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer pt-1"
+                      className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer pt-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <span>{showAllInstallments ? "Ocultar tabela" : `Ver todas as parcelas (1x a ${maxInstallments}x)`}</span>
                       <ChevronDown className={cn("size-3 transition-transform", showAllInstallments && "rotate-180")} />
@@ -2863,7 +2863,7 @@ export function EditorialShowcaseView({
                     setIsContactModalOpen(false);
                     handleWhatsAppDirect();
                   }}
-                  className="w-full min-h-12 p-3 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-between text-left transition-colors active:scale-[0.99] cursor-pointer"
+                  className="w-full min-h-12 p-3 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-between text-left transition-colors active:scale-[0.99] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <div className="flex items-center gap-3">
                     <div className="size-9 rounded-lg bg-emerald-500 text-white flex items-center justify-center shrink-0">
@@ -2882,7 +2882,7 @@ export function EditorialShowcaseView({
               <button
                 type="button"
                 onClick={() => setShowChatInput(!showChatInput)}
-                className="w-full min-h-12 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 border border-border/50 flex items-center justify-between text-left transition-colors active:scale-[0.99] cursor-pointer"
+                className="w-full min-h-12 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 border border-border/50 flex items-center justify-between text-left transition-colors active:scale-[0.99] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <div className="flex items-center gap-3">
                   <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
@@ -2925,7 +2925,7 @@ export function EditorialShowcaseView({
                     setIsContactModalOpen(false);
                     setIsPixPaymentModalOpen(true);
                   }}
-                  className="w-full min-h-12 p-3 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-between text-left transition-colors active:scale-[0.99] cursor-pointer"
+                  className="w-full min-h-12 p-3 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-between text-left transition-colors active:scale-[0.99] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <div className="flex items-center gap-3">
                     <div className="size-9 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0">
@@ -2947,7 +2947,7 @@ export function EditorialShowcaseView({
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => setIsContactModalOpen(false)}
-                  className="w-full min-h-12 p-3 rounded-lg bg-blue-500/10 hover:bg-blue-500/15 border border-blue-500/25 flex items-center justify-between text-left transition-colors active:scale-[0.99] cursor-pointer"
+                  className="w-full min-h-12 p-3 rounded-lg bg-blue-500/10 hover:bg-blue-500/15 border border-blue-500/25 flex items-center justify-between text-left transition-colors active:scale-[0.99] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <div className="flex items-center gap-3">
                     <div className="size-9 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0">
@@ -2970,7 +2970,7 @@ export function EditorialShowcaseView({
                     setIsContactModalOpen(false);
                     setIsBookingDossierOpen(true);
                   }}
-                  className="w-full min-h-12 p-3 rounded-lg bg-foreground text-background hover:bg-foreground/90 flex items-center justify-between text-left transition-colors active:scale-[0.99] cursor-pointer"
+                  className="w-full min-h-12 p-3 rounded-lg bg-foreground text-background hover:bg-foreground/90 flex items-center justify-between text-left transition-colors active:scale-[0.99] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <div className="flex items-center gap-3">
                     <div className="size-9 rounded-lg bg-background/20 text-background flex items-center justify-center shrink-0">
@@ -2990,7 +2990,7 @@ export function EditorialShowcaseView({
                     setIsContactModalOpen(false);
                     onOpenProposalModal();
                   }}
-                  className="w-full min-h-12 p-3 rounded-lg bg-foreground text-background hover:bg-foreground/90 flex items-center justify-between text-left transition-colors active:scale-[0.99] cursor-pointer"
+                  className="w-full min-h-12 p-3 rounded-lg bg-foreground text-background hover:bg-foreground/90 flex items-center justify-between text-left transition-colors active:scale-[0.99] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <div className="flex items-center gap-3">
                     <div className="size-9 rounded-lg bg-background/20 text-background flex items-center justify-center shrink-0">
