@@ -1,5 +1,15 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-319: Persistência Multi-Tenant de Comissões, Metas Escalonadas e Retenções de Operadoras
+- **Data:** 2026-10-22
+- **Contexto:** Resolução da volatilidade da planilha in-page de vendas, metas escalonadas e retenções de over por operadora em `InlineSalesSpreadsheetAndGoalsPanel.tsx`. Anteriormente, as configurações de faixas de faturamento bruto para metas (1% / 1,5% sobre o valor líquido), alíquotas de over (30% sobre o over líquido) e taxas de retenção por operadora eram perdidas a cada reload de página.
+- **Decisão:**
+  1. **Persistência Multi-Tenant Local Scoped:** Vinculado armazenamento dinâmico de `rows`, `agents` e `operatorConfigs` com chaves delimitadas por ID de agência (`waesy_travel_*_${storeId}`).
+  2. **Controles Explícitos de Salvar e Restaurar:** Adicionados botões táteis canônicos $\ge 44$px (`Salvar Planilha` e `Restaurar`) na barra de ferramentas superior.
+  3. **Auto-Persistência em Mutações:** Disparo automático de persistência em qualquer alteração de linha, operadora ou meta de agente.
+- **Fundamentação:** AGENTS.md B.1 a B.45; B.22, B.26.
+- **Consequências:** Agências podem customizar livremente suas faixas de metas por consultor e taxas por operadora sem perda de dados na navegação; zero regressões visuais no design-lint.
+
 ## DEC-318: Blindagem Anti-Injeção de Ingressos (WCTS-1), Validação Criptográfica Estrita e Cobertura de Testes
 - **Data:** 2026-10-22
 - **Contexto:** Auditoria de segurança de ingressos e eventos conforme Invariante B.40 (AGENTS.md). Identificado que o validador de ingressos legados em `ticket-crypto.ts` aceitava indiscriminadamente qualquer string não formatada como ingresso legado válido.

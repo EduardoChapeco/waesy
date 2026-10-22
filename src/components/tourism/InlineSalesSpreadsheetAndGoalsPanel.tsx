@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import {
   Plus,
   Calculator,
@@ -8,6 +8,8 @@ import {
   Copy,
   Settings2,
   Trash2,
+  Save,
+  RotateCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/money";
+import { useWorkspaceStore } from "@/lib/store-context";
 import {
   calculateInlineSaleSpreadsheetRow,
   simulateTripCancellationAndCredit,
@@ -133,6 +136,9 @@ const INITIAL_INLINE_ROWS: InlineSaleSpreadsheetRowInput[] = [
 ];
 
 export function InlineSalesSpreadsheetAndGoalsPanel() {
+  const { currentStore } = useWorkspaceStore();
+  const storeId = currentStore?.id || "default";
+
   const [rows, setRows] = useState<InlineSaleSpreadsheetRowInput[]>(INITIAL_INLINE_ROWS);
   const [agents, setAgents] = useState<AgentCommissionProfile[]>(DEFAULT_AGENT_PROFILES);
   const [operatorConfigs, setOperatorConfigs] = useState<OperatorOverRetentionConfig[]>(
@@ -140,6 +146,63 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
   );
   const [showArchived, setShowArchived] = useState(false);
   const [showOperatorSettings, setShowOperatorSettings] = useState(false);
+  const [showAgentSettings, setShowAgentSettings] = useState(false);
+
+  // Carrega configurações persistidas por agência/tenant no mount
+  useEffect(() => {
+    try {
+      const savedRows = localStorage.getItem(`waesy_travel_sales_rows_${storeId}`);
+      if (savedRows) {
+        const parsed = JSON.parse(savedRows);
+        if (Array.isArray(parsed) && parsed.length > 0) setRows(parsed);
+      }
+
+      const savedAgents = localStorage.getItem(`waesy_travel_agents_${storeId}`);
+      if (savedAgents) {
+        const parsed = JSON.parse(savedAgents);
+        if (Array.isArray(parsed) && parsed.length > 0) setAgents(parsed);
+      }
+
+      const savedOps = localStorage.getItem(`waesy_travel_operator_configs_${storeId}`);
+      if (savedOps) {
+        const parsed = JSON.parse(savedOps);
+        if (Array.isArray(parsed) && parsed.length > 0) setOperatorConfigs(parsed);
+      }
+    } catch (e) {
+      console.warn("[InlineSalesSpreadsheetAndGoalsPanel] Erro ao carregar dados locais:", e);
+    }
+  }, [storeId]);
+
+  // Salva automaticamente alterações locais
+  const persistChanges = useCallback(
+    (newRows?: InlineSaleSpreadsheetRowInput[], newAgents?: AgentCommissionProfile[], newOps?: OperatorOverRetentionConfig[]) => {
+      try {
+        if (newRows) localStorage.setItem(`waesy_travel_sales_rows_${storeId}`, JSON.stringify(newRows));
+        if (newAgents) localStorage.setItem(`waesy_travel_agents_${storeId}`, JSON.stringify(newAgents));
+        if (newOps) localStorage.setItem(`waesy_travel_operator_configs_${storeId}`, JSON.stringify(newOps));
+      } catch (e) {
+        console.warn("[InlineSalesSpreadsheetAndGoalsPanel] Erro ao salvar dados locais:", e);
+      }
+    },
+    [storeId],
+  );
+
+  const handleManualSave = () => {
+    persistChanges(rows, agents, operatorConfigs);
+    toast.success("Configurações e planilha salvas com sucesso!");
+  };
+
+  const handleRestoreDefaults = () => {
+    setRows(INITIAL_INLINE_ROWS);
+    setAgents(DEFAULT_AGENT_PROFILES);
+    setOperatorConfigs(DEFAULT_OPERATOR_OVER_RETENTION_CONFIGS);
+    try {
+      localStorage.removeItem(`waesy_travel_sales_rows_${storeId}`);
+      localStorage.removeItem(`waesy_travel_agents_${storeId}`);
+      localStorage.removeItem(`waesy_travel_operator_configs_${storeId}`);
+    } catch {}
+    toast.info("Configurações restauradas para o padrão do sistema.");
+  };
 
   // Estado do Simulador de Cancelamento / Multa / Carta de Crédito / Financiamento Ativo
   const [cancelTargetRowId, setCancelTargetRowId] = useState<string | null>(null);
@@ -164,15 +227,19 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
     field: K,
     value: InlineSaleSpreadsheetRowInput[K],
   ) => {
-    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
+    setRows((prev) => {
+      const next = prev.map((r) => (r.id === id ? { ...r, [field]: value } : r));
+      persistChanges(next);
+      return next;
+    });
   };
 
   const handleOperatorChangeForRow = (rowId: string, newOperatorName: string) => {
     const matchedOp = operatorConfigs.find(
       (op) => op.operatorName.toLowerCase() === newOperatorName.toLowerCase(),
     );
-    setRows((prev) =>
-      prev.map((r) => {
+    setRows((prev) => {
+      const next = prev.map((r) => {
         if (r.id !== rowId) return r;
         return {
           ...r,
@@ -182,8 +249,10 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
             : r.overRetentionFeePct,
           baseCommissionPct: matchedOp ? matchedOp.baseAgencyCommissionPct : r.baseCommissionPct,
         };
-      }),
-    );
+      });
+      persistChanges(next);
+      return next;
+    });
   };
 
   const handleAddInlineRow = () => {
@@ -216,7 +285,11 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
       deductCommissionOnCancel: false,
       managerCommissionClawbackCents: null,
     };
-    setRows((prev) => [newRow, ...prev]);
+    setRows((prev) => {
+      const next = [newRow, ...prev];
+      persistChanges(next);
+      return next;
+    });
     toast.success("Nova venda adicionada na planilha editável in-page!");
   };
 
@@ -275,6 +348,25 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleManualSave}
+              className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer text-primary border-primary/30 hover:bg-primary/10"
+            >
+              <Save className="size-4" />
+              <span>Salvar Planilha</span>
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={handleRestoreDefaults}
+              className="h-11 min-h-11 px-3 rounded-lg text-xs font-medium gap-1 cursor-pointer text-muted-foreground hover:text-foreground"
+              title="Restaurar padrão da agência"
+            >
+              <RotateCcw className="size-3.5" />
+              <span>Restaurar</span>
+            </Button>
             <Button
               type="button"
               variant="outline"
