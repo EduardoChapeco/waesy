@@ -26,6 +26,7 @@ const ENTRY_POINTS_PATTERNS = [
   "src/services/",
   "src/plugins/",
   "src/server.ts",
+  "src/start.ts",
   "src/integrations/supabase/client.ts",
   "src/config/route-registry.ts",
   ".test.ts",

@@ -11,25 +11,36 @@ import { requestTravelQuote, type TravelTripType } from "@/services/tourism.func
 import { toast } from "sonner";
 
 interface TravelQuoteModalProps {
- open: boolean;
- onOpenChange: (open: boolean) => void;
- defaultDestination?: string;
- defaultTripType?: TravelTripType;
+  open: boolean;
+  onOpenChange?: (open: boolean) => void;
+  onClose?: () => void;
+  defaultDestination?: string;
+  initialDestination?: string;
+  defaultTripType?: TravelTripType;
 }
 
 export function TravelQuoteModal({
- open,
- onOpenChange,
- defaultDestination = "",
- defaultTripType = "air_package",
+  open,
+  onOpenChange,
+  onClose,
+  defaultDestination = "",
+  initialDestination,
+  defaultTripType = "air_package",
 }: TravelQuoteModalProps) {
- // Wizard steps: 1: Origem & Destino, 2: Datas, 3: Quartos & Idades, 4: Contato & Envio
+  const handleOpenChange = (isOpen: boolean) => {
+    onOpenChange?.(isOpen);
+    if (!isOpen) {
+      onClose?.();
+    }
+  };
+
+  // Wizard steps: 1: Origem & Destino, 2: Datas, 3: Quartos & Idades, 4: Contato & Envio
  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
 
  // Form states
  const [origin, setOrigin] = useState("");
  const [originIata, setOriginIata] = useState("");
- const [destination, setDestination] = useState(defaultDestination || "");
+ const [destination, setDestination] = useState(defaultDestination || initialDestination || "");
  const [destinationIata, setDestinationIata] = useState("");
 
  const [departureDate, setDepartureDate] = useState("");
@@ -121,11 +132,11 @@ export function TravelQuoteModal({
  const resetAll = () => {
  setStep(1);
  setIsCompleted(false);
- onOpenChange(false);
+ handleOpenChange(false);
  };
 
  return (
- <Dialog open={open} onOpenChange={onOpenChange}>
+ <Dialog open={open} onOpenChange={handleOpenChange}>
  <DialogContent className="sm:max-w-md sm:w-full sm:rounded-lg p-0 overflow-hidden bg-card border-border">
  {/* Header de Cotação de Viagem */}
  <div className="bg-linear-to-r from-blue-700 via-indigo-600 to-violet-700 text-white p-5 space-y-1 relative">

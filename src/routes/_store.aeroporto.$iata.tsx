@@ -307,7 +307,7 @@ function AirportDetailPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {profile.official_sectors.map((s) => (
+              {profile.official_sectors.map((s: any) => (
                 <div
                   key={s.id}
                   className="bg-card border border-border/70 rounded-lg p-5 space-y-3 flex flex-col justify-between"
@@ -366,7 +366,7 @@ function AirportDetailPage() {
             <div className="space-y-3">
               <h2 className="text-lg font-bold text-foreground">Taxas Aeroportuárias e Trânsito Internacional</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {profile.fees_and_taxes.map((fee, idx) => (
+                {profile.fees_and_taxes.map((fee: any, idx: number) => (
                   <div key={idx} className="bg-card border border-border/70 rounded-lg p-5 space-y-3">
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-bold text-foreground text-sm">{fee.title}</span>
@@ -403,7 +403,7 @@ function AirportDetailPage() {
             <div className="space-y-3">
               <h2 className="text-lg font-bold text-foreground">Comodidades, Lounges e Serviços Internos</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {profile.amenities.map((item, idx) => (
+                {profile.amenities.map((item: any, idx: number) => (
                   <div key={idx} className="bg-card border border-border/70 rounded-lg p-5 space-y-2">
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-bold text-foreground text-sm">{item.name}</span>
@@ -625,7 +625,7 @@ function AirportDetailPage() {
                     Pontos de Interesse nas Proximidades
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    {profile.nearby_points.map((pt) => (
+                    {profile.nearby_points.map((pt: any) => (
                       <div key={pt.id} className="p-3 bg-muted/40 rounded-lg border border-border/60 text-xs space-y-1">
                         <div className="font-bold text-foreground">{pt.name}</div>
                         <div className="text-muted-foreground">
