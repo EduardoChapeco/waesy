@@ -182,12 +182,21 @@ export function verifyTicketPayload(
   }
 
   // 3. Fallback legado: UUID ou TKT-<6 chars>
-  const isUuid =
-    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(clean);
+  const hexChar = "[0-9a-fA-F]";
+  const isUuid = new RegExp(`^${hexChar}{8}-${hexChar}{4}-${hexChar}{4}-${hexChar}{4}-${hexChar}{12}$`).test(clean);
+  const isLegacyCode = clean.startsWith("TKT-") && clean.length >= 10;
+
+  if (isUuid || isLegacyCode) {
+    return {
+      isValid: true,
+      ticketId: clean,
+      isLegacy: true,
+    };
+  }
 
   return {
-    isValid: true,
-    ticketId: clean,
-    isLegacy: true,
+    isValid: false,
+    errorCode: "MALFORMED_PAYLOAD",
+    errorMessage: "Formato de ingresso desconhecido ou corrompido.",
   };
 }

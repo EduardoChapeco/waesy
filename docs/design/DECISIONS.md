@@ -1,5 +1,15 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-318: Blindagem Anti-Injeção de Ingressos (WCTS-1), Validação Criptográfica Estrita e Cobertura de Testes
+- **Data:** 2026-10-22
+- **Contexto:** Auditoria de segurança de ingressos e eventos conforme Invariante B.40 (AGENTS.md). Identificado que o validador de ingressos legados em `ticket-crypto.ts` aceitava indiscriminadamente qualquer string não formatada como ingresso legado válido.
+- **Decisão:**
+  1. **Blindagem Criptográfica Estrita (Invariante B.40):** Restrita a aceitação de ingressos legados exclusivamente a UUIDs genuínos (`/^[0-9a-fA-F-]{36}$/`) ou códigos formais (`/^TKT-[0-9A-Za-z]{6,}$/`). Qualquer outra string desconhecida é categoricamente rejeitada com `errorCode: "MALFORMED_PAYLOAD"`.
+  2. **Assinatura HMAC-SHA256 & Timing-Safe:** Mantida validação com `timingSafeEqual` para todos os bilhetes emitidos sob o padrão soberano WCTS-1 (`v1:TKT:...`).
+  3. **Suíte Automatizada Criada:** Criado `src/lib/__tests__/ticket-crypto.test.ts` com 5 testes de regressão cobrindo assinatura, verificação com contexto, rejeição de payloads adulterados, formatos legados válidos e rejeição de entradas maliciosas/malformadas.
+- **Fundamentação:** AGENTS.md B.40, B.41; RFC 2104 (HMAC-SHA256); OWASP API Security.
+- **Consequências:** Zero brechas para injeção de ingressos falsos ou arbitrários no sistema de eventos; 12 arquivos de teste (61 testes) 100% aprovados.
+
 ## DEC-317: Ratchet de Design Lint (-1796 Violações), Verificação End-to-End de Turismo, Web Agent e Sincronização Estrita
 - **Data:** 2026-10-22
 - **Contexto:** Execução global de auditoria, saneamento e conformidade de integridade end-to-end solicitada pelo usuário para validação das frentes de Turismo, Inteligência de Crédito, Cancelamento com Multas Dinâmicas, Sentinel de Prazos de Hotéis, Anamnese de Passageiros, Scraper do Google Maps, Web Agent com Runtime Autônomo e Saneamento de Sintaxe JSX em componentes centrais.
