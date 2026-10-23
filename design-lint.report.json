@@ -1,27 +1,27 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-23T02:17:40.835Z",
+  "timestamp": "2026-10-23T02:21:21.218Z",
   "inspectedFiles": 2237,
-  "totalViolations": 12270,
+  "totalViolations": 12263,
   "summary": {
-    "totalViolations": 12270,
+    "totalViolations": 12263,
     "bySeverity": {
       "P0": 1355,
-      "P1": 8329,
+      "P1": 8322,
       "P2": 1314,
       "P3": 1272
     },
     "byRule": {
       "DL-18": 1148,
       "DL-02": 3381,
-      "DL-14": 2016,
+      "DL-14": 2011,
       "DL-28": 280,
       "DL-15": 1352,
       "DL-07": 479,
       "DL-27": 1006,
       "DL-30": 266,
-      "DL-01": 875,
       "DL-26": 84,
+      "DL-01": 873,
       "DL-29": 119,
       "DL-05": 130,
       "DL-23": 355,
@@ -38,9 +38,9 @@
     },
     "byModule": {
       "components/app": {
-        "total": 5558,
+        "total": 5551,
         "P0": 557,
-        "P1": 3769,
+        "P1": 3762,
         "P2": 688,
         "P3": 544
       },
@@ -143,7 +143,7 @@
         "P3": 0
       }
     },
-    "filesWithViolations": 891,
+    "filesWithViolations": 889,
     "filesCount": 2237
   },
   "config": {
@@ -784,61 +784,6 @@
       "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
     },
     {
-      "id": "DL-14",
-      "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/ad-engine/public/listing-empty-state.tsx",
-      "module": "components/app",
-      "line": 114,
-      "column": 41,
-      "severity": "P1",
-      "match": "h-10",
-      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-10\"). Exige min-h-11 (44px)."
-    },
-    {
-      "id": "DL-14",
-      "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/ad-engine/public/listing-empty-state.tsx",
-      "module": "components/app",
-      "line": 125,
-      "column": 41,
-      "severity": "P1",
-      "match": "h-10",
-      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-10\"). Exige min-h-11 (44px)."
-    },
-    {
-      "id": "DL-14",
-      "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/ad-engine/public/listing-empty-state.tsx",
-      "module": "components/app",
-      "line": 136,
-      "column": 41,
-      "severity": "P1",
-      "match": "h-10",
-      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-10\"). Exige min-h-11 (44px)."
-    },
-    {
-      "id": "DL-14",
-      "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/ad-engine/public/listing-empty-state.tsx",
-      "module": "components/app",
-      "line": 148,
-      "column": 41,
-      "severity": "P1",
-      "match": "h-10",
-      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-10\"). Exige min-h-11 (44px)."
-    },
-    {
-      "id": "DL-14",
-      "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/ad-engine/public/listing-empty-state.tsx",
-      "module": "components/app",
-      "line": 160,
-      "column": 41,
-      "severity": "P1",
-      "match": "h-10",
-      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-10\"). Exige min-h-11 (44px)."
-    },
-    {
       "id": "DL-15",
       "rule": "DL-15",
       "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/admin-shell.tsx",
@@ -892,28 +837,6 @@
       "severity": "P1",
       "match": "h-6",
       "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-6\"). Exige min-h-11 (44px)."
-    },
-    {
-      "id": "DL-01",
-      "rule": "DL-01",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/ColorPicker.tsx",
-      "module": "components/app",
-      "line": 18,
-      "column": 19,
-      "severity": "P1",
-      "match": "#000000",
-      "message": "Cor hexadecimal literal \"#000000\" fora da camada de token."
-    },
-    {
-      "id": "DL-01",
-      "rule": "DL-01",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/ColorPicker.tsx",
-      "module": "components/app",
-      "line": 27,
-      "column": 15,
-      "severity": "P1",
-      "match": "#000000",
-      "message": "Cor hexadecimal literal \"#000000\" fora da camada de token."
     },
     {
       "id": "DL-02",
@@ -1992,6 +1915,83 @@
       "severity": "P1",
       "match": "text-[10px]",
       "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-29",
+      "rule": "DL-29",
+      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-docking-matrix.tsx",
+      "module": "components/app",
+      "line": 45,
+      "column": 22,
+      "severity": "P2",
+      "match": "grid-cols-3",
+      "message": "Grid de 3 ou mais colunas \"grid-cols-3\" aplicado sem prefixo responsivo (sm:/md:/lg:), quebrando telas móveis."
+    },
+    {
+      "id": "DL-27",
+      "rule": "DL-27",
+      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-docking-matrix.tsx",
+      "module": "components/app",
+      "line": 56,
+      "column": 54,
+      "severity": "P3",
+      "match": "transition-all",
+      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-docking-matrix.tsx",
+      "module": "components/app",
+      "line": 56,
+      "column": 3,
+      "severity": "P1",
+      "match": "size-6",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"size-6\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-15",
+      "rule": "DL-15",
+      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-docking-matrix.tsx",
+      "module": "components/app",
+      "line": 50,
+      "column": 2,
+      "severity": "P0",
+      "match": "<button sem focus-visible",
+      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
+    },
+    {
+      "id": "DL-07",
+      "rule": "DL-07",
+      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-floating-action-bar.tsx",
+      "module": "components/app",
+      "line": 35,
+      "column": 111,
+      "severity": "P2",
+      "match": "shadow-xl",
+      "message": "Sombra decorativa \"shadow-xl\" em superfície de aplicação. Sombras restritas a overlays."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-floating-action-bar.tsx",
+      "module": "components/app",
+      "line": 40,
+      "column": 13,
+      "severity": "P1",
+      "match": "text-[10px]",
+      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-15",
+      "rule": "DL-15",
+      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-floating-action-bar.tsx",
+      "module": "components/app",
+      "line": 33,
+      "column": 2,
+      "severity": "P0",
+      "match": "onClick sem focus-visible",
+      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
     }
   ]
 }

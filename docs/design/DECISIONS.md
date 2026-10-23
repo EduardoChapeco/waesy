@@ -1,5 +1,12 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-294: Onda 3 de Estados Vazios e Seletor de Cor
+- **Data:** 2026-10-22
+- **Contexto:** Ações do estado vazio usavam altura de 40px; o seletor de cor declarava `#000000` diretamente no componente e oferecia campo de 32px.
+- **Decisão:** Elevar todas as ações para `h-11 min-h-11`, manter foco visível e encurtar rótulos; calcular a cor inicial a partir de canais RGB para preservar a validade do input sem literal hexadecimal na interface.
+- **Evidência:** Typecheck PASS; 3 arquivos de teste e 15 testes PASS; design lint reduziu 12.270 para 12.263 violações (-7); `git diff --check` PASS.
+- **Consequências:** Estados vazios operáveis em mobile e teclado, com seletor de cor compatível e alinhado à camada de tokens.
+
 ## DEC-293: Onda 2 de Acessibilidade no Shell Administrativo
 - **Data:** 2026-10-22
 - **Contexto:** O shell compartilhado concentrava violações P0/P1 de foco, alvos menores que 44px e classes arbitrárias de viewport, largura, tipografia e altura.
