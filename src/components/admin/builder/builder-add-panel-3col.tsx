@@ -209,12 +209,12 @@ const SINGLE_BLOCKS: Record<"viagem" | "negocios" | "basico", SingleBlockDef[]> 
   { type: "buttons", icon: Zap, label: "Botões", template: { buttons: [{ id: "1", text: "Botão 1", url: "https://example.com", variant: "primary" }], layout: "vertical" } },
   { type: "gallery", icon: Images, label: "Galeria", template: { images: ["", "", ""] } },
   { type: "form", icon: FileText, label: "Formulário", template: { title: "Peça sua cotação", nameLabel: "Digite seu nome", buttonText: "Enviar", termsText: "Aceito os termos e condições" } },
-  { type: "countdown", icon: Timer, label: "Contador Regressivo", template: { title: "A OFERTA TERMINA EM", endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), backgroundColor: "hsl(0, 84%, 60%)" } },
+  { type: "countdown", icon: Timer, label: "Contador Regressivo", template: { title: "A OFERTA TERMINA EM", endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), backgroundColor: "var(--destructive)" } },
   { type: "divider", icon: AlignLeft, label: "Divisor", template: { style: "line", spacing: "md" } },
   { type: "table", icon: TableIcon, label: "Tabela", template: { title: "Tabela", headers: ["Produto", "Utilização", "Taxa", "Valor"], rows: [{ id: "1", cells: ["Item 1", "08/12/2025", "-", "R$ 999,00"] }] } },
   { type: "expandableText", icon: ChevronDown, label: "Texto Expansível", template: { title: "Clique para expandir", content: "Conteúdo detalhado aqui...", defaultExpanded: false } },
   { type: "acceptCheckbox", icon: CheckSquare, label: "Caixa de Aceite", template: { label: "Li e aceito os termos e condições", required: true } },
-  { type: "floatingButtons", icon: MousePointer2, label: "Botões Flutuantes", template: { buttons: [{ id: "1", type: "whatsapp", label: "WhatsApp", value: "5511999999999", position: "bottom-right", backgroundColor: "#25D366", textColor: "#ffffff" }] } },
+  { type: "floatingButtons", icon: MousePointer2, label: "Botões Flutuantes", template: { buttons: [{ id: "1", type: "whatsapp", label: "WhatsApp", value: "5511999999999", position: "bottom-right", backgroundColor: "var(--success)", textColor: "var(--success-foreground)" }] } },
  ],
 };
 
@@ -261,13 +261,13 @@ export function BuilderAddPanel3Col({
  : activeTemplates;
 
  return (
- <div className="fixed inset-y-0 left-12 z-40 flex select-none animate-in slide-in-from-left duration-200 shadow-2xl">
+ <div className="fixed inset-y-0 left-12 z-40 flex select-none animate-in slide-in-from-left duration-200 motion-reduce:animate-none">
  {/* ── PAINEL PRINCIPAL DE 3 COLUNAS (Wix Studio / Linear Standard) ── */}
- <div className="flex h-full bg-card border-r border-border shadow-2xl">
+ <div className="flex h-full bg-card border-r border-border">
  {/* COLUNA 1: Categorias Principais (170px) */}
  <div className="w-48 bg-muted/20 border-r border-border/70 flex flex-col py-3">
  <div className="px-3 pb-2 flex items-center justify-between border-b border-border/50">
- <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+ <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
  Biblioteca de Seções
  </span>
  </div>
@@ -287,7 +287,7 @@ export function BuilderAddPanel3Col({
  setSelectedSubId(cat.subcategories[0]?.id || "");
  }}
  className={cn(
- "w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs transition-all cursor-pointer text-left",
+ "w-full min-h-11 min-w-11 flex items-center justify-between px-3 py-2 rounded-lg text-xs transition-colors motion-reduce:transition-none cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  isSelected
  ? "bg-primary/10 text-primary font-bold shadow-2xs border border-primary/20"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -308,7 +308,7 @@ export function BuilderAddPanel3Col({
  {/* COLUNA 2: Subcategorias (150px) */}
  <div className="w-40 bg-card border-r border-border/70 flex flex-col py-3">
  <div className="px-3 pb-2 border-b border-border/50">
- <span className="text-[11px] font-bold text-foreground truncate block">
+ <span className="text-xs font-bold text-foreground truncate block">
  {currentCategory.label}
  </span>
  </div>
@@ -316,13 +316,13 @@ export function BuilderAddPanel3Col({
  <ScrollArea className="flex-1 py-1 px-2">
  <div className="space-y-1">
  {isBlocosMode
- ? SINGLE_BLOCK_SUBCATEGORIES.map((sub) => (
- <button
- key={sub.id}
- type="button"
- onClick={() => setSingleBlockSub(sub.id)}
- className={cn(
- "w-full px-3 py-2 rounded-lg text-xs transition-all cursor-pointer text-left truncate block",
+  ? SINGLE_BLOCK_SUBCATEGORIES.map((sub) => (
+  <button
+  key={sub.id}
+  type="button"
+  onClick={() => setSingleBlockSub(sub.id)}
+  className={cn(
+  "w-full min-h-11 min-w-11 px-3 py-2 rounded-lg text-xs transition-colors motion-reduce:transition-none cursor-pointer text-left truncate block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  singleBlockSub === sub.id
  ? "bg-primary text-primary-foreground font-bold shadow-2xs"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -331,15 +331,15 @@ export function BuilderAddPanel3Col({
  {sub.label}
  </button>
  ))
- : currentCategory.subcategories.map((sub) => {
- const isSelected = selectedSubId === sub.id;
- return (
- <button
- key={sub.id}
- type="button"
- onClick={() => setSelectedSubId(sub.id)}
- className={cn(
- "w-full px-3 py-2 rounded-lg text-xs transition-all cursor-pointer text-left truncate block",
+  : currentCategory.subcategories.map((sub) => {
+  const isSelected = selectedSubId === sub.id;
+  return (
+  <button
+  key={sub.id}
+  type="button"
+  onClick={() => setSelectedSubId(sub.id)}
+  className={cn(
+  "w-full min-h-11 min-w-11 px-3 py-2 rounded-lg text-xs transition-colors motion-reduce:transition-none cursor-pointer text-left truncate block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  isSelected
  ? "bg-primary text-primary-foreground font-bold shadow-2xs"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -354,7 +354,7 @@ export function BuilderAddPanel3Col({
  </div>
 
  {/* COLUNA 3: Cards Visuais com Render & Inserção (380px) */}
- <div className="w-[380px] bg-card flex flex-col">
+ <div className="w-96 bg-card flex flex-col">
  {/* Header da Coluna 3 com Busca e Fechar */}
  <div className="p-3 border-b border-border/70 flex items-center justify-between gap-2 bg-muted/10">
  <div className="relative flex-1">
@@ -363,7 +363,7 @@ export function BuilderAddPanel3Col({
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
  placeholder="Buscar modelos de seção..."
- className="h-8 pl-8 text-xs rounded-lg bg-background border-border/80"
+ className="h-11 min-h-11 pl-8 text-xs rounded-lg bg-background border-border/80"
  />
  </div>
  <Button
@@ -371,7 +371,7 @@ export function BuilderAddPanel3Col({
  variant="ghost"
  size="icon"
  onClick={onClose}
- className="size-7 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
+ className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
  >
  <X className="size-3.5" />
  </Button>
@@ -382,23 +382,24 @@ export function BuilderAddPanel3Col({
  <div className="space-y-3 pb-8">
  {isBlocosMode ? (
   SINGLE_BLOCKS[singleBlockSub].map((block) => (
-  <div
+  <button
+  type="button"
   key={block.type}
   onClick={() => {
   onInsertSingleBlock(block.type);
   onClose();
   }}
-  className="group rounded-lg border border-border/70 bg-muted/20 hover:bg-muted/50 hover:border-primary/50 transition-all cursor-pointer overflow-hidden p-3 flex items-center gap-3 shadow-2xs"
+  className="group w-full min-h-11 min-w-11 rounded-lg border border-border/70 bg-muted/20 hover:bg-muted/50 hover:border-primary/50 transition-colors motion-reduce:transition-none cursor-pointer overflow-hidden p-3 flex items-center gap-3 text-left shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
   >
   <div className="size-10 rounded-lg bg-background border border-border/50 flex items-center justify-center text-muted-foreground">
   <block.icon className="size-5" />
   </div>
   <div className="flex-1">
   <p className="text-xs font-bold text-foreground">{block.label}</p>
-  <p className="text-[10px] text-muted-foreground">Inserir bloco individual</p>
+  <p className="text-xs text-muted-foreground">Inserir bloco individual</p>
   </div>
   <Plus className="size-4 text-muted-foreground group-hover:text-primary" />
-  </div>
+  </button>
   ))
  ) : displayedTemplates.length === 0 ? (
  <div className="p-8 text-center text-muted-foreground text-xs space-y-1">
@@ -408,49 +409,50 @@ export function BuilderAddPanel3Col({
  </div>
  ) : (
  displayedTemplates.map((template) => (
- <div
+ <button
+ type="button"
  key={template.id}
  onClick={() => {
  onSelectTemplate(template);
  onClose();
  }}
- className="group rounded-lg border border-border/70 bg-muted/20 hover:bg-muted/50 hover:border-primary/50 transition-all cursor-pointer overflow-hidden p-3 space-y-3 shadow-2xs"
+ className="group w-full min-h-11 min-w-11 rounded-lg border border-border/70 bg-muted/20 hover:bg-muted/50 hover:border-primary/50 transition-colors motion-reduce:transition-none cursor-pointer overflow-hidden p-3 space-y-3 text-left shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
  >
  <div className="flex items-center justify-between">
- <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
+ <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors motion-reduce:transition-none">
  {template.name}
  </span>
- <Badge variant="outline" className="text-[9px] px-2 py-0 font-medium">
+ <Badge variant="outline" className="text-xs px-2 py-0 font-medium">
  {template.category}
  </Badge>
  </div>
 
  {/* Render Visual / Miniatura Gráfica da Seção */}
- <div className="h-28 rounded-lg bg-background border border-border/60 overflow-hidden relative flex items-center justify-center group-hover:shadow-xs transition-shadow">
+ <div className="h-28 rounded-lg bg-background border border-border/60 overflow-hidden relative flex items-center justify-center group-hover:shadow-xs transition-shadow motion-reduce:transition-none">
  {template.previewImageUrl ? (
  <img
  src={template.previewImageUrl}
  alt={template.name}
- className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
+ className="size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
  />
  ) : (
  <div className="flex flex-col items-center gap-1 text-muted-foreground/50">
  <LayoutTemplate className="size-6" />
- <span className="text-[10px] font-mono">Prévia da Seção</span>
+ <span className="text-xs font-mono">Prévia da Seção</span>
  </div>
  )}
- <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/10 transition-colors flex items-center justify-center">
- <span className="px-3 py-1 rounded-full bg-primary text-primary-foreground text-[11px] font-bold opacity-0 group-hover:opacity-100 transition-opacity shadow-md flex items-center gap-1">
+ <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/10 transition-colors motion-reduce:transition-none flex items-center justify-center">
+ <span className="px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none flex items-center gap-1">
  <Plus className="size-3" />
  <span>Inserir</span>
  </span>
  </div>
  </div>
 
- <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
+ <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
  {template.description}
  </p>
- </div>
+ </button>
  ))
  )}
  </div>
