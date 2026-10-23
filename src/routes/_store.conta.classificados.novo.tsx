@@ -2821,6 +2821,29 @@ const [aiInstructions, setAiInstructions] = useState("");
       if (initialData.attributes.fipe_delta_percent !== undefined) setVehicleFipeDeltaPercent(Number(initialData.attributes.fipe_delta_percent));
     }
 
+    // Agronegócio: reidrata campos quando initialData chega de forma assíncrona (modo edição).
+    if ((initialData.category === "agri" || initialData.category === "agro") && initialData.attributes) {
+      const a = initialData.attributes;
+      const hours = a.hours_used ?? a.horimetro;
+      const traction = a.traction ?? a.tracao;
+      if (hours !== undefined && hours !== null) setAgriHoursUsed(String(hours));
+      if (traction !== undefined && traction !== null) setAgriTraction(String(traction));
+      if (a.implement_type !== undefined && a.implement_type !== null) setAgriImplementType(String(a.implement_type));
+      if (a.year_fab !== undefined && a.year_fab !== null) setAgriYearFab(String(a.year_fab));
+      if (a.power_cv !== undefined && a.power_cv !== null) setAgriPowerCv(String(a.power_cv));
+      if (a.cabin_type !== undefined && a.cabin_type !== null) setAgriCabinType(String(a.cabin_type));
+    }
+
+    // Farmácia: idem; retention_prescription=false precisa ser preservado.
+    if ((initialData.category === "pharmacy" || initialData.category === "farmacia") && initialData.attributes) {
+      const a = initialData.attributes;
+      if (a.subniche !== undefined && a.subniche !== null) setPharmacySubNiche(String(a.subniche));
+      if (a.retention_prescription !== undefined && a.retention_prescription !== null) setPharmacyRetentionPrescription(Boolean(a.retention_prescription));
+      if (a.active_ingredient !== undefined && a.active_ingredient !== null) setPharmacyActiveIngredient(String(a.active_ingredient));
+      if (a.manufacturer !== undefined && a.manufacturer !== null) setPharmacyManufacturer(String(a.manufacturer));
+      if (a.anvisa_registry !== undefined && a.anvisa_registry !== null) setPharmacyAnvisaRegistry(String(a.anvisa_registry));
+    }
+
     if (initialData.sub_category || initialData.attributes?.desapego_subcategory) {
       setDesapegoCategory((initialData.sub_category || initialData.attributes?.desapego_subcategory) as any);
     } else if (initialSubcategory) {

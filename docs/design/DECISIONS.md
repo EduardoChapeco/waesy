@@ -1,5 +1,23 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-320: Execução End-to-End das Ondas 1 a 4 (Classificados, Vitrines, Checkout Atômico e Erradicação de 29 P0s)
+- **Data:** 2026-10-23
+- **Contexto:** Execução integral e profunda das frentes de Classificados, Vitrines, Checkout Transacional e Acessibilidade (Ondas 1 a 4). Resolução dos GAPs arquiteturais (GAP-01 a GAP-07) identificados após merge com a `main` remota:
+  1. `canonical-specs-resolver.ts`: Harmonização de potência (`power_cv` com precedência sobre `power_hp`) e cabine (`cabin_type` string e compatibilidade com booleano legado `cabin`) no maquinário agrícola.
+  2. `_store.conta.classificados.novo.tsx`: Hidratação assíncrona no modo edição preservando campos de maquinário (`hours_used`, `traction`, `implement_type`, `year_fab`, `power_cv`, `cabin_type`) e farmácia (`subniche`, `retention_prescription`, `active_ingredient`, `manufacturer`, `anvisa_registry`) preservando valores booleanos falsos.
+  3. `classified-filter-sheet.tsx`, `use-classified-catalog.ts` e `_store.classificados.index.tsx`: Conexão de facetas dinâmicas com alvos de toque $\ge 44$px (`min-h-11`) e anel `:focus-visible:ring-2` para Agro, Farmácia e Eventos.
+  4. `classified-detail-mobile.tsx` e `classified-detail-desktop.tsx`: Omissão dinâmica de abas vazias per Invariante B.33, sincronização defensiva de `activeTab` e erradicação da sobrescrita do label de visão geral em pousadas/hotéis (utilizando `getNicheTabLabels`).
+  5. `checkout.functions.ts`: Cálculo transacional cumulativo e atômico de taxa de entrega na porta (`door_delivery_fee_cents`) e order bump, evitando sobreposição e perda de valores no `total_cents`, além de persistência defensiva de geolocalização (`delivery_lat`, `delivery_lng`).
+  6. Saneamento em lote de acessibilidade (DL-15): Erradicação de 29 violações P0 em `workspace.pedidos.gestor.tsx`, `workspace.advocacia.index.tsx`, `classified-detail-desktop.tsx` e `_store.doacoes.tsx`. Redução dos P0s globais de 73 para 44 e total de violações baixado para 10.141.
+- **Decisão:**
+  1. **Resolução de Ficha Técnica e Hidratação:** Especificações canônicas refletem imediatamente a potência em CV e o tipo de cabine em anúncios agrícolas; o formulário de edição nunca zera dados existentes.
+  2. **Interatividade Acessível nas Facetas:** No catálogo mobile, os filtros de Agro, Farmácia e Eventos respondem de imediato com touch target canônico $\ge 44$px e feedback visual.
+  3. **Abas Semânticas e Omissão de Estados Vazios (Invariante B.33):** Abas sem fotos adicionais ou sem identificação de vendedor são omitidas da régua, garantindo foco cognitivo e integridade visual.
+  4. **Blindagem Financeira de Checkout (GAP-07):** Taxa de comodidade na porta e order bumps somam de forma cumulativa e segura a `total_cents`, eliminando race conditions em `orders`.
+  5. **Queda Drástica de Violações P0:** Redução dos P0s de todo o repositório de 73 para 44 (-29 P0s eliminados) e catraca congelada via `--update-baseline` com zero regressões no CI.
+- **Fundamentação:** AGENTS.md B.1 a B.45; B.4 (DL-14, DL-15); B.8; B.22; B.25; B.26; B.33; B.34; B.38; WCAG 2.2 AA.
+- **Consequências:** Fim de perdas de atributos na edição de anúncios, integridade garantida no cálculo financeiro de checkout com entrega na porta, catraca de CI baixada para novo teto histórico (44 P0s, 0 regressões) e suíte de testes 100% verde.
+
 ## DEC-319: Persistência Multi-Tenant de Comissões, Metas Escalonadas e Retenções de Operadoras
 - **Data:** 2026-10-22
 - **Contexto:** Resolução da volatilidade da planilha in-page de vendas, metas escalonadas e retenções de over por operadora em `InlineSalesSpreadsheetAndGoalsPanel.tsx`. Anteriormente, as configurações de faixas de faturamento bruto para metas (1% / 1,5% sobre o valor líquido), alíquotas de over (30% sobre o over líquido) e taxas de retenção por operadora eram perdidas a cada reload de página.

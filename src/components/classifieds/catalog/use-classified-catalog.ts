@@ -331,7 +331,11 @@ export function useClassifiedCatalog({
           if (!sub.includes(pharmacySubniche.toLowerCase())) return false;
         }
         if (onlyPrescription) {
-          const req = Boolean(item.attributes?.requires_prescription || item.attributes?.retem_receita);
+          const req = Boolean(
+            item.attributes?.retention_prescription ||
+            item.attributes?.requires_prescription ||
+            item.attributes?.retem_receita
+          );
           if (!req) return false;
         }
       } else if (selectedCategory === "event") {

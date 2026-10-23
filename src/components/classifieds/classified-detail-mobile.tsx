@@ -155,14 +155,33 @@ export function ClassifiedDetailMobile({
     const list: Array<{ id: "overview" | "media" | "seller"; label: string }> = [];
     list.push({
       id: "overview",
-      label: isTravelOrHospitality ? "Infos do Pacote" : nicheTabLabels.overviewTab,
+      label: isTravelOrHospitality && niche.id === "travel" ? "Infos do Pacote" : (nicheTabLabels.overviewTab || "Visão Geral"),
     });
     if (images.length > 1) {
       list.push({ id: "media", label: nicheTabLabels.mediaTab || "Fotos & Mídia" });
     }
-    list.push({ id: "seller", label: nicheTabLabels.sellerTab || "Anunciante / Empresa" });
+    const author = classified.profiles as any;
+    const hasSeller = Boolean(
+      author?.name ||
+      author?.full_name ||
+      author?.phone ||
+      classified.contact_whatsapp ||
+      classified.whatsapp ||
+      classified.store_id ||
+      classified.storeId ||
+      classified.user_id
+    );
+    if (hasSeller) {
+      list.push({ id: "seller", label: nicheTabLabels.sellerTab || "Anunciante / Empresa" });
+    }
     return list;
-  }, [isTravelOrHospitality, nicheTabLabels, images.length]);
+  }, [isTravelOrHospitality, niche.id, nicheTabLabels, images.length, classified]);
+
+  useEffect(() => {
+    if (tabs.length > 0 && !tabs.some((t) => t.id === activeTab)) {
+      setActiveTab(tabs[0].id);
+    }
+  }, [tabs, activeTab]);
 
   const priceCents = Number(classified.price_cents || 0);
   const maxInstallments = Math.max(1, Number(attrs.max_installments) || 1);

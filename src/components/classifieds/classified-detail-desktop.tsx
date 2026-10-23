@@ -154,14 +154,33 @@ export function ClassifiedDetailDesktop({
     const list: Array<{ id: "overview" | "media" | "seller"; label: string }> = [];
     list.push({
       id: "overview",
-      label: isTravelOrHospitality ? "Infos do Pacote" : nicheTabLabels.overviewTab,
+      label: isTravelOrHospitality && niche.id === "travel" ? "Infos do Pacote" : (nicheTabLabels.overviewTab || "Visão Geral"),
     });
     if (images.length > 1) {
       list.push({ id: "media", label: nicheTabLabels.mediaTab || "Fotos & Mídia" });
     }
-    list.push({ id: "seller", label: nicheTabLabels.sellerTab || "Anunciante / Empresa" });
+    const author = classified.profiles as any;
+    const hasSeller = Boolean(
+      author?.name ||
+      author?.full_name ||
+      author?.phone ||
+      classified.contact_whatsapp ||
+      classified.whatsapp ||
+      classified.store_id ||
+      classified.storeId ||
+      classified.user_id
+    );
+    if (hasSeller) {
+      list.push({ id: "seller", label: nicheTabLabels.sellerTab || "Anunciante / Empresa" });
+    }
     return list;
-  }, [isTravelOrHospitality, nicheTabLabels, images.length]);
+  }, [isTravelOrHospitality, niche.id, nicheTabLabels, images.length, classified]);
+
+  useEffect(() => {
+    if (tabs.length > 0 && !tabs.some((t) => t.id === activeTab)) {
+      setActiveTab(tabs[0].id);
+    }
+  }, [tabs, activeTab]);
 
   const priceCents = Number(classified.price_cents || 0);
   const maxInstallments = Math.max(1, Number(attrs.max_installments) || 1);
@@ -484,16 +503,19 @@ export function ClassifiedDetailDesktop({
         ) : images.length === 1 ? (
           <div className="w-full aspect-[16/9] max-h-[480px] rounded-lg overflow-hidden bg-muted/20 border border-border/40 relative group">
             <img
-              src={images[0]}
-              alt={classified.title}
-              className="size-full object-cover cursor-pointer group-hover:scale-[1.01] transition-transform duration-300"
-              onClick={() => setFullscreenImage(images[0])}
-            />
-            <button
-              type="button"
-              onClick={() => setFullscreenImage(images[0])}
-              className="absolute bottom-4 right-4 px-4 py-2 rounded-lg bg-background/90 hover:bg-background text-foreground text-xs font-semibold border border-border/60 flex items-center gap-2 transition-all shadow-sm"
-            >
+    src={images[0]}
+    alt={classified.title}
+    tabIndex={0}
+    role="button"
+    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setFullscreenImage(images[0]); } }}
+    className="size-full object-cover cursor-pointer group-hover:scale-[1.01] transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    onClick={() => setFullscreenImage(images[0])}
+  />
+  <button
+    type="button"
+    onClick={() => setFullscreenImage(images[0])}
+    className="absolute bottom-4 right-4 px-4 py-2 rounded-lg bg-background/90 hover:bg-background text-foreground text-xs font-semibold border border-border/60 flex items-center gap-2 transition-all shadow-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+  >
               <Maximize2 className="size-4" />
               <span>Ver em tela cheia</span>
             </button>
@@ -503,34 +525,43 @@ export function ClassifiedDetailDesktop({
             {/* Foto Principal Hero (8 colunas) */}
             <div className="col-span-8 relative overflow-hidden bg-muted/30 h-full">
               <img
-                src={images[0]}
-                alt={classified.title}
-                className="size-full object-cover cursor-pointer hover:scale-[1.01] transition-transform duration-300"
-                onClick={() => setFullscreenImage(images[0])}
-              />
+    src={images[0]}
+    alt={classified.title}
+    tabIndex={0}
+    role="button"
+    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setFullscreenImage(images[0]); } }}
+    className="size-full object-cover cursor-pointer hover:scale-[1.01] transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    onClick={() => setFullscreenImage(images[0])}
+  />
             </div>
             {/* Fotos Secundárias (4 colunas) */}
             <div className="col-span-4 grid grid-rows-2 gap-3 h-full">
               <div className="relative overflow-hidden bg-muted/30 h-full">
                 <img
-                  src={images[1] || images[0]}
-                  alt=""
-                  className="size-full object-cover cursor-pointer hover:scale-[1.01] transition-transform duration-300"
-                  onClick={() => setFullscreenImage(images[1] || images[0])}
-                />
+    src={images[1] || images[0]}
+    alt=""
+    tabIndex={0}
+    role="button"
+    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setFullscreenImage(images[1] || images[0]); } }}
+    className="size-full object-cover cursor-pointer hover:scale-[1.01] transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    onClick={() => setFullscreenImage(images[1] || images[0])}
+  />
               </div>
               <div className="relative overflow-hidden bg-muted/30 h-full">
                 <img
-                  src={images[2] || images[0]}
-                  alt=""
-                  className="size-full object-cover cursor-pointer hover:scale-[1.01] transition-transform duration-300"
-                  onClick={() => setFullscreenImage(images[2] || images[0])}
-                />
-                <button
-                  type="button"
-                  onClick={() => setFullscreenImage(images[0])}
-                  className="absolute bottom-4 right-4 px-4 py-2 rounded-lg bg-background/95 border border-border/50 text-foreground text-xs font-semibold flex items-center gap-2 shadow-md hover:bg-background cursor-pointer active:scale-95"
-                >
+    src={images[2] || images[0]}
+    alt=""
+    tabIndex={0}
+    role="button"
+    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setFullscreenImage(images[2] || images[0]); } }}
+    className="size-full object-cover cursor-pointer hover:scale-[1.01] transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    onClick={() => setFullscreenImage(images[2] || images[0])}
+  />
+  <button
+    type="button"
+    onClick={() => setFullscreenImage(images[0])}
+    className="absolute bottom-4 right-4 px-4 py-2 rounded-lg bg-background/95 border border-border/50 text-foreground text-xs font-semibold flex items-center gap-2 shadow-md hover:bg-background cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+  >
                   <Maximize2 className="size-3.5" />
                   <span>Ver todas ({images.length})</span>
                 </button>
@@ -1463,9 +1494,9 @@ export function ClassifiedDetailDesktop({
       {/* ── LIGHTBOX MODAL ── */}
       {fullscreenImage && (
         <div
-          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4 select-none animate-in fade-in duration-200"
-          onClick={() => setFullscreenImage(null)}
-        >
+    className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4 select-none animate-in fade-in duration-200 focus-visible:outline-none"
+    onClick={() => setFullscreenImage(null)}
+  >
           <button
             type="button"
             onClick={() => setFullscreenImage(null)}
@@ -1476,20 +1507,20 @@ export function ClassifiedDetailDesktop({
           </button>
           {isVideoUrl(fullscreenImage) ? (
             <video
-              src={fullscreenImage}
-              controls
-              playsInline
-              autoPlay
-              className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
-              onClick={(e) => e.stopPropagation()}
-            />
+    src={fullscreenImage}
+    controls
+    playsInline
+    autoPlay
+    className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg focus-visible:outline-none"
+    onClick={(e) => e.stopPropagation()}
+  />
           ) : (
             <img
-              src={fullscreenImage}
-              alt="Tela cheia"
-              className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
-              onClick={(e) => e.stopPropagation()}
-            />
+    src={fullscreenImage}
+    alt="Tela cheia"
+    className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg focus-visible:outline-none"
+    onClick={(e) => e.stopPropagation()}
+  />
           )}
         </div>
       )}

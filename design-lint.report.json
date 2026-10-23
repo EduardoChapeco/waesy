@@ -1,20 +1,19 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-23T11:57:14.895Z",
+  "timestamp": "2026-10-23T14:14:14.394Z",
   "inspectedFiles": 2324,
-  "totalViolations": 10206,
+  "totalViolations": 10141,
   "summary": {
-    "totalViolations": 10206,
+    "totalViolations": 10141,
     "bySeverity": {
-      "P0": 122,
+      "P0": 44,
       "P1": 7646,
       "P2": 1274,
-      "P3": 1164
+      "P3": 1177
     },
     "byRule": {
-      "DL-15": 122,
       "DL-30": 258,
-      "DL-27": 906,
+      "DL-27": 919,
       "DL-26": 81,
       "DL-07": 443,
       "DL-29": 115,
@@ -23,6 +22,7 @@
       "DL-28": 269,
       "DL-18": 1113,
       "DL-03": 386,
+      "DL-15": 44,
       "DL-09": 163,
       "DL-08": 93,
       "DL-01": 826,
@@ -37,11 +37,11 @@
     },
     "byModule": {
       "components/app": {
-        "total": 4381,
-        "P0": 78,
+        "total": 4336,
+        "P0": 20,
         "P1": 3228,
         "P2": 602,
-        "P3": 473
+        "P3": 486
       },
       "components/builder": {
         "total": 49,
@@ -107,15 +107,15 @@
         "P3": 6
       },
       "routes/workspace": {
-        "total": 1684,
-        "P0": 20,
+        "total": 1675,
+        "P0": 11,
         "P1": 1296,
         "P2": 109,
         "P3": 259
       },
       "routes/store": {
-        "total": 1182,
-        "P0": 11,
+        "total": 1171,
+        "P0": 0,
         "P1": 810,
         "P2": 165,
         "P3": 196
@@ -142,7 +142,7 @@
         "P3": 0
       }
     },
-    "filesWithViolations": 864,
+    "filesWithViolations": 857,
     "filesCount": 2324
   },
   "config": {
@@ -375,28 +375,6 @@
   },
   "violationsSample": [
     {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/editor/sections/listing-scope-section.tsx",
-      "module": "components/app",
-      "line": 111,
-      "column": 17,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/editor/sections/listing-scope-section.tsx",
-      "module": "components/app",
-      "line": 215,
-      "column": 17,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
       "id": "DL-30",
       "rule": "DL-30",
       "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/public/canonical-listing-view.tsx",
@@ -406,17 +384,6 @@
       "severity": "P3",
       "match": "overflow-x-auto",
       "message": "Overflow horizontal \"overflow-x-auto\" em superfície de aplicação fora de tabela/carrossel."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/public/canonical-listing-view.tsx",
-      "module": "components/app",
-      "line": 341,
-      "column": 19,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
     },
     {
       "id": "DL-27",
@@ -540,37 +507,37 @@
       "message": "Sombra decorativa \"shadow-xl\" em superfície de aplicação. Sombras restritas a overlays."
     },
     {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "id": "DL-27",
+      "rule": "DL-27",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
       "module": "components/app",
-      "line": 282,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
+      "line": 80,
+      "column": 146,
+      "severity": "P3",
+      "match": "transition-all",
+      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
     },
     {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-docked-rail.tsx",
+      "id": "DL-27",
+      "rule": "DL-27",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
       "module": "components/app",
-      "line": 57,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
+      "line": 160,
+      "column": 147,
+      "severity": "P3",
+      "match": "transition-all",
+      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
     },
     {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-docked-rail.tsx",
+      "id": "DL-27",
+      "rule": "DL-27",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
       "module": "components/app",
-      "line": 87,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
+      "line": 224,
+      "column": 144,
+      "severity": "P3",
+      "match": "transition-all",
+      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
     },
     {
       "id": "DL-29",
@@ -584,15 +551,15 @@
       "message": "Grid de 3 ou mais colunas \"grid-cols-3\" aplicado sem prefixo responsivo (sm:/md:/lg:), quebrando telas móveis."
     },
     {
-      "id": "DL-15",
-      "rule": "DL-15",
+      "id": "DL-27",
+      "rule": "DL-27",
       "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-docking-matrix.tsx",
       "module": "components/app",
-      "line": 50,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
+      "line": 56,
+      "column": 73,
+      "severity": "P3",
+      "match": "transition-all",
+      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
     },
     {
       "id": "DL-07",
@@ -606,477 +573,125 @@
       "message": "Sombra decorativa \"shadow-xl\" em superfície de aplicação. Sombras restritas a overlays."
     },
     {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-floating-action-bar.tsx",
-      "module": "components/app",
-      "line": 46,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-floating-action-bar.tsx",
-      "module": "components/app",
-      "line": 56,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-floating-action-bar.tsx",
-      "module": "components/app",
-      "line": 69,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-floating-action-bar.tsx",
-      "module": "components/app",
-      "line": 79,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-floating-action-bar.tsx",
-      "module": "components/app",
-      "line": 89,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-floating-action-bar.tsx",
-      "module": "components/app",
-      "line": 98,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-global-theme-panel.tsx",
-      "module": "components/app",
-      "line": 74,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-global-theme-panel.tsx",
-      "module": "components/app",
-      "line": 214,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
       "id": "DL-30",
       "rule": "DL-30",
       "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
       "module": "components/app",
-      "line": 299,
+      "line": 307,
       "column": 120,
       "severity": "P3",
       "match": "overflow-x-auto",
       "message": "Overflow horizontal \"overflow-x-auto\" em superfície de aplicação fora de tabela/carrossel."
     },
     {
+      "id": "DL-27",
+      "rule": "DL-27",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
+      "module": "components/app",
+      "line": 336,
+      "column": 26,
+      "severity": "P3",
+      "match": "transition-all",
+      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
+    },
+    {
+      "id": "DL-27",
+      "rule": "DL-27",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
+      "module": "components/app",
+      "line": 350,
+      "column": 26,
+      "severity": "P3",
+      "match": "transition-all",
+      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
+    },
+    {
+      "id": "DL-27",
+      "rule": "DL-27",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
+      "module": "components/app",
+      "line": 364,
+      "column": 26,
+      "severity": "P3",
+      "match": "transition-all",
+      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
+    },
+    {
+      "id": "DL-27",
+      "rule": "DL-27",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
+      "module": "components/app",
+      "line": 378,
+      "column": 26,
+      "severity": "P3",
+      "match": "transition-all",
+      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
+    },
+    {
+      "id": "DL-27",
+      "rule": "DL-27",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
+      "module": "components/app",
+      "line": 392,
+      "column": 26,
+      "severity": "P3",
+      "match": "transition-all",
+      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
+    },
+    {
+      "id": "DL-27",
+      "rule": "DL-27",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
+      "module": "components/app",
+      "line": 778,
+      "column": 41,
+      "severity": "P3",
+      "match": "transition-all",
+      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
+    },
+    {
+      "id": "DL-27",
+      "rule": "DL-27",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
+      "module": "components/app",
+      "line": 790,
+      "column": 41,
+      "severity": "P3",
+      "match": "transition-all",
+      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
+    },
+    {
       "id": "DL-29",
       "rule": "DL-29",
       "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
       "module": "components/app",
-      "line": 1020,
+      "line": 1049,
       "column": 22,
       "severity": "P2",
       "match": "grid-cols-3",
       "message": "Grid de 3 ou mais colunas \"grid-cols-3\" aplicado sem prefixo responsivo (sm:/md:/lg:), quebrando telas móveis."
     },
     {
-      "id": "DL-15",
-      "rule": "DL-15",
+      "id": "DL-27",
+      "rule": "DL-27",
       "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
       "module": "components/app",
-      "line": 105,
-      "column": 9,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
+      "line": 1065,
+      "column": 53,
+      "severity": "P3",
+      "match": "transition-all",
+      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
     },
     {
-      "id": "DL-15",
-      "rule": "DL-15",
+      "id": "DL-27",
+      "rule": "DL-27",
       "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
       "module": "components/app",
-      "line": 112,
-      "column": 9,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
-      "module": "components/app",
-      "line": 120,
-      "column": 9,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
-      "module": "components/app",
-      "line": 127,
-      "column": 9,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
-      "module": "components/app",
-      "line": 135,
-      "column": 9,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
-      "module": "components/app",
-      "line": 142,
-      "column": 9,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
-      "module": "components/app",
-      "line": 149,
-      "column": 9,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
-      "module": "components/app",
-      "line": 304,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
-      "module": "components/app",
-      "line": 322,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
-      "module": "components/app",
-      "line": 334,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
-      "module": "components/app",
-      "line": 346,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
-      "module": "components/app",
-      "line": 358,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
-      "module": "components/app",
-      "line": 370,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
-      "module": "components/app",
-      "line": 441,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
-      "module": "components/app",
-      "line": 481,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
-      "module": "components/app",
-      "line": 489,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
-      "module": "components/app",
-      "line": 499,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
-      "module": "components/app",
-      "line": 505,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
-      "module": "components/app",
-      "line": 749,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
-      "module": "components/app",
-      "line": 759,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
-      "module": "components/app",
-      "line": 1028,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
-      "module": "components/app",
-      "line": 1059,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-layout-switcher-modal.tsx",
-      "module": "components/app",
-      "line": 114,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-left-panel.tsx",
-      "module": "components/app",
-      "line": 171,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-left-panel.tsx",
-      "module": "components/app",
-      "line": 179,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-left-panel.tsx",
-      "module": "components/app",
-      "line": 187,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-left-panel.tsx",
-      "module": "components/app",
-      "line": 208,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-left-panel.tsx",
-      "module": "components/app",
-      "line": 220,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-left-panel.tsx",
-      "module": "components/app",
-      "line": 282,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-left-panel.tsx",
-      "module": "components/app",
-      "line": 310,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-pages-panel.tsx",
-      "module": "components/app",
-      "line": 128,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-pages-panel.tsx",
-      "module": "components/app",
-      "line": 250,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-pages-panel.tsx",
-      "module": "components/app",
-      "line": 260,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
+      "line": 1098,
+      "column": 63,
+      "severity": "P3",
+      "match": "transition-all",
+      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
     },
     {
       "id": "DL-02",
@@ -1330,17 +945,6 @@
       "severity": "P1",
       "match": "size-10",
       "message": "Alvo de toque com altura/dimensão inferior a 44px (\"size-10\"). Exige min-h-11 (44px)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/MediaUploader.tsx",
-      "module": "components/app",
-      "line": 347,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
     },
     {
       "id": "DL-02",
@@ -2023,6 +1627,402 @@
       "severity": "P3",
       "match": "transition-all",
       "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
+      "module": "components/app",
+      "line": 285,
+      "column": 27,
+      "severity": "P1",
+      "match": "text-[11px]",
+      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
+      "module": "components/app",
+      "line": 345,
+      "column": 25,
+      "severity": "P1",
+      "match": "text-[11px]",
+      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
+      "module": "components/app",
+      "line": 354,
+      "column": 88,
+      "severity": "P1",
+      "match": "text-[11px]",
+      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
+      "module": "components/app",
+      "line": 357,
+      "column": 28,
+      "severity": "P1",
+      "match": "text-[10px]",
+      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-27",
+      "rule": "DL-27",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
+      "module": "components/app",
+      "line": 370,
+      "column": 99,
+      "severity": "P3",
+      "match": "transition-all",
+      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
+      "module": "components/app",
+      "line": 387,
+      "column": 86,
+      "severity": "P1",
+      "match": "text-[11px]",
+      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-27",
+      "rule": "DL-27",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
+      "module": "components/app",
+      "line": 399,
+      "column": 99,
+      "severity": "P3",
+      "match": "transition-all",
+      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
+      "module": "components/app",
+      "line": 415,
+      "column": 86,
+      "severity": "P1",
+      "match": "text-[11px]",
+      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
+      "module": "components/app",
+      "line": 495,
+      "column": 74,
+      "severity": "P1",
+      "match": "text-[10px]",
+      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
+      "module": "components/app",
+      "line": 504,
+      "column": 81,
+      "severity": "P1",
+      "match": "text-[11px]",
+      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
+      "module": "components/app",
+      "line": 337,
+      "column": 30,
+      "severity": "P1",
+      "match": "size-10",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"size-10\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
+      "module": "components/app",
+      "line": 337,
+      "column": 41,
+      "severity": "P1",
+      "match": "size-9",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"size-9\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-modifiers-card.tsx",
+      "module": "components/app",
+      "line": 79,
+      "column": 40,
+      "severity": "P1",
+      "match": "text-[10px]",
+      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-modifiers-card.tsx",
+      "module": "components/app",
+      "line": 99,
+      "column": 13,
+      "severity": "P1",
+      "match": "text-[11px]",
+      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-modifiers-card.tsx",
+      "module": "components/app",
+      "line": 108,
+      "column": 16,
+      "severity": "P1",
+      "match": "text-[11px]",
+      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-modifiers-card.tsx",
+      "module": "components/app",
+      "line": 153,
+      "column": 52,
+      "severity": "P1",
+      "match": "text-[10px]",
+      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-modifiers-card.tsx",
+      "module": "components/app",
+      "line": 157,
+      "column": 3,
+      "severity": "P1",
+      "match": "text-[9px]",
+      "message": "Classe arbitrária com colchetes \"text-[9px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-modifiers-card.tsx",
+      "module": "components/app",
+      "line": 183,
+      "column": 77,
+      "severity": "P1",
+      "match": "text-[10px]",
+      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-modifiers-card.tsx",
+      "module": "components/app",
+      "line": 194,
+      "column": 19,
+      "severity": "P1",
+      "match": "text-[10px]",
+      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-27",
+      "rule": "DL-27",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-modifiers-card.tsx",
+      "module": "components/app",
+      "line": 224,
+      "column": 123,
+      "severity": "P3",
+      "match": "transition-all",
+      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-modifiers-card.tsx",
+      "module": "components/app",
+      "line": 225,
+      "column": 26,
+      "severity": "P1",
+      "match": "stroke-[2.5]",
+      "message": "Classe arbitrária com colchetes \"stroke-[2.5]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-modifiers-card.tsx",
+      "module": "components/app",
+      "line": 232,
+      "column": 16,
+      "severity": "P1",
+      "match": "text-[11px]",
+      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-modifiers-card.tsx",
+      "module": "components/app",
+      "line": 91,
+      "column": 13,
+      "severity": "P1",
+      "match": "h-7",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-7\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-modifiers-card.tsx",
+      "module": "components/app",
+      "line": 137,
+      "column": 82,
+      "severity": "P1",
+      "match": "size-4",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"size-4\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-modifiers-card.tsx",
+      "module": "components/app",
+      "line": 245,
+      "column": 13,
+      "severity": "P1",
+      "match": "h-8",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-8\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-03",
+      "rule": "DL-03",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-upsell-card.tsx",
+      "module": "components/app",
+      "line": 241,
+      "column": 29,
+      "severity": "P1",
+      "match": "space-y-1.5",
+      "message": "Espaçamento \"space-y-1.5\" viola a grade estrita de múltiplos de 4px."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-upsell-card.tsx",
+      "module": "components/app",
+      "line": 260,
+      "column": 29,
+      "severity": "P1",
+      "match": "text-[11px]",
+      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-03",
+      "rule": "DL-03",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-upsell-card.tsx",
+      "module": "components/app",
+      "line": 266,
+      "column": 29,
+      "severity": "P1",
+      "match": "space-y-1.5",
+      "message": "Espaçamento \"space-y-1.5\" viola a grade estrita de múltiplos de 4px."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-upsell-card.tsx",
+      "module": "components/app",
+      "line": 304,
+      "column": 29,
+      "severity": "P1",
+      "match": "text-[11px]",
+      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-03",
+      "rule": "DL-03",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-upsell-card.tsx",
+      "module": "components/app",
+      "line": 316,
+      "column": 86,
+      "severity": "P1",
+      "match": "space-y-2.5",
+      "message": "Espaçamento \"space-y-2.5\" viola a grade estrita de múltiplos de 4px."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-upsell-card.tsx",
+      "module": "components/app",
+      "line": 325,
+      "column": 59,
+      "severity": "P1",
+      "match": "text-[10px]",
+      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-upsell-card.tsx",
+      "module": "components/app",
+      "line": 353,
+      "column": 42,
+      "severity": "P1",
+      "match": "text-[11px]",
+      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-28",
+      "rule": "DL-28",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-upsell-card.tsx",
+      "module": "components/app",
+      "line": 1,
+      "column": 1,
+      "severity": "P1",
+      "match": "animate-* sem motion-reduce",
+      "message": "Animação ativa sem tratamento para preferências de movimento reduzido (motion-reduce:transition-none)."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/quick-option-group-dialog.tsx",
+      "module": "components/app",
+      "line": 309,
+      "column": 42,
+      "severity": "P1",
+      "match": "text-[11px]",
+      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-27",
+      "rule": "DL-27",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/quick-option-group-dialog.tsx",
+      "module": "components/app",
+      "line": 321,
+      "column": 134,
+      "severity": "P3",
+      "match": "transition-all",
+      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/quick-option-group-dialog.tsx",
+      "module": "components/app",
+      "line": 327,
+      "column": 19,
+      "severity": "P1",
+      "match": "text-[10px]",
+      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
     }
   ]
 }

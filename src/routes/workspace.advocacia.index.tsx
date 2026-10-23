@@ -747,21 +747,36 @@ function WorkspaceAdvocaciaPage() {
  <TableBody>
  {filteredLawsuits.map((lawsuit: any) => (
  <TableRow
- key={lawsuit.id}
- onClick={() => setSelectedLawsuit(lawsuit)}
- className="cursor-pointer hover:bg-muted/20 transition-colors"
- >
+    key={lawsuit.id}
+    role="row"
+    tabIndex={0}
+    onKeyDown={(e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        setSelectedLawsuit(lawsuit);
+      }
+    }}
+    onClick={() => setSelectedLawsuit(lawsuit)}
+    className="cursor-pointer hover:bg-muted/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+  >
  {/* Favorito */}
- <TableCell onClick={(e) => handleToggleFavorite(e, lawsuit)} className="text-center">
- <Star
- className={cn(
- "size-4 mx-auto transition-colors",
- lawsuit.is_favorite
- ? "text-amber-500 fill-amber-500"
- : "text-muted-foreground/40 hover:text-amber-500"
- )}
- />
- </TableCell>
+ <TableCell className="text-center">
+    <button
+      type="button"
+      aria-label={lawsuit.is_favorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+      onClick={(e) => handleToggleFavorite(e, lawsuit)}
+      className="p-1 rounded-md transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+    >
+      <Star
+        className={cn(
+          "size-4 mx-auto transition-colors",
+          lawsuit.is_favorite
+            ? "text-amber-500 fill-amber-500"
+            : "text-muted-foreground/40 hover:text-amber-500"
+        )}
+      />
+    </button>
+  </TableCell>
 
  {/* Processo & Partes */}
  <TableCell>
@@ -805,13 +820,13 @@ function WorkspaceAdvocaciaPage() {
  </TableCell>
 
  {/* Switch de Monitoramento Ativo */}
- <TableCell onClick={(e) => e.stopPropagation()} className="text-center">
- <Switch
- checked={Boolean(lawsuit.is_monitored)}
- onClick={(e) => handleToggleMonitoring(e, lawsuit)}
- className="scale-75"
- />
- </TableCell>
+ <TableCell className="text-center focus-visible:outline-none" onClick={(e) => e.stopPropagation()}>
+    <Switch
+      checked={Boolean(lawsuit.is_monitored)}
+      onClick={(e) => handleToggleMonitoring(e, lawsuit)}
+      className="scale-75 focus-visible:ring-2 focus-visible:ring-primary"
+    />
+  </TableCell>
 
  {/* Botão Ver Detalhes */}
  <TableCell className="text-right">

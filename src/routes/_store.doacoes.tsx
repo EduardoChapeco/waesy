@@ -279,7 +279,7 @@ function DoacoesPage() {
             type="button"
             onClick={() => setIsDonationSheetOpen(true)}
             aria-label="Anunciar Doação"
-            className="h-11 w-11 inline-flex items-center justify-center rounded-full text-primary hover:bg-primary/10 active:scale-95 transition-all"
+            className="h-11 w-11 inline-flex items-center justify-center rounded-full text-primary hover:bg-primary/10 active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
           >
             <Plus size={22} weight="bold" />
           </button>
@@ -326,7 +326,7 @@ function DoacoesPage() {
               type="button"
               onClick={() => handleSearchChange("")}
               aria-label="Limpar busca"
-              className="absolute right-2.5 size-7 rounded-full inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted"
+              className="absolute right-2.5 size-7 rounded-full inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
             >
               <X size={14} weight="bold" />
             </button>
@@ -360,7 +360,7 @@ function DoacoesPage() {
                 aria-selected={isActive}
                 onClick={() => handleCategoryChange(cat.id)}
                 className={cn(
-                  "snap-start shrink-0 h-9 px-4 rounded-full text-xs font-semibold inline-flex items-center gap-2 transition-all whitespace-nowrap select-none",
+                  "snap-start shrink-0 h-9 px-4 rounded-full text-xs font-semibold inline-flex items-center gap-2 transition-all whitespace-nowrap select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer",
                   isActive
                     ? "bg-foreground text-background shadow-xs"
                     : "bg-card text-muted-foreground border border-border/60 hover:text-foreground hover:border-border"
@@ -395,7 +395,7 @@ function DoacoesPage() {
                   handleCategoryChange(isSelected ? "todos" : cat.id)
                 }
                 className={cn(
-                  "w-full min-h-[54px] px-4 py-3 flex items-center justify-between gap-3 text-left transition-colors active:bg-muted/60",
+                  "w-full min-h-[54px] px-4 py-3 flex items-center justify-between gap-3 text-left transition-colors active:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer",
                   isSelected && "bg-primary/5"
                 )}
               >
@@ -453,7 +453,7 @@ function DoacoesPage() {
               }
               className={cn(
                 cat.bentoSpan,
-                "group relative overflow-hidden cursor-pointer hover:-translate-y-0.5 hover:border-primary/40 transition-all duration-200 min-h-[176px] flex flex-col justify-between",
+                "group relative overflow-hidden cursor-pointer hover:-translate-y-0.5 hover:border-primary/40 transition-all duration-200 min-h-[176px] flex flex-col justify-between focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 isSelected && "ring-2 ring-primary border-primary"
               )}
             >
@@ -638,7 +638,7 @@ function DoacoesPage() {
         type="button"
         onClick={() => setIsDonationSheetOpen(true)}
         aria-label="Anunciar Doação"
-        className="md:hidden fixed bottom-20 right-4 z-40 size-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center active:scale-95 transition-transform"
+        className="md:hidden fixed bottom-20 right-4 z-40 size-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center active:scale-95 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
       >
         <Plus size={24} weight="bold" />
       </button>
@@ -670,7 +670,7 @@ function DoacoesPage() {
                 type="button"
                 onClick={() => setIsDonationSheetOpen(false)}
                 aria-label="Fechar"
-                className="size-10 rounded-full inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted"
+                className="size-10 rounded-full inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
               >
                 <X size={20} weight="bold" />
               </button>
@@ -696,7 +696,7 @@ function DoacoesPage() {
                           type="button"
                           onClick={() => setSubCategory(cat.id)}
                           className={cn(
-                            "shrink-0 h-9 px-4 rounded-full text-xs font-semibold transition-all",
+                            "shrink-0 h-9 px-4 rounded-full text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer",
                             active
                               ? "bg-primary text-primary-foreground"
                               : "bg-muted text-muted-foreground"
@@ -736,7 +736,7 @@ function DoacoesPage() {
                   type="button"
                   onClick={() => setCondition("used")}
                   className={cn(
-                    "h-11 rounded-lg border text-xs font-semibold flex items-center justify-center gap-2 transition-all",
+                    "h-11 rounded-lg border text-xs font-semibold flex items-center justify-center gap-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer",
                     condition === "used"
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border/60 text-muted-foreground"
@@ -753,7 +753,7 @@ function DoacoesPage() {
                   type="button"
                   onClick={() => setCondition("new")}
                   className={cn(
-                    "h-11 rounded-lg border text-xs font-semibold flex items-center justify-center gap-2 transition-all",
+                    "h-11 rounded-lg border text-xs font-semibold flex items-center justify-center gap-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer",
                     condition === "new"
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border/60 text-muted-foreground"
@@ -856,7 +856,7 @@ function DoacoesPage() {
                             prev.filter((_, i) => i !== idx)
                           )
                         }
-                        className="absolute top-1 right-1 size-5 rounded-full bg-black/70 text-white flex items-center justify-center"
+                        className="absolute top-1 right-1 size-5 rounded-full bg-black/70 text-white flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
                       >
                         <X size={11} />
                       </button>

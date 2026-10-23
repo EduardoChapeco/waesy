@@ -73,6 +73,16 @@ export interface ClassifiedFilterSheetProps {
   onSelectJobRegime: (val: string) => void;
   onlyInstantDigital: boolean;
   onToggleInstantDigital: (val: boolean) => void;
+  agriSubcategory: string;
+  onSelectAgriSubcategory: (val: string) => void;
+  agriTraction: string;
+  onSelectAgriTraction: (val: string) => void;
+  pharmacySubniche: string;
+  onSelectPharmacySubniche: (val: string) => void;
+  onlyPrescription: boolean;
+  onToggleOnlyPrescription: (val: boolean) => void;
+  eventType: string;
+  onSelectEventType: (val: string) => void;
 }
 
 export function ClassifiedFilterSheet({
@@ -122,6 +132,16 @@ export function ClassifiedFilterSheet({
   onSelectJobRegime,
   onlyInstantDigital,
   onToggleInstantDigital,
+  agriSubcategory,
+  onSelectAgriSubcategory,
+  agriTraction,
+  onSelectAgriTraction,
+  pharmacySubniche,
+  onSelectPharmacySubniche,
+  onlyPrescription,
+  onToggleOnlyPrescription,
+  eventType,
+  onSelectEventType,
 }: ClassifiedFilterSheetProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -599,6 +619,58 @@ export function ClassifiedFilterSheet({
               </div>
             </div>
           )}
+
+          {/* AGRONEGÓCIO */}
+          {selectedCategory === "agri" && (
+            <>
+              <FacetChipGroup
+                title="Tipo de Máquina"
+                options={AGRI_SUBNICHE_OPTIONS}
+                selected={agriSubcategory}
+                onSelect={onSelectAgriSubcategory}
+              />
+              <FacetChipGroup
+                title="Tração"
+                options={AGRI_TRACTION_OPTIONS}
+                selected={agriTraction}
+                onSelect={onSelectAgriTraction}
+              />
+            </>
+          )}
+
+          {/* FARMÁCIA & SAÚDE */}
+          {selectedCategory === "pharmacy" && (
+            <>
+              <FacetChipGroup
+                title="Categoria"
+                options={PHARMACY_SUBNICHE_OPTIONS}
+                selected={pharmacySubniche}
+                onSelect={onSelectPharmacySubniche}
+              />
+              <div className="pt-2 border-t border-border/40">
+                <div className="flex items-center justify-between bg-muted/20 p-3 rounded-lg border border-border/40 min-h-11">
+                  <Label htmlFor="sheet-only-prescription" className="text-xs cursor-pointer">
+                    Exige receita médica
+                  </Label>
+                  <Switch
+                    id="sheet-only-prescription"
+                    checked={onlyPrescription}
+                    onCheckedChange={onToggleOnlyPrescription}
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* EVENTOS */}
+          {selectedCategory === "event" && (
+            <FacetChipGroup
+              title="Tipo de Evento"
+              options={EVENT_TYPE_OPTIONS}
+              selected={eventType}
+              onSelect={onSelectEventType}
+            />
+          )}
         </div>
 
         <div className="p-4 border-t border-border/40 bg-background shrink-0">
@@ -612,5 +684,40 @@ export function ClassifiedFilterSheet({
         </div>
       </SheetContent>
     </Sheet>
+  );
+}
+
+interface FacetChipGroupProps {
+  title: string;
+  options: ReadonlyArray<{ id: string; label: string }>;
+  selected: string;
+  onSelect: (val: string) => void;
+}
+
+function FacetChipGroup({ title, options, selected, onSelect }: FacetChipGroupProps) {
+  return (
+    <div className="space-y-2 pt-2 border-t border-border/40">
+      <span className="font-bold font-mono uppercase text-muted-foreground block text-xs tracking-wider">
+        {title}
+      </span>
+      <div className="flex flex-wrap gap-2">
+        {options.map((opt) => (
+          <button
+            key={opt.id}
+            type="button"
+            onClick={() => onSelect(opt.id)}
+            aria-pressed={selected === opt.id}
+            className={cn(
+              "min-h-11 px-3 py-2 rounded-lg text-xs text-left break-words cursor-pointer transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              selected === opt.id
+                ? "bg-foreground text-background font-bold"
+                : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
+            )}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }

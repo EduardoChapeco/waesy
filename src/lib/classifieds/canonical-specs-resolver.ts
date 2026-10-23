@@ -759,8 +759,11 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
     const traction = attrs.traction ?? attrs.tracao;
     const yearFab = attrs.year_fab ?? attrs.year;
     const implementType = attrs.implement_type ?? attrs.subniche;
-    const powerHp = attrs.power_hp ?? attrs.potencia;
-    const cabin = attrs.cabin;
+    const powerCvRaw = attrs.power_cv;
+    const powerHpRaw = attrs.power_hp ?? attrs.potencia;
+    const hasPowerCv = powerCvRaw !== undefined && powerCvRaw !== null && powerCvRaw !== "";
+    const hasPowerHp = powerHpRaw !== undefined && powerHpRaw !== null && powerHpRaw !== "";
+    const cabinRaw = attrs.cabin_type ?? attrs.cabin;
 
     list.push({ label: "Segmento", value: "Agronegócio & Maquinário", category: "technical", highlight: true });
     if (horimetro !== undefined && horimetro !== null && horimetro !== "") {
@@ -782,11 +785,20 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
     if (implementType) {
       list.push({ label: "Implemento / Tipo", value: String(implementType), category: "technical" });
     }
-    if (powerHp) {
-      list.push({ label: "Potência", value: `${powerHp} CV`, category: "technical" });
+    if (hasPowerCv || hasPowerHp) {
+      // Contrato legado: ambas as chaves exibem CV (power_hp era exibido como CV antes desta correção).
+      const powerValue = hasPowerCv ? powerCvRaw : powerHpRaw;
+      list.push({ label: "Potência", value: `${powerValue} CV`, category: "technical" });
     }
-    if (cabin !== undefined) {
-      list.push({ label: "Cabine", value: cabin ? "Cabinado com Ar" : "Plataformado", category: "technical" });
+    if (cabinRaw !== undefined && cabinRaw !== null && cabinRaw !== "") {
+      const cabinKey = String(cabinRaw).toLowerCase();
+      const isCabin = cabinRaw === true || cabinKey === "cabin" || cabinKey === "true";
+      const isOpen = cabinRaw === false || cabinKey === "open" || cabinKey === "platform" || cabinKey === "false";
+      if (isCabin) {
+        list.push({ label: "Cabine", value: "Cabinado com Ar", category: "technical" });
+      } else if (isOpen) {
+        list.push({ label: "Cabine", value: "Plataformado", category: "technical" });
+      }
     }
     if (attrs.cautelar_aprovada) {
       list.push({ label: "Vistoria", value: "Vistoria no Campo Aprovada", category: "technical" });
