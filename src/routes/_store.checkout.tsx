@@ -405,6 +405,8 @@ export function CheckoutPage() {
  neighborhood: "",
  city: "",
  state: "",
+ latitude: undefined as number | undefined,
+ longitude: undefined as number | undefined,
  },
  });
 
@@ -1928,6 +1930,8 @@ export function CheckoutPage() {
                               neighborhood: addr.neighborhood || "",
                               city: addr.city || "",
                               state: addr.state || "",
+                              latitude: (addr as any).latitude ? Number((addr as any).latitude) : undefined,
+                              longitude: (addr as any).longitude ? Number((addr as any).longitude) : undefined,
                             },
                           }));
                           handleCepChange(cleanZip, true);
@@ -2012,6 +2016,8 @@ export function CheckoutPage() {
                           neighborhood: res.address.neighborhood || "",
                           city: res.address.city || "",
                           state: res.address.state || "",
+                          latitude: (res.address as any).latitude ? Number((res.address as any).latitude) : undefined,
+                          longitude: (res.address as any).longitude ? Number((res.address as any).longitude) : undefined,
                         },
                       }));
 

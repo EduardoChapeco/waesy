@@ -191,7 +191,7 @@ export const updateStoreCheckoutConfig = createServerFn({ method: "POST" })
     return { status: "success", checkoutConfig };
   });
 
-const CheckoutSchema = z
+export const CheckoutSchema = z
  .object({
  cartId: z.string().uuid(),
  customerName: z.string().min(3),

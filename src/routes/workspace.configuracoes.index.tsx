@@ -148,6 +148,8 @@ export default function WorkspaceConfiguracoesPage() {
   const [city, setCity] = useState(store?.city || "");
   const [state, setState] = useState(store?.state || "");
   const [zipCode, setZipCode] = useState(store?.zip_code || "");
+  const [latitude, setLatitude] = useState<number | null>(store?.latitude ?? store?.settings?.latitude ?? null);
+  const [longitude, setLongitude] = useState<number | null>(store?.longitude ?? store?.settings?.longitude ?? null);
 
   // Formas de Pagamento & Gateway
   const [pixKey, setPixKey] = useState(store?.pix_key || "");
@@ -392,6 +394,8 @@ export default function WorkspaceConfiguracoesPage() {
           city: city.trim() || undefined,
           state: state.trim().toUpperCase() || undefined,
           zipCode: zipCode.trim() || undefined,
+          latitude: latitude !== null && !isNaN(Number(latitude)) ? Number(latitude) : undefined,
+          longitude: longitude !== null && !isNaN(Number(longitude)) ? Number(longitude) : undefined,
           deliveryZones: neighborhoods,
           customCheckoutFields: customFields,
           checkout_config: {
@@ -1206,7 +1210,31 @@ export default function WorkspaceConfiguracoesPage() {
  onChange={(e) => setAddress(e.target.value)}
  placeholder="Rua, número, complemento e bairro"
  className="rounded-lg text-xs h-11 min-h-11"
- />
+                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Latitude (GPS / Despacho)</Label>
+                    <Input
+                      type="number"
+                      step="any"
+                      value={latitude ?? ""}
+                      onChange={(e) => setLatitude(e.target.value ? parseFloat(e.target.value) : null)}
+                      placeholder="-26.723"
+                      className="rounded-lg text-xs h-11 min-h-11"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Longitude (GPS / Despacho)</Label>
+                    <Input
+                      type="number"
+                      step="any"
+                      value={longitude ?? ""}
+                      onChange={(e) => setLongitude(e.target.value ? parseFloat(e.target.value) : null)}
+                      placeholder="-53.518"
+                      className="rounded-lg text-xs h-11 min-h-11"
+                    />
+                  </div>
+                </div>
  </div>
  </div>
  </Card>
