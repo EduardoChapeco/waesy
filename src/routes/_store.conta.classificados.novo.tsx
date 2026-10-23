@@ -2384,16 +2384,16 @@ const [aiInstructions, setAiInstructions] = useState("");
   const [eventBannerUrl, setEventBannerUrl] = useState<string>(
     initialData?.attributes?.banner_image_url || ""
   );
-  const [eventTicketTiers, setEventTicketTiers] = useState<EventTicketTier[]>(
+  const [eventTicketTiers, setEventTicketTiers] = useState<any[]>(
     Array.isArray(initialData?.attributes?.ticket_tiers) ? initialData.attributes.ticket_tiers : []
   );
-  const [eventSchedule, setEventSchedule] = useState<EventScheduleItem[]>(
+  const [eventSchedule, setEventSchedule] = useState<any[]>(
     Array.isArray(initialData?.attributes?.schedule) ? initialData.attributes.schedule : []
   );
-  const [eventSpeakers, setEventSpeakers] = useState<EventSpeaker[]>(
+  const [eventSpeakers, setEventSpeakers] = useState<any[]>(
     Array.isArray(initialData?.attributes?.speakers) ? initialData.attributes.speakers : []
   );
-  const [eventSponsors, setEventSponsors] = useState<EventSponsor[]>(
+  const [eventSponsors, setEventSponsors] = useState<any[]>(
     Array.isArray(initialData?.attributes?.sponsors) ? initialData.attributes.sponsors : []
   );
   const [eventSurveys, setEventSurveys] = useState<EventSurvey[]>(
@@ -6275,7 +6275,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        const newTier: EventTicketTier = {
+                        const newTier: any = {
                           id: `tier_${Date.now()}`,
                           name: "",
                           price: 0,
@@ -6421,7 +6421,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        const newItem: EventScheduleItem = {
+                        const newItem: any = {
                           id: `sched_${Date.now()}`,
                           time: "09:00",
                           title: "",
@@ -6719,10 +6719,11 @@ const [aiInstructions, setAiInstructions] = useState("");
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        const newSponsor: EventSponsor = {
+                        const newSponsor: any = {
                           id: `spn_${Date.now()}`,
                           name: "",
                           tier: "master",
+                          tier_label: "Patrocínio Master",
                         };
                         setEventSponsors([...eventSponsors, newSponsor]);
                       }}

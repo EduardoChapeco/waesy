@@ -373,7 +373,8 @@ const ORGANIZER_ROLE_LABELS: Record<EventOrganizerRole, string> = {
 
 const PARTNER_TIER_LABELS: Record<EventPartnerTier, string> = {
   realizacao: "Realização & Correalização",
-  ouro: "Patrocínio Master / Ouro",
+  master: "Patrocínio Master",
+  ouro: "Patrocínio Ouro",
   prata: "Patrocínio Prata",
   apoio: "Apoio Institucional",
   parceiro_midia: "Parceiro de Mídia",
