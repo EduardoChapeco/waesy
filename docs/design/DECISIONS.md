@@ -1,5 +1,12 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-293: Onda 2 de Acessibilidade no Shell Administrativo
+- **Data:** 2026-10-22
+- **Contexto:** O shell compartilhado concentrava violações P0/P1 de foco, alvos menores que 44px e classes arbitrárias de viewport, largura, tipografia e altura.
+- **Decisão:** Normalizar o shell para `min-h-dvh`, `w-16`, `h-dvh`, `min-h-14`, `size-11` e tokens tipográficos; remover transições genéricas; adicionar foco visível aos links de mudança de módulo, menu mobile, logout e navegação inferior.
+- **Evidência:** Typecheck PASS; design lint reduziu 12.285 para 12.270 violações (-15); `git diff --check` PASS.
+- **Consequências:** Navegação administrativa mais acessível e previsível em teclado e mobile, com menor dependência de valores mágicos.
+
 ## DEC-292: Onda 1 de Design Silencioso em Canvas e Destaques
 - **Data:** 2026-10-22
 - **Contexto:** O preview de templates e o carrossel de destaques apresentavam descrição conversacional, controles abaixo de 44px, foco visual incompleto, valores arbitrários, gradiente decorativo e título extenso.
