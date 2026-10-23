@@ -1,0 +1,176 @@
+{
+ "sel_cols": [
+  "id",
+  "route",
+  "error_message",
+  "stack_trace",
+  "user_id",
+  "payload",
+  "severity",
+  "created_at",
+  "page_url",
+  "schema_name",
+  "table_name",
+  "column_name",
+  "contract_name"
+ ],
+ "sel_count": [
+  {
+   "n": "84",
+   "mn": "2026-09-17T02:30:07.168Z",
+   "mx": "2026-10-22T17:24:48.964Z"
+  }
+ ],
+ "sel_top": [
+  {
+   "route": "catalog.getStoreCatalog",
+   "severity": "error",
+   "msg": "Não foi possível carregar os produtos.",
+   "n": "81",
+   "last": "2026-10-22T17:24:48.964Z"
+  },
+  {
+   "route": "catalog.getStoreCatalog",
+   "severity": "error",
+   "msg": "Nenhuma loja foi configurada. Configure a loja no painel de administração.",
+   "n": "3",
+   "last": "2026-09-21T16:26:32.285Z"
+  }
+ ],
+ "cron": [
+  {
+   "jobid": "3",
+   "jobname": "mining_market_data_daily",
+   "schedule": "0 8,18 * * *",
+   "active": true,
+   "cmd": "SELECT public.dispatch_mining_cron('market-data');"
+  },
+  {
+   "jobid": "4",
+   "jobname": "mining_rss_fetcher_30m",
+   "schedule": "*/30 * * * *",
+   "active": true,
+   "cmd": "SELECT public.dispatch_mining_cron('rss-fetcher');"
+  },
+  {
+   "jobid": "5",
+   "jobname": "mining_continuous_crawler_15m",
+   "schedule": "*/15 * * * *",
+   "active": true,
+   "cmd": "SELECT public.dispatch_mining_cron('continuous-crawler');"
+  },
+  {
+   "jobid": "6",
+   "jobname": "mining_datajud_sync_6h",
+   "schedule": "0 */6 * * *",
+   "active": true,
+   "cmd": "SELECT public.dispatch_mining_cron('datajud-sync');"
+  },
+  {
+   "jobid": "7",
+   "jobname": "mining_cnpj_enrichment_daily",
+   "schedule": "0 2 * * *",
+   "active": true,
+   "cmd": "SELECT public.dispatch_mining_cron('cnpj-enrichment');"
+  }
+ ],
+ "cronRuns": [
+  {
+   "jobid": "3",
+   "status": "succeeded",
+   "n": "6",
+   "last": "2026-10-22T18:00:00.279Z",
+   "m": "1 row"
+  },
+  {
+   "jobid": "4",
+   "status": "succeeded",
+   "n": "144",
+   "last": "2026-10-23T00:30:00.272Z",
+   "m": "1 row"
+  },
+  {
+   "jobid": "5",
+   "status": "succeeded",
+   "n": "288",
+   "last": "2026-10-23T00:30:00.274Z",
+   "m": "1 row"
+  },
+  {
+   "jobid": "6",
+   "status": "succeeded",
+   "n": "12",
+   "last": "2026-10-23T00:00:00.264Z",
+   "m": "1 row"
+  },
+  {
+   "jobid": "7",
+   "status": "succeeded",
+   "n": "3",
+   "last": "2026-10-22T02:00:00.263Z",
+   "m": "1 row"
+  }
+ ],
+ "wa": [],
+ "outbox": [
+  {
+   "n": "1"
+  }
+ ],
+ "attack": [
+  {
+   "n": "0",
+   "last": null
+  }
+ ],
+ "statStmtsSlow": [
+  {
+   "q": "SELECT wal->>$5 as type,\n       wal->>$6 as schema,\n       wal->>$7 as table,\n       COALESCE(wal->>$8, $9) as columns,\n",
+   "calls": "81172",
+   "mean_ms": "10.9",
+   "rows": "81172"
+  },
+  {
+   "q": "SELECT public.dispatch_mining_cron($1)",
+   "calls": "3820",
+   "mean_ms": "75.4",
+   "rows": "3820"
+  },
+  {
+   "q": "select set_config('search_path', $1, true), set_config('role', $2, true), set_config('request.jwt.claims', $3, true), se",
+   "calls": "666376",
+   "mean_ms": "0.1",
+   "rows": "666376"
+  },
+  {
+   "q": "insert into cron.job_run_details (jobid, runid, database, username, command, status) values ($1,$2,$3,$4,$5,$6)",
+   "calls": "3820",
+   "mean_ms": "10.7",
+   "rows": "3820"
+  },
+  {
+   "q": "DELETE FROM stores WHERE id = $1",
+   "calls": "13",
+   "mean_ms": "1913.3",
+   "rows": "13"
+  },
+  {
+   "q": "WITH        rows AS (          SELECT id          FROM net.http_request_queue          ORDER BY id          LIMIT $1    ",
+   "calls": "4657",
+   "mean_ms": "5.0",
+   "rows": "2869"
+  },
+  {
+   "q": "WITH        rows AS (          SELECT ctid          FROM net._http_response          WHERE created < now() - $1         ",
+   "calls": "4657",
+   "mean_ms": "4.1",
+   "rows": "2832"
+  },
+  {
+   "q": "select set_config('search_path', $1, true), set_config($2, $3, true), set_config('role', $4, true), set_config('request.",
+   "calls": "116086",
+   "mean_ms": "0.2",
+   "rows": "116086"
+  }
+ ]
+}

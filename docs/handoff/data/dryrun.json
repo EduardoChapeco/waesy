@@ -1,0 +1,75 @@
+[
+ {
+  "f": "20261002000000_events_external_ticket_and_creator_analytics.sql",
+  "ok": false,
+  "err": "policy \"creator_showcase_self_manage\" for table \"creator_showcase_products\" already exists",
+  "where": ""
+ },
+ {
+  "f": "20261002000001_f04_classifieds_promotion_columns.sql",
+  "ok": true
+ },
+ {
+  "f": "20261002000002_s21_performatic_rls.sql",
+  "ok": true
+ },
+ {
+  "f": "20261002000003_s20_scale_indexes.sql",
+  "ok": true
+ },
+ {
+  "f": "20261002_quick.sql",
+  "ok": true
+ },
+ {
+  "f": "20261022000002_classified_commercial_performance_and_telemetry.sql",
+  "ok": true
+ },
+ {
+  "f": "20261022000003_travel_commercial_intelligence_backlog.sql",
+  "ok": false,
+  "err": "relation \"public.customers\" does not exist",
+  "where": ""
+ },
+ {
+  "f": "20270125000002_ai_operating_system_isolation.sql",
+  "ok": false,
+  "err": "column \"is_enabled\" does not exist",
+  "where": ""
+ },
+ {
+  "f": "20270223000000_advanced_address_platform_mercadolivre_parity.sql",
+  "ok": true
+ },
+ {
+  "f": "20270225000000_global_iata_airports_unification.sql",
+  "ok": false,
+  "err": "column \"updated_at\" of relation \"airports_global\" does not exist",
+  "pos": "901103",
+  "where": ""
+ },
+ {
+  "f": "20270226000001_canonical_twenty_tables_ecosystem_unification.sql",
+  "ok": true
+ },
+ {
+  "f": "20270226120000_airport_cms_and_intelligence.sql",
+  "ok": false,
+  "err": "column profiles.is_admin does not exist",
+  "where": ""
+ },
+ {
+  "f": "20270227000000_travel_tourism_ecosystem_completion.sql",
+  "ok": false,
+  "err": "relation \"public.travel_quote_requests\" does not exist",
+  "where": ""
+ },
+ {
+  "f": "20270228000000_canonical_corporate_travelers_and_trips.sql",
+  "ok": true
+ },
+ {
+  "f": "20270301000000_travel_contract_templates.sql",
+  "ok": true
+ }
+]

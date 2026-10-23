@@ -494,11 +494,6 @@ export function NewTravelContractSheet({
                         }}
                         className="p-3 rounded-lg border border-border/60 bg-card hover:bg-muted/40 transition-colors cursor-pointer flex items-center justify-between gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       >
- handleSelectCustomer(c);
- setActiveTab("manual");
- }}
- className="p-3 rounded-lg border border-border/60 bg-card hover:bg-muted/40 transition-colors cursor-pointer flex items-center justify-between gap-3"
- >
  <div className="space-y-1 min-w-0">
  <p className="font-bold text-foreground truncate">{c.fullName || c.name}</p>
  <p className="text-xs text-muted-foreground truncate">

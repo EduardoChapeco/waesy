@@ -1,0 +1,98 @@
+{
+ "logTables": [
+  "abandoned_carts_log",
+  "account_deletion_log",
+  "activation_logs",
+  "ad_telemetry_events",
+  "ai_prompt_execution_logs",
+  "ai_telemetry_logs",
+  "audit_log",
+  "audit_logs",
+  "courier_expense_logs",
+  "employee_pin_audit_logs",
+  "employee_tenant_audit_logs",
+  "fraud_investigation_logs",
+  "inventory_adjustments_log",
+  "invite_telemetry",
+  "lead_conversion_telemetry",
+  "linkedin_sync_logs",
+  "marketplace_sync_logs",
+  "mobility_incident_reports",
+  "outbox_events",
+  "passenger_checkin_logs",
+  "pixel_dispatch_log",
+  "pwa_telemetry",
+  "receivable_adjustment_log",
+  "scraper_audit_log",
+  "security_attack_incidents",
+  "session_audit_logs",
+  "system_audit_logs",
+  "system_error_logs",
+  "system_wipe_logs",
+  "telemetry_logs",
+  "ticket_lifecycle_logs",
+  "tourism_incident_events",
+  "tourism_incident_tickets",
+  "travel_financial_audit_logs",
+  "user_cart_telemetry",
+  "user_form_submissions_log",
+  "whatsapp_outbox",
+  "whatsapp_outbox_attempts"
+ ],
+ "netErrors": [
+  {
+   "status_code": null,
+   "n": "27",
+   "last": "2026-10-23T00:30:00.337Z",
+   "err": "Timeout of 25000 ms reached. Total time: 25016.252000 ms (DNS time: 6.118000 ms, TCP/SSL handshake time: 77.055000 ms, HTTP Request/Response time: 24930.516000 "
+  }
+ ],
+ "authFailures": [],
+ "extensions": [
+  "btree_gist",
+  "pg_cron",
+  "pg_net",
+  "pg_stat_statements",
+  "pg_trgm",
+  "pgcrypto",
+  "plpgsql",
+  "supabase_vault",
+  "uuid-ossp",
+  "vector"
+ ],
+ "dbsize": [
+  {
+   "s": "100 MB"
+  }
+ ],
+ "deadTuples": [
+  {
+   "relname": "crawl_queue",
+   "n_dead_tup": "404"
+  },
+  {
+   "relname": "news_articles",
+   "n_dead_tup": "90"
+  },
+  {
+   "relname": "mined_articles",
+   "n_dead_tup": "73"
+  },
+  {
+   "relname": "refresh_tokens",
+   "n_dead_tup": "64"
+  },
+  {
+   "relname": "rss_feed_items",
+   "n_dead_tup": "57"
+  }
+ ],
+ "seqscanHeavy": [],
+ "longRunning": [],
+ "publicNoPK": [],
+ "fkNoIndex": [
+  {
+   "n": "608"
+  }
+ ]
+}

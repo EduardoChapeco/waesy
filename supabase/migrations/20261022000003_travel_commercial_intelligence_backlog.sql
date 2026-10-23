@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS public.travel_commercial_contacts (
   status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'nurturing', 'unresponsive', 'promoted_to_crm', 'opted_out')),
   notes TEXT,
   linked_crm_lead_id UUID REFERENCES public.leads_crm(id) ON DELETE SET NULL,
-  linked_customer_id UUID REFERENCES public.customers(id) ON DELETE SET NULL,
+  linked_customer_id UUID REFERENCES public.customers_crm(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );

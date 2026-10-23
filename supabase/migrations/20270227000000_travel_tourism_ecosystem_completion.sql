@@ -160,6 +160,32 @@ CREATE POLICY "Store staff manage travel_flight_reaccommodations"
     )
   );
 
+-- 5b. Garantir tabela travel_quote_requests (ausente em producao apesar de 20270130000000 registrada)
+CREATE TABLE IF NOT EXISTS public.travel_quote_requests (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  store_id UUID NOT NULL REFERENCES public.stores(id) ON DELETE CASCADE,
+  client_name TEXT NOT NULL,
+  client_phone TEXT NOT NULL DEFAULT '',
+  client_email TEXT,
+  destination TEXT NOT NULL DEFAULT 'Cotacao via Vitrine',
+  departure_date DATE,
+  return_date DATE,
+  passengers_count INTEGER NOT NULL DEFAULT 1 CHECK (passengers_count >= 1),
+  budget_cents BIGINT CHECK (budget_cents IS NULL OR budget_cents >= 0),
+  status TEXT NOT NULL DEFAULT 'new',
+  source TEXT NOT NULL DEFAULT 'omni_builder_vitrine',
+  notes TEXT,
+  metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_travel_quote_requests_store_id ON public.travel_quote_requests(store_id);
+ALTER TABLE public.travel_quote_requests ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS travel_quote_requests_store_members ON public.travel_quote_requests;
+CREATE POLICY travel_quote_requests_store_members ON public.travel_quote_requests
+  FOR ALL TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.store_members sm WHERE sm.store_id = travel_quote_requests.store_id AND sm.profile_id = auth.uid()));
+
 -- 6. Garantir Política de Inserção Pública para Cotações
 DROP POLICY IF EXISTS "Qualquer visitante pode enviar cotação em travel_quote_requests" ON public.travel_quote_requests;
 CREATE POLICY "Qualquer visitante pode enviar cotação em travel_quote_requests"

@@ -1,0 +1,151 @@
+{
+ "missingTables": [
+  {
+   "table": "payment_methods",
+   "files": [
+    "src\\lib\\engines\\module-auditor.ts"
+   ]
+  },
+  {
+   "table": "master_products",
+   "files": [
+    "src\\registries\\mcp-tool-registry.ts"
+   ]
+  },
+  {
+   "table": "deliveries",
+   "files": [
+    "src\\registries\\mcp-tool-registry.ts"
+   ]
+  },
+  {
+   "table": "service_schedules",
+   "files": [
+    "src\\registries\\mcp-tool-registry.ts"
+   ]
+  },
+  {
+   "table": "tourism_proposals",
+   "files": [
+    "src\\registries\\mcp-tool-registry.ts"
+   ]
+  },
+  {
+   "table": "commercial_proposals",
+   "files": [
+    "src\\registries\\mcp-tool-registry.ts"
+   ]
+  },
+  {
+   "table": "digital_contracts",
+   "files": [
+    "src\\registries\\mcp-tool-registry.ts"
+   ]
+  },
+  {
+   "table": "fiscal_invoices",
+   "files": [
+    "src\\registries\\mcp-tool-registry.ts"
+   ]
+  },
+  {
+   "table": "store_marketplace_integrations",
+   "files": [
+    "src\\registries\\mcp-tool-registry.ts"
+   ]
+  },
+  {
+   "table": "users",
+   "files": [
+    "src\\services\\admin-team.functions.ts",
+    "src\\services\\onboarding.functions.ts"
+   ]
+  },
+  {
+   "table": "receipts",
+   "files": [
+    "src\\services\\fiscal-nfe.functions.ts",
+    "src\\services\\payment.functions.ts"
+   ]
+  },
+  {
+   "table": "google_business_connections",
+   "files": [
+    "src\\services\\onboarding-pipeline.server.ts"
+   ]
+  }
+ ],
+ "missingRpcs": [
+  {
+   "rpc": "increment_airport_view_count",
+   "files": [
+    "src\\services\\tourism-airports.functions.ts"
+   ]
+  }
+ ],
+ "rlsDisabled": [],
+ "rlsNoPolicy": [
+  "ai_job_charges",
+  "studio_template_library",
+  "unsplash_studio_selections",
+  "travel_voucher_apply_operations",
+  "activation_logs",
+  "ads",
+  "badge_templates",
+  "channel_vault_credentials",
+  "contract_addendums",
+  "direct_conversations",
+  "direct_messages",
+  "eventos_campanhas",
+  "immutable_ledger_entries",
+  "lead_capture_forms",
+  "store_invites",
+  "post_media",
+  "store_orders",
+  "store_stories",
+  "travel_bookings",
+  "trip_commissions",
+  "travel_sale_financial_sheets",
+  "travel_sale_non_commissionable_fees",
+  "travel_sale_over_deductions",
+  "travel_sale_internal_costs",
+  "travel_sale_supplier_items",
+  "travel_financial_audit_logs",
+  "gift_card_events"
+ ],
+ "secDefNoSearchPath": [],
+ "anonExecSecDef": [
+  "match_copilot_semantic_memory",
+  "get_public_tourism_voucher_by_token",
+  "record_classified_event"
+ ],
+ "counts": {
+  "tables": 756,
+  "rpcs": 459,
+  "srcFiles": 1944
+ },
+ "invalidIdx": [],
+ "jobsFailed": [],
+ "cronFailed": [],
+ "edgeFns": [],
+ "bucketsNoPolicy": [
+  "covers",
+  "legal-documents",
+  "receipts",
+  "identity-vault",
+  "classifieds",
+  "classified-media",
+  "home-banners",
+  "home-categories",
+  "public_media",
+  "store-assets",
+  "banners",
+  "avatars",
+  "cms-media",
+  "brand-assets",
+  "product-media",
+  "destination-media",
+  "post-media"
+ ],
+ "storagePolicies": 15
+}

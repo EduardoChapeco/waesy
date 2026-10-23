@@ -43,14 +43,14 @@ CREATE POLICY "Admin master manage airport_cms_profiles" ON public.airport_cms_p
     EXISTS (
       SELECT 1 FROM public.profiles
       WHERE profiles.id = auth.uid()
-        AND (profiles.role = 'admin' OR profiles.is_admin = true)
+        AND (profiles.role = 'admin' OR public.is_platform_admin())
     )
   )
   WITH CHECK (
     EXISTS (
       SELECT 1 FROM public.profiles
       WHERE profiles.id = auth.uid()
-        AND (profiles.role = 'admin' OR profiles.is_admin = true)
+        AND (profiles.role = 'admin' OR public.is_platform_admin())
     )
   );
 

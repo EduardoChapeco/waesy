@@ -36,6 +36,10 @@ CREATE TABLE IF NOT EXISTS public.ck_airports (
   updated_at timestamptz DEFAULT now()
 );
 
+-- Reconciliacao aditiva: tabelas pre-existentes em producao sem updated_at.
+ALTER TABLE public.airports_global ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
+ALTER TABLE public.ck_airports ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
+
 CREATE INDEX IF NOT EXISTS idx_airports_iata ON public.airports_global(iata_code);
 CREATE INDEX IF NOT EXISTS idx_airports_city ON public.airports_global(city);
 CREATE INDEX IF NOT EXISTS idx_airports_country ON public.airports_global(country);
