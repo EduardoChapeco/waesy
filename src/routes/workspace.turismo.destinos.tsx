@@ -1587,10 +1587,18 @@ export default function WorkspaceDestinationsPage() {
  const isSelected = selectedTags.includes(tag);
  return (
  <Badge
- key={tag}
- variant={isSelected ? "default" : "outline"}
- onClick={() => toggleTag(tag)}
- className={`cursor-pointer text-xs py-2 px-3 rounded-lg transition-all ${
+    key={tag}
+    variant={isSelected ? "default" : "outline"}
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        toggleTag(tag);
+      }
+    }}
+    onClick={() => toggleTag(tag)}
+    className={`cursor-pointer text-xs py-2 px-3 rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
  isSelected ? "bg-primary text-primary-foreground font-bold shadow-xs" : "hover:bg-muted"
  }`}
  >

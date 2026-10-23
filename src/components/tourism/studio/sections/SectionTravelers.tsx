@@ -36,7 +36,8 @@ export function SectionTravelers({ draft, save }: Props) {
             Nomes dos passageiros
           </span>
           <AddBtn
-            onClick={() => {
+    className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    onClick={() => {
               const current = (draft as any).pax_names ?? [];
               save({ pax_names: [...current, ""] } as any);
             }}

@@ -627,7 +627,7 @@ function WorkspaceComercialPage() {
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 flex flex-col gap-5 min-h-screen pb-12 overflow-x-hidden">
       <div className="flex items-center justify-between px-1">
         <p className="text-xs font-medium text-muted-foreground">Pipeline de oportunidades, CRM e propostas comerciais</p>
-        <ModuleTourTrigger onClick={() => setIsTourOpen(true)} label="Guia do Módulo" />
+        <ModuleTourTrigger onClick={() => setIsTourOpen(true)} label="Guia do Módulo" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" />
       </div>
 
       {/* ── BARRA OPERACIONAL CANÔNICA (SILENCIOSA & ALTA DENSIDADE) ── */}

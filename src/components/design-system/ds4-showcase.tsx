@@ -274,11 +274,12 @@ export function DS4Showcase() {
               actionSlot={<Button variant="outline" size="sm" data-action-intent="preview-only" data-action-reason="Especime do catalogo de componentes">Ver Empresa</Button>}
             />
             <ActionCard
-              title="Nova Cotação Aérea"
-              description="Inicie a parametrização de trechos nacionais ou internacionais com tarifas corporativas."
-              icon={<Plane className="size-5" />}
-              onClick={() => {}}
-            />
+    title="Nova Cotação Aérea"
+    description="Inicie a parametrização de trechos nacionais ou internacionais com tarifas corporativas."
+    icon={<Plane className="size-5" />}
+    onClick={() => {}}
+    className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+  />
           </div>
 
           {/* 4. OfferCard & 5. MediaCard */}

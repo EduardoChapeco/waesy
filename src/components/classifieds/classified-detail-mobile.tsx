@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Share2, MapPin, Check, ShieldCheck, Package, Truck, MessageCircle, Phone, Edit3, Smartphone, X, FileText, Hotel, Star, Clock, Utensils, Compass } from "lucide-react";
 import { Button } from "@/components/ui/button";

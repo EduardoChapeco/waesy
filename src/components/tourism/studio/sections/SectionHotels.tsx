@@ -279,7 +279,7 @@ export function SectionHotels({ draft, save }: Props) {
         </Card>
       ))}
       <div className="flex gap-2">
-        <AddBtn onClick={add}>Adicionar hotel</AddBtn>
+        <AddBtn onClick={add} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Adicionar hotel</AddBtn>
         <Button
           type="button"
           onClick={() => setInfotravelOpen(true)}

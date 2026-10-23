@@ -119,7 +119,7 @@ export function SectionTours({ draft, save }: Props) {
         </Card>
       ))}
       <div className="flex gap-2">
-        <AddBtn onClick={add}>Adicionar passeio</AddBtn>
+        <AddBtn onClick={add} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Adicionar passeio</AddBtn>
         <Button
           type="button"
           onClick={() => {

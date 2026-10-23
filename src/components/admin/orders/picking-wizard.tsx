@@ -175,12 +175,20 @@ export function PickingWizard({ order, isOpen, onOpenChange, onComplete }: Picki
 
  return (
  <div
- key={item.id}
- className={`flex gap-4 p-4 border transition-all duration-200 cursor-pointer ${isChecked ? "border-success/40 bg-success/5" : "border-border/50 hover:border-primary/40 hover:bg-muted/20"} ${isProcessing ? "opacity-50 pointer-events-none" : ""}`}
- onClick={() => {
- if (!isChecked) handlePickItem(item);
- }}
- >
+    key={item.id}
+    role="button"
+    tabIndex={isProcessing ? -1 : 0}
+    onKeyDown={(e) => {
+      if (!isProcessing && (e.key === "Enter" || e.key === " ")) {
+        e.preventDefault();
+        if (!isChecked) handlePickItem(item);
+      }
+    }}
+    className={`flex gap-4 p-4 border transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${isChecked ? "border-success/40 bg-success/5" : "border-border/50 hover:border-primary/40 hover:bg-muted/20"} ${isProcessing ? "opacity-50 pointer-events-none" : ""}`}
+    onClick={() => {
+      if (!isChecked) handlePickItem(item);
+    }}
+  >
  <div className="pt-1">
  {isProcessing ? (
  <Loader2 className="h-5 w-5 animate-spin text-primary" />

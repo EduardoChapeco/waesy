@@ -189,11 +189,19 @@ export function MultimodalOcrUploader({
 
       {/* ── DROPZONE COM DRAG & DROP E SUPORTE A CTRL+V ── */}
       <div
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={handleDrop}
-        onClick={() => fileInputRef.current?.click()}
-        className="relative border-2 border-dashed border-border/80 hover:border-primary/50 bg-card hover:bg-muted/20 rounded-lg p-6 text-center cursor-pointer transition-all space-y-3 group"
-      >
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        fileInputRef.current?.click();
+      }
+    }}
+    onDragOver={(e) => e.preventDefault()}
+    onDrop={handleDrop}
+    onClick={() => fileInputRef.current?.click()}
+    className="relative border-2 border-dashed border-border/80 hover:border-primary/50 bg-card hover:bg-muted/20 rounded-lg p-6 text-center cursor-pointer transition-all space-y-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+  >
         <input
           ref={fileInputRef}
           type="file"

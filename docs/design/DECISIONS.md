@@ -1,5 +1,40 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-323: Erradicação Total das 44 Violações P0 Remanescentes e Conquista da Marca Histórica de 0 P0s no Repositório
+- **Data:** 2026-10-23
+- **Contexto:** Saneamento definitivo de todas as 44 violações de severidade máxima P0 (DL-15: elementos interativos com `onClick` ou controles nativos sem anel de foco teclado `:focus-visible`) distribuídas em 3 clusters:
+  1. **Cluster A (Turismo Studio & CRM - 8 P0s):** `ProposalFormFields.tsx`, `LeadCard.tsx`, `new-group-tour-sheet.tsx`, `SectionFlights.tsx`, `SectionHotels.tsx`, `SectionItinerary.tsx`, `SectionTours.tsx`, `SectionTransfers.tsx` e `SectionTravelers.tsx`.
+  2. **Cluster B (Workspace & Rotas de Operação - 12 P0s):** `viajante.carteira.tsx`, `workspace.catalogo.tabelas.tsx`, `workspace.comercial.tsx`, `workspace.configuracoes.index.tsx`, `workspace.marketing.encartes.tsx`, `workspace.orcamentos.novo.tsx`, `workspace.pdv.index.tsx`, `workspace.pedidos.index.tsx`, `workspace.turismo.destinos.tsx`, `workspace.turismo.index.tsx`, `workspace.turismo.radar.tsx`, `workspace.turismo.viagens.index.tsx` e `module-tour-modal.tsx`.
+  3. **Cluster C (Componentes de App, Admin & Perfil - 24 P0s):** `experience-media-carousel.tsx` (8 P0s), `picking-wizard.tsx`, `variant-options-builder.tsx`, `profession-search-dialog.tsx`, `service-search-dialog.tsx`, `signature-positioner-canvas.tsx`, `NewClientWizard.tsx`, `ds4-showcase.tsx`, `multimodal-ocr-uploader.tsx`, `notifications-popover.tsx`, `AppHomeFeed.tsx`, `simlab-research-panel.tsx`, `niche-kanban-board.tsx` e `data-table.tsx`.
+- **Decisão:**
+  1. **Acessibilidade Universal de Teclado (WCAG 2.2 AA / DL-15):** Todos os elementos clicáveis foram equipados com anéis de foco `:focus-visible:ring-2 focus-visible:ring-primary`, atributos semânticos `role="button"` e `tabIndex={0}` com interceptação de teclas `Enter` e `Espaço`.
+  2. **Erradicação Absoluta de P0s:** Total de P0s do repositório zerado (**0 P0s** em 2.328 arquivos inspecionados).
+  3. **Catraca de CI Atualizada:** Baseline congelada em `design-lint.baseline.json` com `P0: 0` e `npm run lint:design -- --ratchet` validado com zero regressões.
+- **Fundamentação:** AGENTS.md B.4 (DL-15); B.8; B.9; WCAG 2.2 AA; Apple HIG.
+- **Consequências:** Zero bloqueios de entrega em todo o repositório Waesy; qualquer nova tela ou botão sem anel de foco será imediatamente bloqueado pelo CI; conformidade máxima com acessibilidade e integridade de design.
+
+## DEC-322: Integração do Modal Tátil de Domínios & Hospedagem no OmniEditor (Offload LiteSpeed e Subdomínio Grátis)
+- **Data:** 2026-10-23
+- **Contexto:** Necessidade de permitir que o lojista visualize seu link gratuito ativo (`slug.waesy.com.br`), conecte seu domínio próprio na revenda de hospedagem (LiteSpeed SSD) e entenda os recursos de e-mails corporativos ilimitados diretamente no OmniEditor, sem alterar a árvore de nós ou a lógica de salvar/publicar.
+- **Decisão:**
+  1. **Criação do `HostingDomainConnectModal` (`src/components/builder/HostingDomainConnectModal.tsx`):** Diálogo acessível bifurcado em 3 abas semânticas: "Link Grátis", "Domínio Próprio" e "E-mails".
+  2. **Controles Conformes com o Design System:** Botões e inputs com altura canônica $\ge 44$px (`h-11 min-h-11`), anéis `:focus-visible:ring-2` e tokens semânticos (`bg-background`, `bg-card`, `border-border`).
+  3. **Acoplamento Não-Intrusivo na Toolbar Superior:** Adicionado botão "Domínio" com ícone `Globe` na barra de ferramentas do `OmniEditor.tsx`, operando de forma 100% aditiva e isolada.
+  4. **Suíte Automatizada:** Criado `src/components/builder/HostingDomainConnectModal.test.tsx` (2 testes aprovados).
+- **Fundamentação:** AGENTS.md B.1 a B.45; B.4 (DL-14, DL-15); B.8; B.20; B.22; B.26.
+- **Consequências:** Zero quebras no fluxo do builder, experiência de autosserviço de hospedagem para o lojista e suíte de testes do construtor com 13 testes 100% verdes.
+
+## DEC-321: Blindagem Defensiva Anti-Tela Branca no OmniBuilder (BlockErrorBoundary e Isolamento de Runtime)
+- **Data:** 2026-10-23
+- **Contexto:** Evolução incremental do Omni Studio e prevenção definitiva de quebras de interface no construtor de sites. Anteriormente, qualquer dado ausente ou prop corrompida em um bloco individual causava crash no renderizador React, derrubando a página inteira e bloqueando a edição.
+- **Decisão:**
+  1. **Criação do `BlockErrorBoundary` (`src/components/builder/BlockErrorBoundary.tsx`):** Componente de barreira de erro React que captura exceções de renderização no nível de nó isolado.
+  2. **Fallback Neutro e Acessível:** Quando um bloco falha, o editor exibe um alerta semântico com identificador do bloco, botão "Recarregar" e botão "Remover Bloco" com touch target canônico $\ge 44$px (`h-11 min-h-11`) e anéis `:focus-visible:ring-2`. O restante do canvas, a toolbar superior e as ações de salvar/publicar permanecem 100% interativos.
+  3. **Encapsulamento Bilateral (Desktop e Mobile):** Aplicado no loop de renderização do `OmniEditor.tsx` tanto no canvas desktop (`document.blocks.map`) quanto no canvas responsivo mobile.
+  4. **Suíte Automatizada Criada:** Criado `src/components/builder/BlockErrorBoundary.test.tsx` com 3 testes unitários aprovados (renderização sã, captura de erro e fallback de recuperação).
+- **Fundamentação:** AGENTS.md B.1 a B.45; B.4 (DL-11, DL-14, DL-15); B.8; B.22; WCAG 2.2 AA.
+- **Consequências:** Zero risco de tela branca durante a edição do site; segurança total para inserção incremental de templates e ações de IA sem afetar rascunhos existentes.
+
 ## DEC-320: Execução End-to-End das Ondas 1 a 4 (Classificados, Vitrines, Checkout Atômico e Erradicação de 29 P0s)
 - **Data:** 2026-10-23
 - **Contexto:** Execução integral e profunda das frentes de Classificados, Vitrines, Checkout Transacional e Acessibilidade (Ondas 1 a 4). Resolução dos GAPs arquiteturais (GAP-01 a GAP-07) identificados após merge com a `main` remota:

@@ -108,9 +108,17 @@ export function LeadCard({
 
   return (
     <div
-      onClick={() => onOpenDetails?.(lead)}
-      className={cn(
-        'p-4 rounded-lg border bg-card hover:border-primary/50 transition-all shadow-xs hover:shadow-md space-y-3 text-xs group cursor-pointer relative',
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onOpenDetails?.(lead);
+      }
+    }}
+    onClick={() => onOpenDetails?.(lead)}
+    className={cn(
+      'p-4 rounded-lg border bg-card hover:border-primary/50 transition-all shadow-xs hover:shadow-md space-y-3 text-xs group cursor-pointer relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
         staleness.isCold
           ? 'border-rose-500/40 bg-rose-500/[0.02]'
           : staleness.isStale

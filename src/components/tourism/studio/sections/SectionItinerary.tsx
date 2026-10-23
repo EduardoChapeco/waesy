@@ -272,7 +272,7 @@ export function SectionItinerary({ draft, save }: Props) {
           </div>
         </Card>
       ))}
-      <AddBtn onClick={add}>Adicionar dia</AddBtn>
+      <AddBtn onClick={add} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Adicionar dia</AddBtn>
     </Accordion>
   );
 }

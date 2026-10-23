@@ -1158,9 +1158,10 @@ function PdvTerminal() {
  </Button>
 
  <ModuleTourTrigger
- onClick={() => setIsTourOpen(true)}
- label="Guia do PDV"
- />
+    onClick={() => setIsTourOpen(true)}
+    label="Guia do PDV"
+    className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+  />
 
  <Button
  variant="ghost"

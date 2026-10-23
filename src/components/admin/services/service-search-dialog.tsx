@@ -156,10 +156,18 @@ export function ServiceSearchDialog({
           ) : (
             services.map((srv) => (
               <div
-                key={srv.id}
-                onClick={() => handleSelect(srv)}
-                className="group p-4 rounded-lg border border-border/40 hover:border-primary/50 bg-card/60 hover:bg-muted/20 transition-all cursor-pointer flex flex-col gap-3 shadow-sm"
-              >
+    key={srv.id}
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        handleSelect(srv);
+      }
+    }}
+    onClick={() => handleSelect(srv)}
+    className="group p-4 rounded-lg border border-border/40 hover:border-primary/50 bg-card/60 hover:bg-muted/20 transition-all cursor-pointer flex flex-col gap-3 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+  >
                 {/* TOPO: TÍTULO & CATEGORIA */}
                 <div className="flex items-start justify-between gap-3">
                   <div>

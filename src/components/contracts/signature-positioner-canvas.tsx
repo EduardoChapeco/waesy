@@ -295,9 +295,18 @@ export function SignaturePositionerCanvas({
 
               return (
                 <div
-                  key={field.id}
-                  onClick={() => setSelectedFieldId(field.id)}
-                  style={{
+    key={field.id}
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        setSelectedFieldId(field.id);
+      }
+    }}
+    onClick={() => setSelectedFieldId(field.id)}
+    className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+    style={{
                     left: `${field.x}%`,
                     top: `${field.y}%`,
                     width: `${field.width}%`,

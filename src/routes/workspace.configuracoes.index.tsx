@@ -1102,10 +1102,18 @@ export default function WorkspaceConfiguracoesPage() {
  const isEnabled = enabledModules.includes(mod.id);
  return (
  <div
- key={mod.id}
- onClick={() => handleToggleModule(mod.id)}
- className={cn(
- "flex items-start justify-between p-4 rounded-lg border transition-colors motion-reduce:transition-none cursor-pointer select-none",
+    key={mod.id}
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        handleToggleModule(mod.id);
+      }
+    }}
+    onClick={() => handleToggleModule(mod.id)}
+    className={cn(
+      "flex items-start justify-between p-4 rounded-lg border transition-colors motion-reduce:transition-none cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
  isEnabled
  ? "border-primary/40 bg-primary/5 dark:bg-primary/10"
  : "border-border/60 bg-muted/20 hover:bg-muted/40 opacity-70"

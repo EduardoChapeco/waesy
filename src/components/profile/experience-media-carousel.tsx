@@ -86,12 +86,21 @@ export function ExperienceMediaCarousel({
 
             return (
               <div
-                key={item.id || idx}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedMediaIndex(idx);
-                }}
-                className="group relative shrink-0 w-44 sm:w-56 aspect-video rounded-lg overflow-hidden border border-border/60 bg-muted/20 snap-start shadow-xs hover:border-primary/50 hover:shadow-md transition-all duration-200 cursor-pointer"
+    key={item.id || idx}
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        e.stopPropagation();
+        setSelectedMediaIndex(idx);
+      }
+    }}
+    onClick={(e) => {
+      e.stopPropagation();
+      setSelectedMediaIndex(idx);
+    }}
+    className="group relative shrink-0 w-44 sm:w-56 aspect-video rounded-lg overflow-hidden border border-border/60 bg-muted/20 snap-start shadow-xs hover:border-primary/50 hover:shadow-md transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 {isPdf ? (
                   <div className="size-full flex flex-col items-center justify-center p-3 text-center bg-card">
@@ -135,16 +144,16 @@ export function ExperienceMediaCarousel({
       {/* ── LIGHTBOX APPLE HIG DE ALTA RESOLUÇÃO ── */}
       {selectedMediaIndex !== null && activeItem && (
         <div
-          role="dialog"
-          aria-modal="true"
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-2xl flex flex-col items-center justify-between p-4 sm:p-6 animate-in fade-in duration-200"
-          onClick={() => setSelectedMediaIndex(null)}
-        >
+    role="dialog"
+    aria-modal="true"
+    className="fixed inset-0 z-50 bg-black/90 backdrop-blur-2xl flex flex-col items-center justify-between p-4 sm:p-6 animate-in fade-in duration-200 focus-visible:outline-none"
+    onClick={() => setSelectedMediaIndex(null)}
+  >
           {/* Header Superior Flutuante */}
           <div
-            className="w-full max-w-5xl flex items-center justify-between text-white z-10 py-2"
-            onClick={(e) => e.stopPropagation()}
-          >
+    className="w-full max-w-5xl flex items-center justify-between text-white z-10 py-2 focus-visible:outline-none"
+    onClick={(e) => e.stopPropagation()}
+  >
             <div className="space-y-1 max-w-[70%]">
               <h4 className="text-sm sm:text-base font-bold truncate">
                 {activeItem.title || itemTitle || "Evidência Profissional"}
@@ -190,9 +199,9 @@ export function ExperienceMediaCarousel({
 
           {/* Área Central: Visualizador em Alta Definição */}
           <div
-            className="relative flex-1 w-full max-w-5xl flex items-center justify-center p-2 my-auto select-none"
-            onClick={(e) => e.stopPropagation()}
-          >
+    className="relative flex-1 w-full max-w-5xl flex items-center justify-center p-2 my-auto select-none focus-visible:outline-none"
+    onClick={(e) => e.stopPropagation()}
+  >
             {/* Botão Anterior */}
             {normalizedItems.length > 1 && (
               <button
@@ -202,7 +211,7 @@ export function ExperienceMediaCarousel({
                     prev !== null ? (prev > 0 ? prev - 1 : normalizedItems.length - 1) : null
                   )
                 }
-                className="absolute left-2 sm:left-4 z-10 size-11 rounded-full bg-black/50 hover:bg-black/80 text-white backdrop-blur-md border border-white/10 flex items-center justify-center transition-all cursor-pointer"
+                className="absolute left-2 sm:left-4 z-10 size-11 rounded-full bg-black/50 hover:bg-black/80 text-white backdrop-blur-md border border-white/10 flex items-center justify-center transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 title="Anterior (Seta Esquerda)"
               >
                 <ChevronLeft className="size-6" />
@@ -247,7 +256,7 @@ export function ExperienceMediaCarousel({
                     prev !== null ? (prev < normalizedItems.length - 1 ? prev + 1 : 0) : null
                   )
                 }
-                className="absolute right-2 sm:right-4 z-10 size-11 rounded-full bg-black/50 hover:bg-black/80 text-white backdrop-blur-md border border-white/10 flex items-center justify-center transition-all cursor-pointer"
+                className="absolute right-2 sm:right-4 z-10 size-11 rounded-full bg-black/50 hover:bg-black/80 text-white backdrop-blur-md border border-white/10 flex items-center justify-center transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 title="Próximo (Seta Direita)"
               >
                 <ChevronRight className="size-6" />
@@ -257,9 +266,9 @@ export function ExperienceMediaCarousel({
 
           {/* Rodapé Flutuante com Legenda e Indicadores */}
           <div
-            className="w-full max-w-2xl text-center py-2 z-10"
-            onClick={(e) => e.stopPropagation()}
-          >
+    className="w-full max-w-2xl text-center py-2 z-10 focus-visible:outline-none"
+    onClick={(e) => e.stopPropagation()}
+  >
             {activeItem.description && (
               <p className="text-xs text-white/80 max-w-lg mx-auto mb-2 line-clamp-2">
                 {activeItem.description}
@@ -270,11 +279,11 @@ export function ExperienceMediaCarousel({
               <div className="flex items-center justify-center gap-2">
                 {normalizedItems.map((_, dotIdx) => (
                   <button
-                    key={dotIdx}
-                    type="button"
-                    onClick={() => setSelectedMediaIndex(dotIdx)}
-                    className={cn(
-                      "size-2 rounded-full transition-all cursor-pointer",
+    key={dotIdx}
+    type="button"
+    onClick={() => setSelectedMediaIndex(dotIdx)}
+    className={cn(
+      "size-2 rounded-full transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       dotIdx === selectedMediaIndex
                         ? "bg-white w-5"
                         : "bg-white/30 hover:bg-white/60"

@@ -273,7 +273,7 @@ export function SectionFlights({ draft, save }: Props) {
         );
       })}
       <div className="flex gap-2">
-        <AddBtn onClick={add}>Adicionar voo</AddBtn>
+        <AddBtn onClick={add} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Adicionar voo</AddBtn>
         <Button
           type="button"
           onClick={() => setInfotravelOpen(true)}

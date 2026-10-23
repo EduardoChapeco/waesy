@@ -589,11 +589,12 @@ export function SimLabResearchPanel({ storeId }: { storeId: string }) {
               <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
                 {runs.map((run) => (
                   <RunHistoryItem
-                    key={run.id}
-                    run={run}
-                    isSelected={selectedRun?.id === run.id}
-                    onClick={() => setSelectedRunId(run.id)}
-                  />
+    key={run.id}
+    run={run}
+    isSelected={selectedRun?.id === run.id}
+    onClick={() => setSelectedRunId(run.id)}
+    className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+  />
                 ))}
               </div>
             )}

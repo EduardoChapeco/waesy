@@ -733,10 +733,18 @@ export function NewGroupTourSheet({
  const isSelected = includedItems.includes(item);
  return (
  <Badge
- key={item}
- variant={isSelected ? "default" : "outline"}
- onClick={() => toggleInclusion(item)}
- className={`cursor-pointer text-xs py-2 px-3 rounded-lg transition-all ${
+    key={item}
+    variant={isSelected ? "default" : "outline"}
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        toggleInclusion(item);
+      }
+    }}
+    onClick={() => toggleInclusion(item)}
+    className={`cursor-pointer text-xs py-2 px-3 rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
  isSelected ? "bg-primary text-primary-foreground" : "hover:bg-muted"
  }`}
  >

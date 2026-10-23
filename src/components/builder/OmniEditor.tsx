@@ -27,6 +27,8 @@ import type { StudioTemplateManifest } from "@/lib/builder/studio-manifest";
 import type { BuilderAssetRef } from "@/lib/builder/asset-contract";
 import { LiveTemplatePreviewModal } from "./LiveTemplatePreviewModal";
 import { StudioTemplateFactory } from "./StudioTemplateFactory";
+import { BlockErrorBoundary } from "./BlockErrorBoundary";
+import { HostingDomainConnectModal } from "./HostingDomainConnectModal";
 import { listStudioTemplateDrafts } from "@/services/studio-template-library.functions";
 
 import {
@@ -66,6 +68,7 @@ import {
   MapPin,
   Sparkles,
   SlidersHorizontal,
+  Globe,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1927,6 +1930,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isDomainModalOpen, setIsDomainModalOpen] = useState(false);
 
   const handleFinishRename = () => {
     setIsEditingTitle(false);
@@ -2191,6 +2195,16 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
           <Button
             variant="outline"
             size="sm"
+            onClick={() => setIsDomainModalOpen(true)}
+            className="h-11 min-h-11 px-3 sm:px-3 rounded-lg border-border text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary"
+            title="Domínios e Hospedagem"
+          >
+            <Globe className="size-4 sm:mr-2" />
+            <span className="hidden sm:inline">Domínio</span>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => setIsPreviewMode(!isPreviewMode)}
             className="h-11 min-h-11 px-3 sm:px-3 rounded-lg border-border text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary"
           >
@@ -2432,16 +2446,22 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                       </div>
                     )}
 
-                    <Component
-                      id={block.id}
-                      data={block.config}
-                      styling={block.styling}
-                      isEditing={true}
-                      products={products}
-                      categories={categories}
-                      collections={collections}
-                      storeData={storeData}
-                    />
+                    <BlockErrorBoundary
+                      blockId={block.id}
+                      blockType={block.type}
+                      onRemoveBlock={handleRemoveBlock}
+                    >
+                      <Component
+                        id={block.id}
+                        data={block.config}
+                        styling={block.styling}
+                        isEditing={true}
+                        products={products}
+                        categories={categories}
+                        collections={collections}
+                        storeData={storeData}
+                      />
+                    </BlockErrorBoundary>
                   </div>
                 );
               })
@@ -2593,16 +2613,22 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                     </div>
                   )}
 
-                  <Component
-                    id={block.id}
-                    data={block.config}
-                    styling={block.styling}
-                    isEditing={true}
-                    products={products}
-                    categories={categories}
-                    collections={collections}
-                    storeData={storeData}
-                  />
+                  <BlockErrorBoundary
+                    blockId={block.id}
+                    blockType={block.type}
+                    onRemoveBlock={handleRemoveBlock}
+                  >
+                    <Component
+                      id={block.id}
+                      data={block.config}
+                      styling={block.styling}
+                      isEditing={true}
+                      products={products}
+                      categories={categories}
+                      collections={collections}
+                      storeData={storeData}
+                    />
+                  </BlockErrorBoundary>
                 </div>
               );
             })}
@@ -2984,6 +3010,14 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
           handleApplyTemplate(tplId);
           setPreviewTemplate(null);
         }}
+      />
+
+      {/* ── MODAL DE DOMÍNIOS & HOSPEDAGEM (OFFLOAD LITESPEED / FREE SUBDOMAIN) ── */}
+      <HostingDomainConnectModal
+        isOpen={isDomainModalOpen}
+        onClose={() => setIsDomainModalOpen(false)}
+        storeSlug={document.slug}
+        storeName={document.title || "Minha Loja"}
       />
     </div>
   );

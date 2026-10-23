@@ -179,13 +179,21 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  <div className="p-1 space-y-1">
  {notifications.map((item) => (
  <div
- key={item.id}
- onClick={() => handleNotificationClick(item)}
- className={cn(
- "p-3 rounded-lg flex items-start gap-3 transition-colors cursor-pointer group text-left",
- item.isRead ? "hover:bg-muted/40" : "bg-muted/30 hover:bg-muted/60"
- )}
- >
+    key={item.id}
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        handleNotificationClick(item);
+      }
+    }}
+    onClick={() => handleNotificationClick(item)}
+    className={cn(
+      "p-3 rounded-lg flex items-start gap-3 transition-colors cursor-pointer group text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+      item.isRead ? "hover:bg-muted/40" : "bg-muted/30 hover:bg-muted/60"
+    )}
+  >
  {/* Avatar Squircle da Empresa / Autor */}
  <div className="size-10 rounded-lg bg-card overflow-hidden shrink-0 flex items-center justify-center ">
  {item.avatarUrl ? (

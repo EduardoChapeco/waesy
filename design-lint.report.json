@@ -1,29 +1,28 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-23T14:14:14.394Z",
-  "inspectedFiles": 2324,
-  "totalViolations": 10141,
+  "timestamp": "2026-10-23T15:01:23.695Z",
+  "inspectedFiles": 2328,
+  "totalViolations": 10125,
   "summary": {
-    "totalViolations": 10141,
+    "totalViolations": 10125,
     "bySeverity": {
-      "P0": 44,
-      "P1": 7646,
-      "P2": 1274,
-      "P3": 1177
+      "P0": 0,
+      "P1": 7663,
+      "P2": 1281,
+      "P3": 1181
     },
     "byRule": {
       "DL-30": 258,
-      "DL-27": 919,
+      "DL-27": 923,
       "DL-26": 81,
       "DL-07": 443,
       "DL-29": 115,
-      "DL-02": 3077,
-      "DL-14": 1787,
-      "DL-28": 269,
+      "DL-02": 3082,
+      "DL-14": 1786,
+      "DL-28": 270,
       "DL-18": 1113,
-      "DL-03": 386,
-      "DL-15": 44,
-      "DL-09": 163,
+      "DL-03": 398,
+      "DL-09": 170,
       "DL-08": 93,
       "DL-01": 826,
       "DL-25": 21,
@@ -37,18 +36,18 @@
     },
     "byModule": {
       "components/app": {
-        "total": 4336,
-        "P0": 20,
+        "total": 4316,
+        "P0": 0,
         "P1": 3228,
         "P2": 602,
         "P3": 486
       },
       "components/builder": {
-        "total": 49,
+        "total": 77,
         "P0": 0,
-        "P1": 28,
-        "P2": 14,
-        "P3": 7
+        "P1": 45,
+        "P2": 21,
+        "P3": 11
       },
       "components/chat": {
         "total": 193,
@@ -58,15 +57,15 @@
         "P3": 15
       },
       "components/tourism": {
-        "total": 908,
-        "P0": 8,
+        "total": 900,
+        "P0": 0,
         "P1": 730,
         "P2": 126,
         "P3": 44
       },
       "components/ui": {
-        "total": 279,
-        "P0": 1,
+        "total": 278,
+        "P0": 0,
         "P1": 219,
         "P2": 19,
         "P3": 40
@@ -100,15 +99,15 @@
         "P3": 0
       },
       "routes/other": {
-        "total": 117,
-        "P0": 4,
+        "total": 113,
+        "P0": 0,
         "P1": 91,
         "P2": 16,
         "P3": 6
       },
       "routes/workspace": {
-        "total": 1675,
-        "P0": 11,
+        "total": 1664,
+        "P0": 0,
         "P1": 1296,
         "P2": 109,
         "P3": 259
@@ -143,7 +142,7 @@
       }
     },
     "filesWithViolations": 857,
-    "filesCount": 2324
+    "filesCount": 2328
   },
   "config": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",

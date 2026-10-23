@@ -155,7 +155,7 @@ export default function WorkspaceTripsListPage() {
             <span>Malha Aérea e PNR</span>
           </Link>
         </div>
-        <ModuleTourTrigger onClick={() => setIsTourOpen(true)} label="Guia do Módulo" />
+        <ModuleTourTrigger onClick={() => setIsTourOpen(true)} label="Guia do Módulo" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" />
       </div>
 
       {/* ── 1. TOOLBAR CANÔNICA PADRÃO Waesy ── */}

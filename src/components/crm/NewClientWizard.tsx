@@ -537,11 +537,19 @@ export function NewClientWizard({
  <div className="flex flex-wrap gap-2 pt-1">
  {tags.map((t) => (
  <Badge
- key={t}
- variant="secondary"
- className="text-xs font-semibold px-3 py-1 rounded-lg gap-2 cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors"
- onClick={() => handleRemoveTag(t)}
- >
+    key={t}
+    variant="secondary"
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        handleRemoveTag(t);
+      }
+    }}
+    className="text-xs font-semibold px-3 py-1 rounded-lg gap-2 cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    onClick={() => handleRemoveTag(t)}
+  >
  <span>{t}</span>
  <span className="text-xs opacity-60">×</span>
  </Badge>
