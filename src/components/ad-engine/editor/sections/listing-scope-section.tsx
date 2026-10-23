@@ -114,7 +114,7 @@ export function ListingScopeSection({
                   disabled={alreadyHas}
                   onClick={() => handleAddInclusion(sug)}
                   className={cn(
-                    "text-xs px-3 py-1 rounded-lg border transition-colors cursor-pointer text-left",
+                    "min-h-11 min-w-11 text-xs px-3 py-1 rounded-lg border transition-colors motion-reduce:transition-none cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                     alreadyHas
                       ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 opacity-60 cursor-default"
                       : "border-border/60 bg-background hover:bg-muted/40 text-foreground"
@@ -131,6 +131,7 @@ export function ListingScopeSection({
         <div className="flex items-center gap-2">
           <Input
             value={newInclusion}
+            aria-label="Adicionar item incluso personalizado"
             onChange={(e) => setNewInclusion(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
@@ -139,7 +140,7 @@ export function ListingScopeSection({
               }
             }}
             placeholder="Adicionar item incluso personalizado..."
-            className="h-10 rounded-lg text-xs bg-background flex-1"
+            className="h-11 min-h-11 rounded-lg text-xs bg-background flex-1"
           />
           <Button
             type="button"
@@ -147,7 +148,7 @@ export function ListingScopeSection({
             size="sm"
             onClick={() => handleAddInclusion(newInclusion)}
             disabled={!newInclusion.trim()}
-            className="h-10 rounded-lg text-xs font-semibold gap-1 cursor-pointer"
+            className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             <Plus className="size-3.5" />
             <span>Adicionar</span>
@@ -155,7 +156,7 @@ export function ListingScopeSection({
         </div>
 
         {/* Lista de Itens Inclusos */}
-        {inclusions.length > 0 && (
+        {inclusions.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
             {inclusions.map((item, idx) => (
               <div
@@ -171,13 +172,21 @@ export function ListingScopeSection({
                   variant="ghost"
                   size="icon"
                   onClick={() => handleRemoveInclusion(idx)}
-                  className="size-7 rounded-lg text-muted-foreground hover:text-destructive shrink-0 cursor-pointer"
+                  aria-label={`Remover item incluso: ${item}`}
+                  className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-destructive shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   <Trash2 className="size-3" />
                 </Button>
               </div>
             ))}
           </div>
+        ) : (
+          <p
+            role="status"
+            className="rounded-lg border border-dashed border-border/60 p-3 text-xs text-muted-foreground"
+          >
+            Nenhum item incluso adicionado.
+          </p>
         )}
       </div>
 
@@ -211,7 +220,7 @@ export function ListingScopeSection({
                   disabled={alreadyHas}
                   onClick={() => handleAddExclusion(sug)}
                   className={cn(
-                    "text-xs px-3 py-1 rounded-lg border transition-colors cursor-pointer text-left",
+                    "min-h-11 min-w-11 text-xs px-3 py-1 rounded-lg border transition-colors motion-reduce:transition-none cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                     alreadyHas
                       ? "border-destructive/30 bg-destructive/10 text-destructive opacity-60 cursor-default"
                       : "border-border/60 bg-background hover:bg-muted/40 text-foreground"
@@ -228,6 +237,7 @@ export function ListingScopeSection({
         <div className="flex items-center gap-2">
           <Input
             value={newExclusion}
+            aria-label="Adicionar item não incluso personalizado"
             onChange={(e) => setNewExclusion(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
@@ -236,7 +246,7 @@ export function ListingScopeSection({
               }
             }}
             placeholder="Adicionar item não incluso (ex: Alimentação)..."
-            className="h-10 rounded-lg text-xs bg-background flex-1"
+            className="h-11 min-h-11 rounded-lg text-xs bg-background flex-1"
           />
           <Button
             type="button"
@@ -244,7 +254,7 @@ export function ListingScopeSection({
             size="sm"
             onClick={() => handleAddExclusion(newExclusion)}
             disabled={!newExclusion.trim()}
-            className="h-10 rounded-lg text-xs font-semibold gap-1 cursor-pointer"
+            className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             <Plus className="size-3.5" />
             <span>Adicionar</span>
@@ -252,7 +262,7 @@ export function ListingScopeSection({
         </div>
 
         {/* Lista de Itens Não Inclusos */}
-        {exclusions.length > 0 && (
+        {exclusions.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
             {exclusions.map((item, idx) => (
               <div
@@ -268,13 +278,21 @@ export function ListingScopeSection({
                   variant="ghost"
                   size="icon"
                   onClick={() => handleRemoveExclusion(idx)}
-                  className="size-7 rounded-lg text-muted-foreground hover:text-destructive shrink-0 cursor-pointer"
+                  aria-label={`Remover item não incluso: ${item}`}
+                  className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-destructive shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   <Trash2 className="size-3" />
                 </Button>
               </div>
             ))}
           </div>
+        ) : (
+          <p
+            role="status"
+            className="rounded-lg border border-dashed border-border/60 p-3 text-xs text-muted-foreground"
+          >
+            Nenhum item não incluso adicionado.
+          </p>
         )}
       </div>
     </div>
