@@ -64,6 +64,7 @@ function WorkspaceHotelsPage() {
  const [sheetTab, setSheetTab] = useState<string>("dados");
  const [selectedGlobalHotel, setSelectedGlobalHotel] = useState<GlobalHotelDTO | null>(null);
  const [preflightMatch, setPreflightMatch] = useState<HotelPreflightMatchDTO | null>(null);
+ const [preflightError, setPreflightError] = useState(false);
 
 
  // Form State Modular
@@ -150,10 +151,12 @@ function WorkspaceHotelsPage() {
  const [newRestaurant, setNewRestaurant] = useState({ name: "", cuisine: "", regime: "Incluso" });
 
  useEffect(() => {
- if (!formData.name || formData.name.trim().length < 3 || selectedGlobalHotel || editingHotel?.global_hotel_id) {
  setPreflightMatch(null);
+ setPreflightError(false);
+ if (!isSheetOpen || formData.name.trim().length < 3 || selectedGlobalHotel || editingHotel?.global_hotel_id) {
  return;
  }
+ let active = true;
  const timer = setTimeout(async () => {
  try {
  const match = await checkHotelPreflightMatch({
@@ -163,17 +166,20 @@ function WorkspaceHotelsPage() {
  state: formData.state || undefined,
  },
  });
+ if (!active) return;
  if (match.hasDuplicate && match.matchedHotel) {
  setPreflightMatch(match);
  } else {
  setPreflightMatch(null);
  }
  } catch {
+ if (!active) return;
  setPreflightMatch(null);
+ setPreflightError(true);
  }
  }, 350);
- return () => clearTimeout(timer);
- }, [formData.name, formData.city, formData.state, selectedGlobalHotel, editingHotel?.global_hotel_id]);
+ return () => { active = false; clearTimeout(timer); };
+ }, [formData.name, formData.city, formData.state, selectedGlobalHotel, editingHotel?.global_hotel_id, isSheetOpen]);
 
  const { data: hotels = initialHotels, refetch } = useQuery({
  queryKey: ["workspace_hotels_bank", selectedDestination],
@@ -1431,20 +1437,23 @@ function WorkspaceHotelsPage() {
  <Label className="font-semibold text-primary">Vincular ao Banco Central de Hotéis</Label>
  <HotelAutocompleteInput
  value={selectedGlobalHotel?.id || editingHotel?.global_hotel_id || null}
+ selectedLabel={selectedGlobalHotel?.name || (editingHotel?.global_hotel_id ? editingHotel.name : undefined)}
  onChange={handleSelectGlobalHotel}
  disabled={createMut.isPending || updateMut.isPending}
  />
  <p className="text-xs text-muted-foreground">Selecione um registro verificado para evitar duplicatas. A criação e fusão de registros canônicos permanece sob governança Master.</p>
  </div>
  <div className="space-y-2">
- <Label className="font-semibold text-foreground">Nome do Hotel / Resort *</Label>
+ <Label htmlFor="hotel-name" className="font-semibold text-foreground">Nome do Hotel / Resort *</Label>
  <Input
+ id="hotel-name"
  value={formData.name}
  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
  placeholder="Ex: Nannai Muro Alto Resort & Spa, Salinas Maragogi, Hotel Fasano"
- className="h-10 rounded-lg bg-background"
+ className="h-11 min-h-11 rounded-lg bg-background"
  required
  />
+ {preflightError && <p role="alert" className="text-xs text-destructive">Não foi possível verificar duplicatas. Tente novamente alterando o nome.</p>}
  {preflightMatch && preflightMatch.matchedHotel && !selectedGlobalHotel && (
  <div className="p-3 rounded-lg bg-primary/10 border border-primary/30 flex items-start justify-between gap-3 animate-in fade-in duration-200">
  <div className="space-y-1">
@@ -1468,12 +1477,13 @@ function WorkspaceHotelsPage() {
  city: preflightMatch.matchedHotel.city,
  state: preflightMatch.matchedHotel.state,
  country: preflightMatch.matchedHotel.country,
- is_canonical: true,
- } as any);
+ canonical_slug: "",
+ verified_by_master: true,
+ });
  setPreflightMatch(null);
  }
  }}
- className="h-9 px-3 rounded-md text-xs font-bold shrink-0 bg-background hover:bg-primary/10 border-primary/40 text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+ className="h-11 min-h-11 px-3 rounded-md text-xs font-bold shrink-0 bg-background hover:bg-primary/10 border-primary/40 text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
  >
  Vincular
  </Button>

@@ -889,21 +889,25 @@ export interface HotelPreflightMatchDTO {
 export const checkHotelPreflightMatch = createServerFn({ method: "POST" })
   .validator(
     z.object({
-      name: z.string().min(2),
-      city: z.string().optional(),
-      state: z.string().optional(),
+      name: z.string().trim().min(2).max(120),
+      city: z.string().trim().max(120).optional(),
+      state: z.string().trim().max(80).optional(),
     })
   )
   .handler(async ({ data }): Promise<HotelPreflightMatchDTO> => {
     const db = getServerClient();
     const normalizedInput = normalizeHotelName(data.name);
 
-    // 1. Busca em global_hotels por normalized_name exato ou trigram
-    const { data: globalMatches } = await db
+    const literalPattern = (value: string) => value.replace(/[\\%_]/g, "\\$&");
+    let globalQuery = db
       .from("global_hotels")
       .select("id, name, city, state, country, verified_by_master")
-      .or("normalized_name.eq." + normalizedInput + ",name.ilike.%" + data.name.trim() + "%")
-      .limit(1);
+      .eq("verified_by_master", true)
+      .eq("normalized_name", normalizedInput);
+    if (data.city) globalQuery = globalQuery.ilike("city", literalPattern(data.city));
+    if (data.state) globalQuery = globalQuery.ilike("state", literalPattern(data.state));
+    const { data: globalMatches, error: globalError } = await globalQuery.limit(1);
+    if (globalError) throw new Error(`Falha ao verificar hotel: ${globalError.message}`);
 
     if (globalMatches && globalMatches.length > 0) {
       const match = globalMatches[0];
@@ -923,11 +927,15 @@ export const checkHotelPreflightMatch = createServerFn({ method: "POST" })
     }
 
     // 2. Busca em hotel_aliases
-    const { data: aliasMatches } = await db
+    let aliasQuery = db
       .from("hotel_aliases")
-      .select("global_hotel_id, alias, global_hotels(id, name, city, state, country)")
+      .select("global_hotel_id, alias, global_hotels!inner(id, name, city, state, country)")
       .eq("normalized_alias", normalizedInput)
-      .limit(1);
+      .eq("global_hotels.verified_by_master", true);
+    if (data.city) aliasQuery = aliasQuery.ilike("global_hotels.city", literalPattern(data.city));
+    if (data.state) aliasQuery = aliasQuery.ilike("global_hotels.state", literalPattern(data.state));
+    const { data: aliasMatches, error: aliasError } = await aliasQuery.limit(1);
+    if (aliasError) throw new Error(`Falha ao verificar apelidos do hotel: ${aliasError.message}`);
 
     if (aliasMatches && aliasMatches.length > 0) {
       const alias = aliasMatches[0] as any;
@@ -944,24 +952,6 @@ export const checkHotelPreflightMatch = createServerFn({ method: "POST" })
           is_canonical: true,
         },
         recommendation: "A denominação \"" + data.name + "\" é um sinônimo canônico de \"" + (gh?.name || alias.alias) + "\". Recomendamos utilizar o registro oficial.",
-      };
-    }
-
-    // 3. Fallback no catálogo SSOT estático
-    const staticMatch = getHotelByNameOrSlug(data.name);
-    if (staticMatch) {
-      return {
-        hasDuplicate: true,
-        matchType: "similar",
-        matchedHotel: {
-          id: "canonical-" + normalizeHotelName(staticMatch.name),
-          name: staticMatch.name,
-          city: staticMatch.city,
-          state: staticMatch.state,
-          country: staticMatch.country,
-          is_canonical: true,
-        },
-        recommendation: "Identificamos \"" + staticMatch.name + "\" no Catálogo Oficial de Resorts. Você pode vinculá-lo diretamente com 1 toque.",
       };
     }
 
