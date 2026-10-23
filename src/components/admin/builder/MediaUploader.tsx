@@ -282,8 +282,8 @@ export function MediaUploader({
  </div>
  ) : (
  /* ── 2. ÁREA DE DROP / UPLOAD QUANDO VAZIO ── */
- <div
- className={cn(
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "h-28 rounded-lg border border-dashed border-border/80 flex flex-col items-center justify-center gap-2 text-muted-foreground bg-muted/20 hover:bg-muted/40 hover:border-primary/60 transition-all cursor-pointer select-none",
  isUploading && "pointer-events-none opacity-60",
  )}
@@ -350,7 +350,7 @@ export function MediaUploader({
  setShowPresets(false);
  toast.success(`Exemplo "${preset.label}" aplicado!`);
  }}
- className="text-left text-[11px] p-2 rounded-lg bg-background hover:bg-primary/10 hover:text-primary border border-border/50 truncate cursor-pointer transition-colors"
+ className="text-left text-[11px] p-2 rounded-lg bg-background hover:bg-primary/10 hover:text-primary border border-border/50 truncate cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {preset.label}
  </button>

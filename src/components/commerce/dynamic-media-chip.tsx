@@ -253,7 +253,7 @@ export function DynamicMediaChip({
  <button
  type="button"
  onClick={onClick}
- className="focus:outline-none shrink-0"
+ className="focus:outline-none shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  aria-label={ariaLabel || label}
  >
  {content}

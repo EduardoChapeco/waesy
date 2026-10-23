@@ -62,12 +62,12 @@ export function CompanyNotificationsBell() {
             </div>
           ) : (
             notifications.map((n: any) => (
-              <div
+              <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                 key={n.id}
                 onClick={() => {
                   if (!n.is_read) markMutation.mutate(n.id);
                 }}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "p-3 rounded-lg transition-colors cursor-pointer space-y-1",
                   n.is_read ? "bg-transparent opacity-80" : "bg-muted/40 font-medium"
                 )}

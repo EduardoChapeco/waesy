@@ -142,7 +142,7 @@ function UserLawsuitsPage() {
             activeTab === "lawsuits"
               ? "bg-foreground text-background font-bold shadow-xs"
               : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground"
-          }`}
+          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
         >
           <Scales className="size-3.5" />
           <span>Meus Processos ({lawsuits?.length || 0})</span>
@@ -153,7 +153,7 @@ function UserLawsuitsPage() {
             activeTab === "demands"
               ? "bg-foreground text-background font-bold shadow-xs"
               : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground"
-          }`}
+          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
         >
           <FileText className="size-3.5" />
           <span>Demandas Publicadas ({demands?.length || 0})</span>
@@ -183,7 +183,7 @@ function UserLawsuitsPage() {
  <div className="mt-6 flex flex-wrap justify-center gap-3">
  <button
  onClick={() => setActiveTab("new_demand")}
- className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90"
+ className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Plus className="h-4 w-4" />
  Publicar Demanda para Advogados
@@ -201,10 +201,10 @@ function UserLawsuitsPage() {
  ) : (
  <div className="grid gap-4">
  {lawsuits?.map((lawsuit: any) => (
- <div
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  key={lawsuit.id}
  onClick={() => setSelectedLawsuit(lawsuit)}
- className="rounded-lg border border-border bg-card p-5 transition-all hover:border-primary/40 cursor-pointer shadow-xs"
+ className="rounded-lg border border-border bg-card p-5 transition-all hover:border-primary/40 cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
  <div>
@@ -361,14 +361,14 @@ function UserLawsuitsPage() {
  <button
  type="button"
  onClick={() => setActiveTab("lawsuits")}
- className="rounded-lg border border-border bg-background px-4 py-3 text-sm font-semibold text-foreground transition-all hover:bg-accent"
+ className="rounded-lg border border-border bg-background px-4 py-3 text-sm font-semibold text-foreground transition-all hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  Cancelar
  </button>
  <button
  type="submit"
  disabled={isPending}
- className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 disabled:opacity-50"
+ className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {isPending ? "Publicando..." : "Publicar Demanda"}
  </button>

@@ -135,6 +135,7 @@ import { Route as WorkspaceSuporteRouteImport } from './routes/workspace.suporte
 import { Route as WorkspaceTarefasRouteImport } from './routes/workspace.tarefas'
 import { Route as WorkspaceTokensRouteImport } from './routes/workspace.tokens'
 import { Route as WorkspaceViabilidadeRouteImport } from './routes/workspace.viabilidade'
+import { Route as StoreAeroportoIataRouteImport } from './routes/_store.aeroporto.$iata'
 import { Route as StoreAgendarIndexRouteImport } from './routes/_store.agendar.index'
 import { Route as StoreAgendarIdRouteImport } from './routes/_store.agendar.$id'
 import { Route as StoreBioSlugRouteImport } from './routes/_store.bio.$slug'
@@ -366,6 +367,7 @@ import { Route as WorkspaceTurismoEmbarquesRouteImport } from './routes/workspac
 import { Route as WorkspaceTurismoFornecedoresRouteImport } from './routes/workspace.turismo.fornecedores'
 import { Route as WorkspaceTurismoHoteisRouteImport } from './routes/workspace.turismo.hoteis'
 import { Route as WorkspaceTurismoIncidentesRouteImport } from './routes/workspace.turismo.incidentes'
+import { Route as WorkspaceTurismoOportunidadesRouteImport } from './routes/workspace.turismo.oportunidades'
 import { Route as WorkspaceTurismoRadarRouteImport } from './routes/workspace.turismo.radar'
 import { Route as WorkspaceTurismoReacomodacaoRouteImport } from './routes/workspace.turismo.reacomodacao'
 import { Route as WorkspaceTurismoVistosRouteImport } from './routes/workspace.turismo.vistos'
@@ -375,10 +377,13 @@ import { Route as StoreContaClassificadosNovoRouteImport } from './routes/_store
 import { Route as StoreContaClassificadosPerformanceRouteImport } from './routes/_store.conta.classificados.performance'
 import { Route as StoreContaConversasIndexRouteImport } from './routes/_store.conta.conversas.index'
 import { Route as StoreContaConversasIdRouteImport } from './routes/_store.conta.conversas.$id'
+import { Route as StoreContaLojasNovaRouteImport } from './routes/_store.conta.lojas.nova'
 import { Route as StoreContaPedidosIndexRouteImport } from './routes/_store.conta.pedidos.index'
 import { Route as StoreContaPedidosIdRouteImport } from './routes/_store.conta.pedidos.$id'
 import { Route as StoreLojaSlugSenhaRouteImport } from './routes/_store.loja.$slug.senha'
 import { Route as StorePedidoPublicTokenConfirmacaoRouteImport } from './routes/_store.pedido.$publicToken.confirmacao'
+import { Route as StoreTurismoDestinosSlugRouteImport } from './routes/_store.turismo.destinos.$slug'
+import { Route as StoreTurismoHoteisSlugRouteImport } from './routes/_store.turismo.hoteis.$slug'
 import { Route as AdminMasterSegurancaCertificadosIdRouteImport } from './routes/admin-master.seguranca.certificados.$id'
 import { Route as ApiAuthAdsCallbackRouteImport } from './routes/api.auth.ads.callback'
 import { Route as ApiAuthGovbrCallbackRouteImport } from './routes/api.auth.govbr.callback'
@@ -1056,6 +1061,11 @@ const WorkspaceViabilidadeRoute = WorkspaceViabilidadeRouteImport.update({
   id: '/viabilidade',
   path: '/viabilidade',
   getParentRoute: () => WorkspaceRoute,
+} as any)
+const StoreAeroportoIataRoute = StoreAeroportoIataRouteImport.update({
+  id: '/aeroporto/$iata',
+  path: '/aeroporto/$iata',
+  getParentRoute: () => StoreRoute,
 } as any)
 const StoreAgendarIndexRoute = StoreAgendarIndexRouteImport.update({
   id: '/',
@@ -2296,6 +2306,12 @@ const WorkspaceTurismoIncidentesRoute =
     path: '/turismo/incidentes',
     getParentRoute: () => WorkspaceRoute,
   } as any)
+const WorkspaceTurismoOportunidadesRoute =
+  WorkspaceTurismoOportunidadesRouteImport.update({
+    id: '/turismo/oportunidades',
+    path: '/turismo/oportunidades',
+    getParentRoute: () => WorkspaceRoute,
+  } as any)
 const WorkspaceTurismoRadarRoute = WorkspaceTurismoRadarRouteImport.update({
   id: '/turismo/radar',
   path: '/turismo/radar',
@@ -2347,6 +2363,11 @@ const StoreContaConversasIdRoute = StoreContaConversasIdRouteImport.update({
   path: '/conversas/$id',
   getParentRoute: () => StoreContaRoute,
 } as any)
+const StoreContaLojasNovaRoute = StoreContaLojasNovaRouteImport.update({
+  id: '/nova',
+  path: '/nova',
+  getParentRoute: () => StoreContaLojasRoute,
+} as any)
 const StoreContaPedidosIndexRoute = StoreContaPedidosIndexRouteImport.update({
   id: '/pedidos/',
   path: '/pedidos/',
@@ -2368,6 +2389,17 @@ const StorePedidoPublicTokenConfirmacaoRoute =
     path: '/pedido/$publicToken/confirmacao',
     getParentRoute: () => StoreRoute,
   } as any)
+const StoreTurismoDestinosSlugRoute =
+  StoreTurismoDestinosSlugRouteImport.update({
+    id: '/destinos/$slug',
+    path: '/destinos/$slug',
+    getParentRoute: () => StoreTurismoRoute,
+  } as any)
+const StoreTurismoHoteisSlugRoute = StoreTurismoHoteisSlugRouteImport.update({
+  id: '/hoteis/$slug',
+  path: '/hoteis/$slug',
+  getParentRoute: () => StoreTurismoRoute,
+} as any)
 const AdminMasterSegurancaCertificadosIdRoute =
   AdminMasterSegurancaCertificadosIdRouteImport.update({
     id: '/$id',
@@ -2760,6 +2792,7 @@ export interface FileRoutesByFullPath {
   '/workspace/viabilidade': typeof WorkspaceViabilidadeRoute
   '/admin-master/': typeof AdminMasterIndexRoute
   '/workspace/': typeof WorkspaceIndexRoute
+  '/aeroporto/$iata': typeof StoreAeroportoIataRoute
   '/agendar/$id': typeof StoreAgendarIdRoute
   '/bio/$slug': typeof StoreBioSlugRoute
   '/categoria/$slug': typeof StoreCategoriaSlugRoute
@@ -2784,7 +2817,7 @@ export interface FileRoutesByFullPath {
   '/conta/financas': typeof StoreContaFinancasRoute
   '/conta/gift-cards': typeof StoreContaGiftCardsRoute
   '/conta/ingressos': typeof StoreContaIngressosRoute
-  '/conta/lojas': typeof StoreContaLojasRoute
+  '/conta/lojas': typeof StoreContaLojasRouteWithChildren
   '/conta/metricas': typeof StoreContaMetricasRoute
   '/conta/mobilidade': typeof StoreContaMobilidadeRoute
   '/conta/negociacoes': typeof StoreContaNegociacoesRoute
@@ -2954,6 +2987,7 @@ export interface FileRoutesByFullPath {
   '/workspace/turismo/fornecedores': typeof WorkspaceTurismoFornecedoresRoute
   '/workspace/turismo/hoteis': typeof WorkspaceTurismoHoteisRoute
   '/workspace/turismo/incidentes': typeof WorkspaceTurismoIncidentesRoute
+  '/workspace/turismo/oportunidades': typeof WorkspaceTurismoOportunidadesRoute
   '/workspace/turismo/radar': typeof WorkspaceTurismoRadarRoute
   '/workspace/turismo/reacomodacao': typeof WorkspaceTurismoReacomodacaoRoute
   '/workspace/turismo/vistos': typeof WorkspaceTurismoVistosRoute
@@ -2998,9 +3032,12 @@ export interface FileRoutesByFullPath {
   '/conta/classificados/novo': typeof StoreContaClassificadosNovoRoute
   '/conta/classificados/performance': typeof StoreContaClassificadosPerformanceRoute
   '/conta/conversas/$id': typeof StoreContaConversasIdRoute
+  '/conta/lojas/nova': typeof StoreContaLojasNovaRoute
   '/conta/pedidos/$id': typeof StoreContaPedidosIdRoute
   '/loja/$slug/senha': typeof StoreLojaSlugSenhaRoute
   '/pedido/$publicToken/confirmacao': typeof StorePedidoPublicTokenConfirmacaoRoute
+  '/turismo/destinos/$slug': typeof StoreTurismoDestinosSlugRoute
+  '/turismo/hoteis/$slug': typeof StoreTurismoHoteisSlugRoute
   '/admin-master/seguranca/certificados/$id': typeof AdminMasterSegurancaCertificadosIdRoute
   '/api/auth/ads/callback': typeof ApiAuthAdsCallbackRoute
   '/api/auth/govbr/callback': typeof ApiAuthGovbrCallbackRoute
@@ -3168,6 +3205,7 @@ export interface FileRoutesByTo {
   '/': typeof StoreIndexRoute
   '/admin-master': typeof AdminMasterIndexRoute
   '/workspace': typeof WorkspaceIndexRoute
+  '/aeroporto/$iata': typeof StoreAeroportoIataRoute
   '/agendar/$id': typeof StoreAgendarIdRoute
   '/bio/$slug': typeof StoreBioSlugRoute
   '/categoria/$slug': typeof StoreCategoriaSlugRoute
@@ -3192,7 +3230,7 @@ export interface FileRoutesByTo {
   '/conta/financas': typeof StoreContaFinancasRoute
   '/conta/gift-cards': typeof StoreContaGiftCardsRoute
   '/conta/ingressos': typeof StoreContaIngressosRoute
-  '/conta/lojas': typeof StoreContaLojasRoute
+  '/conta/lojas': typeof StoreContaLojasRouteWithChildren
   '/conta/metricas': typeof StoreContaMetricasRoute
   '/conta/mobilidade': typeof StoreContaMobilidadeRoute
   '/conta/negociacoes': typeof StoreContaNegociacoesRoute
@@ -3361,6 +3399,7 @@ export interface FileRoutesByTo {
   '/workspace/turismo/fornecedores': typeof WorkspaceTurismoFornecedoresRoute
   '/workspace/turismo/hoteis': typeof WorkspaceTurismoHoteisRoute
   '/workspace/turismo/incidentes': typeof WorkspaceTurismoIncidentesRoute
+  '/workspace/turismo/oportunidades': typeof WorkspaceTurismoOportunidadesRoute
   '/workspace/turismo/radar': typeof WorkspaceTurismoRadarRoute
   '/workspace/turismo/reacomodacao': typeof WorkspaceTurismoReacomodacaoRoute
   '/workspace/turismo/vistos': typeof WorkspaceTurismoVistosRoute
@@ -3405,9 +3444,12 @@ export interface FileRoutesByTo {
   '/conta/classificados/novo': typeof StoreContaClassificadosNovoRoute
   '/conta/classificados/performance': typeof StoreContaClassificadosPerformanceRoute
   '/conta/conversas/$id': typeof StoreContaConversasIdRoute
+  '/conta/lojas/nova': typeof StoreContaLojasNovaRoute
   '/conta/pedidos/$id': typeof StoreContaPedidosIdRoute
   '/loja/$slug/senha': typeof StoreLojaSlugSenhaRoute
   '/pedido/$publicToken/confirmacao': typeof StorePedidoPublicTokenConfirmacaoRoute
+  '/turismo/destinos/$slug': typeof StoreTurismoDestinosSlugRoute
+  '/turismo/hoteis/$slug': typeof StoreTurismoHoteisSlugRoute
   '/admin-master/seguranca/certificados/$id': typeof AdminMasterSegurancaCertificadosIdRoute
   '/api/auth/ads/callback': typeof ApiAuthAdsCallbackRoute
   '/api/auth/govbr/callback': typeof ApiAuthGovbrCallbackRoute
@@ -3585,6 +3627,7 @@ export interface FileRoutesById {
   '/_store/': typeof StoreIndexRoute
   '/admin-master/': typeof AdminMasterIndexRoute
   '/workspace/': typeof WorkspaceIndexRoute
+  '/_store/aeroporto/$iata': typeof StoreAeroportoIataRoute
   '/_store/agendar/$id': typeof StoreAgendarIdRoute
   '/_store/bio/$slug': typeof StoreBioSlugRoute
   '/_store/categoria/$slug': typeof StoreCategoriaSlugRoute
@@ -3609,7 +3652,7 @@ export interface FileRoutesById {
   '/_store/conta/financas': typeof StoreContaFinancasRoute
   '/_store/conta/gift-cards': typeof StoreContaGiftCardsRoute
   '/_store/conta/ingressos': typeof StoreContaIngressosRoute
-  '/_store/conta/lojas': typeof StoreContaLojasRoute
+  '/_store/conta/lojas': typeof StoreContaLojasRouteWithChildren
   '/_store/conta/metricas': typeof StoreContaMetricasRoute
   '/_store/conta/mobilidade': typeof StoreContaMobilidadeRoute
   '/_store/conta/negociacoes': typeof StoreContaNegociacoesRoute
@@ -3779,6 +3822,7 @@ export interface FileRoutesById {
   '/workspace/turismo/fornecedores': typeof WorkspaceTurismoFornecedoresRoute
   '/workspace/turismo/hoteis': typeof WorkspaceTurismoHoteisRoute
   '/workspace/turismo/incidentes': typeof WorkspaceTurismoIncidentesRoute
+  '/workspace/turismo/oportunidades': typeof WorkspaceTurismoOportunidadesRoute
   '/workspace/turismo/radar': typeof WorkspaceTurismoRadarRoute
   '/workspace/turismo/reacomodacao': typeof WorkspaceTurismoReacomodacaoRoute
   '/workspace/turismo/vistos': typeof WorkspaceTurismoVistosRoute
@@ -3823,9 +3867,12 @@ export interface FileRoutesById {
   '/_store/conta/classificados/novo': typeof StoreContaClassificadosNovoRoute
   '/_store/conta/classificados/performance': typeof StoreContaClassificadosPerformanceRoute
   '/_store/conta/conversas/$id': typeof StoreContaConversasIdRoute
+  '/_store/conta/lojas/nova': typeof StoreContaLojasNovaRoute
   '/_store/conta/pedidos/$id': typeof StoreContaPedidosIdRoute
   '/_store/loja/$slug/senha': typeof StoreLojaSlugSenhaRoute
   '/_store/pedido/$publicToken/confirmacao': typeof StorePedidoPublicTokenConfirmacaoRoute
+  '/_store/turismo/destinos/$slug': typeof StoreTurismoDestinosSlugRoute
+  '/_store/turismo/hoteis/$slug': typeof StoreTurismoHoteisSlugRoute
   '/admin-master/seguranca/certificados/$id': typeof AdminMasterSegurancaCertificadosIdRoute
   '/api/auth/ads/callback': typeof ApiAuthAdsCallbackRoute
   '/api/auth/govbr/callback': typeof ApiAuthGovbrCallbackRoute
@@ -4003,6 +4050,7 @@ export interface FileRouteTypes {
     | '/workspace/viabilidade'
     | '/admin-master/'
     | '/workspace/'
+    | '/aeroporto/$iata'
     | '/agendar/$id'
     | '/bio/$slug'
     | '/categoria/$slug'
@@ -4197,6 +4245,7 @@ export interface FileRouteTypes {
     | '/workspace/turismo/fornecedores'
     | '/workspace/turismo/hoteis'
     | '/workspace/turismo/incidentes'
+    | '/workspace/turismo/oportunidades'
     | '/workspace/turismo/radar'
     | '/workspace/turismo/reacomodacao'
     | '/workspace/turismo/vistos'
@@ -4241,9 +4290,12 @@ export interface FileRouteTypes {
     | '/conta/classificados/novo'
     | '/conta/classificados/performance'
     | '/conta/conversas/$id'
+    | '/conta/lojas/nova'
     | '/conta/pedidos/$id'
     | '/loja/$slug/senha'
     | '/pedido/$publicToken/confirmacao'
+    | '/turismo/destinos/$slug'
+    | '/turismo/hoteis/$slug'
     | '/admin-master/seguranca/certificados/$id'
     | '/api/auth/ads/callback'
     | '/api/auth/govbr/callback'
@@ -4411,6 +4463,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin-master'
     | '/workspace'
+    | '/aeroporto/$iata'
     | '/agendar/$id'
     | '/bio/$slug'
     | '/categoria/$slug'
@@ -4604,6 +4657,7 @@ export interface FileRouteTypes {
     | '/workspace/turismo/fornecedores'
     | '/workspace/turismo/hoteis'
     | '/workspace/turismo/incidentes'
+    | '/workspace/turismo/oportunidades'
     | '/workspace/turismo/radar'
     | '/workspace/turismo/reacomodacao'
     | '/workspace/turismo/vistos'
@@ -4648,9 +4702,12 @@ export interface FileRouteTypes {
     | '/conta/classificados/novo'
     | '/conta/classificados/performance'
     | '/conta/conversas/$id'
+    | '/conta/lojas/nova'
     | '/conta/pedidos/$id'
     | '/loja/$slug/senha'
     | '/pedido/$publicToken/confirmacao'
+    | '/turismo/destinos/$slug'
+    | '/turismo/hoteis/$slug'
     | '/admin-master/seguranca/certificados/$id'
     | '/api/auth/ads/callback'
     | '/api/auth/govbr/callback'
@@ -4827,6 +4884,7 @@ export interface FileRouteTypes {
     | '/_store/'
     | '/admin-master/'
     | '/workspace/'
+    | '/_store/aeroporto/$iata'
     | '/_store/agendar/$id'
     | '/_store/bio/$slug'
     | '/_store/categoria/$slug'
@@ -5021,6 +5079,7 @@ export interface FileRouteTypes {
     | '/workspace/turismo/fornecedores'
     | '/workspace/turismo/hoteis'
     | '/workspace/turismo/incidentes'
+    | '/workspace/turismo/oportunidades'
     | '/workspace/turismo/radar'
     | '/workspace/turismo/reacomodacao'
     | '/workspace/turismo/vistos'
@@ -5065,9 +5124,12 @@ export interface FileRouteTypes {
     | '/_store/conta/classificados/novo'
     | '/_store/conta/classificados/performance'
     | '/_store/conta/conversas/$id'
+    | '/_store/conta/lojas/nova'
     | '/_store/conta/pedidos/$id'
     | '/_store/loja/$slug/senha'
     | '/_store/pedido/$publicToken/confirmacao'
+    | '/_store/turismo/destinos/$slug'
+    | '/_store/turismo/hoteis/$slug'
     | '/admin-master/seguranca/certificados/$id'
     | '/api/auth/ads/callback'
     | '/api/auth/govbr/callback'
@@ -6050,6 +6112,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/workspace/viabilidade'
       preLoaderRoute: typeof WorkspaceViabilidadeRouteImport
       parentRoute: typeof WorkspaceRoute
+    }
+    '/_store/aeroporto/$iata': {
+      id: '/_store/aeroporto/$iata'
+      path: '/aeroporto/$iata'
+      fullPath: '/aeroporto/$iata'
+      preLoaderRoute: typeof StoreAeroportoIataRouteImport
+      parentRoute: typeof StoreRoute
     }
     '/_store/agendar/': {
       id: '/_store/agendar/'
@@ -7668,6 +7737,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceTurismoIncidentesRouteImport
       parentRoute: typeof WorkspaceRoute
     }
+    '/workspace/turismo/oportunidades': {
+      id: '/workspace/turismo/oportunidades'
+      path: '/turismo/oportunidades'
+      fullPath: '/workspace/turismo/oportunidades'
+      preLoaderRoute: typeof WorkspaceTurismoOportunidadesRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
     '/workspace/turismo/radar': {
       id: '/workspace/turismo/radar'
       path: '/turismo/radar'
@@ -7731,6 +7807,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StoreContaConversasIdRouteImport
       parentRoute: typeof StoreContaRoute
     }
+    '/_store/conta/lojas/nova': {
+      id: '/_store/conta/lojas/nova'
+      path: '/nova'
+      fullPath: '/conta/lojas/nova'
+      preLoaderRoute: typeof StoreContaLojasNovaRouteImport
+      parentRoute: typeof StoreContaLojasRoute
+    }
     '/_store/conta/pedidos/': {
       id: '/_store/conta/pedidos/'
       path: '/pedidos'
@@ -7758,6 +7841,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/pedido/$publicToken/confirmacao'
       preLoaderRoute: typeof StorePedidoPublicTokenConfirmacaoRouteImport
       parentRoute: typeof StoreRoute
+    }
+    '/_store/turismo/destinos/$slug': {
+      id: '/_store/turismo/destinos/$slug'
+      path: '/destinos/$slug'
+      fullPath: '/turismo/destinos/$slug'
+      preLoaderRoute: typeof StoreTurismoDestinosSlugRouteImport
+      parentRoute: typeof StoreTurismoRoute
+    }
+    '/_store/turismo/hoteis/$slug': {
+      id: '/_store/turismo/hoteis/$slug'
+      path: '/hoteis/$slug'
+      fullPath: '/turismo/hoteis/$slug'
+      preLoaderRoute: typeof StoreTurismoHoteisSlugRouteImport
+      parentRoute: typeof StoreTurismoRoute
     }
     '/admin-master/seguranca/certificados/$id': {
       id: '/admin-master/seguranca/certificados/$id'
@@ -8091,6 +8188,18 @@ const StoreAgendarRouteWithChildren = StoreAgendarRoute._addFileChildren(
   StoreAgendarRouteChildren,
 )
 
+interface StoreContaLojasRouteChildren {
+  StoreContaLojasNovaRoute: typeof StoreContaLojasNovaRoute
+}
+
+const StoreContaLojasRouteChildren: StoreContaLojasRouteChildren = {
+  StoreContaLojasNovaRoute: StoreContaLojasNovaRoute,
+}
+
+const StoreContaLojasRouteWithChildren = StoreContaLojasRoute._addFileChildren(
+  StoreContaLojasRouteChildren,
+)
+
 interface StoreContaRouteChildren {
   StoreContaAgendamentosRoute: typeof StoreContaAgendamentosRoute
   StoreContaAtividadeRoute: typeof StoreContaAtividadeRoute
@@ -8110,7 +8219,7 @@ interface StoreContaRouteChildren {
   StoreContaFinancasRoute: typeof StoreContaFinancasRoute
   StoreContaGiftCardsRoute: typeof StoreContaGiftCardsRoute
   StoreContaIngressosRoute: typeof StoreContaIngressosRoute
-  StoreContaLojasRoute: typeof StoreContaLojasRoute
+  StoreContaLojasRoute: typeof StoreContaLojasRouteWithChildren
   StoreContaMetricasRoute: typeof StoreContaMetricasRoute
   StoreContaMobilidadeRoute: typeof StoreContaMobilidadeRoute
   StoreContaNegociacoesRoute: typeof StoreContaNegociacoesRoute
@@ -8155,7 +8264,7 @@ const StoreContaRouteChildren: StoreContaRouteChildren = {
   StoreContaFinancasRoute: StoreContaFinancasRoute,
   StoreContaGiftCardsRoute: StoreContaGiftCardsRoute,
   StoreContaIngressosRoute: StoreContaIngressosRoute,
-  StoreContaLojasRoute: StoreContaLojasRoute,
+  StoreContaLojasRoute: StoreContaLojasRouteWithChildren,
   StoreContaMetricasRoute: StoreContaMetricasRoute,
   StoreContaMobilidadeRoute: StoreContaMobilidadeRoute,
   StoreContaNegociacoesRoute: StoreContaNegociacoesRoute,
@@ -8228,11 +8337,15 @@ const StoreEmpregosRouteWithChildren = StoreEmpregosRoute._addFileChildren(
 interface StoreTurismoRouteChildren {
   StoreTurismoIdRoute: typeof StoreTurismoIdRoute
   StoreTurismoIndexRoute: typeof StoreTurismoIndexRoute
+  StoreTurismoDestinosSlugRoute: typeof StoreTurismoDestinosSlugRoute
+  StoreTurismoHoteisSlugRoute: typeof StoreTurismoHoteisSlugRoute
 }
 
 const StoreTurismoRouteChildren: StoreTurismoRouteChildren = {
   StoreTurismoIdRoute: StoreTurismoIdRoute,
   StoreTurismoIndexRoute: StoreTurismoIndexRoute,
+  StoreTurismoDestinosSlugRoute: StoreTurismoDestinosSlugRoute,
+  StoreTurismoHoteisSlugRoute: StoreTurismoHoteisSlugRoute,
 }
 
 const StoreTurismoRouteWithChildren = StoreTurismoRoute._addFileChildren(
@@ -8308,6 +8421,7 @@ interface StoreRouteChildren {
   StoreTrocasEDevolucoesRoute: typeof StoreTrocasEDevolucoesRoute
   StoreTurismoRoute: typeof StoreTurismoRouteWithChildren
   StoreIndexRoute: typeof StoreIndexRoute
+  StoreAeroportoIataRoute: typeof StoreAeroportoIataRoute
   StoreBioSlugRoute: typeof StoreBioSlugRoute
   StoreCategoriaSlugRoute: typeof StoreCategoriaSlugRoute
   StoreClassificadosIdRoute: typeof StoreClassificadosIdRoute
@@ -8404,6 +8518,7 @@ const StoreRouteChildren: StoreRouteChildren = {
   StoreTrocasEDevolucoesRoute: StoreTrocasEDevolucoesRoute,
   StoreTurismoRoute: StoreTurismoRouteWithChildren,
   StoreIndexRoute: StoreIndexRoute,
+  StoreAeroportoIataRoute: StoreAeroportoIataRoute,
   StoreBioSlugRoute: StoreBioSlugRoute,
   StoreCategoriaSlugRoute: StoreCategoriaSlugRoute,
   StoreClassificadosIdRoute: StoreClassificadosIdRoute,
@@ -8748,6 +8863,7 @@ interface WorkspaceRouteChildren {
   WorkspaceTurismoFornecedoresRoute: typeof WorkspaceTurismoFornecedoresRoute
   WorkspaceTurismoHoteisRoute: typeof WorkspaceTurismoHoteisRoute
   WorkspaceTurismoIncidentesRoute: typeof WorkspaceTurismoIncidentesRoute
+  WorkspaceTurismoOportunidadesRoute: typeof WorkspaceTurismoOportunidadesRoute
   WorkspaceTurismoRadarRoute: typeof WorkspaceTurismoRadarRoute
   WorkspaceTurismoReacomodacaoRoute: typeof WorkspaceTurismoReacomodacaoRoute
   WorkspaceTurismoVistosRoute: typeof WorkspaceTurismoVistosRoute
@@ -8931,6 +9047,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceTurismoFornecedoresRoute: WorkspaceTurismoFornecedoresRoute,
   WorkspaceTurismoHoteisRoute: WorkspaceTurismoHoteisRoute,
   WorkspaceTurismoIncidentesRoute: WorkspaceTurismoIncidentesRoute,
+  WorkspaceTurismoOportunidadesRoute: WorkspaceTurismoOportunidadesRoute,
   WorkspaceTurismoRadarRoute: WorkspaceTurismoRadarRoute,
   WorkspaceTurismoReacomodacaoRoute: WorkspaceTurismoReacomodacaoRoute,
   WorkspaceTurismoVistosRoute: WorkspaceTurismoVistosRoute,

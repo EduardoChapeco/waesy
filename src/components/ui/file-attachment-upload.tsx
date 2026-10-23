@@ -199,7 +199,7 @@ export function FileAttachmentUpload({
  <button
  type="button"
  onClick={() => setShowManualInput(!showManualInput)}
- className="text-[11px] text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 cursor-pointer"
+ className="text-[11px] text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <LinkIcon className="size-3" />
  <span>{showManualInput ? "Cancelar URL" : "Colar Link Externo"}</span>
@@ -293,7 +293,7 @@ export function FileAttachmentUpload({
  <button
  type="button"
  onClick={() => setShowManualInput(false)}
- className="text-muted-foreground hover:text-foreground cursor-pointer"
+ className="text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <X className="size-3.5" />
  </button>

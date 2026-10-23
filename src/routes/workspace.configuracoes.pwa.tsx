@@ -208,7 +208,7 @@ function PwaOmniBuilderPage() {
             activeMainTab === "builder"
               ? "bg-primary text-primary-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground hover:bg-muted"
-          }`}
+          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
         >
           <Smartphone className="size-4" />
           <span>Construtor Visual do App</span>
@@ -221,7 +221,7 @@ function PwaOmniBuilderPage() {
             activeMainTab === "manifest"
               ? "bg-primary text-primary-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground hover:bg-muted"
-          }`}
+          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
         >
           <Sliders className="size-4" />
           <span>Identidade & Manifesto</span>
@@ -234,7 +234,7 @@ function PwaOmniBuilderPage() {
             activeMainTab === "telemetry"
               ? "bg-primary text-primary-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground hover:bg-muted"
-          }`}
+          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
         >
           <BarChart3 className="size-4" />
           <span>Telemetria de Downloads</span>
@@ -252,7 +252,7 @@ function PwaOmniBuilderPage() {
             activeMainTab === "governance"
               ? "bg-primary text-primary-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground hover:bg-muted"
-          }`}
+          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
         >
           <ShieldCheck className="size-4" />
           <span>Governança & Termos</span>
@@ -463,7 +463,7 @@ function PwaOmniBuilderPage() {
                     phonePreviewScreen === "app"
                       ? "bg-card text-foreground shadow-xs"
                       : "text-muted-foreground hover:text-foreground"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   Home do App
                 </button>
@@ -474,7 +474,7 @@ function PwaOmniBuilderPage() {
                     phonePreviewScreen === "splash"
                       ? "bg-card text-foreground shadow-xs"
                       : "text-muted-foreground hover:text-foreground"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   Splash Screen
                 </button>

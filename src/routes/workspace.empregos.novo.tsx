@@ -336,7 +336,7 @@ function WorkspaceNewJobPage() {
                     <button
                       type="button"
                       onClick={() => handleRemoveRequirement(idx)}
-                      className="text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
+                      className="text-muted-foreground hover:text-destructive transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <Trash2 className="size-3" />
                     </button>
@@ -380,7 +380,7 @@ function WorkspaceNewJobPage() {
                     <button
                       type="button"
                       onClick={() => handleRemoveBenefit(idx)}
-                      className="text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
+                      className="text-muted-foreground hover:text-destructive transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <Trash2 className="size-3" />
                     </button>

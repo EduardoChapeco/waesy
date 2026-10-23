@@ -99,7 +99,7 @@ export function BuilderTopBar({
  type="button"
  onClick={() => setViewport("desktop")}
  title="Modo Desktop (1440px)"
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "h-8 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-all cursor-pointer",
  viewport === "desktop"
  ? "bg-background text-foreground shadow-2xs font-bold"
@@ -114,7 +114,7 @@ export function BuilderTopBar({
  type="button"
  onClick={() => setViewport("mobile")}
  title="Modo Mobile (390px)"
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "h-8 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-all cursor-pointer",
  viewport === "mobile"
  ? "bg-background text-foreground shadow-2xs font-bold"
@@ -135,7 +135,7 @@ export function BuilderTopBar({
  onClick={undo}
  disabled={!canUndo}
  title="Desfazer (Ctrl+Z)"
- className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+ className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Undo2 className="size-4" />
  </button>
@@ -144,7 +144,7 @@ export function BuilderTopBar({
  onClick={redo}
  disabled={!canRedo}
  title="Refazer (Ctrl+Y)"
- className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+ className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Redo2 className="size-4" />
  </button>

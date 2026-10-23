@@ -136,7 +136,7 @@ export function ProductOptionsCustomizer({
  isChecked
  ? "bg-primary/10 border-primary text-foreground font-semibold"
  : "bg-card border-border/70 text-muted-foreground hover:border-border hover:bg-muted/30"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <div className="flex items-center gap-3">
  <div

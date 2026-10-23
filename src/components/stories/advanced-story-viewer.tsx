@@ -208,7 +208,7 @@ export function AdvancedStoryViewer({
  {/* Botão de Fechar no Topo Direito */}
  <button
  onClick={onClose}
- className="absolute top-4 right-4 z-50 p-3 rounded-full bg-white/15 hover:bg-white/25 text-white backdrop-blur-md transition-all active:scale-95"
+ className="absolute top-4 right-4 z-50 p-3 rounded-full bg-white/15 hover:bg-white/25 text-white backdrop-blur-md transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  aria-label="Fechar visualizador de stories"
  >
  <X size={22} weight="bold" />
@@ -222,7 +222,7 @@ export function AdvancedStoryViewer({
  setStoryIndex(0);
  setProgress(0);
  }}
- className="hidden md:flex absolute left-8 top-1/2 -translate-y-1/2 z-40 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md transition-all active:scale-95"
+ className="hidden md:flex absolute left-8 top-1/2 -translate-y-1/2 z-40 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  aria-label="Loja anterior"
  >
  <CaretLeft size={28} weight="bold" />
@@ -236,7 +236,7 @@ export function AdvancedStoryViewer({
  setStoryIndex(0);
  setProgress(0);
  }}
- className="hidden md:flex absolute right-8 top-1/2 -translate-y-1/2 z-40 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md transition-all active:scale-95"
+ className="hidden md:flex absolute right-8 top-1/2 -translate-y-1/2 z-40 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  aria-label="Próxima loja"
  >
  <CaretRight size={28} weight="bold" />
@@ -318,7 +318,7 @@ export function AdvancedStoryViewer({
  e.stopPropagation();
  setIsMuted(!isMuted);
  }}
- className="p-2 rounded-full bg-black/40 text-white hover:bg-black/60 backdrop-blur-md"
+ className="p-2 rounded-full bg-black/40 text-white hover:bg-black/60 backdrop-blur-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  aria-label={isMuted ? "Ativar som" : "Desativar som"}
  >
  {isMuted ? <SpeakerSimpleSlash size={18} weight="bold" /> : <SpeakerHigh size={18} weight="bold" />}

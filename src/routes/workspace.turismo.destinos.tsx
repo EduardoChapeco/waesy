@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { MapPin, Plus, Search, Camera, Calendar, Compass, Edit2, Trash2, Hotel, Sun, ExternalLink, Plane, Building2, Layers, Image as ImageIcon, CheckCircle2, Utensils, Lightbulb, Tag, X, UploadCloud, Loader2, Award, Clock, HelpCircle, Eye, Check, ChevronDown, ChevronUp, ArrowRight, MessageSquare, ShieldCheck, Globe2, Sliders, ListPlus, FileText } from "lucide-react";
+import { MapPin, Plus, Search, Camera, Calendar, Compass, Edit2, Trash2, Hotel, Sun, ExternalLink, Plane, Building2, Layers, Image as ImageIcon, CheckCircle2, Utensils, Lightbulb, Tag, X, UploadCloud, Loader2, Award, Clock, HelpCircle, Eye, Check, ChevronDown, ChevronUp, ArrowRight, MessageSquare, ShieldCheck, Globe2, Sliders, ListPlus, FileText, Calculator } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { Input } from "@/components/ui/input";
@@ -20,7 +20,9 @@ import { uploadStoreMedia } from "@/services/storage.functions";
 import { listDestinations, createDestination, updateDestination, deleteDestination, type DestinationDTO, type DestinationSection, type DestinationAttraction, type DestinationCatalogReview } from "@/services/travel-catalog.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
+import { AirportCombobox } from "@/components/ui/airport-combobox";
 import { CANONICAL_DESTINATIONS, BRAZIL_STATES, MAJOR_IATA_AIRPORTS, TOURISM_TAGS_PRESETS, getDestinationsByState, findAirportByIata, searchCanonicalDestinations, type CanonicalDestination } from "@/lib/destinations-catalog";
+import { CancellationPenaltyCalculatorDialog } from "@/components/turismo/cancellation-penalty-calculator-dialog";
 
 export const Route = createFileRoute("/workspace/turismo/destinos")({
  head: () => ({ meta: [{ title: "Destinos Turísticos | Workspace Waesy" }] }),
@@ -46,6 +48,7 @@ export default function WorkspaceDestinationsPage() {
  const [filterTag, setFilterTag] = useState("all");
  const [isSheetOpen, setIsSheetOpen] = useState(false);
  const [isMetricsOpen, setIsMetricsOpen] = useState(false);
+  const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
  const [previewModalDest, setPreviewModalDest] = useState<DestinationDTO | null>(null);
  const [editingDestination, setEditingDestination] = useState<DestinationDTO | null>(null);
  const [activeTab, setActiveTab] = useState("identificacao");
@@ -596,12 +599,19 @@ export default function WorkspaceDestinationsPage() {
           searchPlaceholder="Buscar por cidade, UF, aeroporto IATA (ex: MCZ, Gramado)..."
           onMetricsClick={() => setIsMetricsOpen(true)}
           metricsBadge={metrics.total > 0 ? `${metrics.total} Destinos` : undefined}
+          secondaryAction={{
+            label: "Simulador de Multas",
+            icon: Calculator,
+            onClick: () => setIsCalculatorOpen(true),
+          }}
           primaryAction={{
             label: "Novo Destino (Studio CMS)",
             icon: Plus,
             onClick: handleOpenCreate,
           }}
         />
+
+        <CancellationPenaltyCalculatorDialog open={isCalculatorOpen} onOpenChange={setIsCalculatorOpen} />
 
         <WorkspaceDashboardSheet
           title="Telemetria de Destinos Turísticos"
@@ -917,13 +927,13 @@ export default function WorkspaceDestinationsPage() {
  {filteredCanonicalSearchResults.length > 0 && (
                   <div className="max-h-36 overflow-y-auto no-scrollbar rounded-lg border border-border/80 bg-background p-1 space-y-1 shadow-xs">
  {filteredCanonicalSearchResults.map((dest) => (
- <div
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  key={dest.id}
  onClick={() => {
  handleApplyPreset(dest);
  setCanonicalSearch("");
  }}
- className="p-2 rounded-lg hover:bg-muted/70 flex items-center justify-between cursor-pointer text-xs"
+ className="p-2 rounded-lg hover:bg-muted/70 flex items-center justify-between cursor-pointer text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <span className="font-semibold text-foreground">
  {dest.name} ({dest.state})
@@ -992,22 +1002,12 @@ export default function WorkspaceDestinationsPage() {
  </div>
 
  <div className="space-y-1">
- <Label className="text-xs font-bold flex items-center justify-between">
- <span>Aeroporto IATA Principal</span>
- <span className="text-xs text-muted-foreground font-mono">Ex: NVT, POA</span>
- </Label>
- <select
+ <AirportCombobox
+ label="Aeroporto IATA Principal"
  value={iataGateway}
- onChange={(e) => setIataGateway(e.target.value)}
- className="w-full h-10 rounded-lg bg-background border border-border px-3 text-xs font-mono uppercase"
- >
- <option value="">Sem aeroporto fixo</option>
- {MAJOR_IATA_AIRPORTS.map((a) => (
- <option key={a.code} value={a.code}>
- {a.code} — {a.city} ({a.uf})
- </option>
- ))}
- </select>
+ onChange={(iata) => setIataGateway(iata)}
+ placeholder="Buscar aeroporto gateway..."
+ />
  </div>
  </div>
 
@@ -1153,7 +1153,7 @@ export default function WorkspaceDestinationsPage() {
  <button
  type="button"
  onClick={() => handleRemoveGalleryUrl(idx)}
- className="absolute top-1.5 right-1.5 size-6 rounded-full bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive cursor-pointer"
+ className="absolute top-1.5 right-1.5 size-6 rounded-full bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <X className="size-3.5" />
  </button>
@@ -1161,9 +1161,9 @@ export default function WorkspaceDestinationsPage() {
  ))}
  </div>
  ) : (
- <div
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  onClick={() => galleryInputRef.current?.click()}
- className="p-8 rounded-lg bg-muted/20 border-2 border-dashed border-border/80 text-center text-muted-foreground text-xs hover:border-border hover:bg-muted/30 transition-all cursor-pointer flex flex-col items-center gap-2"
+ className="p-8 rounded-lg bg-muted/20 border-2 border-dashed border-border/80 text-center text-muted-foreground text-xs hover:border-border hover:bg-muted/30 transition-all cursor-pointer flex flex-col items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <UploadCloud className="size-8 text-muted-foreground/60" />
  <span className="font-semibold text-foreground">Nenhuma foto adicional na galeria</span>
@@ -1200,7 +1200,7 @@ export default function WorkspaceDestinationsPage() {
  key={item.type}
  type="button"
  onClick={() => handleAddSection(item.type as any)}
- className="p-3 rounded-lg border border-border bg-background hover:border-primary/60 hover:bg-primary/5 transition-all text-left space-y-1 cursor-pointer shadow-2xs"
+ className="p-3 rounded-lg border border-border bg-background hover:border-primary/60 hover:bg-primary/5 transition-all text-left space-y-1 cursor-pointer shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <span className="text-xs font-bold text-foreground block">{item.label}</span>
  <span className="text-xs text-muted-foreground block leading-tight">{item.desc}</span>
@@ -1470,7 +1470,7 @@ export default function WorkspaceDestinationsPage() {
  key={s}
  type="button"
  onClick={() => setNewReviewRating(s)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "size-8 rounded-lg font-bold font-mono text-xs border transition-all cursor-pointer",
  s === newReviewRating
  ? "bg-primary text-primary-foreground border-primary shadow-2xs"
@@ -1562,7 +1562,7 @@ export default function WorkspaceDestinationsPage() {
  <button
  type="button"
  onClick={() => handleRemoveReview(rev.id)}
- className="absolute top-2 right-2 size-6 rounded-full bg-destructive/10 text-destructive flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+ className="absolute top-2 right-2 size-6 rounded-full bg-destructive/10 text-destructive flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  title="Remover avaliação"
  >
  <X className="size-3" />

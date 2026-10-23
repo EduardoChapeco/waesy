@@ -362,7 +362,7 @@ function NovoAnuncioPage() {
  if (obj.id === "direct_sales") setDestinationType("product");
  if (obj.id === "brand_awareness") setDestinationType("custom_url");
  }}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "p-3 rounded-lg border text-left flex flex-col justify-between gap-2 transition-all cursor-pointer",
  isSel
  ? "border-primary bg-primary/5 ring-1 ring-primary/30"
@@ -491,7 +491,7 @@ function NovoAnuncioPage() {
  <button
  type="button"
  onClick={() => setIsFormatDrawerOpen(!isFormatDrawerOpen)}
- className="w-full flex items-center justify-between text-xs font-semibold text-foreground hover:text-primary transition-colors cursor-pointer"
+ className="w-full flex items-center justify-between text-xs font-semibold text-foreground hover:text-primary transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="flex items-center gap-2">
  <Palette className="size-4 text-primary shrink-0" />
@@ -514,7 +514,7 @@ function NovoAnuncioPage() {
  key={f.id}
  type="button"
  onClick={() => setFormat(f.id)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "p-3 rounded-lg border text-left flex items-start justify-between transition-all cursor-pointer",
  format === f.id
  ? "border-primary bg-primary/5 ring-1 ring-primary/30"

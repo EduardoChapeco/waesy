@@ -68,7 +68,7 @@ export function OverlaysFamily({ mode }: ComponentStateProps) {
               </Button>
 
               {/* Modais Ativos */}
-              <AdaptiveModal
+              <AdaptiveModal /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
                 open={modalOpen}
                 onOpenChange={setModalOpen}
                 title="Configuração Canônica"
@@ -84,7 +84,7 @@ export function OverlaysFamily({ mode }: ComponentStateProps) {
                 </div>
               </AdaptiveModal>
 
-              <CanonicalDrawer
+              <CanonicalDrawer /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
                 open={drawerOpen}
                 onOpenChange={setDrawerOpen}
                 title="Histórico de Auditoria"

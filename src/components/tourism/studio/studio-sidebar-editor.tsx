@@ -534,7 +534,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  key={d.id}
  type="button"
  onClick={() => onChange({ destination_city: `${d.city}, ${d.state}` })}
- className="px-2 py-1 rounded-md bg-muted/60 hover:bg-primary/10 text-[10px] font-mono text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+ className="px-2 py-1 rounded-md bg-muted/60 hover:bg-primary/10 text-[10px] font-mono text-muted-foreground hover:text-primary transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {d.city}
  </button>
@@ -622,7 +622,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  <button
  type="button"
  onClick={() => handleRemoveRoom(room.id)}
- className="text-[10px] text-muted-foreground hover:text-destructive flex items-center gap-1 cursor-pointer"
+ className="text-[10px] text-muted-foreground hover:text-destructive flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Trash className="size-2.5" />
  <span>Remover</span>
@@ -1003,7 +1003,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  key={p.id}
  type="button"
  onClick={() => handleImportPresetHotel(p)}
- className="px-2 py-1 rounded-md bg-background border border-border/60 hover:border-primary/50 text-[10px] font-semibold text-foreground cursor-pointer transition-colors"
+ className="px-2 py-1 rounded-md bg-background border border-border/60 hover:border-primary/50 text-[10px] font-semibold text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {p.name.split(" ")[0]}
  </button>
@@ -1092,7 +1092,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  key={rc.id}
  type="button"
  onClick={() => handleHotelChange(h.id, "room_type", rc.name)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-2 py-1 rounded text-[10px] border transition-colors cursor-pointer",
  h.room_type === rc.name
  ? "bg-primary/10 text-primary border-primary font-bold"

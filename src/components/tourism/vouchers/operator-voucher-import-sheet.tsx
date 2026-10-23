@@ -264,7 +264,7 @@ export function OperatorVoucherImportSheet({
                     activeInputTab === "files"
                       ? "bg-card text-foreground shadow-xs font-bold"
                       : "text-muted-foreground hover:text-foreground"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   Arquivos (PDFs, Imagens, Boletos)
                 </button>
@@ -275,7 +275,7 @@ export function OperatorVoucherImportSheet({
                     activeInputTab === "text"
                       ? "bg-card text-foreground shadow-xs font-bold"
                       : "text-muted-foreground hover:text-foreground"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   Texto / E-mail Copiado
                 </button>
@@ -328,7 +328,7 @@ export function OperatorVoucherImportSheet({
                         <button
                           type="button"
                           onClick={() => setDocuments([])}
-                          className="text-xs text-destructive hover:underline cursor-pointer"
+                          className="text-xs text-destructive hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           Limpar todos
                         </button>
@@ -352,7 +352,7 @@ export function OperatorVoucherImportSheet({
                                 e.stopPropagation();
                                 removeDocument(doc.id);
                               }}
-                              className="size-6 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer shrink-0 transition-colors"
+                              className="size-6 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
                               <X className="size-3.5" />
                             </button>
@@ -391,7 +391,7 @@ export function OperatorVoucherImportSheet({
                     activeReviewTab === "resumo"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted/50 text-muted-foreground hover:text-foreground"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   Resumo
                 </button>
@@ -402,7 +402,7 @@ export function OperatorVoucherImportSheet({
                     activeReviewTab === "passageiros"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted/50 text-muted-foreground hover:text-foreground"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   Viajantes e Validades
                   <Badge variant="secondary" className="text-xs h-4 px-1 ml-1">
@@ -416,7 +416,7 @@ export function OperatorVoucherImportSheet({
                     activeReviewTab === "voos"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted/50 text-muted-foreground hover:text-foreground"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   Voos e Bagagens
                   <Badge variant="secondary" className="text-xs h-4 px-1 ml-1">
@@ -430,7 +430,7 @@ export function OperatorVoucherImportSheet({
                     activeReviewTab === "hospedagem"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted/50 text-muted-foreground hover:text-foreground"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   Hospedagem
                   <Badge variant="secondary" className="text-xs h-4 px-1 ml-1">
@@ -444,7 +444,7 @@ export function OperatorVoucherImportSheet({
                     activeReviewTab === "transfers"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted/50 text-muted-foreground hover:text-foreground"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   Transfers e Tours
                 </button>
@@ -455,7 +455,7 @@ export function OperatorVoucherImportSheet({
                     activeReviewTab === "financeiro"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted/50 text-muted-foreground hover:text-foreground"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   Financeiro e Regras
                 </button>
@@ -697,7 +697,7 @@ export function OperatorVoucherImportSheet({
                                     passengers: parsedData.passengers.filter((_, i) => i !== index),
                                   })
                                 }
-                                className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer transition-colors"
+                                className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                               >
                                 <Trash2 className="size-3.5" />
                               </button>
@@ -862,7 +862,7 @@ export function OperatorVoucherImportSheet({
                                 flights: parsedData.flights.filter((_, i) => i !== index),
                               })
                             }
-                            className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer transition-colors"
+                            className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             <Trash2 className="size-3.5" />
                           </button>
@@ -1043,7 +1043,7 @@ export function OperatorVoucherImportSheet({
                                 hotels: parsedData.hotels.filter((_, i) => i !== index),
                               })
                             }
-                            className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer transition-colors"
+                            className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             <Trash2 className="size-3.5" />
                           </button>
@@ -1471,7 +1471,7 @@ export function OperatorVoucherImportSheet({
                         navigator.clipboard.writeText(`${window.location.origin}${createdVoucherUrl}`);
                         toast.success("Link copiado para a área de transferência!");
                       }}
-                      className="text-primary hover:underline flex items-center gap-1 cursor-pointer font-bold"
+                      className="text-primary hover:underline flex items-center gap-1 cursor-pointer font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <Copy className="size-3" /> Copiar Link
                     </button>

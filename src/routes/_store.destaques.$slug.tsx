@@ -389,7 +389,7 @@ function DedicatedHotpageView() {
  )}
 
  {/* Barra de Navegação Canônica Flutuante no Topo do Hero */}
- <NativeMobileHeader
+ <NativeMobileHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  fallbackHref="/explorar"
  transparent={true}
  bordered={false}
@@ -462,7 +462,7 @@ function DedicatedHotpageView() {
                 key={chip.id}
                 type="button"
                 onClick={() => setSelectedSubCategory(chip.id)}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 ",
                   isSelected
                     ? "bg-foreground text-background border-foreground font-bold "
@@ -500,7 +500,7 @@ function DedicatedHotpageView() {
  selectedFastFilter === "desconto"
  ? "bg-primary text-primary-foreground border-primary"
  : "bg-card border-border text-muted-foreground hover:text-foreground"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <Percent size={13} weight="bold" />
  <span>Com Desconto</span>
@@ -515,7 +515,7 @@ function DedicatedHotpageView() {
  viewMode === "list"
  ? "bg-foreground text-background"
  : "text-muted-foreground hover:text-foreground"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  title="Modo Lista (iFood)"
  >
  <ListDashes size={16} weight="bold" />
@@ -527,7 +527,7 @@ function DedicatedHotpageView() {
  viewMode === "grid"
  ? "bg-foreground text-background"
  : "text-muted-foreground hover:text-foreground"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  title="Modo Grade"
  >
  <SquaresFour size={16} weight="bold" />

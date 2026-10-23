@@ -1,16 +1,22 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Aeroportos Brasileiros Canônicos — Waesy Turismo
-// Fonte: ANAC + Infraero. Usado em: criação de classificados de viagem.
+// Aeroportos Brasileiros e Globais Canônicos — Waesy Turismo
+// Fonte: ANAC + Infraero + IATA Global Catalog (SSOT).
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { GLOBAL_AIRPORTS_CATALOG } from "@/lib/data/airports-catalog";
+import {
+  GLOBAL_AIRPORTS_CATALOG,
+  searchAirportsCatalog,
+} from "@/lib/data/airports-catalog";
 import { GLOBAL_AIRLINES_CATALOG, GLOBAL_CRUISES_CATALOG } from "@/lib/data/airlines-cruises-catalog";
 
 export interface Airport {
   iata: string;
+  icao?: string;
   name: string;
   city: string;
   state: string;
+  country?: string;
+  countryCode?: string;
   region: "Norte" | "Nordeste" | "Centro-Oeste" | "Sudeste" | "Sul" | "Internacional";
 }
 
@@ -27,20 +33,49 @@ function deriveRegion(state?: string, countryCode?: string): Airport["region"] {
 
 export const CANONICAL_AIRPORTS: Airport[] = GLOBAL_AIRPORTS_CATALOG.map((a) => ({
   iata: a.iata_code,
+  icao: a.icao_code,
   name: a.name,
   city: a.city,
   state: a.state_province || a.country_code,
+  country: a.country,
+  countryCode: a.country_code,
   region: deriveRegion(a.state_province, a.country_code),
 }));
 
-/** Retorna o airport ou undefined */
+const CANONICAL_AIRPORT_MAP = new Map<string, Airport>(
+  CANONICAL_AIRPORTS.map((a) => [a.iata, a]),
+);
+
+/** Retorna o airport ou undefined em O(1) */
 export function findAirportByIATA(iata: string): Airport | undefined {
-  return CANONICAL_AIRPORTS.find((a) => a.iata === iata.toUpperCase());
+  if (!iata) return undefined;
+  return CANONICAL_AIRPORT_MAP.get(iata.trim().toUpperCase());
 }
 
-/** Label para uso em Select: "XAP — Chapecó, SC" */
+/** Busca ranqueada por IATA, ICAO, cidade, estado, país ou nome */
+export function searchCanonicalAirports(query: string, limit = 60): Airport[] {
+  return searchAirportsCatalog(query, { limit }).map(
+    (a) =>
+      CANONICAL_AIRPORT_MAP.get(a.iata_code) || {
+        iata: a.iata_code,
+        icao: a.icao_code,
+        name: a.name,
+        city: a.city,
+        state: a.state_province || a.country_code,
+        country: a.country,
+        countryCode: a.country_code,
+        region: deriveRegion(a.state_province, a.country_code),
+      },
+  );
+}
+
+/** Label para uso em Select/Combobox: "XAP — Chapecó, SC" ou "MIA — Miami, Estados Unidos" */
 export function airportLabel(airport: Airport): string {
-  return `${airport.iata} — ${airport.city}, ${airport.state}`;
+  const loc =
+    airport.countryCode && airport.countryCode !== "BR" && airport.country
+      ? `${airport.city}, ${airport.country}`
+      : `${airport.city}, ${airport.state}`;
+  return `${airport.iata} — ${loc}`;
 }
 
 /** Agrupa por região para optgroup */
@@ -53,7 +88,7 @@ export const AIRPORTS_BY_REGION = CANONICAL_AIRPORTS.reduce(
   {} as Record<string, Airport[]>,
 );
 
-/** Airlines Canônicas (24 companhias aéreas) */
+/** Airlines Canônicas */
 export const CANONICAL_AIRLINES = [
   ...GLOBAL_AIRLINES_CATALOG.map((al) => ({
     id: al.iata_code,

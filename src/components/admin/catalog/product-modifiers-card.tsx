@@ -117,21 +117,24 @@ export function ProductModifiersCard({
  const values = grp.values || [];
 
  return (
- <div
- key={grp.id}
- onClick={() => toggleGroup(grp.id)}
- className={cn(
- "relative flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-all text-xs select-none group",
- isChecked
- ? "border-primary/80 bg-primary/[0.03] text-foreground shadow-xs ring-1 ring-primary/20"
- : "border-border/80 bg-background text-muted-foreground hover:border-foreground/30 hover:bg-muted/20",
- )}
- >
+          <div
+            key={grp.id}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleGroup(grp.id); } }}
+            onClick={() => toggleGroup(grp.id)}
+            className={cn(
+              "relative flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors text-xs select-none group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+              isChecked
+                ? "border-primary/80 bg-primary/[0.03] text-foreground shadow-xs ring-1 ring-primary/20"
+                : "border-border/80 bg-background text-muted-foreground hover:border-foreground/30 hover:bg-muted/20",
+            )}
+          >
  {/* CHECKBOX */}
  <div className="pt-1">
  <input
  type="checkbox"
- className="rounded border-border text-primary focus:ring-primary size-4.5 cursor-pointer accent-primary"
+                className="rounded border-border text-primary focus:ring-primary size-4.5 cursor-pointer accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
  checked={isChecked}
  onChange={() => toggleGroup(grp.id)}
  onClick={(e) => e.stopPropagation()}
@@ -201,7 +204,7 @@ export function ProductModifiersCard({
  type="button"
  onClick={(e) => handleEdit(grp, e)}
  title="Editar este grupo de adicionais"
- className="absolute top-3 right-3 p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors opacity-80 group-hover:opacity-100"
+ className="absolute top-3 right-3 p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors opacity-80 group-hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
  >
  <Edit2 className="size-3.5" />
  </button>
@@ -211,10 +214,13 @@ export function ProductModifiersCard({
  </div>
  ) : (
  /* EMPTY STATE PROATIVO COM BOTÃO '+' CENTRAL */
- <div
- onClick={handleCreateNew}
- className="group relative flex flex-col items-center justify-center p-8 text-center rounded-lg border-2 border-dashed border-border/80 hover:border-primary/50 bg-muted/10 hover:bg-primary/[0.02] cursor-pointer transition-all space-y-3"
- >
+          <div
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleCreateNew(); } }}
+            onClick={handleCreateNew}
+            className="group relative flex flex-col items-center justify-center p-8 text-center rounded-lg border-2 border-dashed border-border/80 hover:border-primary/50 bg-muted/10 hover:bg-primary/[0.02] cursor-pointer transition-colors space-y-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
  <div className="size-12 rounded-lg bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center text-primary transition-all group-hover:scale-110 shadow-xs ring-4 ring-primary/5">
  <Plus className="size-6 stroke-[2.5]" />
  </div>

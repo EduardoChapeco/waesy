@@ -137,7 +137,7 @@ export function LeadCommissionCalculatorSheet({
                   paymentMethod === m
                     ? "bg-primary/10 border-primary text-primary"
                     : "bg-muted/40 border-border/80 text-muted-foreground hover:text-foreground"
-                }`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 <span className="block capitalize">{m.replace("_", " ")}</span>
                 <span className="text-xs opacity-70">{(GATEWAY_RATES[m].rate * 100).toFixed(2)}% taxa</span>
@@ -159,7 +159,7 @@ export function LeadCommissionCalculatorSheet({
                 }}
                 className={`px-3 py-1 rounded-md font-bold min-h-11 h-11 inline-flex items-center justify-center ${
                   commissionType === "margin" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
-                }`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 % da Margem
               </button>
@@ -171,7 +171,7 @@ export function LeadCommissionCalculatorSheet({
                 }}
                 className={`px-3 py-1 rounded-md font-bold min-h-11 h-11 inline-flex items-center justify-center ${
                   commissionType === "gross" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
-                }`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 % da Venda
               </button>

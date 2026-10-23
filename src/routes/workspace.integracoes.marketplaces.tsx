@@ -569,7 +569,7 @@ function MarketplaceHubPage() {
         <button
           type="button"
           onClick={() => setMainView("connectors")}
-          className={cn(
+          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
             "px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2 cursor-pointer",
             mainView === "connectors"
               ? "bg-foreground text-background"
@@ -581,7 +581,7 @@ function MarketplaceHubPage() {
         <button
           type="button"
           onClick={() => setMainView("mapping")}
-          className={cn(
+          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
             "px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2 cursor-pointer",
             mainView === "mapping"
               ? "bg-foreground text-background"
@@ -593,7 +593,7 @@ function MarketplaceHubPage() {
         <button
           type="button"
           onClick={() => setMainView("audit")}
-          className={cn(
+          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
             "px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2 cursor-pointer",
             mainView === "audit"
               ? "bg-foreground text-background"
@@ -708,7 +708,7 @@ function MarketplaceHubPage() {
                       <button
                         type="button"
                         onClick={() => handleOpenWebhookInfo(item)}
-                        className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors cursor-pointer"
+                        className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         title="Ver URL do Webhook"
                       >
                         <FileCode2 className="size-3" /> Webhook
@@ -863,7 +863,7 @@ function MarketplaceHubPage() {
                                       type="button"
                                       onClick={() => deleteMappingMutation.mutate({ productId: item.id, platform: ch as MarketplacePlatform })}
                                       disabled={deleteMappingMutation.isPending}
-                                      className="opacity-40 hover:opacity-100 hover:text-destructive cursor-pointer ml-1 text-xs leading-none"
+                                      className="opacity-40 hover:opacity-100 hover:text-destructive cursor-pointer ml-1 text-xs leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                       title={`Desvincular canal ${ch}`}
                                     >
                                       ×

@@ -107,7 +107,7 @@ function CollectionsMobileView({ filteredCollections, onUpdateStatus }: Collecti
                 {col.status !== "archived" ? (
                   <>
                     {col.status === "active" ? (
-                      <DropdownMenuItem
+                      <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                         onClick={() => onUpdateStatus(col.id, "inactive")}
                         className="h-11 min-h-11 rounded-lg text-sm font-medium cursor-pointer"
                       >
@@ -115,7 +115,7 @@ function CollectionsMobileView({ filteredCollections, onUpdateStatus }: Collecti
                         Desativar Coleção
                       </DropdownMenuItem>
                     ) : (
-                      <DropdownMenuItem
+                      <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                         onClick={() => onUpdateStatus(col.id, "active")}
                         className="h-11 min-h-11 rounded-lg text-sm font-medium cursor-pointer"
                       >
@@ -123,7 +123,7 @@ function CollectionsMobileView({ filteredCollections, onUpdateStatus }: Collecti
                         Ativar Coleção
                       </DropdownMenuItem>
                     )}
-                    <DropdownMenuItem
+                    <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                       className="h-11 min-h-11 rounded-lg text-sm font-medium text-destructive focus:text-destructive cursor-pointer"
                       onClick={() => onUpdateStatus(col.id, "archived")}
                     >
@@ -132,7 +132,7 @@ function CollectionsMobileView({ filteredCollections, onUpdateStatus }: Collecti
                     </DropdownMenuItem>
                   </>
                 ) : (
-                  <DropdownMenuItem
+                  <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                     onClick={() => onUpdateStatus(col.id, "active")}
                     className="h-11 min-h-11 rounded-lg text-sm font-medium cursor-pointer"
                   >
@@ -239,7 +239,7 @@ function CollectionsDesktopView({ filteredCollections, onUpdateStatus }: Collect
                             </Link>
                           </DropdownMenuItem>
                           {col.status === "active" ? (
-                            <DropdownMenuItem
+                            <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                               onClick={() => onUpdateStatus(col.id, "inactive")}
                               className="h-9 rounded-lg text-sm cursor-pointer"
                             >
@@ -247,7 +247,7 @@ function CollectionsDesktopView({ filteredCollections, onUpdateStatus }: Collect
                               Desativar
                             </DropdownMenuItem>
                           ) : (
-                            <DropdownMenuItem
+                            <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                               onClick={() => onUpdateStatus(col.id, "active")}
                               className="h-9 rounded-lg text-sm cursor-pointer"
                             >
@@ -255,7 +255,7 @@ function CollectionsDesktopView({ filteredCollections, onUpdateStatus }: Collect
                               Ativar
                             </DropdownMenuItem>
                           )}
-                          <DropdownMenuItem
+                          <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                             className="h-9 rounded-lg text-sm text-destructive focus:text-destructive cursor-pointer"
                             onClick={() => onUpdateStatus(col.id, "archived")}
                           >
@@ -264,7 +264,7 @@ function CollectionsDesktopView({ filteredCollections, onUpdateStatus }: Collect
                           </DropdownMenuItem>
                         </>
                       ) : (
-                        <DropdownMenuItem
+                        <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                           onClick={() => onUpdateStatus(col.id, "active")}
                           className="h-9 rounded-lg text-sm cursor-pointer"
                         >

@@ -1,0 +1,422 @@
+{
+ "missingTables": [
+  {
+   "table": "payment_methods",
+   "files": [
+    "src\\lib\\engines\\module-auditor.ts"
+   ]
+  },
+  {
+   "table": "master_products",
+   "files": [
+    "src\\registries\\mcp-tool-registry.ts"
+   ]
+  },
+  {
+   "table": "deliveries",
+   "files": [
+    "src\\registries\\mcp-tool-registry.ts"
+   ]
+  },
+  {
+   "table": "service_schedules",
+   "files": [
+    "src\\registries\\mcp-tool-registry.ts"
+   ]
+  },
+  {
+   "table": "tourism_proposals",
+   "files": [
+    "src\\registries\\mcp-tool-registry.ts"
+   ]
+  },
+  {
+   "table": "commercial_proposals",
+   "files": [
+    "src\\registries\\mcp-tool-registry.ts"
+   ]
+  },
+  {
+   "table": "digital_contracts",
+   "files": [
+    "src\\registries\\mcp-tool-registry.ts"
+   ]
+  },
+  {
+   "table": "fiscal_invoices",
+   "files": [
+    "src\\registries\\mcp-tool-registry.ts"
+   ]
+  },
+  {
+   "table": "store_marketplace_integrations",
+   "files": [
+    "src\\registries\\mcp-tool-registry.ts"
+   ]
+  },
+  {
+   "table": "users",
+   "files": [
+    "src\\services\\admin-team.functions.ts",
+    "src\\services\\onboarding.functions.ts"
+   ]
+  },
+  {
+   "table": "store_ad_campaigns",
+   "files": [
+    "src\\services\\ads.functions.ts",
+    "src\\services\\builder-copilot-bridge.ts"
+   ]
+  },
+  {
+   "table": "ai_artifacts",
+   "files": [
+    "src\\services\\ai-artifact-compiler.functions.ts",
+    "src\\services\\ai-conversations.functions.ts"
+   ]
+  },
+  {
+   "table": "ai_artifact_versions",
+   "files": [
+    "src\\services\\ai-artifact-compiler.functions.ts",
+    "src\\services\\ai-conversations.functions.ts"
+   ]
+  },
+  {
+   "table": "ai_connectors",
+   "files": [
+    "src\\services\\ai-connectors-vault.functions.ts"
+   ]
+  },
+  {
+   "table": "ai_threads",
+   "files": [
+    "src\\services\\ai-conversations.functions.ts"
+   ]
+  },
+  {
+   "table": "ai_messages",
+   "files": [
+    "src\\services\\ai-conversations.functions.ts"
+   ]
+  },
+  {
+   "table": "ai_tasks",
+   "files": [
+    "src\\services\\ai-conversations.functions.ts",
+    "src\\services\\ai-tasks-durability.functions.ts"
+   ]
+  },
+  {
+   "table": "ai_scheduled_tasks",
+   "files": [
+    "src\\services\\ai-scheduled-tasks.functions.ts"
+   ]
+  },
+  {
+   "table": "crm_leads",
+   "files": [
+    "src\\services\\builder.functions.ts"
+   ]
+  },
+  {
+   "table": "travel_quote_requests",
+   "files": [
+    "src\\services\\builder.functions.ts",
+    "src\\services\\tourism.functions.ts"
+   ]
+  },
+  {
+   "table": "carona_preferences",
+   "files": [
+    "src\\services\\carona.functions.ts"
+   ]
+  },
+  {
+   "table": "carona_passenger_reviews",
+   "files": [
+    "src\\services\\carona.functions.ts"
+   ]
+  },
+  {
+   "table": "carona_recurring_schedules",
+   "files": [
+    "src\\services\\carona.functions.ts"
+   ]
+  },
+  {
+   "table": "carona_stop_points",
+   "files": [
+    "src\\services\\carona.functions.ts"
+   ]
+  },
+  {
+   "table": "intercity_bus_routes",
+   "files": [
+    "src\\services\\carona.functions.ts"
+   ]
+  },
+  {
+   "table": "corporate_contracts",
+   "files": [
+    "src\\services\\corporate-travel.functions.ts"
+   ]
+  },
+  {
+   "table": "corporate_credit_lines",
+   "files": [
+    "src\\services\\corporate-travel.functions.ts"
+   ]
+  },
+  {
+   "table": "corporate_travel_budgets",
+   "files": [
+    "src\\services\\corporate-travel.functions.ts"
+   ]
+  },
+  {
+   "table": "corporate_travel_advances",
+   "files": [
+    "src\\services\\corporate-travel.functions.ts"
+   ]
+  },
+  {
+   "table": "corporate_travel_expenses",
+   "files": [
+    "src\\services\\corporate-travel.functions.ts"
+   ]
+  },
+  {
+   "table": "airport_cms_profiles",
+   "files": [
+    "src\\services\\curadoria.functions.ts",
+    "src\\services\\tourism-airports.functions.ts"
+   ]
+  },
+  {
+   "table": "event_ticket_affiliates",
+   "files": [
+    "src\\services\\events.functions.ts"
+   ]
+  },
+  {
+   "table": "classified_vehicle_fipe_cache",
+   "files": [
+    "src\\services\\fipe.functions.ts"
+   ]
+  },
+  {
+   "table": "receipts",
+   "files": [
+    "src\\services\\fiscal-nfe.functions.ts",
+    "src\\services\\payment.functions.ts"
+   ]
+  },
+  {
+   "table": "google_business_connections",
+   "files": [
+    "src\\services\\onboarding-pipeline.server.ts"
+   ]
+  },
+  {
+   "table": "service_package_commissions",
+   "files": [
+    "src\\services\\service-packages.functions.ts"
+   ]
+  },
+  {
+   "table": "service_package_recurrences",
+   "files": [
+    "src\\services\\service-packages.functions.ts"
+   ]
+  },
+  {
+   "table": "travel_rooming_allocations",
+   "files": [
+    "src\\services\\tourism.functions.ts"
+   ]
+  },
+  {
+   "table": "travel_operator_commissions",
+   "files": [
+    "src\\services\\tourism.functions.ts"
+   ]
+  },
+  {
+   "table": "travel_flight_reaccommodations",
+   "files": [
+    "src\\services\\tourism.functions.ts"
+   ]
+  },
+  {
+   "table": "travel_commercial_contacts",
+   "files": [
+    "src\\services\\travel-commercial-intelligence.functions.ts"
+   ]
+  },
+  {
+   "table": "travel_interests",
+   "files": [
+    "src\\services\\travel-commercial-intelligence.functions.ts"
+   ]
+  },
+  {
+   "table": "travel_opportunity_matches",
+   "files": [
+    "src\\services\\travel-commercial-intelligence.functions.ts"
+   ]
+  },
+  {
+   "table": "travel_sales_spreadsheet_rows",
+   "files": [
+    "src\\services\\travel-continuous-flow.functions.ts"
+   ]
+  },
+  {
+   "table": "travel_contract_templates",
+   "files": [
+    "src\\services\\travel-contract.functions.ts"
+   ]
+  },
+  {
+   "table": "corporate_travelers",
+   "files": [
+    "src\\services\\travel-pax-anamnesis.functions.ts"
+   ]
+  },
+  {
+   "table": "crm_universal_spreadsheet_import_batches",
+   "files": [
+    "src\\services\\travel-pre-boarding-and-commissions.functions.ts"
+   ]
+  }
+ ],
+ "missingRpcs": [
+  {
+   "rpc": "set_default_user_address_atomic",
+   "files": [
+    "src\\services\\addresses.functions.ts"
+   ]
+  },
+  {
+   "rpc": "update_address_instructions_atomic",
+   "files": [
+    "src\\services\\addresses.functions.ts"
+   ]
+  },
+  {
+   "rpc": "save_builder_nodes_atomic",
+   "files": [
+    "src\\services\\builder.functions.ts"
+   ]
+  },
+  {
+   "rpc": "increment_airport_view_count",
+   "files": [
+    "src\\services\\tourism-airports.functions.ts"
+   ]
+  }
+ ],
+ "rlsDisabled": [],
+ "rlsNoPolicy": [
+  "ai_job_charges",
+  "studio_template_library",
+  "unsplash_studio_selections",
+  "travel_voucher_apply_operations",
+  "activation_logs",
+  "ads",
+  "badge_templates",
+  "channel_vault_credentials",
+  "contract_addendums",
+  "direct_conversations",
+  "direct_messages",
+  "eventos_campanhas",
+  "immutable_ledger_entries",
+  "lead_capture_forms",
+  "store_invites",
+  "post_media",
+  "store_orders",
+  "store_stories",
+  "travel_bookings",
+  "trip_commissions",
+  "travel_sale_financial_sheets",
+  "travel_sale_non_commissionable_fees",
+  "travel_sale_over_deductions",
+  "travel_sale_internal_costs",
+  "travel_sale_supplier_items",
+  "travel_financial_audit_logs",
+  "classified_analytics_events",
+  "classified_metrics_daily",
+  "gift_card_events"
+ ],
+ "secDefNoSearchPath": [
+  "release_resource_slot",
+  "approve_installment_conciliation",
+  "process_checkout_transaction_v2",
+  "sync_store_to_directory",
+  "wz_get_or_create_bucket",
+  "wz_grant_tokens_atomic",
+  "wz_reserve_tokens_atomic",
+  "wz_commit_reserved_tokens_atomic",
+  "wz_release_reserved_tokens_atomic",
+  "wz_claim_gift_card_atomic",
+  "wz_migrate_legacy_credits_and_tokens",
+  "adjust_service_pass_credits",
+  "mark_appointment_no_show",
+  "expire_outdated_service_passes"
+ ],
+ "anonExecSecDef": [
+  "decrement_ticket_sold",
+  "release_resource_slot",
+  "match_copilot_semantic_memory",
+  "supersede_stale_travel_proposal_acceptance",
+  "prevent_envelope_on_completed_contract",
+  "claim_healthy_api_keys_for_provider",
+  "get_public_tourism_voucher_by_token",
+  "enforce_civil_data_immutability",
+  "record_classified_event",
+  "wz_get_or_create_bucket",
+  "wz_grant_tokens_atomic",
+  "wz_reserve_tokens_atomic",
+  "wz_commit_reserved_tokens_atomic",
+  "wz_release_reserved_tokens_atomic",
+  "wz_claim_gift_card_atomic",
+  "wz_migrate_legacy_credits_and_tokens",
+  "get_or_create_wallet_account",
+  "calculate_wallet_balance_cents",
+  "adjust_service_pass_credits",
+  "mark_appointment_no_show",
+  "expire_outdated_service_passes",
+  "save_user_address_atomic",
+  "delete_user_address_atomic"
+ ],
+ "counts": {
+  "tables": 717,
+  "rpcs": 456,
+  "srcFiles": 1944
+ },
+ "invalidIdx": [],
+ "jobsFailed": [],
+ "cronFailed": [],
+ "edgeFns": [],
+ "bucketsNoPolicy": [
+  "covers",
+  "legal-documents",
+  "receipts",
+  "identity-vault",
+  "classifieds",
+  "classified-media",
+  "home-banners",
+  "home-categories",
+  "public_media",
+  "store-assets",
+  "banners",
+  "avatars",
+  "cms-media",
+  "brand-assets",
+  "product-media",
+  "destination-media",
+  "post-media"
+ ],
+ "storagePolicies": 15
+}

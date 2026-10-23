@@ -92,10 +92,10 @@ export const TourismServicesGrid: React.FC<TourismServicesGridProps> = ({
  {effectiveServices.map((srv, idx) => {
  const Icon = srv.icon || Plane;
  return (
- <div
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  key={idx}
  onClick={() => handleServiceClick(srv.title)}
- className="group p-5 rounded-lg bg-card border border-border/70 hover:border-sky-500/60 transition-all cursor-pointer hover:shadow-md flex flex-col justify-between space-y-4"
+ className="group p-5 rounded-lg bg-card border border-border/70 hover:border-sky-500/60 transition-all cursor-pointer hover:shadow-md flex flex-col justify-between space-y-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="space-y-3">
  <div className="flex items-center justify-between">

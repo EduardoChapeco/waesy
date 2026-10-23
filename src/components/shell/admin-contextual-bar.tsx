@@ -61,7 +61,7 @@ export function AdminContextualBar({ userRole }: AdminContextualBarProps) {
       <button
         onClick={() => setIsMinimized(false)}
         aria-label="Expandir Barra de Governança"
-        className="fixed bottom-20 right-3.5 lg:bottom-6 lg:right-6 z-50 size-9 sm:size-10 rounded-lg bg-primary text-primary-foreground flex items-center justify-center border border-border/40 hover:scale-105 transition-all cursor-pointer shadow-lg"
+        className="fixed bottom-20 right-3.5 lg:bottom-6 lg:right-6 z-50 size-9 sm:size-10 rounded-lg bg-primary text-primary-foreground flex items-center justify-center border border-border/40 hover:scale-105 transition-all cursor-pointer shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         title="Admin Master"
       >
         <Shield className="size-4" />
@@ -136,7 +136,7 @@ export function AdminContextualBar({ userRole }: AdminContextualBarProps) {
 
  <button
  onClick={() => setIsMinimized(true)}
- className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer ml-1"
+ className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer ml-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  title="Minimizar barra de atalho"
  >
  ✕

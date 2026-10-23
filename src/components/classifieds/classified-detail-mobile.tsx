@@ -403,7 +403,12 @@ export function ClassifiedDetailMobile({
   }, [attrs, classified, images, locationText]);
 
   return (
-    <div className="w-full min-h-screen bg-background text-foreground pb-32 pb-safe select-none">
+    <div
+      data-active-template={templateStyle}
+      data-active-niche={niche.id}
+      data-render-mode="mobile-native"
+      className="w-full min-h-screen bg-background text-foreground pb-32 pb-safe select-none"
+    >
       {/* ── 1. HEADER PADRONIZADO FIXO NO TOPO COM FLEX ROW E BACK BUTTON ALINHADO ── */}
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border/40 px-3 h-12 flex items-center justify-between">
         <NativeBackButton
@@ -592,13 +597,13 @@ export function ClassifiedDetailMobile({
               <div className="pt-1">
                 {isDonation ? (
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-extrabold text-emerald-600 font-mono">Gratuito</span>
+                    <span className="text-2xl font-extrabold text-emerald-600 font-mono whitespace-nowrap tabular-nums">Gratuito</span>
                     <span className="text-xs text-muted-foreground">Doação sem custo</span>
                   </div>
                 ) : isInvestmentOpportunity ? (
                   <div className="space-y-1">
                     <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider block">Aporte Solicitado</span>
-                    <span className="text-2xl font-extrabold text-foreground font-mono">
+                    <span className="text-2xl font-extrabold text-foreground font-mono whitespace-nowrap tabular-nums">
                       {targetInvestment > 0 ? formatMoney(targetInvestment) : (priceCents > 0 ? formatMoney(priceCents) : "A combinar")}
                     </span>
                     {offeredEquity && <span className="text-xs text-primary font-semibold block">{offeredEquity} de participação</span>}
@@ -606,15 +611,15 @@ export function ClassifiedDetailMobile({
                 ) : (
                   <div className="space-y-1">
                     <div className="flex items-baseline gap-2">
-                      <span className="text-2xl sm:text-3xl font-extrabold text-foreground font-mono">
+                      <span className="text-2xl sm:text-3xl font-extrabold text-foreground font-mono whitespace-nowrap tabular-nums">
                         {priceCents > 0 ? formatMoney(priceCents) : "Consulte o anunciante"}
                       </span>
                       {niche.priceSuffix && (
-                        <span className="text-xs text-muted-foreground font-normal">{niche.priceSuffix}</span>
+                        <span className="text-xs text-muted-foreground font-normal whitespace-nowrap">{niche.priceSuffix}</span>
                       )}
                     </div>
                     {priceCents > 0 && maxInstallments > 1 && acceptsCard && (
-                      <p className="text-xs text-muted-foreground font-mono">
+                      <p className="text-xs text-muted-foreground font-mono whitespace-nowrap tabular-nums">
                         ou até {maxInstallments}x de {formatMoney(installmentCents)} {cardInterestFree ? "sem juros" : ""}
                       </p>
                     )}
@@ -633,6 +638,63 @@ export function ClassifiedDetailMobile({
                 <span className="break-words text-wrap">{locationText}</span>
               </div>
             </div>
+
+            {/* Strip Canônico do Template Selecionado (Mobile Native) */}
+            {templateStyle === "automotivo" && (
+              <div data-template-strip="automotivo" className="rounded-lg border border-border/70 bg-muted/20 p-4 space-y-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-foreground block">Showroom Automotivo</span>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="rounded-lg bg-card border border-border/50 p-3">
+                    <span className="text-xs text-muted-foreground block">Ano</span>
+                    <span className="text-xs font-bold text-foreground break-words">{attrs.year || attrs.year_model || "Consulte"}</span>
+                  </div>
+                  <div className="rounded-lg bg-card border border-border/50 p-3">
+                    <span className="text-xs text-muted-foreground block">KM</span>
+                    <span className="text-xs font-bold text-foreground break-words">{attrs.mileage || attrs.mileage_km ? `${attrs.mileage || attrs.mileage_km} km` : "Consulte"}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {templateStyle === "resort_hotel" && (
+              <div data-template-strip="resort_hotel" className="rounded-lg border border-border/70 bg-muted/20 p-4 flex items-center justify-between gap-3">
+                <div className="space-y-1 min-w-0">
+                  <span className="text-xs font-bold text-foreground block break-words text-wrap">Estadia & Hospitalidade</span>
+                  <p className="text-xs text-muted-foreground break-words text-wrap">
+                    Check-in {attrs.checkin_time || "14:00"} • Check-out {attrs.checkout_time || "12:00"}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {templateStyle === "servicos_agenda" && (
+              <div data-template-strip="servicos_agenda" className="rounded-lg border border-border/70 bg-muted/20 p-4 flex items-center justify-between gap-3">
+                <div className="space-y-1 min-w-0">
+                  <span className="text-xs font-bold text-foreground block break-words text-wrap">Agenda & Atendimento</span>
+                  <p className="text-xs text-muted-foreground break-words text-wrap">
+                    Modalidade: {attrs.modality === "online" ? "Online" : attrs.modality === "domicilio" ? "Domicílio" : "Presencial"}
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleStartNativeChat("Olá, gostaria de consultar disponibilidade na agenda.")}
+                  className="h-11 min-h-11 px-3 text-xs font-bold rounded-lg border-primary/40 text-primary hover:bg-primary/10 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  Agendar
+                </Button>
+              </div>
+            )}
+
+            {templateStyle === "editorial" && (
+              <div data-template-strip="editorial" className="rounded-lg border border-primary/25 bg-primary/5 p-4 space-y-1">
+                <span className="text-xs font-bold uppercase tracking-wider text-primary block">Dossiê Editorial</span>
+                <p className="text-xs text-muted-foreground break-words text-wrap">
+                  Curadoria completa com especificações detalhadas e negociação verificada.
+                </p>
+              </div>
+            )}
 
             {/* Negociação e Agendamento Específico por Nicho */}
             {templateStyle === "automotivo" && (attrs.accepts_trade || attrs.accepts_financing || attrs.negotiable) && (
@@ -678,7 +740,7 @@ export function ClassifiedDetailMobile({
             {isTravelOrHospitality && (
               <div className="space-y-4">
                 {/* ── CARD 1: Destino & Localização ── */}
-                <div className="rounded-lg border border-border/60 bg-card p-4 space-y-3">
+                <div className="border-t border-border/40 pt-4 space-y-3">
                   <div className="flex items-center gap-2 text-xs font-bold text-foreground">
                     <MapPin className="size-4 text-primary shrink-0" />
                     <span className="uppercase tracking-wider">Destino & Localização</span>
@@ -714,7 +776,7 @@ export function ClassifiedDetailMobile({
                 </div>
 
                 {/* ── CARD 2: Hospedagem & Hotel ── */}
-                <div className="rounded-lg border border-border/60 bg-card p-4 space-y-3">
+                <div className="border-t border-border/40 pt-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-xs font-bold text-foreground">
                       <Hotel className="size-4 text-primary shrink-0" />
@@ -795,7 +857,7 @@ export function ClassifiedDetailMobile({
                 </div>
 
                 {/* ── CARD 3: O que inclui o pacote ── */}
-                <div className="rounded-lg border border-border/60 bg-card p-4 space-y-3">
+                <div className="border-t border-border/40 pt-4 space-y-3">
                   <div className="flex items-center gap-2 text-xs font-bold text-foreground">
                     <Package className="size-4 text-primary shrink-0" />
                     <span className="uppercase tracking-wider">O Que Inclui o Pacote</span>
@@ -866,7 +928,7 @@ export function ClassifiedDetailMobile({
                 <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   Descrição
                 </h2>
-                <div className="rounded-lg border border-border/50 bg-card p-4 space-y-2 text-sm sm:text-base text-foreground/90 leading-relaxed">
+                <div className="border-t border-border/40 pt-4 space-y-2 text-sm sm:text-base text-foreground/90 leading-relaxed">
                   <p className={isDescExpanded ? "whitespace-pre-line" : "whitespace-pre-line line-clamp-4"}>
                     {classified.content}
                   </p>
@@ -892,7 +954,7 @@ export function ClassifiedDetailMobile({
                   </h2>
                   <span className="text-xs text-muted-foreground font-mono">Condições</span>
                 </div>
-                <div className="rounded-lg border border-border/50 bg-card p-4 space-y-3">
+                <div className="border-t border-border/40 pt-4 space-y-3">
                   <div className="flex flex-wrap gap-2">
                     {paymentMethodsList.map((pm) => (
                       <span
@@ -1001,7 +1063,7 @@ export function ClassifiedDetailMobile({
         {/* ABA 3: Anunciante / Empresa */}
         {activeTab === "seller" && (
           <div className="space-y-4 animate-in fade-in duration-150">
-            <div className="rounded-lg border border-border/60 bg-card p-4 space-y-4">
+            <div className="border-t border-border/40 pt-4 space-y-4">
               <div className="flex items-center gap-3">
                 <div className="size-12 rounded-lg bg-muted flex items-center justify-center font-bold text-muted-foreground text-sm overflow-hidden shrink-0 border border-border/40">
                   {author?.avatar_url ? (

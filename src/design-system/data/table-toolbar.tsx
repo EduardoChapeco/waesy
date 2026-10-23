@@ -74,7 +74,7 @@ export function TableToolbar({
                 key={chip.id}
                 type="button"
                 onClick={() => onToggleFilter?.(chip.id)}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer",
                   chip.active
                     ? "bg-primary text-primary-foreground font-semibold"

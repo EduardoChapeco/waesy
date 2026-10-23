@@ -52,7 +52,7 @@ export function BuilderDockingMatrix({
  type="button"
  onClick={() => onChange(pos.id)}
  title={pos.label}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "size-6 rounded-md flex items-center justify-center transition-all cursor-pointer",
  isSelected
  ? "bg-primary text-primary-foreground shadow-2xs ring-2 ring-primary/30"

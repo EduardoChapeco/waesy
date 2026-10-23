@@ -185,7 +185,7 @@ function BoostPaymentsAdmin() {
                 filterStatus === s
                   ? "bg-foreground text-background border-foreground"
                   : "bg-card text-muted-foreground border-border/60 hover:border-border"
-              }`}
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
             >
               {s === "all"
                 ? "Todos"

@@ -141,7 +141,7 @@ function AdminMasterImprensaPage() {
             onClick={() => setFilterTab("all")}
             className={`px-3 py-2 rounded-lg text-xs font-bold transition-all ${
               filterTab === "all" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             Todos ({totalCount})
           </button>
@@ -149,7 +149,7 @@ function AdminMasterImprensaPage() {
             onClick={() => setFilterTab("approved")}
             className={`px-3 py-2 rounded-lg text-xs font-bold transition-all ${
               filterTab === "approved" ? "bg-background text-emerald-600 shadow-xs" : "text-muted-foreground"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             Aprovados ({approvedCount})
           </button>
@@ -157,7 +157,7 @@ function AdminMasterImprensaPage() {
             onClick={() => setFilterTab("pending")}
             className={`px-3 py-2 rounded-lg text-xs font-bold transition-all ${
               filterTab === "pending" ? "bg-background text-amber-600 shadow-xs" : "text-muted-foreground"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             Pendentes ({pendingCount})
           </button>
@@ -165,7 +165,7 @@ function AdminMasterImprensaPage() {
             onClick={() => setFilterTab("revoked")}
             className={`px-3 py-2 rounded-lg text-xs font-bold transition-all ${
               filterTab === "revoked" ? "bg-background text-destructive shadow-xs" : "text-muted-foreground"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             Revogados ({revokedCount})
           </button>

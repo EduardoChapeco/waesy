@@ -152,7 +152,7 @@ export function NewTaskModal({
               type="button"
               onClick={() => setIsMyDay((v) => !v)}
               title={isMyDay ? "Remover de Meu Dia" : "Adicionar ao Meu Dia"}
-              className={cn(
+              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                 "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer",
                 isMyDay
                   ? "bg-amber-500/15 border-amber-500/40 text-amber-600 dark:text-amber-400"
@@ -191,7 +191,7 @@ export function NewTaskModal({
                     key={p}
                     type="button"
                     onClick={() => setPriority(p)}
-                    className={cn(
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "h-9 rounded-lg border text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-2",
                       priority === p
                         ? `ring-1 ${cfg.ring}`
@@ -339,7 +339,7 @@ export function NewTaskModal({
                   key={ct}
                   type="button"
                   onClick={() => handleAddTag(ct)}
-                  className={cn(
+                  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                     "text-[11px] px-3 py-1 rounded-full border transition-colors cursor-pointer",
                     tags.includes(ct)
                       ? "bg-primary text-primary-foreground border-primary font-medium"
@@ -364,7 +364,7 @@ export function NewTaskModal({
                     <button
                       type="button"
                       onClick={() => handleRemoveTag(tag)}
-                      className="size-3.5 flex items-center justify-center hover:text-destructive cursor-pointer"
+                      className="size-3.5 flex items-center justify-center hover:text-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <X className="size-3" />
                     </button>
@@ -420,7 +420,7 @@ export function NewTaskModal({
                     <button
                       type="button"
                       onClick={() => handleRemoveChecklist(idx)}
-                      className="size-6 flex items-center justify-center text-muted-foreground hover:text-rose-600 rounded cursor-pointer shrink-0"
+                      className="size-6 flex items-center justify-center text-muted-foreground hover:text-rose-600 rounded cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <Trash2 className="size-3.5" />
                     </button>

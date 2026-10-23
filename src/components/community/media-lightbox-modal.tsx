@@ -129,7 +129,7 @@ export function MediaLightboxModal({
 
  <button
   onClick={onClose}
-  className="size-11 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors cursor-pointer"
+  className="size-11 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
   aria-label="Fechar"
   >
   <X className="size-5" />
@@ -142,7 +142,7 @@ export function MediaLightboxModal({
  {post.media_urls.length > 1 && currentIndex > 0 && (
   <button
   onClick={() => setCurrentIndex((prev) => prev - 1)}
-  className="absolute left-3 sm:left-6 z-20 size-11 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-xs transition-transform active:scale-95 cursor-pointer"
+  className="absolute left-3 sm:left-6 z-20 size-11 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-xs transition-transform active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
   >
   <ChevronLeft className="size-6" />
   </button>
@@ -158,7 +158,7 @@ export function MediaLightboxModal({
  {post.media_urls.length > 1 && currentIndex < post.media_urls.length - 1 && (
   <button
   onClick={() => setCurrentIndex((prev) => prev + 1)}
-  className="absolute right-3 sm:right-6 z-20 size-11 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-xs transition-transform active:scale-95 cursor-pointer"
+  className="absolute right-3 sm:right-6 z-20 size-11 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-xs transition-transform active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
   >
   <ChevronRight className="size-6" />
   </button>
@@ -210,7 +210,7 @@ export function MediaLightboxModal({
  onClick={() => setCurrentIndex(idx)}
  className={`size-2 rounded-full transition-all ${
  idx === currentIndex ? "w-6 bg-white" : "bg-white/30 hover:bg-white/60"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  />
  ))}
  </div>

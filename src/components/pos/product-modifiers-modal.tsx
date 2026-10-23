@@ -204,7 +204,7 @@ export function ProductModifiersModal({
  isSelected
  ? "border-primary bg-primary/10 text-primary font-semibold shadow-2xs"
  : "border-border/70 bg-background hover:bg-muted/40 text-foreground"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <span className="flex items-center gap-3">
  <span

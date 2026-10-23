@@ -140,7 +140,7 @@ export function PublicHeader({
  <button
  type="button"
  onClick={() => setIsSearchOpen(false)}
- className="absolute right-2 top-1/2 -translate-y-1/2 size-5 flex items-center justify-center text-muted-foreground hover:text-foreground rounded-full"
+ className="absolute right-2 top-1/2 -translate-y-1/2 size-5 flex items-center justify-center text-muted-foreground hover:text-foreground rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <X className="size-3.5" />
  </button>

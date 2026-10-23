@@ -34,7 +34,20 @@ import {
   listCorporateInvoices,
   listCompanyAirCredits,
   reviewApprovalRequest,
+  createTravelProject,
+  saveTravelerProfile,
+  saveCompanyTravelPolicy,
+  listTravelerDocuments,
+  saveTravelerDocument,
+  listCorporateMembers,
+  saveCorporateMember,
+  createApprovalRequest,
 } from "@/services/corporate-travel.functions";
+import type { TravelerDocumentDTO, CorporateTravelMemberDTO } from "@/types/corporate-travel";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Plus, Settings } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -51,7 +64,7 @@ export const Route = createFileRoute("/workspace/empresa/viagens")({
   component: CompanyCorporateTravelPage,
 });
 
-type TabType = "aprovacoes" | "viagens" | "projetos" | "viajantes" | "politica" | "financeiro";
+type TabType = "aprovacoes" | "viagens" | "projetos" | "viajantes" | "membros" | "politica" | "financeiro";
 
 export default function CompanyCorporateTravelPage() {
   const { currentStore } = useWorkspaceStore();
@@ -102,21 +115,21 @@ export default function CompanyCorporateTravelPage() {
   });
 
   // 4. Projetos de Viagem
-  const { data: projects = [], isLoading: isProjectsLoading } = useQuery({
+  const { data: projects = [], isLoading: isProjectsLoading, refetch: refetchProjects } = useQuery({
     queryKey: ["company-travel-projects", companyId],
     queryFn: () => listCompanyTravelProjects({ data: { companyId } }),
     enabled: Boolean(companyId && account),
   });
 
   // 5. Viajantes Cadastrados
-  const { data: travelers = [], isLoading: isTravelersLoading } = useQuery({
+  const { data: travelers = [], isLoading: isTravelersLoading, refetch: refetchTravelers } = useQuery({
     queryKey: ["company-travelers", companyId],
     queryFn: () => listCompanyTravelers({ data: { companyId } }),
     enabled: Boolean(companyId && account),
   });
 
   // 6. Política Vigente
-  const { data: policy, isLoading: isPolicyLoading } = useQuery({
+  const { data: policy, isLoading: isPolicyLoading, refetch: refetchPolicy } = useQuery({
     queryKey: ["company-travel-policy", companyId],
     queryFn: () => getCompanyTravelPolicy({ data: { companyId } }),
     enabled: Boolean(companyId && account),
@@ -135,7 +148,151 @@ export default function CompanyCorporateTravelPage() {
     enabled: Boolean(companyId && account),
   });
 
-  // 8. Créditos Aéreos da Empresa
+  // 7b. Membros da Conta Corporativa
+  const { data: members = [], refetch: refetchMembers, isLoading: isMembersLoading } = useQuery<CorporateTravelMemberDTO[]>({
+    queryKey: ["company-members", account?.id],
+    queryFn: () => (account?.id ? listCorporateMembers({ data: { accountId: account.id } }) : Promise.resolve([])),
+    enabled: Boolean(account?.id),
+  });
+
+  // Modal: Documentos do Viajante
+  const [selectedTravelerDocs, setSelectedTravelerDocs] = useState<any | null>(null);
+  const [travelerDocsOpen, setTravelerDocsOpen] = useState(false);
+  const [isSavingDoc, setIsSavingDoc] = useState(false);
+  const [docForm, setDocForm] = useState({
+    docType: "passport" as "passport" | "rg" | "cnh" | "visa" | "authorization" | "corporate_letter" | "vaccine" | "other",
+    title: "",
+    fileUrl: "",
+    docNumber: "",
+    issuingCountry: "BRA",
+    expiryDate: "",
+  });
+
+  const { data: travelerDocuments = [], refetch: refetchTravelerDocs, isLoading: isDocsLoading } = useQuery<TravelerDocumentDTO[]>({
+    queryKey: ["traveler-documents", selectedTravelerDocs?.id],
+    queryFn: () => (selectedTravelerDocs?.id ? listTravelerDocuments({ data: { travelerId: selectedTravelerDocs.id } }) : Promise.resolve([])),
+    enabled: Boolean(selectedTravelerDocs?.id && travelerDocsOpen),
+  });
+
+  const handleOpenTravelerDocs = (traveler: any) => {
+    setSelectedTravelerDocs(traveler);
+    setTravelerDocsOpen(true);
+  };
+
+  const handleSaveDocument = async () => {
+    if (!selectedTravelerDocs?.id || !docForm.title.trim() || !docForm.fileUrl.trim()) {
+      toast.error("Informe título e URL do documento.");
+      return;
+    }
+    setIsSavingDoc(true);
+    try {
+      await saveTravelerDocument({
+        data: {
+          travelerId: selectedTravelerDocs.id,
+          docType: docForm.docType,
+          title: docForm.title.trim(),
+          fileUrl: docForm.fileUrl.trim(),
+          docNumber: docForm.docNumber.trim() || null,
+          issuingCountry: docForm.issuingCountry || null,
+          expiryDate: docForm.expiryDate || null,
+        },
+      });
+      toast.success("Documento anexado com sucesso!");
+      setDocForm({
+        docType: "passport",
+        title: "",
+        fileUrl: "",
+        docNumber: "",
+        issuingCountry: "BRA",
+        expiryDate: "",
+      });
+      refetchTravelerDocs();
+    } catch (err: any) {
+      toast.error("Erro ao salvar documento: " + (err?.message || "falha na operação"));
+    } finally {
+      setIsSavingDoc(false);
+    }
+  };
+
+  // Modal: Cadastrar Membro Corporativo
+  const [createMemberOpen, setCreateMemberOpen] = useState(false);
+  const [isSubmittingMember, setIsSubmittingMember] = useState(false);
+  const [memberForm, setMemberForm] = useState({
+    profileId: "",
+    role: "TRAVELER" as "TRAVEL_ADMIN" | "TRAVEL_MANAGER" | "TRAVEL_BOOKER" | "TRAVELER" | "APPROVER",
+    department: "",
+    costCenter: "",
+  });
+
+  const handleSaveMember = async () => {
+    if (!account?.id || !memberForm.profileId.trim()) {
+      toast.error("Informe o ID de perfil do colaborador.");
+      return;
+    }
+    setIsSubmittingMember(true);
+    try {
+      await saveCorporateMember({
+        data: {
+          accountId: account.id,
+          profileId: memberForm.profileId.trim(),
+          role: memberForm.role,
+          department: memberForm.department.trim() || null,
+          costCenter: memberForm.costCenter.trim() || null,
+        },
+      });
+      toast.success("Membro vinculado à conta corporativa!");
+      setCreateMemberOpen(false);
+      setMemberForm({
+        profileId: "",
+        role: "TRAVELER",
+        department: "",
+        costCenter: "",
+      });
+      refetchMembers();
+    } catch (err: any) {
+      toast.error("Erro ao vincular membro: " + (err?.message || "falha na operação"));
+    } finally {
+      setIsSubmittingMember(false);
+    }
+  };
+
+  // Modal: Criar Solicitação de Viagem Rápida
+  const [createApprovalOpen, setCreateApprovalOpen] = useState(false);
+  const [isSubmittingApproval, setIsSubmittingApproval] = useState(false);
+  const [approvalRequestForm, setApprovalRequestForm] = useState({
+    justification: "",
+    totalAmount: 1200,
+    projectId: "",
+  });
+
+  const handleCreateApproval = async () => {
+    if (!companyId || !agencyId) {
+      toast.error("Vínculo corporativo ativo necessário.");
+      return;
+    }
+    setIsSubmittingApproval(true);
+    try {
+      await createApprovalRequest({
+        data: {
+          companyId,
+          agencyId,
+          projectId: approvalRequestForm.projectId || null,
+          totalAmountCents: Math.round(approvalRequestForm.totalAmount * 100),
+          justification: approvalRequestForm.justification.trim() || "Viagem corporativa de negócios",
+        },
+      });
+      toast.success("Solicitação de viagem criada para aprovação!");
+      setCreateApprovalOpen(false);
+      setApprovalRequestForm({ justification: "", totalAmount: 1200, projectId: "" });
+      refetchApprovals();
+    } catch (err: any) {
+      toast.error("Erro ao criar solicitação: " + (err?.message || "falha na operação"));
+    } finally {
+      setIsSubmittingApproval(false);
+    }
+  };
+
+    // 8. Créditos Aéreos da Empresa
   const { data: airCredits = [] } = useQuery<any[]>({
     queryKey: ["company-air-credits", companyId],
     queryFn: () => listCompanyAirCredits({ data: { companyId } }) as any,
@@ -145,6 +302,175 @@ export default function CompanyCorporateTravelPage() {
   const pendingApprovals = useMemo(() => {
     return approvals.filter((a) => a.status === "pending");
   }, [approvals]);
+
+  // ── MODAL: CRIAR PROJETO ──
+  const [createProjectOpen, setCreateProjectOpen] = useState(false);
+  const [isSubmittingProject, setIsSubmittingProject] = useState(false);
+  const [projectForm, setProjectForm] = useState({
+    name: "",
+    description: "",
+    purpose: "",
+    startDate: "",
+    endDate: "",
+    budgetCents: 0,
+    department: "",
+    costCenter: "",
+  });
+
+  const handleCreateProject = async () => {
+    if (!projectForm.name.trim()) {
+      toast.error("Informe o nome do projeto.");
+      return;
+    }
+    if (!agencyId) {
+      toast.error("Agência vinculada não identificada.");
+      return;
+    }
+    setIsSubmittingProject(true);
+    try {
+      await createTravelProject({
+        data: {
+          companyId,
+          agencyId,
+          name: projectForm.name.trim(),
+          description: projectForm.description.trim() || undefined,
+          purpose: projectForm.purpose.trim() || undefined,
+          startDate: projectForm.startDate || undefined,
+          endDate: projectForm.endDate || undefined,
+          budgetCents: Math.round(Number(projectForm.budgetCents) * 100),
+          department: projectForm.department.trim() || undefined,
+          costCenter: projectForm.costCenter.trim() || undefined,
+        },
+      });
+      toast.success("Projeto corporativo criado com sucesso!");
+      setCreateProjectOpen(false);
+      setProjectForm({
+        name: "",
+        description: "",
+        purpose: "",
+        startDate: "",
+        endDate: "",
+        budgetCents: 0,
+        department: "",
+        costCenter: "",
+      });
+      refetchProjects();
+    } catch (err: any) {
+      toast.error("Erro ao criar projeto: " + (err?.message || "Falha desconhecida"));
+    } finally {
+      setIsSubmittingProject(false);
+    }
+  };
+
+  // ── MODAL: CADASTRAR VIAJANTE ──
+  const [createTravelerOpen, setCreateTravelerOpen] = useState(false);
+  const [isSubmittingTraveler, setIsSubmittingTraveler] = useState(false);
+  const [travelerForm, setTravelerForm] = useState({
+    fullName: "",
+    documentType: "cpf",
+    documentNumber: "",
+    email: "",
+    phone: "",
+    seatPreference: "window" as "window" | "aisle" | "any",
+    mealPreference: "standard",
+  });
+
+  const handleCreateTraveler = async () => {
+    if (!travelerForm.fullName.trim() || !travelerForm.documentNumber.trim()) {
+      toast.error("Nome completo e documento são obrigatórios.");
+      return;
+    }
+    setIsSubmittingTraveler(true);
+    try {
+      await saveTravelerProfile({
+        data: {
+          companyId,
+          fullName: travelerForm.fullName.trim(),
+          documentType: travelerForm.documentType,
+          documentNumber: travelerForm.documentNumber.trim(),
+          email: travelerForm.email.trim() || undefined,
+          phone: travelerForm.phone.trim() || undefined,
+          seatPreference: travelerForm.seatPreference,
+          mealPreference: travelerForm.mealPreference,
+          loyaltyPrograms: [],
+        },
+      });
+      toast.success("Perfil de viajante salvo com sucesso!");
+      setCreateTravelerOpen(false);
+      setTravelerForm({
+        fullName: "",
+        documentType: "cpf",
+        documentNumber: "",
+        email: "",
+        phone: "",
+        seatPreference: "window",
+        mealPreference: "standard",
+      });
+      refetchTravelers();
+    } catch (err: any) {
+      toast.error("Erro ao cadastrar viajante: " + (err?.message || "Falha desconhecida"));
+    } finally {
+      setIsSubmittingTraveler(false);
+    }
+  };
+
+  // ── MODAL: CONFIGURAR POLÍTICA ──
+  const [editPolicyOpen, setEditPolicyOpen] = useState(false);
+  const [isSubmittingPolicy, setIsSubmittingPolicy] = useState(false);
+  const [policyForm, setPolicyForm] = useState({
+    title: "",
+    airMaxAmount: 0,
+    airAdvanceDays: 7,
+    airMaxCabin: "economy" as any,
+    hotelMaxStars: 4,
+    hotelMaxNightly: 0,
+  });
+
+  const handleOpenEditPolicy = () => {
+    setPolicyForm({
+      title: policy?.title || "Política Corporativa Padrão",
+      airMaxAmount: (policy?.rules_json?.air?.max_amount_cents || 0) / 100,
+      airAdvanceDays: policy?.rules_json?.air?.advance_days_required || 7,
+      airMaxCabin: policy?.rules_json?.air?.max_cabin || "economy",
+      hotelMaxStars: policy?.rules_json?.hotel?.max_stars || 4,
+      hotelMaxNightly: (policy?.rules_json?.hotel?.max_nightly_amount_cents || 0) / 100,
+    });
+    setEditPolicyOpen(true);
+  };
+
+  const handleSavePolicy = async () => {
+    if (!policyForm.title.trim()) {
+      toast.error("Informe o título da política.");
+      return;
+    }
+    setIsSubmittingPolicy(true);
+    try {
+      await saveCompanyTravelPolicy({
+        data: {
+          companyId,
+          title: policyForm.title.trim(),
+          rulesJson: {
+            air: {
+              max_amount_cents: policyForm.airMaxAmount > 0 ? Math.round(policyForm.airMaxAmount * 100) : undefined,
+              advance_days_required: Number(policyForm.airAdvanceDays) || 0,
+              max_cabin: policyForm.airMaxCabin,
+            },
+            hotel: {
+              max_stars: Number(policyForm.hotelMaxStars) || 4,
+              max_nightly_amount_cents: policyForm.hotelMaxNightly > 0 ? Math.round(policyForm.hotelMaxNightly * 100) : undefined,
+            },
+          },
+        },
+      });
+      toast.success("Política de viagens atualizada com sucesso!");
+      setEditPolicyOpen(false);
+      refetchPolicy();
+    } catch (err: any) {
+      toast.error("Erro ao salvar política: " + (err?.message || "Falha desconhecida"));
+    } finally {
+      setIsSubmittingPolicy(false);
+    }
+  };
 
   const handleOpenReview = (
     requestId: string,
@@ -271,7 +597,7 @@ export default function CompanyCorporateTravelPage() {
         </div>
 
         {/* Régua de Navegação Horizontal Contínua (B.39) */}
-        <div className="flex flex-nowrap items-center gap-2 overflow-x-auto no-scrollbar border-b border-border pb-2">
+        <div className="flex flex-nowrap items-center gap-2 overflow-x-auto no-scrollbar border-b border-border pb-2 tab-list" role="tablist">
           {[
             { id: "aprovacoes", label: `Aprovações (${pendingApprovals.length})`, icon: Clock },
             { id: "viagens", label: `Viagens (${trips.length})`, icon: Plane },
@@ -504,17 +830,40 @@ export default function CompanyCorporateTravelPage() {
         {/* 3. ABA: PROJETOS DE VIAGEM */}
         {activeTab === "projetos" && (
           <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-border/50">
+              <div>
+                <h3 className="text-sm font-bold text-foreground">Projetos & Missões Corporativas</h3>
+                <p className="text-xs text-muted-foreground">Agrupe viagens, centros de custo e controle orçamentário</p>
+              </div>
+              <Button
+                className="h-11 min-h-11 px-4 text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+                onClick={() => setCreateProjectOpen(true)}
+              >
+                <Plus className="size-4 mr-2" />
+                Novo Projeto
+              </Button>
+            </div>
+
             {isProjectsLoading ? (
               <div className="space-y-3">
                 <div className="h-16 bg-muted rounded-lg animate-pulse motion-reduce:animate-none" />
               </div>
             ) : projects.length === 0 ? (
-              <div className="p-8 text-center border border-dashed border-border rounded-lg bg-card text-muted-foreground space-y-2">
+              <div className="p-8 text-center border border-dashed border-border rounded-lg bg-card text-muted-foreground space-y-3">
                 <FolderKanban className="size-8 mx-auto text-muted-foreground" />
                 <p className="text-sm font-medium">Nenhum projeto de viagem criado</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground max-w-md mx-auto">
                   Projetos agrupam múltiplas viagens, tarefas e a timeline viva para missões e eventos corporativos.
                 </p>
+                <div className="pt-2 flex justify-center">
+                  <Button
+                    className="h-11 min-h-11 px-5 text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+                    onClick={() => setCreateProjectOpen(true)}
+                  >
+                    <Plus className="size-4 mr-2" />
+                    Criar Primeiro Projeto
+                  </Button>
+                </div>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -560,17 +909,40 @@ export default function CompanyCorporateTravelPage() {
         {/* 4. ABA: VIAJANTES */}
         {activeTab === "viajantes" && (
           <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-border/50">
+              <div>
+                <h3 className="text-sm font-bold text-foreground">Viajantes & Colaboradores</h3>
+                <p className="text-xs text-muted-foreground">Cofre de passageiros com documentos e preferências de assento</p>
+              </div>
+              <Button
+                className="h-11 min-h-11 px-4 text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+                onClick={() => setCreateTravelerOpen(true)}
+              >
+                <Plus className="size-4 mr-2" />
+                Cadastrar Viajante
+              </Button>
+            </div>
+
             {isTravelersLoading ? (
               <div className="space-y-3">
                 <div className="h-16 bg-muted rounded-lg animate-pulse motion-reduce:animate-none" />
               </div>
             ) : travelers.length === 0 ? (
-              <div className="p-8 text-center border border-dashed border-border rounded-lg bg-card text-muted-foreground space-y-2">
+              <div className="p-8 text-center border border-dashed border-border rounded-lg bg-card text-muted-foreground space-y-3">
                 <Users className="size-8 mx-auto text-muted-foreground" />
                 <p className="text-sm font-medium">Nenhum perfil de viajante cadastrado</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground max-w-md mx-auto">
                   Cadastre seus colaboradores para acelerar emissões com documentos e preferências salvas.
                 </p>
+                <div className="pt-2 flex justify-center">
+                  <Button
+                    className="h-11 min-h-11 px-5 text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+                    onClick={() => setCreateTravelerOpen(true)}
+                  >
+                    <Plus className="size-4 mr-2" />
+                    Cadastrar Primeiro Viajante
+                  </Button>
+                </div>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -609,15 +981,39 @@ export default function CompanyCorporateTravelPage() {
         {/* 5. ABA: POLÍTICA DE VIAGEM */}
         {activeTab === "politica" && (
           <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-border/50">
+              <div>
+                <h3 className="text-sm font-bold text-foreground">Diretrizes de Compliance & Política</h3>
+                <p className="text-xs text-muted-foreground">Tetos tarifários, antecedência mínima e limites de cabine</p>
+              </div>
+              <Button
+                variant="outline"
+                className="h-11 min-h-11 px-4 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+                onClick={handleOpenEditPolicy}
+              >
+                <Settings className="size-4 mr-2" />
+                Configurar Política
+              </Button>
+            </div>
+
             {isPolicyLoading ? (
               <div className="h-24 bg-muted rounded-lg animate-pulse motion-reduce:animate-none" />
             ) : !policy ? (
-              <div className="p-8 text-center border border-dashed border-border rounded-lg bg-card text-muted-foreground space-y-2">
+              <div className="p-8 text-center border border-dashed border-border rounded-lg bg-card text-muted-foreground space-y-3">
                 <ShieldCheck className="size-8 mx-auto text-muted-foreground" />
                 <p className="text-sm font-medium">Nenhuma política de viagem cadastrada</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground max-w-md mx-auto">
                   A política define limites de tarifa, cabines permitidas e exigências de antecedência.
                 </p>
+                <div className="pt-2 flex justify-center">
+                  <Button
+                    className="h-11 min-h-11 px-5 text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+                    onClick={handleOpenEditPolicy}
+                  >
+                    <Settings className="size-4 mr-2" />
+                    Criar Política Vigente
+                  </Button>
+                </div>
               </div>
             ) : (
               <div className="p-6 rounded-lg border border-border bg-card space-y-4">
@@ -845,6 +1241,309 @@ export default function CompanyCorporateTravelPage() {
                 : reviewDialog.action === "approve"
                 ? "Confirmar Aprovação"
                 : "Confirmar Recusa"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── MODAL: NOVO PROJETO CORPORATIVO ── */}
+      <Dialog open={createProjectOpen} onOpenChange={setCreateProjectOpen}>
+        <DialogContent className="sm:max-w-md bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-foreground">Novo Projeto Corporativo</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2 text-xs">
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold text-foreground">Nome do Projeto *</Label>
+              <Input
+                placeholder="Ex: Expansão Comercial SP 2026"
+                value={projectForm.name}
+                onChange={(e) => setProjectForm({ ...projectForm, name: e.target.value })}
+                className="h-11 min-h-11 text-xs"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold text-foreground">Descrição / Objetivo</Label>
+              <Textarea
+                placeholder="Objetivo da missão, visitas a clientes ou convenção..."
+                value={projectForm.description}
+                onChange={(e) => setProjectForm({ ...projectForm, description: e.target.value })}
+                className="text-xs min-h-20"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-foreground">Data Início</Label>
+                <Input
+                  type="date"
+                  value={projectForm.startDate}
+                  onChange={(e) => setProjectForm({ ...projectForm, startDate: e.target.value })}
+                  className="h-11 min-h-11 text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-foreground">Data Término</Label>
+                <Input
+                  type="date"
+                  value={projectForm.endDate}
+                  onChange={(e) => setProjectForm({ ...projectForm, endDate: e.target.value })}
+                  className="h-11 min-h-11 text-xs"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-foreground">Orçamento (R$)</Label>
+                <Input
+                  type="number"
+                  placeholder="0,00"
+                  value={projectForm.budgetCents || ""}
+                  onChange={(e) => setProjectForm({ ...projectForm, budgetCents: Number(e.target.value) })}
+                  className="h-11 min-h-11 text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-foreground">Centro de Custo</Label>
+                <Input
+                  placeholder="Ex: CC-410"
+                  value={projectForm.costCenter}
+                  onChange={(e) => setProjectForm({ ...projectForm, costCenter: e.target.value })}
+                  className="h-11 min-h-11 text-xs"
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0 pt-2 border-t border-border/50">
+            <Button
+              variant="outline"
+              onClick={() => setCreateProjectOpen(false)}
+              disabled={isSubmittingProject}
+              className="h-11 min-h-11 px-4 text-xs font-medium focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleCreateProject}
+              disabled={isSubmittingProject}
+              className="h-11 min-h-11 px-5 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+            >
+              {isSubmittingProject ? "Salvando..." : "Criar Projeto"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── MODAL: CADASTRAR VIAJANTE ── */}
+      <Dialog open={createTravelerOpen} onOpenChange={setCreateTravelerOpen}>
+        <DialogContent className="sm:max-w-md bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-foreground">Cadastrar Colaborador Viajante</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2 text-xs">
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold text-foreground">Nome Completo *</Label>
+              <Input
+                placeholder="Ex: Mariana Albuquerque"
+                value={travelerForm.fullName}
+                onChange={(e) => setTravelerForm({ ...travelerForm, fullName: e.target.value })}
+                className="h-11 min-h-11 text-xs"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-foreground">Tipo de Documento</Label>
+                <Select
+                  value={travelerForm.documentType}
+                  onValueChange={(val) => setTravelerForm({ ...travelerForm, documentType: val })}
+                >
+                  <SelectTrigger className="h-11 min-h-11 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cpf">CPF</SelectItem>
+                    <SelectItem value="passport">Passaporte</SelectItem>
+                    <SelectItem value="rg">RG</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-foreground">Número *</Label>
+                <Input
+                  placeholder="000.000.000-00"
+                  value={travelerForm.documentNumber}
+                  onChange={(e) => setTravelerForm({ ...travelerForm, documentNumber: e.target.value })}
+                  className="h-11 min-h-11 text-xs"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-foreground">E-mail Corporativo</Label>
+                <Input
+                  type="email"
+                  placeholder="nome@empresa.com"
+                  value={travelerForm.email}
+                  onChange={(e) => setTravelerForm({ ...travelerForm, email: e.target.value })}
+                  className="h-11 min-h-11 text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-foreground">Telefone</Label>
+                <Input
+                  placeholder="(00) 00000-0000"
+                  value={travelerForm.phone}
+                  onChange={(e) => setTravelerForm({ ...travelerForm, phone: e.target.value })}
+                  className="h-11 min-h-11 text-xs"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-foreground">Assento Preferencial</Label>
+                <Select
+                  value={travelerForm.seatPreference}
+                  onValueChange={(val: any) => setTravelerForm({ ...travelerForm, seatPreference: val })}
+                >
+                  <SelectTrigger className="h-11 min-h-11 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="window">Janela</SelectItem>
+                    <SelectItem value="aisle">Corredor</SelectItem>
+                    <SelectItem value="any">Qualquer</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-foreground">Refeição</Label>
+                <Input
+                  placeholder="Padrão, vegetariana..."
+                  value={travelerForm.mealPreference}
+                  onChange={(e) => setTravelerForm({ ...travelerForm, mealPreference: e.target.value })}
+                  className="h-11 min-h-11 text-xs"
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0 pt-2 border-t border-border/50">
+            <Button
+              variant="outline"
+              onClick={() => setCreateTravelerOpen(false)}
+              disabled={isSubmittingTraveler}
+              className="h-11 min-h-11 px-4 text-xs font-medium focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleCreateTraveler}
+              disabled={isSubmittingTraveler}
+              className="h-11 min-h-11 px-5 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+            >
+              {isSubmittingTraveler ? "Cadastrando..." : "Salvar Viajante"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── MODAL: CONFIGURAR POLÍTICA DE VIAGEM ── */}
+      <Dialog open={editPolicyOpen} onOpenChange={setEditPolicyOpen}>
+        <DialogContent className="sm:max-w-md bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-foreground">Configurar Política de Viagens</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2 text-xs">
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold text-foreground">Título da Política *</Label>
+              <Input
+                placeholder="Ex: Política Geral de Viagens 2026"
+                value={policyForm.title}
+                onChange={(e) => setPolicyForm({ ...policyForm, title: e.target.value })}
+                className="h-11 min-h-11 text-xs"
+              />
+            </div>
+            <div className="p-3 rounded-lg bg-muted/40 border border-border/60 space-y-2">
+              <span className="font-bold text-foreground block">Parâmetros Aéreos</span>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <Label className="text-2xs text-muted-foreground">Teto Passagem (R$)</Label>
+                  <Input
+                    type="number"
+                    placeholder="Sem teto"
+                    value={policyForm.airMaxAmount || ""}
+                    onChange={(e) => setPolicyForm({ ...policyForm, airMaxAmount: Number(e.target.value) })}
+                    className="h-11 min-h-11 text-xs"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-2xs text-muted-foreground">Antecedência Mínima (dias)</Label>
+                  <Input
+                    type="number"
+                    value={policyForm.airAdvanceDays || ""}
+                    onChange={(e) => setPolicyForm({ ...policyForm, airAdvanceDays: Number(e.target.value) })}
+                    className="h-11 min-h-11 text-xs"
+                  />
+                </div>
+              </div>
+              <div className="space-y-1 pt-1">
+                <Label className="text-2xs text-muted-foreground">Cabine Máxima Permitida</Label>
+                <Select
+                  value={policyForm.airMaxCabin}
+                  onValueChange={(val: any) => setPolicyForm({ ...policyForm, airMaxCabin: val })}
+                >
+                  <SelectTrigger className="h-11 min-h-11 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="economy">Econômica</SelectItem>
+                    <SelectItem value="premium_economy">Econômica Premium</SelectItem>
+                    <SelectItem value="business">Executiva</SelectItem>
+                    <SelectItem value="first">Primeira Classe</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="p-3 rounded-lg bg-muted/40 border border-border/60 space-y-2">
+              <span className="font-bold text-foreground block">Parâmetros de Hotelaria</span>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <Label className="text-2xs text-muted-foreground">Diária Máxima (R$)</Label>
+                  <Input
+                    type="number"
+                    placeholder="Sem teto"
+                    value={policyForm.hotelMaxNightly || ""}
+                    onChange={(e) => setPolicyForm({ ...policyForm, hotelMaxNightly: Number(e.target.value) })}
+                    className="h-11 min-h-11 text-xs"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-2xs text-muted-foreground">Classificação Estrelas</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={5}
+                    value={policyForm.hotelMaxStars || 4}
+                    onChange={(e) => setPolicyForm({ ...policyForm, hotelMaxStars: Number(e.target.value) })}
+                    className="h-11 min-h-11 text-xs"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0 pt-2 border-t border-border/50">
+            <Button
+              variant="outline"
+              onClick={() => setEditPolicyOpen(false)}
+              disabled={isSubmittingPolicy}
+              className="h-11 min-h-11 px-4 text-xs font-medium focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleSavePolicy}
+              disabled={isSubmittingPolicy}
+              className="h-11 min-h-11 px-5 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+            >
+              {isSubmittingPolicy ? "Salvando..." : "Salvar Política"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -166,7 +166,7 @@ function CustomerAgendaPage() {
  <button
  type="button"
  onClick={() => setActiveTab("upcoming")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer",
  activeTab === "upcoming"
  ? "bg-card text-foreground shadow-2xs"
@@ -178,7 +178,7 @@ function CustomerAgendaPage() {
  <button
  type="button"
  onClick={() => setActiveTab("past")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer",
  activeTab === "past"
  ? "bg-card text-foreground shadow-2xs"

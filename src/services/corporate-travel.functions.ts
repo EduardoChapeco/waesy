@@ -215,7 +215,7 @@ export const getCompanyCorporateAccount = createServerFn({ method: "GET" })
     const { data: row, error } = await supabase
       .from("corporate_travel_accounts")
       .select("*, stores!corporate_travel_accounts_agency_id_fkey(id, name, logo_url)")
-      .eq("company_id", data.companyId)
+      .eq("corporate_account_id", data.companyId)
       .eq("status", "active")
       .order("created_at", { ascending: false })
       .limit(1)
@@ -304,7 +304,7 @@ export const listCompanyTravelers = createServerFn({ method: "GET" })
     const { data: rows, error } = await supabase
       .from("traveler_profiles")
       .select("*")
-      .eq("company_id", data.companyId)
+      .eq("corporate_account_id", data.companyId)
       .order("full_name", { ascending: true });
 
     if (error) return [];
@@ -457,7 +457,7 @@ export const listCompanyTravelProjects = createServerFn({ method: "GET" })
     const { data: rows, error } = await supabase
       .from("travel_projects")
       .select("*, tourism_trips(count)")
-      .eq("company_id", data.companyId)
+      .eq("corporate_account_id", data.companyId)
       .order("start_date", { ascending: false });
 
     if (error) return [];
@@ -627,7 +627,7 @@ export const getCompanyTravelPolicy = createServerFn({ method: "GET" })
     const { data: row, error } = await supabase
       .from("travel_policy_versions")
       .select("*")
-      .eq("company_id", data.companyId)
+      .eq("corporate_account_id", data.companyId)
       .eq("status", "active")
       .order("version_number", { ascending: false })
       .limit(1)
@@ -675,13 +675,13 @@ export const saveCompanyTravelPolicy = createServerFn({ method: "POST" })
     const identity = await requireStaff();
 
     // Arquivar versões anteriores da política
-    await supabase.from("travel_policy_versions").update({ status: "archived" }).eq("company_id", data.companyId);
+    await supabase.from("travel_policy_versions").update({ status: "archived" }).eq("corporate_account_id", data.companyId);
 
     // Calcular próximo version_number
     const { data: maxRow } = await supabase
       .from("travel_policy_versions")
       .select("version_number")
-      .eq("company_id", data.companyId)
+      .eq("corporate_account_id", data.companyId)
       .order("version_number", { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -710,19 +710,65 @@ export const createApprovalRequest = createServerFn({ method: "POST" })
       agencyId: z.string().uuid(),
       tripId: z.string().uuid().optional().nullable(),
       projectId: z.string().uuid().optional().nullable(),
-      totalAmountCents: z.number().positive(),
+      offerSnapshotId: z.string().uuid().optional().nullable(),
+      totalAmountCents: z.number().positive().optional().nullable(),
       currency: z.string().default("BRL"),
       lowestLogicalFareCents: z.number().optional().nullable(),
       selectedFareCents: z.number().optional().nullable(),
       policyViolationReasons: z.array(z.string()).default([]),
       justification: z.string().optional().nullable(),
-      fareExpiresAt: z.string(),
+      fareExpiresAt: z.string().optional().nullable(),
       approverProfileId: z.string().uuid().optional().nullable(),
     })
   )
   .handler(async ({ data }): Promise<{ success: boolean; id: string }> => {
     const supabase = getServerClient();
     const identity = await requireStaff();
+
+    let totalAmountCents = 0;
+    let selectedFareCents: number | null = data.selectedFareCents || null;
+    let lowestLogicalFareCents: number | null = data.lowestLogicalFareCents || null;
+    let fareExpiresAt = data.fareExpiresAt || new Date(Date.now() + 24 * 3600 * 1000).toISOString();
+    let currency = data.currency || "BRL";
+    let policyViolationReasons = data.policyViolationReasons || [];
+
+    // Derivação estrita de valores a partir do snapshot oficial (P0-4)
+    if (data.offerSnapshotId) {
+      const { data: snapshot, error: snapErr } = await supabase
+        .from("travel_offer_snapshots")
+        .select("*")
+        .eq("id", data.offerSnapshotId)
+        .single();
+
+      if (snapErr || !snapshot) {
+        throw new Error("Oferta não encontrada ou snapshot de viagem inválido/expirado.");
+      }
+
+      totalAmountCents = Number(snapshot.total_amount_cents);
+      selectedFareCents = Number(snapshot.total_amount_cents);
+      fareExpiresAt = snapshot.expires_at;
+      currency = snapshot.currency || "BRL";
+      policyViolationReasons = snapshot.policy_violation_reasons || [];
+    } else if (data.tripId) {
+      const { data: trip } = await supabase
+        .from("travel_projects")
+        .select("estimated_budget_cents")
+        .eq("id", data.tripId)
+        .maybeSingle();
+
+      if (trip?.estimated_budget_cents && Number(trip.estimated_budget_cents) > 0) {
+        totalAmountCents = Number(trip.estimated_budget_cents);
+        selectedFareCents = Number(trip.estimated_budget_cents);
+      } else if (data.totalAmountCents && data.totalAmountCents > 0) {
+        totalAmountCents = data.totalAmountCents;
+      }
+    } else if (data.totalAmountCents && data.totalAmountCents > 0) {
+      totalAmountCents = data.totalAmountCents;
+    }
+
+    if (totalAmountCents <= 0) {
+      throw new Error("Valor total da aprovação corporativa deve ser derivado de snapshot ou viagem cadastrada.");
+    }
 
     const { data: row, error } = await supabase
       .from("travel_approval_requests")
@@ -733,14 +779,14 @@ export const createApprovalRequest = createServerFn({ method: "POST" })
         project_id: data.projectId || null,
         requester_id: identity.id,
         booker_id: identity.id,
-        status: data.policyViolationReasons.length === 0 ? "auto_approved" : "pending",
-        total_amount_cents: data.totalAmountCents,
-        currency: data.currency,
-        lowest_logical_fare_cents: data.lowestLogicalFareCents || null,
-        selected_fare_cents: data.selectedFareCents || null,
-        policy_violation_reasons: data.policyViolationReasons,
+        status: policyViolationReasons.length === 0 ? "auto_approved" : "pending",
+        total_amount_cents: totalAmountCents,
+        currency,
+        lowest_logical_fare_cents: lowestLogicalFareCents,
+        selected_fare_cents: selectedFareCents,
+        policy_violation_reasons: policyViolationReasons,
         justification: data.justification || null,
-        fare_expires_at: data.fareExpiresAt,
+        fare_expires_at: fareExpiresAt,
         approver_profile_id: data.approverProfileId || null,
       })
       .select("id")
@@ -834,6 +880,21 @@ export const recordAirTicketCredit = createServerFn({ method: "POST" })
     const supabase = getServerClient();
     await requireStaff();
 
+    // P0-4: Validação server-side de integridade do crédito
+    let verifiedOriginalAmount = data.originalAmountCents;
+    const { data: existingTicket } = await supabase
+      .from("travel_projects")
+      .select("id, estimated_budget_cents")
+      .eq("agency_id", data.agencyId)
+      .limit(1)
+      .maybeSingle();
+
+    if (existingTicket?.estimated_budget_cents && Number(existingTicket.estimated_budget_cents) > 0) {
+      if (verifiedOriginalAmount > Number(existingTicket.estimated_budget_cents) * 2) {
+        verifiedOriginalAmount = Number(existingTicket.estimated_budget_cents);
+      }
+    }
+
     const { data: row, error } = await supabase
       .from("air_ticket_credits")
       .insert({
@@ -843,8 +904,8 @@ export const recordAirTicketCredit = createServerFn({ method: "POST" })
         airline: data.airline.toUpperCase().trim(),
         original_pnr: data.originalPnr.toUpperCase().trim(),
         original_ticket_number: data.originalTicketNumber.trim(),
-        original_amount_cents: data.originalAmountCents,
-        remaining_amount_cents: data.originalAmountCents,
+        original_amount_cents: verifiedOriginalAmount,
+        remaining_amount_cents: verifiedOriginalAmount,
         valid_from: data.validFrom,
         expires_at: data.expiresAt,
         transferable: data.transferable,
@@ -870,7 +931,7 @@ export const getCorporateCreditProfile = createServerFn({ method: "GET" })
     const { data: row, error } = await supabase
       .from("corporate_credit_profiles")
       .select("*")
-      .eq("company_id", data.companyId)
+      .eq("corporate_account_id", data.companyId)
       .eq("agency_id", data.agencyId)
       .maybeSingle();
 
@@ -889,7 +950,7 @@ export const listCorporateInvoices = createServerFn({ method: "GET" })
     const supabase = getServerClient();
     let q = supabase.from("corporate_invoices").select("*").order("created_at", { ascending: false });
 
-    if (data.companyId) q = q.eq("company_id", data.companyId);
+    if (data.companyId) q = q.eq("corporate_account_id", data.companyId);
     if (data.agencyId) q = q.eq("agency_id", data.agencyId);
 
     const { data: rows, error } = await q.limit(50);
@@ -927,7 +988,7 @@ export const listCompanyApprovalRequests = createServerFn({ method: "GET" })
     let q = supabase
       .from("travel_approval_requests")
       .select("*, profiles!travel_approval_requests_requester_id_fkey(full_name, email), travel_projects(title)")
-      .eq("company_id", data.companyId)
+      .eq("corporate_account_id", data.companyId)
       .order("created_at", { ascending: false });
 
     if (data.status !== "all") {
@@ -953,7 +1014,7 @@ export const listCompanyCorporateTrips = createServerFn({ method: "GET" })
     const { data: rows, error } = await supabase
       .from("tourism_trips")
       .select("*, travel_projects(title), trip_passengers(count)")
-      .eq("company_id", data.companyId)
+      .eq("corporate_account_id", data.companyId)
       .eq("is_corporate", true)
       .order("start_date", { ascending: false });
 
@@ -975,7 +1036,7 @@ export const listCompanyAirCredits = createServerFn({ method: "GET" })
     const { data: rows, error } = await supabase
       .from("air_ticket_credits")
       .select("*, traveler_profiles(full_name)")
-      .eq("company_id", data.companyId)
+      .eq("corporate_account_id", data.companyId)
       .order("expires_at", { ascending: true });
 
     if (error) {
@@ -988,3 +1049,417 @@ export const listCompanyAirCredits = createServerFn({ method: "GET" })
     }));
   });
 
+
+
+// ─── 11. Contratos Corporativos (corporate_contracts - Cluster 1) ─────────────
+
+export const listCorporateContracts = createServerFn({ method: "GET" })
+  .validator(z.object({ companyId: z.string().uuid().optional(), agencyId: z.string().uuid().optional() }))
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    let q = supabase.from("corporate_contracts").select("*").order("created_at", { ascending: false });
+    if (data.companyId) q = q.eq("corporate_account_id", data.companyId);
+    if (data.agencyId) q = q.eq("agency_id", data.agencyId);
+    const { data: rows, error } = await q.limit(50);
+    if (error) {
+      console.warn("[listCorporateContracts] Falha ao listar contratos:", error.message);
+      return [];
+    }
+    return rows || [];
+  });
+
+export const saveCorporateContract = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string().uuid().optional(),
+      companyId: z.string().uuid(),
+      agencyId: z.string().uuid(),
+      contractNumber: z.string().min(1),
+      title: z.string().min(1),
+      status: z.enum(["draft", "active", "suspended", "expired", "terminated"]).default("active"),
+      billingTermsDays: z.number().int().min(0).default(30),
+      agencyFeePercent: z.number().min(0).default(0),
+      slaNotes: z.string().optional().nullable(),
+      startsAt: z.string().optional(),
+      endsAt: z.string().optional().nullable(),
+      documentUrl: z.string().optional().nullable(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const payload = {
+      company_id: data.companyId,
+      agency_id: data.agencyId,
+      contract_number: data.contractNumber,
+      title: data.title,
+      status: data.status,
+      billing_terms_days: data.billingTermsDays,
+      agency_fee_percent: data.agencyFeePercent,
+      sla_notes: data.slaNotes,
+      starts_at: data.startsAt || new Date().toISOString(),
+      ends_at: data.endsAt,
+      document_url: data.documentUrl,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (data.id) {
+      const { data: updated, error } = await supabase
+        .from("corporate_contracts")
+        .update(payload)
+        .eq("id", data.id)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao atualizar contrato: " + error.message);
+      return updated;
+    } else {
+      const { data: inserted, error } = await supabase
+        .from("corporate_contracts")
+        .insert(payload)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao criar contrato: " + error.message);
+      return inserted;
+    }
+  });
+
+// ─── 12. Linhas de Crédito Rotativo B2B (corporate_credit_lines - Cluster 1) ──
+
+export const getCorporateCreditLine = createServerFn({ method: "GET" })
+  .validator(z.object({ companyId: z.string().uuid(), agencyId: z.string().uuid().optional() }))
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    let q = supabase.from("corporate_credit_lines").select("*").eq("corporate_account_id", data.companyId);
+    if (data.agencyId) q = q.eq("agency_id", data.agencyId);
+    const { data: row, error } = await q.maybeSingle();
+    if (error) {
+      console.warn("[getCorporateCreditLine] Erro:", error.message);
+      return null;
+    }
+    return row;
+  });
+
+export const saveCorporateCreditLine = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string().uuid().optional(),
+      companyId: z.string().uuid(),
+      agencyId: z.string().uuid(),
+      creditLimitCents: z.number().int().min(0),
+      availableLimitCents: z.number().int().min(0),
+      reservedLimitCents: z.number().int().min(0).default(0),
+      paymentTermsDays: z.enum(["15", "30", "45", "60", "90"]).transform(Number),
+      billingCycle: z.enum(["weekly", "biweekly", "monthly"]).default("monthly"),
+      status: z.enum(["active", "suspended", "under_review"]).default("active"),
+      notes: z.string().optional().nullable(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const payload = {
+      company_id: data.companyId,
+      agency_id: data.agencyId,
+      credit_limit_cents: data.creditLimitCents,
+      available_limit_cents: data.availableLimitCents,
+      reserved_limit_cents: data.reservedLimitCents,
+      payment_terms_days: data.paymentTermsDays,
+      billing_cycle: data.billingCycle,
+      status: data.status,
+      notes: data.notes,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (data.id) {
+      const { data: updated, error } = await supabase
+        .from("corporate_credit_lines")
+        .update(payload)
+        .eq("id", data.id)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao atualizar linha de crédito: " + error.message);
+      return updated;
+    } else {
+      const { data: inserted, error } = await supabase
+        .from("corporate_credit_lines")
+        .insert(payload)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao criar linha de crédito: " + error.message);
+      return inserted;
+    }
+  });
+
+// ─── 13. Orçamentos por Centro de Custo (corporate_travel_budgets - Cluster 1) 
+
+export const listCorporateTravelBudgets = createServerFn({ method: "GET" })
+  .validator(z.object({ companyId: z.string().uuid(), fiscalYear: z.number().int().optional() }))
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    let q = supabase.from("corporate_travel_budgets").select("*").eq("corporate_account_id", data.companyId);
+    if (data.fiscalYear) q = q.eq("fiscal_year", data.fiscalYear);
+    const { data: rows, error } = await q.order("fiscal_year", { ascending: false });
+    if (error) {
+      console.warn("[listCorporateTravelBudgets] Erro:", error.message);
+      return [];
+    }
+    return rows || [];
+  });
+
+export const saveCorporateTravelBudget = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string().uuid().optional(),
+      companyId: z.string().uuid(),
+      fiscalYear: z.number().int().min(2020),
+      month: z.number().int().min(1).max(12).optional().nullable(),
+      department: z.string().optional().nullable(),
+      costCenter: z.string().optional().nullable(),
+      budgetCents: z.number().int().min(0),
+      spentCents: z.number().int().min(0).default(0),
+      committedCents: z.number().int().min(0).default(0),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const payload = {
+      company_id: data.companyId,
+      fiscal_year: data.fiscalYear,
+      month: data.month,
+      department: data.department,
+      cost_center: data.costCenter,
+      budget_cents: data.budgetCents,
+      spent_cents: data.spentCents,
+      committed_cents: data.committedCents,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (data.id) {
+      const { data: updated, error } = await supabase
+        .from("corporate_travel_budgets")
+        .update(payload)
+        .eq("id", data.id)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao atualizar orçamento: " + error.message);
+      return updated;
+    } else {
+      const { data: inserted, error } = await supabase
+        .from("corporate_travel_budgets")
+        .insert(payload)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao criar orçamento: " + error.message);
+      return inserted;
+    }
+  });
+
+// ─── 14. Adiantamentos de Viagem (corporate_travel_advances - Cluster 1) ───────
+
+export const listCorporateTravelAdvances = createServerFn({ method: "GET" })
+  .validator(z.object({ companyId: z.string().uuid(), travelerId: z.string().uuid().optional() }))
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    let q = supabase.from("corporate_travel_advances").select("*").eq("corporate_account_id", data.companyId);
+    if (data.travelerId) q = q.eq("traveler_id", data.travelerId);
+    const { data: rows, error } = await q.order("created_at", { ascending: false });
+    if (error) {
+      console.warn("[listCorporateTravelAdvances] Erro:", error.message);
+      return [];
+    }
+    return rows || [];
+  });
+
+export const requestCorporateTravelAdvance = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      companyId: z.string().uuid(),
+      travelerId: z.string().uuid(),
+      tripId: z.string().uuid().optional().nullable(),
+      requestedAmountCents: z.number().int().positive(),
+      purpose: z.string().min(1),
+      pixKey: z.string().optional().nullable(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const { data: inserted, error } = await supabase
+      .from("corporate_travel_advances")
+      .insert({
+        company_id: data.companyId,
+        traveler_id: data.travelerId,
+        trip_id: data.tripId,
+        requested_amount_cents: data.requestedAmountCents,
+        purpose: data.purpose,
+        pix_key: data.pixKey,
+        status: "pending",
+      })
+      .select()
+      .single();
+
+    if (error) throw new Error("Erro ao solicitar adiantamento: " + error.message);
+    return inserted;
+  });
+
+export const updateCorporateTravelAdvanceStatus = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string().uuid(),
+      status: z.enum(["pending", "approved", "paid", "reconciled", "rejected"]),
+      approvedAmountCents: z.number().int().optional(),
+      receiptUrl: z.string().optional().nullable(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    const payload: any = {
+      status: data.status,
+      approved_by: identity.id,
+      updated_at: new Date().toISOString(),
+    };
+    if (data.approvedAmountCents !== undefined) payload.approved_amount_cents = data.approvedAmountCents;
+    if (data.receiptUrl !== undefined) payload.receipt_url = data.receiptUrl;
+    if (data.status === "paid") payload.paid_at = new Date().toISOString();
+
+    const { data: updated, error } = await supabase
+      .from("corporate_travel_advances")
+      .update(payload)
+      .eq("id", data.id)
+      .select()
+      .single();
+
+    if (error) throw new Error("Erro ao atualizar status do adiantamento: " + error.message);
+    return updated;
+  });
+
+// ─── 15. Prestação de Contas e Despesas (corporate_travel_expenses - Cluster 1) 
+
+export const listCorporateTravelExpenses = createServerFn({ method: "GET" })
+  .validator(z.object({ companyId: z.string().uuid(), travelerId: z.string().uuid().optional() }))
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    let q = supabase.from("corporate_travel_expenses").select("*").eq("corporate_account_id", data.companyId);
+    if (data.travelerId) q = q.eq("traveler_id", data.travelerId);
+    const { data: rows, error } = await q.order("expense_date", { ascending: false });
+    if (error) {
+      console.warn("[listCorporateTravelExpenses] Erro:", error.message);
+      return [];
+    }
+    return rows || [];
+  });
+
+export const saveCorporateTravelExpense = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string().uuid().optional(),
+      companyId: z.string().uuid(),
+      travelerId: z.string().uuid(),
+      tripId: z.string().uuid().optional().nullable(),
+      advanceId: z.string().uuid().optional().nullable(),
+      category: z.enum(["meal", "transport", "hotel_extras", "fuel", "toll", "parking", "other"]),
+      amountCents: z.number().int().positive(),
+      expenseDate: z.string().optional(),
+      merchantName: z.string().optional().nullable(),
+      notes: z.string().optional().nullable(),
+      receiptUrl: z.string().optional().nullable(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const payload = {
+      company_id: data.companyId,
+      traveler_id: data.travelerId,
+      trip_id: data.tripId,
+      advance_id: data.advanceId,
+      category: data.category,
+      amount_cents: data.amountCents,
+      expense_date: data.expenseDate || new Date().toISOString().split("T")[0],
+      merchant_name: data.merchantName,
+      notes: data.notes,
+      receipt_url: data.receiptUrl,
+      status: "submitted",
+      updated_at: new Date().toISOString(),
+    };
+
+    if (data.id) {
+      const { data: updated, error } = await supabase
+        .from("corporate_travel_expenses")
+        .update(payload)
+        .eq("id", data.id)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao atualizar despesa: " + error.message);
+      return updated;
+    } else {
+      const { data: inserted, error } = await supabase
+        .from("corporate_travel_expenses")
+        .insert(payload)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao criar despesa: " + error.message);
+      return inserted;
+    }
+  });
+
+// ─── 16. Itens de Fatura Corporativa (corporate_invoice_items - Cluster 1) ────
+
+export const listCorporateInvoiceItems = createServerFn({ method: "GET" })
+  .validator(z.object({ invoiceId: z.string().uuid() }))
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const { data: rows, error } = await supabase
+      .from("corporate_invoice_items")
+      .select("*")
+      .eq("invoice_id", data.invoiceId)
+      .order("created_at", { ascending: true });
+    if (error) {
+      console.warn("[listCorporateInvoiceItems] Erro:", error.message);
+      return [];
+    }
+    return rows || [];
+  });
+
+
+// ─── 17. Magic Links para Passageiros Corporativos (GAP-4.21) ─────────────────
+
+export const generateCorporateTravelerMagicLink = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      travelerId: z.string().uuid(),
+      companyId: z.string().uuid(),
+      expiresInDays: z.number().int().min(1).max(30).default(7),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    if (!identity.id) throw new Error("Acesso não autorizado.");
+
+    const { data: traveler, error } = await supabase
+      .from("traveler_profiles")
+      .select("id, corporate_account_id, full_name, email")
+      .eq("id", data.travelerId)
+      .eq("corporate_account_id", data.companyId)
+      .maybeSingle();
+
+    if (error || !traveler) throw new Error("Viajante não encontrado nesta organização.");
+
+    const token = `corppax_${crypto.randomUUID().replace(/-/g, "")}`;
+    const expiresAt = new Date(Date.now() + data.expiresInDays * 24 * 60 * 60 * 1000).toISOString();
+
+    await supabase
+      .from("traveler_profiles")
+      .update({
+        magic_token: token,
+        magic_token_expires_at: expiresAt,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", traveler.id);
+
+    return {
+      success: true,
+      token,
+      magicLinkUrl: `/viagem/viajante/${token}`,
+      expiresAt,
+      travelerName: traveler.full_name,
+    };
+  });

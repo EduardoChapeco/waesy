@@ -224,7 +224,7 @@ function AfiliadosFinanceiroPage() {
  </Button>
  </DropdownMenuTrigger>
  <DropdownMenuContent align="end" className="w-48">
- <DropdownMenuItem
+ <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
  disabled={p.pendingCommissionCents === 0 || payoutMutation.isPending}
  onClick={() => payoutMutation.mutate({ data: { sellerId: p.sellerId } })}
  >

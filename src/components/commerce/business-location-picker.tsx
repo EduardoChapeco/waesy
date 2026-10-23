@@ -207,7 +207,9 @@ export function BusinessLocationPicker({
  const [isGeocoding, setIsGeocoding] = useState(false);
  const [isGettingGps, setIsGettingGps] = useState(false);
  const [newCoverageCity, setNewCoverageCity] = useState("");
- const { data: mapConfig } = useQuery({
+ const { data: mapConfig, isLoading: isLoadingConfig } = useQuery({
+    // skeleton state support
+
    queryKey: ["public-map-config"],
    queryFn: () => getPublicMapConfig(),
    staleTime: 5 * 60 * 1000,
@@ -259,7 +261,7 @@ export function BusinessLocationPicker({
        markerEl.innerHTML = `
          <div class="relative flex items-center justify-center">
            <div class="size-10 rounded-full bg-primary/20 animate-ping absolute inset-0"></div>
-           <div class="size-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg border-2 border-white">
+           <div class="size-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xs border-2 border-white">
              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
            </div>
          </div>
@@ -477,8 +479,8 @@ export function BusinessLocationPicker({
  key={model.id}
  type="button"
  onClick={() => handleModelSelect(model.id)}
- className={cn(
- "flex items-start gap-3 p-4 rounded-lg border text-left transition-all cursor-pointer select-none",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "flex items-start gap-3 p-4 rounded-lg border text-left transition-colors cursor-pointer select-none",
  isSelected
  ? "bg-primary/5 border-primary ring-1 ring-primary shadow-xs"
  : "bg-card border-border/80 hover:border-foreground/30 hover:bg-muted/40"
@@ -498,7 +500,7 @@ export function BusinessLocationPicker({
  <span className="text-xs font-bold text-foreground block leading-tight">
  {model.title}
  </span>
- <p className="text-[11px] text-muted-foreground leading-relaxed">
+ <p className="text-xs text-muted-foreground leading-relaxed">
  {model.desc}
  </p>
  </div>
@@ -523,7 +525,7 @@ export function BusinessLocationPicker({
  : "Endereço Protegido (Privado)"}
  </span>
  </div>
- <p className="text-[11px] text-muted-foreground leading-relaxed">
+ <p className="text-xs text-muted-foreground leading-relaxed">
  {value.isAddressPublic
  ? "O endereço completo com rua e número será exibido na sua vitrine para clientes irem até você."
  : "Recomendado para Home Office / Dark Kitchens. Apenas seu Bairro, Cidade e Região Atendida serão exibidos."}
@@ -550,12 +552,12 @@ export function BusinessLocationPicker({
  size="sm"
  onClick={handleGetGps}
  disabled={isGettingGps}
- className="h-8 rounded-lg text-xs gap-2 font-medium border-border/70"
+ className="h-11 min-h-11 rounded-lg text-xs gap-2 font-medium border-border/70"
  >
  {isGettingGps ? (
- <Loader2 className="size-3.5 animate-spin" />
+ <Loader2 className="size-4.5 animate-spin motion-reduce:animate-none" />
  ) : (
- <Navigation className="size-3.5 text-primary" />
+ <Navigation className="size-4.5 text-primary" />
  )}
  <span>Usar GPS Atual</span>
  </Button>
@@ -567,8 +569,8 @@ export function BusinessLocationPicker({
  <Label className="text-xs font-medium text-muted-foreground flex items-center justify-between">
  <span>CEP *</span>
  {isSearchingCep && (
- <span className="text-[10px] text-primary flex items-center gap-1 font-mono">
- <Loader2 className="size-2.5 animate-spin" /> Buscando...
+ <span className="text-xs text-primary flex items-center gap-1 font-mono">
+ <Loader2 className="size-2.5 animate-spin motion-reduce:animate-none" /> Buscando...
  </span>
  )}
  </Label>
@@ -583,7 +585,7 @@ export function BusinessLocationPicker({
  onBlur={handleCepBlur}
  placeholder="89800-000"
  maxLength={9}
- className="h-10 rounded-lg bg-card text-xs font-mono"
+ className="h-11 min-h-11 rounded-lg bg-card text-xs font-mono"
  />
  </div>
  </div>
@@ -594,7 +596,7 @@ export function BusinessLocationPicker({
  value={value.city}
  onChange={(e) => onChange({ ...value, city: e.target.value })}
  placeholder="Ex: Chapecó"
- className="h-10 rounded-lg bg-card text-xs font-medium"
+ className="h-11 min-h-11 rounded-lg bg-card text-xs font-medium"
  />
  </div>
 
@@ -605,7 +607,7 @@ export function BusinessLocationPicker({
  onChange={(e) => onChange({ ...value, state: e.target.value.toUpperCase() })}
  placeholder="SC"
  maxLength={2}
- className="h-10 rounded-lg bg-card text-xs uppercase font-bold"
+ className="h-11 min-h-11 rounded-lg bg-card text-xs uppercase font-bold"
  />
  </div>
  </div>
@@ -620,7 +622,7 @@ export function BusinessLocationPicker({
  value={value.street}
  onChange={(e) => onChange({ ...value, street: e.target.value })}
  placeholder="Ex: Av. Getúlio Vargas"
- className="h-10 rounded-lg bg-card text-xs"
+ className="h-11 min-h-11 rounded-lg bg-card text-xs"
  />
  </div>
 
@@ -630,7 +632,7 @@ export function BusinessLocationPicker({
  value={value.number}
  onChange={(e) => onChange({ ...value, number: e.target.value })}
  placeholder="1200"
- className="h-10 rounded-lg bg-card text-xs font-mono"
+ className="h-11 min-h-11 rounded-lg bg-card text-xs font-mono"
  />
  </div>
 
@@ -640,7 +642,7 @@ export function BusinessLocationPicker({
  value={value.complement}
  onChange={(e) => onChange({ ...value, complement: e.target.value })}
  placeholder="Sala 302, Bloco B..."
- className="h-10 rounded-lg bg-card text-xs"
+ className="h-11 min-h-11 rounded-lg bg-card text-xs"
  />
  </div>
  </div>
@@ -653,7 +655,7 @@ export function BusinessLocationPicker({
  value={value.neighborhood}
  onChange={(e) => onChange({ ...value, neighborhood: e.target.value })}
  placeholder="Ex: Centro, Efapi, Passo dos Fortes..."
- className="h-10 rounded-lg bg-card text-xs"
+ className="h-11 min-h-11 rounded-lg bg-card text-xs"
  />
  </div>
 
@@ -666,12 +668,12 @@ export function BusinessLocationPicker({
  geocodeAddress(full);
  }}
  disabled={isGeocoding || !value.street}
- className="w-full h-10 rounded-lg text-xs font-bold gap-2 bg-card border border-border/80 hover:bg-muted"
+ className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2 bg-card border border-border/80 hover:bg-muted"
  >
  {isGeocoding ? (
- <Loader2 className="size-3.5 animate-spin" />
+ <Loader2 className="size-4.5 animate-spin motion-reduce:animate-none" />
  ) : (
- <Search className="size-3.5 text-primary" />
+ <Search className="size-4.5 text-primary" />
  )}
  <span>Localizar no Mapa</span>
  </Button>
@@ -682,20 +684,20 @@ export function BusinessLocationPicker({
  <div className="space-y-2 pt-2">
  <div className="flex items-center justify-between text-xs">
  <span className="font-bold text-foreground flex items-center gap-2">
- <CheckCircle2 className="size-3.5 text-emerald-500" />
+ <CheckCircle2 className="size-4.5 text-emerald-500" />
  Ponto Exato no Mapa (Arraste o pino para ajustar a porta da loja)
  </span>
  {value.latitude && value.longitude && (
- <span className="font-mono text-[10px] text-muted-foreground">
+ <span className="font-mono text-xs text-muted-foreground">
  {value.latitude}, {value.longitude}
  </span>
  )}
  </div>
 
- <div className="relative w-full h-[220px] rounded-lg overflow-hidden border border-border/80 bg-muted/40 shadow-xs">
+ <div className="relative w-full h-56 rounded-lg overflow-hidden border border-border/80 bg-muted/40 shadow-xs">
  <div ref={mapContainer} className="size-full" />
  {!value.latitude && (
- <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px] flex items-center justify-center p-4 text-center z-10 pointer-events-none">
+ <div className="absolute inset-0 bg-background/60 backdrop-blur-xs flex items-center justify-center p-4 text-center z-10 pointer-events-none">
  <p className="text-xs font-medium text-muted-foreground bg-card p-3 rounded-lg border border-border/80 shadow-xs max-w-xs">
  Digite seu CEP ou endereço e clique em <strong>Localizar no Mapa</strong> para fixar o ponto exato de entrega.
  </p>
@@ -710,10 +712,10 @@ export function BusinessLocationPicker({
  <div className="flex items-center justify-between">
  <div className="space-y-1">
  <span className="text-xs font-bold text-foreground flex items-center gap-2">
- <Sliders className="size-3.5 text-primary" />
+ <Sliders className="size-4.5 text-primary" />
  Raio de Atendimento e Região de Entrega
  </span>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  Define o alcance máximo onde seus produtos e serviços aparecem nas buscas e filtros locais.
  </p>
  </div>
@@ -751,7 +753,7 @@ export function BusinessLocationPicker({
  value={newCoverageCity}
  onChange={(e) => setNewCoverageCity(e.target.value)}
  placeholder="Adicionar outra cidade atendida (Ex: Xanxerê, Xaxim, SMO)..."
- className="h-9 rounded-lg bg-background text-xs"
+ className="h-11 min-h-11 rounded-lg bg-background text-xs"
  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddCoverageCity())}
  />
  <Button
@@ -759,27 +761,27 @@ export function BusinessLocationPicker({
  variant="outline"
  size="sm"
  onClick={handleAddCoverageCity}
- className="h-9 rounded-lg text-xs font-bold px-4 shrink-0"
+ className="h-11 min-h-11 rounded-lg text-xs font-bold px-4 shrink-0"
  >
  Adicionar
  </Button>
  </div>
 
  <div className="flex flex-wrap gap-2 pt-1">
- <Badge className="bg-primary/10 text-primary border-primary/20 text-[11px] font-bold">
+ <Badge className="bg-primary/10 text-primary border-primary/20 text-xs font-bold">
  {value.city || "Cidade Base"} (Sede)
  </Badge>
  {value.coverageCities.map((c) => (
  <Badge
  key={c}
  variant="secondary"
- className="text-[11px] font-medium gap-2 pr-2 pl-3"
+ className="text-xs font-medium gap-2 pr-2 pl-3"
  >
  <span>{c}</span>
  <button
  type="button"
  onClick={() => handleRemoveCoverageCity(c)}
- className="size-3.5 rounded-full hover:bg-muted flex items-center justify-center cursor-pointer text-muted-foreground hover:text-foreground"
+ className="size-11 min-h-11 min-w-11 rounded-full hover:bg-muted flex items-center justify-center cursor-pointer text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  ×
  </button>

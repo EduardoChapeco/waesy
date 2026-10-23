@@ -138,7 +138,7 @@ export function PWAInstallBanner({
  <button
  type="button"
  onClick={handleDismiss}
- className="min-h-11 min-w-[44px] rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
+ className="min-h-11 min-w-[44px] rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  title="Fechar"
  aria-label="Fechar banner de instalação"
  >
@@ -156,7 +156,7 @@ export function PWAInstallBanner({
  <button
  type="button"
  onClick={() => setShowIOSGuide(false)}
- className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground"
+ className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <X className="size-4" />
  </button>

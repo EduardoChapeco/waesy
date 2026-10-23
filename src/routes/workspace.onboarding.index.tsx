@@ -155,7 +155,7 @@ export default function WorkspaceOnboardingPage() {
             </p>
           </div>
 
-          <div className="flex flex-col items-end gap-2 shrink-0 bg-background/80 backdrop-blur-sm p-5 rounded-lg border border-border/60">
+          <div className="flex flex-col items-start sm:items-end w-full sm:w-auto gap-2 shrink-0 bg-background/80 backdrop-blur-sm p-4 sm:p-5 rounded-lg border border-border/60">
             <div className="flex items-baseline gap-1">
               <span className="text-3xl sm:text-4xl font-black text-foreground">
                 {onboarding.progressPercentage}%
@@ -165,7 +165,7 @@ export default function WorkspaceOnboardingPage() {
             <p className="text-xs text-muted-foreground">
               {onboarding.completedSteps} de {onboarding.totalSteps} etapas finalizadas
             </p>
-            <div className="w-40 mt-1">
+            <div className="w-full sm:w-40 mt-1">
               <Progress value={onboarding.progressPercentage} className="h-2 rounded-full" />
             </div>
           </div>

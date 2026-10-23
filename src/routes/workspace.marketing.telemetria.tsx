@@ -202,7 +202,7 @@ function WorkspaceTelemetriaPage() {
  activeTab === tab
  ? "bg-background text-foreground "
  : "text-muted-foreground hover:text-foreground"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  {tab === "whatsapp" ? (
  <><WhatsappLogo size={16} weight="bold" className="text-emerald-500" /> Leads WhatsApp</>

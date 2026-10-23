@@ -205,7 +205,7 @@ function RevenueGoalsPage() {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
-      <PageHeader
+      <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         eyebrow="Planejamento Comercial & Gestão de Vendas"
         title="Metas de Faturamento"
         description="Monitore o atingimento das metas mensais de faturamento, a projeção preditiva de fechamento e a meta diária necessária."
@@ -432,7 +432,7 @@ function RevenueGoalsPage() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-border/50 pb-3">
           <div>
             <h3 className="text-base font-bold text-foreground">
-              Desempenho e Metas por Canal de Venda
+              Metas de Vendas
             </h3>
             <p className="text-xs text-muted-foreground">
               Acompanhe a contribuição de cada canal comercial no atingimento da meta global da empresa.

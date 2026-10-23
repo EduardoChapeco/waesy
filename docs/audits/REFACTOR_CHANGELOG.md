@@ -1,0 +1,26 @@
+# REFACTOR_CHANGELOG.md — Registro Estruturado de Alterações
+
+## 1. Arquivos Criados e Modificados
+
+| Arquivo | Tipo | Escopo da Alteração |
+|---|---|---|
+| `src/lib/classifieds/canonical-taxonomy.ts` | Modificado | Adicionada Seção 17: `CLASSIFIED_TEMPLATES_CATALOG`, `NICHE_TEMPLATE_COMPATIBILITY_MAP`, `normalizeClassifiedNicheId`, `getDefaultClassifiedTemplateForNiche`, `getAllowedClassifiedTemplatesForNiche`, `resolveCompatibleClassifiedTemplate`, `resolveClassifiedTemplateManifest` com manifestos bidirecionais Desktop Native vs Mobile Native. |
+| `src/lib/classifieds/canonical-specs-resolver.ts` | Modificado | Isolamento estrito de nichos (`B.37`): removido `template_style === "editorial"` da detecção de `isTravel`, adicionado bloqueio `isExplicitNonTravel`, e incluídos `desapego` e `digital` em `isExplicitNonGrocery`. |
+| `src/lib/ad-engine/niche-taxonomy-manifest.ts` | Modificado | Adicionados `label` e `supportsShipping` em todos os nichos, incluídos `digital` e `gastronomia` em `NICHE_TAXONOMY_REGISTRY`, corrigido `NICHE_KEY_MAP` para chaves singulares canônicas e exportado `normalizeAdEngineNicheId`. |
+| `src/lib/ad-engine/template-metamorphosis.ts` | Modificado | Sincronizado `CANONICAL_TEMPLATES_CATALOG` com todos os templates dos nichos (`retail_promo`, `tourism_adventure`, `service_portfolio`, `real_estate_property`, `vehicle_showroom`, `grocery_express`, `food_menu`) e normalizado `nicheId` em todas as funções. |
+| `src/components/ad-engine/editor/sections/listing-template-selector.tsx` | Modificado | Conectado a `normalizeAdEngineNicheId` e `listAllowedTemplatesForNiche`. |
+| `src/components/ad-engine/editor/listing-full-editor.tsx` | Modificado | Conectado a `normalizeAdEngineNicheId` e `resolveTemplate` ao alternar de nicho. |
+| `src/components/ad-engine/preview/canonical-listing-preview-frame.tsx` | Modificado | Propagado `previewViewport={viewport}` e `data-preview-viewport={viewport}` para `CanonicalListingView`. |
+| `src/components/ad-engine/public/canonical-listing-view.tsx` | Modificado | Adicionado suporte a `previewViewport`, layout bidirecional Desktop Native vs Mobile Native, header de template (`data-active-template`, `data-active-niche`, `data-render-mode`) e removido `truncate` de especificações (`B.38`). |
+| `src/components/classifieds/universal-classified-showcase.tsx` | Modificado | Roteamento determinístico via `normalizeClassifiedNicheId` e `resolveCompatibleClassifiedTemplate` para `EventClassifiedShowcaseView`, `ConvenienceShowcaseView`, `EditorialShowcaseView`, `ClassifiedDetailMobile` e `ClassifiedDetailDesktop`. |
+| `src/components/classifieds/detail/use-classified-detail.ts` | Modificado | Respeito estrito a `explicitTemplateStyle` em `isConvenienceProduct` para não forçar `ConvenienceShowcaseView` quando o anunciante escolhe `standard` ou `editorial`. |
+| `src/components/classifieds/classified-detail-desktop.tsx` | Modificado | Adicionados atributos `data-active-template`, `data-active-niche`, `data-render-mode="desktop-native"`, badge de template e strips dedicados para `automotivo`, `imobiliario`, `resort_hotel`, `servicos_agenda` e `editorial`. |
+| `src/components/classifieds/classified-detail-mobile.tsx` | Modificado | Adicionados atributos `data-active-template`, `data-active-niche`, `data-render-mode="mobile-native"`, badge de template e strips nativos mobile para `automotivo`, `imobiliario`, `resort_hotel`, `servicos_agenda` e `editorial`. |
+| `src/components/classifieds/editorial-showcase-view.tsx` | Modificado | Adicionada prop `previewViewport?: "mobile" | "desktop"` para forçar composição Mobile Native (1 coluna) ou Desktop Native (12 colunas) dentro do preview. |
+| `src/components/common/teteterisgrid-view.tsx` | Modificado | Adicionada prop `compact?: boolean` para adaptação determinística em chassi mobile. |
+| `src/routes/_store.conta.classificados.novo.tsx` | Modificado | Isolados atributos de viagem a `niche.id === "viagem"` em `livePreviewClassified` e `handlePublish`; seletores de template filtrados por `getAllowedClassifiedTemplatesForNiche(niche.id)`; transição de template controlada por `resolveCompatibleClassifiedTemplate`; `previewViewport={previewDevice}` e chassi mobile `max-w-sm` aplicados no painel de preview. |
+| `src/services/classifieds.functions.ts` | Modificado | Expandido `CLASSIFIED_PUBLIC_ALLOWLIST_EXTRA` para paridade pública de todos os 15 nichos; corrigidos defaults de colunas em `upsertClassified`; adicionada validação Zero-Trust de `store_id` e preservação de `author_profile_id` em atualizações. |
+| `src/services/unified-listing.functions.ts` | Modificado | Mapeado `template` em `mapDatabaseRowToUnifiedListing` e incluídos `template_id` e `template_style` em `PUBLIC_SPEC_ALLOWLIST`. |
+| `src/services/builder.functions.ts` | Modificado | Corrigida redeclaração de `needsMarketingBanners` que sobrescrevia o flag de busca de banners. |
+| `src/components/ad-engine/preview/preview.test.ts` | Modificado | Expandida suíte de testes do Ad Engine com verificação de registro completo de nichos e transição `Template A -> B -> A` e fallback de nicho. |
+| `src/lib/classifieds/template-niche-preview.test.ts` | Criado | Nova suíte de regressão cobrindo os Casos 1 a 14 no motor de Classificados, `canonical-specs-resolver`, `TeteterisGrid` e mapeamento BFF. |

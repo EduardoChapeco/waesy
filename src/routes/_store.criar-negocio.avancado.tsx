@@ -388,7 +388,7 @@ function CriarNegocioPage() {
  setStep(s.number as OnboardingStep);
  }
  }}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "flex items-center gap-2 p-2 rounded-lg text-left transition-all",
  isActive && "bg-primary text-primary-foreground font-bold shadow-xs",
  isPassed && "bg-muted/40 text-foreground hover:bg-muted/60 cursor-pointer",
@@ -439,7 +439,7 @@ function CriarNegocioPage() {
  key={cat.id}
  type="button"
  onClick={() => setActiveCategoryFilter(cat.id)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all",
  activeCategoryFilter === cat.id
  ? "bg-foreground text-background font-bold"
@@ -469,10 +469,10 @@ function CriarNegocioPage() {
  const IconComp = segment.icon;
 
  return (
- <div
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  key={segment.id}
  onClick={() => handleSelectNicheAndProceed(segment.id)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "group relative h-64 rounded-lg overflow-hidden cursor-pointer transition-all duration-200 border flex flex-col justify-between p-5 select-none active:scale-[0.98]",
  isSelected
  ? "border-primary ring-2 ring-primary shadow-xs"

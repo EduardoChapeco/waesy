@@ -188,7 +188,7 @@ function CalendarioEditorialPage() {
  key={key}
  type="button"
  onClick={() => setType(key)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "min-h-11 p-3 rounded-lg border text-left flex items-center gap-2 text-xs font-semibold transition-all",
  type === key
  ? "border-primary bg-primary/5 ring-1 ring-primary/30"

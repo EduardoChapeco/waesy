@@ -159,7 +159,7 @@ export const DigitalFileDropzone: React.FC<DigitalFileDropzoneProps> = ({
           </div>
         </div>
       ) : (
-        <div
+        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
           onDragOver={(e) => {
             e.preventDefault();
             setIsDragOver(true);
@@ -167,7 +167,7 @@ export const DigitalFileDropzone: React.FC<DigitalFileDropzoneProps> = ({
           onDragLeave={() => setIsDragOver(false)}
           onDrop={handleDrop}
           onClick={() => !isUploading && fileInputRef.current?.click()}
-          className={cn(
+          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
             "relative flex flex-col items-center justify-center p-6 sm:p-8 rounded-lg border-2 border-dashed transition-all cursor-pointer text-center",
             isDragOver
               ? "border-primary bg-primary/5"

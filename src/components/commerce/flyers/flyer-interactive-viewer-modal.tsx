@@ -263,7 +263,7 @@ export function FlyerInteractiveViewerModal({
                 type="button"
                 onClick={handlePrev}
                 aria-label="Encarte anterior"
-                className="absolute left-2 top-1/2 -translate-y-1/2 z-30 size-10 rounded-full bg-black/60 backdrop-blur-md text-white border border-white/20 flex items-center justify-center hover:bg-black/80 hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-lg"
+                className="absolute left-2 top-1/2 -translate-y-1/2 z-30 size-10 rounded-full bg-black/60 backdrop-blur-md text-white border border-white/20 flex items-center justify-center hover:bg-black/80 hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <ChevronLeft className="size-6" />
               </button>
@@ -272,7 +272,7 @@ export function FlyerInteractiveViewerModal({
                 type="button"
                 onClick={handleNext}
                 aria-label="Próximo encarte"
-                className="absolute right-2 top-1/2 -translate-y-1/2 z-30 size-10 rounded-full bg-black/60 backdrop-blur-md text-white border border-white/20 flex items-center justify-center hover:bg-black/80 hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-lg"
+                className="absolute right-2 top-1/2 -translate-y-1/2 z-30 size-10 rounded-full bg-black/60 backdrop-blur-md text-white border border-white/20 flex items-center justify-center hover:bg-black/80 hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <ChevronRight className="size-6" />
               </button>
@@ -303,7 +303,7 @@ export function FlyerInteractiveViewerModal({
                       e.stopPropagation();
                       setActiveHotspot(isActive ? null : spot);
                     }}
-                    className={cn(
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "absolute -translate-x-1/2 -translate-y-1/2 z-20 group focus:outline-none transition-transform cursor-pointer",
                       isActive ? "scale-125 z-30" : "hover:scale-115"
                     )}
@@ -351,7 +351,7 @@ export function FlyerInteractiveViewerModal({
                 <button
                   type="button"
                   onClick={() => setActiveHotspot(null)}
-                  className="p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/50 cursor-pointer"
+                  className="p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <X className="size-3.5" />
                 </button>
@@ -403,7 +403,7 @@ export function FlyerInteractiveViewerModal({
                     variant="outline"
                     className="w-full h-8 rounded-lg font-semibold text-xs gap-2 cursor-pointer border-border/60"
                   >
-                    <Link
+                    <Link className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       to="/produto/$slug"
                       params={{ slug: activeHotspot.product_slug }}
                       onClick={() => onOpenChange(false)}
@@ -433,7 +433,7 @@ export function FlyerInteractiveViewerModal({
             <button
               type="button"
               onClick={() => setShowProductDrawer(!showProductDrawer)}
-              className="text-primary font-bold hover:underline cursor-pointer flex items-center gap-1"
+              className="text-primary font-bold hover:underline cursor-pointer flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <span>{showProductDrawer ? "Ocultar lista" : `Ver todas as ofertas (${hotspots.length})`}</span>
             </button>

@@ -96,7 +96,7 @@ function RegisterPage() {
  };
 
  return (
- <div className="min-h-[100dvh] w-full flex flex-col lg:flex-row bg-background">
+ <div className="min-h-[100dvh] w-full flex flex-col lg:flex-row bg-background pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))] p-4 sm:p-6 lg:p-0">
  {/* ── Left Side: Minimal Brand Screen (Desktop) ────────── */}
  <div className="relative hidden lg:flex lg:w-[45%] bg-zinc-950 text-white flex-col justify-between p-12 overflow-hidden">
  <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(120,50,255,0.10),transparent_60%)]" />
@@ -162,7 +162,7 @@ function RegisterPage() {
  <Input
  placeholder="Seu nome"
  autoComplete="name"
- className="h-11 rounded-lg border-border bg-card/50 text-sm focus-visible:ring-primary/20"
+ className="h-11 rounded-lg border-border bg-card/50 text-base md:text-sm focus-visible:ring-primary/20"
  {...field}
  />
  </FormControl>
@@ -184,7 +184,7 @@ function RegisterPage() {
  type="email"
  placeholder="seu.email@exemplo.com"
  autoComplete="email"
- className="h-11 rounded-lg border-border bg-card/50 text-sm focus-visible:ring-primary/20"
+ className="h-11 rounded-lg border-border bg-card/50 text-base md:text-sm focus-visible:ring-primary/20"
  {...field}
  />
  </FormControl>
@@ -229,7 +229,7 @@ function RegisterPage() {
  )}
  />
 
- <FormField
+ <FormField /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  control={form.control}
  name="isConsentLgpd"
  render={({ field }) => (

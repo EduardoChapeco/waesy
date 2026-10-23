@@ -430,7 +430,7 @@ export default function WorkspaceTendersPage() {
                     {kw}
                     <button
                       onClick={() => handleRemoveKeyword(kw)}
-                      className="hover:text-destructive transition-colors"
+                      className="hover:text-destructive transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <X className="size-3" />
                     </button>

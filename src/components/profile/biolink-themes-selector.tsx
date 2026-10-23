@@ -140,7 +140,7 @@ export function BiolinkThemesSelector({ value, onChange }: BiolinkThemesSelector
               key={theme.key}
               type="button"
               onClick={() => onChange({ ...value, themeKey: theme.key })}
-              className={cn(
+              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                 "group relative rounded-lg border text-left p-4 transition-all cursor-pointer overflow-hidden flex flex-col justify-between h-44 shadow-2xs",
                 isSelected
                   ? "border-primary ring-2 ring-primary/20 bg-muted/40 shadow-xs"
@@ -213,7 +213,7 @@ export function BiolinkThemesSelector({ value, onChange }: BiolinkThemesSelector
                     buttonStyle: style.id as BiolinkThemeConfig["buttonStyle"],
                   })
                 }
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "p-3 rounded-lg border text-left transition-all cursor-pointer flex flex-col justify-between",
                   isStyleSelected
                     ? "border-primary bg-primary/5 shadow-2xs font-semibold text-primary"

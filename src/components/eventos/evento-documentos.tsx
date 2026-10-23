@@ -236,7 +236,7 @@ export function EventoDocumentos({ eventId }: EventoDocumentosProps) {
                     <button
                       type="button"
                       onClick={() => handleDelete(d.id)}
-                      className="text-muted-foreground hover:text-destructive p-1"
+                      className="text-muted-foreground hover:text-destructive p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       title="Excluir documento"
                     >
                       <Trash2 className="size-3.5" />

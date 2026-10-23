@@ -94,7 +94,7 @@ export function CopilotChatWorkspace({
                     key={idx}
                     type="button"
                     onClick={() => onSendMessage(prompt)}
-                    className="text-xs px-3 py-2 rounded-full border border-border/70 bg-card hover:bg-muted text-foreground transition-colors cursor-pointer"
+                    className="text-xs px-3 py-2 rounded-full border border-border/70 bg-card hover:bg-muted text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     {prompt}
                   </button>
@@ -177,7 +177,7 @@ export function CopilotChatWorkspace({
               type="submit"
               disabled={isLoading || !inputText.trim()}
               aria-label="Enviar mensagem"
-              className="size-9 rounded-lg bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors cursor-pointer"
+              className="size-9 rounded-lg bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <Send className="size-4" />
             </button>

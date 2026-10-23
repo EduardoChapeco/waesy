@@ -143,7 +143,7 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  type="button"
  onClick={() => markAllMutation.mutate()}
  disabled={markAllMutation.isPending}
- className="text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 cursor-pointer"
+ className="text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <CheckCheck className="size-3.5" />
  <span>Marcar todas</span>
@@ -160,7 +160,7 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  key={tab.id}
  type="button"
  onClick={() => setActiveTab(tab.id)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer",
  isActive
  ? "bg-primary/10 text-primary border border-primary/25 font-bold"
@@ -230,7 +230,7 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  e.stopPropagation();
  markReadMutation.mutate(item.id);
  }}
- className="hidden sm:group-hover:flex items-center justify-center size-5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+ className="hidden sm:group-hover:flex items-center justify-center size-5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Check className="size-3" />
  </button>

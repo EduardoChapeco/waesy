@@ -163,7 +163,7 @@ function WorkspaceSessionsAndAuditPage() {
       <div className="flex items-center gap-2 border-b border-border/40 pb-2">
         <button
           onClick={() => setActiveTab("store_audit")}
-          className={cn(
+          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
             "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer",
             activeTab === "store_audit"
               ? "bg-primary text-primary-foreground shadow-2xs"
@@ -185,7 +185,7 @@ function WorkspaceSessionsAndAuditPage() {
 
         <button
           onClick={() => setActiveTab("sessions")}
-          className={cn(
+          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
             "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer",
             activeTab === "sessions"
               ? "bg-primary text-primary-foreground shadow-2xs"
@@ -217,7 +217,7 @@ function WorkspaceSessionsAndAuditPage() {
               <span className="text-xs font-semibold text-muted-foreground mr-1">Entidade:</span>
               <button
                 onClick={() => setEntityFilter("all")}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "px-3 py-1 rounded-lg text-xs transition-colors cursor-pointer",
                   entityFilter === "all"
                     ? "bg-primary text-primary-foreground font-semibold"
@@ -230,7 +230,7 @@ function WorkspaceSessionsAndAuditPage() {
                 <button
                   key={ent}
                   onClick={() => setEntityFilter(ent)}
-                  className={cn(
+                  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                     "px-3 py-1 rounded-lg text-xs transition-colors cursor-pointer capitalize",
                     entityFilter === ent
                       ? "bg-primary text-primary-foreground font-semibold"

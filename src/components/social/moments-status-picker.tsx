@@ -100,7 +100,7 @@ export function MomentsStatusPicker({
  key={preset.emoji}
  type="button"
  onClick={() => handleSelectPreset(preset)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "h-12 rounded-lg flex flex-col items-center justify-center gap-1 transition-all text-lg cursor-pointer border",
  selectedEmoji === preset.emoji
  ? "border-primary bg-primary/10 scale-105 shadow-xs"
@@ -156,7 +156,7 @@ export function MomentsStatusPicker({
  <button
  type="button"
  onClick={() => setAudience("public")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "p-3 rounded-lg border text-center transition-all cursor-pointer",
  audience === "public" ? "border-primary bg-primary/10 text-primary font-bold" : "border-border/40 text-muted-foreground"
  )}
@@ -168,7 +168,7 @@ export function MomentsStatusPicker({
  <button
  type="button"
  onClick={() => setAudience("close_friends")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "p-3 rounded-lg border text-center transition-all cursor-pointer",
  audience === "close_friends" ? "border-primary bg-primary/10 text-primary font-bold" : "border-border/40 text-muted-foreground"
  )}
@@ -180,7 +180,7 @@ export function MomentsStatusPicker({
  <button
  type="button"
  onClick={() => setAudience("private")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "p-3 rounded-lg border text-center transition-all cursor-pointer",
  audience === "private" ? "border-primary bg-primary/10 text-primary font-bold" : "border-border/40 text-muted-foreground"
  )}

@@ -79,7 +79,11 @@ export function ActionAuthGuardModal({
   if (isCompact) {
     return (
       <Sheet open={isOpen} onOpenChange={onOpenChange}>
-        <SheetContent side="bottom" className="p-5 rounded-t-lg border-t border-border bg-background flex flex-col gap-4 outline-none">
+        <SheetContent side="bottom" className="p-5 pb-safe rounded-t-lg border-t border-border bg-background flex flex-col gap-4 outline-none">
+          <SheetHeader className="sr-only">
+            <SheetTitle>{title}</SheetTitle>
+            <SheetDescription>{description}</SheetDescription>
+          </SheetHeader>
           <div className="w-12 h-1.5 rounded-full bg-muted-foreground/30 mx-auto -mt-2 mb-2 shrink-0" />
           {modalBody}
         </SheetContent>
@@ -90,6 +94,10 @@ export function ActionAuthGuardModal({
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md rounded-lg p-6 space-y-4">
+        <DialogHeader className="sr-only">
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
+        </DialogHeader>
         {modalBody}
       </DialogContent>
     </Dialog>

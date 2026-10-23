@@ -97,7 +97,7 @@ export function ProductDetailDesktop({
                       key={m.id}
                       type="button"
                       onClick={() => setActiveMedia(m)}
-                      className={cn(
+                      className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                         "relative aspect-square w-14 shrink-0 rounded-lg overflow-hidden border transition-all duration-200 cursor-pointer",
                         active
                           ? "border-primary ring-2 ring-primary/20 scale-105"
@@ -245,7 +245,7 @@ export function ProductDetailDesktop({
                           <button
                             type="button"
                             onClick={() => setSizeGuideOpen(true)}
-                            className="font-semibold text-primary hover:underline cursor-pointer"
+                            className="font-semibold text-primary hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             Guia de Tamanhos
                           </button>
@@ -262,7 +262,7 @@ export function ProductDetailDesktop({
                               onClick={() => {
                                 setSelectedAttributes((prev) => ({ ...prev, [key]: val }));
                               }}
-                              className={cn(
+                              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                                 "h-9 min-w-10 px-3 rounded-lg border text-xs font-bold transition-all cursor-pointer flex items-center justify-center",
                                 isSelected
                                   ? "border-primary bg-primary text-primary-foreground shadow-xs"
@@ -324,7 +324,7 @@ export function ProductDetailDesktop({
                               key={val.id}
                               type="button"
                               onClick={() => handleToggle(val.id)}
-                              className={cn(
+                              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                                 "w-full flex items-center justify-between p-3 rounded-lg border text-left transition-all cursor-pointer",
                                 isSelected
                                   ? "border-primary bg-primary/5 ring-1 ring-primary/40"
@@ -379,7 +379,7 @@ export function ProductDetailDesktop({
                     <button
                       type="button"
                       onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
-                      className="size-9 flex items-center justify-center font-bold text-sm text-foreground hover:bg-muted rounded-lg active:scale-90 transition-all cursor-pointer"
+                      className="size-9 flex items-center justify-center font-bold text-sm text-foreground hover:bg-muted rounded-lg active:scale-90 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label="Diminuir"
                     >
                       <Minus className="size-4" />
@@ -390,7 +390,7 @@ export function ProductDetailDesktop({
                     <button
                       type="button"
                       onClick={() => setQuantity((prev) => prev + 1)}
-                      className="size-9 flex items-center justify-center font-bold text-sm text-foreground hover:bg-muted rounded-lg active:scale-90 transition-all cursor-pointer"
+                      className="size-9 flex items-center justify-center font-bold text-sm text-foreground hover:bg-muted rounded-lg active:scale-90 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label="Aumentar"
                     >
                       <Plus className="size-4" />

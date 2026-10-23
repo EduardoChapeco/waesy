@@ -215,10 +215,10 @@ export function FounderSmartphoneMockup({
 
             <div className="grid grid-cols-3 gap-2">
               {cnaeCategoryCatalog.map((p, idx) => (
-                <div
+                <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                   key={idx}
                   onClick={() => toast.info(`Demonstração: ${p.name}`, { description: `Valor anunciado: ${p.price}. No app Waesy, seus clientes compram em até 3 toques com Pix instantâneo.` })}
-                  className="rounded-lg border border-border/80 bg-muted/20 hover:bg-muted/50 overflow-hidden space-y-1 p-1 text-center cursor-pointer transition-all active:scale-95"
+                  className="rounded-lg border border-border/80 bg-muted/20 hover:bg-muted/50 overflow-hidden space-y-1 p-1 text-center cursor-pointer transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <img
                     src={p.image}
@@ -264,7 +264,7 @@ export function FounderSmartphoneMockup({
           <button
             type="button"
             onClick={onReset}
-            className="text-xs text-muted-foreground hover:text-foreground font-medium underline underline-offset-4 cursor-pointer"
+            className="text-xs text-muted-foreground hover:text-foreground font-medium underline underline-offset-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             Cadastrar outra empresa na lista
           </button>

@@ -221,7 +221,7 @@ export const BudgetCorporateClean: React.FC<CommercialDocumentTemplateProps> = (
               <button
                 type="button"
                 onClick={onAcceptProposal}
-                className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors shadow-xs"
+                className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 Aprovar e Assinar Proposta
               </button>

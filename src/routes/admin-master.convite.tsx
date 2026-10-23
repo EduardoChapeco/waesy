@@ -283,7 +283,7 @@ function AdminConvitePage() {
             activeTab === "sorteios"
               ? "bg-foreground text-background shadow-sm"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-          }`}
+          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
         >
           Sorteios ({data.raffles.length})
         </button>
@@ -294,7 +294,7 @@ function AdminConvitePage() {
             activeTab === "premios"
               ? "bg-foreground text-background shadow-sm"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-          }`}
+          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
         >
           Prêmios ({data.rewards.length})
         </button>
@@ -305,7 +305,7 @@ function AdminConvitePage() {
             activeTab === "conversoes"
               ? "bg-foreground text-background shadow-sm"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-          }`}
+          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
         >
           Indicações ({data.conversions.length})
         </button>
@@ -332,7 +332,7 @@ function AdminConvitePage() {
                   onClick={() => setOriginFilter("all")}
                   className={`px-3 py-1 rounded-lg font-mono text-[11px] font-bold transition-all ${
                     originFilter === "all" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   Todos
                 </button>
@@ -341,7 +341,7 @@ function AdminConvitePage() {
                   onClick={() => setOriginFilter("platform")}
                   className={`px-3 py-1 rounded-lg font-mono text-[11px] font-bold transition-all ${
                     originFilter === "platform" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   Oficiais
                 </button>
@@ -350,7 +350,7 @@ function AdminConvitePage() {
                   onClick={() => setOriginFilter("store")}
                   className={`px-3 py-1 rounded-lg font-mono text-[11px] font-bold transition-all ${
                     originFilter === "store" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   Lojas
                 </button>
@@ -870,7 +870,7 @@ function AdminConvitePage() {
             >
               Cancelar
             </AlertDialogCancel>
-            <AlertDialogAction
+            <AlertDialogAction /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
               onClick={(e) => {
                 e.preventDefault();
                 confirmDrawRaffle();

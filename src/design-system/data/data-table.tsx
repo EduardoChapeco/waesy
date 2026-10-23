@@ -246,12 +246,12 @@ export function DataTable<T>({
               {columns.map((col) => {
                 const isSorted = sortColumnId === col.id;
                 return (
-                  <th
+                  <th role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                     key={col.id}
                     scope="col"
                     style={{ width: col.width }}
                     onClick={() => col.isSortable && handleSort(col.id)}
-                    className={cn(
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "px-4 py-3 font-semibold tracking-tight",
                       col.align === "right" && "text-right",
                       col.align === "center" && "text-center",

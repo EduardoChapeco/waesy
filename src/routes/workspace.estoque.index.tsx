@@ -443,7 +443,7 @@ function AdminStockPage() {
           <button
             type="button"
             onClick={() => handleSelectLocation("all")}
-            className={cn(
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "px-3 py-2 rounded-lg border text-xs font-semibold transition-all cursor-pointer shrink-0",
               selectedLocationId === "all"
                 ? "border-primary bg-primary/10 text-primary font-bold shadow-xs"
@@ -457,7 +457,7 @@ function AdminStockPage() {
               key={loc.id}
               type="button"
               onClick={() => handleSelectLocation(loc.id)}
-              className={cn(
+              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                 "px-3 py-2 rounded-lg border text-xs font-semibold transition-all cursor-pointer shrink-0 flex items-center gap-2",
                 selectedLocationId === loc.id
                   ? "border-primary bg-primary/10 text-primary font-bold shadow-xs"
@@ -523,7 +523,7 @@ function AdminStockPage() {
       )}
 
  {/* SheetPage de Movimentação por Linha */}
- <SheetPage
+ <SheetPage /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  open={Boolean(selectedVariant)}
  onOpenChange={(open) => !open && setSelectedVariant(null)}
  title="Movimentação de Estoque"

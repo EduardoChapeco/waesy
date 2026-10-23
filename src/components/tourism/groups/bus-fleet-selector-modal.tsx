@@ -214,13 +214,13 @@ export function BusFleetSelectorModal({
 
  <div className="space-y-3">
  {filteredVehicles.map((v) => (
- <div
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  key={v.id}
  onClick={() => setSelectedId(v.id)}
  className={'p-4 rounded-lg border transition-all cursor-pointer space-y-3 ' + (
  selectedId === v.id
  ? 'border-primary bg-primary/5 shadow-sm ring-1 ring-primary'
- : 'border-border bg-card hover:border-border/80'
+ : 'border-border bg-card hover:border-border/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
  <div className="flex items-start justify-between">

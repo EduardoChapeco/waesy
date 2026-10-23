@@ -158,7 +158,7 @@ export function WorkspaceAccountSwitcher({
             <Link
               to="/workspace/lojas"
               onClick={() => setOpen(false)}
-              className="text-2xs font-bold text-primary hover:underline flex items-center gap-1"
+              className="text-2xs font-bold text-primary hover:underline flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <span>Gerenciar</span>
               <ExternalLink className="size-2.5" />
@@ -260,7 +260,7 @@ export function WorkspaceAccountSwitcher({
             <Link
               to="/criar-negocio"
               onClick={() => setOpen(false)}
-              className="flex items-center justify-center gap-2 size-full"
+              className="flex items-center justify-center gap-2 size-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <Plus className="size-3.5" />
               <span>Cadastrar Novo Negócio</span>

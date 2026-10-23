@@ -116,7 +116,7 @@ export function SearchableSelect({
           type="button"
           disabled={disabled}
           className={cn(
-            "flex w-full h-9 items-center justify-between gap-2 rounded-input border border-input bg-transparent px-3 text-sm outline-none transition-colors",
+            "flex w-full h-11 min-h-11 items-center justify-between gap-2 rounded-input border border-input bg-transparent px-3 text-sm outline-none transition-colors motion-reduce:transition-none",
             "hover:border-border focus:border-border-strong focus:ring-1 focus:ring-white/20",
             "disabled:cursor-not-allowed disabled:opacity-60",
             open && "border-border-strong ring-2 ring-ring/20",
@@ -141,18 +141,28 @@ export function SearchableSelect({
             {clearable && value && (
               <span
                 role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleClear(e as any);
+                  }
+                }}
                 onClick={handleClear}
-                className="rounded p-1 text-muted-foreground hover:bg-surface-alt hover:text-foreground"
+                /* design-lint-ignore DL-14 reason:"Gatilho de limpeza compacto embutido em seletor" expiry:"2027-12-31" */
+                className="size-7 inline-flex items-center justify-center rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                aria-label="Limpar seleção"
               >
                 <X className="h-3.5 w-3.5" />
               </span>
             )}
             {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none text-muted-foreground" />
             ) : (
               <ChevronDown
                 className={cn(
-                  "h-4 w-4 text-muted-foreground transition-transform",
+                  "h-4 w-4 text-muted-foreground transition-transform motion-reduce:transition-none",
                   open && "rotate-180",
                 )}
               />
@@ -163,6 +173,7 @@ export function SearchableSelect({
 
       <PopoverContent
         align="start"
+        /* design-lint-ignore DL-02 reason:"Largura dinâmica ancorada à variável CSS do Radix Popover" expiry:"2027-12-31" */
         className="w-[var(--radix-popover-trigger-width)] p-0 rounded-lg border border-border bg-popover text-popover-foreground shadow-md"
       >
         {/* Search input */}
@@ -181,7 +192,7 @@ export function SearchableSelect({
               type="button"
               variant="ghost"
               size="icon"
-              className="h-6 w-6 rounded-full text-muted-foreground hover:text-foreground"
+              className="size-11 min-h-11 min-w-11 rounded-full text-muted-foreground hover:text-foreground"
               onClick={() => setQuery("")}
             >
               <X className="h-3.5 w-3.5" />

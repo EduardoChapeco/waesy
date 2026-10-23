@@ -205,7 +205,7 @@ export function SignaturePositionerCanvas({
                       isSelected
                         ? "bg-card border-primary/50 shadow-xs ring-1 ring-primary/20 font-semibold"
                         : "bg-background/70 border-border/70 hover:border-border hover:bg-background"
-                    }`}
+                    } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <div
@@ -239,7 +239,7 @@ export function SignaturePositionerCanvas({
                     type="button"
                     disabled={readOnly}
                     onClick={() => handleAddTag(tag.type)}
-                    className="flex items-center gap-3 p-3 rounded-lg border border-border/80 bg-card hover:bg-muted/60 transition-all text-left text-xs sm:text-sm font-semibold text-foreground hover:border-primary/40 active:scale-[0.98] min-h-11 cursor-pointer shadow-2xs"
+                    className="flex items-center gap-3 p-3 rounded-lg border border-border/80 bg-card hover:bg-muted/60 transition-all text-left text-xs sm:text-sm font-semibold text-foreground hover:border-primary/40 active:scale-[0.98] min-h-11 cursor-pointer shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <Icon className="size-4 text-primary shrink-0" />
                     <span className="truncate">{tag.label}</span>
@@ -325,7 +325,7 @@ export function SignaturePositionerCanvas({
                         e.stopPropagation();
                         handleDeleteField(field.id);
                       }}
-                      className="text-muted-foreground hover:text-destructive p-1"
+                      className="text-muted-foreground hover:text-destructive p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <Trash2 className="size-3" />
                     </button>

@@ -164,11 +164,11 @@ export function NeighborhoodsManager({
  <MapPin className="size-3.5 text-primary" />
  <span>Bairros Atendidos & Taxas de Entrega ({cityName})</span>
  </Label>
- <Badge variant="outline" className="text-[10px] font-mono bg-card">
+ <Badge variant="outline" className="text-xs font-mono bg-card">
  {activeCount} de {totalCount} ativos
  </Badge>
  </div>
- <p className="text-[11px] text-muted-foreground mt-1">
+ <p className="text-xs text-muted-foreground mt-1">
  Defina quais regiões recebem pedidos e configure a taxa de frete cobrada por bairro.
  </p>
  </div>
@@ -179,7 +179,7 @@ export function NeighborhoodsManager({
  variant="outline"
  size="sm"
  onClick={() => setIsAddingNew((prev) => !prev)}
- className="h-8 rounded-lg text-xs font-bold gap-2"
+ className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2"
  >
  <Plus className="size-3.5" />
  <span>Novo Bairro</span>
@@ -202,7 +202,7 @@ export function NeighborhoodsManager({
  type="button"
  variant="ghost"
  size="icon"
- className="size-6 rounded-lg text-muted-foreground hover:text-foreground"
+ className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground"
  onClick={() => setIsAddingNew(false)}
  >
  <X className="size-3.5" />
@@ -211,7 +211,7 @@ export function NeighborhoodsManager({
 
  <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
  <div className="sm:col-span-7 space-y-1">
- <Label className="text-[11px] text-muted-foreground">Nome do Bairro *</Label>
+ <Label className="text-xs text-muted-foreground">Nome do Bairro *</Label>
  <Input
  value={newNeighborhoodName}
  onChange={(e) => setNewNeighborhoodName(e.target.value)}
@@ -222,7 +222,7 @@ export function NeighborhoodsManager({
  </div>
 
  <div className="sm:col-span-5 space-y-1">
- <Label className="text-[11px] text-muted-foreground">Taxa de Entrega (R$)</Label>
+ <Label className="text-xs text-muted-foreground">Taxa de Entrega (R$)</Label>
  <CurrencyField
  value={newNeighborhoodFee}
  onChange={(cents) => setNewNeighborhoodFee(cents || 0)}
@@ -238,14 +238,14 @@ export function NeighborhoodsManager({
  variant="outline"
  size="sm"
  onClick={() => setIsAddingNew(false)}
- className="h-8 rounded-lg text-xs font-semibold"
+ className="h-11 min-h-11 rounded-lg text-xs font-semibold"
  >
  Cancelar
  </Button>
  <Button
  type="submit"
  size="sm"
- className="h-8 rounded-lg text-xs font-bold bg-primary text-primary-foreground gap-2"
+ className="h-11 min-h-11 rounded-lg text-xs font-bold bg-primary text-primary-foreground gap-2"
  >
  <Check className="size-3.5" />
  <span>Salvar Bairro</span>
@@ -263,13 +263,13 @@ export function NeighborhoodsManager({
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
  placeholder="Filtrar bairro..."
- className="h-8 pl-8 rounded-lg text-xs bg-background"
+ className="h-11 min-h-11 pl-8 rounded-lg text-xs bg-background"
  />
  {searchQuery && (
  <button
  type="button"
  onClick={() => setSearchQuery("")}
- className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+ className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <X className="size-3" />
  </button>
@@ -283,7 +283,7 @@ export function NeighborhoodsManager({
  variant="ghost"
  size="sm"
  onClick={handleSelectAll}
- className="h-7 px-3 rounded-lg text-[11px] font-bold text-muted-foreground hover:text-foreground gap-1"
+ className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold text-muted-foreground hover:text-foreground gap-1"
  title="Marcar todos os bairros como atendidos"
  >
  <CheckCheck className="size-3.5 text-success" />
@@ -295,7 +295,7 @@ export function NeighborhoodsManager({
  variant="ghost"
  size="sm"
  onClick={handleDeselectAll}
- className="h-8 px-3 rounded-lg text-[11px] font-bold text-muted-foreground hover:text-foreground gap-1"
+ className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold text-muted-foreground hover:text-foreground gap-1"
  title="Desmarcar todos os bairros"
  >
  <XSquare className="size-3.5 text-destructive" />
@@ -307,7 +307,7 @@ export function NeighborhoodsManager({
  variant={isBulkFeeOpen ? "secondary" : "outline"}
  size="sm"
  onClick={() => setIsBulkFeeOpen((prev) => !prev)}
- className="h-8 px-3 rounded-lg text-[11px] font-bold gap-1"
+ className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold gap-1"
  >
  <DollarSign className="size-3.5 text-warning" />
  <span>Taxa em Lote</span>
@@ -327,7 +327,7 @@ export function NeighborhoodsManager({
  value={bulkFeeInput}
  onChange={(cents) => setBulkFeeInput(cents)}
  placeholder="R$ 0,00"
- className="h-8 text-xs rounded-lg font-mono bg-background"
+ className="h-11 min-h-11 text-xs rounded-lg font-mono bg-background"
  autoFocus
  />
  </div>
@@ -338,7 +338,7 @@ export function NeighborhoodsManager({
  type="button"
  size="sm"
  onClick={handleApplyBulkFee}
- className="h-8 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white gap-1"
+ className="h-11 min-h-11 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-700 text-foreground gap-1"
  >
  <Check className="size-3.5" />
  <span>Aplicar a Todos</span>
@@ -348,7 +348,7 @@ export function NeighborhoodsManager({
  variant="ghost"
  size="sm"
  onClick={() => setIsBulkFeeOpen(false)}
- className="h-8 rounded-lg text-xs"
+ className="h-11 min-h-11 rounded-lg text-xs"
  >
  Cancelar
  </Button>
@@ -360,9 +360,9 @@ export function NeighborhoodsManager({
  <div className="rounded-lg border border-border/80 bg-background/50 divide-y divide-border/40 max-h-72 overflow-y-auto no-scrollbar shadow-2xs">
  {filteredList.length === 0 ? (
  <div className="p-8 text-center text-muted-foreground space-y-1">
- <MapPin className="size-6 mx-auto opacity-40 mb-1" />
+ <MapPin className="size-11 min-h-11 min-w-11 mx-auto opacity-40 mb-1" />
  <p className="text-xs font-bold text-foreground">Nenhum bairro encontrado</p>
- <p className="text-[11px]">
+ <p className="text-xs">
  Tente buscar por outro termo ou clique em "+ Novo Bairro" para cadastrar.
  </p>
  </div>
@@ -398,14 +398,14 @@ export function NeighborhoodsManager({
  if (e.key === "Enter") handleSaveRename(originalIndex);
  if (e.key === "Escape") handleCancelRename();
  }}
- className="h-7 text-xs rounded-lg bg-background"
+ className="h-11 min-h-11 text-xs rounded-lg bg-background"
  autoFocus
  />
  <Button
  type="button"
  size="icon"
  variant="secondary"
- className="size-7 rounded-lg shrink-0"
+ className="size-11 min-h-11 min-w-11 rounded-lg shrink-0"
  onClick={() => handleSaveRename(originalIndex)}
  title="Salvar nome"
  >
@@ -415,7 +415,7 @@ export function NeighborhoodsManager({
  type="button"
  size="icon"
  variant="ghost"
- className="size-7 rounded-lg shrink-0 text-muted-foreground"
+ className="size-11 min-h-11 min-w-11 rounded-lg shrink-0 text-muted-foreground"
  onClick={handleCancelRename}
  title="Cancelar"
  >
@@ -436,7 +436,7 @@ export function NeighborhoodsManager({
  <button
  type="button"
  onClick={() => handleStartRename(originalIndex, item.name)}
- className="opacity-0 group-hover:opacity-100 hover:opacity-100 text-muted-foreground hover:text-foreground transition-opacity p-1"
+ className="opacity-0 group-hover:opacity-100 hover:opacity-100 text-muted-foreground hover:text-foreground transition-opacity p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  title="Editar nome do bairro"
  >
  <Edit2 className="size-3" />
@@ -449,13 +449,13 @@ export function NeighborhoodsManager({
  <div className="flex items-center gap-2 shrink-0">
  {item.active && (
  <div className="flex items-center gap-2">
- <span className="text-[11px] text-muted-foreground font-mono">Taxa:</span>
+ <span className="text-xs text-muted-foreground font-mono">Taxa:</span>
  <div className="w-24">
  <CurrencyField
  value={item.defaultFeeCents}
  onChange={(cents) => handleUpdateFee(originalIndex, cents || 0)}
  placeholder="0,00"
- className="h-8 text-xs rounded-lg font-mono text-right bg-background"
+ className="h-11 min-h-11 text-xs rounded-lg font-mono text-right bg-background"
  />
  </div>
  </div>
@@ -466,7 +466,7 @@ export function NeighborhoodsManager({
  variant="ghost"
  size="icon"
  onClick={() => handleDeleteNeighborhood(originalIndex, item.name)}
- className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+ className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"
  title="Remover bairro"
  >
  <Trash2 className="size-3.5" />

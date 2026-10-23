@@ -40,7 +40,7 @@ export function TaskRow({
           type="button"
           onClick={() => onToggleComplete?.(!completed)}
           aria-label={completed ? "Marcar como pendente" : "Marcar como concluída"}
-          className={cn(
+          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
             "size-5 rounded-md border flex items-center justify-center transition-colors cursor-pointer",
             completed
               ? "bg-primary border-primary text-primary-foreground"

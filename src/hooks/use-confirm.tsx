@@ -28,8 +28,8 @@ export function useConfirm() {
           <AlertDialogDescription>{options?.description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => setOpen(false)}>Cancelar</AlertDialogCancel>
-          <AlertDialogAction
+          <AlertDialogCancel /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => setOpen(false)}>Cancelar</AlertDialogCancel>
+          <AlertDialogAction /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
             onClick={() => {
               options?.onConfirm();
               setOpen(false);

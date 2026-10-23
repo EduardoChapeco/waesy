@@ -11,6 +11,7 @@ import { requireStaff } from "@/lib/server-access";
 import { enforceRateLimit } from "@/lib/rate-limiter";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
 import { getDefaultCity } from "@/lib/brand.config";
+import { getHotelByNameOrSlug, normalizeHotelName } from "@/lib/data/hotels-resorts-catalog";
 
 // ============================================================
 // Schemas e Contratos de Dados
@@ -218,6 +219,29 @@ Retorne ESTRITAMENTE um JSON minificado compatível com este formato:
         }
         if (matchedHotel.regime_options?.length > 0 && !extracted.meal_plan) {
           extracted.meal_plan = matchedHotel.regime_options[0];
+        }
+      } else {
+        // Busca fallback em global_hotels e catalogo SSOT
+        const { data: gh } = await supabase
+          .from("global_hotels")
+          .select("id, name, canonical_slug")
+          .or(`name.ilike.%${extracted.hotel_name.trim()}%,normalized_name.ilike.%${extracted.hotel_name.trim()}%`)
+          .limit(1)
+          .maybeSingle();
+
+        if (gh) {
+          matchedHotelId = gh.id;
+        } else {
+          const staticHotel = getHotelByNameOrSlug(extracted.hotel_name);
+          if (staticHotel) {
+            matchedHotelId = `canonical-${normalizeHotelName(staticHotel.name)}`;
+            if (staticHotel.cover_photo_url || staticHotel.photos?.[0]) {
+              suggestedBackgroundUrl = staticHotel.cover_photo_url || staticHotel.photos[0];
+            }
+            if (staticHotel.regime_options?.length > 0 && !extracted.meal_plan) {
+              extracted.meal_plan = staticHotel.regime_options[0];
+            }
+          }
         }
       }
     }

@@ -184,7 +184,7 @@ function AdminMasterModulosPage() {
               categoryTab === "all"
                 ? "bg-foreground text-background"
                 : "text-muted-foreground hover:text-foreground bg-muted/40"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             Todos ({modules.length})
           </button>
@@ -195,7 +195,7 @@ function AdminMasterModulosPage() {
               categoryTab === "store_operation"
                 ? "bg-foreground text-background"
                 : "text-muted-foreground hover:text-foreground bg-muted/40"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             Operação de Loja ({storeOpCount})
           </button>
@@ -206,7 +206,7 @@ function AdminMasterModulosPage() {
               categoryTab === "public_discovery"
                 ? "bg-foreground text-background"
                 : "text-muted-foreground hover:text-foreground bg-muted/40"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             Vitrines Públicas ({publicCount})
           </button>
@@ -217,7 +217,7 @@ function AdminMasterModulosPage() {
               categoryTab === "ai_intelligence"
                 ? "bg-foreground text-background"
                 : "text-muted-foreground hover:text-foreground bg-muted/40"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             Inteligência & IA ({aiCount})
           </button>

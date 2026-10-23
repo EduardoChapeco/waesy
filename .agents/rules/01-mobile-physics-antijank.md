@@ -1,6 +1,6 @@
 ---
 description: Regras estritas de Física Mobile, Anti-Jank, Viewports e Padrão WhatsApp List para o Waesy
-globs: ["src/routes/**", "src/components/**"]
+globs: "src/routes/**,src/components/**"
 ---
 
 # 01 — Física Mobile, Ergonomia Anti-Jank & Padrão WhatsApp List (Waesy Standard)

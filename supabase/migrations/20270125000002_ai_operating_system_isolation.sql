@@ -142,6 +142,16 @@ CREATE TABLE IF NOT EXISTS public.ai_skills (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- Reconciliacao aditiva: ai_skills ja existe em producao com schema legado (is_active, is_system).
+ALTER TABLE public.ai_skills ADD COLUMN IF NOT EXISTS version TEXT NOT NULL DEFAULT '1.0.0';
+ALTER TABLE public.ai_skills ADD COLUMN IF NOT EXISTS is_official BOOLEAN NOT NULL DEFAULT true;
+ALTER TABLE public.ai_skills ADD COLUMN IF NOT EXISTS owner_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE;
+ALTER TABLE public.ai_skills ADD COLUMN IF NOT EXISTS is_enabled BOOLEAN NOT NULL DEFAULT true;
+ALTER TABLE public.ai_skills ADD COLUMN IF NOT EXISTS permissions JSONB NOT NULL DEFAULT '[]'::jsonb;
+ALTER TABLE public.ai_skills ADD COLUMN IF NOT EXISTS risk_tier TEXT NOT NULL DEFAULT 'READ';
+ALTER TABLE public.ai_skills ADD COLUMN IF NOT EXISTS input_schema JSONB NOT NULL DEFAULT '{}'::jsonb;
+ALTER TABLE public.ai_skills ADD COLUMN IF NOT EXISTS output_schema JSONB NOT NULL DEFAULT '{}'::jsonb;
+
 CREATE INDEX IF NOT EXISTS idx_ai_skills_enabled ON public.ai_skills(is_enabled, slug);
 
 -- 7. Conectores e Integrações de IA (ai_connectors)

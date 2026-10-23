@@ -132,7 +132,7 @@ function SkillsCatalogPage() {
                 selectedCategory === cat.id
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "bg-muted/40 text-muted-foreground hover:bg-muted/70 hover:text-foreground border border-border/40"
-              }`}
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
             >
               {cat.label}
             </button>

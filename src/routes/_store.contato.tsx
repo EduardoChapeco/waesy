@@ -78,7 +78,7 @@ function ContatoPage() {
  <button
  type="button"
  onClick={() => (window.history.length > 1 ? window.history.back() : window.location.assign("/"))}
- className="size-11 rounded-lg bg-card border border-border/40 flex items-center justify-center text-muted-foreground hover:text-foreground active:scale-95 transition-all"
+ className="size-11 rounded-lg bg-card border border-border/40 flex items-center justify-center text-muted-foreground hover:text-foreground active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  aria-label="Voltar"
  >
  <ArrowLeft className="size-5" />

@@ -386,7 +386,7 @@ function AdminAdsNetworkPage() {
                 activeViewTab === "campaigns"
                   ? "bg-primary text-primary-foreground shadow-xs"
                   : "bg-muted/60 text-muted-foreground hover:text-foreground"
-              }`}
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
             >
               <Radio className="size-3.5 inline mr-2" />
               Campanhas em Execução ({campaigns.length})
@@ -399,7 +399,7 @@ function AdminAdsNetworkPage() {
                 activeViewTab === "ledger"
                   ? "bg-primary text-primary-foreground shadow-xs"
                   : "bg-muted/60 text-muted-foreground hover:text-foreground"
-              }`}
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
             >
               <BookOpen className="size-3.5 inline mr-2" />
               Livro-Razão (Ad-Ledger)
@@ -413,7 +413,7 @@ function AdminAdsNetworkPage() {
                 <button
                   type="button"
                   onClick={() => setSelectedCampaignForLedger(null)}
-                  className="cursor-pointer ml-1 hover:text-destructive"
+                  className="cursor-pointer ml-1 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <X className="size-3" />
                 </button>
@@ -602,7 +602,7 @@ function AdminAdsNetworkPage() {
                 onClick={() => setLedgerTypeFilter("all")}
                 className={`px-3 py-1 rounded-lg text-[11px] font-semibold cursor-pointer ${
                   ledgerTypeFilter === "all" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                }`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 Todos ({ledgerEntries.length})
               </button>
@@ -611,7 +611,7 @@ function AdminAdsNetworkPage() {
                 onClick={() => setLedgerTypeFilter("boost_payment")}
                 className={`px-3 py-1 rounded-lg text-[11px] font-semibold cursor-pointer ${
                   ledgerTypeFilter === "boost_payment" ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground"
-                }`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 Crédito Bruto (Cliente)
               </button>
@@ -620,7 +620,7 @@ function AdminAdsNetworkPage() {
                 onClick={() => setLedgerTypeFilter("waesy_fee_retention")}
                 className={`px-3 py-1 rounded-lg text-[11px] font-semibold cursor-pointer ${
                   ledgerTypeFilter === "waesy_fee_retention" ? "bg-amber-600 text-white" : "bg-muted text-muted-foreground"
-                }`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 Retenção Software Fee
               </button>
@@ -629,7 +629,7 @@ function AdminAdsNetworkPage() {
                 onClick={() => setLedgerTypeFilter("external_ad_spend")}
                 className={`px-3 py-1 rounded-lg text-[11px] font-semibold cursor-pointer ${
                   ledgerTypeFilter === "external_ad_spend" ? "bg-sky-600 text-white" : "bg-muted text-muted-foreground"
-                }`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 Injeção em Leilão (Meta/Google)
               </button>

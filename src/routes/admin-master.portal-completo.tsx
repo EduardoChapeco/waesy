@@ -128,7 +128,7 @@ function AdminMasterPortalCompletoPage() {
             activeTab === "waitlist"
               ? "bg-primary text-primary-foreground shadow-2xs"
               : "text-muted-foreground hover:bg-muted/50"
-          }`}
+          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
         >
           Fila de Espera & Migração ({waitlist.length})
         </button>
@@ -139,7 +139,7 @@ function AdminMasterPortalCompletoPage() {
             activeTab === "content"
               ? "bg-primary text-primary-foreground shadow-2xs"
               : "text-muted-foreground hover:bg-muted/50"
-          }`}
+          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
         >
           Editor da Landing Page (CMS)
         </button>

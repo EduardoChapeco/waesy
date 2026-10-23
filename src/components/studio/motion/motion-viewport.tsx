@@ -377,7 +377,7 @@ export function MotionStudioViewport({
                         isSelected
                           ? "bg-amber-500/20 border-amber-400 text-amber-300 ring-1 ring-amber-400/40"
                           : "bg-zinc-800/80 border-zinc-700/60 text-zinc-300 hover:border-zinc-500"
-                      }`}
+                      } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                       style={{
                         left: `${left}%`,
                         width: `${Math.max(width, 6)}%`,

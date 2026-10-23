@@ -229,7 +229,7 @@ export function EventoLineup({ eventId }: EventoLineupProps) {
               <button
                 type="button"
                 onClick={() => handleDelete(art.id)}
-                className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-muted transition-colors"
+                className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 title="Excluir atração"
               >
                 <Trash2 className="size-4" />

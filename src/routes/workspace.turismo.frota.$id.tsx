@@ -418,7 +418,7 @@ function VehicleLayoutEditorPage() {
  <button
  type="button"
  onClick={() => setActiveDeck(1)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
  activeDeck === 1
  ? "bg-primary text-primary-foreground shadow-2xs"
@@ -430,7 +430,7 @@ function VehicleLayoutEditorPage() {
  <button
  type="button"
  onClick={() => setActiveDeck(2)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
  activeDeck === 2
  ? "bg-primary text-primary-foreground shadow-2xs"
@@ -451,7 +451,7 @@ function VehicleLayoutEditorPage() {
  key={tool.type}
  type="button"
  onClick={() => setActiveTool(tool.type)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-3 py-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer flex items-center gap-2",
  isSelected
  ? "border-primary bg-primary/10 text-primary ring-2 ring-primary/20 shadow-2xs"
@@ -491,7 +491,7 @@ function VehicleLayoutEditorPage() {
  key={cat.key}
  type="button"
  onClick={() => setActiveCategory(cat.key)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-3 py-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer flex items-center gap-2",
  isSelected
  ? "border-primary bg-primary/10 text-primary ring-2 ring-primary/20 shadow-2xs"
@@ -547,7 +547,7 @@ function VehicleLayoutEditorPage() {
  type="button"
  onClick={(e) => handleCellClick(r, c, e)}
  title={`Linha ${r + 1}, Coluna ${c + 1}: ${cell?.label || cellType} (${cell?.category || ""})`}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "size-11 sm:size-12 rounded-lg flex flex-col items-center justify-center font-bold text-xs transition-all cursor-pointer select-none active:scale-95",
  // Estilização por Tipo
  cellType === "seat" &&
@@ -689,7 +689,7 @@ function VehicleLayoutEditorPage() {
  <button
  type="button"
  onClick={() => handleApplyPreset("exec_46")}
- className="p-4 rounded-lg border border-border hover:border-primary text-left transition-all hover:bg-muted/40 cursor-pointer space-y-1"
+ className="p-4 rounded-lg border border-border hover:border-primary text-left transition-all hover:bg-muted/40 cursor-pointer space-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="font-bold text-sm text-foreground flex items-center gap-2">
  <Bus className="size-4 text-primary" /> 46L Executivo
@@ -702,7 +702,7 @@ function VehicleLayoutEditorPage() {
  <button
  type="button"
  onClick={() => handleApplyPreset("semi_42")}
- className="p-4 rounded-lg border border-border hover:border-primary text-left transition-all hover:bg-muted/40 cursor-pointer space-y-1"
+ className="p-4 rounded-lg border border-border hover:border-primary text-left transition-all hover:bg-muted/40 cursor-pointer space-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="font-bold text-sm text-foreground flex items-center gap-2">
  <Bus className="size-4 text-emerald-500" /> 42L Semi-Leito
@@ -715,7 +715,7 @@ function VehicleLayoutEditorPage() {
  <button
  type="button"
  onClick={() => handleApplyPreset("dd_60")}
- className="p-4 rounded-lg border border-border hover:border-primary text-left transition-all hover:bg-muted/40 cursor-pointer space-y-1 sm:col-span-2"
+ className="p-4 rounded-lg border border-border hover:border-primary text-left transition-all hover:bg-muted/40 cursor-pointer space-y-1 sm:col-span-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="font-bold text-sm text-foreground flex items-center gap-2">
  <Layers className="size-4 text-amber-500" /> 60L Double Decker (G8 DD)
@@ -728,7 +728,7 @@ function VehicleLayoutEditorPage() {
  <button
  type="button"
  onClick={() => handleApplyPreset("micro_28")}
- className="p-4 rounded-lg border border-border hover:border-primary text-left transition-all hover:bg-muted/40 cursor-pointer space-y-1 sm:col-span-2"
+ className="p-4 rounded-lg border border-border hover:border-primary text-left transition-all hover:bg-muted/40 cursor-pointer space-y-1 sm:col-span-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="font-bold text-sm text-foreground flex items-center gap-2">
  <Bus className="size-4 text-indigo-500" /> 28L Micro-ônibus

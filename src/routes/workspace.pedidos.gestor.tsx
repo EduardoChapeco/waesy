@@ -433,7 +433,7 @@ function KDSPage() {
  <button
  type="button"
  onClick={() => setTimingTab("now")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer",
  timingTab === "now"
  ? "bg-background text-foreground shadow-2xs"
@@ -449,7 +449,7 @@ function KDSPage() {
  <button
  type="button"
  onClick={() => setTimingTab("scheduled")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer",
  timingTab === "scheduled"
  ? "bg-background text-foreground shadow-2xs"
@@ -477,7 +477,7 @@ function KDSPage() {
  key={ch.id}
  type="button"
  onClick={() => setChannelFilter(ch.id)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer border",
  channelFilter === ch.id
  ? "bg-foreground text-background border-foreground"
@@ -501,7 +501,7 @@ function KDSPage() {
  <button
  type="button"
  onClick={() => setSearchQuery("")}
- className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+ className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  
  </button>
@@ -521,7 +521,7 @@ function KDSPage() {
  <button
  type="button"
  onClick={() => setAlertModalOpen(true)}
- className="font-bold underline hover:text-rose-900 dark:hover:text-rose-200 cursor-pointer"
+ className="font-bold underline hover:text-rose-900 dark:hover:text-rose-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  Intervir e Avisar Cozinha / Cliente
  </button>
@@ -571,7 +571,7 @@ function KDSPage() {
  <div className="rounded-lg border border-border bg-card overflow-hidden">
  <div className="p-4 border-b border-border/80 flex items-center justify-between">
  <div>
- <h3 className="text-sm font-bold text-foreground">Live Dashboard de Pedidos e Acompanhamento de SLA</h3>
+ <h3 className="text-sm font-bold text-foreground">Gestor de Pedidos</h3>
  <p className="text-xs text-muted-foreground">Monitoramento segundo a segundo para eliminação de gargalos operacionais</p>
  </div>
  <Badge variant="outline" className="font-mono text-xs font-bold bg-muted/40">
@@ -634,7 +634,7 @@ function KDSPage() {
  </div>
  </div>
 
- <div className="flex items-center gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
+ <div /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */ className="flex items-center gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
  {(ord.customer_snapshot?.phone || ord.customer?.phone) && (
  <Button
  size="icon"
@@ -1120,7 +1120,7 @@ function KDSPage() {
  <button
  type="button"
  onClick={() => setSheetTab("details")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer",
  sheetTab === "details"
  ? "bg-background text-foreground shadow-2xs"
@@ -1132,7 +1132,7 @@ function KDSPage() {
  <button
  type="button"
  onClick={() => setSheetTab("customer")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer",
  sheetTab === "customer"
  ? "bg-background text-foreground shadow-2xs"
@@ -1144,7 +1144,7 @@ function KDSPage() {
  <button
  type="button"
  onClick={() => setSheetTab("history")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer",
  sheetTab === "history"
  ? "bg-background text-foreground shadow-2xs"

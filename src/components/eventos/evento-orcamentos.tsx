@@ -501,7 +501,7 @@ export function EventoOrcamentos({ eventId }: EventoOrcamentosProps) {
                 <button
                   type="button"
                   onClick={() => handleRemoveItem(item.id)}
-                  className="p-1 rounded-lg text-muted-foreground hover:text-destructive hover:bg-muted transition-colors"
+                  className="p-1 rounded-lg text-muted-foreground hover:text-destructive hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   title="Remover item"
                 >
                   <Trash2 className="size-3.5" />

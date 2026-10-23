@@ -414,7 +414,7 @@ function WorkspaceFaturasPage() {
                         <button
                           type="button"
                           onClick={() => setPreviewReceiptUrl(inv.receipt_url)}
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           <FileText className="size-3" />
                           <span>Ver Anexo</span>

@@ -80,7 +80,7 @@ export function BuilderGlobalThemePanel({
  });
  toast.info("Tema restaurado para o padrão limpo.");
  }}
- className="size-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted flex items-center justify-center cursor-pointer"
+ className="size-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  title="Restaurar padrão"
  >
  <RotateCcw className="size-3.5" />
@@ -101,7 +101,7 @@ export function BuilderGlobalThemePanel({
  theme.primaryColor === preset.primary && theme.backgroundColor === preset.bg;
 
  return (
- <div
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  key={preset.name}
  onClick={() => {
  onChangeTheme({
@@ -111,7 +111,7 @@ export function BuilderGlobalThemePanel({
  });
  toast.success(`Paleta "${preset.name}" aplicada!`);
  }}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "p-3 rounded-lg border flex items-center justify-between cursor-pointer transition-all",
  isSelected
  ? "bg-primary/5 border-primary shadow-2xs font-bold"
@@ -213,7 +213,7 @@ export function BuilderGlobalThemePanel({
  key={opt.id}
  type="button"
  onClick={() => onChangeTheme({ borderRadius: opt.id })}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "py-2 px-3 rounded-lg border text-xs font-semibold transition-all cursor-pointer text-center",
  isSelected
  ? "bg-primary text-primary-foreground font-bold shadow-2xs border-primary"

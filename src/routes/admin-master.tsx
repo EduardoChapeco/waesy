@@ -203,8 +203,8 @@ function AdminMasterLayout() {
  {/* Mobile Drawer */}
  {isMobileOpen && (
  <div className="fixed inset-0 z-50 md:hidden flex">
- <div
- className="fixed inset-0 bg-black/60 backdrop-blur-xs"
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
+ className="fixed inset-0 bg-black/60 backdrop-blur-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  onClick={() => setIsMobileOpen(false)}
  />
  <aside className="relative w-72 max-w-[80vw] bg-background border-r border-border h-full flex flex-col z-10">
@@ -237,7 +237,7 @@ function AdminMasterLayout() {
  to={item.to}
  activeOptions={{ exact: (item as any).exact }}
  onClick={() => setIsMobileOpen(false)}
- className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 [&.active]:bg-primary [&.active]:text-primary-foreground transition-colors cursor-pointer"
+ className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 [&.active]:bg-primary [&.active]:text-primary-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Icon className="size-4 shrink-0" />
  <span>{item.label}</span>

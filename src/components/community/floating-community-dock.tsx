@@ -193,7 +193,7 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
 
  <button
  onClick={() => setIsExpanded(false)}
- className="size-7 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors cursor-pointer"
+ className="size-7 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  aria-label="Fechar compositor"
  >
  <X size={15} weight="bold" />
@@ -210,7 +210,7 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  key={fmt.id}
  type="button"
  onClick={() => setActiveFormat(fmt.id as PostType)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-3 py-2 min-h-11 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0",
  isSelected
  ? "bg-foreground text-background shadow-xs"
@@ -287,7 +287,7 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  <button
  type="button"
  onClick={() => handleRemoveMedia(idx)}
- className="absolute top-1 right-1 size-8 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-destructive transition-colors cursor-pointer"
+ className="absolute top-1 right-1 size-8 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-destructive transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Trash size={12} weight="bold" />
  </button>

@@ -734,7 +734,7 @@ function CommunityHomePage() {
                                 niche: item.category || undefined,
                               })
                             }
-                            className="inline-flex items-center gap-1 text-xs text-muted-foreground/75 font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 cursor-pointer"
+                            className="inline-flex items-center gap-1 text-xs text-muted-foreground/75 font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             <WhatsappLogo size={14} weight="bold" />
                             <span>WhatsApp</span>
@@ -1265,7 +1265,7 @@ function CommunityHomePage() {
                             entityTitle: item.title,
                           })
                         }
-                        className="inline-flex items-center gap-1 text-xs text-muted-foreground/75 font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 cursor-pointer"
+                        className="inline-flex items-center gap-1 text-xs text-muted-foreground/75 font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <WhatsappLogo size={14} weight="bold" />
                         <span>WhatsApp</span>

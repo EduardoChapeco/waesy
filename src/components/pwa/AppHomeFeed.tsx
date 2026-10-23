@@ -159,7 +159,7 @@ export const AppHomeFeed: React.FC<AppHomeFeedProps> = ({
                     onAddToCart?.(prod.id);
                   }}
                   style={{ backgroundColor: themeColor }}
-                  className="w-full h-8 rounded-lg text-white font-semibold text-xs flex items-center justify-center gap-1 active:scale-95 transition-transform"
+                  className="w-full h-8 rounded-lg text-white font-semibold text-xs flex items-center justify-center gap-1 active:scale-95 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <ShoppingBag className="size-3" />
                   <span>Adicionar</span>

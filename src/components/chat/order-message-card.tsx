@@ -55,7 +55,7 @@ export const OrderMessageCard: React.FC<OrderMessageCardProps> = ({
  <button
  onClick={copyOrderId}
  type="button"
- className="text-muted-foreground hover:text-foreground transition-colors p-1 cursor-pointer"
+ className="text-muted-foreground hover:text-foreground transition-colors p-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  title="Copiar ID"
  >
  <Copy className="size-3" />

@@ -95,7 +95,7 @@ function FeedPage() {
                     isActive
                       ? "bg-card text-foreground shadow-2xs font-bold"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   {tab.label}
                 </button>

@@ -166,7 +166,7 @@ function StorePrivacySettingsPage() {
                   accessType === opt.id
                     ? "border-primary bg-primary/10 shadow-xs ring-1 ring-primary/20"
                     : "border-border/60 bg-muted/20 hover:border-foreground/20"
-                }`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 <div className="flex items-center justify-between">
                   <opt.icon

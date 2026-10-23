@@ -32,7 +32,7 @@ export function PostThemeSelector({ selectedThemeId, onSelectTheme }: PostThemeS
  key={theme.id}
  type="button"
  onClick={() => onSelectTheme(theme.id)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "p-3 rounded-lg border text-left flex flex-col justify-between transition-all duration-150 relative overflow-hidden",
  isSelected
  ? "border-primary ring-1 ring-primary/40 bg-card "

@@ -60,12 +60,12 @@ export function UnifiedFeedCard({
   if (mode === "grid") {
     if (hasMedia && primaryMedia) {
       return (
-        <div
+        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
           onClick={() => {
             if (onSelectPost) onSelectPost(post);
             else if (onPreviewMedia) onPreviewMedia(primaryMedia);
           }}
-          className="group aspect-square rounded-lg overflow-hidden bg-muted/30 relative cursor-pointer border border-border/40 hover:border-foreground/40 transition-all select-none"
+          className="group aspect-square rounded-lg overflow-hidden bg-muted/30 relative cursor-pointer border border-border/40 hover:border-foreground/40 transition-all select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <img
             src={primaryMedia}
@@ -89,9 +89,9 @@ export function UnifiedFeedCard({
 
     // Modo Grid para Post de Texto Puro — Card de Nota Threads (Sem quadrado de imagem vazia/quebrada)
     return (
-      <div
+      <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
         onClick={() => onSelectPost?.(post)}
-        className="group aspect-square rounded-lg bg-gray-50 dark:bg-zinc-900/60 border border-border/50 hover:border-foreground/30 p-4 sm:p-4 flex flex-col justify-between cursor-pointer transition-all select-none"
+        className="group aspect-square rounded-lg bg-gray-50 dark:bg-zinc-900/60 border border-border/50 hover:border-foreground/30 p-4 sm:p-4 flex flex-col justify-between cursor-pointer transition-all select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <div className="flex items-center gap-2 min-w-0">
           {authorAvatar ? (
@@ -187,9 +187,9 @@ export function UnifiedFeedCard({
       {/* Corpo: Se tiver mídia = Card Visual Instagram; Se for apenas texto = Nota Threads */}
       {hasMedia && primaryMedia ? (
         <>
-          <div
+          <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
             onClick={() => onPreviewMedia?.(primaryMedia)}
-            className="w-full max-h-[520px] bg-muted/20 overflow-hidden cursor-pointer flex items-center justify-center"
+            className="w-full max-h-[520px] bg-muted/20 overflow-hidden cursor-pointer flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <img
               src={primaryMedia}
@@ -227,7 +227,7 @@ export function UnifiedFeedCard({
           <button
             type="button"
             onClick={() => onSelectPost?.(post)}
-            className="inline-flex items-center gap-2 hover:text-foreground transition-colors cursor-pointer font-medium"
+            className="inline-flex items-center gap-2 hover:text-foreground transition-colors cursor-pointer font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Heart className="size-4" />
             <span>{likesCount}</span>
@@ -235,7 +235,7 @@ export function UnifiedFeedCard({
           <button
             type="button"
             onClick={() => onSelectPost?.(post)}
-            className="inline-flex items-center gap-2 hover:text-foreground transition-colors cursor-pointer font-medium"
+            className="inline-flex items-center gap-2 hover:text-foreground transition-colors cursor-pointer font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <MessageCircle className="size-4" />
             <span>{commentsCount}</span>
@@ -248,7 +248,7 @@ export function UnifiedFeedCard({
               navigator.share({ title: authorName, text: textContent, url: window.location.href }).catch(() => {});
             }
           }}
-          className="inline-flex items-center gap-1 hover:text-foreground transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1 hover:text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           aria-label="Compartilhar publicação"
         >
           <Share2 className="size-3.5" />

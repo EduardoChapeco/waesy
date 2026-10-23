@@ -361,7 +361,7 @@ export function CreatorProfileSheetEditor({
                       type="button"
                       onClick={() => avatarInputRef.current?.click()}
                       disabled={isUploadingMedia}
-                      className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white gap-1 cursor-pointer"
+                      className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       title={isAffiliate ? "Alterar Foto do Parceiro" : "Alterar Foto do Perfil"}
                     >
                       <Camera className="size-4" />
@@ -396,7 +396,7 @@ export function CreatorProfileSheetEditor({
                       type="button"
                       onClick={() => coverInputRef.current?.click()}
                       disabled={isUploadingMedia}
-                      className="absolute top-2.5 right-2.5 bg-background/90 hover:bg-background border border-border/80 text-foreground px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-xs transition-transform active:scale-95"
+                      className="absolute top-2.5 right-2.5 bg-background/90 hover:bg-background border border-border/80 text-foreground px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-xs transition-transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       title="Alterar Capa (21:9)"
                     >
                       <Camera className="size-3.5" />
@@ -417,7 +417,7 @@ export function CreatorProfileSheetEditor({
                     <button
                       type="button"
                       onClick={() => setCoverUrl("")}
-                      className="text-[11px] text-destructive hover:underline cursor-pointer"
+                      className="text-[11px] text-destructive hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       Remover Capa
                     </button>

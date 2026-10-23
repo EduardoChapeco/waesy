@@ -61,6 +61,8 @@ export const SUPPLIER_ITEM_CATEGORIES = [
 
 export const SETTLEMENT_METHODS = [
   { id: "fatura_abatida", label: "Abatimento em fatura (Net)" },
+  { id: "comissao_balcao_a_vista", label: "Comissão à vista no balcão (Sem repasse operadora)" },
+  { id: "abatimento_saldo_devedor", label: "Abatimento de saldo devedor anterior" },
   { id: "deposito_bancario", label: "Depósito bancário" },
   { id: "pix", label: "PIX em conta" },
   { id: "credito_operadora", label: "Crédito na operadora" },
@@ -179,6 +181,8 @@ export interface SaleFinancialCalculationInput {
   over_net_override_cents?: number | null;
 
   internal_costs?: InternalCostItem[];
+  settlement_method?: string;
+  retained_cash_amount_cents?: number;
 }
 
 export interface SaleFinancialCalculationResult {
@@ -212,6 +216,12 @@ export interface SaleFinancialCalculationResult {
   net_result_cents: number;
   margin_on_sale_pct: number;
   margin_on_revenue_pct: number;
+
+  // Bloco 7: Conciliação de Balcão e Saldo com Operadora
+  retained_cash_amount_cents: number;
+  operator_balance_cents: number;
+  is_cash_settled: boolean;
+  requires_operator_invoice: boolean;
 }
 
 /**
@@ -336,6 +346,24 @@ export function calculateSaleFinancials(
       ? Number(((netResultCents / agencyRevenueCents) * 100).toFixed(2))
       : 0;
 
+  // 7. Conciliação de Balcão e Saldo com Operadora
+  const isCashSettled = input.settlement_method === "comissao_balcao_a_vista";
+  const retainedCashAmountCents =
+    input.retained_cash_amount_cents !== undefined && input.retained_cash_amount_cents !== null
+      ? Math.max(0, Math.round(input.retained_cash_amount_cents))
+      : isCashSettled
+        ? agencyRevenueCents
+        : 0;
+
+  // Saldo com a operadora:
+  // Se positivo: a operadora deve repassar à agência (contas a receber)
+  // Se negativo: a agência reteve a mais e deve para a operadora (abater de faturas futuras)
+  // Se zero: quitado integralmente no balcão
+  const operatorBalanceCents = agencyRevenueCents - retainedCashAmountCents;
+
+  // Isenção de emissão de NFSe para operadora se o valor foi retido direto no balcão
+  const requiresOperatorInvoice = !isCashSettled && operatorBalanceCents > 0;
+
   return {
     gross_sale_cents: grossSaleCents,
     non_commissionable_cents: nonCommissionableCents,
@@ -356,5 +384,9 @@ export function calculateSaleFinancials(
     net_result_cents: netResultCents,
     margin_on_sale_pct: marginOnSalePct,
     margin_on_revenue_pct: marginOnRevenuePct,
+    retained_cash_amount_cents: retainedCashAmountCents,
+    operator_balance_cents: operatorBalanceCents,
+    is_cash_settled: isCashSettled,
+    requires_operator_invoice: requiresOperatorInvoice,
   };
 }

@@ -181,7 +181,7 @@ function AdminResourcesPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         eyebrow="Agenda & Agendamentos"
         title="Recursos"
         actions={
@@ -197,7 +197,7 @@ function AdminResourcesPage() {
           Carregando recursos...
         </div>
       ) : resources.length === 0 ? (
-        <EmptyState
+        <EmptyState /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
           title="Nenhum Recurso Cadastrado"
           action={
             <Button onClick={openNewResourceModal} className="rounded-lg font-bold text-xs">

@@ -486,7 +486,7 @@ function WorkspacePackagesPage() {
           <div className="p-6 space-y-4">
             <SheetHeader className="pb-3 border-b border-border/60">
               <SheetTitle className="text-base font-bold text-foreground">
-                {editingPkg?.id ? "Editar Pacote de Aulas / Serviços" : "Novo Pacote de Aulas / Serviços"}
+                {editingPkg?.id ? "Editar Pacote" : "Novo Pacote"}
               </SheetTitle>
             </SheetHeader>
 

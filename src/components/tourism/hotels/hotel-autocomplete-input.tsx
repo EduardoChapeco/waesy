@@ -56,7 +56,7 @@ export function HotelAutocompleteInput({
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         onClick={() => setIsOpen((open) => !open)}
-        className="flex min-h-11 w-full items-center justify-between rounded-lg border border-border bg-background px-3 text-left text-sm hover:border-primary/50 disabled:cursor-not-allowed disabled:opacity-60"
+        className="flex min-h-11 w-full items-center justify-between rounded-lg border border-border bg-background px-3 text-left text-sm hover:border-primary/50 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <span className="flex min-w-0 items-center gap-2 truncate">
           <HotelIcon className="size-4 shrink-0 text-muted-foreground" />
@@ -98,7 +98,7 @@ export function HotelAutocompleteInput({
                     setIsOpen(false);
                     setQuery("");
                   }}
-                  className="flex min-h-11 w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm hover:bg-muted"
+                  className="flex min-h-11 w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <span className="min-w-0 truncate">
                     <span className="block truncate font-medium">{hotel.name}</span>

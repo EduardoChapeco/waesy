@@ -92,7 +92,7 @@ export function ImageHotspots({
  }
  }}
  aria-label={spot.title || `Produto ${index + 1}`}
- className={`absolute -translate-x-1/2 -translate-y-1/2 group focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-full z-10 transition-transform ${isActive ? "scale-125 z-20" : "hover:scale-110"}`}
+ className={`absolute -translate-x-1/2 -translate-y-1/2 group focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-full z-10 transition-transform ${isActive ? "scale-125 z-20" : "hover:scale-110"} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  {/* Outer pulsing ring */}
  <span className="absolute -inset-2 rounded-full bg-primary/40 animate-ping opacity-75" />
@@ -114,7 +114,7 @@ export function ImageHotspots({
  <button
  type="button"
  onClick={() => setActiveHotspot(null)}
- className="p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent"
+ className="p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <X className="w-4 h-4" />
  </button>

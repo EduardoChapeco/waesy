@@ -131,7 +131,7 @@ function PublicRecipesPage() {
           <button
             key={cat}
             onClick={() => setSelectedCategory(cat)}
-            className={cn(
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "text-xs sm:text-sm font-medium whitespace-nowrap transition-colors relative py-1 cursor-pointer",
               selectedCategory === cat
                 ? "text-foreground font-semibold after:absolute after:-bottom-2 after:left-0 after:right-0 after:h-0.5 after:bg-foreground"
@@ -321,10 +321,10 @@ function PublicRecipesPage() {
 
                   <div className="space-y-2 p-3 rounded-lg bg-card border border-border/50">
                     {selectedRecipe.ingredients.map((ing, idx) => (
-                      <div
+                      <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                         key={idx}
                         onClick={() => toggleIngredient(idx)}
-                        className={cn(
+                        className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                           "flex items-start gap-3 p-2 rounded-lg text-xs cursor-pointer select-none transition-colors",
                           checkedIngredients[idx]
                             ? "line-through text-muted-foreground/60 bg-muted/20"

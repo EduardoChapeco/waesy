@@ -75,7 +75,7 @@ export function ShopTheLookSection({
  type="button"
  onClick={() => setActiveHotspotId(spot.id)}
  style={{ left: `${spot.xPercent}%`, top: `${spot.yPercent}%` }}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "absolute -translate-x-1/2 -translate-y-1/2 size-8 sm:size-9 rounded-full flex items-center justify-center cursor-pointer transition-all shadow-lg",
  isSelected
  ? "bg-primary text-primary-foreground scale-110 ring-4 ring-primary/30"

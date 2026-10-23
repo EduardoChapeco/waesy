@@ -411,7 +411,12 @@ export function ClassifiedDetailDesktop({
   }, [attrs, classified, images, locationText]);
 
   return (
-    <div className="w-full min-h-[100dvh] bg-background text-foreground pb-16">
+    <div
+      data-active-template={templateStyle}
+      data-active-niche={niche.id}
+      data-render-mode="desktop-native"
+      className="w-full min-h-[100dvh] bg-background text-foreground pb-16"
+    >
       {/* ── BREADCRUMBS & TOP BAR ACTIONS (Desktop) ── */}
       <div className="w-full max-w-7xl mx-auto px-6 pt-5 pb-4 flex items-center justify-between gap-4">
         {/* Breadcrumb Limpo */}
@@ -545,6 +550,19 @@ export function ClassifiedDetailDesktop({
               <Badge variant="outline" className="text-xs font-bold text-primary border-primary/30 bg-primary/10">
                 {niche.shortLabel || niche.title}
               </Badge>
+              <Badge variant="secondary" data-template-badge={templateStyle} className="text-xs font-semibold">
+                {templateStyle === "automotivo"
+                  ? "Showroom Automotivo"
+                  : templateStyle === "imobiliario"
+                  ? "Ficha Patrimonial"
+                  : templateStyle === "resort_hotel"
+                  ? "Estadia & Hospitalidade"
+                  : templateStyle === "servicos_agenda"
+                  ? "Agenda & Serviços"
+                  : templateStyle === "editorial"
+                  ? "Dossiê Editorial"
+                  : "Vitrine Padrão"}
+              </Badge>
               {classified.condition && !["hospitality_stay", "real_estate_sale", "real_estate_rent", "service", "job", "event", "travel", "digital", "subscription", "business"].includes(niche.id) && (
                 <Badge variant="secondary" className="text-xs font-medium">
                   {classified.condition === "new" ? "Novo na Caixa" : classified.condition === "refurbished" ? "Revisado" : "Usado"}
@@ -599,6 +617,97 @@ export function ClassifiedDetailDesktop({
           {/* Destaque Visual por Modelo Canônico */}
           {(displayMode === "continuous_list" || activeTab === "overview") && (
             <>
+              {/* Strip Canônico do Template Selecionado (Desktop Native) */}
+              {templateStyle === "automotivo" && (
+                <div data-template-strip="automotivo" className="rounded-lg border border-border/70 bg-muted/20 p-5 space-y-3">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-2">
+                      <Car className="size-4 text-primary" />
+                      <span className="text-xs font-bold uppercase tracking-wider text-foreground">Showroom Automotivo & Telemetria</span>
+                    </div>
+                    <Badge variant="outline" className="text-xs font-semibold border-primary/30 text-primary">Vistoria & Procedência</Badge>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+                    <div className="rounded-lg bg-card border border-border/50 p-3">
+                      <span className="text-xs text-muted-foreground block">Ano / Modelo</span>
+                      <span className="text-sm font-bold text-foreground break-words">{attrs.year || attrs.year_model || "Consulte"}</span>
+                    </div>
+                    <div className="rounded-lg bg-card border border-border/50 p-3">
+                      <span className="text-xs text-muted-foreground block">Quilometragem</span>
+                      <span className="text-sm font-bold text-foreground break-words">{attrs.mileage || attrs.mileage_km ? `${attrs.mileage || attrs.mileage_km} km` : "Consulte"}</span>
+                    </div>
+                    <div className="rounded-lg bg-card border border-border/50 p-3">
+                      <span className="text-xs text-muted-foreground block">Câmbio</span>
+                      <span className="text-sm font-bold text-foreground break-words">{attrs.transmission || "Original"}</span>
+                    </div>
+                    <div className="rounded-lg bg-card border border-border/50 p-3">
+                      <span className="text-xs text-muted-foreground block">Combustível</span>
+                      <span className="text-sm font-bold text-foreground break-words">{attrs.fuel || "Flex"}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {templateStyle === "resort_hotel" && (
+                <div data-template-strip="resort_hotel" className="rounded-lg border border-border/70 bg-muted/20 p-5 flex items-center justify-between gap-4">
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <Hotel className="size-4 text-primary" />
+                      <span className="text-xs font-bold text-foreground block">Estadia, Check-in & Hospitalidade</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground break-words">
+                      Check-in: {attrs.checkin_time || "14:00"} • Check-out: {attrs.checkout_time || "12:00"} {attrs.max_guests ? `• Até ${attrs.max_guests} hóspedes` : ""}
+                    </p>
+                  </div>
+                  {onOpenBookingModal && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onOpenBookingModal()}
+                      className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg border-primary/40 text-primary hover:bg-primary/10 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      Consultar Datas
+                    </Button>
+                  )}
+                </div>
+              )}
+
+              {templateStyle === "servicos_agenda" && (
+                <div data-template-strip="servicos_agenda" className="rounded-lg border border-border/70 bg-muted/20 p-5 flex items-center justify-between gap-4">
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <Briefcase className="size-4 text-primary" />
+                      <span className="text-xs font-bold text-foreground block">Agenda Profissional & Escopo de Atendimento</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground break-words">
+                      Modalidade: {attrs.modality === "online" ? "Remoto / Online" : attrs.modality === "domicilio" ? "Em Domicílio" : "Presencial"} {attrs.availability ? `• ${attrs.availability}` : ""}
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleStartNativeChat("Olá, gostaria de consultar disponibilidade na agenda.")}
+                    className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg border-primary/40 text-primary hover:bg-primary/10 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    Agendar Horário
+                  </Button>
+                </div>
+              )}
+
+              {templateStyle === "editorial" && (
+                <div data-template-strip="editorial" className="rounded-lg border border-primary/25 bg-primary/5 p-5 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Compass className="size-4 text-primary" />
+                    <span className="text-xs font-bold uppercase tracking-wider text-primary">Dossiê Curatorial Editorial</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed break-words">
+                    Apresentação expandida com narrativa completa, especificações verificadas e atendimento direto com o anunciante.
+                  </p>
+                </div>
+              )}
+
               {/* Ações Comerciais Específicas: Propostas, Troca e Visitas */}
               {templateStyle === "automotivo" && (attrs.accepts_trade || attrs.accepts_financing || attrs.negotiable) && (
                 <div className="rounded-lg border border-primary/20 bg-primary/5 p-5 flex items-center justify-between gap-4">

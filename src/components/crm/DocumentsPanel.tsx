@@ -204,7 +204,7 @@ export function DocumentsPanel({
  <button
  type="button"
  onClick={() => handleDelete(doc.id)}
- className="text-muted-foreground hover:text-destructive transition-colors p-1"
+ className="text-muted-foreground hover:text-destructive transition-colors p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  title="Excluir documento"
  >
  <Trash2 className="size-3.5" />

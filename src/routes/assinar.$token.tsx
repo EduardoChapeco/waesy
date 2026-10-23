@@ -331,7 +331,7 @@ function SignContractPage() {
                   <button
                     type="button"
                     onClick={captureSelfie}
-                    className="absolute bottom-3 left-1/2 -translate-x-1/2 h-11 px-6 rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-xs hover:opacity-90 transition-opacity"
+                    className="absolute bottom-3 left-1/2 -translate-x-1/2 h-11 px-6 rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-xs hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     Tirar Foto
                   </button>
@@ -347,7 +347,7 @@ function SignContractPage() {
                         type="button"
                         onClick={uploadSelfie}
                         disabled={isUploadingSelfie}
-                        className="h-8 px-3 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50"
+                        className="h-8 px-3 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         {isUploadingSelfie ? "Confirmando..." : "Confirmar"}
                       </button>
@@ -355,7 +355,7 @@ function SignContractPage() {
                     <button
                       type="button"
                       onClick={retakeSelfie}
-                      className="h-8 px-3 rounded-lg text-xs font-semibold bg-muted text-foreground hover:bg-muted/80"
+                      className="h-8 px-3 rounded-lg text-xs font-semibold bg-muted text-foreground hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <RefreshCcw className="size-3 inline mr-1" />
                       Refazer
@@ -368,7 +368,7 @@ function SignContractPage() {
                 <button
                   type="button"
                   onClick={openCamera}
-                  className="w-full h-11 rounded-lg border border-dashed border-border/80 flex items-center justify-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+                  className="w-full h-11 rounded-lg border border-dashed border-border/80 flex items-center justify-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <Camera className="size-4" />
                   Abrir câmera e capturar selfie

@@ -77,22 +77,11 @@ function StoreCartPage() {
 
   return (
     <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 md:px-0 space-y-4 sm:space-y-6 pb-28 lg:pb-16">
-      {/* ── Sub-Header Silencioso Nativo ── */}
-      <div className="flex items-center justify-between pb-3 border-b border-border/40 pt-1">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => (window.history.length > 1 ? window.history.back() : router.navigate({ to: "/" }))}
-            className="size-11 sm:hidden rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
-            aria-label="Voltar"
-          >
-            <ArrowLeft className="size-5" />
-          </Button>
-          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
-            Meu Carrinho
-          </h1>
-        </div>
+      {/* ── Sub-Header Silencioso Nativo (Apenas Desktop — No Mobile, AppShell provê NativeMobileHeader canônico) ── */}
+      <div className="hidden sm:flex items-center justify-between pb-3 border-b border-border/40 pt-1">
+        <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
+          Meu Carrinho
+        </h1>
         {selectedCart && (
           <span className="text-xs text-muted-foreground font-semibold">
             {selectedCart.itemCount} {selectedCart.itemCount === 1 ? "item" : "itens"}
@@ -126,8 +115,8 @@ function StoreCartPage() {
                 variant="default"
                 className="p-4 sm:p-6 rounded-lg border border-border/80 bg-card space-y-4"
               >
-                <div
-                  className="flex items-center justify-between cursor-pointer group pb-3 border-b border-border/40"
+                <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
+                  className="flex items-center justify-between cursor-pointer group pb-3 border-b border-border/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   onClick={() => setSelectedStoreId(cart.storeId)}
                 >
                   <div className="flex items-center gap-3">
@@ -191,7 +180,7 @@ function StoreCartPage() {
                                 </p>
                               )}
                             {item.isOutOfStock && (
-                              <p className="text-[11px] font-bold text-destructive mt-1 block">
+                              <p className="text-2xs font-bold text-destructive mt-1 block">
                                 Sem estoque disponível
                               </p>
                             )}
@@ -318,7 +307,7 @@ function StoreCartPage() {
         <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 pb-safe bg-background border-t border-border/60 z-40">
           <div className="flex items-center justify-between gap-3 max-w-lg mx-auto">
             <div>
-              <span className="text-[10px] text-muted-foreground uppercase tracking-wider block font-semibold">
+              <span className="text-2xs text-muted-foreground uppercase tracking-wider block font-semibold">
                 Total Estimado
               </span>
               <span className="text-base sm:text-lg font-black font-mono text-foreground leading-none">
@@ -335,7 +324,7 @@ function StoreCartPage() {
                 Remover Esgotados
               </Button>
             ) : (
-              <Button asChild className="flex-1 max-w-[220px] h-12 font-bold rounded-lg text-sm flex items-center justify-center gap-2 bg-primary text-primary-foreground shadow-none active:scale-95 transition-all cursor-pointer">
+              <Button asChild className="flex-1 max-w-56 h-12 font-bold rounded-lg text-sm flex items-center justify-center gap-2 bg-primary text-primary-foreground shadow-none active:scale-95 transition-colors cursor-pointer">
                 <Link to="/checkout" search={{ store: selectedCart.storeId }}>
                   <span>Finalizar Compra</span>
                   <ArrowRight className="size-4 shrink-0" />

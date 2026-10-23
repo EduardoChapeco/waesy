@@ -310,10 +310,10 @@ function CriarNegocioPage() {
  },
  });
 
- if (result?.storeId) {
-    setClientContextCookies({ context: "store", storeId: result.storeId });
-    await setTenantContext({ data: { store_id: result.storeId } }).catch(() => null);
-  }
+    if (result?.storeId) {
+      setClientContextCookies({ context: "store", storeId: result.storeId });
+      await setTenantContext({ data: { store_id: result.storeId } });
+    }
 
   toast.success(`Negócio "${result?.storeName || name}" cadastrado com sucesso! Redirecionando...`);
   window.location.href = result?.storeId ? `/workspace?storeId=${result.storeId}` : "/workspace";
@@ -335,7 +335,7 @@ function CriarNegocioPage() {
  ];
 
  return (
-  <div className="w-full max-w-6xl mx-auto py-2 space-y-6 animate-in fade-in duration-200">
+  <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-2 pb-32 pb-safe space-y-6 animate-in fade-in duration-200">
   {/* ── Top Bar de Retorno / Atalho ao Workspace ou Início + Seletor de Modo ── */}
   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
   <NativeBackButton fallbackHref={session?.memberships && session.memberships.length > 0 ? "/workspace" : "/"} />
@@ -345,7 +345,7 @@ function CriarNegocioPage() {
   <button
   type="button"
   onClick={() => setMode("expresso")}
-  className={cn(
+  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
   "px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2",
   mode === "expresso"
   ? "bg-background text-foreground shadow-xs"
@@ -358,7 +358,7 @@ function CriarNegocioPage() {
   <button
   type="button"
   onClick={() => setMode("avancado")}
-  className={cn(
+  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
   "px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2",
   mode === "avancado"
   ? "bg-background text-foreground shadow-xs"
@@ -435,7 +435,7 @@ function CriarNegocioPage() {
  setStep(s.number as OnboardingStep);
  }
  }}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "flex items-center gap-2 p-2 rounded-lg text-left transition-all",
  isActive && "bg-primary text-primary-foreground font-bold shadow-xs",
  isPassed && "bg-muted/40 text-foreground hover:bg-muted/60 cursor-pointer",
@@ -486,7 +486,7 @@ function CriarNegocioPage() {
  key={cat.id}
  type="button"
  onClick={() => setActiveCategoryFilter(cat.id)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all",
  activeCategoryFilter === cat.id
  ? "bg-foreground text-background font-bold"
@@ -516,10 +516,10 @@ function CriarNegocioPage() {
  const IconComp = segment.icon;
 
  return (
- <div
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  key={segment.id}
  onClick={() => handleSelectNicheAndProceed(segment.id)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "group relative h-64 rounded-lg overflow-hidden cursor-pointer transition-all duration-200 border flex flex-col justify-between p-5 select-none active:scale-[0.98]",
  isSelected
  ? "border-primary ring-2 ring-primary shadow-xs"

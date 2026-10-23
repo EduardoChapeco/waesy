@@ -606,7 +606,7 @@ function ClassificadosIndex() {
                   <Link
                     to="/classificados/$id"
                     params={{ id: ad.id }}
-                    className="relative size-16 shrink-0 rounded-lg overflow-hidden bg-muted flex items-center justify-center"
+                    className="relative size-20 shrink-0 rounded-lg overflow-hidden bg-muted flex items-center justify-center border border-border/40"
                   >
                     {thumbUrl ? (
                       isVideo ? (
@@ -615,10 +615,10 @@ function ClassificadosIndex() {
                         <img src={thumbUrl} alt={ad.title} loading="lazy" onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }} className="size-full object-cover" />
                       )
                     ) : (
-                      <ImageIcon className="size-6 text-muted-foreground/35" />
+                      <ImageIcon className="size-7 text-muted-foreground/35" />
                     )}
                     {isBoosted && (
-                      <span className="absolute top-1 left-1 px-1 py-0.2 rounded bg-amber-500 text-primary-foreground text-xs font-black uppercase">
+                      <span className="absolute top-1 left-1 px-2 py-0 rounded bg-amber-500 text-primary-foreground text-xs font-black uppercase">
                         Boost
                       </span>
                     )}
@@ -626,28 +626,29 @@ function ClassificadosIndex() {
 
                   {/* Conteúdo Central */}
                   <div className="flex-1 min-w-0 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <Link
-                        to="/classificados/$id"
-                        params={{ id: ad.id }}
-                        className="text-xs font-bold text-foreground break-words text-wrap leading-tight hover:text-primary transition-colors flex-1"
-                      >
-                        {ad.title}
-                      </Link>
+                    <div className="flex items-center gap-2 flex-wrap">
                       <Badge
                         variant="outline"
                         className={cn("text-xs font-mono px-2 py-0 shrink-0", statusConf.className)}
                       >
                         {statusConf.label}
                       </Badge>
+                      <span className="text-xs text-muted-foreground capitalize">
+                        {niche.shortLabel}
+                      </span>
                     </div>
 
+                    <Link
+                      to="/classificados/$id"
+                      params={{ id: ad.id }}
+                      className="text-sm font-bold text-foreground break-words text-wrap leading-snug hover:text-primary transition-colors block line-clamp-2"
+                    >
+                      {ad.title}
+                    </Link>
+
                     <div className="flex items-baseline justify-between gap-1">
-                      <span className="text-xs font-bold font-mono text-foreground">
+                      <span className="text-sm font-black font-mono text-foreground">
                         {ad.price_cents != null ? (ad.price_cents === 0 ? "Doação" : formatMoney(ad.price_cents)) : "—"}
-                      </span>
-                      <span className="text-xs text-muted-foreground capitalize break-words text-wrap leading-tight">
-                        {niche.shortLabel}
                       </span>
                     </div>
 

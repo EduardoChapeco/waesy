@@ -1,1755 +1,2133 @@
-import React, { useState, useMemo, useEffect, useRef } from "react";
-import { Link } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   Calendar,
-  Clock,
   MapPin,
+  Clock,
   Ticket,
   Share2,
-  ExternalLink,
   ShieldCheck,
+  CheckCircle2,
   Users,
   Mic,
-  HelpCircle,
-  CheckCircle2,
-  Building,
-  Navigation,
-  Car,
-  Coffee,
-  Download,
-  Edit3,
-  Phone,
-  Check,
-  Sparkles,
+  Award,
+  BarChart3,
   Info,
-  ChevronRight,
-  Send,
-  Loader2,
-  X,
-  Play,
-  Volume2,
-  VolumeX,
+  ExternalLink,
   Smartphone,
+  QrCode,
+  Play,
+  Copy,
+  Check,
+  MessageCircle,
+  Edit3,
+  Car,
+  Accessibility,
+  RefreshCcw,
+  BadgePercent,
+  Lock,
+  Plus,
+  Send,
+  Star,
+  Download,
+  Image as ImageIcon,
+  ChevronDown,
+  Navigation,
+  Building2,
 } from "lucide-react";
-
-function isVideoUrl(url?: string | null): boolean {
-  if (!url) return false;
-  return /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(url);
-}
+import { formatCanonicalAddress } from "@/lib/format-address";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { SquircleCard } from "@/components/ui/squircle-card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { MapLibreCanvas } from "@/components/mobility/maplibre-canvas";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { formatMoney } from "@/lib/money";
-import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 import {
-  registerClassifiedEventLead,
-  submitClassifiedEventSurveyVote,
-  getClassifiedEventSurveyResults,
-  type SurveyVoteResponseItem,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { formatMoney } from "@/lib/money";
+import { useIsDesktop } from "@/hooks/use-mobile";
+import {
+  normalizeEventDomain,
+  buildEventCalendarLinks,
+  type EventTicketTierNormalized,
+} from "@/lib/classifieds/event-domain";
+import {
+  checkoutClassifiedEventTicket,
+  voteClassifiedEventSurvey,
+  getClassifiedEventPublicWall,
+  submitClassifiedEventTestimonial,
+  verifyClassifiedTicketByCode,
 } from "@/services/classifieds-events.functions";
 
-export interface EventTicketTier {
-  id: string;
-  name: string;
-  price_cents?: number;
-  price?: number;
-  external_url?: string;
-  purchase_url?: string;
-  batch?: string;
-  description?: string;
-  status?: "available" | "active" | "sold_out" | "coming_soon";
-  included_items?: string[];
-}
-
-export interface EventScheduleItem {
-  id: string;
-  time: string;
-  end_time?: string;
-  stage_or_room?: string;
-  stage?: string;
-  title: string;
-  description?: string;
-  speaker_name?: string;
-  speaker_role?: string;
-  speaker_photo?: string;
-  is_break?: boolean;
-}
-
-export interface EventSpeaker {
-  id: string;
-  name: string;
-  role: string;
-  photo_url?: string;
-  avatar_url?: string;
-  company?: string;
-  bio?: string;
-  social_link?: string;
-  social_url?: string;
-}
-
-export interface EventSponsor {
-  id: string;
-  name: string;
-  tier: "master" | "ouro" | "prata" | "apoio";
-  logo_url?: string;
-  website_url?: string;
-}
-
-export interface EventSurvey {
-  id: string;
-  question: string;
-  options: string[];
-  allow_anonymous?: boolean;
-  is_active?: boolean;
-  active?: boolean;
-}
+export type {
+  EventTicketTier,
+  EventScheduleItem,
+  EventSpeaker,
+  EventSponsor,
+  EventSurvey,
+  EventPollOptionNormalized,
+} from "@/lib/classifieds/event-domain";
 
 export interface EventClassifiedShowcaseViewProps {
   classified: any;
   isOwner?: boolean;
   onEditClassified?: () => void;
+  previewViewport?: "mobile" | "desktop" | "auto";
+  templateStyle?: "editorial" | "standard";
+  displayMode?: "tabs" | "continuous_list";
 }
 
 export function EventClassifiedShowcaseView({
   classified,
   isOwner = false,
   onEditClassified,
+  previewViewport = "auto",
 }: EventClassifiedShowcaseViewProps) {
-  const attrs = classified.attributes || {};
+  const queryClient = useQueryClient();
+  const isViewportDesktop = useIsDesktop(1024);
+  const effectiveIsDesktop =
+    previewViewport === "mobile"
+      ? false
+      : previewViewport === "desktop"
+      ? true
+      : isViewportDesktop;
 
-  // Formatação de Datas e Horários
-  const eventDateRaw = attrs.event_date || classified.event_date;
-  const eventEndDateRaw = attrs.end_date || classified.end_date;
-  const startTime = attrs.start_time || "09:00";
-  const endTime = attrs.end_time;
-  const gatesOpenTime = attrs.gates_open_time;
+  const event = normalizeEventDomain(classified);
+  const calendarLinks = buildEventCalendarLinks(
+    event,
+    typeof window !== "undefined" ? window.location.href : undefined
+  );
 
-  const dateObject = useMemo(() => {
-    if (!eventDateRaw) return null;
-    const [y, m, d] = String(eventDateRaw).split("-").map(Number);
-    if (!y || !m || !d) return null;
-    return new Date(y, m - 1, d);
-  }, [eventDateRaw]);
+  // Selected Ticket Tier (defaults to first purchasable tier, or first tier)
+  const defaultTierId =
+    event.active_ticket_tiers[0]?.id || event.ticket_tiers[0]?.id || null;
+  const [selectedTierId, setSelectedTierId] = useState<string | null>(defaultTierId);
+  const [heroImageFailed, setHeroImageFailed] = useState(false);
+  const canonicalVenueAddress = formatCanonicalAddress(event.venue_address, event.city, event.state);
 
-  const formattedDate = useMemo(() => {
-    if (!dateObject) return "Data a definir";
-    return dateObject.toLocaleDateString("pt-BR", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
-  }, [dateObject]);
-
-  const dayNumber = dateObject ? String(dateObject.getDate()).padStart(2, "0") : "--";
-  const monthAbbr = dateObject
-    ? dateObject.toLocaleDateString("pt-BR", { month: "short" }).toUpperCase()
-    : "DATA";
-
-  // Localização
-  const venueName = attrs.venue_name || classified.location_name || "Local a confirmar";
-  const venueAddress = attrs.venue_address || classified.location_text || "";
-  const cityState = [classified.city, classified.state].filter(Boolean).join(" - ");
-
-  // Ingressos, Programação, Palestrantes e Patrocinadores
-  const ticketTiers: EventTicketTier[] = Array.isArray(attrs.ticket_tiers) ? attrs.ticket_tiers : [];
-  const schedule: EventScheduleItem[] = Array.isArray(attrs.schedule) ? attrs.schedule : [];
-  const speakers: EventSpeaker[] = Array.isArray(attrs.speakers) ? attrs.speakers : [];
-  const sponsors: EventSponsor[] = Array.isArray(attrs.sponsors) ? attrs.sponsors : [];
-  const surveys: EventSurvey[] = Array.isArray(attrs.surveys) ? attrs.surveys : [];
-  const policies = attrs.policies || {};
-
-  // Mídia
-  const bannerUrl = attrs.banner_image_url || classified.images?.[0] || "";
-  const extraImages: string[] = Array.isArray(classified.images) ? classified.images : [];
-  const videoUrl = attrs.video_url || "";
-
-  // Dados do Story 9:16, Anfitrião (Luma style) e PWA
-  const storyUrl = attrs.story_url || "";
-  const storyAutoOpen = !!attrs.story_auto_open;
-  const pwaEnabled = !!attrs.pwa_enabled;
-  const hostName = attrs.host_name || classified.store?.name || classified.profiles?.full_name || "Organizador";
-  const hostAvatarUrl = attrs.host_avatar_url || classified.store?.logo_url || classified.profiles?.avatar_url || "";
-  const hostPhone = attrs.host_phone || classified.contact_whatsapp || "";
-  const hostRole = attrs.host_role || "Anfitrião do Evento";
-
-  // Estado do Story 9:16
-  const [isStoryOpen, setIsStoryOpen] = useState(false);
-  const [storyProgress, setStoryProgress] = useState(0);
-  const [isStoryMuted, setIsStoryMuted] = useState(false);
-  const storyVideoRef = useRef<HTMLVideoElement | null>(null);
-
-  // Auto-Abertura do Story (Respeita 1x por sessão para UX suave)
   useEffect(() => {
-    if (storyUrl && storyAutoOpen && typeof window !== "undefined") {
-      const key = `waesy_story_seen_${classified.id}`;
-      if (!sessionStorage.getItem(key)) {
-        sessionStorage.setItem(key, "1");
-        setIsStoryOpen(true);
-      }
+    const nextDefault =
+      event.active_ticket_tiers[0]?.id || event.ticket_tiers[0]?.id || null;
+    if (!selectedTierId || !event.ticket_tiers.some((t) => t.id === selectedTierId)) {
+      setSelectedTierId(nextDefault);
     }
-  }, [storyUrl, storyAutoOpen, classified.id]);
+  }, [event.ticket_tiers, event.active_ticket_tiers, selectedTierId]);
 
-  // Temporizador para Story de Imagem
+  const selectedTier: EventTicketTierNormalized | null =
+    event.ticket_tiers.find((t) => t.id === selectedTierId) ||
+    event.active_ticket_tiers[0] ||
+    event.ticket_tiers[0] ||
+    null;
+
+  // Multi-day schedule tab state
+  const [selectedScheduleDayKey, setSelectedScheduleDayKey] = useState<string>(
+    event.schedule_days[0]?.day_key || "default"
+  );
   useEffect(() => {
-    if (!isStoryOpen || isVideoUrl(storyUrl)) return;
-    setStoryProgress(0);
-    const durationMs = 7000;
-    const intervalMs = 100;
-    const increment = (intervalMs / durationMs) * 100;
+    if (
+      event.schedule_days.length > 0 &&
+      !event.schedule_days.some((d) => d.day_key === selectedScheduleDayKey)
+    ) {
+      setSelectedScheduleDayKey(event.schedule_days[0].day_key);
+    }
+  }, [event.schedule_days, selectedScheduleDayKey]);
 
-    const timer = setInterval(() => {
-      setStoryProgress((prev) => {
-        if (prev + increment >= 100) {
-          clearInterval(timer);
-          setIsStoryOpen(false);
-          return 100;
-        }
-        return prev + increment;
-      });
-    }, intervalMs);
-
-    return () => clearInterval(timer);
-  }, [isStoryOpen, storyUrl]);
-
-  // Estado de Inscrição Rápida (Modal)
-  const [selectedTicketForSignup, setSelectedTicketForSignup] = useState<EventTicketTier | null>(null);
-  const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
-  const [leadName, setLeadName] = useState("");
-  const [leadWhatsapp, setLeadWhatsapp] = useState("");
-  const [leadEmail, setLeadEmail] = useState("");
-  const [leadNotes, setLeadNotes] = useState("");
-  const [isSubmittingLead, setIsSubmittingLead] = useState(false);
-  const [leadSuccess, setLeadSuccess] = useState(false);
-
-  // Estado de Enquetes ao Vivo
-  const [votedSurveys, setVotedSurveys] = useState<Record<string, number>>({});
-  const [isAnonymousVote, setIsAnonymousVote] = useState<Record<string, boolean>>({});
-  const [surveyResults, setSurveyResults] = useState<
-    Record<string, { totalVotes: number; percentages: Record<number, number>; responses?: SurveyVoteResponseItem[] }>
-  >({});
-  const [isVotingSurvey, setIsVotingSurvey] = useState(false);
-
-  // Navegação Fluida por Âncoras do Menu de Abas (App Nativo Luma)
+  // Anchor Navigation + ScrollSpy
   const [activeSection, setActiveSection] = useState<string>("sobre");
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof IntersectionObserver === "undefined") {
+      return;
+    }
+    const sectionIds = event.available_sections.map((s) => `section-${s.id}`);
+    const elements = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => Boolean(el));
+
+    if (elements.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+        if (visible.length > 0) {
+          const id = visible[0].target.id.replace(/^section-/, "");
+          setActiveSection(id);
+        }
+      },
+      {
+        rootMargin: "-20% 0px -65% 0px",
+        threshold: [0.1, 0.25, 0.5],
+      }
+    );
+
+    for (const el of elements) {
+      observer.observe(el);
+    }
+    return () => observer.disconnect();
+  }, [event.available_sections]);
 
   const scrollToSection = (sectionId: string) => {
     setActiveSection(sectionId);
-    const element = document.getElementById(sectionId);
-    if (element) {
-      const yOffset = -90;
-      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-      window.scrollTo({ top: y, behavior: "smooth" });
+    if (typeof document !== "undefined") {
+      const el = document.getElementById(`section-${sectionId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     }
   };
 
-  // Carregamento Inicial dos Resultados das Enquetes ao Vivo
+  // Calendar Menu state
+  const [calendarMenuOpen, setCalendarMenuOpen] = useState(false);
+
+  // Lightbox state for Exclusive Gallery
+  const [lightboxImageUrl, setLightboxImageUrl] = useState<string | null>(null);
+
+  // Story Viewer Modal
+  const [storyViewerOpen, setStoryViewerOpen] = useState(false);
   useEffect(() => {
-    if (surveys.length > 0 && classified.id) {
-      surveys.forEach((survey) => {
-        getClassifiedEventSurveyResults({
-          data: { classifiedId: classified.id, surveyId: survey.id },
-        })
-          .then((res) => {
-            if (res) {
-              setSurveyResults((prev) => ({
-                ...prev,
-                [survey.id]: {
-                  totalVotes: res.totalVotes,
-                  percentages: res.percentages,
-                  responses: res.responses || [],
-                },
-              }));
-            }
-          })
-          .catch(() => null);
-      });
-    }
-  }, [surveys, classified.id]);
-
-  // Abertura do Modal de Inscrição
-  const [issuedTicket, setIssuedTicket] = useState<{
-    ticketCode: string;
-    qrPayload: string;
-    signature: string;
-    pixCopyPaste: string | null;
-    amountCents: number;
-  } | null>(null);
-
-  const handleOpenSignup = (tier?: EventTicketTier) => {
-    setSelectedTicketForSignup(tier || null);
-    setIsSignupModalOpen(true);
-    setLeadSuccess(false);
-    setIssuedTicket(null);
-  };
-
-  const handleSubmitLead = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!leadName.trim() || leadName.length < 2) {
-      toast.error("Informe seu nome completo.");
-      return;
-    }
-    if (!leadWhatsapp.trim() || leadWhatsapp.length < 8) {
-      toast.error("Informe um WhatsApp válido para receber a confirmação.");
-      return;
-    }
-
-    setIsSubmittingLead(true);
-    try {
-      const res = await registerClassifiedEventLead({
-        data: {
-          classifiedId: classified.id,
-          name: leadName.trim(),
-          whatsapp: leadWhatsapp.trim(),
-          email: leadEmail.trim() || undefined,
-          ticketTierId: selectedTicketForSignup?.id,
-          ticketTierName: selectedTicketForSignup?.name,
-          ticketTierPriceCents: selectedTicketForSignup?.price_cents,
-          notes: leadNotes.trim() || undefined,
-        },
-      });
-
-      if (res?.ticketCode) {
-        setIssuedTicket({
-          ticketCode: res.ticketCode,
-          qrPayload: res.qrPayload,
-          signature: res.signature,
-          pixCopyPaste: res.pixCopyPaste || null,
-          amountCents: res.amountCents || 0,
-        });
+    if (
+      event.story_url &&
+      event.story_auto_open &&
+      typeof window !== "undefined" &&
+      previewViewport === "auto"
+    ) {
+      const key = `waesy_story_seen_${event.id}`;
+      if (!sessionStorage.getItem(key)) {
+        sessionStorage.setItem(key, "1");
+        setStoryViewerOpen(true);
       }
-      setLeadSuccess(true);
-      toast.success("Inscrição e bilhete criptográfico gerados com sucesso!");
-    } catch (err: any) {
-      toast.error(err?.message || "Não foi possível confirmar a sua inscrição.");
-    } finally {
-      setIsSubmittingLead(false);
     }
-  };
+  }, [event.story_url, event.story_auto_open, event.id, previewViewport]);
 
-  // Votação em Enquetes com Suporte a Anonimato
-  const handleVoteSurvey = async (survey: EventSurvey, optionIndex: number, optionLabel: string) => {
-    if (votedSurveys[survey.id] !== undefined) return;
-    setIsVotingSurvey(true);
-    try {
-      const isAnon = isAnonymousVote[survey.id] ?? true;
-      await submitClassifiedEventSurveyVote({
+  // Checkout Modal State
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [ticketQty, setTicketQty] = useState(1);
+  const [buyerName, setBuyerName] = useState("");
+  const [buyerWhatsapp, setBuyerWhatsapp] = useState("");
+  const [buyerDocument, setBuyerDocument] = useState("");
+  const [buyerEmail, setBuyerEmail] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"pix" | "card" | "free">("pix");
+  const [issuedResult, setIssuedResult] = useState<any | null>(null);
+  const [copiedPix, setCopiedPix] = useState(false);
+
+  // Check-in Validator Modal
+  const [validatorOpen, setValidatorOpen] = useState(false);
+  const [verifyCodeInput, setVerifyCodeInput] = useState("");
+  const [verifyResult, setVerifyResult] = useState<any | null>(null);
+
+  // Testimonial Form
+  const [testimonialOpen, setTestimonialOpen] = useState(false);
+  const [testName, setTestName] = useState("");
+  const [testRating, setTestRating] = useState(5);
+  const [testComment, setTestComment] = useState("");
+
+  // Local Poll Votes Tracking
+  const [votedPolls, setVotedPolls] = useState<Record<string, string>>({});
+
+  // Public Wall Query
+  const isRealUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+    event.id
+  );
+  const { data: wallData } = useQuery({
+    queryKey: ["classified-event-wall", event.id],
+    queryFn: () => getClassifiedEventPublicWall({ data: { classifiedId: event.id } }),
+    enabled: isRealUuid,
+  });
+
+  const attendees = wallData?.attendees || [];
+  const totalConfirmed = wallData?.totalConfirmed || 0;
+  const testimonials = wallData?.testimonials || [];
+
+  // Checkout Mutation
+  const checkoutMutation = useMutation({
+    mutationFn: (payload: any) => checkoutClassifiedEventTicket({ data: payload }),
+    onSuccess: (res) => {
+      setIssuedResult(res);
+      toast.success("Inscrição confirmada e ingresso emitido!");
+      queryClient.invalidateQueries({ queryKey: ["classified-event-wall", event.id] });
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || "Não foi possível emitir o ingresso.");
+    },
+  });
+
+  // Survey Vote Mutation
+  const voteMutation = useMutation({
+    mutationFn: (payload: { surveyId: string; optionId: string }) =>
+      voteClassifiedEventSurvey({
         data: {
-          classifiedId: classified.id,
-          surveyId: survey.id,
-          optionIndex,
-          optionLabel,
-          isAnonymous: isAnon,
+          classifiedId: event.id,
+          surveyId: payload.surveyId,
+          optionId: payload.optionId,
         },
-      });
-
-      setVotedSurveys((prev) => ({ ...prev, [survey.id]: optionIndex }));
-
-      // Busca resultados atualizados com respostas para organizador
-      const res = await getClassifiedEventSurveyResults({
-        data: { classifiedId: classified.id, surveyId: survey.id },
-      });
-
-      if (res) {
-        setSurveyResults((prev) => ({
-          ...prev,
-          [survey.id]: {
-            totalVotes: res.totalVotes,
-            percentages: res.percentages,
-            responses: res.responses || [],
-          },
-        }));
-      }
+      }),
+    onSuccess: (_, variables) => {
+      setVotedPolls((prev) => ({ ...prev, [variables.surveyId]: variables.optionId }));
       toast.success("Voto computado com sucesso!");
-    } catch (err: any) {
-      toast.error(err?.message || "Erro ao registrar voto na enquete.");
-    } finally {
-      setIsVotingSurvey(false);
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || "Erro ao registrar voto.");
+    },
+  });
+
+  // Testimonial Mutation
+  const testimonialMutation = useMutation({
+    mutationFn: (payload: any) => submitClassifiedEventTestimonial({ data: payload }),
+    onSuccess: () => {
+      toast.success("Depoimento publicado no mural do evento!");
+      setTestimonialOpen(false);
+      setTestName("");
+      setTestComment("");
+      queryClient.invalidateQueries({ queryKey: ["classified-event-wall", event.id] });
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || "Erro ao enviar avaliação.");
+    },
+  });
+
+  // Check-in Verify Mutation
+  const verifyMutation = useMutation({
+    mutationFn: (code: string) =>
+      verifyClassifiedTicketByCode({
+        data: { ticketCode: code, markAsCheckedIn: isOwner },
+      }),
+    onSuccess: (res) => {
+      setVerifyResult(res);
+      if (res.valid) {
+        toast.success(
+          res.checkedInNow ? "Check-in realizado com sucesso!" : "Ingresso autêntico!"
+        );
+      } else {
+        toast.error(res.message || "Ingresso não encontrado.");
+      }
+    },
+  });
+
+  const handleOpenCheckout = (tier?: EventTicketTierNormalized | null) => {
+    const targetTier = tier || selectedTier;
+    if (targetTier) {
+      if (!targetTier.is_purchasable) {
+        toast.info(`Este lote não está disponível (${targetTier.lifecycle_badge_label}).`);
+        return;
+      }
+      if (targetTier.external_url) {
+        window.open(targetTier.external_url, "_blank", "noopener,noreferrer");
+        return;
+      }
+      setSelectedTierId(targetTier.id);
+      setPaymentMethod(targetTier.is_free ? "free" : "pix");
+    } else if (event.external_ticket_url) {
+      window.open(event.external_ticket_url, "_blank", "noopener,noreferrer");
+      return;
+    } else {
+      setPaymentMethod("free");
     }
+    setIssuedResult(null);
+    setCheckoutOpen(true);
   };
 
-  // Gerador de Arquivo de Calendário .ics (Download Direto)
-  const handleDownloadCalendar = () => {
-    if (!dateObject) {
-      toast.error("Data do evento não configurada.");
-      return;
-    }
-
-    const pad = (n: number) => String(n).padStart(2, "0");
-    const y = dateObject.getFullYear();
-    const m = pad(dateObject.getMonth() + 1);
-    const d = pad(dateObject.getDate());
-
-    const [startH, startMin] = startTime.split(":").map((v: string) => pad(Number(v) || 0));
-    const [endH, endMin] = (endTime || "18:00").split(":").map((v: string) => pad(Number(v) || 0));
-
-    const dtStart = `${y}${m}${d}T${startH}${startMin}00`;
-    const dtEnd = `${y}${m}${d}T${endH}${endMin}00`;
-
-    const summary = classified.title || "Evento Waesy";
-    const desc = (classified.content || "").replace(/\n/g, "\\n");
-    const loc = [venueName, venueAddress, cityState].filter(Boolean).join(", ");
-
-    const icsData = [
-      "BEGIN:VCALENDAR",
-      "VERSION:2.0",
-      "PRODID:-//Waesy Inc//Waesy Events//PT",
-      "CALSCALE:GREGORIAN",
-      "METHOD:PUBLISH",
-      "BEGIN:VEVENT",
-      `UID:waesy-event-${classified.id}@waesy.com`,
-      `DTSTAMP:${y}${m}${d}T000000Z`,
-      `DTSTART:${dtStart}`,
-      `DTEND:${dtEnd}`,
-      `SUMMARY:${summary}`,
-      `DESCRIPTION:${desc}`,
-      `LOCATION:${loc}`,
-      "STATUS:CONFIRMED",
-      "END:VEVENT",
-      "END:VCALENDAR",
-    ].join("\r\n");
-
-    const blob = new Blob([icsData], { type: "text/calendar;charset=utf-8" });
+  const handleDownloadIcs = () => {
+    const blob = new Blob([calendarLinks.icsContent], {
+      type: "text/calendar;charset=utf-8",
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `evento-${classified.id.slice(0, 8)}.ics`;
-    document.body.appendChild(a);
+    a.download = calendarLinks.icsFilename;
     a.click();
-    document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    toast.success("Arquivo de calendário gerado! Abra para salvar na sua agenda.");
+    setCalendarMenuOpen(false);
+    toast.success("Arquivo .ics baixado para sua agenda!");
   };
 
-  // Compartilhar
-  const handleShare = () => {
+  const handleShare = async () => {
+    const url = typeof window !== "undefined" ? window.location.href : "";
     if (typeof navigator !== "undefined" && navigator.share) {
-      navigator
-        .share({
-          title: classified.title,
-          text: `Confira o evento ${classified.title} no Waesy`,
-          url: window.location.href,
-        })
-        .catch(() => null);
-    } else if (typeof navigator !== "undefined" && navigator.clipboard) {
-      navigator.clipboard.writeText(window.location.href);
-      toast.success("Link do evento copiado para a área de transferência!");
+      try {
+        await navigator.share({
+          title: event.title,
+          text: `Confira o evento ${event.title}`,
+          url,
+        });
+        return;
+      } catch {}
+    }
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link do evento copiado!");
     }
   };
 
-  // Agrupamento de Patrocinadores por Cota
-  const sponsorsByTier = useMemo(() => {
-    return {
-      master: sponsors.filter((s) => s.tier === "master"),
-      ouro: sponsors.filter((s) => s.tier === "ouro"),
-      prata: sponsors.filter((s) => s.tier === "prata"),
-      apoio: sponsors.filter((s) => s.tier === "apoio"),
-    };
-  }, [sponsors]);
+  const activeDayGroup =
+    event.schedule_days.find((d) => d.day_key === selectedScheduleDayKey) ||
+    event.schedule_days[0] ||
+    null;
 
   return (
-    <div className="w-full min-h-screen bg-background text-foreground pb-32 pb-safe">
-      {/* ── 1. Hero Cinematográfico ── */}
-      <section className="relative w-full border-b border-border/50 bg-card overflow-hidden">
-        {bannerUrl ? (
-          <div className="relative w-full h-64 sm:h-96 md:h-96 overflow-hidden bg-muted">
+    <div className="min-h-screen bg-background pb-32 pb-safe">
+      {/* 1. CLEAN WIDE HERO BANNER (ZERO HEAVY SHADOW OVERLAY, CONTROLLABLE FOCAL POINT) */}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-4 sm:pt-6">
+        <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] rounded-lg overflow-hidden border border-border/60 bg-muted">
+          {event.hero_image_url && !heroImageFailed ? (
             <img
-              src={bannerUrl}
-              alt={classified.title}
-              className="w-full h-full object-cover"
-              loading="eager"
+              src={event.hero_image_url}
+              alt={event.title}
+              onError={() => setHeroImageFailed(true)}
+              className={`w-full h-full object-cover ${
+                event.hero_focal_point === "top"
+                  ? "object-top"
+                  : event.hero_focal_point === "bottom"
+                  ? "object-bottom"
+                  : "object-center"
+              }`}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-          </div>
-        ) : (
-          <div className="w-full h-32 bg-muted/40" />
-        )}
-
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 relative -mt-20 sm:-mt-28 pb-8 space-y-6">
-          {/* Convite & Destaques de Abertura (Luma Style) */}
-          <div className="flex items-center gap-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-semibold">
-              <Sparkles className="size-3.5" />
-              <span>Você foi convidado para participar</span>
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center bg-muted text-muted-foreground gap-2 p-6 text-center">
+              <Calendar className="size-10 text-primary/60" />
+              <span className="text-xs font-semibold uppercase tracking-wider">
+                Capa Oficial do Evento
+              </span>
             </div>
-            {storyUrl && (
-              <Badge variant="outline" className="rounded-full text-xs font-semibold py-1 px-2.5 border-primary/30 text-primary bg-primary/5">
-                Story 9:16 Disponível
-              </Badge>
+          )}
+
+          {/* Top Floating Utility Controls */}
+          <div className="absolute top-3 right-3 flex items-center gap-2 z-10">
+            {event.story_url && (
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setStoryViewerOpen(true)}
+                className="h-11 min-h-11 rounded-lg bg-background/95 hover:bg-background text-foreground font-bold text-xs gap-2 px-3 border border-border/60 focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <Play className="size-4 text-primary fill-primary" />
+                <span>Story (9:16)</span>
+              </Button>
+            )}
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleShare}
+              className="h-11 min-h-11 rounded-lg bg-background/95 hover:bg-background text-foreground font-semibold text-xs gap-2 px-3 border border-border/60 focus-visible:ring-2 focus-visible:ring-primary"
+              aria-label="Compartilhar evento"
+            >
+              <Share2 className="size-4" />
+              <span className="hidden sm:inline">Compartilhar</span>
+            </Button>
+            {isOwner && onEditClassified && (
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={onEditClassified}
+                className="h-11 min-h-11 rounded-lg bg-background/95 hover:bg-background text-foreground font-semibold text-xs gap-2 px-3 border border-border/60 focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <Edit3 className="size-4" />
+                <span className="hidden sm:inline">Editar</span>
+              </Button>
             )}
           </div>
+        </div>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-6">
-            <div className="flex items-start gap-4 sm:gap-6">
-              {/* Card Calendário Squircle */}
-              <div className="size-20 sm:size-24 rounded-2xl bg-background border border-border shadow-sm flex flex-col items-center justify-center shrink-0 text-center overflow-hidden">
-                <span className="text-xs font-bold text-primary uppercase tracking-wider w-full bg-primary/10 py-1">
-                  {monthAbbr}
-                </span>
-                <span className="text-2xl sm:text-3xl font-black text-foreground leading-none py-1">
-                  {dayNumber}
-                </span>
-              </div>
+        {/* 2. FULL-WIDTH EVENT HEADER & STRUCTURED SUMMARY BAR (ZERO TRUNCATION) */}
+        <header className="mt-4 sm:mt-6 sm:bg-card sm:rounded-lg sm:border sm:border-border/60 py-2 sm:p-6">
+          <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
+            {/* Left: Date Tile + Full-Width Title + Separated Schedule & Metadata */}
+            <div className="flex items-start gap-4 flex-1 min-w-0">
+              {event.date_tile && (
+                <div className="shrink-0 w-16 sm:w-20 rounded-lg border border-primary/30 bg-primary/5 p-3 text-center flex flex-col items-center justify-center">
+                  <span className="text-xs font-bold uppercase tracking-wider text-primary">
+                    {event.date_tile.month_short}
+                  </span>
+                  <span className="text-2xl sm:text-3xl font-black text-foreground leading-none my-1 tabular-nums">
+                    {event.date_tile.day}
+                  </span>
+                  <span className="text-xs font-semibold text-muted-foreground uppercase">
+                    {event.date_tile.weekday_short}
+                  </span>
+                </div>
+              )}
 
-              <div className="space-y-2">
+              <div className="space-y-3 flex-1 min-w-0">
+                {/* Category & Metadata Badges (Separated from Schedule Times!) */}
                 <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="outline" className="rounded-lg text-xs font-semibold py-1 px-2.5 bg-primary/10 text-primary border-primary/20">
-                    <Ticket className="size-3 mr-1" />
-                    <span>Eventos & Ingressos</span>
+                  <Badge className="bg-primary/10 text-primary border border-primary/20 font-bold text-xs px-3 py-1 rounded-md">
+                    {event.modality_label}
                   </Badge>
-
-                  {attrs.visibility === "unlisted" && (
-                    <Badge variant="secondary" className="rounded-lg text-xs font-semibold py-1 px-2.5">
-                      Link Direto / Não Listado
+                  <Badge variant="outline" className="text-xs font-semibold px-3 py-1 rounded-md">
+                    {event.age_rating_label}
+                  </Badge>
+                  {event.visibility === "unlisted" && (
+                    <Badge
+                      variant="outline"
+                      className="text-xs font-semibold px-3 py-1 rounded-md border-amber-500/40 text-amber-600 dark:text-amber-400"
+                    >
+                      Evento Exclusivo (Link Direto)
                     </Badge>
                   )}
-
-                  {attrs.age_rating && (
-                    <Badge variant="outline" className="rounded-lg text-xs font-semibold py-1 px-2.5">
-                      {attrs.age_rating}
+                  {totalConfirmed > 0 && (
+                    <Badge
+                      variant="secondary"
+                      className="text-xs font-semibold px-3 py-1 rounded-md gap-1"
+                    >
+                      <Users className="size-3 text-primary" />
+                      <span>{totalConfirmed} confirmados</span>
                     </Badge>
                   )}
                 </div>
 
-                <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-foreground break-words text-wrap leading-tight">
-                  {classified.title}
+                {/* Full Event Title — 100% Width, Natural Wrap, Zero Truncate */}
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-foreground leading-tight break-words text-wrap">
+                  {event.title}
                 </h1>
 
-                <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-muted-foreground">
-                  <span className="inline-flex items-center gap-1.5 font-medium">
-                    <Calendar className="size-4 text-primary shrink-0" />
-                    <span className="capitalize">{formattedDate}</span>
-                  </span>
-
-                  <span className="inline-flex items-center gap-1.5 font-medium">
-                    <Clock className="size-4 text-primary shrink-0" />
-                    <span>{startTime}{endTime ? ` às ${endTime}` : ""}</span>
-                  </span>
-
-                  <span className="inline-flex items-center gap-1.5 font-medium">
-                    <MapPin className="size-4 text-primary shrink-0" />
-                    <span className="truncate max-w-xs">{venueName}{cityState ? ` • ${cityState}` : ""}</span>
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Ações Rápidas do Cabeçalho */}
-            <div className="flex items-center flex-wrap gap-2 shrink-0 w-full sm:w-auto">
-              {storyUrl && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsStoryOpen(true)}
-                  className="rounded-lg h-11 min-h-11 px-4 text-xs font-bold gap-2 cursor-pointer bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-primary/10 border-primary/30 text-foreground hover:bg-primary/20 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-xs"
-                >
-                  <Play className="size-3.5 fill-primary text-primary" />
-                  <span>Story 9:16</span>
-                </Button>
-              )}
-
-              {isOwner && onEditClassified && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onEditClassified}
-                  className="rounded-lg h-11 min-h-11 px-4 text-xs font-bold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border-border"
-                >
-                  <Edit3 className="size-4" />
-                  <span>Editar Evento</span>
-                </Button>
-              )}
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleDownloadCalendar}
-                className="rounded-lg h-11 min-h-11 px-4 text-xs font-semibold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border-border"
-                title="Salvar no Google Calendar / Apple Agenda"
-              >
-                <Download className="size-4 text-muted-foreground" />
-                <span className="hidden sm:inline">Salvar na Agenda</span>
-              </Button>
-
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={handleShare}
-                className="rounded-lg size-11 min-h-11 min-w-11 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border-border"
-                aria-label="Compartilhar evento"
-              >
-                <Share2 className="size-4 text-muted-foreground" />
-              </Button>
-
-              {ticketTiers.length > 0 && (
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={() => handleOpenSignup(ticketTiers[0])}
-                  className="rounded-lg h-11 min-h-11 px-5 text-xs font-bold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ml-auto sm:ml-0"
-                >
-                  <Ticket className="size-4" />
-                  <span>Garantir Ingresso</span>
-                </Button>
-              )}
-            </div>
-          </div>
-
-          {/* Card do Anfitrião / Organizador (Luma Style "Hosted by") & PWA */}
-          <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-t border-border/40">
-            <div className="flex items-center gap-3 p-3 rounded-2xl bg-card border border-border/70 shadow-xs max-w-md">
-              {hostAvatarUrl ? (
-                <img
-                  src={hostAvatarUrl}
-                  alt={hostName}
-                  className="size-11 min-h-11 min-w-11 rounded-xl object-cover border border-border/80"
-                />
-              ) : (
-                <div className="size-11 min-h-11 min-w-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-sm border border-primary/20">
-                  {hostName.charAt(0).toUpperCase()}
-                </div>
-              )}
-              <div className="min-w-0 flex-1">
-                <span className="text-xs text-muted-foreground font-medium block">
-                  Organizado por
-                </span>
-                <p className="text-xs sm:text-sm font-bold text-foreground truncate">
-                  {hostName}
-                </p>
-                <span className="text-xs text-primary font-medium block truncate">
-                  {hostRole}
-                </span>
-              </div>
-              {hostPhone && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  asChild
-                  className="rounded-lg h-11 min-h-11 px-3 text-xs font-semibold gap-1.5 cursor-pointer border-border shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                >
-                  <a
-                    href={`https://wa.me/55${hostPhone.replace(/\D/g, "")}?text=${encodeURIComponent(
-                      `Olá ${hostName}! Vi o convite para o evento "${classified.title}" e gostaria de tirar uma dúvida.`
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Phone className="size-3.5 text-emerald-600" />
-                    <span className="hidden sm:inline">Contatar</span>
-                  </a>
-                </Button>
-              )}
-            </div>
-
-            {pwaEnabled && (
-              <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-primary/5 border border-primary/20 text-xs text-foreground max-w-sm">
-                <Smartphone className="size-4 text-primary shrink-0" />
-                <span className="text-xs text-muted-foreground leading-tight">
-                  Adicione à tela inicial para acessar ingressos e programação offline.
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Rule B.39 / Luma App-Native Anchor Navigation Bar ── */}
-      <nav aria-label="Navegação das Seções do Evento" className="sticky top-14 z-20 w-full bg-background/95 backdrop-blur-md border-y border-border/50 py-2.5 transition-all shadow-xs">
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar px-4 sm:px-6 max-w-6xl mx-auto">
-          <button
-            type="button"
-            onClick={() => scrollToSection("sobre")}
-            className={cn(
-              "h-10 min-h-10 px-4 rounded-full text-xs font-semibold whitespace-nowrap transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-              activeSection === "sobre"
-                ? "bg-foreground text-background font-bold"
-                : "bg-muted/70 text-muted-foreground hover:text-foreground"
-            )}
-          >
-            Sobre
-          </button>
-          {ticketTiers.length > 0 && (
-            <button
-              type="button"
-              onClick={() => scrollToSection("ingressos")}
-              className={cn(
-                "h-10 min-h-10 px-4 rounded-full text-xs font-semibold whitespace-nowrap transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                activeSection === "ingressos"
-                  ? "bg-foreground text-background font-bold"
-                  : "bg-muted/70 text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <Ticket className="size-3.5" />
-              <span>Ingressos ({ticketTiers.length})</span>
-            </button>
-          )}
-          {schedule.length > 0 && (
-            <button
-              type="button"
-              onClick={() => scrollToSection("programacao")}
-              className={cn(
-                "h-10 min-h-10 px-4 rounded-full text-xs font-semibold whitespace-nowrap transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                activeSection === "programacao"
-                  ? "bg-foreground text-background font-bold"
-                  : "bg-muted/70 text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <Clock className="size-3.5" />
-              <span>Programação</span>
-            </button>
-          )}
-          {speakers.length > 0 && (
-            <button
-              type="button"
-              onClick={() => scrollToSection("palestrantes")}
-              className={cn(
-                "h-10 min-h-10 px-4 rounded-full text-xs font-semibold whitespace-nowrap transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                activeSection === "palestrantes"
-                  ? "bg-foreground text-background font-bold"
-                  : "bg-muted/70 text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <Mic className="size-3.5" />
-              <span>Palestrantes ({speakers.length})</span>
-            </button>
-          )}
-          {surveys.length > 0 && (
-            <button
-              type="button"
-              onClick={() => scrollToSection("enquetes")}
-              className={cn(
-                "h-10 min-h-10 px-4 rounded-full text-xs font-semibold whitespace-nowrap transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                activeSection === "enquetes"
-                  ? "bg-foreground text-background font-bold"
-                  : "bg-muted/70 text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <HelpCircle className="size-3.5" />
-              <span>Enquetes ao Vivo</span>
-            </button>
-          )}
-          {venueName && (
-            <button
-              type="button"
-              onClick={() => scrollToSection("localizacao")}
-              className={cn(
-                "h-10 min-h-10 px-4 rounded-full text-xs font-semibold whitespace-nowrap transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                activeSection === "localizacao"
-                  ? "bg-foreground text-background font-bold"
-                  : "bg-muted/70 text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <MapPin className="size-3.5" />
-              <span>Local & Acesso</span>
-            </button>
-          )}
-          {sponsors.length > 0 && (
-            <button
-              type="button"
-              onClick={() => scrollToSection("patrocinadores")}
-              className={cn(
-                "h-10 min-h-10 px-4 rounded-full text-xs font-semibold whitespace-nowrap transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                activeSection === "patrocinadores"
-                  ? "bg-foreground text-background font-bold"
-                  : "bg-muted/70 text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <Building className="size-3.5" />
-              <span>Patrocinadores</span>
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={() => scrollToSection("politicas")}
-            className={cn(
-              "h-10 min-h-10 px-4 rounded-full text-xs font-semibold whitespace-nowrap transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-              activeSection === "politicas"
-                ? "bg-foreground text-background font-bold"
-                : "bg-muted/70 text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <ShieldCheck className="size-3.5" />
-            <span>Políticas</span>
-          </button>
-          <button
-            type="button"
-            onClick={handleShare}
-            className="h-10 min-h-10 px-4 rounded-full text-xs font-semibold whitespace-nowrap bg-muted/70 text-muted-foreground hover:text-foreground transition-colors shrink-0 flex items-center gap-1.5 ml-auto cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            <Share2 className="size-3.5" />
-            <span>Compartilhar</span>
-          </button>
-        </div>
-      </nav>
-
-      {/* ── 2. Grid Principal (8 Cols Conteúdo + 4 Cols Ingressos/Comercial) ── */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Coluna de Conteúdo (8 Cols) */}
-          <div className="lg:col-span-8 space-y-10">
-            {/* Bloco: Sobre o Evento */}
-            <section id="sobre" className="space-y-4 scroll-mt-28">
-              <h2 className="text-lg sm:text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                <Info className="size-5 text-primary" />
-                <span>Sobre o Evento</span>
-              </h2>
-
-              <div className="prose prose-sm max-w-none text-foreground/90 whitespace-pre-line leading-relaxed text-sm bg-card border border-border/60 rounded-2xl p-5 sm:p-6 shadow-xs">
-                {classified.content || "Nenhuma descrição adicional informada pelo organizador."}
-              </div>
-
-              {/* Grid de Destaques em Squircles */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-                <SquircleCard className="p-4 border border-border/60 flex flex-col justify-between">
-                  <span className="text-xs text-muted-foreground font-medium">Início</span>
-                  <span className="text-base font-bold text-foreground mt-1">{startTime}</span>
-                </SquircleCard>
-
-                <SquircleCard className="p-4 border border-border/60 flex flex-col justify-between">
-                  <span className="text-xs text-muted-foreground font-medium">Portões</span>
-                  <span className="text-base font-bold text-foreground mt-1">{gatesOpenTime || startTime}</span>
-                </SquircleCard>
-
-                <SquircleCard className="p-4 border border-border/60 flex flex-col justify-between">
-                  <span className="text-xs text-muted-foreground font-medium">Classificação</span>
-                  <span className="text-base font-bold text-foreground mt-1">{attrs.age_rating || "Livre"}</span>
-                </SquircleCard>
-
-                <SquircleCard className="p-4 border border-border/60 flex flex-col justify-between">
-                  <span className="text-xs text-muted-foreground font-medium">Formato</span>
-                  <span className="text-base font-bold text-foreground mt-1">Presencial</span>
-                </SquircleCard>
-              </div>
-
-              {/* Vídeo Promocional se houver */}
-              {videoUrl && (
-                <div className="pt-4">
-                  <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
-                    <Sparkles className="size-4 text-primary" />
-                    <span>Apresentação em Vídeo</span>
-                  </h3>
-                  <div className="aspect-video w-full rounded-2xl overflow-hidden border border-border bg-black">
-                    {videoUrl.includes("youtube.com") || videoUrl.includes("youtu.be") ? (
-                      <iframe
-                        src={videoUrl.replace("watch?v=", "embed/")}
-                        title="Vídeo do Evento"
-                        className="w-full h-full"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      />
-                    ) : (
-                      <video src={videoUrl} controls className="w-full h-full object-cover" />
-                    )}
-                  </div>
-                </div>
-              )}
-            </section>
-
-            {/* Bloco: Programação Visual (Schedule / Line-up) */}
-            {schedule.length > 0 && (
-              <section id="programacao" className="space-y-4 pt-4 border-t border-border/40 scroll-mt-28">
-                <div className="flex items-center justify-between gap-4">
-                  <h2 className="text-lg sm:text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                    <Clock className="size-5 text-primary" />
-                    <span>Programação do Evento</span>
-                  </h2>
-                  <Badge variant="outline" className="text-xs font-semibold py-1 px-2.5">
-                    {schedule.length} {schedule.length === 1 ? "Atividade" : "Atividades"}
-                  </Badge>
-                </div>
-
-                <div className="space-y-3">
-                  {schedule.map((item, idx) => (
-                    <div
-                      key={item.id || idx}
-                      className={cn(
-                        "p-4 sm:p-5 rounded-2xl border transition-colors",
-                        item.is_break
-                          ? "bg-muted/40 border-border/40 text-muted-foreground"
-                          : "bg-card border-border/70 hover:border-primary/40 shadow-xs"
-                      )}
-                    >
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs sm:text-sm font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md">
-                            {item.time}{item.end_time ? ` - ${item.end_time}` : ""}
-                          </span>
-                          {item.stage_or_room && (
-                            <Badge variant="secondary" className="text-xs font-semibold py-0.5 px-2">
-                              {item.stage_or_room}
-                            </Badge>
-                          )}
-                        </div>
-
-                        {item.is_break && (
-                          <span className="text-xs text-muted-foreground font-semibold inline-flex items-center gap-1">
-                            <Coffee className="size-3.5" />
-                            <span>Intervalo / Convivência</span>
-                          </span>
-                        )}
-                      </div>
-
-                      <h3 className="text-base font-bold text-foreground break-words text-wrap leading-tight">
-                        {item.title}
-                      </h3>
-
-                      {item.description && (
-                        <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 break-words text-wrap leading-relaxed">
-                          {item.description}
-                        </p>
-                      )}
-
-                      {item.speaker_name && (
-                        <div className="flex items-center gap-2 pt-3 mt-2 border-t border-border/30">
-                          {item.speaker_photo ? (
-                            <img
-                              src={item.speaker_photo}
-                              alt={item.speaker_name}
-                              className="size-7 rounded-full object-cover border border-border"
-                            />
-                          ) : (
-                            <div className="size-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">
-                              {item.speaker_name.charAt(0)}
-                            </div>
-                          )}
-                          <div className="text-xs min-w-0">
-                            <span className="font-bold text-foreground block truncate">{item.speaker_name}</span>
-                            {item.speaker_role && (
-                              <span className="text-muted-foreground truncate block">{item.speaker_role}</span>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Bloco: Palestrantes & Atrações */}
-            {speakers.length > 0 && (
-              <section id="palestrantes" className="space-y-4 pt-4 border-t border-border/40 scroll-mt-28">
-                <h2 className="text-lg sm:text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                  <Mic className="size-5 text-primary" />
-                  <span>Palestrantes & Atrações</span>
-                </h2>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {speakers.map((speaker, idx) => (
-                    <div
-                      key={speaker.id || idx}
-                      className="p-5 rounded-2xl border border-border/70 bg-card hover:border-primary/40 transition-colors flex items-start gap-4 shadow-xs"
-                    >
-                      {speaker.photo_url ? (
-                        <img
-                          src={speaker.photo_url}
-                          alt={speaker.name}
-                          className="size-16 sm:size-20 rounded-2xl object-cover shrink-0 border border-border"
-                        />
-                      ) : (
-                        <div className="size-16 sm:size-20 rounded-2xl bg-muted text-muted-foreground flex items-center justify-center shrink-0 text-xl font-bold border border-border">
-                          {speaker.name.charAt(0)}
-                        </div>
-                      )}
-
-                      <div className="min-w-0 flex-1 space-y-1">
-                        <h3 className="text-base font-bold text-foreground break-words text-wrap leading-tight">
-                          {speaker.name}
-                        </h3>
-                        <p className="text-xs font-semibold text-primary break-words text-wrap leading-tight">
-                          {speaker.role}
-                        </p>
-                        {speaker.bio && (
-                          <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed pt-1">
-                            {speaker.bio}
-                          </p>
-                        )}
-                        {speaker.social_link && (
-                          <a
-                            href={speaker.social_link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs text-primary font-semibold hover:underline pt-2"
-                          >
-                            <span>Ver Perfil</span>
-                            <ExternalLink className="size-3" />
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Bloco: Enquetes e Interatividade ao Vivo */}
-            {surveys.length > 0 && (
-              <section id="enquetes" className="space-y-4 pt-4 border-t border-border/40 scroll-mt-28">
-                <div className="flex items-center justify-between gap-4">
-                  <h2 className="text-lg sm:text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                    <HelpCircle className="size-5 text-primary" />
-                    <span>Interatividade & Enquetes</span>
-                  </h2>
-                  <Badge variant="outline" className="text-xs font-semibold py-1 px-2.5">
-                    Tempo Real
-                  </Badge>
-                </div>
-
-                <div className="space-y-4">
-                  {surveys.map((survey) => {
-                    const hasVoted = votedSurveys[survey.id] !== undefined;
-                    const res = surveyResults[survey.id];
-
-                    return (
-                      <div
-                        key={survey.id}
-                        className="p-5 sm:p-6 rounded-2xl border border-border/70 bg-card space-y-4 shadow-xs"
-                      >
-                        <h3 className="text-base font-bold text-foreground leading-snug">
-                          {survey.question}
-                        </h3>
-
-                        <div className="space-y-2.5">
-                          {survey.options.map((option, optIdx) => {
-                            const isSelected = votedSurveys[survey.id] === optIdx;
-                            const pct = res?.percentages?.[optIdx] ?? 0;
-
-                            return (
-                              <button
-                                key={optIdx}
-                                type="button"
-                                disabled={hasVoted || isVotingSurvey}
-                                onClick={() => handleVoteSurvey(survey, optIdx, option)}
-                                className={cn(
-                                  "w-full text-left p-3.5 rounded-xl border text-xs sm:text-sm font-semibold transition-all relative overflow-hidden flex items-center justify-between gap-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-11",
-                                  hasVoted
-                                    ? isSelected
-                                      ? "border-primary bg-primary/10 text-primary"
-                                      : "border-border/50 bg-muted/20 text-muted-foreground"
-                                    : "border-border/70 bg-muted/30 hover:bg-muted/60 text-foreground"
-                                )}
-                              >
-                                {hasVoted && (
-                                  <div
-                                    className="absolute inset-y-0 left-0 bg-primary/15 transition-all duration-500"
-                                    style={{ width: `${pct}%` }}
-                                  />
-                                )}
-                                <span className="relative z-10 flex items-center gap-2 min-w-0 truncate">
-                                  {isSelected && <CheckCircle2 className="size-4 shrink-0 text-primary" />}
-                                  <span className="truncate">{option}</span>
-                                </span>
-                                {hasVoted && (
-                                  <span className="relative z-10 font-mono text-xs font-bold shrink-0">
-                                    {pct}%
-                                  </span>
-                                )}
-                              </button>
-                            );
-                          })}
-                        </div>
-
-                        {!hasVoted && (
-                          <div className="flex items-center gap-2 pt-1 text-xs text-muted-foreground">
-                            <input
-                              type="checkbox"
-                              id={`anon-${survey.id}`}
-                              checked={isAnonymousVote[survey.id] ?? true}
-                              onChange={(e) =>
-                                setIsAnonymousVote((prev) => ({ ...prev, [survey.id]: e.target.checked }))
-                              }
-                              className="size-4 rounded border-border"
-                            />
-                            <Label htmlFor={`anon-${survey.id}`} className="text-xs cursor-pointer text-muted-foreground">
-                              Votar de forma anônima (sem expor nome no painel)
-                            </Label>
-                          </div>
-                        )}
-
-                        {hasVoted && (
-                          <p className="text-xs text-muted-foreground text-right font-medium">
-                            {res?.totalVotes ? `${res.totalVotes} votos registrados` : "Voto computado"}
-                          </p>
-                        )}
-
-                        {/* Mini Painel de Respostas para o Organizador (Regra B.38) */}
-                        {isOwner && res?.responses && res.responses.length > 0 && (
-                          <div className="pt-3 border-t border-border/40 space-y-2">
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                                Painel de Respostas do Organizador ({res.responses.length})
-                              </span>
-                              <Badge variant="outline" className="text-xs font-mono">
-                                {res.totalVotes} votos
-                              </Badge>
-                            </div>
-                            <div className="max-h-48 overflow-y-auto space-y-1.5 no-scrollbar">
-                              {res.responses.map((resp: any) => (
-                                <div
-                                  key={resp.id}
-                                  className="p-2.5 rounded-lg border border-border/40 bg-muted/20 flex items-center justify-between text-xs"
-                                >
-                                  <div className="space-y-0.5 min-w-0 pr-2">
-                                    <span className="font-semibold text-foreground truncate block">
-                                      {resp.isAnonymous ? "Anônimo" : resp.voterName}
-                                    </span>
-                                    <p className="text-muted-foreground text-xs truncate">
-                                      Opção: <strong className="text-foreground">{resp.optionLabel}</strong>
-                                    </p>
-                                  </div>
-                                  <span className="text-muted-foreground text-xs font-mono shrink-0">
-                                    {new Date(resp.createdAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </section>
-            )}
-
-            {/* Bloco: Localização & Como Chegar */}
-            <section id="localizacao" className="space-y-4 pt-4 border-t border-border/40 scroll-mt-28">
-              <h2 className="text-lg sm:text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                <Navigation className="size-5 text-primary" />
-                <span>Localização & Acesso</span>
-              </h2>
-
-              <div className="p-5 sm:p-6 rounded-2xl border border-border/70 bg-card space-y-4 shadow-xs">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="space-y-1">
-                    <p className="text-base font-bold text-foreground">{venueName}</p>
-                    {venueAddress && (
-                      <p className="text-xs sm:text-sm text-muted-foreground">{venueAddress}</p>
-                    )}
-                    {cityState && (
-                      <p className="text-xs text-muted-foreground">{cityState}</p>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      asChild
-                      className="rounded-lg h-11 min-h-11 px-4 text-xs font-semibold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border-border"
-                    >
-                      <a
-                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                          [venueName, venueAddress, cityState].filter(Boolean).join(", ")
-                        )}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <MapPin className="size-4 mr-1.5 text-primary" />
-                        <span>Abrir no Google Maps</span>
-                      </a>
-                    </Button>
-                  </div>
-                </div>
-
-                {(policies.parking_info || attrs.parking_info) && (
-                  <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-muted/40 border border-border/40 text-xs text-muted-foreground">
-                    <Car className="size-4 text-primary shrink-0 mt-0.5" />
-                    <p className="leading-relaxed">
-                      <strong>Estacionamento:</strong> {policies.parking_info || attrs.parking_info}
-                    </p>
-                  </div>
+                {event.subtitle && (
+                  <p className="text-sm sm:text-base text-muted-foreground leading-relaxed break-words">
+                    {event.subtitle}
+                  </p>
                 )}
-              </div>
-            </section>
 
-            {/* Bloco: Patrocinadores & Realização */}
-            {sponsors.length > 0 && (
-              <section id="patrocinadores" className="space-y-4 pt-4 border-t border-border/40 scroll-mt-28">
-                <h2 className="text-lg sm:text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                  <Building className="size-5 text-primary" />
-                  <span>Patrocinadores & Parceiros</span>
-                </h2>
-
-                <div className="space-y-6">
-                  {sponsorsByTier.master.length > 0 && (
-                    <div className="space-y-2">
-                      <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
-                        Cota Master
-                      </span>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        {sponsorsByTier.master.map((s, idx) => (
-                          <a
-                            key={s.id || idx}
-                            href={s.website_url || "#"}
-                            target={s.website_url ? "_blank" : undefined}
-                            rel="noopener noreferrer"
-                            className="p-4 rounded-xl border border-border/70 bg-card hover:border-primary/50 transition-colors flex items-center justify-center min-h-24"
-                          >
-                            <img src={s.logo_url} alt={s.name} className="max-h-12 max-w-full object-contain" />
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {sponsorsByTier.ouro.length > 0 && (
-                    <div className="space-y-2">
-                      <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
-                        Patrocínio Ouro
-                      </span>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                        {sponsorsByTier.ouro.map((s, idx) => (
-                          <a
-                            key={s.id || idx}
-                            href={s.website_url || "#"}
-                            target={s.website_url ? "_blank" : undefined}
-                            rel="noopener noreferrer"
-                            className="p-3 rounded-xl border border-border/60 bg-card hover:border-primary/40 transition-colors flex items-center justify-center min-h-16"
-                          >
-                            <img src={s.logo_url} alt={s.name} className="max-h-10 max-w-full object-contain" />
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {sponsorsByTier.prata.length > 0 && (
-                    <div className="space-y-2">
-                      <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
-                        Patrocínio Prata
-                      </span>
-                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5">
-                        {sponsorsByTier.prata.map((s, idx) => (
-                          <div
-                            key={s.id || idx}
-                            className="p-2.5 rounded-lg border border-border/50 bg-card flex items-center justify-center min-h-16"
-                          >
-                            <img src={s.logo_url} alt={s.name} className="max-h-8 max-w-full object-contain" />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {sponsorsByTier.apoio.length > 0 && (
-                    <div className="space-y-2">
-                      <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
-                        Apoio & Realização
-                      </span>
-                      <div className="flex flex-wrap gap-2">
-                        {sponsorsByTier.apoio.map((s, idx) => (
-                          <div
-                            key={s.id || idx}
-                            className="px-3 py-1.5 rounded-lg border border-border/40 bg-muted/30 text-xs font-semibold text-muted-foreground"
-                          >
-                            {s.name}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </section>
-            )}
-
-            {/* Bloco: Políticas do Evento */}
-            <section id="politicas" className="space-y-4 pt-4 border-t border-border/40 scroll-mt-28">
-              <h2 className="text-lg sm:text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                <ShieldCheck className="size-5 text-primary" />
-                <span>Políticas & Diretrizes</span>
-              </h2>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-4 rounded-2xl border border-border/60 bg-card space-y-1.5">
-                  <span className="text-xs font-bold text-foreground block">Cancelamento e Reembolso</span>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    {policies.refund_policy || "Cancelamentos são aceitos em até 7 dias corridos após a compra, conforme o Código de Defesa do Consumidor."}
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-2xl border border-border/60 bg-card space-y-1.5">
-                  <span className="text-xs font-bold text-foreground block">Meia-Entrada & Benefícios</span>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    {policies.half_price_policy || "Obrigatória a apresentação de documento comprobatório para estudantes, idosos e PCDs no credenciamento."}
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-2xl border border-border/60 bg-card space-y-1.5 sm:col-span-2">
-                  <span className="text-xs font-bold text-foreground block">Acessibilidade PCD</span>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    {policies.accessibility_info || "Espaço com acesso para cadeirantes, rampas e sanitários adaptados."}
-                  </p>
-                </div>
-              </div>
-            </section>
-          </div>
-
-          {/* Coluna Comercial Lateral (4 Cols no Desktop) */}
-          <aside className="lg:col-span-4 space-y-6">
-            {/* Bloco de Ingressos e Lotes */}
-            <div id="ingressos" className="p-5 sm:p-6 rounded-2xl border border-border bg-card space-y-5 shadow-xs sticky top-24 scroll-mt-28">
-              <div className="flex items-center justify-between gap-2 border-b border-border/50 pb-4">
-                <div>
-                  <h3 className="text-base font-bold text-foreground">Ingressos & Lotes</h3>
-                  <p className="text-xs text-muted-foreground">Escolha a sua modalidade de acesso</p>
-                </div>
-                <Ticket className="size-5 text-primary" />
-              </div>
-
-              {ticketTiers.length > 0 ? (
-                <div className="space-y-3">
-                  {ticketTiers.map((tier) => {
-                    const isSoldOut = tier.status === "sold_out";
-
-                    return (
-                      <div
-                        key={tier.id}
-                        className={cn(
-                          "p-4 rounded-xl border transition-all space-y-2.5",
-                          isSoldOut
-                            ? "border-border/40 bg-muted/20 opacity-60"
-                            : "border-border/70 bg-muted/30 hover:border-primary/50"
-                        )}
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <h4 className="text-sm font-bold text-foreground">{tier.name}</h4>
-                            {tier.description && (
-                              <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{tier.description}</p>
-                            )}
-                          </div>
-                          <span className="font-mono text-sm font-bold text-foreground shrink-0">
-                            {tier.price_cents === 0 ? "Gratuito" : formatMoney(tier.price_cents)}
+                {/* Structured Date, Explicit Schedule Times & Location */}
+                <div className="pt-2 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
+                  {/* Date & Explicit Schedule Block */}
+                  <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/40 border border-border/50">
+                    <Clock className="size-4 text-primary shrink-0 mt-1" />
+                    <div className="space-y-1 min-w-0">
+                      <p className="font-bold text-foreground capitalize break-words">
+                        {event.formatted_date_range}
+                      </p>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                        {event.gates_open_time && (
+                          <span>
+                            Portões: <strong className="text-foreground">{event.gates_open_time}</strong>
                           </span>
-                        </div>
-
-                        {tier.external_url ? (
-                          <Button
-                            variant={isSoldOut ? "outline" : "default"}
-                            size="sm"
-                            asChild
-                            disabled={isSoldOut}
-                            className="w-full rounded-lg h-11 min-h-11 text-xs font-bold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                          >
-                            <a href={tier.external_url} target="_blank" rel="noopener noreferrer">
-                              <span>{isSoldOut ? "Lote Esgotado" : "Comprar na Plataforma"}</span>
-                              <ExternalLink className="size-3.5" />
-                            </a>
-                          </Button>
-                        ) : (
-                          <Button
-                            variant={isSoldOut ? "outline" : "default"}
-                            size="sm"
-                            disabled={isSoldOut}
-                            onClick={() => handleOpenSignup(tier)}
-                            className="w-full rounded-lg h-11 min-h-11 text-xs font-bold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                          >
-                            <Ticket className="size-3.5" />
-                            <span>{isSoldOut ? "Lote Esgotado" : "Garantir Participação"}</span>
-                          </Button>
                         )}
+                        {event.start_time && (
+                          <span>
+                            Início: <strong className="text-foreground">{event.start_time}</strong>
+                          </span>
+                        )}
+                        {event.end_time && (
+                          <span>
+                            Término: <strong className="text-foreground">{event.end_time}</strong>
+                          </span>
+                        )}
+                        <span className="text-muted-foreground/80">({event.timezone_short})</span>
                       </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="text-center py-6 space-y-3">
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    Cadastre-se para receber o aviso e link de abertura de vendas.
-                  </p>
-                  <Button
-                    variant="default"
-                    onClick={() => handleOpenSignup()}
-                    className="w-full rounded-lg h-11 min-h-11 text-xs font-bold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  >
-                    <span>Receber Link de Ingressos</span>
-                  </Button>
-                </div>
-              )}
-
-              {/* Informação do Organizador */}
-              <div className="pt-4 border-t border-border/40 space-y-2">
-                <span className="text-xs font-semibold text-muted-foreground block">Organizado por</span>
-                <div className="flex items-center gap-3">
-                  {classified.store?.logo_url ? (
-                    <img
-                      src={classified.store.logo_url}
-                      alt={classified.store.name}
-                      className="size-10 rounded-xl object-cover border border-border"
-                    />
-                  ) : (
-                    <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
-                      {(classified.store?.name || classified.profiles?.full_name || "O").charAt(0)}
                     </div>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-bold text-foreground truncate">
-                      {classified.store?.name || classified.profiles?.full_name || "Organizador Verificado"}
-                    </p>
-                    <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium inline-flex items-center gap-1">
-                      <ShieldCheck className="size-3" />
-                      <span>Anunciante Verificado</span>
-                    </span>
                   </div>
-                </div>
 
-                {classified.contact_whatsapp && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    asChild
-                    className="w-full mt-2 rounded-lg h-11 min-h-11 text-xs font-semibold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border-border"
+                  {/* Venue & City Block */}
+                  <button
+                    type="button"
+                    onClick={() => scrollToSection("local")}
+                    className="flex items-start gap-3 p-3 rounded-lg bg-muted/40 border border-border/50 hover:border-primary/40 transition-colors text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
+                    <MapPin className="size-4 text-primary shrink-0 mt-1" />
+                    <div className="space-y-1 min-w-0">
+                      <p className="font-bold text-foreground break-words">
+                        {event.venue_name}
+                      </p>
+                      <p className="text-xs text-muted-foreground break-words">
+                        {canonicalVenueAddress?.display ||
+                          [event.venue_address, `${event.city} - ${event.state}`]
+                            .filter(Boolean)
+                            .join(" • ")}
+                      </p>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Save to Calendar Dropdown & Check-in Validator Trigger */}
+            <div className="flex flex-wrap sm:flex-nowrap lg:flex-col items-stretch sm:items-center lg:items-end gap-2 shrink-0">
+              <div className="relative">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setCalendarMenuOpen((prev) => !prev)}
+                  aria-expanded={calendarMenuOpen}
+                  className="h-11 min-h-11 w-full sm:w-auto rounded-lg font-semibold text-xs gap-2 px-4 focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <Calendar className="size-4 text-primary" />
+                  <span>Salvar na Agenda</span>
+                  <ChevronDown className="size-4 text-muted-foreground" />
+                </Button>
+
+                {calendarMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-60 rounded-lg border border-border bg-card p-2 z-30 space-y-1">
                     <a
-                      href={`https://wa.me/55${classified.contact_whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(
-                        `Olá! Gostaria de mais informações sobre o evento "${classified.title}".`
-                      )}`}
+                      href={calendarLinks.googleCalendarUrl}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={() => setCalendarMenuOpen(false)}
+                      className="flex items-center justify-between w-full h-11 min-h-11 px-3 rounded-md text-xs font-semibold text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
-                      <Phone className="size-3.5 text-emerald-600" />
-                      <span>Falar com o Organizador</span>
+                      <span>Google Calendar</span>
+                      <ExternalLink className="size-3 text-muted-foreground" />
                     </a>
-                  </Button>
-                )}
-              </div>
-            </div>
-          </aside>
-        </div>
-      </main>
-
-      {/* ── 3. Barra Flutuante Mobile (Fixada em z-30 para não ocluir modais em z-50) ── */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-background/95 backdrop-blur-md border-t border-border px-4 py-3 shadow-lg flex items-center justify-between gap-3 pb-safe">
-        <div className="min-w-0">
-          <span className="text-xs text-muted-foreground block truncate">Ingressos a partir de</span>
-          <span className="text-sm font-bold font-mono text-foreground">
-            {ticketTiers.length > 0
-              ? ticketTiers[0].price_cents === 0
-                ? "Gratuito"
-                : formatMoney(ticketTiers[0].price_cents)
-              : "Consulte"}
-          </span>
-        </div>
-
-        <Button
-          variant="default"
-          onClick={() => handleOpenSignup(ticketTiers[0])}
-          className="rounded-lg h-11 min-h-11 px-6 text-xs font-bold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-sm"
-        >
-          <Ticket className="size-4" />
-          <span>Garantir Vaga</span>
-        </Button>
-      </div>
-
-      {/* ── 4. Modal de Inscrição Rápida / Captura de Leads ── */}
-      <Dialog open={isSignupModalOpen} onOpenChange={setIsSignupModalOpen}>
-        <DialogContent className="sm:max-w-md rounded-2xl p-6 border-border/80 z-50">
-          <DialogHeader className="space-y-1">
-            <DialogTitle className="text-lg font-bold text-foreground">
-              {leadSuccess ? "Inscrição Realizada!" : "Inscrição no Evento"}
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
-              {leadSuccess
-                ? "Seus dados foram confirmados. Nos vemos no evento!"
-                : selectedTicketForSignup
-                ? `Você está se inscrevendo para: ${selectedTicketForSignup.name} (${selectedTicketForSignup.price_cents === 0 ? "Gratuito" : formatMoney(selectedTicketForSignup.price_cents)})`
-                : "Preencha para receber os links oficiais e ingressos."}
-            </DialogDescription>
-          </DialogHeader>
-
-          {leadSuccess ? (
-            <div className="py-4 space-y-4 text-center">
-              <div className="size-12 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto">
-                <Check className="size-6" />
-              </div>
-              <p className="text-sm text-foreground font-semibold">
-                Parabéns, {leadName}! Seu ingresso foi emitido.
-              </p>
-
-              {issuedTicket && (
-                <div className="p-4 rounded-lg bg-muted/40 border border-border/80 text-left space-y-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-semibold text-muted-foreground flex items-center gap-2">
-                      <ShieldCheck className="size-4 text-emerald-600" />
-                      <span>Bilhete Criptográfico WCTS-1</span>
-                    </span>
-                    <Badge variant="outline" className="text-xs font-mono">
-                      HMAC-SHA256
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-background border border-border">
-                    <span className="text-sm font-mono font-bold text-foreground tracking-wider">
-                      {issuedTicket.ticketCode}
-                    </span>
+                    <a
+                      href={calendarLinks.outlookCalendarUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setCalendarMenuOpen(false)}
+                      className="flex items-center justify-between w-full h-11 min-h-11 px-3 rounded-md text-xs font-semibold text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      <span>Outlook Calendar</span>
+                      <ExternalLink className="size-3 text-muted-foreground" />
+                    </a>
                     <button
                       type="button"
-                      onClick={() => {
-                        if (typeof navigator !== "undefined" && navigator.clipboard) {
-                          navigator.clipboard.writeText(issuedTicket.qrPayload);
-                          toast.success("Token criptográfico do ingresso copiado!");
-                        }
-                      }}
-                      className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold text-primary hover:bg-primary/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+                      onClick={handleDownloadIcs}
+                      className="flex items-center justify-between w-full h-11 min-h-11 px-3 rounded-md text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
-                      Copiar Token QR
+                      <span>Apple Calendar / Baixar .ics</span>
+                      <Download className="size-3 text-primary" />
                     </button>
                   </div>
+                )}
+              </div>
 
-                  {issuedTicket.pixCopyPaste && issuedTicket.amountCents > 0 && (
-                    <div className="pt-2 border-t border-border/60 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-foreground">
-                          Pagamento PIX ({formatMoney(issuedTicket.amountCents)})
-                        </span>
-                        <Badge variant="secondary" className="text-xs">
-                          BRCode EMV
-                        </Badge>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setValidatorOpen(true)}
+                className="h-11 min-h-11 w-full sm:w-auto rounded-lg font-semibold text-xs gap-2 px-4 focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <QrCode className="size-4 text-primary" />
+                <span>{isOwner ? "Portaria / Check-in" : "Validar Ingresso"}</span>
+              </Button>
+            </div>
+          </div>
+        </header>
+      </div>
+
+      {/* 3. STICKY DYNAMIC ANCHOR NAVIGATION WITH SCROLLSPY (RULE B.39 SINGLE CONTINUOUS ROW) */}
+      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border/60 mt-6">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 flex items-center gap-2 overflow-x-auto flex-nowrap no-scrollbar py-2 tab-list" role="tablist">
+          {event.available_sections.map((sec) => {
+            const isActive = activeSection === sec.id;
+            return (
+              <button
+                key={sec.id}
+                type="button"
+                onClick={() => scrollToSection(sec.id)}
+                className={`px-4 h-11 min-h-11 rounded-lg text-xs font-bold whitespace-nowrap transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                  isActive
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                }`}
+              >
+                <span>{sec.label}</span>
+                {typeof sec.count === "number" && sec.count > 0 && (
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-extrabold ${
+                      isActive
+                        ? "bg-primary-foreground/20 text-primary-foreground"
+                        : "bg-muted text-foreground"
+                    }`}
+                  >
+                    {sec.count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 4. MAIN BIDIRECTIONAL CONTENT GRID */}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-8">
+        <div
+          className={
+            effectiveIsDesktop
+              ? "grid grid-cols-1 lg:grid-cols-12 gap-8 items-start"
+              : "space-y-8"
+          }
+        >
+          {/* LEFT / MAIN COLUMN (8 cols on Desktop) */}
+          <div className={effectiveIsDesktop ? "lg:col-span-8 space-y-10" : "space-y-8"}>
+            {/* HIGHLIGHT PROMO STRIP (Visual Microcards) */}
+            {event.promo_cards.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {event.promo_cards.map((card) => (
+                  <button
+                    key={card.id}
+                    type="button"
+                    onClick={() => scrollToSection(card.target_section)}
+                    className="p-4 rounded-lg border border-border/60 bg-card hover:border-primary/40 transition-colors text-left flex items-center gap-3 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    {card.image_url ? (
+                      <img
+                        src={card.image_url}
+                        alt={card.title}
+                        onError={(e) => {
+                          (e.currentTarget as HTMLElement).style.display = "none";
+                        }}
+                        className="size-12 rounded-lg object-cover shrink-0 border border-border/50"
+                      />
+                    ) : (
+                      <div className="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                        <Ticket className="size-5" />
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <span className="text-xs font-bold uppercase tracking-wider text-primary block">
+                        {card.badge}
+                      </span>
+                      <p className="text-sm font-bold text-foreground break-words leading-snug">
+                        {card.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground break-words mt-1">
+                        {card.subtitle}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* SECTION: SOBRE O EVENTO + CUSTOM CMS SECTIONS */}
+            <section id="section-sobre" className="scroll-mt-20 space-y-6">
+              <div className="py-2 sm:bg-card sm:rounded-lg sm:border sm:border-border/60 sm:p-6 space-y-4">
+                <div className="flex items-center gap-2">
+                  <Info className="size-5 text-primary shrink-0" />
+                  <h2 className="text-xl font-black tracking-tight text-foreground">
+                    Sobre o Evento
+                  </h2>
+                </div>
+
+                {event.summary && (
+                  <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 text-sm font-medium text-foreground leading-relaxed break-words">
+                    {event.summary}
+                  </div>
+                )}
+
+                <div className="text-sm sm:text-base text-foreground/90 whitespace-pre-line leading-relaxed break-words">
+                  {event.description || "Descrição oficial do evento em atualização."}
+                </div>
+
+                {event.tags.length > 0 && (
+                  <div className="pt-3 border-t border-border/40 flex flex-wrap gap-2">
+                    {event.tags.map((tag) => (
+                      <Badge
+                        key={tag}
+                        variant="secondary"
+                        className="text-xs font-medium px-3 py-1 rounded-md"
+                      >
+                        #{tag}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Custom Structured Sections (Rich Text, Highlights, FAQ, Callouts) */}
+              {event.sections.map((sec) => (
+                <div
+                  key={sec.id}
+                  className={`rounded-lg border p-6 space-y-3 ${
+                    sec.type === "highlight"
+                      ? "bg-primary/5 border-primary/30"
+                      : "bg-card border-border/60"
+                  }`}
+                >
+                  <h3 className="text-lg font-bold text-foreground break-words">
+                    {sec.title}
+                  </h3>
+                  {sec.subtitle && (
+                    <p className="text-xs font-semibold text-muted-foreground break-words">
+                      {sec.subtitle}
+                    </p>
+                  )}
+                  <div className="text-sm text-foreground/90 whitespace-pre-line leading-relaxed break-words">
+                    {sec.content}
+                  </div>
+                  {sec.cta_label && sec.cta_url && (
+                    <div className="pt-2">
+                      <a
+                        href={sec.cta_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 h-11 min-h-11 px-4 rounded-lg bg-primary text-primary-foreground text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <span>{sec.cta_label}</span>
+                        <ExternalLink className="size-4" />
+                      </a>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </section>
+
+            {/* SECTION: INGRESSOS & LOTES (ANCHOR TARGET IN MAIN FLOW) */}
+            {(event.ticket_tiers.length > 0 ||
+              event.external_ticket_url ||
+              event.participation_mode === "FREE") && (
+              <section id="section-ingressos" className="scroll-mt-20 space-y-4">
+                <div className="py-2 sm:bg-card sm:rounded-lg sm:border sm:border-border/60 sm:p-6 space-y-5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <Ticket className="size-5 text-primary shrink-0" />
+                      <h2 className="text-xl font-black tracking-tight text-foreground">
+                        Ingressos e Lotes
+                      </h2>
+                    </div>
+                    <Badge variant="outline" className="text-xs font-semibold w-fit">
+                      {event.participation_mode_label}
+                    </Badge>
+                  </div>
+
+                  {event.ticket_tiers.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {event.ticket_tiers.map((tier) => {
+                        const isSelected = selectedTier?.id === tier.id;
+                        return (
+                          <div
+                            key={tier.id}
+                            className={`rounded-lg border p-4 flex flex-col justify-between gap-4 transition-colors ${
+                              !tier.is_purchasable
+                                ? "border-border/40 bg-muted/20 opacity-75"
+                                : isSelected
+                                ? "border-primary bg-primary/5 ring-1 ring-primary/30"
+                                : "border-border/60 bg-background hover:border-primary/40"
+                            }`}
+                          >
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between gap-2 flex-wrap">
+                                <Badge
+                                  variant="secondary"
+                                  className="text-xs font-bold px-2 py-1 rounded-md"
+                                >
+                                  {tier.category_label}
+                                </Badge>
+                                <Badge
+                                  variant={tier.is_purchasable ? "default" : "outline"}
+                                  className={`text-xs font-bold px-2 py-1 rounded-md ${
+                                    tier.lifecycle_state === "SOLD_OUT" ||
+                                    tier.lifecycle_state === "ENDED"
+                                      ? "border-destructive/40 text-destructive"
+                                      : ""
+                                  }`}
+                                >
+                                  {tier.lifecycle_badge_label}
+                                </Badge>
+                              </div>
+
+                              <h3 className="text-base font-bold text-foreground break-words">
+                                {tier.name}
+                              </h3>
+
+                              {tier.eligibility_rule && (
+                                <p className="text-xs font-medium text-muted-foreground break-words">
+                                  {tier.eligibility_rule}
+                                </p>
+                              )}
+                            </div>
+
+                            <div className="pt-3 border-t border-border/40 flex items-center justify-between gap-3">
+                              <div>
+                                <span
+                                  className={`text-lg font-black tabular-nums ${
+                                    tier.is_free ? "text-emerald-600 dark:text-emerald-400" : "text-foreground"
+                                  }`}
+                                >
+                                  {tier.price_display}
+                                </span>
+                                {tier.capacity > 0 && tier.is_purchasable && (
+                                  <p className="text-xs text-muted-foreground">
+                                    {tier.remaining_count} vagas restantes
+                                  </p>
+                                )}
+                              </div>
+
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant={isSelected ? "default" : "outline"}
+                                disabled={!tier.is_purchasable}
+                                onClick={() => handleOpenCheckout(tier)}
+                                className="h-11 min-h-11 rounded-lg font-bold text-xs px-4 focus-visible:ring-2 focus-visible:ring-primary"
+                              >
+                                {!tier.is_purchasable
+                                  ? tier.lifecycle_badge_label
+                                  : tier.external_url
+                                  ? "Comprar Externo"
+                                  : tier.is_free
+                                  ? "Garantir Vaga"
+                                  : "Selecionar"}
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="p-4 rounded-lg bg-muted/30 border border-border/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="space-y-1">
+                        <p className="text-sm font-bold text-foreground">
+                          {event.has_free_tier
+                            ? "Inscrição Gratuita"
+                            : "Garanta sua participação"}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Emita sua credencial oficial com QR Code para acesso rápido na portaria.
+                        </p>
                       </div>
                       <Button
                         type="button"
-                        variant="outline"
-                        onClick={() => {
-                          if (typeof navigator !== "undefined" && navigator.clipboard && issuedTicket.pixCopyPaste) {
-                            navigator.clipboard.writeText(issuedTicket.pixCopyPaste);
-                            toast.success("Código PIX Copia e Cola copiado!");
-                          }
-                        }}
-                        className="w-full rounded-lg h-11 min-h-11 text-xs font-bold border-primary/40 text-primary hover:bg-primary/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        onClick={() => handleOpenCheckout(null)}
+                        className="h-11 min-h-11 rounded-lg font-bold text-xs px-5 focus-visible:ring-2 focus-visible:ring-primary"
                       >
-                        Copiar Código PIX Copia e Cola
+                        {event.external_ticket_url
+                          ? "Acessar Inscrição Externa"
+                          : "Garantir Credencial"}
                       </Button>
                     </div>
                   )}
                 </div>
+              </section>
+            )}
+
+            {/* SECTION: PROGRAMAÇÃO & CRONOGRAMA MULTI-DIA COM PALESTRANTES VINCULADOS */}
+            {event.schedule.length > 0 && (
+              <section id="section-programacao" className="scroll-mt-20 space-y-4">
+                <div className="py-2 sm:bg-card sm:rounded-lg sm:border sm:border-border/60 sm:p-6 space-y-5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <Clock className="size-5 text-primary shrink-0" />
+                      <h2 className="text-xl font-black tracking-tight text-foreground">
+                        Programação Oficial
+                      </h2>
+                    </div>
+
+                    {/* Multi-Day Selector Tabs */}
+                    {event.schedule_days.length > 1 && (
+                      <div className="flex items-center gap-2 overflow-x-auto flex-nowrap no-scrollbar tab-list" role="tablist">
+                        {event.schedule_days.map((dayGroup) => {
+                          const active = dayGroup.day_key === activeDayGroup?.day_key;
+                          return (
+                            <button
+                              key={dayGroup.day_key}
+                              type="button"
+                              onClick={() => setSelectedScheduleDayKey(dayGroup.day_key)}
+                              className={`h-11 min-h-11 px-4 rounded-lg text-xs font-bold whitespace-nowrap transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                                active
+                                  ? "bg-primary text-primary-foreground"
+                                  : "bg-muted/50 text-muted-foreground hover:text-foreground"
+                              }`}
+                            >
+                              {dayGroup.day_label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-4">
+                    {(activeDayGroup?.items || event.schedule).map((item) => (
+                      <div
+                        key={item.id}
+                        className="rounded-lg border border-border/60 bg-background p-4 sm:p-5 flex flex-col sm:flex-row sm:items-start gap-4 hover:border-primary/40 transition-colors"
+                      >
+                        {/* Time Pill */}
+                        <div className="shrink-0 flex sm:flex-col items-center sm:items-start gap-2 sm:w-28">
+                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-md bg-primary/10 text-primary font-mono text-xs font-black tabular-nums">
+                            {item.time}
+                            {item.end_time ? ` - ${item.end_time}` : ""}
+                          </span>
+                          <Badge variant="outline" className="text-xs font-semibold">
+                            {item.type_label}
+                          </Badge>
+                        </div>
+
+                        {/* Activity Content + Linked Speaker */}
+                        <div className="flex-1 min-w-0 space-y-2">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <h3 className="text-base font-bold text-foreground break-words">
+                              {item.title}
+                            </h3>
+                            {item.stage_or_room && (
+                              <Badge variant="secondary" className="text-xs font-semibold">
+                                {item.stage_or_room}
+                              </Badge>
+                            )}
+                          </div>
+
+                          {item.description && (
+                            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed break-words whitespace-pre-line">
+                              {item.description}
+                            </p>
+                          )}
+
+                          {/* Linked Speaker Card */}
+                          {item.linked_speaker ? (
+                            <div className="pt-2 flex items-center gap-3">
+                              {item.linked_speaker.photo_url ? (
+                                <img
+                                  src={item.linked_speaker.photo_url}
+                                  alt={item.linked_speaker.name}
+                                  className="size-9 rounded-full object-cover border border-border shrink-0"
+                                />
+                              ) : (
+                                <div className="size-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
+                                  {item.linked_speaker.name.charAt(0).toUpperCase()}
+                                </div>
+                              )}
+                              <div className="min-w-0">
+                                <p className="text-xs font-bold text-foreground break-words">
+                                  {item.linked_speaker.name}
+                                </p>
+                                {(item.linked_speaker.role || item.linked_speaker.company) && (
+                                  <p className="text-xs text-muted-foreground break-words">
+                                    {[item.linked_speaker.role, item.linked_speaker.company]
+                                      .filter(Boolean)
+                                      .join(" • ")}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          ) : item.speaker_name ? (
+                            <div className="pt-1 flex items-center gap-2 text-xs font-semibold text-primary">
+                              <Mic className="size-3 shrink-0" />
+                              <span className="break-words">{item.speaker_name}</span>
+                            </div>
+                          ) : null}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {/* SECTION: PALESTRANTES, CONVIDADOS & ATRAÇÕES (ZERO BIO TRUNCATION) */}
+            {event.speakers.length > 0 && (
+              <section id="section-palestrantes" className="scroll-mt-20 space-y-4">
+                <div className="py-2 sm:bg-card sm:rounded-lg sm:border sm:border-border/60 sm:p-6 space-y-5">
+                  <div className="flex items-center gap-2">
+                    <Mic className="size-5 text-primary shrink-0" />
+                    <h2 className="text-xl font-black tracking-tight text-foreground">
+                      Palestrantes e Atrações Confirmadas
+                    </h2>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {event.speakers.map((speaker) => (
+                      <div
+                        key={speaker.id}
+                        className="rounded-lg border border-border/60 bg-background p-5 flex flex-col justify-between gap-4 hover:border-primary/40 transition-colors"
+                      >
+                        <div className="space-y-3">
+                          <div className="flex items-start gap-4">
+                            {speaker.photo_url ? (
+                              <img
+                                src={speaker.photo_url}
+                                alt={speaker.name}
+                                className="size-16 rounded-lg object-cover border border-border shrink-0"
+                              />
+                            ) : (
+                              <div className="size-16 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-black text-xl shrink-0">
+                                {speaker.name.charAt(0).toUpperCase()}
+                              </div>
+                            )}
+                            <div className="min-w-0 flex-1 space-y-1">
+                              <h3 className="text-base font-bold text-foreground break-words">
+                                {speaker.name}
+                              </h3>
+                              {speaker.role && (
+                                <p className="text-xs font-bold text-primary break-words">
+                                  {speaker.role}
+                                </p>
+                              )}
+                              {speaker.company && (
+                                <p className="text-xs font-medium text-muted-foreground break-words">
+                                  {speaker.company}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          {speaker.bio && (
+                            <p className="text-xs sm:text-sm text-muted-foreground whitespace-pre-line leading-relaxed break-words">
+                              {speaker.bio}
+                            </p>
+                          )}
+                        </div>
+
+                        {speaker.social_url && (
+                          <div className="pt-2 border-t border-border/40">
+                            <a
+                              href={speaker.social_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 h-11 min-h-11 px-3 rounded-lg text-xs font-bold text-primary hover:bg-primary/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            >
+                              <ExternalLink className="size-4" />
+                              <span>Ver perfil / Rede social</span>
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {/* SECTION: MÍDIA, GALERIA EXCLUSIVA DO EVENTO & VÍDEO */}
+            {(event.gallery_images.length > 0 || event.video_url || event.story_url) && (
+              <section id="section-midia" className="scroll-mt-20 space-y-4">
+                <div className="py-2 sm:bg-card sm:rounded-lg sm:border sm:border-border/60 sm:p-6 space-y-5">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-2">
+                      <ImageIcon className="size-5 text-primary shrink-0" />
+                      <h2 className="text-xl font-black tracking-tight text-foreground">
+                        Mídia e Galeria do Evento
+                      </h2>
+                    </div>
+                    {event.story_url && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setStoryViewerOpen(true)}
+                        className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <Play className="size-4 text-primary" />
+                        <span>Assistir Story Vertical (9:16)</span>
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* Gallery Grid */}
+                  {event.gallery_images.length > 0 && (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {event.gallery_images.map((imgUrl, idx) => (
+                        <button
+                          key={`${imgUrl}-${idx}`}
+                          type="button"
+                          onClick={() => setLightboxImageUrl(imgUrl)}
+                          className="group relative aspect-[4/3] rounded-lg overflow-hidden border border-border/60 bg-muted cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        >
+                          <img
+                            src={imgUrl}
+                            alt={`${event.title} - Mídia ${idx + 1}`}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Official Event Video */}
+                  {event.video_url && (
+                    <div className="pt-2 space-y-2">
+                      <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                        <Play className="size-4 text-primary" />
+                        <span>Vídeo / Aftermovie Oficial</span>
+                      </h3>
+                      <div className="aspect-video w-full rounded-lg overflow-hidden border border-border/60 bg-black">
+                        {event.video_url.includes("youtube.com") ||
+                        event.video_url.includes("youtu.be") ? (
+                          <iframe
+                            src={event.video_url
+                              .replace("watch?v=", "embed/")
+                              .replace("youtu.be/", "youtube.com/embed/")}
+                            title={event.title}
+                            className="w-full h-full"
+                            allowFullScreen
+                          />
+                        ) : (
+                          <video
+                            src={event.video_url}
+                            controls
+                            className="w-full h-full object-contain"
+                          />
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </section>
+            )}
+
+            {/* SECTION: ENQUETES INTERATIVAS COM AGENDAMENTO */}
+            {event.surveys.length > 0 && (
+              <section id="section-enquetes" className="scroll-mt-20 space-y-4">
+                <div className="py-2 sm:bg-card sm:rounded-lg sm:border sm:border-border/60 sm:p-6 space-y-5">
+                  <div className="flex items-center gap-2">
+                    <BarChart3 className="size-5 text-primary shrink-0" />
+                    <h2 className="text-xl font-black tracking-tight text-foreground">
+                      Enquetes Oficiais
+                    </h2>
+                  </div>
+
+                  <div className="space-y-4">
+                    {event.surveys.map((survey) => {
+                      const userVotedOptionId = votedPolls[survey.id];
+                      const isOpen = survey.lifecycle_state === "OPEN";
+                      const totalVotes =
+                        survey.total_votes + (userVotedOptionId ? 1 : 0);
+
+                      return (
+                        <div
+                          key={survey.id}
+                          className="rounded-lg border border-border/60 bg-background p-5 space-y-4"
+                        >
+                          <div className="flex items-start justify-between gap-3 flex-wrap">
+                            <h3 className="text-base font-bold text-foreground break-words">
+                              {survey.question}
+                            </h3>
+                            <Badge
+                              variant={isOpen ? "default" : "outline"}
+                              className="text-xs font-bold"
+                            >
+                              {survey.lifecycle_label}
+                            </Badge>
+                          </div>
+
+                          <div className="space-y-2">
+                            {survey.options.map((opt) => {
+                              const isVoted = userVotedOptionId === opt.id;
+                              const effectiveVotes = opt.votes + (isVoted ? 1 : 0);
+                              const pct =
+                                totalVotes > 0
+                                  ? Math.round((effectiveVotes / totalVotes) * 100)
+                                  : 0;
+
+                              return (
+                                <button
+                                  key={opt.id}
+                                  type="button"
+                                  disabled={!isOpen || Boolean(userVotedOptionId) || voteMutation.isPending}
+                                  onClick={() =>
+                                    voteMutation.mutate({
+                                      surveyId: survey.id,
+                                      optionId: opt.id,
+                                    })
+                                  }
+                                  className={`relative w-full min-h-11 p-3 rounded-lg border text-left overflow-hidden transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                                    isVoted
+                                      ? "border-primary bg-primary/5"
+                                      : "border-border/60 hover:border-primary/40 bg-card"
+                                  }`}
+                                >
+                                  <div
+                                    className="absolute inset-y-0 left-0 bg-primary/10 transition-transform duration-500 motion-reduce:transition-none"
+                                    style={{ width: `${pct}%` }}
+                                  />
+                                  <div className="relative flex items-center justify-between gap-3 text-xs sm:text-sm">
+                                    <span className="font-semibold text-foreground flex items-center gap-2 break-words">
+                                      {isVoted && (
+                                        <CheckCircle2 className="size-4 text-primary shrink-0" />
+                                      )}
+                                      {opt.text}
+                                    </span>
+                                    <span className="font-mono font-bold text-muted-foreground shrink-0 tabular-nums">
+                                      {pct}% ({effectiveVotes})
+                                    </span>
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {/* SECTION: LOCALIZAÇÃO, MAPA & MÚLTIPLOS PONTOS DE ACESSO */}
+            <section id="section-local" className="scroll-mt-20 space-y-4">
+              <div className="py-2 sm:bg-card sm:rounded-lg sm:border sm:border-border/60 sm:p-6 space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="size-5 text-primary shrink-0" />
+                    <h2 className="text-xl font-black tracking-tight text-foreground">
+                      Localização e Pontos de Acesso
+                    </h2>
+                  </div>
+                  <a
+                    href={event.primary_map_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 h-11 min-h-11 px-4 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 text-xs font-bold transition-colors w-fit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <Navigation className="size-4" />
+                    <span>Como Chegar (Google Maps)</span>
+                  </a>
+                </div>
+
+                {/* Primary Venue Card */}
+                <div className="py-3 border-t border-border/40 sm:p-4 sm:rounded-lg sm:border sm:border-border/60 sm:bg-background space-y-2">
+                  <Badge variant="secondary" className="text-xs font-bold">
+                    Local Principal
+                  </Badge>
+                  <h3 className="text-base font-bold text-foreground break-words">
+                    {event.venue_name}
+                  </h3>
+                  <p className="text-sm text-muted-foreground break-words">
+                    {canonicalVenueAddress?.display ||
+                      [event.venue_address, `${event.city} - ${event.state}`]
+                        .filter(Boolean)
+                        .join(" • ")}
+                  </p>
+                </div>
+
+                {/* Mapa real do local (coordenadas persistidas do evento) */}
+                {typeof event.latitude === "number" && typeof event.longitude === "number" && (
+                  <div className="w-full aspect-[16/9] sm:aspect-[21/9] rounded-lg overflow-hidden border border-border/60 bg-muted/20">
+                    <MapLibreCanvas
+                      initialCenter={[event.longitude, event.latitude]}
+                      initialZoom={15}
+                      markers={[
+                        {
+                          id: "event-venue",
+                          lat: event.latitude,
+                          lng: event.longitude,
+                          title: event.venue_name,
+                        },
+                      ]}
+                      className="size-full"
+                    />
+                  </div>
+                )}
+
+                {/* Multiple Access Points (Credenciamento, Estacionamento, Entrada VIP, PCD) */}
+                {event.access_points.length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      Acessos, Portarias e Estacionamentos do Evento
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {event.access_points.map((ap) => (
+                        <div
+                          key={ap.id}
+                          className="p-4 rounded-lg border border-border/60 bg-background flex flex-col justify-between gap-3"
+                        >
+                          <div className="space-y-1">
+                            <Badge variant="outline" className="text-xs font-semibold">
+                              {ap.type_label}
+                            </Badge>
+                            <p className="text-sm font-bold text-foreground break-words">
+                              {ap.label}
+                            </p>
+                            {ap.address && (
+                              <p className="text-xs text-muted-foreground break-words">
+                                {ap.address}
+                              </p>
+                            )}
+                            {ap.instructions && (
+                              <p className="text-xs text-muted-foreground/90 break-words">
+                                {ap.instructions}
+                              </p>
+                            )}
+                          </div>
+                          <a
+                            href={ap.map_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 h-11 min-h-11 px-3 rounded-lg border border-border/60 hover:border-primary/40 text-xs font-bold text-primary w-fit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          >
+                            <ExternalLink className="size-3" />
+                            <span>Ver no Mapa</span>
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Quick Parking & Accessibility Summary inside Location */}
+                {(event.policies.parking_info || event.policies.accessibility_info) && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                    {event.policies.parking_info && (
+                      <div className="py-3 border-t border-border/40 sm:p-4 sm:rounded-lg sm:bg-muted/30 sm:border sm:border-border/50 space-y-1">
+                        <div className="flex items-center gap-2 text-xs font-bold text-foreground">
+                          <Car className="size-4 text-primary shrink-0" />
+                          <span>Estacionamento</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground leading-relaxed break-words">
+                          {event.policies.parking_info}
+                        </p>
+                      </div>
+                    )}
+                    {event.policies.accessibility_info && (
+                      <div className="py-3 border-t border-border/40 sm:p-4 sm:rounded-lg sm:bg-muted/30 sm:border sm:border-border/50 space-y-1">
+                        <div className="flex items-center gap-2 text-xs font-bold text-foreground">
+                          <Accessibility className="size-4 text-primary shrink-0" />
+                          <span>Acessibilidade (PCD)</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground leading-relaxed break-words">
+                          {event.policies.accessibility_info}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {/* SECTION: PARCEIROS, PATROCINADORES & APOIO (RECTANGULAR CONTAIN LOGOS) */}
+            {event.sponsors.length > 0 && (
+              <section id="section-parceiros" className="scroll-mt-20 space-y-4">
+                <div className="py-2 sm:bg-card sm:rounded-lg sm:border sm:border-border/60 sm:p-6 space-y-6">
+                  <div className="flex items-center gap-2">
+                    <Award className="size-5 text-primary shrink-0" />
+                    <h2 className="text-xl font-black tracking-tight text-foreground">
+                      Patrocinadores e Apoiadores
+                    </h2>
+                  </div>
+
+                  {(
+                    ["realizacao", "ouro", "prata", "apoio", "parceiro_midia"] as const
+                  ).map((tierKey) => {
+                    const tierSponsors = event.sponsors.filter((s) => s.tier === tierKey);
+                    if (tierSponsors.length === 0) return null;
+                    return (
+                      <div key={tierKey} className="space-y-3">
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-border/40 pb-2">
+                          {tierSponsors[0].tier_label}
+                        </h3>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                          {tierSponsors.map((sp) => {
+                            const cardInner = (
+                              <div className="rounded-lg border border-border/60 bg-background p-4 flex flex-col items-center justify-center gap-3 h-32 hover:border-primary/40 transition-colors text-center">
+                                {sp.logo_url ? (
+                                  <img
+                                    src={sp.logo_url}
+                                    alt={sp.name}
+                                    className="max-h-14 max-w-full object-contain"
+                                  />
+                                ) : (
+                                  <div className="size-10 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
+                                    <Building2 className="size-5" />
+                                  </div>
+                                )}
+                                <span className="text-xs font-bold text-foreground break-words leading-tight">
+                                  {sp.name}
+                                </span>
+                              </div>
+                            );
+
+                            return sp.website_url ? (
+                              <a
+                                key={sp.id}
+                                href={sp.website_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg"
+                              >
+                                {cardInner}
+                              </a>
+                            ) : (
+                              <div key={sp.id}>{cardInner}</div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
+            {/* SECTION: POLÍTICAS E DIRETRIZES OFICIAIS */}
+            {event.has_policies && (
+              <section id="section-politicas" className="scroll-mt-20 space-y-4">
+                <div className="py-2 sm:bg-card sm:rounded-lg sm:border sm:border-border/60 sm:p-6 space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Info className="size-5 text-primary shrink-0" />
+                    <h2 className="text-xl font-black tracking-tight text-foreground">
+                      Políticas e Diretrizes do Evento
+                    </h2>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {event.policies.refund_policy && (
+                      <div className="py-3 border-t border-border/40 sm:p-4 sm:rounded-lg sm:border sm:border-border/60 sm:bg-background space-y-2">
+                        <div className="flex items-center gap-2 text-xs font-bold text-foreground">
+                          <RefreshCcw className="size-4 text-primary shrink-0" />
+                          <span>Cancelamento e Reembolso</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground leading-relaxed break-words">
+                          {event.policies.refund_policy}
+                        </p>
+                      </div>
+                    )}
+                    {event.policies.half_price_policy && (
+                      <div className="py-3 border-t border-border/40 sm:p-4 sm:rounded-lg sm:border sm:border-border/60 sm:bg-background space-y-2">
+                        <div className="flex items-center gap-2 text-xs font-bold text-foreground">
+                          <BadgePercent className="size-4 text-primary shrink-0" />
+                          <span>Meia-Entrada e Benefícios</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground leading-relaxed break-words">
+                          {event.policies.half_price_policy}
+                        </p>
+                      </div>
+                    )}
+                    {event.policies.accessibility_info && (
+                      <div className="py-3 border-t border-border/40 sm:p-4 sm:rounded-lg sm:border sm:border-border/60 sm:bg-background space-y-2">
+                        <div className="flex items-center gap-2 text-xs font-bold text-foreground">
+                          <Accessibility className="size-4 text-primary shrink-0" />
+                          <span>Acessibilidade</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground leading-relaxed break-words">
+                          {event.policies.accessibility_info}
+                        </p>
+                      </div>
+                    )}
+                    {event.policies.parking_info && (
+                      <div className="py-3 border-t border-border/40 sm:p-4 sm:rounded-lg sm:border sm:border-border/60 sm:bg-background space-y-2">
+                        <div className="flex items-center gap-2 text-xs font-bold text-foreground">
+                          <Car className="size-4 text-primary shrink-0" />
+                          <span>Estacionamento e Acesso</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground leading-relaxed break-words">
+                          {event.policies.parking_info}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {/* MURAL DE PARTICIPANTES & DEPOIMENTOS */}
+            {(totalConfirmed > 0 || testimonials.length > 0) && (
+              <section className="py-2 sm:bg-card sm:rounded-lg sm:border sm:border-border/60 sm:p-6 space-y-4">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <Users className="size-5 text-primary shrink-0" />
+                    <h2 className="text-lg font-black text-foreground">
+                      Comunidade e Participantes ({totalConfirmed})
+                    </h2>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setTestimonialOpen(true)}
+                    className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <Plus className="size-4" />
+                    <span>Deixar Depoimento</span>
+                  </Button>
+                </div>
+
+                {attendees.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {attendees.map((att: any) => (
+                      <div
+                        key={att.id}
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted/60 border border-border/60 text-xs font-medium"
+                      >
+                        <CheckCircle2 className="size-3 text-emerald-500" />
+                        <span>{att.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {testimonials.length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                    {testimonials.map((t: any) => (
+                      <div
+                        key={t.id}
+                        className="py-3 border-t border-border/40 sm:p-4 sm:rounded-lg sm:border sm:border-border/60 sm:bg-background space-y-2"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-foreground">
+                            {t.authorName}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            {Array.from({ length: t.rating || 5 }).map((_, idx) => (
+                              <Star
+                                key={idx}
+                                className="size-3 fill-amber-400 text-amber-400"
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground break-words">
+                          "{t.comment}"
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+            )}
+          </div>
+
+          {/* RIGHT SIDEBAR: STICKY CONVERSION BOX & MULTIPLE ORGANIZERS (4 cols on Desktop) */}
+          <aside
+            className={
+              effectiveIsDesktop
+                ? "lg:col-span-4 lg:sticky lg:top-20 space-y-6"
+                : "space-y-6"
+            }
+          >
+            {/* Ticket Conversion Card */}
+            <div className="py-2 sm:bg-card sm:rounded-lg sm:border sm:border-border/60 sm:p-6 space-y-5">
+              <div className="flex items-center justify-between border-b border-border/50 pb-4">
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-primary block">
+                    Inscrições & Ingressos
+                  </span>
+                  <h3 className="text-lg font-black text-foreground mt-1">
+                    {event.all_tickets_sold_out
+                      ? "Ingressos Esgotados"
+                      : selectedTier
+                      ? selectedTier.price_display
+                      : event.has_free_tier
+                      ? "GRÁTIS"
+                      : event.lowest_active_price_cents !== null
+                      ? formatMoney(event.lowest_active_price_cents)
+                      : "Sob Consulta"}
+                  </h3>
+                  {selectedTier?.eligibility_rule && (
+                    <p className="text-xs font-medium text-muted-foreground mt-1 break-words">
+                      {selectedTier.eligibility_rule}
+                    </p>
+                  )}
+                </div>
+                <div className="size-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <Ticket className="size-5" />
+                </div>
+              </div>
+
+              {/* Quick Lot Selector in Sidebar */}
+              {event.ticket_tiers.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Selecione o Ingresso / Lote
+                  </Label>
+                  <div className="space-y-2">
+                    {event.ticket_tiers.map((tier) => {
+                      const isSelected = selectedTier?.id === tier.id;
+                      return (
+                        <button
+                          key={tier.id}
+                          type="button"
+                          disabled={!tier.is_purchasable}
+                          onClick={() => setSelectedTierId(tier.id)}
+                          className={`w-full p-3 rounded-lg border text-left transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                            !tier.is_purchasable
+                              ? "border-border/40 bg-muted/20 opacity-60 cursor-not-allowed"
+                              : isSelected
+                              ? "border-primary bg-primary/5 ring-1 ring-primary/30"
+                              : "border-border/60 hover:border-primary/40 bg-background"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-xs font-bold text-foreground break-words">
+                              {tier.name}
+                            </span>
+                            <span
+                              className={`text-xs font-black tabular-nums shrink-0 ${
+                                tier.is_free
+                                  ? "text-emerald-600 dark:text-emerald-400"
+                                  : "text-primary"
+                              }`}
+                            >
+                              {tier.price_display}
+                            </span>
+                          </div>
+                          {tier.eligibility_rule && (
+                            <p className="text-xs text-muted-foreground mt-1 break-words">
+                              {tier.eligibility_rule}
+                            </p>
+                          )}
+                          <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
+                            <span>{tier.category_label}</span>
+                            <span className="font-semibold">{tier.lifecycle_badge_label}</span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               )}
 
-              <p className="text-xs text-muted-foreground leading-relaxed max-w-xs mx-auto">
-                Guarde o código do seu bilhete ({issuedTicket?.ticketCode || "Confirmado"}). Você também pode adicionar o evento à sua agenda agora mesmo.
-              </p>
+              {/* Primary CTA (Single Primary Action per Surface - Rule B.8) */}
+              <Button
+                type="button"
+                disabled={event.all_tickets_sold_out}
+                onClick={() => handleOpenCheckout(selectedTier)}
+                className="w-full h-11 min-h-11 rounded-lg font-bold text-sm gap-2 focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <Ticket className="size-4" />
+                <span>
+                  {event.all_tickets_sold_out
+                    ? "Lotes Esgotados"
+                    : selectedTier?.external_url || event.external_ticket_url
+                    ? "Comprar no Site Oficial"
+                    : selectedTier?.is_free || event.has_free_tier
+                    ? "Garantir Ingresso Gratuito"
+                    : "Comprar Ingresso"}
+                </span>
+              </Button>
 
-              <div className="pt-2 flex flex-col gap-2">
-                <Button
-                  variant="outline"
-                  onClick={handleDownloadCalendar}
-                  className="rounded-lg h-11 min-h-11 text-xs font-semibold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border-border"
-                >
-                  <Download className="size-4" />
-                  <span>Salvar na Minha Agenda</span>
-                </Button>
-                <Button
-                  variant="default"
-                  onClick={() => setIsSignupModalOpen(false)}
-                  className="rounded-lg h-11 min-h-11 text-xs font-bold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                >
-                  <span>Concluir</span>
-                </Button>
+              <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground text-center">
+                <ShieldCheck className="size-4 text-emerald-500 shrink-0" />
+                <span>Credencial digital Waesy com QR Code antifraude</span>
               </div>
             </div>
-          ) : (
-            <form onSubmit={handleSubmitLead} className="space-y-4 pt-2">
-              <div className="space-y-1.5">
-                <Label htmlFor="lead-name" className="text-xs font-semibold text-foreground">
-                  Nome Completo *
-                </Label>
-                <Input
-                  id="lead-name"
-                  value={leadName}
-                  onChange={(e) => setLeadName(e.target.value)}
-                  placeholder="Seu nome completo"
-                  required
-                  className="h-11 min-h-11 text-xs rounded-lg"
-                />
+
+            {/* Multiple Organizers & Realizers Card (Honest Verification - Rule B.33) */}
+            <div className="py-2 sm:bg-card sm:rounded-lg sm:border sm:border-border/60 sm:p-6 space-y-4">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                Realização e Organização
+              </h4>
+
+              <div className="space-y-3">
+                {event.organizers.map((org) => (
+                  <div
+                    key={org.id}
+                    className="flex items-center gap-3 p-3 rounded-lg border border-border/50 bg-background"
+                  >
+                    {org.avatar_url ? (
+                      <img
+                        src={org.avatar_url}
+                        alt={org.name}
+                        className={`size-12 shrink-0 border border-border/60 ${
+                          org.entity_type === "PERSON"
+                            ? "rounded-full object-cover"
+                            : "rounded-lg object-contain bg-white p-1"
+                        }`}
+                      />
+                    ) : (
+                      <div className="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-black text-base shrink-0">
+                        {org.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+
+                    <div className="min-w-0 flex-1">
+                      <span className="text-xs font-bold uppercase tracking-wider text-primary block">
+                        {org.role_label}
+                      </span>
+                      <p className="text-sm font-bold text-foreground break-words">
+                        {org.name}
+                      </p>
+                      {org.is_verified && (
+                        <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mt-1 font-medium">
+                          <CheckCircle2 className="size-3 shrink-0" />
+                          <span>Organizador Verificado</span>
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="lead-whatsapp" className="text-xs font-semibold text-foreground">
-                  WhatsApp com DDD *
-                </Label>
-                <Input
-                  id="lead-whatsapp"
-                  value={leadWhatsapp}
-                  onChange={(e) => setLeadWhatsapp(e.target.value)}
-                  placeholder="(00) 00000-0000"
-                  required
-                  className="h-11 min-h-11 text-xs rounded-lg font-mono"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="lead-email" className="text-xs font-semibold text-foreground">
-                  E-mail (opcional)
-                </Label>
-                <Input
-                  id="lead-email"
-                  type="email"
-                  value={leadEmail}
-                  onChange={(e) => setLeadEmail(e.target.value)}
-                  placeholder="seuemail@exemplo.com"
-                  className="h-11 min-h-11 text-xs rounded-lg"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="lead-notes" className="text-xs font-semibold text-foreground">
-                  Observações ou perguntas ao organizador (opcional)
-                </Label>
-                <Textarea
-                  id="lead-notes"
-                  value={leadNotes}
-                  onChange={(e) => setLeadNotes(e.target.value)}
-                  placeholder="Ex: Necessito de assento reservado, etc."
-                  rows={2}
-                  className="text-xs rounded-lg resize-none"
-                />
-              </div>
-
-              <div className="pt-2 flex items-center justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsSignupModalOpen(false)}
-                  disabled={isSubmittingLead}
-                  className="rounded-lg h-11 min-h-11 px-4 text-xs font-semibold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border-border"
+              {event.primary_organizer.phone && (
+                <a
+                  href={`https://wa.me/55${event.primary_organizer.phone.replace(/\D/g, "")}?text=${encodeURIComponent(
+                    `Olá! Gostaria de informações sobre o evento "${event.title}".`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full h-11 min-h-11 rounded-lg border border-border/60 hover:bg-muted/50 text-xs font-bold text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  variant="default"
-                  disabled={isSubmittingLead}
-                  className="rounded-lg h-11 min-h-11 px-6 text-xs font-bold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                >
-                  {isSubmittingLead ? (
-                    <>
-                      <Loader2 className="size-4 animate-spin" />
-                      <span>Confirmando...</span>
-                    </>
-                  ) : (
-                    <span>Confirmar Inscrição</span>
-                  )}
-                </Button>
-              </div>
-            </form>
+                  <MessageCircle className="size-4 text-emerald-500" />
+                  <span>Falar com a Organização</span>
+                </a>
+              )}
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      {/* MOBILE STICKY BOTTOM BAR (Z-30 PER RULE B.34) */}
+      {!effectiveIsDesktop && (
+        <div className="fixed bottom-0 inset-x-0 z-30 bg-background/95 backdrop-blur-md border-t border-border/60 p-3 flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <span className="text-xs font-semibold text-muted-foreground block">
+              {selectedTier ? selectedTier.name : "Inscrição"}
+            </span>
+            <span className="text-base font-black text-foreground tabular-nums">
+              {selectedTier
+                ? selectedTier.price_display
+                : event.has_free_tier
+                ? "GRÁTIS"
+                : event.lowest_active_price_cents !== null
+                ? formatMoney(event.lowest_active_price_cents)
+                : "Consultar"}
+            </span>
+          </div>
+          <Button
+            type="button"
+            disabled={event.all_tickets_sold_out}
+            onClick={() => handleOpenCheckout(selectedTier)}
+            className="h-11 min-h-11 rounded-lg font-bold text-xs px-5 gap-2 shrink-0 focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <Ticket className="size-4" />
+            <span>
+              {event.all_tickets_sold_out
+                ? "Esgotado"
+                : selectedTier?.is_free || event.has_free_tier
+                ? "Garantir Vaga"
+                : "Comprar Ingresso"}
+            </span>
+          </Button>
+        </div>
+      )}
+
+      {/* DIALOG: LIGHTBOX FOR EXCLUSIVE EVENT GALLERY */}
+      <Dialog
+        open={Boolean(lightboxImageUrl)}
+        onOpenChange={(open) => !open && setLightboxImageUrl(null)}
+      >
+        <DialogContent className="sm:max-w-3xl rounded-lg p-3 bg-background border border-border">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Visualização de Mídia — {event.title}</DialogTitle>
+            <DialogDescription>Foto ampliada da galeria do evento.</DialogDescription>
+          </DialogHeader>
+          {lightboxImageUrl && (
+            <img
+              src={lightboxImageUrl}
+              alt={event.title}
+              className="w-full max-h-[80vh] object-contain rounded-md"
+            />
           )}
         </DialogContent>
       </Dialog>
 
-      {/* ── 5. Modal de Story 9:16 (Visual Estilo Instagram / Reel Mobile-First) ── */}
-      {storyUrl && (
-        <Dialog open={isStoryOpen} onOpenChange={setIsStoryOpen}>
-          <DialogContent
-            style={{ aspectRatio: "9/16", maxHeight: "90vh" }}
-            className="p-0 sm:max-w-sm w-full bg-black text-white border-0 overflow-hidden rounded-2xl flex flex-col justify-between z-50 shadow-2xl"
-          >
-            {/* Barra Superior com Progresso e Host */}
-            <div className="absolute top-0 inset-x-0 z-20 p-3 bg-gradient-to-b from-black/80 via-black/40 to-transparent space-y-2">
-              <div className="w-full bg-white/20 h-1 rounded-full overflow-hidden">
-                <div
-                  className="bg-white h-full transition-all duration-100 ease-linear rounded-full"
-                  style={{ width: `${storyProgress}%` }}
-                />
-              </div>
+      {/* DIALOG: STORY VERTICAL (9:16) */}
+      <Dialog open={storyViewerOpen} onOpenChange={setStoryViewerOpen}>
+        <DialogContent className="sm:max-w-sm p-0 overflow-hidden rounded-lg bg-black border-border/40">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Story Oficial — {event.title}</DialogTitle>
+            <DialogDescription>Destaque vertical 9:16 do evento.</DialogDescription>
+          </DialogHeader>
+          <div className="relative aspect-[9/16] w-full bg-black flex items-center justify-center">
+            {event.story_url &&
+            (event.story_url.endsWith(".mp4") || event.story_url.endsWith(".webm")) ? (
+              <video
+                src={event.story_url}
+                controls
+                autoPlay
+                playsInline
+                className="w-full h-full object-cover"
+              />
+            ) : event.story_url ? (
+              <img
+                src={event.story_url}
+                alt={event.title}
+                className="w-full h-full object-cover"
+              />
+            ) : null}
+          </div>
+        </DialogContent>
+      </Dialog>
 
-              <div className="flex items-center justify-between gap-3 text-white">
-                <div className="flex items-center gap-2 min-w-0">
-                  {hostAvatarUrl ? (
-                    <img src={hostAvatarUrl} alt={hostName} className="size-8 rounded-full object-cover border border-white/30" />
-                  ) : (
-                    <div className="size-8 rounded-full bg-primary/40 text-white flex items-center justify-center font-bold text-xs">
-                      {hostName.charAt(0)}
-                    </div>
+      {/* DIALOG: CHECKOUT & EMISSÃO DE INGRESSO QR */}
+      <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
+        <DialogContent className="sm:max-w-lg rounded-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-lg font-black">
+              <Ticket className="size-5 text-primary" />
+              <span>
+                {issuedResult ? "Seu Ingresso Digital QR" : "Inscrição e Emissão de Ingresso"}
+              </span>
+            </DialogTitle>
+            <DialogDescription>
+              {issuedResult
+                ? "Apresente o código abaixo na portaria do evento."
+                : `${event.title} • ${selectedTier ? selectedTier.name : "Inscrição Geral"}`}
+            </DialogDescription>
+          </DialogHeader>
+
+          {!issuedResult ? (
+            <div className="space-y-4 py-2">
+              <div className="p-4 rounded-lg bg-muted/40 border border-border/60 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase text-primary">
+                    {selectedTier ? selectedTier.name : "Ingresso Individual"}
+                  </p>
+                  {selectedTier?.eligibility_rule && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {selectedTier.eligibility_rule}
+                    </p>
                   )}
-                  <div className="min-w-0">
-                    <p className="text-xs font-bold truncate leading-tight">{classified.title}</p>
-                    <p className="text-xs text-white/70 truncate">{hostName}</p>
-                  </div>
+                  <p className="text-lg font-black text-foreground mt-1">
+                    {selectedTier ? selectedTier.price_display : "GRÁTIS"}
+                  </p>
                 </div>
 
-                <div className="flex items-center gap-1">
-                  {isVideoUrl(storyUrl) && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setIsStoryMuted(!isStoryMuted)}
-                      className="size-11 min-h-11 min-w-11 text-white hover:bg-white/20 rounded-full"
-                    >
-                      {isStoryMuted ? <VolumeX className="size-4" /> : <Volume2 className="size-4" />}
-                    </Button>
-                  )}
+                <div className="flex items-center gap-2">
                   <Button
                     type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setIsStoryOpen(false)}
-                    className="size-11 min-h-11 min-w-11 text-white hover:bg-white/20 rounded-full"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setTicketQty(Math.max(1, ticketQty - 1))}
+                    className="size-11 min-h-11 min-w-11 rounded-lg font-bold"
                   >
-                    <X className="size-5" />
+                    -
+                  </Button>
+                  <span className="w-8 text-center font-bold text-sm tabular-nums">
+                    {ticketQty}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setTicketQty(
+                        Math.min(selectedTier?.max_per_order || 10, ticketQty + 1)
+                      )
+                    }
+                    className="size-11 min-h-11 min-w-11 rounded-lg font-bold"
+                  >
+                    +
                   </Button>
                 </div>
               </div>
-            </div>
 
-            {/* Visualizador de Mídia 9:16 */}
-            <div className="relative w-full h-full flex items-center justify-center bg-black">
-              {isVideoUrl(storyUrl) ? (
-                <video
-                  ref={storyVideoRef}
-                  src={storyUrl}
-                  autoPlay
-                  playsInline
-                  muted={isStoryMuted}
-                  onTimeUpdate={(e) => {
-                    const v = e.currentTarget;
-                    if (v.duration) {
-                      setStoryProgress((v.currentTime / v.duration) * 100);
-                    }
-                  }}
-                  onEnded={() => setIsStoryOpen(false)}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <img
-                  src={storyUrl}
-                  alt={classified.title}
-                  className="w-full h-full object-cover"
-                />
-              )}
-            </div>
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <Label className="text-xs font-bold">Nome Completo do Participante *</Label>
+                  <Input
+                    value={buyerName}
+                    onChange={(e) => setBuyerName(e.target.value)}
+                    placeholder="Ex: João da Silva"
+                    className="h-11 min-h-11 rounded-lg"
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs font-bold">WhatsApp *</Label>
+                    <Input
+                      value={buyerWhatsapp}
+                      onChange={(e) => setBuyerWhatsapp(e.target.value)}
+                      placeholder="(49) 99999-9999"
+                      className="h-11 min-h-11 rounded-lg"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs font-bold">CPF (Opcional)</Label>
+                    <Input
+                      value={buyerDocument}
+                      onChange={(e) => setBuyerDocument(e.target.value)}
+                      placeholder="000.000.000-00"
+                      className="h-11 min-h-11 rounded-lg"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-bold">E-mail (Opcional)</Label>
+                  <Input
+                    type="email"
+                    value={buyerEmail}
+                    onChange={(e) => setBuyerEmail(e.target.value)}
+                    placeholder="seu@email.com"
+                    className="h-11 min-h-11 rounded-lg"
+                  />
+                </div>
+              </div>
 
-            {/* Barra Inferior com CTA de Conversão */}
-            <div className="absolute bottom-0 inset-x-0 z-20 p-4 bg-gradient-to-t from-black/90 via-black/50 to-transparent flex items-center gap-3">
               <Button
-                variant="default"
+                type="button"
+                disabled={checkoutMutation.isPending}
                 onClick={() => {
-                  setIsStoryOpen(false);
-                  handleOpenSignup(ticketTiers[0]);
+                  if (buyerName.trim().length < 2) {
+                    toast.error("Informe o nome completo.");
+                    return;
+                  }
+                  if (buyerWhatsapp.trim().length < 8) {
+                    toast.error("Informe um WhatsApp válido.");
+                    return;
+                  }
+                  checkoutMutation.mutate({
+                    classifiedId: event.id,
+                    tierId: selectedTier?.id || "general",
+                    tierName: selectedTier?.name || "Ingresso Geral",
+                    quantity: ticketQty,
+                    unitPriceCents: selectedTier?.price_cents || 0,
+                    buyerName: buyerName.trim(),
+                    buyerWhatsapp: buyerWhatsapp.trim(),
+                    buyerDocument: buyerDocument.trim() || undefined,
+                    buyerEmail: buyerEmail.trim() || undefined,
+                    paymentMethod:
+                      (selectedTier?.price_cents || 0) === 0 ? "free" : paymentMethod,
+                  });
                 }}
-                className="w-full rounded-xl h-11 min-h-11 text-xs font-bold gap-2 cursor-pointer shadow-lg"
+                className="w-full h-11 min-h-11 rounded-lg font-bold text-sm gap-2"
               >
-                <Ticket className="size-4" />
-                <span>Garantir Ingresso</span>
+                <QrCode className="size-4" />
+                <span>
+                  {checkoutMutation.isPending
+                    ? "Emitindo Credencial..."
+                    : "Confirmar e Gerar QR Code"}
+                </span>
               </Button>
             </div>
-          </DialogContent>
-        </Dialog>
-      )}
+          ) : (
+            <div className="space-y-4 py-2">
+              {issuedResult.tickets?.map((tkt: any) => (
+                <div
+                  key={tkt.code}
+                  className="p-4 rounded-lg border-2 border-primary/40 bg-primary/5 flex flex-col items-center text-center space-y-3"
+                >
+                  <Badge className="bg-emerald-500/15 text-emerald-600 border-emerald-500/30 font-bold">
+                    CREDENCIAL VÁLIDA
+                  </Badge>
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
+                      tkt.qrPayload
+                    )}`}
+                    alt={`QR Code ${tkt.code}`}
+                    className="size-40 rounded-lg border border-border p-2 bg-white"
+                  />
+                  <p className="font-mono text-base font-black tracking-wider text-primary">
+                    {tkt.code}
+                  </p>
+                </div>
+              ))}
+              {issuedResult.pixCopyPaste && (
+                <div className="p-3 rounded-lg bg-muted/40 border border-border/60 space-y-2">
+                  <Label className="text-xs font-bold">Chave PIX do Organizador</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      readOnly
+                      value={issuedResult.pixCopyPaste}
+                      className="h-11 min-h-11 text-xs font-mono"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        navigator.clipboard.writeText(issuedResult.pixCopyPaste);
+                        setCopiedPix(true);
+                        toast.success("Chave PIX copiada!");
+                      }}
+                      className="h-11 min-h-11 px-3"
+                    >
+                      {copiedPix ? <Check className="size-4" /> : <Copy className="size-4" />}
+                    </Button>
+                  </div>
+                </div>
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setCheckoutOpen(false)}
+                className="w-full h-11 min-h-11 rounded-lg font-bold"
+              >
+                Concluir
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
-      {/* ── 6. Minimalist White-Label Badge (Feito com amor por Waesy) ── */}
-      <Link
-        to="/"
-        className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-30 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-background/90 backdrop-blur-md border border-border/60 text-xs font-medium text-muted-foreground hover:text-foreground shadow-sm transition-colors cursor-pointer group"
-        title="Waesy Plataforma de Eventos"
-      >
-        <Sparkles className="size-3 text-primary group-hover:scale-110 transition-transform" />
-        <span>Feito com amor por <strong className="font-bold text-foreground">Waesy</strong></span>
-      </Link>
+      {/* DIALOG: PORTARIA & VALIDADOR DE INGRESSOS */}
+      <Dialog open={validatorOpen} onOpenChange={setValidatorOpen}>
+        <DialogContent className="sm:max-w-md rounded-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 font-black">
+              <QrCode className="size-5 text-primary" />
+              <span>Validador de Credenciais</span>
+            </DialogTitle>
+            <DialogDescription>
+              Digite o código do ingresso (ex: WSY-EVT-XXXXXX) para validar autenticidade.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="flex gap-2">
+              <Input
+                value={verifyCodeInput}
+                onChange={(e) => setVerifyCodeInput(e.target.value.toUpperCase())}
+                placeholder="WSY-EVT-XXXXXX"
+                className="h-11 min-h-11 font-mono uppercase rounded-lg"
+              />
+              <Button
+                type="button"
+                disabled={verifyMutation.isPending || verifyCodeInput.trim().length < 4}
+                onClick={() => verifyMutation.mutate(verifyCodeInput.trim())}
+                className="h-11 min-h-11 rounded-lg font-bold px-4"
+              >
+                Validar
+              </Button>
+            </div>
+            {verifyResult && (
+              <div
+                className={`p-4 rounded-lg border text-xs space-y-1 ${
+                  verifyResult.valid
+                    ? "bg-emerald-500/10 border-emerald-500/30 text-foreground"
+                    : "bg-destructive/10 border-destructive/30 text-destructive"
+                }`}
+              >
+                <p className="font-bold">{verifyResult.message}</p>
+                {verifyResult.valid && (
+                  <>
+                    <p>Participante: {verifyResult.buyerName}</p>
+                    <p>Lote: {verifyResult.tierName}</p>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* DIALOG: NOVO DEPOIMENTO */}
+      <Dialog open={testimonialOpen} onOpenChange={setTestimonialOpen}>
+        <DialogContent className="sm:max-w-md rounded-lg">
+          <DialogHeader>
+            <DialogTitle className="font-black">Publicar Depoimento</DialogTitle>
+            <DialogDescription>
+              Compartilhe sua expectativa ou avaliação sobre {event.title}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="space-y-1">
+              <Label className="text-xs font-bold">Seu Nome</Label>
+              <Input
+                value={testName}
+                onChange={(e) => setTestName(e.target.value)}
+                placeholder="Como deseja aparecer"
+                className="h-11 min-h-11 rounded-lg"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs font-bold">Comentário</Label>
+              <Textarea
+                value={testComment}
+                onChange={(e) => setTestComment(e.target.value)}
+                rows={3}
+                className="rounded-lg text-xs"
+              />
+            </div>
+            <Button
+              type="button"
+              disabled={testimonialMutation.isPending}
+              onClick={() =>
+                testimonialMutation.mutate({
+                  classifiedId: event.id,
+                  authorName: testName.trim(),
+                  rating: testRating,
+                  comment: testComment.trim(),
+                })
+              }
+              className="w-full h-11 min-h-11 rounded-lg font-bold text-xs gap-2"
+            >
+              <Send className="size-4" />
+              <span>Publicar no Mural</span>
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

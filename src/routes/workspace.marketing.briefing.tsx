@@ -517,7 +517,7 @@ export function BrandBriefingPage() {
                   <button
                     type="button"
                     onClick={() => removePillar(i)}
-                    className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors flex-shrink-0"
+                    className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -527,7 +527,7 @@ export function BrandBriefingPage() {
             <button
               type="button"
               onClick={addPillar}
-              className="w-full h-10 border border-dashed border-border/60 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:border-border flex items-center justify-center gap-2 transition-colors"
+              className="w-full h-10 border border-dashed border-border/60 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:border-border flex items-center justify-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <Plus className="w-3.5 h-3.5" />
               Adicionar Pilar de Conteúdo
@@ -554,7 +554,7 @@ export function BrandBriefingPage() {
                   <button
                     type="button"
                     onClick={() => removeKeyword(i)}
-                    className="text-muted-foreground hover:text-destructive transition-colors flex-shrink-0"
+                    className="text-muted-foreground hover:text-destructive transition-colors flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <Trash2 className="w-3 h-3" />
                   </button>
@@ -564,7 +564,7 @@ export function BrandBriefingPage() {
             <button
               type="button"
               onClick={addKeyword}
-              className="h-9 px-4 border border-dashed border-border/60 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:border-border flex items-center gap-2 transition-colors"
+              className="h-9 px-4 border border-dashed border-border/60 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:border-border flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <Plus className="w-3.5 h-3.5" />
               Adicionar Keyword

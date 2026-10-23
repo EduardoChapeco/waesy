@@ -12,23 +12,8 @@ import { recordLedgerEntryCore } from "@/services/immutable-ledger.functions";
 // Order status enum (shared between validator and domain logic)
 // ---------------------------------------------------------------------------
 
-export const ORDER_STATUS_VALUES = [
- "draft",
- "awaiting_shipping_quote",
- "awaiting_payment",
- "payment_processing",
- "paid",
- "processing",
- "ready_for_pickup",
- "shipped",
- "delivered",
- "completed",
- "cancelled",
- "payment_failed",
- "return_requested",
- "returned",
- "refunded",
-] as const;
+import { ORDER_STATUS_VALUES } from "@/lib/order-constants";
+export { ORDER_STATUS_VALUES };
 
 // ---------------------------------------------------------------------------
 // Handlers (decoupled for unit testing)
@@ -1981,3 +1966,18 @@ export const reorderCustomerOrder = createServerFn({ method: "POST" })
       );
     }
   });
+
+// Re-exports canônicos de gestão do Workspace para compatibilidade (EARS-DRY-01)
+export {
+  listOrdersFn,
+  getOrderDetailFn,
+  updateOrderStatusFn,
+  listOrdersFn as listWorkspaceOrders,
+  getOrderDetailFn as getWorkspaceOrderDetail,
+  updateOrderStatusFn as updateWorkspaceOrderStatus,
+  listOrdersInputSchema,
+  getOrderDetailInputSchema,
+  updateOrderStatusInputSchema,
+  type WorkspaceOrderItemDTO,
+  type OrderDetailDTO,
+} from "./orders.functions";

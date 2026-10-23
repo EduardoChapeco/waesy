@@ -128,7 +128,7 @@ export function BuilderPagesPanel({
  <button
  type="button"
  onClick={() => setIsAdding(false)}
- className="text-muted-foreground hover:text-foreground text-xs"
+ className="text-muted-foreground hover:text-foreground text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  ✕
  </button>
@@ -235,12 +235,12 @@ export function BuilderPagesPanel({
  </div>
  </div>
 
- <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+ <div /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */ className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
  <button
  type="button"
  onClick={() => startEditSeo(p)}
  title="Configurar SEO"
- className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+ className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Globe className="size-3.5" />
  </button>
@@ -254,7 +254,7 @@ export function BuilderPagesPanel({
  }
  }}
  title="Excluir página"
- className="size-7 rounded-lg flex items-center justify-center text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+ className="size-7 rounded-lg flex items-center justify-center text-destructive hover:bg-destructive/10 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Trash2 className="size-3.5" />
  </button>

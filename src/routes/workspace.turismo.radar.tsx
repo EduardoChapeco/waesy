@@ -319,7 +319,7 @@ export default function TurismoRadarPage() {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Alertas Operacionais e Câmbio em Tempo Real
+              Radar Operacional
             </h2>
             <Button
               variant="ghost"

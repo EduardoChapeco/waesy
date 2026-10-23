@@ -139,7 +139,7 @@ export function ContractClauseLibrary({
  className={'px-3 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all ' + (
  selectedCategory === k
  ? 'bg-primary text-primary-foreground shadow-sm'
- : 'bg-muted/40 text-muted-foreground hover:text-foreground'
+ : 'bg-muted/40 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
  {label}

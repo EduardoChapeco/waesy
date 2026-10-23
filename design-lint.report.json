@@ -1,97 +1,96 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-21T11:46:07.813Z",
-  "inspectedFiles": 2237,
-  "totalViolations": 12307,
+  "timestamp": "2026-10-23T01:10:28.248Z",
+  "inspectedFiles": 2324,
+  "totalViolations": 10458,
   "summary": {
-    "totalViolations": 12307,
+    "totalViolations": 10458,
     "bySeverity": {
-      "P0": 1359,
-      "P1": 8350,
-      "P2": 1319,
-      "P3": 1279
+      "P0": 76,
+      "P1": 7890,
+      "P2": 1287,
+      "P3": 1205
     },
     "byRule": {
-      "DL-18": 1151,
-      "DL-02": 3393,
-      "DL-14": 2022,
-      "DL-28": 280,
-      "DL-15": 1356,
-      "DL-07": 482,
-      "DL-27": 1013,
-      "DL-30": 266,
-      "DL-26": 85,
-      "DL-01": 875,
-      "DL-29": 119,
-      "DL-05": 130,
-      "DL-23": 355,
-      "DL-03": 437,
-      "DL-09": 141,
-      "DL-08": 107,
-      "DL-25": 25,
+      "DL-18": 1123,
+      "DL-02": 3196,
+      "DL-14": 1868,
+      "DL-28": 271,
+      "DL-07": 453,
+      "DL-27": 947,
+      "DL-30": 258,
+      "DL-26": 82,
+      "DL-01": 856,
+      "DL-15": 76,
+      "DL-29": 115,
+      "DL-05": 131,
+      "DL-23": 354,
+      "DL-03": 386,
+      "DL-09": 163,
+      "DL-08": 94,
+      "DL-25": 21,
       "DL-24": 2,
-      "DL-11": 22,
+      "DL-13": 10,
       "DL-12": 29,
-      "DL-13": 11,
-      "DL-06": 3,
-      "DL-04": 3
+      "DL-11": 20,
+      "DL-06": 3
     },
     "byModule": {
       "components/app": {
-        "total": 5585,
-        "P0": 559,
-        "P1": 3787,
-        "P2": 691,
-        "P3": 548
+        "total": 4625,
+        "P0": 32,
+        "P1": 3469,
+        "P2": 613,
+        "P3": 511
       },
       "components/builder": {
-        "total": 130,
-        "P0": 42,
-        "P1": 50,
-        "P2": 21,
-        "P3": 17
+        "total": 57,
+        "P0": 0,
+        "P1": 31,
+        "P2": 16,
+        "P3": 10
       },
       "components/chat": {
-        "total": 81,
-        "P0": 4,
-        "P1": 70,
-        "P2": 2,
-        "P3": 5
+        "total": 193,
+        "P0": 0,
+        "P1": 116,
+        "P2": 62,
+        "P3": 15
       },
       "components/tourism": {
-        "total": 1034,
-        "P0": 76,
-        "P1": 769,
-        "P2": 129,
-        "P3": 60
+        "total": 908,
+        "P0": 8,
+        "P1": 730,
+        "P2": 126,
+        "P3": 44
       },
       "components/ui": {
-        "total": 310,
-        "P0": 38,
+        "total": 279,
+        "P0": 1,
         "P1": 219,
-        "P2": 14,
-        "P3": 39
+        "P2": 19,
+        "P3": 40
       },
       "hooks": {
-        "total": 17,
-        "P0": 5,
+        "total": 12,
+        "P0": 0,
         "P1": 8,
         "P2": 4,
         "P3": 0
       },
       "lib": {
-        "total": 254,
-        "P0": 1,
+        "total": 253,
+        "P0": 0,
         "P1": 218,
         "P2": 35,
         "P3": 0
       },
       "routes/admin": {
-        "total": 1002,
-        "P0": 86,
-        "P1": 748,
+        "total": 921,
+        "P0": 0,
+        "P1": 749,
         "P2": 50,
-        "P3": 118
+        "P3": 122
       },
       "routes/api": {
         "total": 6,
@@ -101,25 +100,25 @@
         "P3": 0
       },
       "routes/other": {
-        "total": 124,
-        "P0": 11,
+        "total": 117,
+        "P0": 4,
         "P1": 91,
         "P2": 16,
         "P3": 6
       },
       "routes/workspace": {
-        "total": 2125,
-        "P0": 424,
-        "P1": 1315,
-        "P2": 110,
-        "P3": 276
+        "total": 1684,
+        "P0": 20,
+        "P1": 1296,
+        "P2": 109,
+        "P3": 259
       },
       "routes/store": {
-        "total": 1418,
-        "P0": 113,
-        "P1": 922,
-        "P2": 175,
-        "P3": 208
+        "total": 1182,
+        "P0": 11,
+        "P1": 810,
+        "P2": 165,
+        "P3": 196
       },
       "services": {
         "total": 210,
@@ -143,8 +142,8 @@
         "P3": 0
       }
     },
-    "filesWithViolations": 891,
-    "filesCount": 2237
+    "filesWithViolations": 875,
+    "filesCount": 2324
   },
   "config": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -325,6 +324,38 @@
         "approvedBy": "design-system-architect"
       },
       {
+        "id": "DL-01",
+        "file": "src/lib/travel/excelencia-offer-engine.ts",
+        "reason": "Motor gerador de arte gráfica e renderização canvas de ofertas de turismo",
+        "date": "2026-10-21",
+        "expiry": "2028-12-31",
+        "approvedBy": "design-system-architect"
+      },
+      {
+        "id": "DL-01",
+        "file": "src/lib/travel/liquid-glass-engine.ts",
+        "reason": "Motor de renderização gráfica e física óptica de liquid glass para cartões",
+        "date": "2026-10-21",
+        "expiry": "2028-12-31",
+        "approvedBy": "design-system-architect"
+      },
+      {
+        "id": "DL-01",
+        "file": "src/components/social-templates/TravelTemplateEditorial.tsx",
+        "reason": "Gerador de templates visuais de stories e flyers de marketing com gradientes fotográficos",
+        "date": "2026-10-21",
+        "expiry": "2028-12-31",
+        "approvedBy": "design-system-architect"
+      },
+      {
+        "id": "DL-01",
+        "file": "src/components/tourism/promotional-flyer/travel-promo-artboard.tsx",
+        "reason": "Artboard de composição visual de encartes de turismo",
+        "date": "2026-10-21",
+        "expiry": "2028-12-31",
+        "approvedBy": "design-system-architect"
+      },
+      {
         "id": "DL-18",
         "file": "src/components/resume/resume-document.tsx",
         "reason": "Folha fisica A4 de papel para impressao e preview isolado do modo escuro exige fundo branco e cores fisicas",
@@ -346,7 +377,7 @@
     {
       "id": "DL-18",
       "rule": "DL-18",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/listing-precheck-dialog.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/editor/listing-precheck-dialog.tsx",
       "module": "components/app",
       "line": 167,
       "column": 48,
@@ -357,7 +388,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/listing-precheck-dialog.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/editor/listing-precheck-dialog.tsx",
       "module": "components/app",
       "line": 182,
       "column": 29,
@@ -368,7 +399,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/listing-precheck-dialog.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/editor/listing-precheck-dialog.tsx",
       "module": "components/app",
       "line": 218,
       "column": 24,
@@ -379,7 +410,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/listing-precheck-dialog.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/editor/listing-precheck-dialog.tsx",
       "module": "components/app",
       "line": 227,
       "column": 24,
@@ -390,7 +421,7 @@
     {
       "id": "DL-28",
       "rule": "DL-28",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/listing-precheck-dialog.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/editor/listing-precheck-dialog.tsx",
       "module": "components/app",
       "line": 1,
       "column": 1,
@@ -401,7 +432,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-modifiers-section.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/editor/sections/listing-modifiers-section.tsx",
       "module": "components/app",
       "line": 105,
       "column": 22,
@@ -412,7 +443,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-modifiers-section.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/editor/sections/listing-modifiers-section.tsx",
       "module": "components/app",
       "line": 149,
       "column": 32,
@@ -423,7 +454,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-modifiers-section.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/editor/sections/listing-modifiers-section.tsx",
       "module": "components/app",
       "line": 179,
       "column": 34,
@@ -434,7 +465,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-modifiers-section.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/editor/sections/listing-modifiers-section.tsx",
       "module": "components/app",
       "line": 191,
       "column": 30,
@@ -443,20 +474,9 @@
       "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-8\"). Exige min-h-11 (44px)."
     },
     {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-scope-section.tsx",
-      "module": "components/app",
-      "line": 111,
-      "column": 17,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-scope-section.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/editor/sections/listing-scope-section.tsx",
       "module": "components/app",
       "line": 150,
       "column": 24,
@@ -467,7 +487,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-scope-section.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/editor/sections/listing-scope-section.tsx",
       "module": "components/app",
       "line": 174,
       "column": 30,
@@ -476,20 +496,9 @@
       "message": "Alvo de toque com altura/dimensão inferior a 44px (\"size-7\"). Exige min-h-11 (44px)."
     },
     {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-scope-section.tsx",
-      "module": "components/app",
-      "line": 208,
-      "column": 17,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-scope-section.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/editor/sections/listing-scope-section.tsx",
       "module": "components/app",
       "line": 247,
       "column": 24,
@@ -500,7 +509,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-scope-section.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/editor/sections/listing-scope-section.tsx",
       "module": "components/app",
       "line": 271,
       "column": 30,
@@ -511,7 +520,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
       "module": "components/app",
       "line": 116,
       "column": 24,
@@ -522,7 +531,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
       "module": "components/app",
       "line": 183,
       "column": 32,
@@ -533,7 +542,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
       "module": "components/app",
       "line": 210,
       "column": 22,
@@ -544,7 +553,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
       "module": "components/app",
       "line": 277,
       "column": 30,
@@ -555,7 +564,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/unified-listing-editor.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/editor/unified-listing-editor.tsx",
       "module": "components/app",
       "line": 176,
       "column": 26,
@@ -566,7 +575,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/unified-listing-editor.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/editor/unified-listing-editor.tsx",
       "module": "components/app",
       "line": 222,
       "column": 26,
@@ -577,7 +586,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/unified-listing-editor.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/editor/unified-listing-editor.tsx",
       "module": "components/app",
       "line": 232,
       "column": 26,
@@ -588,7 +597,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/unified-listing-editor.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/editor/unified-listing-editor.tsx",
       "module": "components/app",
       "line": 253,
       "column": 24,
@@ -599,7 +608,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/unified-listing-editor.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/editor/unified-listing-editor.tsx",
       "module": "components/app",
       "line": 269,
       "column": 24,
@@ -610,7 +619,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/unified-listing-editor.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/editor/unified-listing-editor.tsx",
       "module": "components/app",
       "line": 280,
       "column": 24,
@@ -621,7 +630,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/unified-listing-editor.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/editor/unified-listing-editor.tsx",
       "module": "components/app",
       "line": 300,
       "column": 26,
@@ -632,7 +641,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/unified-listing-editor.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/editor/unified-listing-editor.tsx",
       "module": "components/app",
       "line": 382,
       "column": 26,
@@ -643,7 +652,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/editor/unified-listing-editor.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/editor/unified-listing-editor.tsx",
       "module": "components/app",
       "line": 394,
       "column": 26,
@@ -654,7 +663,7 @@
     {
       "id": "DL-18",
       "rule": "DL-18",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/preview/canonical-listing-preview-frame.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/preview/canonical-listing-preview-frame.tsx",
       "module": "components/app",
       "line": 181,
       "column": 99,
@@ -665,9 +674,9 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/preview/canonical-listing-preview-frame.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/preview/canonical-listing-preview-frame.tsx",
       "module": "components/app",
-      "line": 186,
+      "line": 187,
       "column": 44,
       "severity": "P2",
       "match": "shadow-2xl",
@@ -676,9 +685,9 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/preview/canonical-listing-preview-frame.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/preview/canonical-listing-preview-frame.tsx",
       "module": "components/app",
-      "line": 186,
+      "line": 187,
       "column": 55,
       "severity": "P3",
       "match": "transition-all",
@@ -687,7 +696,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/preview/canonical-listing-preview-frame.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/preview/canonical-listing-preview-frame.tsx",
       "module": "components/app",
       "line": 95,
       "column": 24,
@@ -698,7 +707,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/preview/canonical-listing-preview-frame.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/preview/canonical-listing-preview-frame.tsx",
       "module": "components/app",
       "line": 106,
       "column": 24,
@@ -709,7 +718,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/preview/canonical-listing-preview-frame.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/preview/canonical-listing-preview-frame.tsx",
       "module": "components/app",
       "line": 117,
       "column": 24,
@@ -720,7 +729,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/preview/canonical-listing-preview-frame.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/preview/canonical-listing-preview-frame.tsx",
       "module": "components/app",
       "line": 132,
       "column": 24,
@@ -731,7 +740,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/preview/canonical-listing-preview-frame.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/preview/canonical-listing-preview-frame.tsx",
       "module": "components/app",
       "line": 144,
       "column": 24,
@@ -742,7 +751,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/preview/canonical-listing-preview-frame.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/preview/canonical-listing-preview-frame.tsx",
       "module": "components/app",
       "line": 156,
       "column": 24,
@@ -753,7 +762,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/preview/canonical-listing-preview-frame.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/preview/canonical-listing-preview-frame.tsx",
       "module": "components/app",
       "line": 168,
       "column": 26,
@@ -764,29 +773,18 @@
     {
       "id": "DL-30",
       "rule": "DL-30",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/public/canonical-listing-view.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/public/canonical-listing-view.tsx",
       "module": "components/app",
-      "line": 246,
+      "line": 339,
       "column": 55,
       "severity": "P3",
       "match": "overflow-x-auto",
       "message": "Overflow horizontal \"overflow-x-auto\" em superfície de aplicação fora de tabela/carrossel."
     },
     {
-      "id": "DL-27",
-      "rule": "DL-27",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/public/canonical-listing-view.tsx",
-      "module": "components/app",
-      "line": 253,
-      "column": 88,
-      "severity": "P3",
-      "match": "transition-all",
-      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
-    },
-    {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/public/listing-empty-state.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/public/listing-empty-state.tsx",
       "module": "components/app",
       "line": 114,
       "column": 41,
@@ -797,7 +795,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/public/listing-empty-state.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/public/listing-empty-state.tsx",
       "module": "components/app",
       "line": 125,
       "column": 41,
@@ -808,7 +806,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/public/listing-empty-state.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/public/listing-empty-state.tsx",
       "module": "components/app",
       "line": 136,
       "column": 41,
@@ -819,7 +817,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/public/listing-empty-state.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/public/listing-empty-state.tsx",
       "module": "components/app",
       "line": 148,
       "column": 41,
@@ -830,7 +828,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/ad-engine/public/listing-empty-state.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/public/listing-empty-state.tsx",
       "module": "components/app",
       "line": 160,
       "column": 41,
@@ -841,7 +839,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/admin-shell.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/admin-shell.tsx",
       "module": "components/app",
       "line": 360,
       "column": 37,
@@ -852,7 +850,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/admin-shell.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/admin-shell.tsx",
       "module": "components/app",
       "line": 366,
       "column": 73,
@@ -863,7 +861,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/admin-shell.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/admin-shell.tsx",
       "module": "components/app",
       "line": 367,
       "column": 15,
@@ -874,7 +872,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/admin-shell.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/admin-shell.tsx",
       "module": "components/app",
       "line": 377,
       "column": 100,
@@ -885,7 +883,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/admin-shell.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/admin-shell.tsx",
       "module": "components/app",
       "line": 507,
       "column": 66,
@@ -896,7 +894,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/admin-shell.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/admin-shell.tsx",
       "module": "components/app",
       "line": 514,
       "column": 60,
@@ -907,7 +905,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/admin-shell.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/admin-shell.tsx",
       "module": "components/app",
       "line": 519,
       "column": 19,
@@ -918,7 +916,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/admin-shell.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/admin-shell.tsx",
       "module": "components/app",
       "line": 544,
       "column": 8,
@@ -929,7 +927,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/admin-shell.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/admin-shell.tsx",
       "module": "components/app",
       "line": 544,
       "column": 32,
@@ -940,7 +938,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/admin-shell.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/admin-shell.tsx",
       "module": "components/app",
       "line": 562,
       "column": 25,
@@ -951,7 +949,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/admin-shell.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/admin-shell.tsx",
       "module": "components/app",
       "line": 670,
       "column": 18,
@@ -960,31 +958,9 @@
       "message": "Classe arbitrária com colchetes \"min-h-[56px]\". Use tokens canônicos."
     },
     {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/admin-shell.tsx",
-      "module": "components/app",
-      "line": 412,
-      "column": 2,
-      "severity": "P0",
-      "match": "onClick sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/admin-shell.tsx",
-      "module": "components/app",
-      "line": 469,
-      "column": 2,
-      "severity": "P0",
-      "match": "onClick sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/admin-shell.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/admin-shell.tsx",
       "module": "components/app",
       "line": 529,
       "column": 13,
@@ -995,7 +971,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/admin-shell.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/admin-shell.tsx",
       "module": "components/app",
       "line": 573,
       "column": 13,
@@ -1004,31 +980,9 @@
       "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-8\"). Exige min-h-11 (44px)."
     },
     {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/admin-shell.tsx",
-      "module": "components/app",
-      "line": 576,
-      "column": 2,
-      "severity": "P0",
-      "match": "onClick sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/admin-shell.tsx",
-      "module": "components/app",
-      "line": 613,
-      "column": 2,
-      "severity": "P0",
-      "match": "onClick sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
       "module": "components/app",
       "line": 8,
       "column": 30,
@@ -1039,7 +993,7 @@
     {
       "id": "DL-26",
       "rule": "DL-26",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
       "module": "components/app",
       "line": 11,
       "column": 58,
@@ -1050,7 +1004,7 @@
     {
       "id": "DL-26",
       "rule": "DL-26",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
       "module": "components/app",
       "line": 13,
       "column": 46,
@@ -1061,7 +1015,7 @@
     {
       "id": "DL-26",
       "rule": "DL-26",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
       "module": "components/app",
       "line": 15,
       "column": 56,
@@ -1072,7 +1026,7 @@
     {
       "id": "DL-26",
       "rule": "DL-26",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
       "module": "components/app",
       "line": 17,
       "column": 70,
@@ -1083,7 +1037,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
       "module": "components/app",
       "line": 21,
       "column": 45,
@@ -1094,7 +1048,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
       "module": "components/app",
       "line": 21,
       "column": 55,
@@ -1105,7 +1059,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
       "module": "components/app",
       "line": 23,
       "column": 57,
@@ -1116,7 +1070,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
       "module": "components/app",
       "line": 23,
       "column": 67,
@@ -1127,7 +1081,7 @@
     {
       "id": "DL-26",
       "rule": "DL-26",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
       "module": "components/app",
       "line": 41,
       "column": 35,
@@ -1138,7 +1092,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
       "module": "components/app",
       "line": 54,
       "column": 44,
@@ -1149,7 +1103,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/ArrayBuilder.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/ArrayBuilder.tsx",
       "module": "components/app",
       "line": 85,
       "column": 48,
@@ -1160,7 +1114,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/ArrayBuilder.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/ArrayBuilder.tsx",
       "module": "components/app",
       "line": 174,
       "column": 64,
@@ -1171,7 +1125,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/ArrayBuilder.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/ArrayBuilder.tsx",
       "module": "components/app",
       "line": 116,
       "column": 13,
@@ -1182,7 +1136,7 @@
     {
       "id": "DL-01",
       "rule": "DL-01",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
       "module": "components/app",
       "line": 212,
       "column": 198,
@@ -1193,7 +1147,7 @@
     {
       "id": "DL-01",
       "rule": "DL-01",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
       "module": "components/app",
       "line": 217,
       "column": 217,
@@ -1204,7 +1158,7 @@
     {
       "id": "DL-01",
       "rule": "DL-01",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
       "module": "components/app",
       "line": 217,
       "column": 239,
@@ -1215,7 +1169,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
       "module": "components/app",
       "line": 264,
       "column": 107,
@@ -1226,7 +1180,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
       "module": "components/app",
       "line": 266,
       "column": 61,
@@ -1237,7 +1191,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
       "module": "components/app",
       "line": 270,
       "column": 19,
@@ -1248,7 +1202,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
       "module": "components/app",
       "line": 290,
       "column": 73,
@@ -1259,7 +1213,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
       "module": "components/app",
       "line": 311,
       "column": 19,
@@ -1270,7 +1224,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
       "module": "components/app",
       "line": 325,
       "column": 39,
@@ -1281,7 +1235,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
       "module": "components/app",
       "line": 342,
       "column": 39,
@@ -1292,7 +1246,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
       "module": "components/app",
       "line": 357,
       "column": 18,
@@ -1303,7 +1257,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
       "module": "components/app",
       "line": 391,
       "column": 109,
@@ -1314,7 +1268,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
       "module": "components/app",
       "line": 398,
       "column": 17,
@@ -1325,7 +1279,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
       "module": "components/app",
       "line": 417,
       "column": 108,
@@ -1336,7 +1290,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
       "module": "components/app",
       "line": 423,
       "column": 38,
@@ -1347,7 +1301,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
       "module": "components/app",
       "line": 439,
       "column": 19,
@@ -1358,7 +1312,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
       "module": "components/app",
       "line": 443,
       "column": 77,
@@ -1369,7 +1323,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
       "module": "components/app",
       "line": 443,
       "column": 152,
@@ -1380,7 +1334,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
       "module": "components/app",
       "line": 450,
       "column": 16,
@@ -1389,42 +1343,9 @@
       "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
     },
     {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
-      "module": "components/app",
-      "line": 282,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
-      "module": "components/app",
-      "line": 320,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
-      "module": "components/app",
-      "line": 337,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
       "module": "components/app",
       "line": 374,
       "column": 13,
@@ -1433,31 +1354,9 @@
       "message": "Alvo de toque com altura/dimensão inferior a 44px (\"size-7\"). Exige min-h-11 (44px)."
     },
     {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
-      "module": "components/app",
-      "line": 385,
-      "column": 3,
-      "severity": "P0",
-      "match": "onClick sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-add-panel-3col.tsx",
-      "module": "components/app",
-      "line": 411,
-      "column": 2,
-      "severity": "P0",
-      "match": "onClick sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
       "module": "components/app",
       "line": 80,
       "column": 20,
@@ -1468,7 +1367,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
       "module": "components/app",
       "line": 80,
       "column": 35,
@@ -1479,7 +1378,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
       "module": "components/app",
       "line": 80,
       "column": 161,
@@ -1490,7 +1389,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
       "module": "components/app",
       "line": 84,
       "column": 137,
@@ -1501,7 +1400,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
       "module": "components/app",
       "line": 88,
       "column": 19,
@@ -1512,7 +1411,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
       "module": "components/app",
       "line": 91,
       "column": 18,
@@ -1523,7 +1422,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
       "module": "components/app",
       "line": 96,
       "column": 19,
@@ -1534,7 +1433,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
       "module": "components/app",
       "line": 110,
       "column": 67,
@@ -1545,7 +1444,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
       "module": "components/app",
       "line": 160,
       "column": 13,
@@ -1556,7 +1455,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
       "module": "components/app",
       "line": 160,
       "column": 23,
@@ -1567,7 +1466,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
       "module": "components/app",
       "line": 160,
       "column": 153,
@@ -1578,7 +1477,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
       "module": "components/app",
       "line": 164,
       "column": 137,
@@ -1589,7 +1488,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
       "module": "components/app",
       "line": 182,
       "column": 67,
@@ -1600,7 +1499,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
       "module": "components/app",
       "line": 224,
       "column": 13,
@@ -1611,7 +1510,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
       "module": "components/app",
       "line": 224,
       "column": 23,
@@ -1622,7 +1521,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
       "module": "components/app",
       "line": 224,
       "column": 153,
@@ -1633,7 +1532,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
       "module": "components/app",
       "line": 227,
       "column": 137,
@@ -1644,7 +1543,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
       "module": "components/app",
       "line": 234,
       "column": 67,
@@ -1655,7 +1554,7 @@
     {
       "id": "DL-15",
       "rule": "DL-15",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
       "module": "components/app",
       "line": 58,
       "column": 2,
@@ -1664,20 +1563,9 @@
       "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
     },
     {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
-      "module": "components/app",
-      "line": 79,
-      "column": 2,
-      "severity": "P0",
-      "match": "onClick sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
       "module": "components/app",
       "line": 123,
       "column": 18,
@@ -1686,20 +1574,9 @@
       "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-9\"). Exige min-h-11 (44px)."
     },
     {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
-      "module": "components/app",
-      "line": 159,
-      "column": 2,
-      "severity": "P0",
-      "match": "onClick sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
       "module": "components/app",
       "line": 188,
       "column": 13,
@@ -1708,20 +1585,9 @@
       "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-8\"). Exige min-h-11 (44px)."
     },
     {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
-      "module": "components/app",
-      "line": 223,
-      "column": 2,
-      "severity": "P0",
-      "match": "onClick sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
       "module": "components/app",
       "line": 240,
       "column": 13,
@@ -1732,7 +1598,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-cms-panel.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-cms-panel.tsx",
       "module": "components/app",
       "line": 88,
       "column": 27,
@@ -1743,7 +1609,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-cms-panel.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-cms-panel.tsx",
       "module": "components/app",
       "line": 95,
       "column": 28,
@@ -1754,7 +1620,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-cms-panel.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-cms-panel.tsx",
       "module": "components/app",
       "line": 99,
       "column": 25,
@@ -1765,7 +1631,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-cms-panel.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-cms-panel.tsx",
       "module": "components/app",
       "line": 119,
       "column": 40,
@@ -1776,7 +1642,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-cms-panel.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-cms-panel.tsx",
       "module": "components/app",
       "line": 125,
       "column": 134,
@@ -1787,7 +1653,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-cms-panel.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-cms-panel.tsx",
       "module": "components/app",
       "line": 130,
       "column": 31,
@@ -1798,7 +1664,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-cms-panel.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-cms-panel.tsx",
       "module": "components/app",
       "line": 137,
       "column": 32,
@@ -1809,7 +1675,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-cms-panel.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-cms-panel.tsx",
       "module": "components/app",
       "line": 150,
       "column": 43,
@@ -1820,7 +1686,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-cms-panel.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-cms-panel.tsx",
       "module": "components/app",
       "line": 150,
       "column": 67,
@@ -1831,7 +1697,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-docked-rail.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-docked-rail.tsx",
       "module": "components/app",
       "line": 63,
       "column": 54,
@@ -1842,7 +1708,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-docked-rail.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-docked-rail.tsx",
       "module": "components/app",
       "line": 79,
       "column": 87,
@@ -1853,7 +1719,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-docked-rail.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-docked-rail.tsx",
       "module": "components/app",
       "line": 79,
       "column": 205,
@@ -1864,7 +1730,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-docked-rail.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-docked-rail.tsx",
       "module": "components/app",
       "line": 98,
       "column": 87,
@@ -1875,7 +1741,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-docked-rail.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-docked-rail.tsx",
       "module": "components/app",
       "line": 98,
       "column": 205,
@@ -1886,7 +1752,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-docked-rail.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-docked-rail.tsx",
       "module": "components/app",
       "line": 63,
       "column": 3,
@@ -1895,31 +1761,9 @@
       "message": "Alvo de toque com altura/dimensão inferior a 44px (\"size-9\"). Exige min-h-11 (44px)."
     },
     {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-docked-rail.tsx",
-      "module": "components/app",
-      "line": 57,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-docked-rail.tsx",
-      "module": "components/app",
-      "line": 89,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-docking-matrix.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-docking-matrix.tsx",
       "module": "components/app",
       "line": 40,
       "column": 19,
@@ -1930,7 +1774,7 @@
     {
       "id": "DL-29",
       "rule": "DL-29",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-docking-matrix.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-docking-matrix.tsx",
       "module": "components/app",
       "line": 45,
       "column": 22,
@@ -1941,7 +1785,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-docking-matrix.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-docking-matrix.tsx",
       "module": "components/app",
       "line": 56,
       "column": 54,
@@ -1952,7 +1796,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-docking-matrix.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-docking-matrix.tsx",
       "module": "components/app",
       "line": 56,
       "column": 3,
@@ -1961,20 +1805,9 @@
       "message": "Alvo de toque com altura/dimensão inferior a 44px (\"size-6\"). Exige min-h-11 (44px)."
     },
     {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-docking-matrix.tsx",
-      "module": "components/app",
-      "line": 50,
-      "column": 2,
-      "severity": "P0",
-      "match": "<button sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-floating-action-bar.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-floating-action-bar.tsx",
       "module": "components/app",
       "line": 35,
       "column": 111,
@@ -1985,13 +1818,211 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/builder/builder-floating-action-bar.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-floating-action-bar.tsx",
       "module": "components/app",
       "line": 40,
       "column": 13,
       "severity": "P1",
       "match": "text-[10px]",
       "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-floating-action-bar.tsx",
+      "module": "components/app",
+      "line": 49,
+      "column": 13,
+      "severity": "P1",
+      "match": "h-7",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-7\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-floating-action-bar.tsx",
+      "module": "components/app",
+      "line": 60,
+      "column": 13,
+      "severity": "P1",
+      "match": "h-7",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-7\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-floating-action-bar.tsx",
+      "module": "components/app",
+      "line": 74,
+      "column": 13,
+      "severity": "P1",
+      "match": "size-7",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"size-7\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-floating-action-bar.tsx",
+      "module": "components/app",
+      "line": 85,
+      "column": 13,
+      "severity": "P1",
+      "match": "size-7",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"size-7\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-floating-action-bar.tsx",
+      "module": "components/app",
+      "line": 96,
+      "column": 13,
+      "severity": "P1",
+      "match": "size-7",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"size-7\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-floating-action-bar.tsx",
+      "module": "components/app",
+      "line": 106,
+      "column": 13,
+      "severity": "P1",
+      "match": "size-7",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"size-7\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-global-theme-panel.tsx",
+      "module": "components/app",
+      "line": 28,
+      "column": 52,
+      "severity": "P1",
+      "match": "#09090b",
+      "message": "Cor hexadecimal literal \"#09090b\" fora da camada de token."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-global-theme-panel.tsx",
+      "module": "components/app",
+      "line": 28,
+      "column": 67,
+      "severity": "P1",
+      "match": "#ffffff",
+      "message": "Cor hexadecimal literal \"#ffffff\" fora da camada de token."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-global-theme-panel.tsx",
+      "module": "components/app",
+      "line": 28,
+      "column": 84,
+      "severity": "P1",
+      "match": "#09090b",
+      "message": "Cor hexadecimal literal \"#09090b\" fora da camada de token."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-global-theme-panel.tsx",
+      "module": "components/app",
+      "line": 29,
+      "column": 52,
+      "severity": "P1",
+      "match": "#0284c7",
+      "message": "Cor hexadecimal literal \"#0284c7\" fora da camada de token."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-global-theme-panel.tsx",
+      "module": "components/app",
+      "line": 29,
+      "column": 67,
+      "severity": "P1",
+      "match": "#ffffff",
+      "message": "Cor hexadecimal literal \"#ffffff\" fora da camada de token."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-global-theme-panel.tsx",
+      "module": "components/app",
+      "line": 29,
+      "column": 84,
+      "severity": "P1",
+      "match": "#0f172a",
+      "message": "Cor hexadecimal literal \"#0f172a\" fora da camada de token."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-global-theme-panel.tsx",
+      "module": "components/app",
+      "line": 30,
+      "column": 51,
+      "severity": "P1",
+      "match": "#059669",
+      "message": "Cor hexadecimal literal \"#059669\" fora da camada de token."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-global-theme-panel.tsx",
+      "module": "components/app",
+      "line": 30,
+      "column": 66,
+      "severity": "P1",
+      "match": "#ffffff",
+      "message": "Cor hexadecimal literal \"#ffffff\" fora da camada de token."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-global-theme-panel.tsx",
+      "module": "components/app",
+      "line": 30,
+      "column": 83,
+      "severity": "P1",
+      "match": "#064e3b",
+      "message": "Cor hexadecimal literal \"#064e3b\" fora da camada de token."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-global-theme-panel.tsx",
+      "module": "components/app",
+      "line": 31,
+      "column": 56,
+      "severity": "P1",
+      "match": "#d97706",
+      "message": "Cor hexadecimal literal \"#d97706\" fora da camada de token."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-global-theme-panel.tsx",
+      "module": "components/app",
+      "line": 31,
+      "column": 71,
+      "severity": "P1",
+      "match": "#ffffff",
+      "message": "Cor hexadecimal literal \"#ffffff\" fora da camada de token."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-global-theme-panel.tsx",
+      "module": "components/app",
+      "line": 31,
+      "column": 88,
+      "severity": "P1",
+      "match": "#451a03",
+      "message": "Cor hexadecimal literal \"#451a03\" fora da camada de token."
     }
   ]
 }

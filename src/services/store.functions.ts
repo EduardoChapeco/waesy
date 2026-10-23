@@ -43,6 +43,13 @@ export async function _getStoreSettings() {
  niche: settings.niche || settings.segment || null,
  order_types: settings.order_types || { delivery: true, takeout: true, dine_in: true },
  tourism_layout_mode: settings.tourism_layout_mode || "air_cover",
+  checkout_layout_mode: settings.checkout_layout_mode || "auto",
+  digital_delivery_type: settings.digital_delivery_type || "secure_link",
+  digital_external_url: settings.digital_external_url || null,
+  digital_instructions: settings.digital_instructions || null,
+  weighable_pricing_mode: settings.weighable_pricing_mode || "bands",
+  service_payment_policy: settings.service_payment_policy || "online_full",
+  service_deposit_percentage: settings.service_deposit_percentage ?? 30,
  wholesale_enabled: !!(
   settings.wholesale_enabled ||
   settings.wholesale_mode ||
@@ -89,6 +96,13 @@ export const saveStoreSettingsSchema = z.object({
  checkout_config: z.record(z.any()).optional(),
  ai_knowledge_base: z.string().optional().or(z.literal("")),
  wholesale_enabled: z.boolean().optional(),
+  checkout_layout_mode: z.string().optional(),
+  digital_delivery_type: z.string().optional(),
+  digital_external_url: z.string().optional().or(z.literal("")),
+  digital_instructions: z.string().optional().or(z.literal("")),
+  weighable_pricing_mode: z.string().optional(),
+  service_payment_policy: z.string().optional(),
+  service_deposit_percentage: z.number().optional(),
 });
 
 export async function _saveStoreSettings(data: z.infer<typeof saveStoreSettingsSchema>) {
@@ -112,6 +126,13 @@ export async function _saveStoreSettings(data: z.infer<typeof saveStoreSettingsS
  emergency_pause_until,
  order_types,
  payment_processing_mode,
+  checkout_layout_mode,
+  digital_delivery_type,
+  digital_external_url,
+  digital_instructions,
+  weighable_pricing_mode,
+  service_payment_policy,
+  service_deposit_percentage,
  ...columns
  } = data;
  const db = getServerClient();
@@ -158,6 +179,13 @@ export async function _saveStoreSettings(data: z.infer<typeof saveStoreSettingsS
  order_types !== undefined
  ? order_types
  : currentStore?.settings?.order_types || { delivery: true, takeout: true, dine_in: true },
+  checkout_layout_mode: checkout_layout_mode !== undefined ? checkout_layout_mode : currentStore?.settings?.checkout_layout_mode,
+  digital_delivery_type: digital_delivery_type !== undefined ? digital_delivery_type : currentStore?.settings?.digital_delivery_type,
+  digital_external_url: digital_external_url !== undefined ? digital_external_url : currentStore?.settings?.digital_external_url,
+  digital_instructions: digital_instructions !== undefined ? digital_instructions : currentStore?.settings?.digital_instructions,
+  weighable_pricing_mode: weighable_pricing_mode !== undefined ? weighable_pricing_mode : currentStore?.settings?.weighable_pricing_mode,
+  service_payment_policy: service_payment_policy !== undefined ? service_payment_policy : currentStore?.settings?.service_payment_policy,
+  service_deposit_percentage: service_deposit_percentage !== undefined ? service_deposit_percentage : currentStore?.settings?.service_deposit_percentage,
  };
 
  const { error } = await db
@@ -693,40 +721,58 @@ export const getMyStoresList = createServerFn({ method: "GET" }).handler(async (
  return [];
  }
 
- // 2. Coletar IDs de lojas na tabela canônica workspace_members
- const storeIdsSet = new Set<string>();
- const roleByStoreId: Record<string, string> = {};
+  // 2. Coletar IDs de lojas na tabela canônica workspace_members e por context_profile_id
+  const storeIdsSet = new Set<string>();
+  const roleByStoreId: Record<string, string> = {};
 
- try {
- const { data: wmRows, error: wmErr } = await db
- .from("workspace_members")
- .select("store_id, role")
- .eq("profile_id", userId);
+  try {
+    const { data: wmRows, error: wmErr } = await db
+      .from("workspace_members")
+      .select("store_id, role")
+      .or(`profile_id.eq.${userId},user_id.eq.${userId}`);
 
- if (wmErr) {
- console.warn("[stores] Erro ao buscar workspace_members em getMyStoresList:", wmErr.message);
- }
+    if (wmErr) {
+      console.warn("[stores] Erro ao buscar workspace_members em getMyStoresList:", wmErr.message);
+    }
 
- (wmRows || []).forEach((m: any) => {
- if (m.store_id) {
- storeIdsSet.add(m.store_id);
- roleByStoreId[m.store_id] = m.role || "owner";
- }
- });
- } catch (memErr) {
- console.warn("[stores] Erro ao buscar memberships em getMyStoresList:", memErr);
- }
+    (wmRows || []).forEach((m: any) => {
+      if (m.store_id) {
+        storeIdsSet.add(m.store_id);
+        roleByStoreId[m.store_id] = m.role || "owner";
+      }
+    });
+  } catch (memErr) {
+    console.warn("[stores] Erro ao buscar memberships em getMyStoresList:", memErr);
+  }
 
- // Também inclui qualquer store_id presente nos memberships resolvidos pela identity
- (identity.memberships || []).forEach((m: any) => {
- if (m.store_id) {
- storeIdsSet.add(m.store_id);
- if (!roleByStoreId[m.store_id]) {
- roleByStoreId[m.store_id] = m.role || "owner";
- }
- }
- });
+  // Também inclui lojas criadas pelo perfil via context_profile_id
+  try {
+    const { data: directStores } = await db
+      .from("stores")
+      .select("id")
+      .eq("context_profile_id", userId);
 
+    (directStores || []).forEach((st: any) => {
+      if (st.id) {
+        storeIdsSet.add(st.id);
+        if (!roleByStoreId[st.id]) {
+          roleByStoreId[st.id] = "owner";
+        }
+      }
+    });
+  } catch (directErr) {
+    console.warn("[stores] Erro ao buscar context_profile_id em getMyStoresList:", directErr);
+  }
+
+  // Também inclui qualquer store_id presente nos memberships resolvidos pela identity
+  (identity.memberships || []).forEach((m: any) => {
+    if (m.store_id) {
+      storeIdsSet.add(m.store_id);
+      if (!roleByStoreId[m.store_id]) {
+        roleByStoreId[m.store_id] = m.role || "owner";
+      }
+    }
+  });
  // 3. Montar query de lojas
  let query = db
  .from("stores")

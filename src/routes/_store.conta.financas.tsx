@@ -323,7 +323,7 @@ function PersonalFinancePage() {
         });
 
         toast.success("Transferência realizada com sucesso!");
-        setActiveReceipt(result.receipt);
+        setActiveReceipt(result.receipt ?? null);
         setIsTransferOpen(false);
         setTransferAmountStr("");
         setTransferRecipientId("");
@@ -354,8 +354,14 @@ function PersonalFinancePage() {
           data: { amountCents },
         });
 
-        toast.success("Saldo creditado na carteira!");
-        setActiveReceipt(result.receipt);
+        if (result.status === "PENDING") {
+          toast.success("Cobrança Pix gerada com sucesso! O saldo será liquidado após a confirmação do pagamento.");
+        } else {
+          toast.success("Saldo creditado na carteira!");
+        }
+        if (result.receipt) {
+          setActiveReceipt(result.receipt);
+        }
         setIsDepositOpen(false);
         handlePeriodChange(month, year);
       } catch (err: any) {

@@ -286,7 +286,7 @@ export function BuilderAddPanel3Col({
  setSelectedCatId(cat.id);
  setSelectedSubId(cat.subcategories[0]?.id || "");
  }}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs transition-all cursor-pointer text-left",
  isSelected
  ? "bg-primary/10 text-primary font-bold shadow-2xs border border-primary/20"
@@ -321,7 +321,7 @@ export function BuilderAddPanel3Col({
  key={sub.id}
  type="button"
  onClick={() => setSingleBlockSub(sub.id)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "w-full px-3 py-2 rounded-lg text-xs transition-all cursor-pointer text-left truncate block",
  singleBlockSub === sub.id
  ? "bg-primary text-primary-foreground font-bold shadow-2xs"
@@ -338,7 +338,7 @@ export function BuilderAddPanel3Col({
  key={sub.id}
  type="button"
  onClick={() => setSelectedSubId(sub.id)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "w-full px-3 py-2 rounded-lg text-xs transition-all cursor-pointer text-left truncate block",
  isSelected
  ? "bg-primary text-primary-foreground font-bold shadow-2xs"
@@ -382,13 +382,13 @@ export function BuilderAddPanel3Col({
  <div className="space-y-3 pb-8">
  {isBlocosMode ? (
   SINGLE_BLOCKS[singleBlockSub].map((block) => (
-  <div
+  <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
   key={block.type}
   onClick={() => {
   onInsertSingleBlock(block.type);
   onClose();
   }}
-  className="group rounded-lg border border-border/70 bg-muted/20 hover:bg-muted/50 hover:border-primary/50 transition-all cursor-pointer overflow-hidden p-3 flex items-center gap-3 shadow-2xs"
+  className="group rounded-lg border border-border/70 bg-muted/20 hover:bg-muted/50 hover:border-primary/50 transition-all cursor-pointer overflow-hidden p-3 flex items-center gap-3 shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
   >
   <div className="size-10 rounded-lg bg-background border border-border/50 flex items-center justify-center text-muted-foreground">
   <block.icon className="size-5" />
@@ -408,13 +408,13 @@ export function BuilderAddPanel3Col({
  </div>
  ) : (
  displayedTemplates.map((template) => (
- <div
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  key={template.id}
  onClick={() => {
  onSelectTemplate(template);
  onClose();
  }}
- className="group rounded-lg border border-border/70 bg-muted/20 hover:bg-muted/50 hover:border-primary/50 transition-all cursor-pointer overflow-hidden p-3 space-y-3 shadow-2xs"
+ className="group rounded-lg border border-border/70 bg-muted/20 hover:bg-muted/50 hover:border-primary/50 transition-all cursor-pointer overflow-hidden p-3 space-y-3 shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">

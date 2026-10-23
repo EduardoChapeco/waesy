@@ -113,7 +113,7 @@ export function ListingScopeSection({
                   type="button"
                   disabled={alreadyHas}
                   onClick={() => handleAddInclusion(sug)}
-                  className={cn(
+                  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                     "text-xs px-3 py-1 rounded-lg border transition-colors cursor-pointer text-left",
                     alreadyHas
                       ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 opacity-60 cursor-default"
@@ -210,7 +210,7 @@ export function ListingScopeSection({
                   type="button"
                   disabled={alreadyHas}
                   onClick={() => handleAddExclusion(sug)}
-                  className={cn(
+                  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                     "text-xs px-3 py-1 rounded-lg border transition-colors cursor-pointer text-left",
                     alreadyHas
                       ? "border-destructive/30 bg-destructive/10 text-destructive opacity-60 cursor-default"

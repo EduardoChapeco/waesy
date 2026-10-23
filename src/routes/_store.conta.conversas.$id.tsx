@@ -502,7 +502,7 @@ export function CustomerChatRoom({
           <button
             type="submit"
             disabled={!text.trim() || isSending}
-            className="size-11 rounded-full flex items-center justify-center text-primary disabled:opacity-30 disabled:cursor-not-allowed hover:opacity-80 active:scale-95 transition-all cursor-pointer shrink-0"
+            className="size-11 rounded-full flex items-center justify-center text-primary disabled:opacity-30 disabled:cursor-not-allowed hover:opacity-80 active:scale-95 transition-all cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             title="Enviar"
             aria-label="Enviar mensagem"
           >

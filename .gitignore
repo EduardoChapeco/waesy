@@ -43,3 +43,6 @@ wrangler.toml
 
 # Temporary / Scratch
 scratch/
+.chrome-session/
+tools/infotravel-miner/.chrome-session/
+tools/infotravel-miner/output/

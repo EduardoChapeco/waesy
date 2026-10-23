@@ -87,7 +87,7 @@ export const FaqCleanAccordion: React.FC<FaqCleanAccordionProps> = ({
                 <button
                   type="button"
                   onClick={() => toggleItem(index)}
-                  className="w-full p-5 sm:p-6 text-left flex items-center justify-between gap-4 select-none focus:outline-hidden"
+                  className="w-full p-5 sm:p-6 text-left flex items-center justify-between gap-4 select-none focus:outline-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <span className="text-base sm:text-lg font-bold text-foreground">
                     {item.question}

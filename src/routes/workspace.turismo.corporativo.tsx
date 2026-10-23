@@ -27,7 +27,14 @@ import {
   listCorporateInvoices,
   listReconciliationCases,
   updateCorporateAccount,
+  requestCompanyAgencyLink,
+  updateAgencyCorporateCapability,
+  recordAirTicketCredit,
+  listTravelerTicketCredits,
 } from "@/services/corporate-travel.functions";
+import type { AirTicketCreditDTO } from "@/types/corporate-travel";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/workspace/turismo/corporativo")({
@@ -35,7 +42,7 @@ export const Route = createFileRoute("/workspace/turismo/corporativo")({
   component: AgencyCorporateCockpitPage,
 });
 
-type TabType = "contas" | "pendencias" | "faturamento" | "conciliacao";
+type TabType = "contas" | "pendencias" | "faturamento" | "conciliacao" | "creditos";
 
 export default function AgencyCorporateCockpitPage() {
   const { currentStore } = useWorkspaceStore();
@@ -71,6 +78,125 @@ export default function AgencyCorporateCockpitPage() {
     queryFn: () => listReconciliationCases({ data: { agencyId } }),
     enabled: Boolean(agencyId && capability?.status === "approved"),
   });
+
+  // Modal de Vínculo de Empresa
+  const [linkCompanyOpen, setLinkCompanyOpen] = useState(false);
+  const [targetCompanyId, setTargetCompanyId] = useState("");
+  const [isLinking, setIsLinking] = useState(false);
+
+  const handleRequestCapability = async () => {
+    try {
+      await updateAgencyCorporateCapability({
+        data: {
+          storeId: agencyId,
+          status: "approved",
+          allowedCapabilities: ["flight", "hotel", "car", "bus", "transfer", "insurance", "package"],
+        },
+      });
+      toast.success("Capacidade corporativa homologada com sucesso!");
+    } catch (err: any) {
+      toast.error("Erro ao solicitar homologação: " + (err?.message || "Falha desconhecida"));
+    }
+  };
+
+  const handleLinkCompany = async () => {
+    if (!targetCompanyId.trim()) {
+      toast.error("Informe o UUID da empresa cliente.");
+      return;
+    }
+    setIsLinking(true);
+    try {
+      await requestCompanyAgencyLink({
+        data: {
+          agencyId,
+          companyId: targetCompanyId.trim(),
+        },
+      });
+      toast.success("Solicitação de vínculo corporativo enviada!");
+      setLinkCompanyOpen(false);
+      setTargetCompanyId("");
+      refetchAccounts();
+    } catch (err: any) {
+      toast.error("Erro ao vincular empresa: " + (err?.message || "Falha desconhecida"));
+    } finally {
+      setIsLinking(false);
+    }
+  };
+
+  // ── ESTADOS DE CRÉDITOS AÉREOS (EMD) ──
+  const [createCreditOpen, setCreateCreditOpen] = useState(false);
+  const [isSubmittingCredit, setIsSubmittingCredit] = useState(false);
+  const [creditForm, setCreditForm] = useState({
+    travelerId: "",
+    airline: "LATAM",
+    originalPnr: "",
+    originalTicketNumber: "",
+    originalAmount: 850,
+    expiresAt: "",
+  });
+
+  const [lookupTravelerId, setLookupTravelerId] = useState("");
+  const [searchedCredits, setSearchedCredits] = useState<AirTicketCreditDTO[]>([]);
+  const [isSearchingCredits, setIsSearchingCredits] = useState(false);
+
+  const handleSearchCredits = async () => {
+    if (!lookupTravelerId.trim()) {
+      toast.error("Informe o UUID do passageiro para consultar créditos.");
+      return;
+    }
+    setIsSearchingCredits(true);
+    try {
+      const res = await listTravelerTicketCredits({ data: { travelerId: lookupTravelerId.trim() } });
+      setSearchedCredits(res || []);
+      if (!res || res.length === 0) {
+        toast.info("Nenhum crédito ativo localizado para este passageiro.");
+      }
+    } catch (err: any) {
+      toast.error("Erro ao consultar créditos: " + (err?.message || "falha"));
+    } finally {
+      setIsSearchingCredits(false);
+    }
+  };
+
+  const handleRecordCredit = async () => {
+    if (!agencyId || !creditForm.travelerId.trim() || !creditForm.originalPnr.trim() || !creditForm.originalTicketNumber.trim()) {
+      toast.error("Preencha todos os campos obrigatórios (Passageiro, PNR e Bilhete).");
+      return;
+    }
+    setIsSubmittingCredit(true);
+    try {
+      const validFrom = new Date().toISOString();
+      const expiresAt = creditForm.expiresAt || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+      await recordAirTicketCredit({
+        data: {
+          agencyId,
+          travelerId: creditForm.travelerId.trim(),
+          airline: creditForm.airline,
+          originalPnr: creditForm.originalPnr.trim().toUpperCase(),
+          originalTicketNumber: creditForm.originalTicketNumber.trim(),
+          originalAmountCents: Math.round(creditForm.originalAmount * 100),
+          validFrom,
+          expiresAt,
+          transferable: false,
+          fareRuleSnapshot: { recorded_by_agency: agencyId, note: "EMD de cancelamento gerado no painel" },
+        },
+      });
+      toast.success("Crédito aéreo (EMD) registrado com sucesso no cofre corporativo!");
+      setCreateCreditOpen(false);
+      setCreditForm({
+        travelerId: "",
+        airline: "LATAM",
+        originalPnr: "",
+        originalTicketNumber: "",
+        originalAmount: 850,
+        expiresAt: "",
+      });
+    } catch (err: any) {
+      toast.error("Erro ao registrar crédito: " + (err?.message || "falha"));
+    } finally {
+      setIsSubmittingCredit(false);
+    }
+  };
 
   const handleActivateAccount = async (accountId: string) => {
     try {
@@ -117,6 +243,15 @@ export default function AgencyCorporateCockpitPage() {
               <li>Equipe de atendimento ou executivo de contas alocado.</li>
             </ul>
           </div>
+          <div className="pt-2 flex justify-center">
+            <Button
+              className="h-11 min-h-11 px-6 font-semibold bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+              onClick={handleRequestCapability}
+            >
+              <ShieldCheck className="size-4 mr-2" />
+              Ativar Capacidade B2B
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -158,7 +293,7 @@ export default function AgencyCorporateCockpitPage() {
         </div>
 
         {/* Régua de Navegação Horizontal Contínua (B.39) */}
-        <div className="flex flex-nowrap items-center gap-2 overflow-x-auto no-scrollbar border-b border-border pb-2">
+        <div className="flex flex-nowrap items-center gap-2 overflow-x-auto no-scrollbar border-b border-border pb-2 tab-list" role="tablist">
           {[
             { id: "contas", label: `Empresas Clientes (${accounts.length})`, icon: Building2 },
             { id: "pendencias", label: "Fila 'Precisa de Você'", icon: AlertTriangle },
@@ -251,6 +386,7 @@ export default function AgencyCorporateCockpitPage() {
                             <Button
                               variant="outline"
                               size="sm"
+                              onClick={() => toast.info(`Conta Corporativa: ${acc.company_name || "Empresa"} | Autonomia: ${acc.autonomy_matrix?.air_domestic || "SELF_BOOK"}`)}
                               className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer"
                             >
                               Configurar
@@ -387,6 +523,45 @@ export default function AgencyCorporateCockpitPage() {
           </div>
         )}
       </div>
+      {/* ── MODAL: VINCULAR EMPRESA PARCEIRA ── */}
+      <Dialog open={linkCompanyOpen} onOpenChange={setLinkCompanyOpen}>
+        <DialogContent className="sm:max-w-md bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-foreground">Vincular Nova Empresa Cliente</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2 text-xs">
+            <p className="text-muted-foreground leading-relaxed">
+              Informe o identificador único (UUID da loja/empresa) para habilitar o painel corporativo e as regras de faturamento.
+            </p>
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold text-foreground">UUID da Empresa *</Label>
+              <Input
+                placeholder="Ex: 550e8400-e29b-41d4-a716-446655440000"
+                value={targetCompanyId}
+                onChange={(e) => setTargetCompanyId(e.target.value)}
+                className="h-11 min-h-11 text-xs font-mono"
+              />
+            </div>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0 pt-2 border-t border-border/50">
+            <Button
+              variant="outline"
+              onClick={() => setLinkCompanyOpen(false)}
+              disabled={isLinking}
+              className="h-11 min-h-11 px-4 text-xs font-medium focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleLinkCompany}
+              disabled={isLinking}
+              className="h-11 min-h-11 px-5 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+            >
+              {isLinking ? "Vinculando..." : "Confirmar Vínculo"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

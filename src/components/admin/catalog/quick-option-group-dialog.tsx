@@ -318,7 +318,7 @@ export function QuickOptionGroupDialog({
  key={preset.name}
  type="button"
  onClick={() => applyPreset(preset)}
- className="flex flex-col items-start p-3 rounded-lg border border-border/80 bg-background hover:bg-muted/40 hover:border-primary/40 transition-all text-left cursor-pointer group"
+ className="flex flex-col items-start p-3 rounded-lg border border-border/80 bg-background hover:bg-muted/40 hover:border-primary/40 transition-all text-left cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="flex items-center gap-2 w-full mb-1">
  <Icon className="size-3.5 text-primary shrink-0" />
@@ -426,7 +426,7 @@ export function QuickOptionGroupDialog({
  form.setValue("selection_type", "single");
  form.setValue("max_selections", 1);
  }}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "flex items-center justify-center gap-2 py-2 px-3 rounded-lg border text-xs font-medium transition-all cursor-pointer",
  selectionType === "single"
  ? "border-primary bg-primary/10 text-primary font-bold shadow-xs"
@@ -438,7 +438,7 @@ export function QuickOptionGroupDialog({
  <button
  type="button"
  onClick={() => form.setValue("selection_type", "multiple")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "flex items-center justify-center gap-2 py-2 px-3 rounded-lg border text-xs font-medium transition-all cursor-pointer",
  selectionType === "multiple"
  ? "border-primary bg-primary/10 text-primary font-bold shadow-xs"
@@ -543,7 +543,7 @@ export function QuickOptionGroupDialog({
  <button
  type="button"
  onClick={() => form.setValue(`values.${index}.image_url`, "")}
- className="absolute inset-0 bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+ className="absolute inset-0 bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  title="Remover foto"
  >
  <X className="size-3.5" />
@@ -554,7 +554,7 @@ export function QuickOptionGroupDialog({
  type="button"
  onClick={() => handleSelectFileForValue(index)}
  disabled={isUploadingThis}
- className="size-11 rounded-lg border border-dashed border-border hover:border-primary/60 bg-muted/30 hover:bg-primary/5 flex flex-col items-center justify-center text-muted-foreground hover:text-primary transition-all cursor-pointer"
+ className="size-11 rounded-lg border border-dashed border-border hover:border-primary/60 bg-muted/30 hover:bg-primary/5 flex flex-col items-center justify-center text-muted-foreground hover:text-primary transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  title="Adicionar foto 1:1 ao adicional"
  >
  {isUploadingThis ? (

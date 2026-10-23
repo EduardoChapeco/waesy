@@ -207,7 +207,7 @@ export function ProductQuickOrderDialog({
               <button
                 type="button"
                 onClick={() => setDeliveryMode("pickup")}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "p-3 rounded-lg border text-left flex flex-col gap-1 transition-all cursor-pointer",
                   deliveryMode === "pickup"
                     ? "border-primary bg-primary/5 text-foreground ring-1 ring-primary/30"
@@ -224,7 +224,7 @@ export function ProductQuickOrderDialog({
               <button
                 type="button"
                 onClick={() => setDeliveryMode("immediate")}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "p-3 rounded-lg border text-left flex flex-col gap-1 transition-all cursor-pointer",
                   deliveryMode === "immediate"
                     ? "border-primary bg-primary/5 text-foreground ring-1 ring-primary/30"
@@ -261,7 +261,7 @@ export function ProductQuickOrderDialog({
               <button
                 type="button"
                 onClick={() => setPaymentMethod("pix")}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "p-2 rounded-lg border text-center flex flex-col items-center gap-1 transition-all cursor-pointer",
                   paymentMethod === "pix"
                     ? "border-emerald-500 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-bold"
@@ -275,7 +275,7 @@ export function ProductQuickOrderDialog({
               <button
                 type="button"
                 onClick={() => setPaymentMethod("card")}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "p-2 rounded-lg border text-center flex flex-col items-center gap-1 transition-all cursor-pointer",
                   paymentMethod === "card"
                     ? "border-primary bg-primary/10 text-foreground font-bold"
@@ -289,7 +289,7 @@ export function ProductQuickOrderDialog({
               <button
                 type="button"
                 onClick={() => setPaymentMethod("cash")}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "p-2 rounded-lg border text-center flex flex-col items-center gap-1 transition-all cursor-pointer",
                   paymentMethod === "cash"
                     ? "border-primary bg-primary/10 text-foreground font-bold"

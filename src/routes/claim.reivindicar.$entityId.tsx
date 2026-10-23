@@ -175,7 +175,7 @@ function ClaimReivindicarPage() {
                       isSelected 
                         ? 'border-primary bg-primary/10 shadow-xs ring-1 ring-primary' 
                         : 'border-border/70 bg-card hover:bg-muted/30'
-                    }`}
+                    } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                   >
                     <Icon className={`size-5 shrink-0 mt-1 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
                     <div>

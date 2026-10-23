@@ -309,7 +309,7 @@ function SecurityTelemetryPage() {
       <div className="flex items-center gap-2 border-b border-border/60 pb-2">
         <button
           onClick={() => setActiveTab("attacks")}
-          className={cn(
+          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
             "text-xs font-bold px-4 py-2 rounded-lg transition-all flex items-center gap-2 cursor-pointer",
             activeTab === "attacks"
               ? "bg-foreground text-background shadow-sm"
@@ -322,7 +322,7 @@ function SecurityTelemetryPage() {
 
         <button
           onClick={() => setActiveTab("sentinel")}
-          className={cn(
+          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
             "text-xs font-bold px-4 py-2 rounded-lg transition-all flex items-center gap-2 cursor-pointer",
             activeTab === "sentinel"
               ? "bg-foreground text-background shadow-sm"
@@ -351,7 +351,7 @@ function SecurityTelemetryPage() {
             <button
               key={sev}
               onClick={() => setSeverityFilter(sev)}
-              className={cn(
+              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                 "text-[11px] px-3 py-1 rounded-lg border transition-all cursor-pointer whitespace-nowrap",
                 severityFilter === sev
                   ? "bg-foreground text-background border-foreground font-bold"

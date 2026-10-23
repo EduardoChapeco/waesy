@@ -234,7 +234,7 @@ export function ServicePackagesRail({
  paymentMethod === "pix"
  ? "bg-foreground text-background border-foreground "
  : "bg-muted/40 border-border text-foreground hover:bg-muted"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <Zap size={14} className="text-primary" /> Pix Imediato
  </button>
@@ -245,7 +245,7 @@ export function ServicePackagesRail({
  paymentMethod === "credit_card"
  ? "bg-foreground text-background border-foreground "
  : "bg-muted/40 border-border text-foreground hover:bg-muted"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  Cartão de Crédito
  </button>

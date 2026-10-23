@@ -204,7 +204,7 @@ export function TravelPackageDetailView({
           {onEditClick && (
             <button
               onClick={onEditClick}
-              className="text-amber-600 dark:text-amber-400 hover:underline font-semibold flex items-center gap-1"
+              className="text-amber-600 dark:text-amber-400 hover:underline font-semibold flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <Edit3 className="size-3" />
               Editar no Gestor
@@ -218,7 +218,7 @@ export function TravelPackageDetailView({
  <button
  type="button"
  onClick={() => setActiveTab("destination")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "relative flex-1 flex items-center justify-center gap-2 py-3 transition-colors cursor-pointer",
  activeTab === "destination"
  ? "text-primary font-bold after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-8 after:h-0.5 after:bg-primary after:rounded-full"
@@ -232,7 +232,7 @@ export function TravelPackageDetailView({
  <button
  type="button"
  onClick={() => setActiveTab("resort")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "relative flex-1 flex items-center justify-center gap-2 py-3 transition-colors cursor-pointer",
  activeTab === "resort"
  ? "text-primary font-bold after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-8 after:h-0.5 after:bg-primary after:rounded-full"
@@ -246,7 +246,7 @@ export function TravelPackageDetailView({
  <button
  type="button"
  onClick={() => setActiveTab("itinerary")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "relative flex-1 flex items-center justify-center gap-2 py-3 transition-colors cursor-pointer",
  activeTab === "itinerary"
  ? "text-primary font-bold after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-8 after:h-0.5 after:bg-primary after:rounded-full"
@@ -260,7 +260,7 @@ export function TravelPackageDetailView({
  <button
  type="button"
  onClick={() => setActiveTab("explore")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "relative flex-1 flex items-center justify-center gap-2 py-3 transition-colors cursor-pointer",
  activeTab === "explore"
  ? "text-primary font-bold after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-8 after:h-0.5 after:bg-primary after:rounded-full"
@@ -413,10 +413,10 @@ export function TravelPackageDetailView({
               const optId = opt.id || String(i);
               const isSelected = selectedDepartureId === optId || (!selectedDepartureId && i === 0);
               return (
-                <div
+                <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                   key={opt.id || i}
                   onClick={() => setSelectedDepartureId(selectedDepartureId === optId ? null : optId)}
-                  className={cn(
+                  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                     "p-4 rounded-lg bg-card border transition-colors flex flex-col justify-between gap-2 shadow-2xs cursor-pointer text-left",
                     isSelected
                       ? "border-primary ring-2 ring-primary/25 bg-primary/5"
@@ -703,7 +703,7 @@ export function TravelPackageDetailView({
        const isExpanded = !!expandedDays[day.day];
 
        return (
-         <div key={day.id || day.day} className="relative group cursor-pointer" onClick={() => toggleDay(day.day)}>
+         <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} key={day.id || day.day} className="relative group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" onClick={() => toggleDay(day.day)}>
            {/* Marcador Circular Numerado */}
            <div
              className={cn(
@@ -1178,10 +1178,10 @@ export function TravelPackageDetailView({
  const optId = opt.id || String(i);
  const isSelected = selectedDepartureId === optId || (!selectedDepartureId && i === 0);
  return (
- <div
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  key={opt.id || i}
  onClick={() => setSelectedDepartureId(selectedDepartureId === optId ? null : optId)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg border gap-2 transition-colors cursor-pointer text-left",
  isSelected
  ? "border-primary ring-2 ring-primary/25 bg-primary/5"

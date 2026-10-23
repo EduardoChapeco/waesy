@@ -212,7 +212,7 @@ export function ImageCropperDialog({
                         isActive
                           ? "bg-foreground text-background font-bold shadow-xs"
                           : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/40"
-                      }`}
+                      } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                     >
                       {preset.label}
                     </button>

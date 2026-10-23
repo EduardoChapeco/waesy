@@ -55,9 +55,7 @@ export function CartSheet() {
           size="wide"
           className={cn(
             "w-full sm:max-w-lg md:max-w-xl flex flex-col p-0 bg-background/95 backdrop-blur-md border-l border-border/60 overscroll-contain",
-            totalItemCount > 0
-              ? "max-sm:inset-0 max-sm:h-dvh max-sm:w-full max-sm:rounded-none max-sm:border-none"
-              : "max-sm:inset-x-0 max-sm:bottom-0 max-sm:max-h-full max-sm:rounded-t-lg"
+            "max-sm:inset-0 max-sm:h-dvh max-sm:w-full max-sm:rounded-none max-sm:border-none"
           )}
         >
           {/* Cabeçalho do Carrinho */}
@@ -74,11 +72,11 @@ export function CartSheet() {
 
           {/* ── Sacola Modular em Abas (Alinhamento Estratégico R1) ── */}
           {totalItemCount > 0 && (
-            <div className="px-4 sm:px-6 py-2 bg-muted/20 border-b border-border/40 flex items-center gap-2 overflow-x-auto no-scrollbar shrink-0">
+            <div className="px-4 sm:px-6 py-2 bg-muted/20 border-b border-border/40 tab-list flex items-center gap-2 overflow-x-auto no-scrollbar shrink-0">
               <button
                 type="button"
                 onClick={() => setModalityFilter("all")}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "px-3 py-2 text-xs font-semibold rounded-md transition-colors cursor-pointer shrink-0",
                   modalityFilter === "all"
                     ? "bg-foreground text-background"
@@ -90,7 +88,7 @@ export function CartSheet() {
               <button
                 type="button"
                 onClick={() => setModalityFilter("delivery")}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "px-3 py-2 text-xs font-semibold rounded-md transition-colors cursor-pointer shrink-0",
                   modalityFilter === "delivery"
                     ? "bg-foreground text-background"
@@ -102,7 +100,7 @@ export function CartSheet() {
               <button
                 type="button"
                 onClick={() => setModalityFilter("services")}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "px-3 py-2 text-xs font-semibold rounded-md transition-colors cursor-pointer shrink-0",
                   modalityFilter === "services"
                     ? "bg-foreground text-background"
@@ -114,7 +112,7 @@ export function CartSheet() {
               <button
                 type="button"
                 onClick={() => setModalityFilter("digital")}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "px-3 py-2 text-xs font-semibold rounded-md transition-colors cursor-pointer shrink-0",
                   modalityFilter === "digital"
                     ? "bg-foreground text-background"

@@ -86,7 +86,7 @@ export function DealReviewModal({
                     onClick={() => setRating(star)}
                     onMouseEnter={() => setHoverRating(star)}
                     onMouseLeave={() => setHoverRating(null)}
-                    className="p-1 rounded-lg hover:scale-110 active:scale-95 transition-transform cursor-pointer"
+                    className="p-1 rounded-lg hover:scale-110 active:scale-95 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     aria-label={`${star} estrelas`}
                   >
                     <Star

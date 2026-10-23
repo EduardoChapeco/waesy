@@ -149,7 +149,7 @@ export function FoodMenuTabsSection({
  key={cat.id}
  type="button"
  onClick={() => setActiveTab(cat.id)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-4 py-2 rounded-lg text-xs font-semibold transition-all shrink-0 cursor-pointer",
  isSelected
  ? "bg-primary text-primary-foreground shadow-2xs"

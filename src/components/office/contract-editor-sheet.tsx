@@ -87,7 +87,7 @@ export function ContractEditorSheet({
  type="button"
  onClick={() => setActiveTab('editor')}
  className={'px-3 py-2 rounded-lg text-xs font-semibold transition-all ' + (
- activeTab === 'editor' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
+ activeTab === 'editor' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
  <Edit3 className="w-3.5 h-3.5 inline mr-1" />
@@ -97,7 +97,7 @@ export function ContractEditorSheet({
  type="button"
  onClick={() => setActiveTab('library')}
  className={'px-3 py-2 rounded-lg text-xs font-semibold transition-all ' + (
- activeTab === 'library' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
+ activeTab === 'library' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
  <BookOpen className="w-3.5 h-3.5 inline mr-1" />
@@ -107,7 +107,7 @@ export function ContractEditorSheet({
  type="button"
  onClick={() => setActiveTab('preview')}
  className={'px-3 py-2 rounded-lg text-xs font-semibold transition-all ' + (
- activeTab === 'preview' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
+ activeTab === 'preview' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
  <Eye className="w-3.5 h-3.5 inline mr-1" />
@@ -117,7 +117,7 @@ export function ContractEditorSheet({
  type="button"
  onClick={() => setActiveTab('sign')}
  className={'px-3 py-2 rounded-lg text-xs font-semibold transition-all ' + (
- activeTab === 'sign' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
+ activeTab === 'sign' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
  <Shield className="w-3.5 h-3.5 inline mr-1" />

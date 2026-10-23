@@ -197,7 +197,7 @@ export function VariantMatrixGrid({
       </div>
 
       {/* Visualizacao Desktop: Tabela Ampla com Rolagem Suave sem Esmagamento */}
-      <div className="hidden md:block border rounded-lg overflow-x-auto bg-card mb-4">
+      <div className="hidden md:block border rounded-lg overflow-x-auto table-container bg-card mb-4">
         <table className="w-full min-w-3xl text-sm text-left">
           <thead className="bg-muted/40 text-muted-foreground text-xs uppercase font-semibold">
             <tr>
@@ -206,7 +206,7 @@ export function VariantMatrixGrid({
                   <Input
                     value={rowKey}
                     onChange={(e) => handleRenameDimension(rowKey, e.target.value)}
-                    className="h-8 text-xs bg-transparent border-transparent hover:border-input focus:border-input focus:bg-background transition-all font-bold uppercase px-1 -ml-1 cursor-text w-full focus-visible:ring-2 focus-visible:ring-ring"
+                    className="h-8 text-xs bg-transparent border-transparent hover:border-input focus:border-input focus:bg-background transition-colors font-bold uppercase px-1 -ml-1 cursor-text w-full focus-visible:ring-2 focus-visible:ring-ring"
                     title="Renomear matriz mãe"
                   />
                   <span className="text-xs font-normal lowercase opacity-70 whitespace-nowrap">
@@ -221,7 +221,7 @@ export function VariantMatrixGrid({
                       key={`col-${colIndex}`}
                       value={k}
                       onChange={(e) => handleRenameDimension(k, e.target.value)}
-                      className="h-8 text-xs bg-transparent border-transparent hover:border-input focus:border-input focus:bg-background transition-all font-semibold uppercase px-1 -ml-1 cursor-text w-32 focus-visible:ring-2 focus-visible:ring-ring"
+                      className="h-8 text-xs bg-transparent border-transparent hover:border-input focus:border-input focus:bg-background transition-colors font-semibold uppercase px-1 -ml-1 cursor-text w-32 focus-visible:ring-2 focus-visible:ring-ring"
                       title="Renomear coluna"
                     />
                   ))}
@@ -283,7 +283,7 @@ export function VariantMatrixGrid({
                                 <button
                                   type="button"
                                   onClick={() => handleGroupImageUpdate(gName, null)}
-                                  className="absolute inset-0 bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                  className="absolute inset-0 bg-background/80 text-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                   aria-label="Remover foto"
                                 >
                                   <X className="size-5" />
@@ -309,7 +309,7 @@ export function VariantMatrixGrid({
                           {displayColKeys.map((k, colIdx) => (
                             <Input
                               key={`cell-${colIdx}`}
-                              className="h-10 text-xs w-32 px-3 bg-card focus:ring-primary focus:border-primary transition-all focus-visible:ring-2 focus-visible:ring-ring"
+                              className="h-10 text-xs w-32 px-3 bg-card focus:ring-primary focus:border-primary transition-colors focus-visible:ring-2 focus-visible:ring-ring"
                               placeholder="Ex: Rosa 36"
                               value={variant.attributes[k] || ""}
                               onChange={(e) => {
@@ -391,7 +391,7 @@ export function VariantMatrixGrid({
                             type="button"
                             variant="ghost"
                             size="icon"
-                            className="size-9 text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
+                            className="size-11 min-h-11 min-w-11 text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
                             title="Duplicar linha"
                             onClick={() => handleCloneVariant(globalIdx)}
                           >
@@ -401,7 +401,7 @@ export function VariantMatrixGrid({
                             type="button"
                             variant="ghost"
                             size="icon"
-                            className="size-9 text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                            className="size-11 min-h-11 min-w-11 text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
                             onClick={() => setAdvancedEditIndex(globalIdx)}
                             title="Edição Avançada"
                           >
@@ -411,7 +411,7 @@ export function VariantMatrixGrid({
                             type="button"
                             variant="ghost"
                             size="icon"
-                            className="size-9 text-destructive/70 hover:text-destructive hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-ring"
+                            className="size-11 min-h-11 min-w-11 text-destructive/70 hover:text-destructive hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-ring"
                             onClick={() => handleDeleteVariant(globalIdx)}
                             title="Remover linha"
                           >
@@ -431,7 +431,7 @@ export function VariantMatrixGrid({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-xs text-muted-foreground hover:text-primary border border-dashed border-muted-foreground/30 bg-background/50 w-full justify-start h-10 focus-visible:ring-2 focus-visible:ring-ring"
+                      className="text-xs text-muted-foreground hover:text-primary border border-dashed border-muted-foreground/30 bg-background/50 w-full justify-start h-11 min-h-11 focus-visible:ring-2 focus-visible:ring-ring"
                       onClick={() => handleAddVariantToGroup(gName)}
                     >
                       <Plus className="size-3 mr-2" /> Adicionar linha em {gName}
@@ -449,7 +449,7 @@ export function VariantMatrixGrid({
         {Array.from(grouped.entries()).map(([gName, gData], groupIndex) => {
           const sharedImage = gData.variants[0]?.image_url;
           return (
-            <div key={`m-group-${groupIndex}`} className="p-4 rounded-xl border border-border bg-card space-y-4">
+            <div key={`m-group-${groupIndex}`} className="p-4 rounded-lg border border-border bg-card space-y-4">
               <div className="flex items-center gap-3">
                 {sharedImage ? (
                   <div className="relative size-14 rounded-lg overflow-hidden border bg-muted shrink-0">
@@ -457,7 +457,7 @@ export function VariantMatrixGrid({
                     <button
                       type="button"
                       onClick={() => handleGroupImageUpdate(gName, null)}
-                      className="absolute inset-0 bg-black/60 text-white flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
+                      className="absolute inset-0 bg-background/80 text-foreground flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label="Remover foto"
                     >
                       <X className="size-4" />

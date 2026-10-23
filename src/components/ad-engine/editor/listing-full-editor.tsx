@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Tag, DollarSign, ImagePlus, Layers, SlidersHorizontal, CheckCircle2, Receipt, Palette, FileText } from "lucide-react";
+import { Tag, DollarSign, ImagePlus, Layers, SlidersHorizontal, CheckCircle2, Receipt, Palette } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,7 +14,11 @@ import { ListingScopeSection } from "./sections/listing-scope-section";
 import { ListingFiscalSection } from "./sections/listing-fiscal-section";
 import { ListingTemplateSelector } from "./sections/listing-template-selector";
 import type { UnifiedListing, UnifiedNiche, ListingOrigin } from "@/types/unified-ad-engine";
-import { NICHE_TAXONOMY_REGISTRY } from "@/lib/ad-engine/niche-taxonomy-manifest";
+import {
+  NICHE_TAXONOMY_REGISTRY,
+  normalizeAdEngineNicheId,
+} from "@/lib/ad-engine/niche-taxonomy-manifest";
+import { resolveTemplate } from "@/lib/ad-engine/template-metamorphosis";
 import { cn } from "@/lib/utils";
 
 export interface ListingFullEditorProps {
@@ -35,21 +39,21 @@ export function ListingFullEditor({
   className,
 }: ListingFullEditorProps) {
   const [activeTab, setActiveTab] = useState("basico");
-  const niche = (listing.niche || "retail") as UnifiedNiche;
-  const nicheConfig = NICHE_TAXONOMY_REGISTRY[niche];
+  const normalizedNiche = normalizeAdEngineNicheId(listing.niche || listing.niche_id || "varejo");
+  const niche = (listing.niche || normalizedNiche) as UnifiedNiche;
+  const nicheConfig = NICHE_TAXONOMY_REGISTRY[normalizedNiche];
   const isWorkspace = origin === "workspace";
 
   const commercial = listing.commercial || { price_cents: 0 };
   const media = listing.media || { media_urls: [], cover_url: "" };
   const fiscal = listing.fiscal || {};
-  const currentTemplate = listing.template || nicheConfig?.allowedTemplates[0] || "retail_standard";
+  const currentTemplate = resolveTemplate(normalizedNiche, listing.template);
 
-  const isTourism = niche === "tourism";
-  const isService = niche === "services";
+  const isTourism = normalizedNiche === "turismo";
+  const isService = normalizedNiche === "servico";
   const hasScope = isTourism || isService;
-  const supportsFiscal = isWorkspace && (nicheConfig?.supportsShipping || niche === "retail");
+  const supportsFiscal = isWorkspace && Boolean(nicheConfig?.supportsShipping);
 
-  // Cast or adapt variants / departures
   const variants = (listing.variants || []) as UnifiedVariantItem[];
   const departures = ((listing.departures || []) as unknown) as UnifiedDepartureItem[];
   const modifiers = (listing.modifier_groups || []) as UnifiedModifierGroup[];
@@ -59,47 +63,47 @@ export function ListingFullEditor({
   return (
     <div className={cn("space-y-6", className)}>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="h-11 p-1 bg-muted/60 rounded-lg flex items-center gap-1 overflow-x-auto w-full justify-start scrollbar-none border border-border/40">
-          <TabsTrigger value="basico" className="h-9 rounded-md text-xs font-semibold gap-2 px-3">
+        <TabsList className="h-11 p-1 bg-muted/60 rounded-lg flex flex-nowrap items-center gap-1 overflow-x-auto w-full justify-start no-scrollbar border border-border/40">
+          <TabsTrigger value="basico" className="h-9 rounded-md text-xs font-semibold gap-2 px-3 shrink-0">
             <Tag className="size-4" />
             <span>Identificação</span>
           </TabsTrigger>
 
-          <TabsTrigger value="comercial" className="h-9 rounded-md text-xs font-semibold gap-2 px-3">
+          <TabsTrigger value="comercial" className="h-9 rounded-md text-xs font-semibold gap-2 px-3 shrink-0">
             <DollarSign className="size-4" />
             <span>Preço & Condições</span>
           </TabsTrigger>
 
-          <TabsTrigger value="midia" className="h-9 rounded-md text-xs font-semibold gap-2 px-3">
+          <TabsTrigger value="midia" className="h-9 rounded-md text-xs font-semibold gap-2 px-3 shrink-0">
             <ImagePlus className="size-4" />
             <span>Fotos & Vídeo</span>
           </TabsTrigger>
 
-          <TabsTrigger value="variacoes" className="h-9 rounded-md text-xs font-semibold gap-2 px-3">
+          <TabsTrigger value="variacoes" className="h-9 rounded-md text-xs font-semibold gap-2 px-3 shrink-0">
             <Layers className="size-4" />
             <span>{isTourism ? "Saídas & Vagas" : "Grade & Variações"}</span>
           </TabsTrigger>
 
-          <TabsTrigger value="opcionais" className="h-9 rounded-md text-xs font-semibold gap-2 px-3">
+          <TabsTrigger value="opcionais" className="h-9 rounded-md text-xs font-semibold gap-2 px-3 shrink-0">
             <SlidersHorizontal className="size-4" />
             <span>Adicionais</span>
           </TabsTrigger>
 
           {hasScope && (
-            <TabsTrigger value="escopo" className="h-9 rounded-md text-xs font-semibold gap-2 px-3">
+            <TabsTrigger value="escopo" className="h-9 rounded-md text-xs font-semibold gap-2 px-3 shrink-0">
               <CheckCircle2 className="size-4" />
               <span>Inclusos & Exclusos</span>
             </TabsTrigger>
           )}
 
           {supportsFiscal && (
-            <TabsTrigger value="fiscal" className="h-9 rounded-md text-xs font-semibold gap-2 px-3">
+            <TabsTrigger value="fiscal" className="h-9 rounded-md text-xs font-semibold gap-2 px-3 shrink-0">
               <Receipt className="size-4" />
               <span>Fiscal (2026)</span>
             </TabsTrigger>
           )}
 
-          <TabsTrigger value="template" className="h-9 rounded-md text-xs font-semibold gap-2 px-3">
+          <TabsTrigger value="template" className="h-9 rounded-md text-xs font-semibold gap-2 px-3 shrink-0">
             <Palette className="size-4" />
             <span>Composição Visual</span>
           </TabsTrigger>
@@ -122,13 +126,14 @@ export function ListingFullEditor({
               <div className="space-y-2">
                 <Label className="text-xs font-medium text-foreground">Nicho / Vertical</Label>
                 <Select
-                  value={niche}
+                  value={normalizedNiche}
                   onValueChange={(val) => {
-                    const nextNiche = val as UnifiedNiche;
-                    const nextConfig = NICHE_TAXONOMY_REGISTRY[nextNiche];
+                    const nextNiche = normalizeAdEngineNicheId(val) as UnifiedNiche;
+                    const resolvedNextTemplate = resolveTemplate(nextNiche, listing.template);
                     onChange({
                       niche: nextNiche,
-                      template: nextConfig?.allowedTemplates[0] || "retail_standard",
+                      niche_id: nextNiche as any,
+                      template: resolvedNextTemplate,
                     });
                   }}
                 >
@@ -271,7 +276,7 @@ export function ListingFullEditor({
         {/* ── ABA 8: Composição Visual / Templates Coerentes (F24, O02) ── */}
         <TabsContent value="template" className="mt-4">
           <ListingTemplateSelector
-            niche={niche}
+            niche={normalizedNiche}
             value={currentTemplate}
             onChange={(templateId) => onChange({ template: templateId })}
           />

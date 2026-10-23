@@ -242,7 +242,10 @@ function CouriersListPage() {
                 return (
                   <div
                     key={courier.id}
-                    className="p-4 space-y-3 bg-card hover:bg-muted/20 transition-colors cursor-pointer"
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedCourier(courier); } }}
+                    className="p-4 space-y-3 bg-card hover:bg-muted/20 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     onClick={() => setSelectedCourier(courier)}
                   >
                     <div className="flex items-start justify-between gap-2">
@@ -252,14 +255,14 @@ function CouriersListPage() {
                           <a
                             href={`tel:${courier.phone}`}
                             onClick={(e) => e.stopPropagation()}
-                            className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 font-medium"
+                            className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             <Phone className="size-3 text-primary" />
                             {courier.phone}
                           </a>
                         )}
                       </div>
-                      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                      <div /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */ className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                         <StatusBadge status={courier.status} />
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -280,7 +283,7 @@ function CouriersListPage() {
                                 Ver Perfil Completo
                               </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem
+                            <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                               onClick={() =>
                                 toggleStatusMutation.mutate({
                                   courierId: courier.id,
@@ -345,7 +348,10 @@ function CouriersListPage() {
                     return (
                       <tr
                         key={courier.id}
-                        className="hover:bg-muted/20 transition-colors group cursor-pointer"
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedCourier(courier); } }}
+                        className="hover:bg-muted/20 transition-colors group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         onClick={() => setSelectedCourier(courier)}
                       >
                         <td className="px-4 py-4">
@@ -377,7 +383,7 @@ function CouriersListPage() {
                             ? formatMoney(courier.default_fee_cents)
                             : "---"}
                         </td>
-                        <td className="px-4 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+                        <td /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */ className="px-4 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button
@@ -397,7 +403,7 @@ function CouriersListPage() {
                                   Ver Perfil Completo
                                 </Link>
                               </DropdownMenuItem>
-                              <DropdownMenuItem
+                              <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                                 onClick={() =>
                                   toggleStatusMutation.mutate({
                                     courierId: courier.id,

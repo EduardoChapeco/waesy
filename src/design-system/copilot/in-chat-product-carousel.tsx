@@ -74,7 +74,7 @@ export function InChatProductCarousel({
             <button
               type="button"
               onClick={() => onSelectProduct?.(p)}
-              className="w-full min-h-9 px-2 py-1 rounded-md bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors cursor-pointer"
+              className="w-full min-h-9 px-2 py-1 rounded-md bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               Ver Detalhes
             </button>

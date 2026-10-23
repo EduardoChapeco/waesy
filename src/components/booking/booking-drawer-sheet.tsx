@@ -127,7 +127,7 @@ export function BookingDrawerSheet({
                           setSelectedDate(day.iso);
                           setSelectedSlot(null);
                         }}
-                        className={cn(
+                        className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                           "p-2 rounded-lg text-center border transition-all cursor-pointer flex flex-col items-center justify-center",
                           isSelected
                             ? "bg-foreground text-background border-foreground font-bold shadow-xs"
@@ -157,7 +157,7 @@ export function BookingDrawerSheet({
                         setSelectedResourceId(null);
                         setSelectedSlot(null);
                       }}
-                      className={cn(
+                      className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                         "h-8 px-3 rounded-lg text-xs font-medium border shrink-0 transition-all cursor-pointer",
                         !selectedResourceId
                           ? "bg-foreground text-background border-foreground font-bold"
@@ -176,7 +176,7 @@ export function BookingDrawerSheet({
                             setSelectedResourceId(res.id);
                             setSelectedSlot(null);
                           }}
-                          className={cn(
+                          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                             "h-8 px-3 rounded-lg text-xs font-medium border shrink-0 transition-all cursor-pointer",
                             isSelected
                               ? "bg-primary text-primary-foreground border-primary font-bold shadow-xs"
@@ -222,7 +222,7 @@ export function BookingDrawerSheet({
                           key={slotIso}
                           type="button"
                           onClick={() => setSelectedSlot(slotIso)}
-                          className={cn(
+                          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                             "h-9 rounded-lg text-xs font-mono font-bold border transition-all cursor-pointer flex items-center justify-center",
                             isSelected
                               ? "bg-primary text-primary-foreground border-primary shadow-xs"

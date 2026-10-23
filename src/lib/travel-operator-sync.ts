@@ -44,6 +44,10 @@ export const CanonicalOperatorDocumentSchema = z.object({
       phone: z.string().nullable(),
       email: z.string().nullable(),
       is_lead: z.boolean(),
+      passenger_type: z.enum(["ADT", "CHD", "INF"]).default("ADT").optional(),
+      age: z.number().int().nonnegative().nullable().optional(),
+      room_category: z.string().nullable().optional(),
+      companion_lead_cpf: z.string().nullable().optional(),
     }),
   ),
   services: z.object({
@@ -59,6 +63,21 @@ export const CanonicalOperatorDocumentSchema = z.object({
     installment_count: z.number().int().positive().nullable(),
     installment_cents: z.number().int().nonnegative().nullable(),
     payment_method: z.string().nullable(),
+    payment_details: z
+      .object({
+        method_type: z
+          .enum(["boleto", "cartao_credito", "pix", "faturado", "misto", "outro"])
+          .default("outro"),
+        boleto_status: z
+          .enum(["aprovado", "negado", "liquidado", "pendente"])
+          .nullable()
+          .optional(),
+        credit_confidence_score: z.number().int().min(0).max(100).nullable().optional(),
+        operator_credit_approved_cents: z.number().int().nonnegative().nullable().optional(),
+        bank_name: z.string().nullable().optional(),
+        barcode_digits: z.string().nullable().optional(),
+      })
+      .optional(),
   }),
   contacts: z.object({
     commercial_phone: z.string().nullable(),

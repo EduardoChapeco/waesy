@@ -28,6 +28,7 @@ const GROUP_OVERVIEW: NavGroup = {
   section: "master",
   items: [
     { path: "/workspace", label: "Visão Geral", icon: LayoutDashboard },
+    { path: "/workspace/empresa/viagens", label: "Viagens B2B", icon: Plane },
     { path: "/workspace/onboarding", label: "Ativação", icon: Layers },
   ],
 };
@@ -240,6 +241,7 @@ const GROUP_TURISMO_COMMERCIAL: NavGroup = {
     { path: "/workspace/turismo", label: "Funil Comercial", icon: Kanban },
     { path: "/workspace/turismo/propostas", label: "Propostas Emitidas", icon: FileText },
     { path: "/workspace/turismo/cotacoes", label: "Cotações Rápidas", icon: Plane },
+    { path: "/workspace/turismo/corporativo", label: "Turismo B2B", icon: Building2 },
   ],
 };
 

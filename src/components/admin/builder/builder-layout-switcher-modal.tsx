@@ -111,7 +111,7 @@ export function BuilderLayoutSwitcherModal({
  onApplyLayout(layout.id);
  onClose();
  }}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "p-4 rounded-lg border flex flex-col items-center justify-between text-center gap-3 transition-all cursor-pointer group relative",
  isSelected
  ? "bg-primary/10 border-primary shadow-xs ring-2 ring-primary/20"

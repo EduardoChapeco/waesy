@@ -1,4 +1,4 @@
-import { Tag, Plane } from "lucide-react";
+import { Tag, Plane, Sparkles } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -94,6 +94,7 @@ export default function AgencyQuotesPage() {
  const [isDashboardOpen, setIsDashboardOpen] = useState(false);
  const [viewMode, setViewMode] = useState<"kanban" | "grid">("kanban");
  const [isOcrLoading, setIsOcrLoading] = useState(false);
+ const [ocrProgressText, setOcrProgressText] = useState("Lendo...");
 
  // Modais
  const [isNewSheetOpen, setIsNewSheetOpen] = useState(Boolean(searchParams?.leadName || searchParams?.clientId));
@@ -115,7 +116,7 @@ export default function AgencyQuotesPage() {
 
  const { data: quotes } = useQuery({
  queryKey: ["agency-travel-quotes", selectedStatus],
- queryFn: () => listAgencyTravelQuotes({ data: { status: selectedStatus as any } }),
+ queryFn: () => listAgencyTravelQuotes({ data: { status: selectedStatus as any, storeId: store?.id } }),
  initialData: initialQuotes,
  });
 
@@ -315,6 +316,7 @@ export default function AgencyQuotesPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            <Button type="button" variant="outline" size="sm" onClick={() => navigate({ to: "/workspace/turismo/oportunidades" })} className="h-11 min-h-11 px-4 gap-2 text-xs font-semibold border-primary/30 text-primary hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-ring"><Sparkles className="size-4 text-primary" /><span>Radar Comercial & Oportunidades</span></Button>
             <input
               type="file"
               id="quote-ocr-file-input"
@@ -323,6 +325,13 @@ export default function AgencyQuotesPage() {
               onChange={async (e) => {
                 const file = e.target.files?.[0];
                 if (!file) return;
+                if (file.size > 25 * 1024 * 1024) {
+                  toast.error("Arquivo muito grande. O limite máximo para OCR é de 25MB.");
+                  e.target.value = "";
+                  return;
+                }
+                const isLarge = file.size > 4 * 1024 * 1024;
+                setOcrProgressText(isLarge ? "Lendo PDF grande..." : "Carregando arquivo...");
                 setIsOcrLoading(true);
                 try {
                   const reader = new FileReader();
@@ -332,6 +341,7 @@ export default function AgencyQuotesPage() {
                     reader.readAsDataURL(file);
                   });
                   const base64 = dataUrl.split(",")[1];
+                  setOcrProgressText("Processando IA / OCR...");
                   const res = await ingestTravelDocument({
                     data: {
                       fileBase64: base64,
@@ -362,7 +372,7 @@ export default function AgencyQuotesPage() {
               className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
             >
               <FileText size={14} />
-              <span>{isOcrLoading ? "Lendo..." : " Importar Operadora (OCR)"}</span>
+              <span>{isOcrLoading ? ocrProgressText : "Importar Operadora (OCR)"}</span>
             </Button>
 
             <span className="text-xs text-muted-foreground font-mono hidden sm:inline">
@@ -1188,3 +1198,4 @@ export default function AgencyQuotesPage() {
     </NicheOperationalGuard>
   );
 }
+

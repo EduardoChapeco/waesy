@@ -1,6 +1,6 @@
 ---
 description: Regras de Segurança, Integridade Transacional e BFF do Omni-Commerce
-globs: ["src/services/**", "src/routes/**", "supabase/migrations/**"]
+globs: "src/services/**,src/routes/**,supabase/migrations/**"
 ---
 
 # 03 — Omni-Commerce Backend & Segurança Server-Side (Waesy Standard)

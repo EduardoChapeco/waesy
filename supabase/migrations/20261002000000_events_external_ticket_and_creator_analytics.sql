@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS public.creator_showcase_products (
 ALTER TABLE public.creator_showcase_products ENABLE ROW LEVEL SECURITY;
 
 -- RLS: O próprio criador pode gerenciar sua vitrine
+DROP POLICY IF EXISTS "creator_showcase_self_manage" ON public.creator_showcase_products;
 CREATE POLICY "creator_showcase_self_manage" ON public.creator_showcase_products
   FOR ALL USING (
     creator_profile_id IN (
@@ -69,6 +70,7 @@ CREATE POLICY "creator_showcase_self_manage" ON public.creator_showcase_products
   );
 
 -- RLS: Qualquer pessoa pode ver vitrines de criadores
+DROP POLICY IF EXISTS "creator_showcase_public_read" ON public.creator_showcase_products;
 CREATE POLICY "creator_showcase_public_read" ON public.creator_showcase_products
   FOR SELECT USING (true);
 
@@ -98,6 +100,7 @@ CREATE TABLE IF NOT EXISTS public.creator_showcase_clicks (
 ALTER TABLE public.creator_showcase_clicks ENABLE ROW LEVEL SECURITY;
 
 -- Somente o criador pode ver suas métricas
+DROP POLICY IF EXISTS "showcase_clicks_creator_read" ON public.creator_showcase_clicks;
 CREATE POLICY "showcase_clicks_creator_read" ON public.creator_showcase_clicks
   FOR SELECT USING (
     creator_profile_id IN (
@@ -106,6 +109,7 @@ CREATE POLICY "showcase_clicks_creator_read" ON public.creator_showcase_clicks
   );
 
 -- Sistema pode inserir (sem auth)
+DROP POLICY IF EXISTS "showcase_clicks_insert_anon" ON public.creator_showcase_clicks;
 CREATE POLICY "showcase_clicks_insert_anon" ON public.creator_showcase_clicks
   FOR INSERT WITH CHECK (true);
 

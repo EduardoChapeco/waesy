@@ -5,7 +5,7 @@ import { MapLibreCanvas } from "@/components/mobility/maplibre-canvas";
 import { Check, Compass, Navigation, Search, Cpu, Building2, Globe2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plug, MapPin, CreditCard, Mail, Truck, Sliders, Eye, EyeOff, CheckCircle2, AlertCircle, Clock, ShieldCheck, RefreshCw, Save, Radio, Layers, Plus, Trash2, Terminal, Activity, Zap, Linkedin, Copy, ExternalLink, Lock } from 'lucide-react';
+import { Plug, MapPin, CreditCard, Mail, Truck, Sliders, Eye, EyeOff, CheckCircle2, AlertCircle, Clock, ShieldCheck, RefreshCw, Save, Radio, Layers, Plus, Trash2, Terminal, Activity, Zap, Linkedin, Copy, ExternalLink, Lock, Plane } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +17,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getPlatformApiIntegrations, updatePlatformApiIntegrations, type PlatformApiIntegrationsDTO } from "@/services/master.functions";
 import { listApiKeyPools, saveApiKeyToPool, batchSaveApiKeysToPool, resetProviderPoolCooldowns, toggleApiKeyStatus, deleteApiKeyFromPool, testPoolKeyConnection, listMasterPrompts, saveMasterPrompt, type ApiKeyPoolDTO, type MasterPromptDTO, type ApiProvider } from "@/services/api-orchestrator.functions";
+import { GmapsScraperPanel } from "@/components/admin/gmaps-scraper-panel";
+import { WebAgentPanel } from "@/components/admin/web-agent-panel";
+import { InfotravelIntegrationPanel } from "@/components/admin/infotravel-integration-panel";
 import { listMasterWhatsAppInstances, toggleMasterWhatsAppInstance, type WhatsAppChannelInstanceDTO } from "@/services/whatsapp-channel-instances.functions";
 
 export const Route = createFileRoute("/admin-master/integracoes")({
@@ -95,7 +98,7 @@ export const Route = createFileRoute("/admin-master/integracoes")({
  component: AdminMasterIntegracoesPage,
 });
 
-type TabType = "pools" | "prompts" | "maps" | "payments" | "comms" | "logistics" | "webhooks" | "linkedin";
+type TabType = "pools" | "prompts" | "maps" | "payments" | "comms" | "logistics" | "webhooks" | "linkedin" | "gmaps" | "webagent" | "infotravel";
 
 function MasterWhatsAppInstancesPanel({ instances, onChanged }: { instances: WhatsAppChannelInstanceDTO[]; onChanged: () => void }) {
  const [busyId, setBusyId] = useState<string | null>(null);
@@ -474,7 +477,7 @@ function AdminMasterIntegracoesPage() {
  </div>
 
  {/* Navegação por Abas */}
- <div className="flex flex-wrap gap-2 pb-1">
+ <div className="flex flex-nowrap overflow-x-auto no-scrollbar snap-x gap-2 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
  <button
  type="button"
  onClick={() => setActiveTab("pools")}
@@ -482,7 +485,7 @@ function AdminMasterIntegracoesPage() {
  activeTab === "pools"
  ? "bg-foreground text-background shadow-xs"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <Layers className="size-4" />
  <span>Pool de Chaves e Rotação</span>
@@ -495,7 +498,7 @@ function AdminMasterIntegracoesPage() {
  activeTab === "prompts"
  ? "bg-foreground text-background shadow-xs"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <Terminal className="size-4" />
  <span>Prompts Master (IA)</span>
@@ -508,7 +511,7 @@ function AdminMasterIntegracoesPage() {
  activeTab === "maps"
  ? "bg-foreground text-background shadow-xs"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <MapPin className="size-4" />
  <span>Serviços de Mapas</span>
@@ -521,7 +524,7 @@ function AdminMasterIntegracoesPage() {
  activeTab === "payments"
  ? "bg-foreground text-background shadow-xs"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <CreditCard className="size-4" />
  <span>Gateways de Pagamento</span>
@@ -534,7 +537,7 @@ function AdminMasterIntegracoesPage() {
  activeTab === "comms"
  ? "bg-foreground text-background shadow-xs"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <Mail className="size-4" />
  <span>Mensageria</span>
@@ -547,7 +550,7 @@ function AdminMasterIntegracoesPage() {
  activeTab === "webhooks"
  ? "bg-foreground text-background shadow-xs"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <Radio className="size-4" />
  <span>Webhooks</span>
@@ -560,11 +563,51 @@ function AdminMasterIntegracoesPage() {
       activeTab === "linkedin"
         ? "bg-foreground text-background shadow-xs"
         : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
-    }`}
+    } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
   >
     <Linkedin className="size-4 text-primary" />
     <span>LinkedIn Omni-Bridge</span>
     <Badge variant="outline" className="text-[9px] px-2 py-0 border-blue-500/40 text-blue-500 bg-blue-500/10">OAuth 2.0</Badge>
+  </button>
+
+  <button
+    type="button"
+    onClick={() => setActiveTab("gmaps")}
+    className={`flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
+      activeTab === "gmaps"
+        ? "bg-foreground text-background shadow-xs"
+        : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+    } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+  >
+    <MapPin className="size-4" />
+    <span>Google Maps Scraper</span>
+  </button>
+
+  <button
+    type="button"
+    onClick={() => setActiveTab("webagent")}
+    className={`flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
+      activeTab === "webagent"
+        ? "bg-foreground text-background shadow-xs"
+        : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+    } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+  >
+    <Globe2 className="size-4" />
+    <span>Agente Web</span>
+  </button>
+
+  <button
+    type="button"
+    onClick={() => setActiveTab("infotravel")}
+    className={`flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
+      activeTab === "infotravel"
+        ? "bg-foreground text-background shadow-xs"
+        : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+    } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+  >
+    <Plane className="size-4" />
+    <span>Infotravel e Operadoras</span>
+    <Badge variant="outline" className="text-[9px] px-2 py-0 border-sky-500/40 text-sky-500 bg-sky-500/10">Sync</Badge>
   </button>
  </div>
 
@@ -823,7 +866,7 @@ function AdminMasterIntegracoesPage() {
                         isSelected
                           ? "bg-primary/5 border-primary ring-1 ring-primary shadow-2xs"
                           : "bg-muted/20 border-border/70 hover:border-foreground/30 hover:bg-muted/40"
-                      }`}
+                      } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-bold text-foreground leading-tight">
@@ -860,7 +903,7 @@ function AdminMasterIntegracoesPage() {
                   <button
                     type="button"
                     onClick={() => toggleVisibility("google_maps")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     {visibleKeys["google_maps"] ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                   </button>
@@ -886,7 +929,7 @@ function AdminMasterIntegracoesPage() {
                   <button
                     type="button"
                     onClick={() => toggleVisibility("mapbox")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     {visibleKeys["mapbox"] ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                   </button>
@@ -1313,7 +1356,7 @@ function AdminMasterIntegracoesPage() {
      <button
        type="button"
        onClick={() => setVisibleKeys(v => ({ ...v, abacatepay: !v.abacatepay }))}
-       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
      >
        {visibleKeys["abacatepay"] ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
      </button>
@@ -1346,7 +1389,7 @@ function AdminMasterIntegracoesPage() {
      <button
        type="button"
        onClick={() => setVisibleKeys(v => ({ ...v, mercadopago: !v.mercadopago }))}
-       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
      >
        {visibleKeys["mercadopago"] ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
      </button>
@@ -1436,6 +1479,7 @@ function AdminMasterIntegracoesPage() {
   )}
 
   {/* ── ABA 7: LINKEDIN OMNI-BRIDGE (ROOT CREDENTIALS) ── */}
+
   {activeTab === "linkedin" && (
     <div className="space-y-6">
       {/* Frosted Header Card */}
@@ -1559,7 +1603,7 @@ function AdminMasterIntegracoesPage() {
                 <button
                   type="button"
                   onClick={() => setVisibleKeys((v) => ({ ...v, linkedin_secret: !v.linkedin_secret }))}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {visibleKeys["linkedin_secret"] ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
                 </button>
@@ -1581,7 +1625,7 @@ function AdminMasterIntegracoesPage() {
                     navigator.clipboard.writeText(liRedirectUri);
                     toast.success("Redirect URI copiada para a área de transferência!");
                   }}
-                  className="text-[11px] font-semibold text-primary flex items-center gap-1 hover:underline cursor-pointer"
+                  className="text-[11px] font-semibold text-primary flex items-center gap-1 hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <Copy className="size-3" />
                   <span>Copiar</span>
@@ -1672,6 +1716,15 @@ function AdminMasterIntegracoesPage() {
       </form>
     </div>
   )}
+
+  {/* ── ABA: GOOGLE MAPS SCRAPER ── */}
+  {activeTab === "gmaps" && <GmapsScraperPanel />}
+
+  {/* ── ABA: INFOTRAVEL & OPERADORAS ── */}
+  {/* ── ABA: AGENTE WEB & NAVEGAÇÃO ── */}
+  {activeTab === "webagent" && <WebAgentPanel />}
+
+  {activeTab === "infotravel" && <InfotravelIntegrationPanel />}
 
    {/* Modal: Adicionar Chave(s) à Pool */}
  <Dialog open={isNewKeyModalOpen} onOpenChange={setIsNewKeyModalOpen}>

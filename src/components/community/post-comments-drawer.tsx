@@ -70,10 +70,10 @@ export function PostCommentsDrawer({
  return (
  <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
  {/* Backdrop click to close */}
- <div className="flex-1" onClick={onClose} />
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} className="flex-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" onClick={onClose} />
 
  {/* Drawer Container */}
- <div
+ <div /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */
  className="relative w-full max-w-lg mx-auto bg-background sm:rounded-t-lg rounded-t-lg border-t border-border flex flex-col h-[75vh] max-h-[600px] overflow-hidden animate-in slide-in-from-bottom duration-300"
  onClick={(e) => e.stopPropagation()}
  >
@@ -89,7 +89,7 @@ export function PostCommentsDrawer({
  </div>
  <button
  onClick={onClose}
- className="size-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+ className="size-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <X className="size-4" />
  </button>
@@ -159,7 +159,7 @@ export function PostCommentsDrawer({
  setReplyingTo(cmt);
  setCommentText(`@${cmt.author.username || cmt.author.name} `);
  }}
- className="text-[11px] font-semibold text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
+ className="text-[11px] font-semibold text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <CornerDownRight className="size-3" />
  <span>Responder</span>
@@ -179,7 +179,7 @@ export function PostCommentsDrawer({
  </span>
  <button
  onClick={() => setReplyingTo(null)}
- className="text-xs font-bold text-destructive hover:underline"
+ className="text-xs font-bold text-destructive hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  Cancelar
  </button>

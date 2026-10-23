@@ -20,6 +20,10 @@ import {
   BUSINESS_GOAL_OPTIONS,
   BUSINESS_POINT_OPTIONS,
   JOB_REGIME_OPTIONS,
+  AGRI_SUBNICHE_OPTIONS,
+  AGRI_TRACTION_OPTIONS,
+  PHARMACY_SUBNICHE_OPTIONS,
+  EVENT_TYPE_OPTIONS,
 } from "./classified-catalog-types";
 
 export interface ClassifiedFilterSheetProps {

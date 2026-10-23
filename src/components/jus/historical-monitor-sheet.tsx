@@ -282,7 +282,7 @@ export function HistoricalMonitorSheet({
  key={tag}
  type="button"
  onClick={() => toggleTag(tag)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-3 py-1 rounded-lg text-[11px] font-semibold transition-colors border",
  isSelected
  ? "bg-primary text-primary-foreground border-primary"
@@ -310,7 +310,7 @@ export function HistoricalMonitorSheet({
  key={court}
  type="button"
  onClick={() => toggleCourt(court)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-3 py-1 rounded-lg text-[11px] font-mono font-bold transition-colors border",
  isSelected
  ? "bg-primary text-primary-foreground border-primary"

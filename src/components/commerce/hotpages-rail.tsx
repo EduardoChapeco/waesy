@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import type { HotpageDTO } from "@/services/hotpage.functions";
 
 export interface HotpagesRailProps {
@@ -54,7 +55,7 @@ export function HotpagesRail({
 
   return (
     <section className={`w-full ${className}`} aria-label="Experiências e Categorias em Destaque">
-      <div className="-mx-2 px-2 sm:mx-0 sm:px-0 flex gap-3 sm:gap-4 overflow-x-auto no-scrollbar pb-1 snap-x snap-mandatory">
+      <div className="carousel -mx-2 px-2 sm:mx-0 sm:px-0 flex gap-3 sm:gap-4 overflow-x-auto no-scrollbar pb-1 snap-x snap-mandatory">
         {hotpages.map((hp) => {
           const isActive = activeSlug === hp.slug;
           const baseClass = `snap-start group relative flex flex-col w-60 sm:w-76 shrink-0 rounded-lg transition-transform duration-150 active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
@@ -67,7 +68,7 @@ export function HotpagesRail({
                 key={hp.id}
                 type="button"
                 onClick={() => onSelect(hp.slug)}
-                className={baseClass}
+                className={cn(baseClass, "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary")}
                 aria-label={hp.title || "Categoria"}
               >
                 <HotpageCardContent hp={hp} cleanMode={cleanMode} />
@@ -83,7 +84,7 @@ export function HotpagesRail({
               to={target.to as any}
               params={target.params as any}
               search={target.search as any}
-              className={baseClass}
+              className={cn(baseClass, "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary")}
               aria-label={hp.title || "Categoria"}
             >
               <HotpageCardContent hp={hp} cleanMode={cleanMode} />

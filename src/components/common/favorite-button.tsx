@@ -144,7 +144,7 @@ export function FavoriteButton(props: FavoriteButtonProps) {
       type="button"
       onClick={handleClick}
       disabled={mutation.isPending}
-      className={cn(
+      className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
         "size-8 rounded-lg flex items-center justify-center transition-all cursor-pointer select-none",
         "bg-background/80 hover:bg-background backdrop-blur-md border border-border/50 shadow-xs",
         "hover:scale-105 active:scale-95 active:shadow-none",

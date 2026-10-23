@@ -107,7 +107,7 @@ function CityPickerPanel({
           <button
             type="button"
             onClick={() => setSearchQuery("")}
-            className="absolute right-7 top-1/2 -translate-y-1/2 size-7 flex items-center justify-center text-muted-foreground hover:text-foreground rounded-full transition-colors"
+            className="absolute right-7 top-1/2 -translate-y-1/2 size-7 flex items-center justify-center text-muted-foreground hover:text-foreground rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <X className="size-4" />
           </button>
@@ -122,7 +122,7 @@ function CityPickerPanel({
               key={city.id}
               type="button"
               onClick={() => { onSelect(city); onClose(); }}
-              className={cn(
+              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                 "shrink-0 h-8 px-3 rounded-lg text-xs font-semibold border transition-all cursor-pointer",
                 selectedCity?.id === city.id
                   ? "bg-primary text-primary-foreground border-primary"
@@ -145,7 +145,7 @@ function CityPickerPanel({
                 key={city.id}
                 type="button"
                 onClick={() => { onSelect(city); onClose(); }}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "w-full flex items-center justify-between gap-3 px-3 py-3 rounded-lg text-left cursor-pointer transition-colors",
                   isSelected
                     ? "bg-primary/10 text-primary"
@@ -297,7 +297,7 @@ export function CityCombobox({
           <button
             type="button"
             onClick={handleAutoFill}
-            className="flex-shrink-0 text-[11px] text-primary hover:underline font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+            className="flex-shrink-0 text-[11px] text-primary hover:underline font-semibold flex items-center gap-1 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Crosshair className="size-3" />
             <span>Usar {masterLoc.city}</span>
@@ -373,7 +373,7 @@ export function CityCombobox({
                         key={id}
                         type="button"
                         onClick={() => { handleSelectCity(city); setDesktopOpen(false); }}
-                        className={cn(
+                        className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                           "shrink-0 h-7 px-3 rounded-lg text-[11px] font-semibold border transition-all cursor-pointer",
                           selectedCity?.id === id
                             ? "bg-primary text-primary-foreground border-primary"
@@ -396,7 +396,7 @@ export function CityCombobox({
                       key={city.id}
                       type="button"
                       onClick={() => { handleSelectCity(city); setDesktopOpen(false); }}
-                      className={cn(
+                      className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                         "w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-xs cursor-pointer transition-colors text-left",
                         isSelected
                           ? "bg-primary/10 text-primary font-bold"

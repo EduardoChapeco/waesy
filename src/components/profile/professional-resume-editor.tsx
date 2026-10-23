@@ -455,7 +455,7 @@ export function ProfessionalResumeEditor({
  <button
  type="button"
  onClick={() => handleRemoveSkill(skill)}
- className="size-4 rounded-full flex items-center justify-center hover:bg-destructive/20 hover:text-destructive text-muted-foreground transition-colors cursor-pointer"
+ className="size-4 rounded-full flex items-center justify-center hover:bg-destructive/20 hover:text-destructive text-muted-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <X className="size-2.5" />
  </button>
@@ -1264,7 +1264,7 @@ export function ProfessionalResumeEditor({
                 linkedInActiveTab === "oauth"
                   ? "border-primary text-primary"
                   : "border-transparent text-muted-foreground hover:text-foreground"
-              }`}
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
             >
               Conexão Direta (OAuth 2.0)
             </button>
@@ -1275,7 +1275,7 @@ export function ProfessionalResumeEditor({
                 linkedInActiveTab === "json"
                   ? "border-primary text-primary"
                   : "border-transparent text-muted-foreground hover:text-foreground"
-              }`}
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
             >
               Colar Dados / JSON
             </button>
@@ -1320,7 +1320,7 @@ export function ProfessionalResumeEditor({
                   <button
                     type="button"
                     onClick={handleLoadExampleLinkedInJson}
-                    className="text-xs font-semibold text-primary hover:underline cursor-pointer"
+                    className="text-xs font-semibold text-primary hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     Usar exemplo de teste
                   </button>
@@ -1765,7 +1765,7 @@ function ExperienceEditSheet({
                       key={s.id}
                       type="button"
                       onClick={() => handleSelectStore(s)}
-                      className="w-full text-left p-2 rounded-lg hover:bg-muted text-xs flex items-center gap-2 cursor-pointer"
+                      className="w-full text-left p-2 rounded-lg hover:bg-muted text-xs flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       {s.logo_url && <img src={s.logo_url} alt="" className="size-5 rounded-md object-cover" />}
                       <span className="font-bold">{s.name}</span>
@@ -1911,7 +1911,7 @@ function ExperienceEditSheet({
                       key={star}
                       type="button"
                       onClick={() => setCompanyRating(star === companyRating ? 0 : star)}
-                      className="p-1 rounded-lg hover:bg-muted transition-colors cursor-pointer"
+                      className="p-1 rounded-lg hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       title={`${star} estrela${star > 1 ? "s" : ""}`}
                     >
                       <Star
@@ -2704,7 +2704,7 @@ function ProjectEditSheet({
  <button
  type="button"
  onClick={() => setMediaUrls((prev) => prev.filter((_, i) => i !== idx))}
- className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white"
+ className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Trash2 className="size-4" />
  </button>
@@ -2915,7 +2915,7 @@ function CausesEditSheet({
  key={cause}
  type="button"
  onClick={() => toggleCause(cause)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "w-full text-left p-4 rounded-lg border transition-all flex items-center justify-between text-xs font-semibold cursor-pointer",
  isChecked
  ? "bg-primary/10 border-primary text-primary"

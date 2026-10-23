@@ -263,7 +263,7 @@ function AdminDenunciasPage() {
  )}
 
  {/* SheetPage de Julgamento & Parecer de Moderação */}
- <SheetPage
+ <SheetPage /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  open={!!selectedReport && !!actionType}
  onOpenChange={(open) => {
  if (!open) {

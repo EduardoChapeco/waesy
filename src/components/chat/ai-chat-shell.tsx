@@ -25,6 +25,9 @@ import {
   Calendar,
   Trash2,
   Compass,
+  Zap,
+  Link2,
+  TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -43,6 +46,11 @@ import { CopilotApprovalPanel } from "./copilot-approval-panel";
 import { CopilotMessageRenderer } from "./copilot-message-renderer";
 import { CopilotArtifactPanel } from "./copilot-artifact-panel";
 import type { CopilotFsmPhase, CopilotFsmExecutionState } from "@/types/copilot-fsm";
+import { CopilotSkillsCenter } from "./copilot-skills-center";
+import { CopilotBackgroundTasksDrawer } from "./copilot-background-tasks-drawer";
+import { CopilotScheduledTasksView } from "./copilot-scheduled-tasks-view";
+import { CopilotConnectorsCenter } from "./copilot-connectors-center";
+import { CopilotAnalyticsDashboard } from "./copilot-analytics-dashboard";
 
 export type ThreadType = "store" | "direct_p2p" | "support" | "project" | "ai_assistant";
 
@@ -127,6 +135,10 @@ export function AIChatShell({
   mobileFallbackHref,
 }: AIChatShellProps) {
   // Estados de navegação e busca
+  const [viewMode, setViewMode] = useState<
+    "chat" | "skills" | "schedule" | "connectors" | "analytics"
+  >("chat");
+  const [tasksDrawerOpen, setTasksDrawerOpen] = useState(false);
   const [filterTab, setFilterTab] = useState<"all" | "direct" | "projects" | "archived">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [replyTo, setReplyTo] = useState<QuotedMessage | null>(null);
@@ -360,7 +372,120 @@ export function AIChatShell({
           showMobileChat === false && "hidden md:flex"
         )}
       >
-        {activeThread ? (
+        {/* ── RÉGUA DE NAVEGAÇÃO CANÔNICA DO COPILOT ── */}
+        <div className="flex items-center justify-between px-3 py-2 border-b border-border/40 bg-card/60 backdrop-blur-md gap-2 shrink-0 overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-1.5 min-w-max">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setViewMode("chat")}
+              className={cn(
+                "h-11 min-h-11 px-3.5 rounded-xl text-xs font-semibold cursor-pointer gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                viewMode === "chat"
+                  ? "bg-primary text-primary-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              )}
+            >
+              <MessageSquare className="size-4" />
+              <span>Conversa</span>
+            </Button>
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setViewMode("skills")}
+              className={cn(
+                "h-11 min-h-11 px-3.5 rounded-xl text-xs font-semibold cursor-pointer gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                viewMode === "skills"
+                  ? "bg-primary text-primary-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              )}
+            >
+              <Zap className="size-4" />
+              <span>Habilidades</span>
+            </Button>
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setTasksDrawerOpen(true)}
+              className="h-11 min-h-11 px-3.5 rounded-xl text-xs font-semibold cursor-pointer gap-2 transition-colors text-muted-foreground hover:text-foreground hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            >
+              <Clock className="size-4" />
+              <span>Tarefas</span>
+            </Button>
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setViewMode("schedule")}
+              className={cn(
+                "h-11 min-h-11 px-3.5 rounded-xl text-xs font-semibold cursor-pointer gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                viewMode === "schedule"
+                  ? "bg-primary text-primary-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              )}
+            >
+              <Calendar className="size-4" />
+              <span>Agendamentos</span>
+            </Button>
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setViewMode("connectors")}
+              className={cn(
+                "h-11 min-h-11 px-3.5 rounded-xl text-xs font-semibold cursor-pointer gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                viewMode === "connectors"
+                  ? "bg-primary text-primary-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              )}
+            >
+              <Link2 className="size-4" />
+              <span>Conectores</span>
+            </Button>
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setViewMode("analytics")}
+              className={cn(
+                "h-11 min-h-11 px-3.5 rounded-xl text-xs font-semibold cursor-pointer gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                viewMode === "analytics"
+                  ? "bg-primary text-primary-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              )}
+            >
+              <TrendingUp className="size-4" />
+              <span>Métricas</span>
+            </Button>
+          </div>
+        </div>
+
+        {/* Conteúdo Renderizado conforme o ViewMode Ativo */}
+        {viewMode === "skills" ? (
+          <div className="flex-1 overflow-y-auto no-scrollbar">
+            <CopilotSkillsCenter onSelectSkill={() => setViewMode("chat")} />
+          </div>
+        ) : viewMode === "schedule" ? (
+          <div className="flex-1 overflow-y-auto no-scrollbar">
+            <CopilotScheduledTasksView />
+          </div>
+        ) : viewMode === "connectors" ? (
+          <div className="flex-1 overflow-y-auto no-scrollbar">
+            <CopilotConnectorsCenter />
+          </div>
+        ) : viewMode === "analytics" ? (
+          <div className="flex-1 overflow-y-auto no-scrollbar">
+            <CopilotAnalyticsDashboard />
+          </div>
+        ) : activeThread ? (
           <>
             {/* Cabeçalho da Conversa Ativa */}
             <header className="flex items-center justify-between px-3 py-2 border-b border-border/40 bg-background/80 backdrop-blur-md sticky top-0 z-10 gap-2 shrink-0">
@@ -854,6 +979,8 @@ export function AIChatShell({
           )}
         </SheetContent>
       </Sheet>
+      {/* ── GAVETA DE TAREFAS EM SEGUNDO PLANO E LIVE SANDBOX ── */}
+      <CopilotBackgroundTasksDrawer open={tasksDrawerOpen} onOpenChange={setTasksDrawerOpen} />
     </div>
   );
 }

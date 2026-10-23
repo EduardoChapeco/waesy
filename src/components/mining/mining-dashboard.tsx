@@ -1009,7 +1009,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                   key={chip}
                   type="button"
                   onClick={() => handleBenchmark(chip)}
-                  className="text-xs px-2 py-1 rounded-md border border-border/40 hover:bg-muted/30 text-muted-foreground transition-colors cursor-pointer"
+                  className="text-xs px-2 py-1 rounded-md border border-border/40 hover:bg-muted/30 text-muted-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {chip}
                 </button>

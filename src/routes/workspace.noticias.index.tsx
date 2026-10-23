@@ -206,7 +206,7 @@ function WorkspaceNoticiasIndexPage() {
  return (
  <div className="w-full space-y-6">
  {/* Header */}
- <PageHeader
+ <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  title="Notícias"
  actions={
  <div className="flex items-center gap-2">

@@ -306,7 +306,7 @@ function PdvComandasPage() {
  key={table.table_number}
  type="button"
  onClick={() => handleTableClick(table)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "relative flex flex-col justify-between p-4 sm:p-4 rounded-lg border text-left transition-all cursor-pointer min-h-[120px] select-none group active:scale-98",
  config.cardClass,
  )}
@@ -626,7 +626,7 @@ function PdvComandasPage() {
  key={count}
  type="button"
  onClick={() => setSplitCount(count)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "py-2 rounded-lg text-xs font-bold border transition-colors cursor-pointer text-center",
  splitCount === count
  ? "bg-primary text-primary-foreground border-primary"

@@ -254,15 +254,7 @@ export interface UniversalClassifiedShowcaseProps {
   similarAds?: any[];
 }
 
-export type ClassifiedTemplateStyle =
-  | "standard"
-  | "editorial"
-  | "automotivo"
-  | "imobiliario"
-  | "resort_hotel"
-  | "servicos_agenda"
-  | "conveniencia"
-  | "instagram_resort";
+export type { ClassifiedTemplateStyle } from "@/lib/classifieds/canonical-taxonomy";
 
 export type ClassifiedDisplayMode = "tabs" | "continuous_list";
 

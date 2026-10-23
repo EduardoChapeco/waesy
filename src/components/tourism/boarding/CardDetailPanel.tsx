@@ -376,7 +376,7 @@ export function CardDetailPanel({
                       activeTab === tab.id
                         ? 'border-primary text-primary'
                         : 'border-transparent text-muted-foreground hover:text-foreground'
-                    }`}
+                    } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                   >
                     {tab.label}
                   </button>
@@ -412,7 +412,7 @@ export function CardDetailPanel({
                             <button
                               type="button"
                               onClick={() => toggleMutation.mutate({ item_id: item.id, is_completed: !item.is_completed })}
-                              className="flex items-center gap-3 text-left flex-1 min-w-0 cursor-pointer min-h-11 py-1"
+                              className="flex items-center gap-3 text-left flex-1 min-w-0 cursor-pointer min-h-11 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
                               {item.is_completed ? (
                                 <CheckCircle2 className="size-4 text-emerald-500 shrink-0" />

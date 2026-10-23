@@ -66,7 +66,7 @@ export function MomentDetailDrawer({ moment, onClose }: MomentDetailDrawerProps)
  <button
  type="button"
  onClick={onClose}
- className="absolute top-3 right-3 size-8 rounded-full bg-black/60 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/80 transition-all cursor-pointer z-10"
+ className="absolute top-3 right-3 size-8 rounded-full bg-black/60 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/80 transition-all cursor-pointer z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  aria-label="Fechar momento"
  >
  <X size={16} weight="bold" />

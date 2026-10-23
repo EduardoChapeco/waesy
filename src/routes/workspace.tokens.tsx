@@ -566,7 +566,7 @@ export default function WorkspaceTokensPage() {
  paymentMethod === "pix"
  ? "border-primary bg-primary/5 text-foreground font-semibold"
  : "border-border/60 text-muted-foreground"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  Pix Imediato
  </button>
@@ -577,7 +577,7 @@ export default function WorkspaceTokensPage() {
  paymentMethod === "credit_card"
  ? "border-primary bg-primary/5 text-foreground font-semibold"
  : "border-border/60 text-muted-foreground"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  Cartão de Crédito
  </button>

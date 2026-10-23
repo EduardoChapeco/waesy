@@ -121,7 +121,7 @@ export function MasterCatalogSearchDialog({
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <X className="size-4" />
               </button>
@@ -139,7 +139,7 @@ export function MasterCatalogSearchDialog({
                   selectedCategory === cat.id
                     ? "bg-primary text-primary-foreground shadow-2xs"
                     : "bg-muted/60 text-muted-foreground hover:text-foreground hover:bg-muted"
-                }`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 {cat.label}
               </button>

@@ -217,7 +217,7 @@ export function CurriculoGeneratorModal({
                 <button
                   type="button"
                   onClick={() => setFormat("a4")}
-                  className={cn(
+                  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                     "flex flex-col items-center justify-center p-3 rounded-lg border text-xs font-semibold gap-2 transition-all cursor-pointer",
                     format === "a4"
                       ? "bg-primary/10 border-primary text-primary shadow-xs"
@@ -231,7 +231,7 @@ export function CurriculoGeneratorModal({
                 <button
                   type="button"
                   onClick={() => setFormat("story")}
-                  className={cn(
+                  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                     "flex flex-col items-center justify-center p-3 rounded-lg border text-xs font-semibold gap-2 transition-all cursor-pointer",
                     format === "story"
                       ? "bg-primary/10 border-primary text-primary shadow-xs"
@@ -260,7 +260,7 @@ export function CurriculoGeneratorModal({
                     key={t.id}
                     type="button"
                     onClick={() => setTemplate(t.id as CurriculoTemplate)}
-                    className={cn(
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "h-8 px-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer truncate",
                       template === t.id
                         ? "bg-primary text-primary-foreground border-primary"
@@ -285,7 +285,7 @@ export function CurriculoGeneratorModal({
                     type="button"
                     onClick={() => setAccentColor(c)}
                     title={c.label}
-                    className={cn(
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "size-7 rounded-full transition-transform cursor-pointer flex items-center justify-center ring-2",
                       c.class,
                       accentColor.id === c.id ? "ring-primary scale-110" : "ring-transparent opacity-70 hover:opacity-100"
@@ -426,7 +426,7 @@ export function CurriculoGeneratorModal({
                 <button
                   type="button"
                   onClick={handleCopyLink}
-                  className="size-6 p-0 hover:text-primary cursor-pointer shrink-0 ml-1"
+                  className="size-6 p-0 hover:text-primary cursor-pointer shrink-0 ml-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <Copy className="size-3.5" />
                 </button>

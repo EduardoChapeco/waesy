@@ -564,7 +564,7 @@ export function ProfileInPageEditor({
       <div className="w-full space-y-6 animate-in fade-in duration-200">
         {/* Header do Editor In-Page com Título e Ação de Fechar */}
         <div className="flex items-center justify-between pb-4 border-b border-border/40">
-          <div className="space-y-0.5">
+          <div className="space-y-1">
             <div className="flex items-center gap-2">
               {isBrandPersonaView ? (
                 <Building2 className="size-5 text-primary" />
@@ -585,7 +585,7 @@ export function ProfileInPageEditor({
             type="button"
             variant="outline"
             onClick={onClose}
-            className="h-10 px-4 rounded-lg text-xs font-semibold gap-1.5 cursor-pointer border-border/70 hover:bg-muted/40"
+            className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer border-border/70 hover:bg-muted/40"
           >
             <X className="size-4" />
             <span>Fechar</span>
@@ -595,7 +595,7 @@ export function ProfileInPageEditor({
           {/* ── 1. Banner de Claridade de Identidade (Padrão Canônico das Imagens 1 e 2) ── */}
           <div className="rounded-lg border border-border/60 bg-muted/30 p-4 sm:p-5 flex items-start justify-between gap-4 text-xs text-foreground">
             <div className="flex items-start gap-3 min-w-0">
-              <div className="size-9 rounded-lg bg-card border border-border/50 text-foreground flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+              <div className="size-9 rounded-lg bg-card border border-border/50 text-foreground flex items-center justify-center shrink-0 mt-1 shadow-2xs">
                 {isBrandPersonaView ? (
                   <Sparkles className="size-5 text-primary" />
                 ) : (
@@ -607,7 +607,7 @@ export function ProfileInPageEditor({
                   <h3 className="font-bold text-foreground text-sm">
                     {isBrandPersonaView ? "Perfil de Marca" : "Conta Civil"}
                   </h3>
-                  <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary">
+                  <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary">
                     {isBrandPersonaView ? "Marca Oficial" : "Perfil Oficial"}
                   </Badge>
                 </div>
@@ -622,7 +622,7 @@ export function ProfileInPageEditor({
 
           {/* ── 2. Régua Horizontal Canônica de Abas (B.39) ── */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <div className="flex items-center overflow-x-auto no-scrollbar pb-1">
+            <div className="tab-list flex items-center overflow-x-auto no-scrollbar pb-1">
               <TabsList className="bg-transparent p-0 gap-2 h-auto flex flex-nowrap">
                 <TabsTrigger
                   value="identidade"
@@ -679,7 +679,7 @@ export function ProfileInPageEditor({
                     <Camera className="size-4 text-primary shrink-0" />
                     <span>Identidade Visual</span>
                   </div>
-                  <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary">
+                  <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary">
                     1:1 Squircle + 21:9 Panorâmica
                   </Badge>
                 </div>
@@ -706,11 +706,11 @@ export function ProfileInPageEditor({
                       type="button"
                       onClick={() => avatarInputRef.current?.click()}
                       disabled={isUploadingMedia}
-                      className="absolute inset-0 bg-black/40 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-xs font-semibold gap-1 cursor-pointer"
+                      className="absolute inset-0 bg-background/80 text-foreground rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-xs font-semibold gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       title="Alterar Foto de Perfil (1:1)"
                     >
                       <Camera className="size-4 sm:size-5" />
-                      <span className="text-[10px]">Alterar</span>
+                      <span className="text-xs">Alterar</span>
                     </button>
                     <input
                       ref={avatarInputRef}
@@ -730,7 +730,7 @@ export function ProfileInPageEditor({
                         className="size-full object-cover select-none"
                       />
                     ) : (
-                      <div className="size-full bg-gradient-to-r from-muted to-muted/60 flex items-center justify-center text-muted-foreground p-3 text-center">
+                      <div className="size-full bg-muted/40 flex items-center justify-center text-muted-foreground p-3 text-center">
                         <span className="text-xs font-medium">Sem imagem de capa (Proporção 21:9)</span>
                       </div>
                     )}
@@ -742,7 +742,7 @@ export function ProfileInPageEditor({
                         variant="secondary"
                         onClick={() => coverInputRef.current?.click()}
                         disabled={isUploadingMedia}
-                        className="bg-background/85 hover:bg-background text-foreground backdrop-blur-md border border-border/80 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs h-9 min-h-9"
+                        className="bg-background/85 hover:bg-background text-foreground backdrop-blur-md border border-border/80 px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-xs h-11 min-h-11"
                       >
                         <Camera className="size-3.5" />
                         <span className="hidden sm:inline">Alterar Capa (21:9)</span>
@@ -755,7 +755,7 @@ export function ProfileInPageEditor({
                           variant="destructive"
                           onClick={() => setCoverUrl("")}
                           disabled={isUploadingMedia}
-                          className="bg-destructive/85 hover:bg-destructive text-destructive-foreground px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center cursor-pointer h-9 min-h-9"
+                          className="bg-destructive/85 hover:bg-destructive text-destructive-foreground px-3 py-2 rounded-lg text-xs font-semibold flex items-center cursor-pointer h-11 min-h-11 min-w-11"
                           title="Remover Capa"
                         >
                           <Trash2 className="size-3.5" />
@@ -777,7 +777,7 @@ export function ProfileInPageEditor({
                     <button
                       type="button"
                       onClick={() => setCoverUrl("")}
-                      className="text-xs text-muted-foreground hover:text-destructive cursor-pointer transition-colors"
+                      className="text-xs text-muted-foreground hover:text-destructive cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       Remover Imagem de Capa
                     </button>
@@ -794,7 +794,7 @@ export function ProfileInPageEditor({
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs font-semibold">
                       {isBrandPersonaView ? "Nome da Marca / Razão Social *" : "Nome Completo *"}
                     </Label>
@@ -806,7 +806,7 @@ export function ProfileInPageEditor({
                     />
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs font-semibold">Nome de Usuário (@) *</Label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-mono">
@@ -821,12 +821,12 @@ export function ProfileInPageEditor({
                         className="h-11 pl-7 rounded-lg text-xs font-mono"
                       />
                     </div>
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Seu identificador único na rede comunitária.
                     </p>
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs font-semibold">
                       {isBrandPersonaView ? "Documento (CNPJ ou CPF)" : "CPF (Pessoa Física)"}
                     </Label>
@@ -836,12 +836,12 @@ export function ProfileInPageEditor({
                       placeholder={isBrandPersonaView ? "00.000.000/0000-00" : "000.000.000-00"}
                       className="h-11 rounded-lg text-xs font-mono"
                     />
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Necessário para emissão de notas fiscais, contratos e validações de segurança.
                     </p>
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs font-semibold">Telefone / WhatsApp</Label>
                     <Input
                       value={phone}
@@ -849,14 +849,14 @@ export function ProfileInPageEditor({
                       placeholder="(00) 00000-0000"
                       className="h-11 rounded-lg text-xs font-mono"
                     />
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Para confirmações de atendimento, pedidos e segurança em dois fatores.
                     </p>
                   </div>
 
                   {!isBrandPersonaView ? (
                     <>
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <Label className="text-xs font-semibold">Data de Nascimento</Label>
                         <Input
                           type="date"
@@ -866,7 +866,7 @@ export function ProfileInPageEditor({
                         />
                       </div>
 
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <Label className="text-xs font-semibold">Gênero</Label>
                         <Select
                           value={gender}
@@ -885,7 +885,7 @@ export function ProfileInPageEditor({
                       </div>
                     </>
                   ) : (
-                    <div className="space-y-1.5 sm:col-span-2">
+                    <div className="space-y-2 sm:col-span-2">
                       <Label className="text-xs font-semibold">Categoria / Nicho de Atuação</Label>
                       <Input
                         value={occupation}
@@ -896,7 +896,7 @@ export function ProfileInPageEditor({
                     </div>
                   )}
 
-                  <div className="space-y-1.5 sm:col-span-2">
+                  <div className="space-y-2 sm:col-span-2">
                     <Label className="text-xs font-semibold">Localização (Cidade e Estado)</Label>
                     <CitySelect
                       stateValue={state}
@@ -906,14 +906,14 @@ export function ProfileInPageEditor({
                     />
                   </div>
 
-                  <div className="space-y-1.5 sm:col-span-2">
+                  <div className="space-y-2 sm:col-span-2">
                     <div className="flex items-center justify-between">
                       <Label className="text-xs font-semibold">
                         {isBrandPersonaView ? "Biografia da Marca (Apresentação)" : "Biografia Pública"}
                       </Label>
                       <span
                         className={cn(
-                          "text-[10px] font-mono",
+                          "text-xs font-mono",
                           charsRemaining < 20 ? "text-destructive font-bold" : "text-muted-foreground"
                         )}
                       >
@@ -962,7 +962,7 @@ export function ProfileInPageEditor({
                       <Sparkles className="size-4 text-primary shrink-0" />
                       <span>Banner Promocional da Vitrine</span>
                     </div>
-                    <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary">
+                    <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary">
                       16:9 Widescreen
                     </Badge>
                   </div>
@@ -988,7 +988,7 @@ export function ProfileInPageEditor({
                         variant="secondary"
                         onClick={() => showcaseBannerInputRef.current?.click()}
                         disabled={isUploadingMedia}
-                        className="bg-background/85 hover:bg-background text-foreground backdrop-blur-md border border-border/80 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs h-9 min-h-9"
+                        className="bg-background/85 hover:bg-background text-foreground backdrop-blur-md border border-border/80 px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-xs h-11 min-h-11"
                       >
                         <Camera className="size-3.5" />
                         <span>Alterar Banner (16:9)</span>
@@ -1000,7 +1000,7 @@ export function ProfileInPageEditor({
                           variant="destructive"
                           onClick={() => setShowcaseBannerUrl("")}
                           disabled={isUploadingMedia}
-                          className="bg-destructive/85 hover:bg-destructive text-destructive-foreground px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center cursor-pointer h-9 min-h-9"
+                          className="bg-destructive/85 hover:bg-destructive text-destructive-foreground px-3 py-2 rounded-lg text-xs font-semibold flex items-center cursor-pointer h-11 min-h-11 min-w-11"
                           title="Remover Banner"
                         >
                           <Trash2 className="size-3.5" />
@@ -1017,7 +1017,7 @@ export function ProfileInPageEditor({
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label className="text-xs font-semibold">Título / Chamada da Campanha</Label>
                       <Input
                         value={showcaseBannerTitle}
@@ -1026,7 +1026,7 @@ export function ProfileInPageEditor({
                         className="h-11 rounded-lg text-xs"
                       />
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label className="text-xs font-semibold">Link de Destino do Banner</Label>
                       <Input
                         value={showcaseBannerLink}
@@ -1064,11 +1064,11 @@ export function ProfileInPageEditor({
                                   : "border-border/60 bg-muted/20"
                               )}
                             >
-                              <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="flex items-center gap-3 min-w-0">
                                 <Store className="size-4 text-primary shrink-0" />
                                 <div className="min-w-0">
                                   <p className="text-xs font-bold text-foreground truncate">{st.name}</p>
-                                  <p className="text-[11px] text-muted-foreground truncate">{st.city || "SC"}</p>
+                                  <p className="text-xs text-muted-foreground truncate">{st.city || "SC"}</p>
                                 </div>
                               </div>
                               <Switch
@@ -1108,11 +1108,11 @@ export function ProfileInPageEditor({
                                   : "border-border/60 bg-muted/20"
                               )}
                             >
-                              <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="flex items-center gap-3 min-w-0">
                                 <Store className="size-4 text-primary shrink-0" />
                                 <div className="min-w-0">
                                   <p className="text-xs font-bold text-foreground truncate">{st.name}</p>
-                                  <p className="text-[11px] text-muted-foreground truncate">{st.segment || "Parceiro"}</p>
+                                  <p className="text-xs text-muted-foreground truncate">{st.segment || "Parceiro"}</p>
                                 </div>
                               </div>
                               <Button
@@ -1120,7 +1120,7 @@ export function ProfileInPageEditor({
                                 size="sm"
                                 variant={isConnected ? "default" : "outline"}
                                 onClick={() => handleTogglePartnerStore(st.id)}
-                                className="h-9 px-3 rounded-lg text-xs font-semibold cursor-pointer"
+                                className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer"
                               >
                                 {isConnected ? "Conectada" : "Conectar"}
                               </Button>
@@ -1156,7 +1156,7 @@ export function ProfileInPageEditor({
                             variant="ghost"
                             disabled={index === 0}
                             onClick={() => handleMoveShowcaseSection(index, "up")}
-                            className="size-8 p-0 rounded-lg cursor-pointer disabled:opacity-30"
+                            className="size-11 min-h-11 min-w-11 p-0 rounded-lg cursor-pointer disabled:opacity-30"
                           >
                             <ArrowUp className="size-4" />
                           </Button>
@@ -1166,7 +1166,7 @@ export function ProfileInPageEditor({
                             variant="ghost"
                             disabled={index === showcaseOrder.length - 1}
                             onClick={() => handleMoveShowcaseSection(index, "down")}
-                            className="size-8 p-0 rounded-lg cursor-pointer disabled:opacity-30"
+                            className="size-11 min-h-11 min-w-11 p-0 rounded-lg cursor-pointer disabled:opacity-30"
                           >
                             <ArrowDown className="size-4" />
                           </Button>
@@ -1191,7 +1191,7 @@ export function ProfileInPageEditor({
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs font-semibold">Instagram (@handle)</Label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-mono">
@@ -1208,7 +1208,7 @@ export function ProfileInPageEditor({
                     </div>
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label className="text-xs font-semibold">Website Oficial</Label>
                     <Input
                       value={website}
@@ -1238,14 +1238,14 @@ export function ProfileInPageEditor({
                         <p className="text-xs font-bold text-foreground truncate">
                           {link.label || link.title}
                         </p>
-                        <p className="text-[11px] text-muted-foreground font-mono truncate">{link.url}</p>
+                        <p className="text-xs text-muted-foreground font-mono truncate">{link.url}</p>
                       </div>
                       <Button
                         type="button"
                         size="sm"
                         variant="ghost"
                         onClick={() => handleRemoveBiolink(link.id)}
-                        className="text-muted-foreground hover:text-destructive h-9 px-2.5 rounded-lg cursor-pointer"
+                        className="text-muted-foreground hover:text-destructive h-11 min-h-11 px-3 rounded-lg cursor-pointer"
                       >
                         <Trash2 className="size-4" />
                       </Button>
@@ -1299,7 +1299,7 @@ export function ProfileInPageEditor({
                   <div className="flex items-center justify-between gap-4 p-3 rounded-lg border border-border/40 bg-muted/20">
                     <div>
                       <p className="text-xs font-bold text-foreground">Perfil Anônimo</p>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Oculta seu nome em buscas públicas comunitárias.
                       </p>
                     </div>
@@ -1312,7 +1312,7 @@ export function ProfileInPageEditor({
                   <div className="flex items-center justify-between gap-4 p-3 rounded-lg border border-border/40 bg-muted/20">
                     <div>
                       <p className="text-xs font-bold text-foreground">Ocultar Minha Cidade</p>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Não exibe sua localização geográfica no cabeçalho do perfil público.
                       </p>
                     </div>
@@ -1345,7 +1345,7 @@ export function ProfileInPageEditor({
             >
               {isSaving ? (
                 <>
-                  <Loader2 className="size-4 animate-spin" />
+                  <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                   <span>Salvando...</span>
                 </>
               ) : (

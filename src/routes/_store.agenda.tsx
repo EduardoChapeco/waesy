@@ -453,7 +453,7 @@ function AgendaPadronizadaPage() {
                   <button
                     type="button"
                     onClick={() => setSelectedDate("all")}
-                    className="text-xs font-semibold text-primary hover:underline cursor-pointer"
+                    className="text-xs font-semibold text-primary hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     Limpar data
                   </button>

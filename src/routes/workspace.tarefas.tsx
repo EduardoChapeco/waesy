@@ -296,6 +296,7 @@ function WorkspaceTasksPage() {
             <div className="space-y-2">
               {pendingTasks.map((task) => (
                 <TaskItemCard
+                  className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   key={task.id}
                   task={task}
                   onToggleStatus={handleToggleStatus}
@@ -333,6 +334,7 @@ function WorkspaceTasksPage() {
 
                 {completedTasks.map((task) => (
                   <TaskItemCard
+                    className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     key={task.id}
                     task={task}
                     onToggleStatus={handleToggleStatus}

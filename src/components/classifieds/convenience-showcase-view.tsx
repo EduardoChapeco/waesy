@@ -654,15 +654,15 @@ export function ConvenienceShowcaseView({
           <div>
             <div className="flex items-baseline gap-2">
               {discountResult.activeTier && (
-                <span className="text-sm sm:text-base text-muted-foreground line-through font-mono">
+                <span className="text-sm sm:text-base text-muted-foreground line-through font-mono whitespace-nowrap tabular-nums">
                   {formatMoney(baseUnitPriceCents)}
                 </span>
               )}
-              <span className="text-2xl sm:text-3xl font-black text-foreground font-mono tracking-tight">
+              <span className="text-2xl sm:text-3xl font-black text-foreground font-mono tracking-tight whitespace-nowrap tabular-nums">
                 {effectiveUnitPriceCents > 0 ? formatMoney(effectiveUnitPriceCents) : "Preço sob consulta"}
               </span>
             </div>
-            <span className="text-xs text-muted-foreground font-mono">
+            <span className="text-xs text-muted-foreground font-mono whitespace-nowrap">
               {isFreshPricingActive && pricingMode === "weight"
                 ? `/ ${weightGrams >= 1000 ? `${(weightGrams / 1000).toFixed(1)}kg` : `${weightGrams}g`}`
                 : unitSuffix
@@ -672,13 +672,13 @@ export function ConvenienceShowcaseView({
           </div>
 
           {discountResult.activeTier ? (
-            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
               {discountResult.activeTier.discount_type === "percentage"
                 ? `${discountResult.activeTier.discount_value}% OFF`
                 : `${formatMoney(discountResult.activeTier.discount_value)} OFF`}
             </span>
           ) : acceptsPix && pixDiscountPercent > 0 && effectiveUnitPriceCents > 0 ? (
-            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
               {pixDiscountPercent}% OFF no Pix
             </span>
           ) : null}
@@ -687,14 +687,14 @@ export function ConvenienceShowcaseView({
         {acceptsPix && pixDiscountPercent > 0 && effectiveUnitPriceCents > 0 && (
           <div className="text-xs text-emerald-700 dark:text-emerald-400 font-medium flex items-center gap-2">
             <span>
-              Sai por <strong>{formatMoney(pixPriceCents)}</strong> à vista no Pix
+              Sai por <strong className="whitespace-nowrap tabular-nums">{formatMoney(pixPriceCents)}</strong> à vista no Pix
             </span>
           </div>
         )}
 
         {discountResult.totalSavedCents > 0 && (
           <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-            Economia de <strong>{formatMoney(discountResult.totalSavedCents)}</strong> com desconto progressivo
+            Economia de <strong className="whitespace-nowrap tabular-nums">{formatMoney(discountResult.totalSavedCents)}</strong> com desconto progressivo
           </div>
         )}
 
@@ -707,7 +707,7 @@ export function ConvenienceShowcaseView({
                   <span>Pagamento <strong>à vista</strong> no cartão</span>
                 ) : (
                   <span>
-                    ou até <strong>{maxInstallments}x de {formatMoney(installmentCents)}</strong>{" "}
+                    ou até <strong>{maxInstallments}x de <span className="whitespace-nowrap tabular-nums">{formatMoney(installmentCents)}</span></strong>{" "}
                     {cardInterestFree ? "(sem juros)" : ""}
                   </span>
                 )}
@@ -758,7 +758,7 @@ export function ConvenienceShowcaseView({
               <button
                 type="button"
                 onClick={() => setPricingMode("unit")}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "py-2 px-3 text-center rounded-lg font-semibold text-xs transition-all cursor-pointer flex items-center justify-center gap-2",
                   pricingMode === "unit"
                     ? "bg-background text-foreground  font-bold ring-1 ring-border/80"
@@ -770,7 +770,7 @@ export function ConvenienceShowcaseView({
               <button
                 type="button"
                 onClick={() => setPricingMode("weight")}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "py-2 px-3 text-center rounded-lg font-semibold text-xs transition-all cursor-pointer flex items-center justify-center gap-2",
                   pricingMode === "weight"
                     ? "bg-background text-foreground  font-bold ring-1 ring-border/80"
@@ -790,7 +790,7 @@ export function ConvenienceShowcaseView({
                       key={g}
                       type="button"
                       onClick={() => setWeightGrams(g)}
-                      className={cn(
+                      className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                         "px-2 py-1 rounded-lg text-xs font-mono font-medium border transition-all cursor-pointer",
                         weightGrams === g
                           ? "bg-primary text-primary-foreground border-primary font-bold "
@@ -821,7 +821,7 @@ export function ConvenienceShowcaseView({
                     key={stage}
                     type="button"
                     onClick={() => setSelectedRipeness(stage)}
-                    className={cn(
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "p-3 rounded-lg text-center border transition-all cursor-pointer flex flex-col items-center justify-center gap-1",
                       isSelected
                         ? "border-primary bg-primary/10 text-primary font-bold  ring-1 ring-primary/30"
@@ -1005,8 +1005,8 @@ export function ConvenienceShowcaseView({
             
             {/* Box da Foto: Grande, proporção controlada e cantos suaves */}
             <div className="space-y-2 sm:space-y-3">
-              <div
-                className="relative aspect-square w-full max-h-[500px] rounded-none sm:rounded-2xl overflow-hidden bg-muted/20 border-b sm:border border-border/60 flex items-center justify-center shadow-none sm:shadow-2xs group cursor-pointer"
+              <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
+                className="relative aspect-square w-full rounded-none sm:rounded-lg overflow-hidden bg-muted/20 border-b sm:border border-border/60 flex items-center justify-center group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 onClick={() => images.length > 0 && setFullscreenImage(images[activePhotoIdx] || images[0])}
               >
                 {images.length > 0 ? (
@@ -1039,7 +1039,7 @@ export function ConvenienceShowcaseView({
                       key={idx}
                       type="button"
                       onClick={() => setActivePhotoIdx(idx)}
-                      className={cn(
+                      className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                         "size-14 rounded-lg overflow-hidden border shrink-0 bg-muted/20 transition-all cursor-pointer",
                         activePhotoIdx === idx
                           ? "border-primary ring-2 ring-primary/20"
@@ -1059,7 +1059,7 @@ export function ConvenienceShowcaseView({
                ═════════════════════════════════════════════════════════════════ */}
             <div className={cn("px-4 space-y-3", isForcedMobile ? "block" : "md:hidden")}>
               {/* Card Canônico de Resumo do Produto (Identificação + Preço Integrados Padrão Apple HIG) */}
-              <div className="p-4 sm:p-5 rounded-lg bg-card border border-border/60 space-y-3 shadow-xs">
+              <div className="py-4 sm:p-5 border-b border-border/40 sm:rounded-lg sm:bg-card sm:border sm:border-border/60 space-y-3">
                 <div className="space-y-1">
                   <div className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap">
                     <span className="font-semibold text-foreground/90">{advertiserName}</span>
@@ -1104,7 +1104,7 @@ export function ConvenienceShowcaseView({
                           key={opt}
                           type="button"
                           onClick={() => setSelectedPrepOption(isSelected ? "" : opt)}
-                          className={cn(
+                          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                             "px-3 py-2 rounded-lg text-xs font-medium border transition-all cursor-pointer",
                             isSelected
                               ? "bg-primary text-primary-foreground border-primary font-bold "
@@ -1124,7 +1124,7 @@ export function ConvenienceShowcaseView({
                 SEÇÃO: DETALHES DO PRODUTO (DESCRIÇÃO SEMPRE ABAIXO DA FOTO)
                ───────────────────────────────────────────────────────────── */}
             {description && (
-              <div className="mx-4 sm:mx-0 p-4 sm:p-6 rounded-lg bg-card border border-border/60 space-y-3">
+              <div className="mx-4 sm:mx-0 py-4 sm:p-6 border-t border-border/40 sm:rounded-lg sm:bg-card sm:border sm:border-border/60 space-y-3">
                 <h2 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
                   <FileText className="size-4 text-primary" />
                   <span>Detalhes do Produto</span>
@@ -1146,7 +1146,7 @@ export function ConvenienceShowcaseView({
             </div>
 
             {ingredients && (
-              <div className="mx-4 sm:mx-0 p-4 sm:p-5 rounded-lg border border-border/60 bg-card space-y-2 shadow-2xs">
+              <div className="mx-4 sm:mx-0 py-4 sm:p-5 border-t border-border/40 sm:rounded-lg sm:bg-card sm:border sm:border-border/60 space-y-2">
                 <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">Ingredientes / Composição:</span>
                 <p className="text-xs sm:text-sm text-foreground/85 leading-relaxed break-words text-wrap">{ingredients}</p>
               </div>
@@ -1227,7 +1227,7 @@ export function ConvenienceShowcaseView({
                         key={opt}
                         type="button"
                         onClick={() => setSelectedPrepOption(isSelected ? "" : opt)}
-                        className={cn(
+                        className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                           "px-3 py-2 rounded-lg text-xs font-medium border transition-all cursor-pointer",
                           isSelected
                             ? "bg-primary text-primary-foreground border-primary font-bold "
@@ -1534,7 +1534,7 @@ export function ConvenienceShowcaseView({
                 <button
                   type="button"
                   onClick={() => setOrderDeliveryMode("immediate")}
-                  className={cn(
+                  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                     "py-2 px-1 text-center rounded-lg font-semibold text-xs transition-all cursor-pointer",
                     orderDeliveryMode === "immediate"
                       ? "bg-background text-foreground  font-bold ring-1 ring-border/80"
@@ -1546,7 +1546,7 @@ export function ConvenienceShowcaseView({
                 <button
                   type="button"
                   onClick={() => setOrderDeliveryMode("scheduled")}
-                  className={cn(
+                  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                     "py-2 px-1 text-center rounded-lg font-semibold text-xs transition-all cursor-pointer",
                     orderDeliveryMode === "scheduled"
                       ? "bg-background text-foreground  font-bold ring-1 ring-border/80"
@@ -1558,7 +1558,7 @@ export function ConvenienceShowcaseView({
                 <button
                   type="button"
                   onClick={() => setOrderDeliveryMode("pickup")}
-                  className={cn(
+                  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                     "py-2 px-1 text-center rounded-lg font-semibold text-xs transition-all cursor-pointer",
                     orderDeliveryMode === "pickup"
                       ? "bg-background text-foreground  font-bold ring-1 ring-border/80"
@@ -1593,7 +1593,7 @@ export function ConvenienceShowcaseView({
                         key={win.id}
                         type="button"
                         onClick={() => setOrderScheduledWindow(win.id)}
-                        className={cn(
+                        className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                           "p-2 rounded-lg text-xs font-medium border text-left cursor-pointer transition-all",
                           orderScheduledWindow === win.id
                             ? "bg-primary/10 border-primary text-primary font-bold"
@@ -1644,7 +1644,7 @@ export function ConvenienceShowcaseView({
                   <button
                     type="button"
                     onClick={() => setOrderPaymentMethod("pix")}
-                    className={cn(
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "p-3 rounded-lg border text-center transition-all cursor-pointer flex flex-col items-center gap-1 min-h-[58px]",
                       orderPaymentMethod === "pix"
                         ? "border-emerald-600 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold"
@@ -1665,7 +1665,7 @@ export function ConvenienceShowcaseView({
                   <button
                     type="button"
                     onClick={() => setOrderPaymentMethod("card")}
-                    className={cn(
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "p-3 rounded-lg border text-center transition-all cursor-pointer flex flex-col items-center gap-1 min-h-[58px]",
                       orderPaymentMethod === "card"
                         ? "border-primary bg-primary/10 text-primary font-bold"
@@ -1682,7 +1682,7 @@ export function ConvenienceShowcaseView({
                   <button
                     type="button"
                     onClick={() => setOrderPaymentMethod("cash")}
-                    className={cn(
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "p-3 rounded-lg border text-center transition-all cursor-pointer flex flex-col items-center gap-1 min-h-[58px]",
                       orderPaymentMethod === "cash"
                         ? "border-amber-600 bg-amber-500/10 text-amber-700 dark:text-amber-300 font-bold"

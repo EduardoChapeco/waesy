@@ -393,7 +393,7 @@ export default function ReaccommodationPage() {
                 <ShieldAlert className="size-5 text-muted-foreground" />
               </div>
               <div>
-                <SheetTitle className="text-base font-bold">Registrar Caso ANAC 400 (Contingência e Reacomodação)</SheetTitle>
+                <SheetTitle className="text-base font-bold">Registrar Contingência</SheetTitle>
                 <SheetDescription className="text-xs text-muted-foreground">
                   Vincule o passageiro, bilhete aéreo e calcule a assistência material obrigatória por lei.
                 </SheetDescription>

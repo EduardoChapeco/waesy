@@ -294,10 +294,10 @@ export function SquadsWorkspacePage() {
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {squad.agents.map((agent) => (
-                          <div
+                          <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                             key={agent.agent_id}
                             onClick={() => setSelectedAgent(agent)}
-                            className="p-3 rounded-lg bg-muted/10 border border-border/40 hover:bg-muted/30 hover:border-border transition-all cursor-pointer flex items-center justify-between group"
+                            className="p-3 rounded-lg bg-muted/10 border border-border/40 hover:bg-muted/30 hover:border-border transition-all cursor-pointer flex items-center justify-between group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             <div className="truncate pr-2">
                               <span className="text-xs font-semibold text-foreground block truncate group-hover:text-primary transition-colors">
@@ -335,7 +335,7 @@ export function SquadsWorkspacePage() {
                           <button
                             type="button"
                             onClick={() => setSelectedRunArtifacts({ squadName: squad.custom_name, run: squad.latest_run })}
-                            className="h-11 px-3 inline-flex items-center gap-2 rounded-lg text-xs font-medium border border-border/60 bg-background hover:bg-muted/40 transition-colors shrink-0 min-h-11"
+                            className="h-11 px-3 inline-flex items-center gap-2 rounded-lg text-xs font-medium border border-border/60 bg-background hover:bg-muted/40 transition-colors shrink-0 min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             <FileCheck className="w-3.5 h-3.5 text-foreground/80" />
                             Inspecionar Parecer
@@ -345,7 +345,7 @@ export function SquadsWorkspacePage() {
                             type="button"
                             onClick={() => handleApproveRun(squad.latest_run!.id)}
                             disabled={actionLoading === `approve-${squad.latest_run.id}`}
-                            className="h-11 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-500 transition-colors shrink-0 min-h-11"
+                            className="h-11 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-500 transition-colors shrink-0 min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             <CheckCircle2 className="w-3.5 h-3.5" />
                             {actionLoading === `approve-${squad.latest_run.id}`
@@ -370,7 +370,7 @@ export function SquadsWorkspacePage() {
                           <button
                             type="button"
                             onClick={() => setSelectedRunArtifacts({ squadName: squad.custom_name, run: squad.latest_run })}
-                            className="text-xs font-semibold text-primary hover:underline cursor-pointer"
+                            className="text-xs font-semibold text-primary hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             Ver Parecer Completo
                           </button>
@@ -381,7 +381,7 @@ export function SquadsWorkspacePage() {
                         type="button"
                         onClick={() => handleTriggerRun(squad.id)}
                         disabled={actionLoading === `trigger-${squad.id}`}
-                        className="h-11 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-medium bg-foreground text-background hover:opacity-90 transition-opacity min-h-11"
+                        className="h-11 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-medium bg-foreground text-background hover:opacity-90 transition-opacity min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <Play
                           className={`w-3.5 h-3.5 ${

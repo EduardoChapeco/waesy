@@ -651,110 +651,206 @@ export interface TravelQuoteRequestDTO {
 }
 
 export const requestTravelQuote = createServerFn({ method: "POST" })
- .validator(
- z.object({
- origin_city: z.string().min(1, "Origem obrigatória"),
- origin_iata: z.string().optional(),
- destination_city: z.string().min(1, "Destino obrigatório"),
- destination_iata: z.string().optional(),
- departure_date: z.string().optional(),
- return_date: z.string().optional(),
- rooms_count: z.number().default(1),
- adults_count: z.number().default(2),
- children_count: z.number().default(0),
- children_ages: z.array(z.number()).default([]),
- trip_type: z.enum(["air_package", "hotel_only", "cruise", "bus", "visa_assistance"]).default("air_package"),
- flexible_dates: z.boolean().default(false),
- contact_name: z.string().min(1, "Nome obrigatório"),
- contact_whatsapp: z.string().min(8, "WhatsApp obrigatório"),
- contact_email: z.string().optional(),
- budget_tier: z.enum(["economy", "standard", "premium", "luxury"]).default("standard"),
- special_notes: z.string().optional(),
- })
- )
- .handler(async ({ data }): Promise<{ success: boolean; id: string }> => {
- const supabase = getServerClient();
+  .validator(
+    z.object({
+      store_id: z.string().uuid().optional(),
+      origin_city: z.string().min(1, "Origem obrigatória"),
+      origin_iata: z.string().optional(),
+      destination_city: z.string().min(1, "Destino obrigatório"),
+      destination_iata: z.string().optional(),
+      departure_date: z.string().optional(),
+      return_date: z.string().optional(),
+      rooms_count: z.number().default(1),
+      adults_count: z.number().default(2),
+      children_count: z.number().default(0),
+      children_ages: z.array(z.number()).default([]),
+      trip_type: z.enum(["air_package", "hotel_only", "cruise", "bus", "visa_assistance"]).default("air_package"),
+      flexible_dates: z.boolean().default(false),
+      contact_name: z.string().min(1, "Nome obrigatório"),
+      contact_whatsapp: z.string().min(8, "WhatsApp obrigatório"),
+      contact_email: z.string().optional(),
+      budget_tier: z.enum(["economy", "standard", "premium", "luxury"]).default("standard"),
+      special_notes: z.string().optional(),
+    })
+  )
+  .handler(async ({ data }): Promise<{ success: boolean; id: string; protocol: string }> => {
+    const supabase = getServerClient();
+    const protocol = `COT-${new Date().getFullYear()}-${Math.floor(10000 + Math.random() * 90000)}`;
 
- const { data: inserted, error } = await supabase
- .from("travel_quotes")
- .insert({
- origin_city: data.origin_city,
- origin_iata: data.origin_iata || null,
- destination_city: data.destination_city,
- destination_iata: data.destination_iata || null,
- departure_date: data.departure_date || null,
- return_date: data.return_date || null,
- rooms_count: data.rooms_count,
- adults_count: data.adults_count,
- children_count: data.children_count,
- children_ages: data.children_ages,
- trip_type: data.trip_type,
- flexible_dates: data.flexible_dates,
- contact_name: data.contact_name,
- contact_whatsapp: data.contact_whatsapp,
- contact_email: data.contact_email || null,
- budget_tier: data.budget_tier,
- special_notes: data.special_notes || null,
- status: "new",
- })
- .select("id")
- .single();
+    const { data: inserted, error } = await supabase
+      .from("travel_quotes")
+      .insert({
+        store_id: data.store_id || null,
+        protocol_number: protocol,
+        origin_city: data.origin_city,
+        origin_iata: data.origin_iata || null,
+        destination_city: data.destination_city,
+        destination_iata: data.destination_iata || null,
+        departure_date: data.departure_date || null,
+        return_date: data.return_date || null,
+        rooms_count: data.rooms_count,
+        adults_count: data.adults_count,
+        children_count: data.children_count,
+        children_ages: data.children_ages,
+        trip_type: data.trip_type,
+        flexible_dates: data.flexible_dates,
+        contact_name: data.contact_name,
+        contact_whatsapp: data.contact_whatsapp,
+        contact_email: data.contact_email || null,
+        budget_tier: data.budget_tier,
+        special_notes: data.special_notes || null,
+        status: "new",
+      })
+      .select("id")
+      .single();
 
- if (error) {
- console.error("[tourism.functions] Erro ao gravar cotação na tabela travel_quotes:", error);
- return { success: false, id: "" };
- }
+    if (error) {
+      console.error("[tourism.functions] Erro ao gravar cotação na tabela travel_quotes:", error);
+      return { success: false, id: "", protocol: "" };
+    }
 
- return { success: true, id: inserted.id };
- });
+    // Gravação defensiva também em travel_quote_requests para sincronia total
+    if (data.store_id) {
+      try {
+      await supabase.from("travel_quote_requests").insert({
+        id: inserted.id,
+        store_id: data.store_id,
+        client_name: data.contact_name,
+        client_phone: data.contact_whatsapp,
+        client_email: data.contact_email || null,
+        destination: data.destination_city,
+        departure_date: data.departure_date || null,
+        return_date: data.return_date || null,
+        passengers_count: data.adults_count + data.children_count,
+        status: "new",
+        source: "showcase_wizard",
+        notes: data.special_notes || null,
+        metadata: {
+          protocol,
+          origin_city: data.origin_city,
+          rooms_count: data.rooms_count,
+          adults_count: data.adults_count,
+          children_count: data.children_count,
+          children_ages: data.children_ages,
+          trip_type: data.trip_type,
+          flexible_dates: data.flexible_dates,
+          budget_tier: data.budget_tier,
+        },
+      });
+    } catch (syncErr: any) {
+      console.warn("[tourism.functions] Aviso ao espelhar em travel_quote_requests:", syncErr);
+    }
+    }
+
+    return { success: true, id: inserted.id, protocol };
+  });
 
 export const listAgencyTravelQuotes = createServerFn({ method: "GET" })
- .validator(
- z.object({
- status: z.enum(["all", "new", "analyzing", "quoted", "won", "lost"]).default("all"),
- limit: z.number().default(50),
- })
- )
- .handler(async ({ data }): Promise<TravelQuoteRequestDTO[]> => {
- const supabase = getServerClient();
- 
- let query = supabase.from("travel_quotes").select("*").order("created_at", { ascending: false }).limit(data.limit);
- 
- if (data.status !== "all") {
- query = query.eq("status", data.status);
- }
- 
- const { data: rows, error } = await query;
+  .validator(
+    z.object({
+      storeId: z.string().uuid().optional(),
+      status: z.enum(["all", "new", "analyzing", "quoted", "won", "lost"]).default("all"),
+      limit: z.number().default(50),
+    })
+  )
+  .handler(async ({ data }): Promise<TravelQuoteRequestDTO[]> => {
+    const supabase = getServerClient();
+    
+    let query = supabase.from("travel_quotes").select("*").order("created_at", { ascending: false }).limit(data.limit);
+    
+    if (data.storeId) {
+      query = query.or(`store_id.eq.${data.storeId},store_id.is.null`);
+    }
 
- if (error || !rows) {
- return [];
- }
+    if (data.status !== "all") {
+      query = query.eq("status", data.status);
+    }
+    
+    const { data: rows } = await query;
+    const quotesMap = new Map<string, TravelQuoteRequestDTO>();
 
- return rows.map((r: any) => ({
- id: r.id,
- origin_city: r.origin_city,
- origin_iata: r.origin_iata,
- destination_city: r.destination_city,
- destination_iata: r.destination_iata,
- departure_date: r.departure_date,
- return_date: r.return_date,
- rooms_count: r.rooms_count,
- adults_count: r.adults_count,
- children_count: r.children_count,
- children_ages: r.children_ages,
- trip_type: r.trip_type,
- flexible_dates: r.flexible_dates,
- contact_name: r.contact_name,
- contact_whatsapp: r.contact_whatsapp,
- contact_email: r.contact_email,
- budget_tier: r.budget_tier,
- special_notes: r.special_notes,
- status: r.status,
- agency_notes: r.agency_notes,
- quote_amount_cents: r.quote_amount_cents,
- created_at: r.created_at,
- }));
- });
+    (rows || []).forEach((r: any) => {
+      quotesMap.set(r.id, {
+        id: r.id,
+        origin_city: r.origin_city,
+        origin_iata: r.origin_iata,
+        destination_city: r.destination_city,
+        destination_iata: r.destination_iata,
+        departure_date: r.departure_date,
+        return_date: r.return_date,
+        rooms_count: r.rooms_count,
+        adults_count: r.adults_count,
+        children_count: r.children_count,
+        children_ages: r.children_ages,
+        trip_type: r.trip_type,
+        flexible_dates: r.flexible_dates,
+        contact_name: r.contact_name,
+        contact_whatsapp: r.contact_whatsapp,
+        contact_email: r.contact_email,
+        budget_tier: r.budget_tier,
+        special_notes: r.special_notes,
+        status: r.status,
+        agency_notes: r.agency_notes,
+        quote_amount_cents: r.quote_amount_cents,
+        created_at: r.created_at,
+      });
+    });
+
+    // Também sincroniza registros vindos de travel_quote_requests
+    if (data.storeId) {
+      let tqQuery = supabase
+        .from("travel_quote_requests")
+        .select("*")
+        .eq("store_id", data.storeId)
+        .order("created_at", { ascending: false })
+        .limit(data.limit);
+
+      if (data.status !== "all") {
+        const statusMap: Record<string, string> = {
+          new: "new",
+          analyzing: "quoting",
+          quoted: "proposal_sent",
+          won: "converted",
+          lost: "lost",
+        };
+        const mappedStatus = statusMap[data.status] || data.status;
+        tqQuery = tqQuery.eq("status", mappedStatus);
+      }
+
+      const { data: tqRows } = await tqQuery;
+      (tqRows || []).forEach((r: any) => {
+        if (!quotesMap.has(r.id)) {
+          const meta = r.metadata || {};
+          quotesMap.set(r.id, {
+            id: r.id,
+            origin_city: meta.origin_city || "A definir",
+            origin_iata: meta.origin_iata || null,
+            destination_city: r.destination || "Destino a cotar",
+            destination_iata: meta.destination_iata || null,
+            departure_date: r.departure_date,
+            return_date: r.return_date,
+            rooms_count: meta.rooms_count || 1,
+            adults_count: meta.adults_count || r.passengers_count || 1,
+            children_count: meta.children_count || 0,
+            children_ages: meta.children_ages || [],
+            trip_type: meta.trip_type || "air_package",
+            flexible_dates: meta.flexible_dates ?? false,
+            contact_name: r.client_name,
+            contact_whatsapp: r.client_phone,
+            contact_email: r.client_email,
+            budget_tier: meta.budget_tier || "standard",
+            special_notes: r.notes || meta.special_notes,
+            status: r.status === "quoting" ? "analyzing" : r.status === "proposal_sent" ? "quoted" : r.status === "converted" ? "won" : r.status === "lost" ? "lost" : "new",
+            agency_notes: meta.agency_notes,
+            quote_amount_cents: r.budget_cents,
+            created_at: r.created_at,
+          });
+        }
+      });
+    }
+
+    return Array.from(quotesMap.values());
+  });
 
 export const createAgencyTravelQuoteSchema = z.object({
  contact_name: z.string().min(2, "Nome do cliente é obrigatório"),
@@ -864,3 +960,258 @@ export const deleteAgencyTravelQuote = createServerFn({ method: "POST" })
 
  return { success: true };
  });
+
+
+// ==============================================================================
+// 10. ROOMING LIST CANÔNICO & NORMALIZAÇÃO DE HOTELARIA (travel_rooming_allocations)
+// ==============================================================================
+
+export const listTourRoomingAllocations = createServerFn({ method: "GET" })
+  .validator(z.object({ tourId: z.string().uuid() }))
+  .handler(async ({ data: { tourId } }) => {
+    const supabase = getServerClient();
+    const { data, error } = await supabase
+      .from("travel_rooming_allocations")
+      .select("*")
+      .eq("tour_id", tourId)
+      .order("room_number", { ascending: true });
+
+    if (error) {
+      console.warn("[tourism.functions] Erro ao listar rooming allocations:", error);
+      return [];
+    }
+    return data || [];
+  });
+
+export const saveTourRoomingAllocation = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      tour_id: z.string().uuid(),
+      store_id: z.string().uuid(),
+      hotel_name: z.string().min(1),
+      room_number: z.string().optional().nullable(),
+      room_type: z.enum(["single", "double_couple", "double_twin", "triple", "quadruple", "family"]).default("double_couple"),
+      capacity: z.number().int().min(1).default(2),
+      guest_name: z.string().min(1),
+      guest_document: z.string().optional().nullable(),
+      document_type: z.string().default("CPF"),
+      guest_phone: z.string().optional().nullable(),
+      special_requests: z.string().optional().nullable(),
+      status: z.enum(["confirmed", "checked_in", "checked_out", "cancelled"]).default("confirmed"),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const { data: inserted, error } = await supabase
+      .from("travel_rooming_allocations")
+      .insert({
+        tour_id: data.tour_id,
+        store_id: data.store_id,
+        hotel_name: data.hotel_name,
+        room_number: data.room_number || null,
+        room_type: data.room_type,
+        capacity: data.capacity,
+        guest_name: data.guest_name,
+        guest_document: data.guest_document || null,
+        document_type: data.document_type || "CPF",
+        guest_phone: data.guest_phone || null,
+        special_requests: data.special_requests || null,
+        status: data.status,
+      })
+      .select("id")
+      .single();
+
+    if (error) {
+      throw new Error(`Erro ao salvar alocação de quarto: ${error.message}`);
+    }
+    return { success: true, id: inserted.id };
+  });
+
+// ==============================================================================
+// 11. COMISSÕES E CONTAS A RECEBER DE OPERADORAS (travel_operator_commissions)
+// ==============================================================================
+
+export const listOperatorCommissions = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      storeId: z.string().uuid(),
+      status: z.enum(["all", "pending", "approved", "paid", "disputed", "cancelled"]).default("all"),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    let query = supabase
+      .from("travel_operator_commissions")
+      .select("*")
+      .eq("store_id", data.storeId)
+      .order("sale_date", { ascending: false });
+
+    if (data.status !== "all") {
+      query = query.eq("status", data.status);
+    }
+
+    const { data: rows, error } = await query;
+    if (error) {
+      console.warn("[tourism.functions] Erro ao listar comissões de operadoras:", error);
+      return [];
+    }
+    return rows || [];
+  });
+
+export const createOperatorCommission = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      store_id: z.string().uuid(),
+      operator_name: z.string().min(1),
+      booking_reference: z.string().min(1),
+      passenger_name: z.string().min(1),
+      destination: z.string().optional().nullable(),
+      travel_departure_date: z.string().optional().nullable(),
+      sale_date: z.string().optional(),
+      gross_amount_cents: z.number().int().nonnegative(),
+      commission_rate_percent: z.number().min(0).max(100).default(10.0),
+      payout_rule: z.enum(["departure_plus_30", "sale_plus_30", "on_checkout"]).default("departure_plus_30"),
+      notes: z.string().optional().nullable(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const commissionAmountCents = Math.round((data.gross_amount_cents * data.commission_rate_percent) / 100);
+
+    let estimatedPayoutDate = null;
+    const baseDate = data.payout_rule === "sale_plus_30" || !data.travel_departure_date
+      ? new Date(data.sale_date || Date.now())
+      : new Date(data.travel_departure_date);
+    baseDate.setDate(baseDate.getDate() + 30);
+    estimatedPayoutDate = baseDate.toISOString().slice(0, 10);
+
+    const { data: inserted, error } = await supabase
+      .from("travel_operator_commissions")
+      .insert({
+        store_id: data.store_id,
+        operator_name: data.operator_name,
+        booking_reference: data.booking_reference,
+        passenger_name: data.passenger_name,
+        destination: data.destination || null,
+        travel_departure_date: data.travel_departure_date || null,
+        sale_date: data.sale_date || new Date().toISOString().slice(0, 10),
+        gross_amount_cents: data.gross_amount_cents,
+        commission_rate_percent: data.commission_rate_percent,
+        commission_amount_cents: commissionAmountCents,
+        payout_rule: data.payout_rule,
+        estimated_payout_date: estimatedPayoutDate,
+        status: "pending",
+        notes: data.notes || null,
+      })
+      .select("id")
+      .single();
+
+    if (error) {
+      throw new Error(`Erro ao registrar comissão de operadora: ${error.message}`);
+    }
+    return { success: true, id: inserted.id, commission_amount_cents: commissionAmountCents };
+  });
+
+export const updateOperatorCommissionStatus = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string().uuid(),
+      status: z.enum(["pending", "approved", "paid", "disputed", "cancelled"]),
+      notes: z.string().optional().nullable(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const patch: Record<string, any> = { status: data.status, updated_at: new Date().toISOString() };
+    if (data.notes !== undefined) patch.notes = data.notes;
+
+    const { error } = await supabase
+      .from("travel_operator_commissions")
+      .update(patch)
+      .eq("id", data.id);
+
+    if (error) {
+      throw new Error(`Erro ao atualizar status da comissão: ${error.message}`);
+    }
+    return { success: true };
+  });
+
+// ==============================================================================
+// 12. REACOMODAÇÃO DE MALHA AÉREA ANAC (travel_flight_reaccommodations)
+// ==============================================================================
+
+export const listFlightReaccommodations = createServerFn({ method: "GET" })
+  .validator(z.object({ storeId: z.string().uuid() }))
+  .handler(async ({ data: { storeId } }) => {
+    const supabase = getServerClient();
+    const { data, error } = await supabase
+      .from("travel_flight_reaccommodations")
+      .select("*")
+      .eq("store_id", storeId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.warn("[tourism.functions] Erro ao listar reacomodações:", error);
+      return [];
+    }
+    return data || [];
+  });
+
+export const createFlightReaccommodation = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      store_id: z.string().uuid(),
+      pnr_locator: z.string().min(5),
+      airline_code: z.string().min(2),
+      passenger_name: z.string().min(2),
+      original_flight_number: z.string().min(1),
+      original_departure_time: z.string(),
+      new_flight_number: z.string().min(1),
+      new_departure_time: z.string(),
+      change_reason: z.string().default("malha_aerea"),
+      notification_channel: z.enum(["whatsapp", "email", "sms"]).default("whatsapp"),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const { data: inserted, error } = await supabase
+      .from("travel_flight_reaccommodations")
+      .insert({
+        store_id: data.store_id,
+        pnr_locator: data.pnr_locator.toUpperCase(),
+        airline_code: data.airline_code.toUpperCase(),
+        passenger_name: data.passenger_name,
+        original_flight_number: data.original_flight_number,
+        original_departure_time: data.original_departure_time,
+        new_flight_number: data.new_flight_number,
+        new_departure_time: data.new_departure_time,
+        change_reason: data.change_reason,
+        passenger_notified: false,
+        notification_channel: data.notification_channel,
+      })
+      .select("id")
+      .single();
+
+    if (error) {
+      throw new Error(`Erro ao registrar reacomodação de voo: ${error.message}`);
+    }
+    return { success: true, id: inserted.id };
+  });
+
+export const markFlightReaccommodationNotified = createServerFn({ method: "POST" })
+  .validator(z.object({ id: z.string().uuid() }))
+  .handler(async ({ data: { id } }) => {
+    const supabase = getServerClient();
+    const { error } = await supabase
+      .from("travel_flight_reaccommodations")
+      .update({
+        passenger_notified: true,
+        notification_timestamp: new Date().toISOString(),
+      })
+      .eq("id", id);
+
+    if (error) {
+      throw new Error(`Erro ao registrar notificação: ${error.message}`);
+    }
+    return { success: true };
+  });

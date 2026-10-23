@@ -193,3 +193,106 @@ export const syncTravelDocumentToOperatorCanonical = createServerFn({ method: "P
 
     return { success: true, replayed: false, run };
   });
+
+export const IngestOperatorSyncBatchSchema = z.object({
+  operatorCode: OperatorCodeSchema,
+  items: z.array(
+    z.object({
+      id: z.string().min(1),
+      status: z.string().default("Confirmada"),
+      criacao: z.string().optional().default(""),
+      valorTotal: z.string().optional().default("0,00"),
+      taxas: z.string().optional().default("0,00"),
+      impostos: z.string().optional().default("0,00"),
+      comissao: z.string().optional().default("0,00"),
+      contato: z.string().optional().default(""),
+      email: z.string().optional().default(""),
+      telefone: z.string().optional().default(""),
+      hotel: z.string().optional().default(""),
+      acomodacao: z.string().optional().default(""),
+      formaPagto: z.string().optional().default(""),
+      statusPagto: z.string().optional().default("Aprovado"),
+      scoreConfianca: z.number().optional().default(75),
+      bancoEmissor: z.string().optional().default(""),
+      parcelamento: z.string().optional().default("1x"),
+      passageiros: z
+        .array(
+          z.object({
+            nome: z.string().min(1),
+            tipo: z.string().optional().default("ADT"),
+            birthDate: z.string().optional().default(""),
+            cpf: z.string().optional().default(""),
+            titular: z.boolean().optional().default(false),
+          }),
+        )
+        .default([]),
+    }),
+  ),
+});
+
+export const ingestOperatorSyncBatch = createServerFn({ method: "POST" })
+  .validator(IngestOperatorSyncBatchSchema)
+  .handler(async ({ data }) => {
+    const { operatorCode, items = [] } = data ?? {};
+    const identity = await requireStaff();
+    const supabase = getServerClient();
+
+    let processedCount = 0;
+    let totalPaxCount = 0;
+
+    for (const item of items) {
+      const idempotencyKey = `operator-batch:${identity.store_id}:${operatorCode}:${item.id}`;
+
+      // Verifica se já foi sincronizado
+      const { data: existing } = await supabase
+        .from("travel_operator_sync_runs")
+        .select("id")
+        .eq("store_id", identity.store_id)
+        .eq("idempotency_key", idempotencyKey)
+        .maybeSingle();
+
+      const normalizedPayload = {
+        schema_version: "travel-operator-v1",
+        operator: { code: operatorCode },
+        reservation: item,
+        ingested_at: new Date().toISOString(),
+      };
+
+      if (!existing) {
+        await supabase.from("travel_operator_sync_runs").insert({
+          store_id: identity.store_id,
+          operator_code: operatorCode,
+          source_kind: "browser_extension",
+          adapter_version: "travel-operator-v1",
+          idempotency_key: idempotencyKey,
+          status: "ready",
+          normalized_payload: normalizedPayload,
+          created_by_profile_id: identity.id,
+          completed_at: new Date().toISOString(),
+        });
+        processedCount++;
+      }
+
+      totalPaxCount += (item.passageiros || []).length;
+    }
+
+    // Atualiza last_sync_at da operadora
+    await supabase
+      .from("travel_operator_integrations")
+      .update({
+        last_sync_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("store_id", identity.store_id)
+      .eq("provider_code", operatorCode);
+
+    return {
+      success: true,
+      operatorCode,
+      totalReceived: items.length,
+      newProcessed: processedCount,
+      totalPax: totalPaxCount,
+      timestamp: new Date().toISOString(),
+    };
+  });
+

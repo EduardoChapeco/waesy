@@ -192,13 +192,13 @@ export function ProductPricingTab({
                 (formValues.payment_mode || "inherit") === "inherit"
                   ? "border-primary bg-primary/10 text-foreground"
                   : "border-border hover:bg-muted/40 text-muted-foreground"
-              }`}
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
             >
               <div className="flex items-center gap-2 font-bold text-xs">
                 <Store className="size-4 text-primary" />
                 <span>Usar Padrão da Loja</span>
               </div>
-              <p className="text-[11px] text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Herda as configurações de Pix, cartão e boleto globais configuradas no Workspace.
               </p>
             </button>
@@ -210,13 +210,13 @@ export function ProductPricingTab({
                 formValues.payment_mode === "custom"
                   ? "border-primary bg-primary/10 text-foreground"
                   : "border-border hover:bg-muted/40 text-muted-foreground"
-              }`}
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
             >
               <div className="flex items-center gap-2 font-bold text-xs">
                 <CreditCard className="size-4 text-primary" />
                 <span>Personalizar para Este Item</span>
               </div>
-              <p className="text-[11px] text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Restringir ou liberar métodos específicos apenas para este anúncio/oferta.
               </p>
             </button>
@@ -227,7 +227,7 @@ export function ProductPricingTab({
           <div className="p-4 rounded-lg bg-muted/20 border border-border/60 space-y-3">
             <p className="text-xs font-semibold text-foreground">Métodos Permitidos Neste Produto:</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="flex items-center justify-between p-2.5 rounded-lg border border-border/50 bg-background">
+              <div className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-background">
                 <span className="text-xs font-medium">Pix Imediato</span>
                 <Controller
                   control={control}
@@ -238,7 +238,7 @@ export function ProductPricingTab({
                 />
               </div>
 
-              <div className="flex items-center justify-between p-2.5 rounded-lg border border-border/50 bg-background">
+              <div className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-background">
                 <span className="text-xs font-medium">Cartão de Crédito</span>
                 <Controller
                   control={control}
@@ -249,7 +249,7 @@ export function ProductPricingTab({
                 />
               </div>
 
-              <div className="flex items-center justify-between p-2.5 rounded-lg border border-border/50 bg-background">
+              <div className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-background">
                 <span className="text-xs font-medium">Dinheiro / No Local</span>
                 <Controller
                   control={control}
@@ -261,7 +261,7 @@ export function ProductPricingTab({
               </div>
             </div>
 
-            <div className="space-y-1.5 pt-1">
+            <div className="space-y-2 pt-1">
               <Label className="text-xs font-medium text-foreground">Parcelamento Máximo Sem Juros</Label>
               <Select
                 value={String(formValues.max_installments || "12")}
@@ -335,11 +335,11 @@ export function ProductPricingTab({
         {/* Promoções, Cupons e Validade */}
         <div className="space-y-3 pt-2 border-t border-border/40">
           <div className="flex items-center justify-between gap-4 p-3 rounded-lg bg-muted/20 border border-border/50">
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-3">
               <Ticket className="size-4 text-primary" />
               <div>
                 <p className="text-xs font-medium text-foreground">Permitir Cupons de Desconto</p>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Desmarque para proteger itens com margem reduzida de cupons promocionais da loja.
                 </p>
               </div>
@@ -354,7 +354,7 @@ export function ProductPricingTab({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-medium text-muted-foreground">Início da Oferta (Opcional)</Label>
               <Input
                 type="date"
@@ -363,7 +363,7 @@ export function ProductPricingTab({
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-medium text-muted-foreground">Validade da Oferta (Opcional)</Label>
               <Input
                 type="date"
@@ -414,9 +414,9 @@ export function ProductPricingTab({
           <Label className="text-xs font-bold text-foreground">Sincronização em Canais de Venda</Label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex items-center justify-between p-3 rounded-lg border border-border/60 bg-muted/10">
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 <span className="text-xs font-bold text-foreground">Google Merchant Center</span>
-                <p className="text-[11px] text-muted-foreground">Exporta para o Google Shopping e Free Listings.</p>
+                <p className="text-xs text-muted-foreground">Exporta para o Google Shopping e Free Listings.</p>
               </div>
               <Controller
                 control={control}
@@ -428,9 +428,9 @@ export function ProductPricingTab({
             </div>
 
             <div className="flex items-center justify-between p-3 rounded-lg border border-border/60 bg-muted/10">
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 <span className="text-xs font-bold text-foreground">Sacolinha Instagram / Meta</span>
-                <p className="text-[11px] text-muted-foreground">Catálogo para marcação em posts e stories.</p>
+                <p className="text-xs text-muted-foreground">Catálogo para marcação em posts e stories.</p>
               </div>
               <Controller
                 control={control}
@@ -442,9 +442,9 @@ export function ProductPricingTab({
             </div>
 
             <div className="flex items-center justify-between p-3 rounded-lg border border-border/60 bg-muted/10">
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 <span className="text-xs font-bold text-foreground">Mercado Livre</span>
-                <p className="text-[11px] text-muted-foreground">Sincronização de anúncios e estoque.</p>
+                <p className="text-xs text-muted-foreground">Sincronização de anúncios e estoque.</p>
               </div>
               <Controller
                 control={control}
@@ -456,9 +456,9 @@ export function ProductPricingTab({
             </div>
 
             <div className="flex items-center justify-between p-3 rounded-lg border border-border/60 bg-muted/10">
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 <span className="text-xs font-bold text-foreground">iFood / Aiqfome</span>
-                <p className="text-[11px] text-muted-foreground">Cardápio digital integrado para gastronomia.</p>
+                <p className="text-xs text-muted-foreground">Cardápio digital integrado para gastronomia.</p>
               </div>
               <Controller
                 control={control}
@@ -475,7 +475,7 @@ export function ProductPricingTab({
         <div className="space-y-3 pt-2 border-t border-border/40">
           <Label className="text-xs font-bold text-foreground">SEO & Descoberta por IA (WebMCP)</Label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-medium text-muted-foreground">Título SEO Personalizado</Label>
               <Input
                 {...register("seo_title")}
@@ -484,7 +484,7 @@ export function ProductPricingTab({
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-medium text-muted-foreground">Meta Descrição</Label>
               <Input
                 {...register("seo_description")}
@@ -495,11 +495,11 @@ export function ProductPricingTab({
           </div>
 
           <div className="flex items-center justify-between gap-4 p-3 rounded-lg bg-primary/5 border border-primary/20">
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-3">
               <Bot className="size-4 text-primary" />
               <div>
                 <p className="text-xs font-medium text-foreground">Indexar no Protocolo WebMCP (Agentes de IA)</p>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Permite que assistentes e compradores autônomos descubram, comparem e recomendem este item.
                 </p>
               </div>

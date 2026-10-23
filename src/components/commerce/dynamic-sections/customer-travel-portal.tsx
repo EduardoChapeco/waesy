@@ -126,7 +126,7 @@ export const CustomerTravelPortal: React.FC<CustomerTravelPortalProps> = ({
             <button
               type="button"
               onClick={() => setActiveFilter("all")}
-              className={cn(
+              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                 "h-8 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer",
                 activeFilter === "all"
                   ? "bg-background text-foreground shadow-xs"
@@ -138,7 +138,7 @@ export const CustomerTravelPortal: React.FC<CustomerTravelPortalProps> = ({
             <button
               type="button"
               onClick={() => setActiveFilter("confirmed")}
-              className={cn(
+              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                 "h-8 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer",
                 activeFilter === "confirmed"
                   ? "bg-background text-foreground shadow-xs"
@@ -150,7 +150,7 @@ export const CustomerTravelPortal: React.FC<CustomerTravelPortalProps> = ({
             <button
               type="button"
               onClick={() => setActiveFilter("completed")}
-              className={cn(
+              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                 "h-8 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer",
                 activeFilter === "completed"
                   ? "bg-background text-foreground shadow-xs"

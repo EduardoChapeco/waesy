@@ -49,6 +49,7 @@ import {
   type HotelBankDTO,
   type DestinationDTO,
 } from "@/services/travel-catalog.functions";
+import { HotelCombobox, type HotelComboboxItem } from "@/components/ui/hotel-combobox";
 import {
   type TravelPackageData,
   type TravelItineraryDay,
@@ -74,6 +75,7 @@ import {
 } from "@/lib/classifieds/canonical-airports";
 import { uploadClassifiedMedia } from "@/lib/classifieds/upload-classified-media";
 import { formatMoney } from "@/lib/money";
+import { AirportCombobox } from "@/components/ui/airport-combobox";
 import { cn } from "@/lib/utils";
 
 export interface TravelPackageFormProps {
@@ -273,6 +275,71 @@ export function TravelPackageForm({
         image: h.image,
       })) as any,
     });
+  };
+
+  const handleSelectHotelFromCombobox = (hotelId: string, hotelItem?: HotelComboboxItem) => {
+    if (!hotelId) {
+      onChange({
+        ...value,
+        resort: {
+          ...resort,
+          name: "",
+        },
+      });
+      return;
+    }
+
+    if (!hotelItem) {
+      const foundInStore = hotelsBankList.find((h: HotelBankDTO) => h.id === hotelId);
+      if (foundInStore) {
+        handleSelectHotelFromBank(hotelId);
+      }
+      return;
+    }
+
+    const defaultMealPlan = hotelItem.regime_options?.[0] || resort.meal_plan || "All Inclusive";
+    const hotelCity = hotelItem.city || destination.name;
+    const hotelRegion = hotelItem.state ? `${hotelItem.state}, ${hotelItem.country || "Brasil"}` : destination.region;
+
+    // Inclusão inteligente de hospedagem no pacote se ainda não houver
+    const currentInclusions = [...(value.inclusions || [])];
+    const accommodationInclusion = `Hospedagem em ${hotelItem.name} (${defaultMealPlan})`;
+    if (
+      !currentInclusions.some(
+        (inc) =>
+          inc.toLowerCase().includes("hospedagem") ||
+          inc.toLowerCase().includes(hotelItem.name.toLowerCase()),
+      )
+    ) {
+      currentInclusions.unshift(accommodationInclusion);
+    }
+
+    onChange({
+      ...value,
+      resort: {
+        ...resort,
+        name: hotelItem.name,
+        meal_plan: defaultMealPlan,
+        cover_image_url: hotelItem.cover_photo_url || resort.cover_image_url,
+        badges: hotelItem.badges && hotelItem.badges.length > 0 ? hotelItem.badges : resort.badges,
+        bio_bullets:
+          hotelItem.bio_bullets && hotelItem.bio_bullets.length > 0
+            ? hotelItem.bio_bullets
+            : resort.bio_bullets,
+        photos:
+          hotelItem.photos && hotelItem.photos.length > 0
+            ? hotelItem.photos
+            : resort.photos,
+      },
+      destination: {
+        ...destination,
+        name: hotelCity,
+        region: hotelRegion,
+        country: hotelItem.country || destination.country || "Brasil",
+      },
+      inclusions: currentInclusions,
+    });
+    toast.success(`Hotel "${hotelItem.name}" vinculado com autopreenchimento!`);
   };
 
   const handleSelectHotelFromBank = (hotelId: string) => {
@@ -757,7 +824,7 @@ export function TravelPackageForm({
                   <button
                     type="button"
                     onClick={() => setShowNewDestModal(false)}
-                    className="size-5 flex items-center justify-center text-muted-foreground hover:text-foreground"
+                    className="size-5 flex items-center justify-center text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <X className="size-3.5" />
                   </button>
@@ -844,13 +911,11 @@ export function TravelPackageForm({
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs font-medium text-foreground">Aeroporto de Chegada / IATA</Label>
-                <Input
+                <AirportCombobox
+                  label="Aeroporto de Chegada / IATA Gateway"
                   value={destination.iata_gateway || ""}
-                  onChange={(e) => updateDestination("iata_gateway", e.target.value.toUpperCase())}
-                  placeholder="Ex: BPS, POA, PUJ"
-                  className="h-11 rounded-lg text-xs bg-background font-mono uppercase"
-                  maxLength={4}
+                  onChange={(val) => updateDestination("iata_gateway", val)}
+                  placeholder="Buscar aeroporto de chegada..."
                 />
               </div>
             </div>
@@ -1206,27 +1271,17 @@ export function TravelPackageForm({
               </div>
             </div>
 
-            {/* Seletor de Hotel Pré-cadastrado */}
-            {hotelsBankList.length > 0 && (
-              <div className="p-3 rounded-lg bg-muted/20 border border-border/50 space-y-2">
-                <Label className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
-                  <Sliders className="size-3 text-primary" />
-                  <span>Vincular do Catálogo Oficial de Hotéis & Resorts</span>
-                </Label>
-                <Select onValueChange={handleSelectHotelFromBank}>
-                  <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
-                    <SelectValue placeholder="Escolher um hotel parceiro cadastrado..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {hotelsBankList.map((h: HotelBankDTO) => (
-                      <SelectItem key={h.id} value={h.id}>
-                        {h.name} — {h.city}, {h.state}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+            {/* Seletor de Hotel Inteligente com Combobox Tátil e Busca em Tempo Real */}
+            <div className="p-3 rounded-lg bg-muted/20 border border-border/50 space-y-2">
+              <HotelCombobox
+                label="Vincular do Catálogo Oficial de Hotéis & Resorts"
+                placeholder="Buscar hotel, resort ou pousada (ex: Salinas, Nannai, Tivoli)..."
+                value={resort.name}
+                storeHotels={hotelsBankList}
+                onChange={(hotelId, hotelItem) => handleSelectHotelFromCombobox(hotelId, hotelItem)}
+                helperText="Busque no banco central ou no catálogo de sua agência para preencher automaticamente destino, fotos e refeições."
+              />
+            </div>
 
             {/* Modal Inline de Cadastro Rápido de Hotel */}
             {showNewHotelModal && (
@@ -1236,7 +1291,7 @@ export function TravelPackageForm({
                   <button
                     type="button"
                     onClick={() => setShowNewHotelModal(false)}
-                    className="size-5 flex items-center justify-center text-muted-foreground hover:text-foreground"
+                    className="size-5 flex items-center justify-center text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <X className="size-3.5" />
                   </button>
@@ -1401,7 +1456,7 @@ export function TravelPackageForm({
                       <button
                         type="button"
                         onClick={() => removeBadge(idx)}
-                        className="size-4 rounded-full flex items-center justify-center hover:bg-destructive/20 text-muted-foreground hover:text-destructive"
+                        className="size-4 rounded-full flex items-center justify-center hover:bg-destructive/20 text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <X className="size-3" />
                       </button>
@@ -1471,47 +1526,27 @@ export function TravelPackageForm({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <Label className="text-xs font-medium text-foreground">Aeroporto de Origem (IATA)</Label>
-                    <Select
+                    <AirportCombobox
+                      label="Aeroporto de Origem (IATA)"
                       value={flightDetails.origin_airport || flightDetails.departure_iata || ""}
-                      onValueChange={(val) => {
+                      onChange={(val) => {
                         updateFlightDetails("origin_airport", val);
                         updateFlightDetails("departure_iata", val);
                       }}
-                    >
-                      <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
-                        <SelectValue placeholder="Selecione o aeroporto de saída..." />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-72">
-                        {CANONICAL_AIRPORTS.map((a) => (
-                          <SelectItem key={a.iata} value={a.iata}>
-                            {airportLabel(a)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      placeholder="Buscar aeroporto de saída..."
+                    />
                   </div>
 
                   <div className="space-y-1">
-                    <Label className="text-xs font-medium text-foreground">Aeroporto de Destino (IATA)</Label>
-                    <Select
+                    <AirportCombobox
+                      label="Aeroporto de Destino (IATA)"
                       value={flightDetails.destination_iata || destination.iata_gateway || ""}
-                      onValueChange={(val) => {
+                      onChange={(val) => {
                         updateFlightDetails("destination_iata", val);
                         updateDestination("iata_gateway", val);
                       }}
-                    >
-                      <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
-                        <SelectValue placeholder="Selecione o aeroporto de chegada..." />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-72">
-                        {CANONICAL_AIRPORTS.map((a) => (
-                          <SelectItem key={a.iata} value={a.iata}>
-                            {airportLabel(a)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      placeholder="Buscar aeroporto de chegada..."
+                    />
                   </div>
 
                   <div className="space-y-1">
@@ -1699,7 +1734,7 @@ export function TravelPackageForm({
                           <button
                             type="button"
                             onClick={() => handleRemoveGateway(gw)}
-                            className="size-4 hover:bg-destructive/20 rounded flex items-center justify-center ml-1 text-primary hover:text-destructive cursor-pointer"
+                            className="size-4 hover:bg-destructive/20 rounded flex items-center justify-center ml-1 text-primary hover:text-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             <X className="size-2.5" />
                           </button>

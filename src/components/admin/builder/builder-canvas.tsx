@@ -76,7 +76,7 @@ export function BuilderCanvas({
 
  {/* ── 1. FRAME DE VISUALIZAÇÃO STUDIO: DESKTOP (EDGE-TO-EDGE REAL) ── */}
  {viewport === "desktop" && (
- <div
+ <div /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */
  className="w-full max-w-[1440px] min-h-[calc(100dvh-100px)] bg-background border border-border/60 rounded-none shadow-none overflow-hidden flex flex-col mb-16 transition-all"
  onClick={(e) => e.stopPropagation()}
  >
@@ -156,7 +156,7 @@ export function BuilderCanvas({
 
  {/* ── 2. FRAME DE VISUALIZAÇÃO STUDIO: MOBILE (VIEWPORT PRECISO 390PX) ── */}
  {viewport === "mobile" && (
- <div
+ <div /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */
  className="w-[390px] min-h-[844px] bg-background border border-border/70 rounded-none shadow-none overflow-hidden flex flex-col my-4 relative shrink-0 transition-all"
  onClick={(e) => e.stopPropagation()}
  >
@@ -220,7 +220,7 @@ export function BuilderCanvas({
 
  {/* ── 3. FRAME DE VISUALIZAÇÃO STUDIO: STORY (9:16 VERTICAL CANVAS) ── */}
  {viewport === "story" && (
- <div
+ <div /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */
  className="w-[360px] min-h-[640px] bg-background border border-border/70 rounded-none shadow-none overflow-hidden flex flex-col my-4 relative shrink-0 transition-all"
  onClick={(e) => e.stopPropagation()}
  >

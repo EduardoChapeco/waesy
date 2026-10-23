@@ -15,6 +15,7 @@ import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity } from "@/lib/server-access";
 import { createHash, createHmac, randomBytes } from "node:crypto";
 import { emitFinancialEvent } from "./financial-event-bus.service";
+import { createGatewayPayment } from "./payment-gateway.server";
 
 // ============================================================
 // DTOs & Tipos Canônicos
@@ -52,7 +53,10 @@ export interface P2PTransferResultDTO {
   transactionId: string;
   amountCents: number;
   newBalanceCents: number;
-  receipt: FinancialReceiptDTO;
+  receipt?: FinancialReceiptDTO;
+  status?: "PENDING" | "SETTLED";
+  pixQrCode?: string;
+  pixCopiaECola?: string;
 }
 
 // Chave canônica para HMAC de comprovantes (em prod lida via env)
@@ -466,7 +470,8 @@ export const transferP2P = createServerFn({ method: "POST" })
   });
 
 /**
- * 3. Simula depósito ou recarga de saldo via Pix no ambiente de carteira
+ * 3. Cria solicitação de depósito Pix na carteira (status estritamente PENDING até liquidação via webhook)
+ * Em conformidade com AGENTS.md P0-1: Proibido gerar saldo liquidado sem pagamento real confirmado.
  */
 export const depositPixToWallet = createServerFn({ method: "POST" })
   .validator(
@@ -481,6 +486,13 @@ export const depositPixToWallet = createServerFn({ method: "POST" })
       throw new Error("Faça login para adicionar saldo.");
     }
 
+    const token = process.env.MERCADO_PAGO_ACCESS_TOKEN?.trim();
+    if (!token) {
+      throw new Error(
+        "BLOCKED — Provedor de pagamento Pix não configurado no servidor (MERCADO_PAGO_ACCESS_TOKEN ausente). Não é permitido gerar saldo sem liquidação de pagamento real."
+      );
+    }
+
     const supabase = getServerClient();
     const externalSourceAccId = await getOrCreateLedgerAccount(supabase, null, "EXTERNAL_SOURCE");
     const userAccId = await getOrCreateLedgerAccount(supabase, identity.id, "USER_AVAILABLE");
@@ -492,8 +504,20 @@ export const depositPixToWallet = createServerFn({ method: "POST" })
       .single();
 
     const txId = `pix_dep_${Date.now()}_${randomBytes(4).toString("hex")}`;
-    const authCode = `PIX-${Date.now().toString(36).toUpperCase()}-${randomBytes(3).toString("hex").toUpperCase()}`;
     const nowIso = new Date().toISOString();
+
+    // 1. Gera cobrança real no gateway de pagamentos Pix
+    const gatewayRes = await createGatewayPayment({
+      orderId: txId,
+      amountCents: data.amountCents,
+      method: "pix",
+      idempotencyKey: data.idempotencyKey || txId,
+      payer: {
+        name: profile?.full_name || "Usuário Waesy",
+        email: identity.email || "financeiro@waesy.com.br",
+        cpf: profile?.cpf || null,
+      },
+    });
 
     const hashChain = generateLedgerHash("GENESIS_BLOCK", {
       transactionId: txId,
@@ -503,7 +527,8 @@ export const depositPixToWallet = createServerFn({ method: "POST" })
       createdAt: nowIso,
     });
 
-    const { data: entry, error } = await supabase
+    // 2. Insere lançamento no ledger com status estrito PENDING (não movimenta saldo disponível)
+    const { error } = await supabase
       .from("financial_ledger_entries")
       .insert({
         transaction_id: txId,
@@ -512,64 +537,159 @@ export const depositPixToWallet = createServerFn({ method: "POST" })
         amount_cents: data.amountCents,
         currency: "BRL",
         entry_type: "DEPOSIT",
-        status: "SETTLED",
-        description: "Depósito Pix em Carteira",
+        status: "PENDING",
+        description: "Depósito Pix em Carteira (Aguardando Liquidação)",
         idempotency_key: data.idempotencyKey || `pix_${identity.id}_${Date.now()}`,
         hash_chain: hashChain,
         created_at: nowIso,
-      })
-      .select()
-      .single();
+        metadata: {
+          provider: "mercado_pago",
+          provider_ref: gatewayRes.providerRef,
+          pix_qr_code: gatewayRes.pix?.qrCode || null,
+          pix_qr_code_base64: gatewayRes.pix?.qrCodeBase64 || null,
+        },
+      });
 
     if (error) {
-      console.error("[financial-ledger] Erro no depósito:", error);
-      throw new Error("Falha ao creditar saldo na carteira.");
+      console.error("[financial-ledger] Erro ao registrar solicitação de depósito Pix:", error);
+      throw new Error("Falha ao registrar cobrança de depósito na carteira.");
     }
 
-    const payerName = "Banco Central / Pix Integrado";
-    const payeeName = profile?.full_name || "Usuário Waesy";
-
-    const hmacSig = signReceiptPayload({
-      transactionId: txId,
-      authenticationCode: authCode,
-      amountCents: data.amountCents,
-      issuedAt: nowIso,
-      payerName,
-      payeeName,
-    });
-
-    const { data: receiptRecord } = await supabase
-      .from("financial_receipts")
-      .insert({
-        transaction_id: txId,
-        emitter_name: "Waesy Pagamentos e Tecnologia Ltda.",
-        payer_profile_id: null,
-        payer_name: payerName,
-        payer_document: null,
-        payee_profile_id: identity.id,
-        payee_name: payeeName,
-        payee_document: profile?.cpf || null,
-        amount_cents: data.amountCents,
-        currency: "BRL",
-        payment_method: "PIX",
-        authentication_code: authCode,
-        hmac_signature: hmacSig,
-        details: { type: "DEPOSIT_PIX" },
-        issued_at: nowIso,
-      })
-      .select()
-      .single();
-
+    // 3. Emite evento financeiro com status PENDING
     await emitFinancialEvent({
       profileId: identity.id,
       sourceDomain: "WALLET",
       sourceEntityId: txId,
-      eventType: "PIX_DEPOSIT_COMPLETED",
+      eventType: "PIX_DEPOSIT_INITIATED",
       direction: "INCOMING",
       amountCents: data.amountCents,
+      counterpartyName: "Pix / Mercado Pago",
+      counterpartyProfileId: null,
+      description: "Recarga de Saldo via Pix (Pendente de Pagamento)",
+      categoryName: "Depósito",
+      categoryIcon: "Clock",
+      categoryColor: "amber",
+      status: "PENDING",
+      referenceUrl: "/conta/financas",
+      receiptId: null,
+    });
+
+    // 4. Saldo permanece inalterado pois computeAccountBalance filtra apenas SETTLED
+    const currentBalance = await computeAccountBalance(supabase, userAccId);
+
+    return {
+      success: true,
+      transactionId: txId,
+      amountCents: data.amountCents,
+      newBalanceCents: currentBalance,
+      status: "PENDING",
+      pixQrCode: gatewayRes.pix?.qrCode,
+      pixCopiaECola: gatewayRes.pix?.qrCode,
+    };
+  });
+
+/**
+ * 3.1 Liquidação atômica de depósito Pix após confirmação de webhook
+ */
+export async function settlePixDepositWebhookAtomic(params: {
+  transactionId: string;
+  providerRef: string;
+  amountCents: number;
+  provider: string;
+}): Promise<{ settled: boolean; alreadySettled?: boolean }> {
+  const supabase = getServerClient();
+
+  const { data: entry } = await supabase
+    .from("financial_ledger_entries")
+    .select("*, credit_account:credit_account_id(profile_id)")
+    .eq("transaction_id", params.transactionId)
+    .maybeSingle();
+
+  if (!entry) {
+    throw new Error(`Transação ${params.transactionId} não encontrada para liquidação.`);
+  }
+
+  if (entry.status === "SETTLED") {
+    return { settled: true, alreadySettled: true };
+  }
+
+  if (entry.status !== "PENDING") {
+    throw new Error(`Transação ${params.transactionId} não está pendente (status atual: ${entry.status}).`);
+  }
+
+  const nowIso = new Date().toISOString();
+  const authCode = `PIX-${Date.now().toString(36).toUpperCase()}-${randomBytes(3).toString("hex").toUpperCase()}`;
+  const profileId = entry.credit_account?.profile_id;
+
+  const { data: profile } = profileId
+    ? await supabase.from("profiles").select("full_name, cpf").eq("id", profileId).maybeSingle()
+    : { data: null };
+
+  const payerName = "Banco Central / Pix Integrado";
+  const payeeName = profile?.full_name || "Usuário Waesy";
+
+  const hmacSig = signReceiptPayload({
+    transactionId: entry.transaction_id,
+    authenticationCode: authCode,
+    amountCents: entry.amount_cents,
+    issuedAt: nowIso,
+    payerName,
+    payeeName,
+  });
+
+  // Atualiza para SETTLED atomicamente
+  const { error: updateErr } = await supabase
+    .from("financial_ledger_entries")
+    .update({
+      status: "SETTLED",
+      metadata: {
+        ...(typeof entry.metadata === "object" ? entry.metadata : {}),
+        settled_at: nowIso,
+        settled_by: params.provider,
+        provider_ref: params.providerRef,
+      },
+    })
+    .eq("id", entry.id)
+    .eq("status", "PENDING");
+
+  if (updateErr) {
+    throw new Error(`Falha ao liquidar lançamento contábil: ${updateErr.message}`);
+  }
+
+  // Gera comprovante oficial assinado
+  const { data: receiptRecord } = await supabase
+    .from("financial_receipts")
+    .insert({
+      transaction_id: entry.transaction_id,
+      emitter_name: "Waesy Pagamentos e Tecnologia Ltda.",
+      payer_profile_id: null,
+      payer_name: payerName,
+      payer_document: null,
+      payee_profile_id: profileId,
+      payee_name: payeeName,
+      payee_document: profile?.cpf || null,
+      amount_cents: entry.amount_cents,
+      currency: "BRL",
+      payment_method: "PIX",
+      authentication_code: authCode,
+      hmac_signature: hmacSig,
+      details: { type: "DEPOSIT_PIX_SETTLED", provider: params.provider },
+      issued_at: nowIso,
+    })
+    .select()
+    .maybeSingle();
+
+  if (profileId) {
+    await emitFinancialEvent({
+      profileId,
+      sourceDomain: "WALLET",
+      sourceEntityId: entry.transaction_id,
+      eventType: "PIX_DEPOSIT_COMPLETED",
+      direction: "INCOMING",
+      amountCents: entry.amount_cents,
       counterpartyName: "Pix",
       counterpartyProfileId: null,
-      description: "Recarga de Saldo via Pix",
+      description: "Recarga de Saldo via Pix Liquidada",
       categoryName: "Depósito",
       categoryIcon: "ArrowDownLeft",
       categoryColor: "emerald",
@@ -577,34 +697,10 @@ export const depositPixToWallet = createServerFn({ method: "POST" })
       referenceUrl: "/conta/financas",
       receiptId: receiptRecord?.id || null,
     });
+  }
 
-    const newBalance = await computeAccountBalance(supabase, userAccId);
-
-    return {
-      success: true,
-      transactionId: txId,
-      amountCents: data.amountCents,
-      newBalanceCents: newBalance,
-      receipt: {
-        id: receiptRecord?.id || txId,
-        transactionId: txId,
-        emitterName: "Waesy Pagamentos e Tecnologia Ltda.",
-        payerProfileId: null,
-        payerName,
-        payerDocument: null,
-        payeeProfileId: identity.id,
-        payeeName,
-        payeeDocument: profile?.cpf || null,
-        amountCents: data.amountCents,
-        currency: "BRL",
-        paymentMethod: "PIX",
-        authenticationCode: authCode,
-        hmacSignature: hmacSig,
-        details: {},
-        issuedAt: nowIso,
-      },
-    };
-  });
+  return { settled: true };
+}
 
 /**
  * 4. Obtém detalhes de um comprovante digital por ID ou Código de Autenticação

@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
+import { getAirportByIata } from "@/lib/data/airports-catalog";
 
 // ============================================================================
 // 1. CATÁLOGO DOS 41 MÓDULOS DO GERADOR INTELIGENTE DE PRÉ-EMBARQUE
@@ -237,6 +238,10 @@ export function expandAirportCode(codeOrName: string): string {
   const clean = (codeOrName || "").trim().toUpperCase();
   if (AIRPORT_IATA_DIRECTORY[clean]) {
     return AIRPORT_IATA_DIRECTORY[clean];
+  }
+  const globalAirport = getAirportByIata(clean);
+  if (globalAirport) {
+    return `${globalAirport.city} — ${globalAirport.name} (${globalAirport.iata_code})`;
   }
   if (clean.length === 3 && /^[A-Z]{3}$/.test(clean)) {
     return `Aeroporto (${clean})`;

@@ -273,7 +273,7 @@ function AdminMasterHubsPage() {
                 selectedModule === m.id
                   ? "bg-foreground text-background border-foreground font-bold "
                   : "bg-card text-muted-foreground border-border hover:bg-muted/70 hover:text-foreground"
-              }`}
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
             >
               <span>{m.label}</span>
             </button>
@@ -335,7 +335,7 @@ function AdminMasterHubsPage() {
                     hub.is_active
                       ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
                       : "bg-muted border-border text-muted-foreground/40"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                   title={hub.is_active ? "Ativo (clique para pausar)" : "Pausado (clique para ativar)"}
                 >
                   {hub.is_active ? <Eye size={16} /> : <EyeOff size={16} />}

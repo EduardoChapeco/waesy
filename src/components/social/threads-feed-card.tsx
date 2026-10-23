@@ -196,7 +196,7 @@ export function CommunityFeedCard({
  </Button>
  </DropdownMenuTrigger>
  <DropdownMenuContent align="end" className="w-48 rounded-lg p-2">
- <DropdownMenuItem
+ <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
  onClick={() => {
  setBookmarked(!bookmarked);
  toast.success(bookmarked ? "Removido dos salvos" : "Item salvo com sucesso!");
@@ -206,14 +206,14 @@ export function CommunityFeedCard({
  <Bookmark className="size-3.5" />
  <span>{bookmarked ? "Remover dos Salvos" : "Salvar Publicação"}</span>
  </DropdownMenuItem>
- <DropdownMenuItem
+ <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
  onClick={handleShare}
  className="rounded-lg cursor-pointer text-xs font-semibold gap-2"
  >
  <Share2 className="size-3.5" />
  <span>Copiar Link do Post</span>
  </DropdownMenuItem>
- <DropdownMenuItem
+ <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
  onClick={() => {
  setIsHidden(true);
  toast.success("Publicação oculta do seu feed.", {
@@ -257,7 +257,7 @@ export function CommunityFeedCard({
  type="button"
  onClick={() => handleVotePoll(option.id)}
  disabled={!!pollData.user_voted_option}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "w-full relative h-10 rounded-lg overflow-hidden text-left flex items-center justify-between px-3 text-xs font-bold transition-all border",
  isSelected
  ? "border-primary bg-primary/10 text-primary"
@@ -302,9 +302,9 @@ export function CommunityFeedCard({
  )}
  >
  {post.media_urls.map((url, idx) => (
- <div
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  key={idx}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "relative cursor-pointer overflow-hidden group/media bg-muted/40",
  post.media_urls!.length === 1 ? "w-full max-h-140 flex items-center justify-center" : "aspect-square"
  )}
@@ -329,7 +329,7 @@ export function CommunityFeedCard({
  <button
  type="button"
  onClick={handleLikeClick}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "h-9 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-all cursor-pointer active:scale-90",
  liked ? "text-rose-500" : "hover:text-foreground hover:bg-muted/40"
  )}
@@ -343,7 +343,7 @@ export function CommunityFeedCard({
  <button
  type="button"
  onClick={() => onReply && onReply(post)}
- className="h-9 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold hover:text-foreground hover:bg-muted/40 transition-all cursor-pointer active:scale-90"
+ className="h-9 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold hover:text-foreground hover:bg-muted/40 transition-all cursor-pointer active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  aria-label="Comentar"
  >
  <MessageCircle className="size-4" />
@@ -354,7 +354,7 @@ export function CommunityFeedCard({
  <button
  type="button"
  onClick={handleRepostClick}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "h-9 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-all cursor-pointer active:scale-90",
  reposted ? "text-emerald-500" : "hover:text-foreground hover:bg-muted/40"
  )}
@@ -368,7 +368,7 @@ export function CommunityFeedCard({
  <button
  type="button"
  onClick={handleShare}
- className="h-9 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold hover:text-foreground hover:bg-muted/40 transition-all cursor-pointer active:scale-90"
+ className="h-9 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold hover:text-foreground hover:bg-muted/40 transition-all cursor-pointer active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  aria-label="Compartilhar"
  >
  <Send className="size-4" />

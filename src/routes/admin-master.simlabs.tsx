@@ -120,7 +120,7 @@ function AdminSimLabsPage() {
             ["personas", `Perfis (${personas.length})`, Users],
             ["new_sim", "Nova exploração", Play],
           ] as const).map(([tab, label, Icon]) => (
-            <button key={tab} onClick={() => setActiveTab(tab)} className={`h-10 shrink-0 rounded-lg px-4 text-xs font-semibold ${activeTab === tab ? "bg-primary text-primary-foreground" : "bg-muted/40 text-muted-foreground"}`}>
+            <button key={tab} onClick={() => setActiveTab(tab)} className={`h-10 shrink-0 rounded-lg px-4 text-xs font-semibold ${activeTab === tab ? "bg-primary text-primary-foreground" : "bg-muted/40 text-muted-foreground"} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}>
               <Icon className="mr-2 inline size-4" />{label}
             </button>
           ))}

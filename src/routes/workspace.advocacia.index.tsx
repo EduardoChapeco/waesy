@@ -328,7 +328,7 @@ function WorkspaceAdvocaciaPage() {
  return (
  <div className="space-y-6">
  {/* ── CABEÇALHO DO WORKSPACE JUS ── */}
- <PageHeader
+ <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  eyebrow="Jurídico"
  title="Processos"
  actions={
@@ -949,7 +949,7 @@ function WorkspaceAdvocaciaPage() {
  <button
  key={area.id}
  onClick={() => setSelectedArea(area.id)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "rounded-lg px-3 py-2 text-xs font-semibold transition-all cursor-pointer",
  selectedArea === area.id
  ? "bg-primary text-primary-foreground"
@@ -967,10 +967,10 @@ function WorkspaceAdvocaciaPage() {
  </div>
  ) : (
  filteredDemands.map((demand: any) => (
- <div
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  key={demand.id}
  onClick={() => setSelectedDemand(demand)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "rounded-lg border p-5 transition-all cursor-pointer bg-card",
  selectedDemand?.id === demand.id
  ? "border-primary ring-1 ring-primary shadow-xs"
@@ -1031,7 +1031,7 @@ function WorkspaceAdvocaciaPage() {
  key={m.id}
  type="button"
  onClick={() => setFeeType(m.id as any)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "p-2 rounded-lg text-xs font-bold border transition-colors cursor-pointer",
  feeType === m.id
  ? "bg-primary text-primary-foreground border-primary"

@@ -132,7 +132,7 @@ export function CarouselWizardModal({
  className={'p-5 rounded-lg border-2 text-left transition-all ' + (
  generationEngine === 'escamas'
  ? 'border-primary bg-primary/5 shadow-md'
- : 'border-border bg-card hover:border-border/80'
+ : 'border-border bg-card hover:border-border/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
  <div className="p-3 rounded-lg bg-primary/10 text-primary w-fit mb-3">
@@ -150,7 +150,7 @@ export function CarouselWizardModal({
  className={'p-5 rounded-lg border-2 text-left transition-all ' + (
  generationEngine === 'classic'
  ? 'border-primary bg-primary/5 shadow-md'
- : 'border-border bg-card hover:border-border/80'
+ : 'border-border bg-card hover:border-border/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
  <div className="p-3 rounded-lg bg-purple-500/10 text-purple-500 w-fit mb-3">
@@ -211,7 +211,7 @@ export function CarouselWizardModal({
  className={'p-4 rounded-lg border text-left transition-all ' + (
  density === d.id
  ? 'border-primary bg-primary/10 shadow-sm'
- : 'border-border bg-card'
+ : 'border-border bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
  <div className="font-bold text-xs text-foreground">{d.label}</div>
@@ -232,7 +232,7 @@ export function CarouselWizardModal({
  className={'h-10 px-5 rounded-lg border text-xs font-bold transition-all ' + (
  slideCount === count
  ? 'border-primary bg-primary text-primary-foreground'
- : 'border-border bg-card text-muted-foreground'
+ : 'border-border bg-card text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
  {count} Slides
@@ -283,7 +283,7 @@ export function CarouselWizardModal({
  className={'w-8 h-8 rounded-lg text-xs font-bold transition-all ' + (
  activeSlideIndex === i
  ? 'bg-primary text-primary-foreground'
- : 'bg-muted text-muted-foreground'
+ : 'bg-muted text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
  {i + 1}

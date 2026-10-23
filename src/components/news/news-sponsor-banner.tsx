@@ -112,9 +112,9 @@ export function NewsSponsorBanner({
 
       <div className="flex flex-col sm:flex-row items-center gap-4">
         {sponsor.video_url ? (
-          <div
+          <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
             onClick={handleClick}
-            className="w-full sm:w-1/3 aspect-16/9 rounded-lg overflow-hidden bg-black cursor-pointer hover:opacity-95 transition-opacity shrink-0 relative"
+            className="w-full sm:w-1/3 aspect-16/9 rounded-lg overflow-hidden bg-black cursor-pointer hover:opacity-95 transition-opacity shrink-0 relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <video
               src={sponsor.video_url}
@@ -126,9 +126,9 @@ export function NewsSponsorBanner({
             />
           </div>
         ) : sponsor.banner_url ? (
-          <div
+          <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
             onClick={handleClick}
-            className="w-full sm:w-1/3 aspect-16/9 rounded-lg overflow-hidden bg-muted cursor-pointer hover:opacity-95 transition-opacity shrink-0"
+            className="w-full sm:w-1/3 aspect-16/9 rounded-lg overflow-hidden bg-muted cursor-pointer hover:opacity-95 transition-opacity shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <img
               src={sponsor.banner_url}
@@ -137,9 +137,9 @@ export function NewsSponsorBanner({
             />
           </div>
         ) : sponsor.logo_url ? (
-          <div
+          <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
             onClick={handleClick}
-            className="size-16 rounded-lg bg-card p-2 flex items-center justify-center cursor-pointer shrink-0"
+            className="size-16 rounded-lg bg-card p-2 flex items-center justify-center cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <img src={sponsor.logo_url} alt={sponsor.name} className="max-h-full max-w-full object-contain aspect-square" width={48} height={48} loading="lazy" />
           </div>

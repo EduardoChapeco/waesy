@@ -396,10 +396,10 @@ export function NewGroupTourSheet({
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
  {TOUR_PRESETS.map((preset) => (
- <div
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  key={preset.id}
  onClick={() => applyPreset(preset)}
- className="p-3 rounded-lg border border-border/70 bg-card hover:bg-muted/40 hover:border-primary/40 transition-all cursor-pointer space-y-1 text-left"
+ className="p-3 rounded-lg border border-border/70 bg-card hover:bg-muted/40 hover:border-primary/40 transition-all cursor-pointer space-y-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="flex items-center justify-between">
  <span className="font-bold text-foreground text-xs">{preset.title}</span>
@@ -530,14 +530,14 @@ export function NewGroupTourSheet({
  {layouts.map((layout) => {
  const isSelected = selectedLayoutId === layout.id;
  return (
- <div
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  key={layout.id}
  onClick={() => setSelectedLayoutId(layout.id)}
  className={`p-4 rounded-lg border transition-all cursor-pointer space-y-2 ${
  isSelected
  ? "bg-primary/5 border-primary shadow-xs"
  : "bg-card border-border/70 hover:border-primary/40"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <div className="flex items-center justify-between">
  <span className="font-bold text-foreground text-xs">{layout.name}</span>
@@ -674,7 +674,7 @@ export function NewGroupTourSheet({
  <button
  type="button"
  onClick={() => removeBoardingPoint(idx)}
- className="text-destructive hover:underline cursor-pointer"
+ className="text-destructive hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  Remover
  </button>

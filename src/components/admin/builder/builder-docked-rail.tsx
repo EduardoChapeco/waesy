@@ -59,7 +59,7 @@ export function BuilderDockedRail({
  type="button"
  onClick={() => onTogglePanel(isActive ? null : tool.id)}
  title={tool.label}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "size-9 rounded-lg flex items-center justify-center transition-all cursor-pointer relative group",
  tool.isPrimary && !isActive
  ? "bg-primary text-primary-foreground hover:opacity-90 shadow-2xs"
@@ -92,7 +92,7 @@ export function BuilderDockedRail({
  title="Atalhos do Construtor"
  aria-label="Atalhos do Construtor"
  aria-pressed={showShortcutHint}
- className="size-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer group relative"
+ className="size-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer group relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <HelpCircle className="size-4" />
  <span className="absolute left-14 px-3 py-1 rounded-lg bg-foreground text-background text-[10px] font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-md">

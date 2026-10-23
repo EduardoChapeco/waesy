@@ -286,7 +286,7 @@ export const FlashSaleHero: React.FC<FlashSaleHeroProps> = (props) => {
  background: `linear-gradient(135deg, ${accentColor}, #f97316)`,
  }}
  >
- <a
+ <a className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  href={props.isEditing ? "#" : targetLink}
  onClick={(e) => {
  if (props.isEditing) {

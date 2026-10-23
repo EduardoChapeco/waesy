@@ -187,7 +187,7 @@ export function SevenSinsCanvasPage() {
                 type="button"
                 onClick={() => handleGenerateCopy()}
                 disabled={generating || !storeId || (!selectedProductId && !productName.trim())}
-                className="h-11 px-5 inline-flex items-center justify-center gap-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground shadow-sm hover:opacity-95 transition-opacity"
+                className="h-11 px-5 inline-flex items-center justify-center gap-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground shadow-sm hover:opacity-95 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <RefreshCw className={`w-4 h-4 ${generating ? "animate-spin" : ""}`} />
                 {generating ? "Gerando rascunho..." : "Gerar rascunho de copy"}
@@ -214,7 +214,7 @@ export function SevenSinsCanvasPage() {
             <button
               type="button"
               onClick={() => setFeedback(null)}
-              className="text-xs underline opacity-80 hover:opacity-100 ml-4"
+              className="text-xs underline opacity-80 hover:opacity-100 ml-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               Fechar
             </button>
@@ -242,7 +242,7 @@ export function SevenSinsCanvasPage() {
                     isSelected
                       ? "bg-card border-primary shadow-sm ring-1 ring-primary/30"
                       : "bg-card/50 border-border/50 hover:bg-card hover:border-border"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   <div className="flex items-center gap-2 mb-2">
                     <span
@@ -386,7 +386,7 @@ export function SevenSinsCanvasPage() {
                           `*${generatedHook.copy_headline}*\n\n${generatedHook.copy_body}\n\n${generatedHook.call_to_action}`
                         )
                       }
-                      className="h-10 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-medium border border-border/60 hover:bg-muted/40 transition-colors"
+                      className="h-10 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-medium border border-border/60 hover:bg-muted/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <Copy className="w-3.5 h-3.5" />
                       Copiar
@@ -395,7 +395,7 @@ export function SevenSinsCanvasPage() {
                     <button
                       type="button"
                       onClick={handleOpenWhatsApp}
-                      className="h-10 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
+                      className="h-10 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <MessageCircle className="w-3.5 h-3.5" />
                       WhatsApp
@@ -409,7 +409,7 @@ export function SevenSinsCanvasPage() {
                     type="button"
                     onClick={handleSaveToBrandDna}
                     disabled={savingDna}
-                    className="w-full sm:w-1/2 h-11 inline-flex items-center justify-center gap-2 rounded-lg text-xs font-medium border border-border/60 hover:bg-muted/40 transition-colors"
+                    className="w-full sm:w-1/2 h-11 inline-flex items-center justify-center gap-2 rounded-lg text-xs font-medium border border-border/60 hover:bg-muted/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <BookmarkCheck className={`w-4 h-4 ${savingDna ? "animate-spin text-primary" : "text-emerald-500"}`} />
                     {savingDna ? "Salvando..." : "Salvar no Brand DNA"}
@@ -419,7 +419,7 @@ export function SevenSinsCanvasPage() {
                     type="button"
                     onClick={handleRunSimLab}
                     disabled={simulating}
-                    className="w-full sm:w-1/2 h-11 inline-flex items-center justify-center gap-2 rounded-lg text-xs font-semibold bg-foreground text-background hover:opacity-90 transition-opacity"
+                    className="w-full sm:w-1/2 h-11 inline-flex items-center justify-center gap-2 rounded-lg text-xs font-semibold bg-foreground text-background hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <Users className="w-4 h-4" />
                     {simulating ? "Gerando respostas…" : "Explorar reações sintéticas"}
@@ -437,7 +437,7 @@ export function SevenSinsCanvasPage() {
                   type="button"
                   onClick={() => handleGenerateCopy()}
                   disabled={generating || !storeId || (!selectedProductId && !productName.trim())}
-                  className="h-10 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-medium bg-primary text-primary-foreground"
+                  className="h-10 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-medium bg-primary text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
                   Gerar rascunho
