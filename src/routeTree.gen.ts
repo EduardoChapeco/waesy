@@ -160,6 +160,7 @@ import { Route as StoreContaCurriculoRouteImport } from './routes/_store.conta.c
 import { Route as StoreContaEmpresaRouteImport } from './routes/_store.conta.empresa'
 import { Route as StoreContaEnderecosRouteImport } from './routes/_store.conta.enderecos'
 import { Route as StoreContaEntregadorRouteImport } from './routes/_store.conta.entregador'
+import { Route as StoreContaEventosRouteImport } from './routes/_store.conta.eventos'
 import { Route as StoreContaFinancasRouteImport } from './routes/_store.conta.financas'
 import { Route as StoreContaGiftCardsRouteImport } from './routes/_store.conta.gift-cards'
 import { Route as StoreContaIngressosRouteImport } from './routes/_store.conta.ingressos'
@@ -1185,6 +1186,11 @@ const StoreContaEnderecosRoute = StoreContaEnderecosRouteImport.update({
 const StoreContaEntregadorRoute = StoreContaEntregadorRouteImport.update({
   id: '/entregador',
   path: '/entregador',
+  getParentRoute: () => StoreContaRoute,
+} as any)
+const StoreContaEventosRoute = StoreContaEventosRouteImport.update({
+  id: '/eventos',
+  path: '/eventos',
   getParentRoute: () => StoreContaRoute,
 } as any)
 const StoreContaFinancasRoute = StoreContaFinancasRouteImport.update({
@@ -2814,6 +2820,7 @@ export interface FileRoutesByFullPath {
   '/conta/empresa': typeof StoreContaEmpresaRoute
   '/conta/enderecos': typeof StoreContaEnderecosRoute
   '/conta/entregador': typeof StoreContaEntregadorRoute
+  '/conta/eventos': typeof StoreContaEventosRoute
   '/conta/financas': typeof StoreContaFinancasRoute
   '/conta/gift-cards': typeof StoreContaGiftCardsRoute
   '/conta/ingressos': typeof StoreContaIngressosRoute
@@ -3227,6 +3234,7 @@ export interface FileRoutesByTo {
   '/conta/empresa': typeof StoreContaEmpresaRoute
   '/conta/enderecos': typeof StoreContaEnderecosRoute
   '/conta/entregador': typeof StoreContaEntregadorRoute
+  '/conta/eventos': typeof StoreContaEventosRoute
   '/conta/financas': typeof StoreContaFinancasRoute
   '/conta/gift-cards': typeof StoreContaGiftCardsRoute
   '/conta/ingressos': typeof StoreContaIngressosRoute
@@ -3649,6 +3657,7 @@ export interface FileRoutesById {
   '/_store/conta/empresa': typeof StoreContaEmpresaRoute
   '/_store/conta/enderecos': typeof StoreContaEnderecosRoute
   '/_store/conta/entregador': typeof StoreContaEntregadorRoute
+  '/_store/conta/eventos': typeof StoreContaEventosRoute
   '/_store/conta/financas': typeof StoreContaFinancasRoute
   '/_store/conta/gift-cards': typeof StoreContaGiftCardsRoute
   '/_store/conta/ingressos': typeof StoreContaIngressosRoute
@@ -4072,6 +4081,7 @@ export interface FileRouteTypes {
     | '/conta/empresa'
     | '/conta/enderecos'
     | '/conta/entregador'
+    | '/conta/eventos'
     | '/conta/financas'
     | '/conta/gift-cards'
     | '/conta/ingressos'
@@ -4485,6 +4495,7 @@ export interface FileRouteTypes {
     | '/conta/empresa'
     | '/conta/enderecos'
     | '/conta/entregador'
+    | '/conta/eventos'
     | '/conta/financas'
     | '/conta/gift-cards'
     | '/conta/ingressos'
@@ -4906,6 +4917,7 @@ export interface FileRouteTypes {
     | '/_store/conta/empresa'
     | '/_store/conta/enderecos'
     | '/_store/conta/entregador'
+    | '/_store/conta/eventos'
     | '/_store/conta/financas'
     | '/_store/conta/gift-cards'
     | '/_store/conta/ingressos'
@@ -6286,6 +6298,13 @@ declare module '@tanstack/react-router' {
       path: '/entregador'
       fullPath: '/conta/entregador'
       preLoaderRoute: typeof StoreContaEntregadorRouteImport
+      parentRoute: typeof StoreContaRoute
+    }
+    '/_store/conta/eventos': {
+      id: '/_store/conta/eventos'
+      path: '/eventos'
+      fullPath: '/conta/eventos'
+      preLoaderRoute: typeof StoreContaEventosRouteImport
       parentRoute: typeof StoreContaRoute
     }
     '/_store/conta/financas': {
@@ -8216,6 +8235,7 @@ interface StoreContaRouteChildren {
   StoreContaEmpresaRoute: typeof StoreContaEmpresaRoute
   StoreContaEnderecosRoute: typeof StoreContaEnderecosRoute
   StoreContaEntregadorRoute: typeof StoreContaEntregadorRoute
+  StoreContaEventosRoute: typeof StoreContaEventosRoute
   StoreContaFinancasRoute: typeof StoreContaFinancasRoute
   StoreContaGiftCardsRoute: typeof StoreContaGiftCardsRoute
   StoreContaIngressosRoute: typeof StoreContaIngressosRoute
@@ -8261,6 +8281,7 @@ const StoreContaRouteChildren: StoreContaRouteChildren = {
   StoreContaEmpresaRoute: StoreContaEmpresaRoute,
   StoreContaEnderecosRoute: StoreContaEnderecosRoute,
   StoreContaEntregadorRoute: StoreContaEntregadorRoute,
+  StoreContaEventosRoute: StoreContaEventosRoute,
   StoreContaFinancasRoute: StoreContaFinancasRoute,
   StoreContaGiftCardsRoute: StoreContaGiftCardsRoute,
   StoreContaIngressosRoute: StoreContaIngressosRoute,
@@ -9180,13 +9201,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

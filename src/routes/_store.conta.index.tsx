@@ -180,6 +180,7 @@ function AccountDashboardPage() {
         },
         { to: "/conta/agendamentos", label: "Agendamentos", icon: Calendar },
         { to: "/conta/ingressos", label: "Ingressos", icon: Ticket },
+        { to: "/conta/eventos", label: "Meus Eventos", icon: Calendar },
         { to: "/conta/viagens", label: "Viagens", icon: Plane },
         { to: "/conta/pacotes", label: "Pacotes", icon: Ticket },
         { to: "/conta/enderecos", label: "Endereços", icon: MapPin },

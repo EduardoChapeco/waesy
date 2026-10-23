@@ -1,5 +1,16 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-325: Consolidação Holística de Produção — Portal de Eventos, RSVP Rápido, Autonomous Cloud (CloudWeby) e Marco 0 P0s
+- **Data:** 2026-10-23
+- **Contexto:** Unificação completa de todas as frentes de trabalho ativas no repositório:
+  1. **Portal Civil de Eventos & RSVP Rápido:** Integração das rotas civis de gestão (`_store.conta.eventos.tsx`) e visualização com Story Viewer 9:16 (`_store.evento.$id.tsx` e `fast-lead-rsvp-modal.tsx`), com migrations de banco idempotentes (`20270220000000` e `20270220020000`).
+  2. **Autonomous Cloud & Omni Studio (CloudWeby):** Especificação canônica integral arquivada em `docs/specs/WAESY_OMNI_BUILDER_AND_EMAIL_STUDIO_SPEC.md`, unificando cPanel/WHM/LiteSpeed, caixa de e-mails in-app com IA agêntica e WebMCP.
+  3. **Marco 0 P0s Sustentado:** Saneamento de elementos interativos com `:focus-visible` em modais de eventos e simulações econométricas, mantendo estritamente zero violações de severidade P0.
+  4. **Homologação Automatizada:** 100% dos testes unitários e de integração aprovados (14 testes de eventos, preview de classificados e domínios) e typecheck TypeScript com 0 erros.
+- **Decisão:** Unificar a base de código na branch `main` com sincronização de produção, preparar deploy do banco Supabase e deploy seguro Cloudflare Pages.
+- **Fundamentação:** AGENTS.md B.1 a B.45; B.4 (DL-14, DL-15); B.20; B.22; B.26; WCAG 2.2 AA.
+- **Consequências:** Base 100% íntegra, testada e pronta para publicação em produção.
+
 ## DEC-324: Conclusão da Onda 1 (GAP-01 a GAP-04) — Pré-Visualização Live, Isolamento de SDR e Ergonomia Tátil
 - **Data:** 2026-10-23
 - **Contexto:** Execução integral da Onda 1 do Plano Mestre de Remediação Holística (`PLANO_MESTRE_REMEDIACAO_HOLISTICA_E_REFINAMENTO_CONTINUO_2026.md`) abrangendo o fluxo de edição e criação de classificados e eventos (`_store.conta.classificados.novo.tsx` e `_store.classificados.$id.tsx`):

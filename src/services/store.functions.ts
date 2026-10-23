@@ -34,6 +34,8 @@ export async function _getStoreSettings() {
  const settings = (store.settings as Record<string, any>) || {};
  return {
  ...store,
+ latitude: settings.latitude ?? null,
+ longitude: settings.longitude ?? null,
  pix_key: store.pix_key || null,
  payment_instructions: store.payment_instructions || null,
  payment_processing_mode: settings.payment_processing_mode || "platform_gateway",
@@ -70,6 +72,8 @@ export const saveStoreSettingsSchema = z.object({
  city: z.string().max(100).optional(),
  state: z.string().max(2).optional(),
  zip_code: z.string().max(9).optional(),
+ latitude: z.number().optional().nullable(),
+ longitude: z.number().optional().nullable(),
  description: z.string().max(500).optional(),
  pix_key: z.string().max(120).optional().or(z.literal("")),
  payment_instructions: z.string().max(1000).optional().or(z.literal("")),
@@ -133,6 +137,8 @@ export async function _saveStoreSettings(data: z.infer<typeof saveStoreSettingsS
   weighable_pricing_mode,
   service_payment_policy,
   service_deposit_percentage,
+ latitude,
+ longitude,
  ...columns
  } = data;
  const db = getServerClient();
@@ -145,6 +151,8 @@ export async function _saveStoreSettings(data: z.infer<typeof saveStoreSettingsS
  .single();
  const settings = {
  ...(currentStore?.settings || {}),
+ ...(latitude !== undefined ? { latitude } : {}),
+ ...(longitude !== undefined ? { longitude } : {}),
  ...(segment ? { segment, type: segment, niche: segment } : {}),
  ...(type && !segment ? { type, segment: type, niche: type } : {}),
  ...(niche && !segment && !type ? { niche, segment: niche, type: niche } : {}),

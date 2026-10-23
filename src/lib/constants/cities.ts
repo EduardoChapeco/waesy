@@ -33,6 +33,21 @@ export const CHAPECO_NEIGHBORHOODS: NeighborhoodPreset[] = [
  { name: "Quedas do Palmital", defaultFeeCents: 900, defaultTimeMinutes: 50, active: true },
 ];
 
+export const DEFAULT_GENERIC_NEIGHBORHOODS: NeighborhoodPreset[] = [
+  { name: "Centro", defaultFeeCents: 500, defaultTimeMinutes: 30, active: true },
+  { name: "Bairros Próximos", defaultFeeCents: 700, defaultTimeMinutes: 40, active: true },
+  { name: "Bairros Afastados", defaultFeeCents: 1000, defaultTimeMinutes: 50, active: true },
+];
+
+export function getNeighborhoodsForCity(cityName?: string): NeighborhoodPreset[] {
+  if (!cityName) return DEFAULT_GENERIC_NEIGHBORHOODS;
+  const norm = cityName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+  if (norm.includes("chapeco")) {
+    return CHAPECO_NEIGHBORHOODS;
+  }
+  return DEFAULT_GENERIC_NEIGHBORHOODS;
+}
+
 export const CANONICAL_CITIES: CityRecord[] = [
  // ── Grande Oeste Catarinense (Foco Principal Waesy) ──
  { id: "chapeco-sc", name: "Chapecó", state: "SC", label: "Chapecó - SC", region: "Oeste SC", lat: -27.1004, lng: -52.6152 },

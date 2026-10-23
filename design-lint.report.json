@@ -1,29 +1,29 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-23T15:57:36.732Z",
-  "inspectedFiles": 2329,
-  "totalViolations": 10125,
+  "timestamp": "2026-10-23T17:48:27.950Z",
+  "inspectedFiles": 2335,
+  "totalViolations": 10258,
   "summary": {
-    "totalViolations": 10125,
+    "totalViolations": 10258,
     "bySeverity": {
       "P0": 0,
-      "P1": 7663,
-      "P2": 1281,
-      "P3": 1181
+      "P1": 7733,
+      "P2": 1342,
+      "P3": 1183
     },
     "byRule": {
-      "DL-30": 258,
-      "DL-27": 923,
+      "DL-30": 259,
+      "DL-27": 924,
       "DL-26": 81,
-      "DL-07": 443,
-      "DL-29": 115,
-      "DL-02": 3082,
-      "DL-14": 1786,
+      "DL-07": 449,
+      "DL-29": 116,
+      "DL-02": 3094,
+      "DL-14": 1795,
       "DL-28": 270,
-      "DL-18": 1113,
-      "DL-03": 398,
-      "DL-09": 170,
-      "DL-08": 93,
+      "DL-18": 1133,
+      "DL-03": 427,
+      "DL-09": 222,
+      "DL-08": 95,
       "DL-01": 826,
       "DL-25": 21,
       "DL-23": 353,
@@ -36,11 +36,11 @@
     },
     "byModule": {
       "components/app": {
-        "total": 4316,
+        "total": 4368,
         "P0": 0,
-        "P1": 3228,
-        "P2": 602,
-        "P3": 486
+        "P1": 3264,
+        "P2": 617,
+        "P3": 487
       },
       "components/builder": {
         "total": 77,
@@ -106,18 +106,18 @@
         "P3": 6
       },
       "routes/workspace": {
-        "total": 1664,
+        "total": 1665,
         "P0": 0,
-        "P1": 1296,
+        "P1": 1297,
         "P2": 109,
         "P3": 259
       },
       "routes/store": {
-        "total": 1171,
+        "total": 1251,
         "P0": 0,
-        "P1": 810,
-        "P2": 165,
-        "P3": 196
+        "P1": 843,
+        "P2": 211,
+        "P3": 197
       },
       "services": {
         "total": 210,
@@ -141,8 +141,8 @@
         "P3": 0
       }
     },
-    "filesWithViolations": 857,
-    "filesCount": 2329
+    "filesWithViolations": 861,
+    "filesCount": 2335
   },
   "config": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",

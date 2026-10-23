@@ -183,10 +183,12 @@ function RunHistoryItem({
   run,
   isSelected,
   onClick,
+  className,
 }: {
   run: SimResearchRun;
   isSelected: boolean;
   onClick: () => void;
+  className?: string;
 }) {
   const status = STATUS_CONFIG[run.status] ?? STATUS_CONFIG.completed;
   const StatusIcon = status.icon;

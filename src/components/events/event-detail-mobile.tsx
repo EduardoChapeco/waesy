@@ -22,6 +22,7 @@ export interface EventDetailMobileProps {
   handleToggleRsvp: (status: "going" | "interested" | "not_going") => void;
   handleBuyTicket: (lot: any) => void;
   isOwner: boolean;
+  onOpenStory?: () => void;
 }
 
 export function EventDetailMobile({
@@ -38,6 +39,7 @@ export function EventDetailMobile({
   handleToggleRsvp,
   handleBuyTicket,
   isOwner,
+  onOpenStory,
 }: EventDetailMobileProps) {
   const activeLots = lots.filter((l: any) => l.status === "active");
   const ticketsSectionRef = useRef<HTMLDivElement>(null);
@@ -104,6 +106,16 @@ export function EventDetailMobile({
             />
           </div>
         </div>
+
+        {event.story_media_url && onOpenStory && (
+          <button
+            type="button"
+            onClick={onOpenStory}
+            className="absolute bottom-3 right-3 z-20 h-11 min-h-11 px-4 rounded-full bg-purple-600/90 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg backdrop-blur-md active:scale-95 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          >
+            <span>Ver Story</span>
+          </button>
+        )}
 
         {/* Badge de Evento Externo sobre a mídia */}
         {event.is_external && (
