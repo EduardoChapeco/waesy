@@ -2449,7 +2449,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                     <BlockErrorBoundary
                       blockId={block.id}
                       blockType={block.type}
-                      onRemoveBlock={handleRemoveBlock}
+                      onRemoveBlock={handleRemove}
                     >
                       <Component
                         id={block.id}
@@ -2616,7 +2616,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                   <BlockErrorBoundary
                     blockId={block.id}
                     blockType={block.type}
-                    onRemoveBlock={handleRemoveBlock}
+                    onRemoveBlock={handleRemove}
                   >
                     <Component
                       id={block.id}

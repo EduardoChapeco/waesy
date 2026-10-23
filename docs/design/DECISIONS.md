@@ -1,5 +1,19 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-324: Conclusão da Onda 1 (GAP-01 a GAP-04) — Pré-Visualização Live, Isolamento de SDR e Ergonomia Tátil
+- **Data:** 2026-10-23
+- **Contexto:** Execução integral da Onda 1 do Plano Mestre de Remediação Holística (`PLANO_MESTRE_REMEDIACAO_HOLISTICA_E_REFINAMENTO_CONTINUO_2026.md`) abrangendo o fluxo de edição e criação de classificados e eventos (`_store.conta.classificados.novo.tsx` e `_store.classificados.$id.tsx`):
+  1. **GAP-01 (Pré-Visualização em Rascunho / `preview-live`):** Implementada rota virtual de pré-visualização no loader de `_store.classificados.$id.tsx` com hidratação via `sessionStorage` (`waesy_preview_payload`), garantindo abertura e navegação de rascunhos sem necessidade de persistência prévia no Postgres. Criada suíte unitária de regressão com 3 testes 100% verdes (`preview-live-flow.test.ts`).
+  2. **GAP-02 (Isolamento de SDR em Eventos):** Desconto comercial automático (`maxDiscountPct`) isolado e desativado no nicho `evento`, exibindo aviso orientativo e preservando a soberania dos lotes de ingressos.
+  3. **GAP-03 (Higienização de Cabeçalhos e Padrão HIG):** Erradicados prefixos numéricos estáticos (`3.1`, `3.2`, `3.5`, `3.10`) e normalizados todos os cabeçalhos de seção para no máximo 6 palavras.
+  4. **GAP-04 (Ergonomia Tátil nos Repeaters):** Alvos de toque nos repeaters elevados para `w-11 min-w-11 h-11 min-h-11` (44x44px), em total conformidade com WCAG 2.2 AA (Critério 2.5.8) e `AGENTS.md` B.4 (DL-14).
+- **Decisão:**
+  1. **Modo Preview Soberano:** O showcase público reconhece o parâmetro `preview-live` e renderiza rascunhos em tempo real com banner informativo e sem requisições 404 ao Postgres.
+  2. **Semântica Estrita de Eventos:** Eventos agora têm seus preços governados exclusivamente pela menor cota dos lotes ativos, sem interferência de regras de desconto mercantil.
+  3. **Catraca de CI Blindada:** Ratchet mantido com 0 violações P0 e 0 regressões visuais em relação à baseline congelada.
+- **Fundamentação:** AGENTS.md B.4 (DL-02, DL-14, DL-15); B.8; B.22; B.33; B.36; WCAG 2.2 AA.
+- **Consequências:** Experiência de criação e pré-visualização de anúncios fluida e sem atrito; total conformidade com o design system; 65 testes de classificados 100% aprovados.
+
 ## DEC-323: Erradicação Total das 44 Violações P0 Remanescentes e Conquista da Marca Histórica de 0 P0s no Repositório
 - **Data:** 2026-10-23
 - **Contexto:** Saneamento definitivo de todas as 44 violações de severidade máxima P0 (DL-15: elementos interativos com `onClick` ou controles nativos sem anel de foco teclado `:focus-visible`) distribuídas em 3 clusters:

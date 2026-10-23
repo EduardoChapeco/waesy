@@ -305,7 +305,6 @@ export function SignaturePositionerCanvas({
       }
     }}
     onClick={() => setSelectedFieldId(field.id)}
-    className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
     style={{
                     left: `${field.x}%`,
                     top: `${field.y}%`,
@@ -313,7 +312,7 @@ export function SignaturePositionerCanvas({
                     height: `${field.height}%`,
                     borderColor: signer.colorCode || "#2563eb",
                   }}
-                  className={`absolute border-2 rounded-lg flex items-center justify-between px-2 cursor-move transition-all bg-card/95 shadow-xs ${
+                  className={`absolute border-2 rounded-lg flex items-center justify-between px-2 cursor-move transition-all bg-card/95 shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                     isSelected ? "ring-2 ring-primary/40 shadow-md" : "hover:border-primary"
                   }`}
                 >

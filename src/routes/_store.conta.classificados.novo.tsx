@@ -4444,7 +4444,7 @@ const [aiInstructions, setAiInstructions] = useState("");
             <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
               <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-3 border-b border-border/40">
                 <FileText className="size-4 text-primary shrink-0" />
-                <span>2. Informações</span>
+                <span>Informações Gerais</span>
               </div>
 
             <div className="space-y-2">
@@ -4796,7 +4796,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                 <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border/40 w-full">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <Plane className="size-4 text-primary shrink-0" />
-                    <span>3. Detalhes da Viagem</span>
+                    <span>Detalhes da Viagem</span>
                   </div>
                   <Button
                     type="button"
@@ -5537,7 +5537,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                                 size="sm"
                                 disabled={idx === 0}
                                 onClick={() => handleMoveTravelBullet(idx, "up")}
-                                className="h-11 min-h-11 w-7 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                className="h-11 min-h-11 w-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                 title="Mover para cima"
                                 aria-label="Mover para cima"
                               >
@@ -5549,7 +5549,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                                 size="sm"
                                 disabled={idx === travelBioBullets.length - 1}
                                 onClick={() => handleMoveTravelBullet(idx, "down")}
-                                className="h-11 min-h-11 w-7 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                className="h-11 min-h-11 w-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                 title="Mover para baixo"
                                 aria-label="Mover para baixo"
                               >
@@ -5562,7 +5562,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                             variant="ghost"
                             size="sm"
                             onClick={() => handleRemoveTravelBullet(idx)}
-                            className="h-11 min-h-11 w-7 p-0 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            className="h-11 min-h-11 w-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                             title={travelBioBullets.length === 1 ? "Limpar campo" : "Remover diferencial"}
                             aria-label="Remover diferencial"
                           >
@@ -5954,7 +5954,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                 <div className="flex items-center justify-between pb-3 border-b border-border/40">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <Calendar className="size-4 text-primary shrink-0" />
-                    <span>3. Detalhes do Evento</span>
+                    <span>Detalhes do Evento</span>
                   </div>
                   <Badge variant="outline" className="text-xs font-mono text-muted-foreground">
                     Classificado / Eventos
@@ -5965,7 +5965,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                 <div className="space-y-4">
                   <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <Clock className="size-4 text-primary" />
-                    <span>3.1 Datas, Horários e Acesso</span>
+                    <span>Datas e Horários</span>
                   </p>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -6081,7 +6081,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                 <div className="space-y-4 pt-4 border-t border-border/40">
                   <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <MapPin className="size-4 text-primary" />
-                    <span>3.2 Local e Espaço do Evento</span>
+                    <span>Local do Evento</span>
                   </p>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -6287,7 +6287,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                     <div className="space-y-1">
                       <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                         <Ticket className="size-4 text-primary" />
-                        <span>3.5 Ingressos e Lotes</span>
+                        <span>Ingressos e Lotes</span>
                       </p>
                       <p className="text-xs text-muted-foreground hidden sm:block">
                         Defina os lotes e valores. O menor valor ativo será a precificação oficial do anúncio.
@@ -6983,7 +6983,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                 <div className="space-y-4 pt-4 border-t border-border/40">
                   <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <ShieldCheck className="size-4 text-primary" />
-                    <span>3.10 Políticas e Informações</span>
+                    <span>Políticas do Evento</span>
                   </p>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -7054,7 +7054,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                 <div className="flex items-center justify-between pb-3 border-b border-border/40">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <Wrench className="size-4 text-primary shrink-0" />
-                    <span>3. Equipamento</span>
+                    <span>Equipamento</span>
                   </div>
                   <Badge variant="outline" className="text-xs font-mono text-muted-foreground">
                     Aluguel / Eventos
@@ -7095,7 +7095,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                 <div className="flex items-center justify-between pb-3 border-b border-border/40">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <Key className="size-4 text-primary shrink-0" />
-                    <span>3. Hospedagem</span>
+                    <span>Hospedagem</span>
  </div>
  <Badge variant="outline" className="text-xs font-mono text-muted-foreground">
  Temporada / Diária
@@ -7309,7 +7309,7 @@ const [aiInstructions, setAiInstructions] = useState("");
               <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
                 <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-3 border-b border-border/40">
                   <HomeIcon className="size-4 text-primary shrink-0" />
-                  <span>3. Imóvel</span>
+                  <span>Imóvel</span>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -7470,7 +7470,7 @@ const [aiInstructions, setAiInstructions] = useState("");
             <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Car className="size-4 text-primary" />
- <span>3. Veículo</span>
+ <span>Veículo</span>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -8897,7 +8897,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                   <div className="flex items-center justify-between pb-2 border-b border-border/40">
                     <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
                       <Briefcase className="size-4 text-primary" />
-                      <span>3. Parâmetros do Negócio</span>
+                      <span>Parâmetros do Negócio</span>
                     </div>
                     <Badge variant="outline" className="text-xs font-semibold text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10">
                       Negócios
@@ -9479,7 +9479,7 @@ const [aiInstructions, setAiInstructions] = useState("");
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Tag className="size-4 text-primary" />
- <span>3. Especificações</span>
+ <span>Especificações</span>
  </div>
  
  </div>
@@ -9770,7 +9770,7 @@ const [aiInstructions, setAiInstructions] = useState("");
             <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Wrench className="size-4 text-primary" />
- <span>3. Atendimento</span>
+ <span>Atendimento</span>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -10085,7 +10085,7 @@ const [aiInstructions, setAiInstructions] = useState("");
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <FileArchive className="size-4 text-primary" />
- <span>3. Arquivo Digital</span>
+ <span>Arquivo Digital</span>
  </div>
  <Badge variant="outline" className="text-xs font-mono text-muted-foreground">
  Download Imediato
@@ -10384,7 +10384,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                                   size="sm"
                                   disabled={idx === 0}
                                   onClick={() => handleMoveTravelBullet(idx, "up")}
-                                  className="h-11 min-h-11 w-7 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                  className="h-11 min-h-11 w-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                   title="Mover para cima"
                                   aria-label="Mover para cima"
                                 >
@@ -10396,7 +10396,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                                   size="sm"
                                   disabled={idx === travelBioBullets.length - 1}
                                   onClick={() => handleMoveTravelBullet(idx, "down")}
-                                  className="h-11 min-h-11 w-7 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                  className="h-11 min-h-11 w-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                   title="Mover para baixo"
                                   aria-label="Mover para baixo"
                                 >
@@ -10409,7 +10409,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                               variant="ghost"
                               size="sm"
                               onClick={() => handleRemoveTravelBullet(idx)}
-                              className="h-11 min-h-11 w-7 p-0 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                              className="h-11 min-h-11 w-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                               title={travelBioBullets.length === 1 ? "Limpar campo" : "Remover diferencial"}
                               aria-label="Remover diferencial"
                             >
@@ -10945,7 +10945,7 @@ const [aiInstructions, setAiInstructions] = useState("");
               <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
                 <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-3 border-b border-border/40">
                   <MapPin className="size-4 text-primary shrink-0" />
-                  <span>5. Localização e Contato</span>
+                  <span>Localização e Contato</span>
                 </div>
 
  <CityCombobox
@@ -11277,7 +11277,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                 <div className="flex items-center justify-between pb-3 border-b border-blue-500/15">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <Bot className="size-4 text-blue-500 shrink-0" />
-                    <span>6. Assistente de Vendas (IA)</span>
+                    <span>Assistente de Vendas (SDR)</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
@@ -11327,43 +11327,57 @@ const [aiInstructions, setAiInstructions] = useState("");
                       </p>
                     </div>
 
-                    {/* Desconto Máximo */}
-                    <div className="space-y-2 p-4 bg-background rounded-lg border border-border/60">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-xs font-medium text-foreground flex items-center gap-2">
+                    {/* Desconto Máximo (Isolado por Nicho) */}
+                    {niche.id === "evento" ? (
+                      <div className="space-y-2 p-4 bg-background rounded-lg border border-border/60">
+                        <div className="flex items-center gap-2">
                           <BadgePercent className="size-4 text-primary" />
-                          Desconto Máximo Permitido
-                        </Label>
-                        <span className="text-xs font-bold text-foreground tabular-nums font-mono">
-                          {maxDiscountPct === 0 ? "Sem desconto" : `${maxDiscountPct}%`}
-                        </span>
-                      </div>
-                      <input
-                        type="range"
-                        min={0}
-                        max={30}
-                        step={1}
-                        value={maxDiscountPct}
-                        onChange={(e) => setMaxDiscountPct(Number(e.target.value))}
-                        className="w-full h-2 rounded-full accent-primary cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                        aria-label="Desconto máximo para o agente SDR"
-                      />
-                      <div className="flex justify-between text-xs text-muted-foreground font-mono">
-                        <span>0%</span>
-                        <span>10%</span>
-                        <span>20%</span>
-                        <span>30%</span>
-                      </div>
-                      {maxDiscountPct === 0 ? (
-                        <p className="text-xs text-muted-foreground/75 text-muted-foreground">
-                          O agente não poderá negociar desconto algum — defenderá o preço cheio.
+                          <Label className="text-xs font-medium text-foreground">
+                            Desconto Automático Desativado
+                          </Label>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Preços e lotes de ingressos são definidos individualmente na seção de Ingressos e Lotes. Descontos automáticos via SDR são desativados para preservar as regras de lote do evento.
                         </p>
-                      ) : (
-                        <p className="text-xs text-muted-foreground/75 text-amber-600 dark:text-amber-400">
-                          O agente pode conceder até {maxDiscountPct}% de desconto como último recurso. Ele negociará profissionalmente antes de ceder.
-                        </p>
-                      )}
-                    </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-2 p-4 bg-background rounded-lg border border-border/60">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs font-medium text-foreground flex items-center gap-2">
+                            <BadgePercent className="size-4 text-primary" />
+                            Desconto Máximo Permitido
+                          </Label>
+                          <span className="text-xs font-bold text-foreground tabular-nums font-mono">
+                            {maxDiscountPct === 0 ? "Sem desconto" : `${maxDiscountPct}%`}
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min={0}
+                          max={30}
+                          step={1}
+                          value={maxDiscountPct}
+                          onChange={(e) => setMaxDiscountPct(Number(e.target.value))}
+                          className="w-full h-2 rounded-full accent-primary cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          aria-label="Desconto máximo para o agente SDR"
+                        />
+                        <div className="flex justify-between text-xs text-muted-foreground font-mono">
+                          <span>0%</span>
+                          <span>10%</span>
+                          <span>20%</span>
+                          <span>30%</span>
+                        </div>
+                        {maxDiscountPct === 0 ? (
+                          <p className="text-xs text-muted-foreground/75 text-muted-foreground">
+                            O agente não poderá negociar desconto algum — defenderá o preço cheio.
+                          </p>
+                        ) : (
+                          <p className="text-xs text-muted-foreground/75 text-amber-600 dark:text-amber-400">
+                            O agente pode conceder até {maxDiscountPct}% de desconto como último recurso. Ele negociará profissionalmente antes de ceder.
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
