@@ -46,7 +46,7 @@ export function BuilderDockedRail({
  ];
 
  return (
- <aside className="w-12 bg-card border-r border-border/80 flex flex-col items-center justify-between py-3 flex-none select-none z-30 shadow-2xs">
+ <aside className="w-12 bg-card border-r border-border/80 flex flex-col items-center justify-between py-3 flex-none select-none z-30">
  {/* Grupo Superior: Ferramentas Principais */}
  <div className="flex flex-col items-center gap-2 w-full px-2">
  {tools.map((tool) => {
@@ -60,9 +60,9 @@ export function BuilderDockedRail({
  onClick={() => onTogglePanel(isActive ? null : tool.id)}
  title={tool.label}
  className={cn(
- "size-9 rounded-lg flex items-center justify-center transition-all cursor-pointer relative group",
+ "size-11 rounded-lg flex items-center justify-center transition-colors motion-reduce:transition-none cursor-pointer relative group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  tool.isPrimary && !isActive
- ? "bg-primary text-primary-foreground hover:opacity-90 shadow-2xs"
+ ? "bg-primary text-primary-foreground hover:opacity-90"
  : isActive
  ? "bg-primary/15 text-primary font-bold border border-primary/30"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/70"
@@ -72,11 +72,11 @@ export function BuilderDockedRail({
 
  {/* Indicador de Painel Ativo */}
  {isActive && (
- <span className="absolute -right-1.5 top-1/2 -translate-y-1/2 w-1 h-4 bg-primary rounded-l-full" />
+ <span className="absolute -right-1 top-1/2 -translate-y-1/2 w-1 h-4 bg-primary rounded-l-full" />
  )}
 
  {/* Tooltip Hover Lateral */}
- <span className="absolute left-14 px-3 py-1 rounded-lg bg-foreground text-background text-[10px] font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-md">
+ <span className="absolute left-14 px-3 py-1 rounded-lg bg-foreground text-background text-xs font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity motion-reduce:transition-none z-50">
  {tool.label}
  </span>
  </button>
@@ -92,10 +92,10 @@ export function BuilderDockedRail({
  title="Atalhos do Construtor"
  aria-label="Atalhos do Construtor"
  aria-pressed={showShortcutHint}
- className="size-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer group relative"
+ className="size-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors motion-reduce:transition-none cursor-pointer group relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
  >
  <HelpCircle className="size-4" />
- <span className="absolute left-14 px-3 py-1 rounded-lg bg-foreground text-background text-[10px] font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-md">
+ <span className="absolute left-14 px-3 py-1 rounded-lg bg-foreground text-background text-xs font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity motion-reduce:transition-none z-50">
  Atalhos (Ctrl+Z / Ctrl+Y)
  </span>
  </button>
