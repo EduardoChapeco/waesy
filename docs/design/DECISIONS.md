@@ -1,5 +1,15 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-326: Arquitetura de Infraestrutura VPS, Docker e WhatsApp Multi-Tenant (Oracle Fase 1 & Hetzner Fase 2)
+- **Data:** 2026-10-23
+- **Contexto:** Definição da esteira de infraestrutura de microsserviços para orquestração de WhatsApp corporativo e automações com Docker (Evolution API v2 / Baileys):
+  1. **Fase 1 (Homologação & Testes Master):** Adoção da **Oracle Cloud Infrastructure (Always Free)** com instâncias Ampere A1 (ARM64) gratuitas até 4 OCPUs e 24 GB de RAM, contêineres Docker da Evolution API + Redis, isoladas e publicadas com segurança Zero-Trust via **Cloudflare Tunnel (`cloudflared`)**, sem expor portas de VPS ou IP público diretamente à internet.
+  2. **Fase 2 (Escala Comercial Multi-Tenant para Lojistas):** Adoção da **Hetzner Cloud (CX22/CX32)** com excelente custo-benefício (€ 3,79 a € 5,50/mês para 4 GB a 8 GB de RAM) como esteira para comercializar instâncias dedicadas de WhatsApp aos lojistas, permitindo que cada empresa conecte seu próprio número via QR Code no painel do Waesy Workspace.
+  3. **Especificação Canônica:** Registrada formalmente em `docs/specs/WAESY_VPS_DOCKER_AND_WHATSAPP_ORCHESTRATION_SPEC.md`.
+- **Decisão:** Padronizar a arquitetura bifásica (Oracle Free para testes internos e Hetzner Cloud para revenda/expansão de clientes), mantendo Cloudflare Tunnel na borda e webhooks integrados ao BFF do Waesy.
+- **Fundamentação:** `AGENTS.md` B.1 a B.45; B.11; B.23; B.25; B.40; Segurança Zero-Trust.
+- **Consequências:** Zero custo de infraestrutura no início dos testes de WhatsApp; arquitetura replicável e escalável para dezenas de lojas no ecossistema Waesy sem sobrecarregar a hospedagem central.
+
 ## DEC-325: Consolidação Holística de Produção — Portal de Eventos, RSVP Rápido, Autonomous Cloud (CloudWeby) e Marco 0 P0s
 - **Data:** 2026-10-23
 - **Contexto:** Unificação completa de todas as frentes de trabalho ativas no repositório:
