@@ -1,25 +1,25 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-23T07:17:25.803Z",
+  "timestamp": "2026-10-23T07:21:54.951Z",
   "inspectedFiles": 2237,
-  "totalViolations": 11960,
+  "totalViolations": 11955,
   "summary": {
-    "totalViolations": 11960,
+    "totalViolations": 11955,
     "bySeverity": {
       "P0": 1293,
-      "P1": 8110,
+      "P1": 8106,
       "P2": 1306,
-      "P3": 1251
+      "P3": 1250
     },
     "byRule": {
-      "DL-14": 1945,
       "DL-30": 266,
-      "DL-27": 985,
       "DL-15": 1290,
+      "DL-27": 984,
       "DL-26": 84,
       "DL-07": 472,
       "DL-29": 119,
       "DL-02": 3274,
+      "DL-14": 1941,
       "DL-28": 278,
       "DL-18": 1141,
       "DL-03": 437,
@@ -38,11 +38,11 @@
     },
     "byModule": {
       "components/app": {
-        "total": 5248,
+        "total": 5243,
         "P0": 495,
-        "P1": 3550,
+        "P1": 3546,
         "P2": 680,
-        "P3": 523
+        "P3": 522
       },
       "components/builder": {
         "total": 120,
@@ -143,7 +143,7 @@
         "P3": 0
       }
     },
-    "filesWithViolations": 875,
+    "filesWithViolations": 874,
     "filesCount": 2237
   },
   "config": {
@@ -344,50 +344,6 @@
   },
   "violationsSample": [
     {
-      "id": "DL-14",
-      "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
-      "module": "components/app",
-      "line": 116,
-      "column": 24,
-      "severity": "P1",
-      "match": "h-8",
-      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-8\"). Exige min-h-11 (44px)."
-    },
-    {
-      "id": "DL-14",
-      "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
-      "module": "components/app",
-      "line": 183,
-      "column": 32,
-      "severity": "P1",
-      "match": "size-10",
-      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"size-10\"). Exige min-h-11 (44px)."
-    },
-    {
-      "id": "DL-14",
-      "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
-      "module": "components/app",
-      "line": 210,
-      "column": 22,
-      "severity": "P1",
-      "match": "h-8",
-      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-8\"). Exige min-h-11 (44px)."
-    },
-    {
-      "id": "DL-14",
-      "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/ad-engine/editor/sections/listing-variants-section.tsx",
-      "module": "components/app",
-      "line": 277,
-      "column": 30,
-      "severity": "P1",
-      "match": "size-10",
-      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"size-10\"). Exige min-h-11 (44px)."
-    },
-    {
       "id": "DL-30",
       "rule": "DL-30",
       "file": "/home/ubuntu/waesy-design-remediation/src/components/ad-engine/public/canonical-listing-view.tsx",
@@ -397,17 +353,6 @@
       "severity": "P3",
       "match": "overflow-x-auto",
       "message": "Overflow horizontal \"overflow-x-auto\" em superfície de aplicação fora de tabela/carrossel."
-    },
-    {
-      "id": "DL-27",
-      "rule": "DL-27",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/ad-engine/public/canonical-listing-view.tsx",
-      "module": "components/app",
-      "line": 253,
-      "column": 88,
-      "severity": "P3",
-      "match": "transition-all",
-      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
     },
     {
       "id": "DL-15",
@@ -1989,6 +1934,61 @@
       "module": "components/app",
       "line": 164,
       "column": 25,
+      "severity": "P1",
+      "match": "text-[11px]",
+      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-food-specs-card.tsx",
+      "module": "components/app",
+      "line": 178,
+      "column": 27,
+      "severity": "P1",
+      "match": "text-[11px]",
+      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-food-specs-card.tsx",
+      "module": "components/app",
+      "line": 224,
+      "column": 78,
+      "severity": "P1",
+      "match": "text-[10px]",
+      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-food-specs-card.tsx",
+      "module": "components/app",
+      "line": 246,
+      "column": 33,
+      "severity": "P1",
+      "match": "text-[11px]",
+      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-27",
+      "rule": "DL-27",
+      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-food-specs-card.tsx",
+      "module": "components/app",
+      "line": 258,
+      "column": 109,
+      "severity": "P3",
+      "match": "transition-all",
+      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-food-specs-card.tsx",
+      "module": "components/app",
+      "line": 285,
+      "column": 27,
       "severity": "P1",
       "match": "text-[11px]",
       "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."

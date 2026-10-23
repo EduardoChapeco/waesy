@@ -1,5 +1,12 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-299: Fechamento de Variantes e Visualização Canônica
+- **Data:** 2026-10-23
+- **Contexto:** Duas frentes da terceira rodada não produziram artefato recuperável no limite operacional: variantes de anúncio e visualização pública canônica.
+- **Decisão:** Retomar ambas com worktrees isolados e escopo reduzido. Normalizar campos, ações e foco na seção de variantes; limitar a transição das miniaturas da visualização canônica a propriedade específica com suporte a movimento reduzido.
+- **Evidência:** Dois commits integrados; typecheck PASS; 1 arquivo de teste e 6 testes focados PASS; design lint reduziu 11.960 para 11.955 violações (-5), com P0 mantido em 1.293 e P1 reduzido de 8.110 para 8.106.
+- **Consequências:** A terceira rodada foi efetivamente fechada em seis componentes, sem alteração de schema, dados, callbacks ou persistência.
+
 ## DEC-298: Terceira Rodada Paralela — Fechamento Parcial
 - **Data:** 2026-10-23
 - **Contexto:** Os maiores agrupamentos restantes estavam no Inspector, painel lateral, modal de layout, painel de páginas e duas superfícies de anúncios.
