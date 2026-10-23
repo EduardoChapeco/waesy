@@ -102,7 +102,7 @@ export function ListingModifiersSection({
           variant="outline"
           size="sm"
           onClick={handleAddGroup}
-          className="h-8 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
+          className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
         >
           <Plus className="size-3.5" />
           <span>Criar Grupo</span>
@@ -130,7 +130,7 @@ export function ListingModifiersSection({
                     value={group.name}
                     onChange={(e) => handleUpdateGroup(gIdx, { name: e.target.value })}
                     placeholder="Nome do Grupo (ex: Upgrades Opcionais)"
-                    className="h-9 rounded-lg text-xs font-bold bg-background"
+                    className="h-11 min-h-11 rounded-lg text-xs font-bold bg-background"
                   />
                 </div>
                 <div className="flex items-center gap-3">
@@ -146,7 +146,7 @@ export function ListingModifiersSection({
                     variant="ghost"
                     size="icon"
                     onClick={() => handleRemoveGroup(gIdx)}
-                    className="size-8 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
+                    className="size-11 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
                     title="Remover grupo"
                   >
                     <Trash2 className="size-4" />
@@ -162,13 +162,13 @@ export function ListingModifiersSection({
                       value={opt.name}
                       onChange={(e) => handleUpdateOption(gIdx, oIdx, { name: e.target.value })}
                       placeholder="Nome do adicional (ex: Café da Manhã Completo)"
-                      className="h-9 rounded-lg text-xs bg-background flex-1"
+                      className="h-11 min-h-11 rounded-lg text-xs bg-background flex-1"
                     />
                     <div className="w-32">
                       <CurrencyField
                         value={opt.price_cents}
                         onChange={(cents) => handleUpdateOption(gIdx, oIdx, { price_cents: cents })}
-                        className="h-9 rounded-lg text-xs bg-background"
+                        className="h-11 min-h-11 rounded-lg text-xs bg-background"
                       />
                     </div>
                     <Button
@@ -176,7 +176,7 @@ export function ListingModifiersSection({
                       variant="ghost"
                       size="icon"
                       onClick={() => handleRemoveOption(gIdx, oIdx)}
-                      className="size-8 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer shrink-0"
+                      className="size-11 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer shrink-0"
                     >
                       <Trash2 className="size-3.5" />
                     </Button>
@@ -188,7 +188,7 @@ export function ListingModifiersSection({
                   variant="ghost"
                   size="sm"
                   onClick={() => handleAddOption(gIdx)}
-                  className="h-8 text-xs text-primary gap-1 cursor-pointer pl-0 hover:bg-transparent"
+                  className="h-11 min-h-11 text-xs text-primary gap-1 cursor-pointer pl-0 hover:bg-transparent"
                 >
                   <Plus className="size-3.5" />
                   <span>Adicionar opção ao grupo</span>

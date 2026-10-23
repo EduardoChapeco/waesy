@@ -111,33 +111,33 @@ export function ListingEmptyState({
         {reason === "server_error" && onRetry && (
           <Button
             type="button"
-            className="w-full sm:w-auto h-10 rounded-md text-xs font-semibold gap-2 cursor-pointer shadow-xs focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+            className="w-full sm:w-auto h-11 min-h-11 rounded-md text-xs font-semibold gap-2 cursor-pointer shadow-xs focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
             onClick={onRetry} /* focus-visible:ring-2 */
           >
             <RefreshCw className="size-3.5" />
-            <span>Tentar Novamente</span>
+            <span>Tentar novamente</span>
           </Button>
         )}
 
         {reason === "expired" && isOwner && onRenewListing && (
           <Button
             type="button"
-            className="w-full sm:w-auto h-10 rounded-md text-xs font-bold gap-2 cursor-pointer shadow-xs focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+            className="w-full sm:w-auto h-11 min-h-11 rounded-md text-xs font-bold gap-2 cursor-pointer shadow-xs focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
             onClick={onRenewListing} /* focus-visible:ring-2 */
           >
             <RefreshCw className="size-3.5" />
-            <span>Renovar Anúncio Agora</span>
+            <span>Renovar anúncio</span>
           </Button>
         )}
 
         {reason === "out_of_stock" && onJoinWaitlist && (
           <Button
             type="button"
-            className="w-full sm:w-auto h-10 rounded-md text-xs font-semibold gap-2 cursor-pointer shadow-xs focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+            className="w-full sm:w-auto h-11 min-h-11 rounded-md text-xs font-semibold gap-2 cursor-pointer shadow-xs focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
             onClick={onJoinWaitlist} /* focus-visible:ring-2 */
           >
             <Bell className="size-3.5" />
-            <span>Avisar Quando Disponível</span>
+            <span>Avisar disponibilidade</span>
           </Button>
         )}
 
@@ -145,11 +145,11 @@ export function ListingEmptyState({
           <Button
             type="button"
             variant="outline"
-            className="w-full sm:w-auto h-10 rounded-md text-xs font-semibold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+            className="w-full sm:w-auto h-11 min-h-11 rounded-md text-xs font-semibold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
             onClick={onExploreSimilar} /* focus-visible:ring-2 */
           >
             <Search className="size-3.5" />
-            <span>Explorar Similares</span>
+            <span>Explorar similares</span>
           </Button>
         )}
 
@@ -157,7 +157,7 @@ export function ListingEmptyState({
           <Button
             type="button"
             variant="ghost"
-            className="w-full sm:w-auto h-10 rounded-md text-xs font-medium gap-2 cursor-pointer text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+            className="w-full sm:w-auto h-11 min-h-11 rounded-md text-xs font-medium gap-2 cursor-pointer text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
             onClick={onBack} /* focus-visible:ring-2 */
           >
             <ArrowLeft className="size-3.5" />

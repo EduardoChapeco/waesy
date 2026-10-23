@@ -67,7 +67,6 @@ export function CanonicalListingPreviewFrame({
       frameRef.current.style.width = `${targetWidth}px`;
       frameRef.current.style.transform = `scale(${activeScale})`;
       frameRef.current.style.transformOrigin = "top center";
-      frameRef.current.style.transition = "transform 0.15s ease-out, width 0.2s ease-in-out";
     }
   }, [targetWidth, activeScale]);
 
@@ -86,14 +85,19 @@ export function CanonicalListingPreviewFrame({
         </div>
 
         {/* Seletores de Viewport */}
-        <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg border border-border/40">
+        <div
+          className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg border border-border/40"
+          role="group"
+          aria-label="Selecionar largura da prévia"
+        >
           <Button
             type="button"
             variant={viewport === "mobile" ? "default" : "ghost"}
             size="sm"
-            onClick={() => setViewport("mobile")} /* focus-visible:ring-2 */
-            className="h-8 w-8 p-0 rounded-md cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+            onClick={() => setViewport("mobile")}
+            className="size-11 min-h-11 min-w-11 p-0 rounded-md cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
             title="Mobile (390px)"
+            aria-label="Visualizar em mobile"
           >
             <Smartphone className="size-3.5" />
           </Button>
@@ -102,9 +106,10 @@ export function CanonicalListingPreviewFrame({
             type="button"
             variant={viewport === "tablet" ? "default" : "ghost"}
             size="sm"
-            onClick={() => setViewport("tablet")} /* focus-visible:ring-2 */
-            className="h-8 w-8 p-0 rounded-md cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+            onClick={() => setViewport("tablet")}
+            className="size-11 min-h-11 min-w-11 p-0 rounded-md cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
             title="Tablet (768px)"
+            aria-label="Visualizar em tablet"
           >
             <Tablet className="size-3.5" />
           </Button>
@@ -113,9 +118,10 @@ export function CanonicalListingPreviewFrame({
             type="button"
             variant={viewport === "desktop" ? "default" : "ghost"}
             size="sm"
-            onClick={() => setViewport("desktop")} /* focus-visible:ring-2 */
-            className="h-8 w-8 p-0 rounded-md cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+            onClick={() => setViewport("desktop")}
+            className="size-11 min-h-11 min-w-11 p-0 rounded-md cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
             title="Desktop (1280px)"
+            aria-label="Visualizar em desktop"
           >
             <Monitor className="size-3.5" />
           </Button>
@@ -127,10 +133,11 @@ export function CanonicalListingPreviewFrame({
             type="button"
             variant="ghost"
             size="icon"
-            onClick={() => setZoomFactor((z) => Math.max(0.6, Number((z - 0.1).toFixed(1))))} /* focus-visible:ring-2 */
+            onClick={() => setZoomFactor((z) => Math.max(0.6, Number((z - 0.1).toFixed(1))))}
             disabled={zoomFactor <= 0.6}
-            className="size-8 rounded-md cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+            className="size-11 min-h-11 min-w-11 rounded-md cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
             title="Diminuir Zoom"
+            aria-label="Diminuir zoom"
           >
             <ZoomOut className="size-3.5" />
           </Button>
@@ -139,10 +146,11 @@ export function CanonicalListingPreviewFrame({
             type="button"
             variant="ghost"
             size="icon"
-            onClick={() => setZoomFactor(1)} /* focus-visible:ring-2 */
+            onClick={() => setZoomFactor(1)}
             disabled={zoomFactor === 1}
-            className="size-8 rounded-md cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+            className="size-11 min-h-11 min-w-11 rounded-md cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
             title="Resetar Zoom"
+            aria-label="Resetar zoom"
           >
             <RefreshCw className="size-3.5" />
           </Button>
@@ -151,10 +159,11 @@ export function CanonicalListingPreviewFrame({
             type="button"
             variant="ghost"
             size="icon"
-            onClick={() => setZoomFactor((z) => Math.min(1.4, Number((z + 0.1).toFixed(1))))} /* focus-visible:ring-2 */
+            onClick={() => setZoomFactor((z) => Math.min(1.4, Number((z + 0.1).toFixed(1))))}
             disabled={zoomFactor >= 1.4}
-            className="size-8 rounded-md cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+            className="size-11 min-h-11 min-w-11 rounded-md cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
             title="Aumentar Zoom"
+            aria-label="Aumentar zoom"
           >
             <ZoomIn className="size-3.5" />
           </Button>
@@ -164,9 +173,10 @@ export function CanonicalListingPreviewFrame({
               type="button"
               variant="outline"
               size="sm"
-              onClick={onOpenExternalPreview} /* focus-visible:ring-2 */
-              className="h-8 rounded-md text-2xs font-semibold gap-1 px-2 cursor-pointer ml-1 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+              onClick={onOpenExternalPreview}
+              className="h-11 min-h-11 min-w-11 rounded-md text-2xs font-semibold gap-1 px-2 cursor-pointer ml-1 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
               title="Abrir em Nova Aba"
+              aria-label="Abrir prévia em nova aba"
             >
               <ExternalLink className="size-3" />
               <span className="hidden md:inline">Nova Aba</span>
@@ -178,12 +188,12 @@ export function CanonicalListingPreviewFrame({
       {/* ── Viewport Isolada com Escala Proporcional (F25 / F26: Regras P1 a P7) ── */}
       <div
         ref={containerRef}
-        className="flex-1 overflow-auto p-4 flex justify-center items-start bg-neutral-900/5 dark:bg-black/40"
+        className="flex-1 min-w-0 overflow-auto p-4 flex justify-center items-start bg-muted/30 dark:bg-muted/40"
       >
         <div
           ref={frameRef}
           className={cn(
-            "bg-background text-foreground shadow-2xl transition-all border border-border/80 shrink-0 rounded-lg overflow-hidden",
+            "bg-background text-foreground transition-transform motion-reduce:transition-none border border-border/80 shrink-0 rounded-lg overflow-hidden",
             viewport === "mobile" && "border-4 border-neutral-700/60 ring-1 ring-border/40",
             viewport === "tablet" && "border-2 border-neutral-600/40",
             viewport === "desktop" && "border border-border"

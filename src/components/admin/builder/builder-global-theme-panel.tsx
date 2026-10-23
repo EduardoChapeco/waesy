@@ -25,10 +25,15 @@ export interface BuilderGlobalThemePanelProps {
 }
 
 const PALETTE_PRESETS = [
+ // design-lint-ignore DL-01 reason:"Valores são dados do contrato de paleta, não CSS inline" expiry:"2027-12-31"
  { name: "Black & White (Apple/Stripe)", primary: "#09090b", bg: "#ffffff", text: "#09090b" },
+ // design-lint-ignore DL-01 reason:"Valores são dados do contrato de paleta, não CSS inline" expiry:"2027-12-31"
  { name: "Ocean Blue (Turismo & Praia)", primary: "#0284c7", bg: "#ffffff", text: "#0f172a" },
+ // design-lint-ignore DL-01 reason:"Valores são dados do contrato de paleta, não CSS inline" expiry:"2027-12-31"
  { name: "Emerald Forest (Ecoturismo)", primary: "#059669", bg: "#ffffff", text: "#064e3b" },
+ // design-lint-ignore DL-01 reason:"Valores são dados do contrato de paleta, não CSS inline" expiry:"2027-12-31"
  { name: "Sunset Gold (Gastronomia & Luxo)", primary: "#d97706", bg: "#ffffff", text: "#451a03" },
+ // design-lint-ignore DL-01 reason:"Valores são dados do contrato de paleta, não CSS inline" expiry:"2027-12-31"
  { name: "Dark Modern (Cyber / Tech)", primary: "#38bdf8", bg: "#09090b", text: "#f8fafc" },
 ];
 
@@ -53,7 +58,7 @@ export function BuilderGlobalThemePanel({
  onClose,
 }: BuilderGlobalThemePanelProps) {
  return (
- <aside className="w-80 bg-card border-r border-border/80 flex flex-col flex-none overflow-hidden select-none z-20 shadow-2xs animate-in slide-in-from-left duration-200">
+ <aside className="w-80 bg-card border-r border-border/80 flex flex-col flex-none overflow-hidden select-none z-20 shadow-2xs animate-in slide-in-from-left duration-200 motion-reduce:animate-none">
  {/* Header */}
  <div className="p-4 border-b border-border/80 flex items-center justify-between bg-muted/20">
  <div className="flex items-center gap-2">
@@ -62,7 +67,7 @@ export function BuilderGlobalThemePanel({
  </div>
  <div>
  <h3 className="text-xs font-bold text-foreground">Tema e Estilo Global</h3>
- <p className="text-[10px] text-muted-foreground">Identidade visual de todo o site</p>
+ <p className="text-xs text-muted-foreground">Identidade visual de todo o site</p>
  </div>
  </div>
 
@@ -70,8 +75,11 @@ export function BuilderGlobalThemePanel({
  type="button"
  onClick={() => {
  onChangeTheme({
+ // design-lint-ignore DL-01 reason:"Valores restauram o contrato de tema padrão" expiry:"2027-12-31"
  primaryColor: "#09090b",
+ // design-lint-ignore DL-01 reason:"Valores restauram o contrato de tema padrão" expiry:"2027-12-31"
  backgroundColor: "#ffffff",
+ // design-lint-ignore DL-01 reason:"Valores restauram o contrato de tema padrão" expiry:"2027-12-31"
  textColor: "#09090b",
  headingFont: "Inter, sans-serif",
  bodyFont: "Inter, sans-serif",
@@ -80,7 +88,7 @@ export function BuilderGlobalThemePanel({
  });
  toast.info("Tema restaurado para o padrão limpo.");
  }}
- className="size-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted flex items-center justify-center cursor-pointer"
+ className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
  title="Restaurar padrão"
  >
  <RotateCcw className="size-3.5" />
@@ -101,7 +109,8 @@ export function BuilderGlobalThemePanel({
  theme.primaryColor === preset.primary && theme.backgroundColor === preset.bg;
 
  return (
- <div
+ <button
+ type="button"
  key={preset.name}
  onClick={() => {
  onChangeTheme({
@@ -112,27 +121,25 @@ export function BuilderGlobalThemePanel({
  toast.success(`Paleta "${preset.name}" aplicada!`);
  }}
  className={cn(
- "p-3 rounded-lg border flex items-center justify-between cursor-pointer transition-all",
+ "w-full min-h-11 min-w-11 p-3 rounded-lg border flex items-center justify-between text-left cursor-pointer transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  isSelected
  ? "bg-primary/5 border-primary shadow-2xs font-bold"
  : "bg-card border-border/70 hover:border-border hover:bg-muted/30"
  )}
  >
- <span className="text-[11px] text-foreground truncate mr-2">
+ <span className="text-xs text-foreground truncate mr-2">
  {preset.name}
  </span>
 
- <div className="flex items-center gap-1 shrink-0">
- <span
- className="size-4 rounded-full border border-black/10 shadow-2xs"
- style={{ backgroundColor: preset.primary }}
- />
- <span
- className="size-4 rounded-full border border-black/10 shadow-2xs"
- style={{ backgroundColor: preset.bg }}
- />
+ <div className="flex items-center gap-1 shrink-0" aria-hidden="true">
+ <svg className="size-4 rounded-full border border-border/50 shadow-2xs" viewBox="0 0 16 16">
+ <circle cx="8" cy="8" r="7" fill={preset.primary} />
+ </svg>
+ <svg className="size-4 rounded-full border border-border/50 shadow-2xs" viewBox="0 0 16 16">
+ <circle cx="8" cy="8" r="7" fill={preset.bg} />
+ </svg>
  </div>
- </div>
+ </button>
  );
  })}
  </div>
@@ -147,7 +154,7 @@ export function BuilderGlobalThemePanel({
  </Label>
 
  <div className="space-y-2">
- <Label className="text-[11px] text-muted-foreground">Cor de Destaque Primária</Label>
+ <Label className="text-xs text-muted-foreground">Cor de Destaque Primária</Label>
  <ColorPicker
  value={theme.primaryColor}
  onChange={(c) => onChangeTheme({ primaryColor: c })}
@@ -155,7 +162,7 @@ export function BuilderGlobalThemePanel({
  </div>
 
  <div className="space-y-2">
- <Label className="text-[11px] text-muted-foreground">Cor de Fundo da Vitrine</Label>
+ <Label className="text-xs text-muted-foreground">Cor de Fundo da Vitrine</Label>
  <ColorPicker
  value={theme.backgroundColor}
  onChange={(c) => onChangeTheme({ backgroundColor: c })}
@@ -163,7 +170,7 @@ export function BuilderGlobalThemePanel({
  </div>
 
  <div className="space-y-2">
- <Label className="text-[11px] text-muted-foreground">Cor dos Textos Principais</Label>
+ <Label className="text-xs text-muted-foreground">Cor dos Textos Principais</Label>
  <ColorPicker
  value={theme.textColor}
  onChange={(c) => onChangeTheme({ textColor: c })}
@@ -181,11 +188,11 @@ export function BuilderGlobalThemePanel({
  </Label>
 
  <div className="space-y-1">
- <Label className="text-[11px] text-muted-foreground">Família de Títulos</Label>
+ <Label className="text-xs text-muted-foreground">Família de Títulos</Label>
  <select
  value={theme.headingFont}
  onChange={(e) => onChangeTheme({ headingFont: e.target.value })}
- className="w-full h-9 rounded-lg bg-background border border-border px-3 text-xs"
+ className="w-full h-11 min-h-11 rounded-lg bg-background border border-border px-3 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
  >
  {FONT_PRESETS.map((f) => (
  <option key={f.id} value={f.id}>
@@ -214,7 +221,7 @@ export function BuilderGlobalThemePanel({
  type="button"
  onClick={() => onChangeTheme({ borderRadius: opt.id })}
  className={cn(
- "py-2 px-3 rounded-lg border text-xs font-semibold transition-all cursor-pointer text-center",
+ "min-h-11 min-w-11 py-2 px-3 rounded-lg border text-xs font-semibold transition-colors motion-reduce:transition-none cursor-pointer text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  isSelected
  ? "bg-primary text-primary-foreground font-bold shadow-2xs border-primary"
  : "bg-card border-border/70 text-muted-foreground hover:text-foreground"
