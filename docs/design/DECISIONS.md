@@ -1,5 +1,12 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-297: Segunda Execução Paralela de Builder e Editor
+- **Data:** 2026-10-23
+- **Contexto:** Após a primeira rodada, os achados restantes estavam concentrados no rail e docking do Builder, no preview do anúncio e nas seções de pré-checagem, modificadores e escopo.
+- **Decisão:** Executar seis worktrees isolados e integrar apenas commits validados para `builder-docked-rail`, `builder-docking-matrix`, `canonical-listing-preview-frame`, `listing-precheck-dialog`, `listing-modifiers-section` e `listing-scope-section`.
+- **Evidência:** Seis commits integrados; typecheck PASS; 2 arquivos de teste e 9 testes focados PASS; build PASS; design lint reduziu 12.130 para 12.094 violações (-36), com P0 de 1.334 para 1.329 e P1 de 8.223 para 8.197.
+- **Consequências:** Mais seis superfícies compartilhadas com foco, toque e responsividade normalizados, sem alteração de schemas, callbacks, rotas ou persistência.
+
 ## DEC-296: Execução Paralela de Seis Componentes Compartilhados
 - **Data:** 2026-10-23
 - **Contexto:** A concentração de achados P0/P1 estava nos componentes centrais do Builder e no editor de anúncios, permitindo frentes independentes sem sobreposição de arquivos.
