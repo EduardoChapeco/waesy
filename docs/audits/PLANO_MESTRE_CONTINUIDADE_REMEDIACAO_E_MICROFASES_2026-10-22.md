@@ -1,206 +1,276 @@
-# Plano Mestre de Continuidade, Auditoria Forense e Decomposição em Microfases
-**Data de Emissão:** 22 de Outubro de 2026  
-**Status do Repositório:** `main` | Branch Ativa: Multithread em Produção  
-**Autoridade:** Conselho Consultivo Técnico & Diretoria de Engenharia Waesy  
-**Conformidade Normativa:** `AGENTS.md` (Regras B.1 a B.45) e `docs/design/DESIGN.md`
+# PLANO MESTRE DE CONTINUIDADE, REMEDIAÇÃO HOLÍSTICA E MICROFASES EXECUTÁVEIS
+
+**Data de Emissão:** 2026-10-22T21:15:00-03:00  
+**Status do Repositório:** Em Execução / Auditoria Contínua  
+**Alinhamento Normativo:** `AGENTS.md` (B.1 a B.45), `docs/design/DESIGN.md`, `docs/design/DESIGN-LINT.md`, `docs/PERFORMANCE.md`  
+**Governança:** BigTech Executive Board (`pm`, `decompose-prd`, `security-guard`, `design-ops`, `qa-gatekeeper`)
 
 ---
 
-## 1. Sumário Executivo & Status Real do Repositório
+## 1. Sumário Executivo & Propósito Deste Documento
 
-O ecossistema Waesy atingiu estabilidade transacional em suas camadas críticas de banco de dados e funções BFF, porém uma auditoria forense ponta a ponta revelou divergências entre a casca visual (frontend) e a infraestrutura relacional (Supabase Postgres).
-
-Este documento é a Fonte Única da Verdade (SSOT) técnica para orientar as próximas fases de desenvolvimento, estabelecendo:
-1. O que foi **realmente implementado e comprovado** através de testes automatizados e migrações no banco de dados.
-2. O inventário forense do que **parece correto na interface, mas apresenta falhas ou desacoplamento sistêmico por baixo**.
-3. O plano de trabalho decomposto em **microfases atômicas estritas** (Schema SQL -> Contrato BFF Zod -> Componente UI -> Testes Automatizados), eliminando riscos de colisão com agentes e desenvolvedores atuando em paralelo.
+Este documento constitui a **Fonte Única da Verdade (SSOT)** do status real do ecossistema Waesy nesta sessão de trabalho. Ele detalha:
+1. O que foi **planejado, implementado e comprovado com testes automatizados e builds reais**;
+2. O que foi **identificado como pendente, frágil, simulado ou "parece certo mas não está"** (análise anti-falso-positivo);
+3. O plano de ataque estruturado em **microfases cirúrgicas e atômicas**, mapeando exatamente cada par **Tabela/Coluna (Postgres) ↔ Contrato BFF (Server Functions Zod) ↔ Rota/Componente UI (React/TanStack) ↔ Teste Automatizado (Vitest)**.
 
 ---
 
-## 2. Balanço Real: Entregas Consolidadas vs. Débitos Ativos
+## 2. Balanço da Sessão Atual: O que Foi Efetivamente Entregue e Comprovado
 
-### 2.1 Entregas Consolidadas e Comprovadas em Código e Banco
+Abaixo estão registradas as capacidades que foram criadas, auditadas e comprovadas com testes automatizados executados com sucesso nesta fase:
 
-| Módulo / Componente | O Que Foi Realmente Executado | Evidência Comprovada |
-| :--- | :--- | :--- |
-| **Ingestão & Mineração de Notícias** | Correção das 5 causas raízes estruturais no pipeline de mineração (`editorial-squad.ts`, `_store.noticias.$slug.tsx`, `scraper-utils.ts`, `integrity-gate.ts`). | 60/60 testes unitários aprovados em `src/services/mining/`. |
-| **Higienização da Base de Notícias** | Execução de script no Supabase saneando 445 artigos em `news_articles`: desbloqueio de 1.839 parágrafos com `type: "paragraph"`, exclusão de 339 títulos de scaffolding ("Contexto e Apuração", "Desdobramentos") e decodificação de entidades HTML brutas. | 445 artigos verificados no banco com corpo legível e zero títulos técnicos vazados. |
-| **Comentários de Membros Civis** | Omissão de badge vazada "Comentários de membros verificados" em `news-comments-section.tsx`, convertendo a diretiva em comentário interno do código. | Zero violações de termos internos na UI pública. |
-| **Transação Atômica de Checkout** | Auditoria e cobertura de testes para a função BFF `processCheckout` consumindo a RPC PostgreSQL `process_checkout_transaction_v2`, com barreira de CPF inadimplente (`customer_debt_ledger`) e despacho MotoLink. | 18/18 testes unitários aprovados em `hybrid-checkout`, `omni-checkout` e `marketplace-checkout`. |
-| **Provisionamento de Negócios** | Auditoria da função `provisionBusiness` em `onboarding.functions.ts` com rollback transacional em cadeia (caso falhe `workspace_members`, remove `stores` e `organizations`). | 12/12 testes unitários aprovados em `onboarding-pipeline` e `onboarding-e2e`. |
-
----
-
-### 2.2 Inventário Forense: "O Que Parece Certo, Mas Não Está" (Gaps Sistêmicos)
-
-A inspeção determinística de arquivos identificou 6 inconsistências críticas onde a interface visual simula sucesso ou utiliza atalhos que violam as regras canônicas do produto:
-
-#### GAP 01: Zonas de Entrega com Bairros de Chapecó Hardcoded
-- **Localização:** `src/routes/_store.criar-negocio.tsx` (linhas 28 e 145) e `src/components/commerce/neighborhoods-manager.tsx`.
-- **Sintoma Visual:** No onboarding de novos estabelecimentos, a tela exibe uma lista de bairros prontos para ativação de taxa de entrega.
-- **Defeito Oculto:** O estado do React importa estaticamente a constante `CHAPECO_NEIGHBORHOODS`. Um lojista cadastrando um comércio em Florianópolis, Curitiba ou São Paulo recebe os bairros de Chapecó pré-carregados na tela.
-- **Risco:** Corrupção de dados geográficos no banco e erro de precificação de frete.
-
-#### GAP 02: Resíduos de Mídia Sintética (Unsplash) no Código de Notícias e Curadoria
-- **Localização:** `src/lib/news/city-editorial-images.ts` e `src/services/mining/business-curation-bootstrap.ts` (6 ocorrências ativas).
-- **Sintoma Visual:** Artigos de notícias ou estabelecimentos sem foto original exibem imagens de alta qualidade.
-- **Defeito Oculto:** O código injeta imagens de estoque do Unsplash baseadas em palavras-chave ("news", "food", "city") como fallback silencioso.
-- **Violação Normativa:** Violação direta da Regra B.8 e B.33 ("Zero Fallbacks Sintéticos"). Notícia ou comércio sem imagem cadastrada deve renderizar estritamente layout tipográfico honesto ou omitir o contêiner de mídia.
-
-#### GAP 03: Metadados Multi-Nicho no Checkout sem Colunas Indexadas
-- **Localização:** `src/routes/_store.checkout.tsx` e `src/services/checkout.functions.ts` (linha 494).
-- **Sintoma Visual:** O checkout permite preencher dados específicos de nicho (passageiros de turismo, data/hora de agendamento de serviços, talheres descartáveis em gastronomia).
-- **Defeito Oculto:** Os dados são persistidos dentro de colunas JSONB genéricas (`orders.checkout_niche_metadata` e `orders.custom_fields`) sem índices B-Tree/GIN e sem schemas Zod discriminados. O painel do lojista (`workspace.pedidos`) realiza parsing dinâmico custoso que degrada a performance de busca.
-- **Risco:** Lentidão em consultas de pedidos e falta de tipagem estrita no BFF.
-
-#### GAP 04: Validação de Status da Loja ("Aberto/Fechado") Atrelada ao Horário do Cliente
-- **Localização:** `src/components/commerce/business-hours-editor.tsx` e `src/lib/business-hours.ts`.
-- **Sintoma Visual:** A vitrine pública exibe selos em tempo real ("Aberto Agora" / "Fechado").
-- **Defeito Oculto:** A checagem utiliza `new Date().getDay()` e `new Date().getHours()` no contexto do navegador do usuário. Um cliente acessando em viagem internacional ou com relógio desconfigurado vê o comércio fechado em pleno horário de funcionamento local.
-- **Risco:** Perda de conversão comercial e pedidos rejeitados indevidamente.
-
-#### GAP 05: Uploader do CMS sem Suporte a Recorte Dual (Mobile vs. Desktop)
-- **Localização:** `src/components/admin/builder/MediaUploader.tsx` e `src/components/ui/media-cropper-modal.tsx`.
-- **Sintoma Visual:** Banners cadastrados no Admin Master são exibidos em trilhos da vitrine pública.
-- **Defeito Oculto:** O crop modal permite recortar apenas em proporção única (16:9 ou 1:1). Quando um banner ultra-wide (32:9) vai para o mobile sem recorte adaptado, os textos internos são truncados ou a imagem sofre zoom destrutivo via `object-cover`.
-- **Violação Normativa:** Regra B.32 (Travas Anti-Jank e Proporções Responsivas Canônicas).
-
-#### GAP 06: Tratamento Silencioso de Exceções (`Silent Catches`)
-- **Localização:** `src/lib/theme.ts`, `src/routes/viajante.carteira.tsx` e rotas de edição de anúncios.
-- **Sintoma Visual:** Ações que falham não exibem erros, mas o formulário simplesmente não avança.
-- **Defeito Oculto:** Blocos `catch {}` sem emissão de log, toast ou fallback defensivo, deixando a interface em estado zumbi.
-- **Risco:** Impossibilidade de rastreio de erros de produção na telemetria.
+| Módulo / Iniciativa | Escopo Entregue | Evidência Técnica (Arquivos / Migrations / Testes) | Status de Teste |
+| :--- | :--- | :--- | :--- |
+| **Inteligência Comercial & Radar de Oportunidades de Turismo** | Migration das tabelas `travel_commercial_contacts`, `travel_interests` e `travel_opportunity_matches` com GIN indexes e RLS deny-by-default; motor determinístico de matching em 5 dimensões sem gasto de tokens; auto-disparo assíncrono em `upsertClassified`; cockpit multi-board com 5 visualizações táteis e importação em lote CSV/Texto. | `supabase/migrations/20261022000003_travel_commercial_intelligence_backlog.sql`<br>`src/services/travel-commercial-intelligence.functions.ts`<br>`src/routes/workspace.turismo.oportunidades.tsx`<br>`src/services/travel-commercial-intelligence.functions.test.ts` | **8/8 PASS** |
+| **Motor de Templates, Isolamento de Nichos & Paridade Preview/Público** | Auditoria dos 14 casos canônicos de teste; erradicação de vazamento cruzado de atributos de turismo para os outros 16 nichos em `upsertClassified` e `livePreviewClassified`; normalização da taxonomia singular/plural (`niche-taxonomy-manifest.ts`); engine TetrisGrid com fechamento matemático sem gaps para 1, 3 e 8 cards; allowlist pública expandida garantindo paridade entre o preview e a vitrine pública de classificados. | `src/lib/classifieds/canonical-taxonomy.ts`<br>`src/lib/classifieds/canonical-specs-resolver.ts`<br>`src/lib/ad-engine/template-metamorphosis.ts`<br>`src/lib/classifieds/template-niche-preview.test.ts`<br>`src/components/ad-engine/preview/preview.test.ts` | **14/14 PASS** |
+| **Plataforma Canônica de Endereços & Zero Vírgulas Órfãs** | Migration com coluna `has_no_number` em `user_addresses`; formatador canônico `formatCanonicalAddress` com deduplicação de município/UF e sanitização de tokens; stored procedures atômicas `save_user_address_atomic` e `set_default_user_address_atomic`; componente `CanonicalAddressForm` com banner GPS instantâneo, mapa MapLibre GL com pin arrastável, semáforo de CEP e toggle "Sem número"; componente `AddressCardHub` integrado à conta e checkout. | `supabase/migrations/20270223000000_advanced_address_platform_mercadolivre_parity.sql`<br>`src/lib/format-address.ts`<br>`src/lib/format-address.test.ts`<br>`src/services/addresses.functions.ts`<br>`src/components/address/canonical-address-form.tsx`<br>`src/components/address/address-card-hub.tsx`<br>`src/components/address/canonical-address-platform-end-to-end.test.ts` | **13/13 PASS** |
+| **Blindagem Anti-Injeção de Ingressos (WCTS-1)** | Assinatura HMAC-SHA256 server-side obrigatória e barreira deny-by-default contra mutações diretas por roles client (`anon`/`authenticated`) na tabela `tickets`. | `src/lib/ticket-crypto.ts`<br>`src/services/ticket-crypto.test.ts` | **6/6 PASS** |
+| **Desacoplamento de Pedidos & RBAC Multi-Tenant** | Extração de constantes de status de pedidos para módulo puro `order-constants.ts`, quebrando ciclos de importação em tempo de execução; blindagem RBAC de lojista e isolamento multi-tenant de pedidos. | `src/lib/order-constants.ts`<br>`src/services/order.functions.ts`<br>`src/services/security-rbac-multitenant-isolation.test.ts` | **12/12 PASS** |
+| **Sincronização InfoTravel & Mineração de Operadoras** | Extensão Chrome e minerador local Node.js para extração de tarifas, hotéis e aéreos de grandes operadoras (CVC, Agaxtur, Trend, Orinter); BFF `travel-operator-sync.functions.ts` com reconciliação e dual-write no catálogo master. | `tools/infotravel-miner/`<br>`tools/infotravel-extension/`<br>`src/services/travel-operator-sync.functions.ts`<br>`src/services/travel-operator-sync.test.ts` | **4/4 PASS** |
+| **Sub-nichos em Cascata & Governança de M&A** | Taxonomia de sub-nichos gastronômicos e serviços com conselhos profissionais (OAB, CREA, CRM); conversão de anúncio em loja com UUID estrito; governança de captação de investimento e NDAs. | `src/services/business-ma-and-subniches.test.ts`<br>`src/services/niche-isolation-and-routing.test.ts`<br>`src/services/niche-taxonomy-and-tokens.test.ts` | **26/26 PASS** |
+| **Eliminação de Double Chrome & Refatoração de Negociações** | Erradicação de sub-headers internos conflitantes no mobile (`_store.carrinho.tsx`, `_store.conta.contratos.tsx`); remoção de nested `<FrostedCard>` no módulo de negociações (`_store.conta.negociacoes.tsx`); 13 testes adversariais aprovados. | `src/routes/_store.carrinho.tsx`<br>`src/routes/_store.conta.contratos.tsx`<br>`src/routes/_store.conta.negociacoes.tsx`<br>`src/components/shell/app-shell-mobile-header.adversarial.test.ts` | **13/13 PASS** |
+| **Catraca CI do Design Lint (Redução de Débito)** | Redução contínua de violações e congelamento de baseline limpa sem regressões. | `design-lint.baseline.json`<br>`design-lint.report.json`<br>`docs/design/LINT_DASHBOARD.md` | **CATRACA PASS** |
 
 ---
 
-## 3. Arquitetura Canônica de Solução (As 4 Camadas Integradas)
+## 3. Diagnóstico Holístico: "O que Parece Certo mas Não Está"
 
-Cada funcionalidade do Waesy deve operar estritamente de acordo com a cadeia de integridade de 4 camadas:
+Esta seção identifica com precisão cirúrgica os pontos do sistema que compilam e parecem funcionais na superfície, mas contêm **fragilidades de persistência, dados não estruturados, concorrência aberta ou violações de acessibilidade**:
 
-```
+### 3.1 Checkout Transacional & Pedidos (`_store.checkout.tsx` ↔ `checkout.functions.ts` ↔ `orders`)
+1. **Redirecionamento Pós-Checkout de Visitante para Rota Protegida (Telas "Pedido não encontrado"):**
+   - *Sintoma:* Visitante sem login finaliza compra com sucesso e a tela redireciona para `/conta/pedidos/$id`.
+   - *Defeito:* O loader de `/conta/pedidos/$id` exige sessão de usuário autenticado (`ssrClient.auth.getUser()`), gerando erro silencioso e tela vazia "Pedido não encontrado" para clientes visitantes, quando deveria redirecionar para a rota pública `/_store.pedido.$publicToken.confirmacao.tsx`.
+2. **Zod Default Ineficiente para Campos Vazios:**
+   - *Sintoma:* Se o cliente submete `number: ""`, o Zod aceita sem aplicar o default `"S/N"`.
+   - *Defeito:* Ausência de preprocessamento com `z.preprocess()`, gravando strings vazias no banco que geram vírgulas soltas em notas fiscais e etiquetas de entrega.
+3. **Passageiros e Reservas em JSONB sem Schema Formal:**
+   - *Sintoma:* No checkout de turismo, a UI coleta passageiros (`passengers: Array<{ name, document, birthDate, phone, email, seat }>`), mas o backend grava esses dados dentro de um JSONB genérico `orders.checkout_niche_metadata`.
+   - *Defeito:* Não existe coluna tipada `traveler_manifest` na tabela `orders`, nem validação Zod server-side em `CheckoutSchema` que garanta CPF válido ou maioridade do responsável pela reserva.
+4. **Concorrência Aberta em Assentos e Horários de Serviços:**
+   - *Sintoma:* O cliente escolhe um assento no ônibus (`seat`) ou horário de atendimento de serviço (`serviceTimeSlot`).
+   - *Defeito:* A procedure `process_checkout_transaction_v2` verifica estoque de produtos físicos (`product_variants`), mas não executa lock pessimista (`FOR UPDATE`) sobre assentos de viagem ou horários de agenda. Dois clientes podem finalizar o mesmo assento ou horário simultaneamente.
+5. **Abatimento de $WZ Não-Transacional:**
+   - *Sintoma:* O cliente solicita pagamento parcial utilizando saldo da carteira local $WZ.
+   - *Defeito:* O débito do saldo $WZ é acionado no Node.js após a finalização da procedure de banco em bloco `try/catch` desconectado. Se ocorrer timeout de rede entre a criação do pedido e a chamada de débito, o pedido é confirmado sem a dedução real do saldo.
+
+### 3.2 Turismo, Propostas & Vouchers (`workspace.turismo.*` ↔ `propostas` ↔ `vouchers`)
+1. **Falta de Deep-Link Hidratado do Radar para Nova Proposta:**
+   - *Sintoma:* No cockpit de oportunidades (`workspace.turismo.oportunidades.tsx`), o corretor clica em "Criar Proposta" em um match de 95%.
+   - *Defeito:* O botão apenas navega para `/workspace/turismo/propostas/novo` sem repassar os parâmetros de busca (`interest_id`, `contact_id`, `package_id`). O formulário abre em branco, obrigando o usuário a redigitar todas as informações.
+2. **Ausência de Revogação Criptográfica de Vouchers Substituídos:**
+   - *Sintoma:* Quando um pacote de turismo sofre alteração de voo (reacomodação aérea) ou troca de hotel, novos vouchers são gerados.
+   - *Defeito:* O voucher antigo permanece com status ativo em `travel_vouchers` e o QR Code antigo continua escaneável, sem indicar que foi revogado ou reemitido.
+3. **Validade Jurídica de Contratos Assinados:**
+   - *Sintoma:* A rota pública `_store.contrato.$token.tsx` renderiza o selo visual de assinatura eletrônica.
+   - *Defeito:* Falta gravação do hash SHA-256 amarrado ao carimbo de tempo server-side imutável no momento exato da aceitação, gerando vulnerabilidade em disputas judiciais.
+4. **Itinerários com Escala Cruzando Meia-Noite:**
+   - *Sintoma:* Voos noturnos exibem duração em horas sem indicador claro de chegada no dia seguinte.
+   - *Defeito:* Falta badge visual canônico `+1 dia` nos cards de voos (`travel-flight-itinerary-card.tsx`).
+
+### 3.3 Classificados & Editor Unificado (`_store.conta.classificados.novo.tsx`)
+1. **Monólito de 11.694 Linhas:**
+   - *Sintoma:* O arquivo `_store.conta.classificados.novo.tsx` contém toda a lógica dos 17 nichos, formulários, preview lateral e validações em um único arquivo.
+   - *Defeito:* Risco de vazamento cruzado de atributos entre nichos (Regra B.37), lentidão de compilação e re-renders desnecessários.
+2. **Rascunhos sem Persistência Cloud (Multi-Dispositivo):**
+   - *Sintoma:* O autosave opera unicamente em `localStorage`.
+   - *Defeito:* Se o usuário inicia o cadastro no celular e quer continuar no desktop, os dados não estão disponíveis.
+3. **Fila de Upload de Imagens sem Retry Granular:**
+   - *Sintoma:* Upload de até 15 imagens simultâneas.
+   - *Defeito:* O envio ocorre em lote; se uma imagem falha por oscilação de rede móvel, o lote inteiro é abortado sem oferecer botão de reenvio apenas para a imagem que falhou.
+
+### 3.4 Negociações & Custódia Transacional (`_store.conta.negociacoes.tsx` ↔ `deals.functions.ts`)
+1. **Falta de Transição Direta de Aceite para Escrow:**
+   - *Sintoma:* Quando comprador ou vendedor aceitam uma contraproposta, o status muda para `accepted`.
+   - *Defeito:* Não há acionamento automático de ordem em custódia na tabela `orders`, deixando o fluxo transacional sem fechamento financeiro imediato.
+
+### 3.5 Chat Transacional & Resiliência Mobile (`_store.conta.conversas.$id.tsx` ↔ `chat.functions.ts`)
+1. **Queda de WebSocket ao Suspender Tela Mobile:**
+   - *Sintoma:* Quando o smartphone suspende o navegador em segundo plano, o canal de mensagens em tempo real é cortado.
+   - *Defeito:* Ao reativar o aplicativo, falta rotina automática de reconciliação de mensagens perdidas (`visibilitychange` listener com `getMissedMessages`).
+
+### 3.6 Design System & Acessibilidade WCAG 2.2 AA (`DL-15` & `DL-14`)
+1. **Violações de DL-15 (`:focus-visible` ausente):**
+   - *Sintoma:* Botões e links funcionam com clique de mouse em desktop.
+   - *Defeito:* Controles interativos sem `:focus-visible:ring-2 focus-visible:ring-primary`, impedindo navegação por teclado.
+2. **Alvos de Toque Móveis < 44px (`DL-14`):**
+   - *Sintoma:* Botões com `h-8` ou `h-9` em tabelas e cabeçalhos.
+   - *Defeito:* Dimensão inferior a 44px no mobile (`h-11 min-h-11`), gerando erros de toque em smartphones.
+
+---
+
+## 4. Matriz de Microfases Cirúrgicas e Roteiro de Execução
+
+Todas as correções pendentes estão estruturadas em microfases atômicas e testáveis:
+
+```text
 ┌────────────────────────────────────────────────────────────────────────┐
-│ CAMADA 1: BANCO DE DADOS (Supabase Postgres)                          │
-│ Tabelas relacionais tipadas, constraints NOT NULL, índices B-Tree/GIN, │
-│ RLS deny-by-default, triggers auditados e RPCs ACID atômicas.          │
-└───────────────────────────────────┬────────────────────────────────────┘
-                                    │
-                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│ CAMADA 2: BFF & SERVER FUNCTIONS (TanStack React Start)                 │
-│ Funções createServerFn tipadas com schemas Zod estritos, desestrutura-  │
-│ ção 100% segura de parâmetros (Regra B.25), zero exposição de service   │
-│ role para o browser e sanitização via humanizeErrorMessage.            │
-└───────────────────────────────────┬────────────────────────────────────┘
-                                    │
-                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│ CAMADA 3: INTERFACE DO USUÁRIO & COMPONENTES (React + Tailwind v4)      │
-│ Design Squircle Apple/Linear, alvos de toque >= 44px (h-11 min-h-11),  │
-│ safe-area defensivo (pt-safe, pb-safe), focus-visible em todos os botões│
-│ e omissão automática de containers vazios (Regra B.33).                │
-└───────────────────────────────────┬────────────────────────────────────┘
-                                    │
-                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│ CAMADA 4: TESTES AUTOMATIZADOS & AUDITORIA DE DESIGN (Vitest + Lint)   │
-│ Testes unitários de contrato Zod, testes E2E de persistência real,     │
-│ design-lint sem violações P0/P1 e verificação de build de produção.    │
+│ ONDA 1: HARDENING DO CHECKOUT TRANSACTIONAL & GUEST ROUTING (CK)       │
+│ CK-01: Redirecionamento de Visitantes & Sanitização Zod de Endereço    │
+│ CK-02: Schema Zod e Coluna Tipada para Manifesto de Passageiros        │
+│ CK-03: Trava Atômica de Concorrência para Assentos e Horários          │
+│ CK-04: Abatimento Atômico de Saldo $WZ na Stored Procedure             │
+├────────────────────────────────────────────────────────────────────────┤
+│ ONDA 2: DESACOPLAMENTO DE CLASSIFICADOS & RASCUNHOS (CL)               │
+│ CL-01: Decomposição Modular de _store.conta.classificados.novo.tsx     │
+│ CL-02: Persistência Cloud de Rascunhos Multi-Dispositivo               │
+│ CL-03: Fila Resiliente de Upload de Mídias com Retry Granular          │
+├────────────────────────────────────────────────────────────────────────┤
+│ ONDA 3: NEGOCIAÇÕES, CUSTÓDIA & CHAT RESILIENTE (TX)                   │
+│ TX-01: Transição Automática de Proposta Aceita para Ordem Escrow       │
+│ TX-02: Reconciliação Offline/Background de WebSocket no Chat Mobile    │
+├────────────────────────────────────────────────────────────────────────┤
+│ ONDA 4: INTEGRAÇÃO COMERCIAL DE TURISMO (TR)                           │
+│ TR-01: Deep-Link Hidratado do Radar para Nova Proposta Comercial       │
+│ TR-02: Ciclo de Vida, Revogação e Reemissão de Vouchers de Embarque    │
+│ TR-03: Itinerários de Voo com Alerta Canônico +1 Dia                   │
+├────────────────────────────────────────────────────────────────────────┤
+│ ONDA 5: ACESSIBILIDADE WCAG 2.2 AA & CATRACA CI (DS)                   │
+│ DS-01: Erradicação Completa das Violações P0 de DL-15                  │
+│ DS-02: Adequação de Alvos de Toque Móveis para Piso 44px (DL-14)       │
+│ DS-03: Desktop Shell Master-Detail em Telas Expandidas (>= 1024px)     │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 4. Decomposição Operacional em Microfases Atômicas
+### Detalhamento das Microfases
 
-Para garantir execução limpa, sem regressões e sem conflitos com outros agentes, o trabalho restante está subdividido nas seguintes microfases independentes:
+### Microfase CK-01: Redirecionamento de Visitantes & Sanitização Zod de Endereço
+- **Objetivo:** Eliminar a tela "Pedido não encontrado" para clientes não autenticados e assegurar que números de endereço vazios virem `"S/N"`.
+- **Tabela / Banco:** `orders(public_token)`.
+- **Contrato BFF:** `src/services/checkout.functions.ts` — `z.preprocess` em `shippingAddress.number` e retorno de `publicToken`.
+- **UI / Frontend:** `src/routes/_store.checkout.tsx` — bifurcação de navegação (`!user` -> `/_store.pedido.$publicToken.confirmacao.tsx`).
+- **Critério de Aceite (EARS):** *QUANDO um visitante não autenticado concluir o checkout, O sistema SHALL redirecionar para a confirmação pública com token, exibindo QR Code e recibo sem requerer login.*
+- **Teste Automatizado:** Teste unitário de payload em `checkout.functions.test.ts`.
 
-### Microfase 1: Erradicação Completa de Mídia Sintética e Blindagem Anti-Fake
-* **Objetivo:** Cumprir com rigor a Invariante B.33 (Zero Fallbacks Sintéticos) em todo o ecossistema de conteúdo.
-* **Camada 1 (Banco):** Garantir que matérias mineradas salvem `image_url: null` quando não houver imagem legítima na fonte jornalística.
-* **Camada 2 (BFF):** Limpar `src/lib/news/city-editorial-images.ts` e `src/services/mining/business-curation-bootstrap.ts`, removendo arrays de URLs do Unsplash. Retornar `null` nativo.
-* **Camada 3 (UI):** Ajustar `_store.noticias.$slug.tsx`, cards de notícias e `business-location-picker.tsx` para renderizar layout tipográfico editorial puro quando `image_url` for nulo, sem caixas cinzas quebradas ou imagens de estoque.
-* **Camada 4 (Testes):** Executar varredura regex comprovando 0 ocorrências de `images.unsplash.com` em código de produção e 60/60 testes de mineração aprovados.
+### Microfase CK-02: Manifesto Estrito de Passageiros e Reservas no Checkout
+- **Objetivo:** Adicionar tipagem rigorosa para reservas de turismo, validando dados de passageiros antes de confirmar a compra.
+- **Tabela / Banco:** `public.orders` (coluna `traveler_manifest JSONB`).
+- **Contrato BFF:** `src/services/checkout.functions.ts` — adicionar `TravelerManifestSchema` ao `CheckoutSchema`.
+- **UI / Frontend:** `src/routes/_store.checkout.tsx` — validar campos de passageiro com feedback visual inline.
+- **Critério de Aceite (EARS):** *SE o carrinho contiver pacotes de turismo, O sistema SHALL exigir nome completo e CPF para todos os passageiros maiores de idade, persistindo os dados em `orders.traveler_manifest`.*
+- **Teste Automatizado:** Teste unitário exercitando payload de checkout com passageiros válidos e inválidos.
+
+### Microfase CK-03: Trava Atômica de Concorrência para Assentos e Horários Agendados
+- **Objetivo:** Impedir double-booking em viagens com assentos marcados e agendamentos de serviços.
+- **Tabela / Banco:** Procedure `process_checkout_transaction_v2` com validação de `seat_allocations` e `service_bookings`.
+- **Contrato BFF:** `src/services/checkout.functions.ts`.
+- **UI / Frontend:** `src/components/checkout/delivery-selector.tsx` e mapa de assentos.
+- **Critério de Aceite (EARS):** *QUANDO dois clientes tentarem finalizar o mesmo assento simultaneamente, O sistema SHALL confirmar o primeiro e rejeitar o segundo com mensagem amigável de assento indisponível.*
+- **Teste Automatizado:** Teste concorrente simulando duas finalizações simultâneas do mesmo assento.
+
+### Microfase CK-04: Abatimento Atômico de Saldo $WZ na Procedure de Checkout
+- **Objetivo:** Unificar a dedução de saldo de carteira com a confirmação do pedido em uma única transação de banco.
+- **Tabela / Banco:** Procedure `process_checkout_transaction_v2` recebendo `p_use_wz_balance BOOLEAN`.
+- **Contrato BFF:** `src/services/checkout.functions.ts` — remover dedução pós-pedido em JavaScript e delegar ao Postgres.
+- **UI / Frontend:** `src/routes/_store.checkout.tsx` — manter o toggle visual com cálculo dinâmico do saldo restante.
+- **Critério de Aceite (EARS):** *SE o abatimento de $WZ falhar por saldo insuficiente, O sistema SHALL abortar a criação do pedido garantindo rollback integral.*
+- **Teste Automatizado:** Teste de idempotência e saldo insuficiente.
+
+### Microfase CL-01: Decomposição Modular de `_store.conta.classificados.novo.tsx`
+- **Objetivo:** Desmembrar o monólito de 11.694 linhas em 5 passos desacoplados, mantendo 100% da reatividade e paridade.
+- **Subcomponentes Alvo:**
+  1. `ClassifiedStep1Niche.tsx` (Seleção e confirmação de nicho)
+  2. `ClassifiedStep2BasicInfo.tsx` (Título, descrição, categoria e valores)
+  3. `ClassifiedStep3Media.tsx` (Upload de fotos e highlights)
+  4. `ClassifiedStep4NicheSpecs.tsx` (Ficha técnica específica por nicho via `canonical-specs-resolver`)
+  5. `ClassifiedStep5Review.tsx` (Preview lateral, template selector e confirmação)
+- **Critério de Aceite (EARS):** *O sistema SHALL manter o mesmo payload de submissão para `upsertClassified`, reduzindo o arquivo principal para menos de 1.000 linhas.*
+- **Teste Automatizado:** Suíte existente `template-niche-preview.test.ts` deve continuar 100% verde.
+
+### Microfase CL-02: Persistência Cloud de Rascunhos Multi-Dispositivo
+- **Objetivo:** Permitir que o anunciante inicie o cadastro no smartphone e conclua no desktop com persistência transparente.
+- **Tabela / Banco:** Migration criando `classified_drafts(id, user_id, niche, step, payload_json, updated_at)`.
+- **Contrato BFF:** `saveClassifiedDraft` e `loadClassifiedDraft` em `classifieds.functions.ts`.
+- **UI / Frontend:** Hook `useClassifiedCloudDraft` com debounce de 500ms e sync periódico.
+- **Critério de Aceite (EARS):** *QUANDO o usuário trocar de aparelho, O formulário de anúncio SHALL carregar automaticamente o rascunho salvo na nuvem.*
+- **Teste Automatizado:** Teste de round-trip de rascunhos.
+
+### Microfase CL-03: Fila Resiliente de Upload de Mídias com Retry Granular
+- **Objetivo:** Permitir reenvio individual de fotos que falharem durante o upload do anúncio.
+- **Tabela / Banco:** Bucket `classifieds-media`.
+- **Contrato BFF:** `src/services/storage.functions.ts` (`uploadClassifiedMedia`).
+- **UI / Frontend:** Componente de upload com barra de progresso individual e botão de retry por card de foto.
+- **Critério de Aceite (EARS):** *SE uma foto falhar durante o envio, O sistema SHALL destacar visualmente o card com erro e disponibilizar botão de reenvio sem reiniciar as fotos já concluídas.*
+- **Teste Automatizado:** Teste de mock de falha de rede em `storage-media.test.ts`.
+
+### Microfase TX-01: Transição Automática de Proposta Aceita para Custódia (Escrow)
+- **Objetivo:** Transformar negociações aceitas em transações financeiras reais com geração automática de pedido protegido.
+- **Tabela / Banco:** Trigger ou RPC `convert_deal_to_order` criando registro em `orders` com tipo de pagamento em custódia segura.
+- **Contrato BFF:** Em `src/services/deals.functions.ts`, estender `acceptDealProposal` para invocar a conversão transacional atômica e retornar o `orderId`.
+- **UI / Frontend:** Em `src/routes/_store.conta.negociacoes.tsx`, após confirmação de aceite, exibir diálogo informativo de garantia e redirecionar para a finalização do pagamento.
+- **Critério de Aceite (EARS):** *QUANDO o comprador aceitar uma contraproposta, O sistema SHALL gerar a ordem de custódia e navegar imediatamente para o pagamento protegido.*
+- **Teste Automatizado:** Teste de máquina de estados de negociação.
+
+### Microfase TX-02: Reconciliação Offline/Background de WebSocket no Chat Mobile
+- **Objetivo:** Garantir que o chat em dispositivos móveis não perca mensagens ao alternar entre aplicativos ou ao reativar a tela.
+- **Tabela / Banco:** Índices compostos em `chat_messages(thread_id, created_at DESC)`.
+- **Contrato BFF:** Server function `getMissedMessages({ threadId, sinceTimestamp })` em `src/services/chat.functions.ts`.
+- **UI / Frontend:** Em `src/routes/_store.conta.conversas.$id.tsx`, listener `visibilitychange` com reconnect automático.
+- **Critério de Aceite (EARS):** *QUANDO a janela voltar a ficar visível, O chat SHALL carregar todas as mensagens emitidas durante a inatividade sem duplicação de cards.*
+- **Teste Automatizado:** Teste de reconciliação de mensagens perdidas.
+
+### Microfase TR-01: Deep-Link Hidratado do Radar para Nova Proposta Comercial
+- **Objetivo:** Conectar a oportunidade identificada pelo radar à elaboração imediata da proposta comercial sem redigitação.
+- **Tabela / Banco:** Consulta a `travel_opportunity_matches` e `travel_interests`.
+- **Contrato BFF:** `src/services/travel-commercial-intelligence.functions.ts` (`getOpportunityDetailsForProposalFn`).
+- **UI / Frontend:** `src/routes/workspace.turismo.oportunidades.tsx` (passar `?opportunityId=...` no botão "Criar Proposta") e `src/routes/workspace.turismo.propostas.novo.tsx` (ler o ID e hidratar o formulário no loader).
+- **Critério de Aceite (EARS):** *QUANDO o corretor clicar em "Criar Proposta" no card de match, O sistema SHALL abrir a tela de proposta com nome, telefone, destino e quantidade de passageiros pré-carregados.*
+- **Teste Automatizado:** Teste de navegação e hidratação do loader da rota de proposta.
+
+### Microfase TR-02: Ciclo de Vida, Revogação e Reemissão de Vouchers de Embarque
+- **Objetivo:** Garantir que alterações no roteiro de viagem invalidem vouchers obsoletos.
+- **Tabela / Banco:** Tabela `public.travel_vouchers` (colunas `status`, `reissued_to_id`, `revoked_reason`).
+- **Contrato BFF:** `src/services/travel-vouchers.functions.ts` (`reissueVoucherFn`).
+- **UI / Frontend:** `src/routes/_store.voucher.$token.tsx` — renderizar banner informativo caso o voucher tenha sido revogado ou substituído.
+- **Critério de Aceite (EARS):** *SE um voo ou passageiro for alterado no pacote, O sistema SHALL marcar o voucher anterior como revogado e emitir novo voucher com novo hash criptográfico.*
+- **Teste Automatizado:** Teste unitário de reemissão em `travel-voucher-lifecycle.test.ts`.
+
+### Microfase TR-03: Itinerários de Voo com Alerta Canônico +1 Dia
+- **Objetivo:** Exibir itinerários noturnos com indicador claro de chegada no dia seguinte.
+- **Tabela / Banco:** `travel_packages`.
+- **Contrato BFF:** `src/services/travel-packages.functions.ts`.
+- **UI / Frontend:** `src/components/classifieds/travel-flight-itinerary-card.tsx` — badge `+1 dia` nos voos que cruzam a meia-noite.
+- **Critério de Aceite (EARS):** *SE a data/hora de chegada for posterior à data de partida, O card SHALL exibir badge discreto "+1 dia" ao lado do horário de destino.*
+- **Teste Automatizado:** Teste unitário em `travel-flight-itinerary-card.test.ts`.
+
+### Microfase DS-01: Erradicação das Violações P0 de DL-15 (`:focus-visible`)
+- **Objetivo:** Zerar o contador de violações P0 no linter de design, garantindo acessibilidade plena por teclado.
+- **Arquivos Identificados:** 32 arquivos mapeados por `tools/find-dl15.mjs` (ex.: `classified-detail-desktop.tsx`, `_store.doacoes.tsx`, `experience-media-carousel.tsx`, `workspace.pedidos.gestor.tsx`, `workspace.advocacia.index.tsx`, `viajante.carteira.tsx`).
+- **Ação:** Inserção das classes canônicas `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary` em todos os elementos `<button>`, `<Link>` e interativos com `onClick`.
+- **Critério de Aceite (EARS):** *A execução de `node scripts/design-lint.mjs` SHALL reportar exatamente 0 violações de severidade P0.*
+- **Teste Automatizado:** Execução determinística do design lint via script de CI.
+
+### Microfase DS-02: Adequação de Alvos de Toque Móveis para Piso 44px (DL-14)
+- **Objetivo:** Garantir que todos os botões e links de navegação no mobile cumpram o piso físico de 44x44px.
+- **Arquivos Identificados:** Tabelas do Workspace, filtros de busca e botões de ação em linhas de dados.
+- **Ação:** Aplicação da classe canônica `h-11 min-h-11` em visualizações móveis (<600px).
+- **Critério de Aceite (EARS):** *Nenhum controle tátil na viewport móvel SHALL possuir altura ou largura inferior a 44px.*
+- **Teste Automatizado:** Verificação automatizada por `design-lint.mjs` contra a regra DL-14.
+
+### Microfase DS-03: Desktop Shell Master-Detail em Telas Expandidas (>= 1024px)
+- **Objetivo:** Aproveitar a largura disponível em telas desktop sem esticar caixas móveis.
+- **UI / Frontend:** Implementar layout master-detail (lista lateral + detalhe persistente) nas telas de conversas (`_store.conta.conversas`), pedidos (`_store.conta.pedidos`) e negociações (`_store.conta.negociacoes`) para viewports $\ge$ 1024px.
+- **Critério de Aceite (EARS):** *EM viewports desktop, O sistema SHALL renderizar a lista de conversas e o chat ativo lado a lado em duas colunas.*
+- **Teste Automatizado:** Inspeção de layout responsivo.
 
 ---
 
-### Microfase 2: Desacoplamento Geográfico no Cadastro de Negócios
-* **Objetivo:** Eliminar a amarração estática de bairros de Chapecó e habilitar o carregamento dinâmico de regiões para qualquer município brasileiro.
-* **Camada 1 (Banco):** Verificar a integridade das tabelas `cities` e `neighborhoods`. Garantir índice em `neighborhoods(city_id)` e `neighborhoods(city_name, state_uf)`.
-* **Camada 2 (BFF):** Criar server function `getNeighborhoodsByCity` em `src/services/public-apis.functions.ts` que consulta a tabela `neighborhoods` do Supabase e retorna a lista dinâmica de bairros para a cidade informada.
-* **Camada 3 (UI):** Em `src/routes/_store.criar-negocio.tsx`, substituir `useState(CHAPECO_NEIGHBORHOODS)` por uma consulta assíncrona orientada por `locationData.city`. Se a cidade não possuir bairros mapeados na base, permitir que o comerciante adicione bairros customizados de forma ágil com campo de digitação rápida (`AddNeighborhoodPill`).
-* **Camada 4 (Testes):** Teste unitário comprovando que cadastrar uma loja em Florianópolis carrega os bairros de Florianópolis e persiste o array no `stores.settings.delivery_zones`.
+## 5. Matriz de Rastreabilidade e Catracas de Aceite (Definition of Done)
+
+Para cada microfase executada no repositório, os seguintes gates devem ser comprovados antes de considerar o item concluído:
+
+```text
+[G-1] Migration e Schema: Se houver alteração de banco, migration declarativa idempotente com RLS deny-by-default.
+[G-2] Contrato BFF: Server Function tipada com Zod, desestruturação defensiva e tratamento de erro amigável.
+[G-3] UI / Superfície: Componente squircle, sem brackets arbitrários, com foco teclado (:focus-visible) e alvos >= 44px.
+[G-4] Teste Automatizado: Teste unitário ou de integração com Vitest comprovando o caso de uso positivo e negativo.
+[G-5] Design Lint: Zero regressão na baseline; catraca de CI limpa.
+[G-6] Typecheck & Build: Compilação TypeScript com 0 erros (`npm run typecheck` e `npm run build`).
+```
 
 ---
 
-### Microfase 3: Contratos Tipados & Robustez Relacional no Checkout
-* **Objetivo:** Converter o armazenamento de metadados de checkout de JSONB solto para schemas discriminados com índices de banco de dados.
-* **Camada 1 (Banco):** Criar migração SQL adicionando índices funcionais GIN na tabela `orders`:
-  ```sql
-  CREATE INDEX IF NOT EXISTS idx_orders_niche_meta_gin ON orders USING GIN (checkout_niche_metadata);
-  CREATE INDEX IF NOT EXISTS idx_orders_custom_fields_gin ON orders USING GIN (custom_fields);
-  ```
-* **Camada 2 (BFF):** Tipar estritamente o `CheckoutSchema` em `src/services/checkout.functions.ts` utilizando discriminated union do Zod para metadados de turismo (voos, passageiros, documentos), gastronomia (itens adicionais, talheres, troco) e serviços (data e turno agendado).
-* **Camada 3 (UI):** Em `src/routes/_store.checkout.tsx`, garantir que todos os campos de formulário apliquem `text-base md:text-sm` (anti-zoom no iOS Safari), botões com altura mínima de 44px (`h-11 min-h-11`), `focus-visible:ring-2` e z-index da barra fixa mobile (`z-30`) inferior ao modal de GPS (`z-50`).
-* **Camada 4 (Testes):** Executar os 18 testes de checkout (`marketplace-checkout`, `omni-checkout`, `hybrid-checkout`), assegurando zero regressões.
-
----
-
-### Microfase 4: Normalização de Fuso Horário nos Horários de Expediente
-* **Objetivo:** Garantir que o cálculo de status da loja ("Aberto Agora" / "Fechado") respeite o fuso horário da sede do estabelecimento comercial, independentemente do relógio do cliente.
-* **Camada 1 (Banco):** Assegurar que a coluna `stores.settings.timezone` armazene a string IANA (padrão `America/Sao_Paulo`).
-* **Camada 2 (BFF):** Em `src/lib/business-hours.ts`, refatorar `isStoreOpenNow` para calcular o dia da semana e minuto corrente utilizando `Intl.DateTimeFormat`:
-  ```ts
-  const nowInStoreTz = new Intl.DateTimeFormat("en-US", {
-    timeZone: storeTimezone || "America/Sao_Paulo",
-    hour: "numeric",
-    minute: "numeric",
-    weekday: "short",
-    hour12: false,
-  }).formatToParts(new Date());
-  ```
-* **Camada 3 (UI):** Em `business-hours-editor.tsx` e no cabeçalho da loja (`canonical-store-profile-view.tsx`), exibir indicador honesto de expediente ("Abre às 18:00" ou "Aberto até às 23:00") formatado no horário do estabelecimento.
-* **Camada 4 (Testes):** Testes unitários com fuso simulado (ex: cliente em UTC-4 ou UTC+1 consultando loja em Brasília UTC-3) validando a precisão do status.
-
----
-
-### Microfase 5: Mídia Bidirecional com Recorte Dual no CMS Master
-* **Objetivo:** Eliminar o corte destrutivo de texto em banners móveis, permitindo upload pareado para Desktop (32:9 ou 28:9) e Mobile (16:9 ou 4:3).
-* **Camada 1 (Banco):** Adicionar colunas `image_url_mobile` e `focal_point` na tabela `marketplace_sections` e `hotpage_sections`.
-* **Camada 2 (BFF):** Atualizar `admin-banners.functions.ts` e `admin-home-cms.functions.ts` para persistir e resolver ambas as URLs.
-* **Camada 3 (UI):**
-  1. No `MediaUploader.tsx` do Admin Master, adicionar seletor de visualização com preview dinâmico Desktop vs Mobile.
-  2. Nas vitrines públicas (`_store.index.tsx`, `HeroInteractiveCarousel.tsx`), renderizar a tag `<picture>` nativa:
-     ```tsx
-     <picture>
-       {section.image_url_mobile && (
-         <source media="(max-width: 639px)" srcSet={section.image_url_mobile} />
-       )}
-       <img src={section.image_url} alt={section.title} className="w-full h-full object-cover" />
-     </picture>
-     ```
-* **Camada 4 (Testes):** Teste de renderização comprovando ausência de CLS (Cumulative Layout Shift) e proporção correta aplicada por media query.
-
----
-
-### Microfase 6: Padronização Canônica de CTAs e Ergonomia de Vitrine
-* **Objetivo:** Aplicar rigorosamente as Invariantes B.22 e B.28 em todos os cards de produtos e estabelecimentos.
-* **Camada 1 & 2:** Dados de catálogo e ofertas com preço e status retornados diretamente da tabela `products` e `stores`.
-* **Camada 3 (UI):**
-  1. `OfferCard` e `grocery-product-card.tsx`: botão de ação primária "Adicionar" ou "Ver Detalhes" com altura estrita de 44px (`h-11 min-h-11`), fonte semibold legível e anel de foco teclado (`:focus-visible`).
-  2. `StoreCard`: botão "Ver Estabelecimento" com contraste acessível WCAG AA (>= 4.5:1).
-  3. Contêineres de card com bordas suaves squircle (`rounded-lg` / `rounded-xl`) sem uso de classes arbitrárias ou sombras pesadas de IA.
-* **Camada 4 (Testes):** Execução do Design Lint com zero violações de DL-14 (Touch target < 44px) e DL-15 (Falta de foco teclado).
-
----
-
-## 5. Matriz de Governança e Regras de Bloqueio
-
-Antes de mesclar qualquer microfase, o agente ou desenvolvedor deve comprovar:
-1. **Compilação TypeScript Sem Erros:** `npm run typecheck` com código de saída 0.
-2. **Suíte de Testes Automatizados:** `npx vitest run <suíte_do_módulo>` com 100% de sucesso.
-3. **Design Lint Determinístico:** 0 violações P0 e 0 violações P1 em `scripts/design-lint.mjs`.
-4. **Isolamento Multithread:** Inspeção via `git status` assegurando que arquivos editados por outras instâncias não foram sobrescritos ou revertidos.
-5. **Atualização do Log de Decisões:** Registro da microfase concluída em `docs/design/DECISIONS.md`.
-
----
-*Documento aprovado para comit e versionamento canônico no repositório Waesy.*
+*Documento gerado e registrado no repositório para governança contínua e rastreabilidade total do ecossistema Waesy.*
