@@ -1,5 +1,12 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-295: Onda 4 de Controles do Builder
+- **Data:** 2026-10-22
+- **Contexto:** Uploader e construtor de arrays tinham gradientes arbitrários, cores literais, `transition-all`, ações menores que 44px e drop zone sem navegação por teclado.
+- **Decisão:** Remover o fundo radial e cores branco/preto, normalizar inputs e ações para 44px, trocar transições genéricas por transições específicas, adicionar foco e transformar a área de upload em controle operável por teclado.
+- **Evidência:** Typecheck PASS; 1 arquivo de teste e 3 testes PASS; design lint reduziu 12.263 para 12.241 violações (-22); `git diff --check` PASS.
+- **Consequências:** Edição de mídia e listas mais acessível, sem alteração de upload, presets, callbacks ou persistência.
+
 ## DEC-294: Onda 3 de Estados Vazios e Seletor de Cor
 - **Data:** 2026-10-22
 - **Contexto:** Ações do estado vazio usavam altura de 40px; o seletor de cor declarava `#000000` diretamente no componente e oferecia campo de 32px.
