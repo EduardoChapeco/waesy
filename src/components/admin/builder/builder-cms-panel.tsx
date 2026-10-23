@@ -1,10 +1,9 @@
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
-import { Database, ShoppingBag, MapPin, Hotel, Star, Store, Plus, ExternalLink, Sliders, CheckCircle2, Layers } from 'lucide-react';
+import { Database, ShoppingBag, MapPin, Star, Store, Plus, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 export interface BuilderCmsPanelProps {
@@ -34,7 +33,7 @@ export function BuilderCmsPanel({
       unit: "produtos cadastrados",
       blockType: "product_grid",
       bindingSource: "dynamic_products",
-      actionLabel: "Inserir Grade de Produtos",
+      actionLabel: "Inserir Produtos",
       managementUrl: "/workspace/catalogo/produtos",
     },
     {
@@ -46,7 +45,7 @@ export function BuilderCmsPanel({
       unit: "destinos catalogados",
       blockType: "tourism_destinations_carousel",
       bindingSource: "destinations_catalog",
-      actionLabel: "Inserir Carrossel de Destinos",
+      actionLabel: "Inserir Destinos",
       managementUrl: "/workspace/turismo/destinos",
     },
     {
@@ -58,7 +57,7 @@ export function BuilderCmsPanel({
       unit: "avaliações verificadas",
       blockType: "testimonial_carousel",
       bindingSource: "dynamic_reviews",
-      actionLabel: "Inserir Depoimentos de Clientes",
+      actionLabel: "Inserir Depoimentos",
       managementUrl: "/workspace/turismo/destinos",
     },
     {
@@ -70,7 +69,7 @@ export function BuilderCmsPanel({
       unit: "perfil sincronizado",
       blockType: "store_profile_hero",
       bindingSource: "store_profile",
-      actionLabel: "Inserir Cabeçalho da Empresa",
+      actionLabel: "Inserir Cabeçalho",
       managementUrl: "/perfil-da-loja",
     },
   ];
@@ -85,22 +84,12 @@ export function BuilderCmsPanel({
           </div>
           <div>
             <h3 className="text-xs font-semibold text-foreground">Gerenciador de Dados (CMS)</h3>
-            <p className="text-[10px] text-muted-foreground">Coleções dinâmicas conectadas</p>
+            <p className="text-xs text-muted-foreground">Coleções conectadas</p>
           </div>
         </div>
       </div>
 
       <ScrollArea className="flex-1 p-4 space-y-3 text-xs">
-        <div className="p-3 rounded-lg bg-muted/30 border border-border space-y-1 mb-2">
-          <span className="text-[11px] font-semibold text-foreground flex items-center gap-1">
-            <Sliders className="size-3 text-primary" />
-            Live Data Binding
-          </span>
-          <p className="text-[10px] text-muted-foreground leading-relaxed">
-            Blocos conectados ao CMS se atualizam sozinhos sempre que você altera preços, fotos ou destinos no painel.
-          </p>
-        </div>
-
         <div className="space-y-3">
           {collections.map((col) => {
             const Icon = col.icon;
@@ -115,26 +104,29 @@ export function BuilderCmsPanel({
                       <Icon className="size-4" />
                     </div>
                     <div>
-                      <h4 className="text-xs font-semibold text-foreground leading-tight">{col.title}</h4>
-                      <span className="text-[10px] text-muted-foreground font-mono tabular-nums">
+                      <h4 className="text-xs font-semibold text-foreground leading-tight">
+                        {col.title}
+                      </h4>
+                      <span className="text-xs text-muted-foreground font-mono tabular-nums">
                         {col.count} {col.unit}
                       </span>
                     </div>
                   </div>
 
-                  <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-[9px] font-medium py-0 px-2 shrink-0">
+                  <Badge
+                    variant="outline"
+                    className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-xs font-medium py-0 px-2 shrink-0"
+                  >
                     Ativo
                   </Badge>
                 </div>
 
-                <p className="text-[11px] text-muted-foreground leading-relaxed">
-                  {col.description}
-                </p>
+                <p className="text-xs text-muted-foreground leading-relaxed">{col.description}</p>
 
                 <div className="pt-2 border-t border-border/50 flex items-center justify-between gap-2">
                   <Link
                     to={col.managementUrl as any}
-                    className="text-[10px] text-muted-foreground hover:text-foreground flex items-center gap-1"
+                    className="inline-flex min-h-11 items-center gap-1 rounded-lg px-2 text-xs text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   >
                     <span>Gerenciar</span>
                     <ExternalLink className="size-2.5" />
@@ -147,7 +139,7 @@ export function BuilderCmsPanel({
                       onInsertDynamicBlock(col.blockType, col.bindingSource, col.title);
                       toast.success(`Bloco dinâmico de "${col.title}" inserido na página!`);
                     }}
-                    className="rounded-lg text-[10px] font-medium h-7 px-3 gap-1 bg-primary text-primary-foreground cursor-pointer"
+                    className="h-11 min-h-11 rounded-lg px-3 text-xs font-medium gap-1 bg-primary text-primary-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   >
                     <Plus className="size-3" />
                     <span>{col.actionLabel}</span>

@@ -95,7 +95,7 @@ function RichTextInspectorField({
         <Label className="text-xs font-bold text-foreground">
           {label || "Texto Formatado (Markdown)"}
         </Label>
-        <span className="text-[10px] font-mono text-muted-foreground">
+        <span className="text-xs font-mono text-muted-foreground">
           {(value || "").length} caracteres
         </span>
       </div>
@@ -106,7 +106,7 @@ function RichTextInspectorField({
           type="button"
           onClick={() => insertFormatting("**", "**")}
           title="Negrito (**texto**)"
-          className="size-6 flex items-center justify-center rounded hover:bg-muted font-black text-xs cursor-pointer text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="size-11 flex items-center justify-center rounded hover:bg-muted font-black text-xs cursor-pointer text-foreground min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           B
         </button>
@@ -114,16 +114,16 @@ function RichTextInspectorField({
           type="button"
           onClick={() => insertFormatting("*", "*")}
           title="Itálico (*texto*)"
-          className="size-6 flex items-center justify-center rounded hover:bg-muted italic font-serif text-xs cursor-pointer text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="size-11 flex items-center justify-center rounded hover:bg-muted italic font-serif text-xs cursor-pointer text-foreground min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           I
         </button>
-        <div className="w-[1px] h-4 bg-border/60 mx-1" />
+        <div className="w-px h-4 bg-border/60 mx-1" />
         <button
           type="button"
           onClick={() => insertFormatting("## ")}
           title="Título Principal (H2)"
-          className="px-2 h-6 flex items-center justify-center rounded hover:bg-muted font-bold text-[10px] cursor-pointer text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="px-2 h-11 flex items-center justify-center rounded hover:bg-muted font-bold text-xs cursor-pointer text-foreground min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           H2
         </button>
@@ -131,16 +131,16 @@ function RichTextInspectorField({
           type="button"
           onClick={() => insertFormatting("### ")}
           title="Subtítulo (H3)"
-          className="px-2 h-6 flex items-center justify-center rounded hover:bg-muted font-semibold text-[10px] cursor-pointer text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="px-2 h-11 flex items-center justify-center rounded hover:bg-muted font-semibold text-xs cursor-pointer text-foreground min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           H3
         </button>
-        <div className="w-[1px] h-4 bg-border/60 mx-1" />
+        <div className="w-px h-4 bg-border/60 mx-1" />
         <button
           type="button"
           onClick={() => insertFormatting("- ")}
           title="Lista com marcadores (- item)"
-          className="size-6 flex items-center justify-center rounded hover:bg-muted text-xs cursor-pointer text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="size-11 flex items-center justify-center rounded hover:bg-muted text-xs cursor-pointer text-foreground min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           •
         </button>
@@ -148,7 +148,7 @@ function RichTextInspectorField({
           type="button"
           onClick={() => insertFormatting("> ")}
           title="Citação (> destaque)"
-          className="size-6 flex items-center justify-center rounded hover:bg-muted text-xs cursor-pointer text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="size-11 flex items-center justify-center rounded hover:bg-muted text-xs cursor-pointer text-foreground min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           ”
         </button>
@@ -156,18 +156,18 @@ function RichTextInspectorField({
           type="button"
           onClick={() => insertFormatting("[link](", ")")}
           title="Inserir Link ([texto](url))"
-          className="px-1 h-6 flex items-center justify-center rounded hover:bg-muted text-[10px] font-mono cursor-pointer text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        ><Link className="size-3" /></button>
+          className="px-1 h-11 flex items-center justify-center rounded hover:bg-muted text-xs font-mono cursor-pointer text-primary min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        ><Link className="shrink-0" /></button>
       </div>
 
       <Textarea
         ref={textareaRef}
         value={value || ""}
         onChange={(e) => onChange(e.target.value)}
-        className="rounded-lg text-xs min-h-[90px] bg-background font-sans leading-relaxed resize-y border-border/80"
+        className="rounded-lg text-xs min-h-24 bg-background font-sans leading-relaxed resize-y border-border/80"
         placeholder={placeholder || "Escreva o texto aqui... Suporta **negrito**, *itálico*, links e listas."}
       />
-      <p className="text-[10px] text-muted-foreground/80 leading-tight">
+      <p className="text-xs text-muted-foreground/80 leading-tight">
         Formatação ao vivo renderizada na vitrine e preview.
       </p>
     </div>
@@ -214,7 +214,7 @@ export function BuilderInspector({
  </div>
  <div className="space-y-1">
  <h4 className="text-xs font-bold text-foreground">Nenhum bloco selecionado</h4>
- <p className="text-[11px] text-muted-foreground max-w-52 leading-relaxed">
+ <p className="text-xs text-muted-foreground max-w-52 leading-relaxed">
  Clique em qualquer seção ou bloco no canvas para editar textos, imagens, layout e dados em tempo real.
  </p>
  </div>
@@ -282,11 +282,11 @@ export function BuilderInspector({
  <h3 className="text-xs font-bold text-foreground truncate">
  {blockManifest.name}
  </h3>
- <Badge variant="outline" className="text-[9px] px-2 py-0 font-mono">
+ <Badge variant="outline" className="text-xs px-2 py-0 font-mono">
  {selectedNode.block_type}
  </Badge>
  </div>
- <p className="text-[10px] text-muted-foreground line-clamp-1">
+ <p className="text-xs text-muted-foreground line-clamp-1">
  {blockManifest.description || "Propriedades e estilo do bloco."}
  </p>
  </div>
@@ -296,7 +296,7 @@ export function BuilderInspector({
  variant="ghost"
  size="icon"
  onClick={() => setSelectedNodeId(null)}
- className="size-7 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
+ className="size-11 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
  >
  <X className="size-3.5" />
  </Button>
@@ -304,7 +304,7 @@ export function BuilderInspector({
 
  {/* ── Breadcrumb de Navegação Hierárquica ── */}
  {ancestors.length > 1 && (
- <div className="flex items-center gap-1 px-3 py-2 bg-muted/40 border-b border-border/60 text-[10px] text-muted-foreground overflow-x-auto no-scrollbar">
+ <div className="flex items-center gap-1 px-3 py-2 bg-muted/40 border-b border-border/60 text-xs text-muted-foreground overflow-x-auto no-scrollbar">
  <Layers className="size-3 shrink-0 text-muted-foreground/80" />
  {ancestors.map((anc, idx) => (
  <React.Fragment key={anc.id}>
@@ -312,8 +312,8 @@ export function BuilderInspector({
  <button
  type="button"
  onClick={() => setSelectedNodeId(anc.id)}
- className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "hover:text-primary transition-colors cursor-pointer truncate max-w-[100px]",
+ className={cn(
+ "hover:text-primary transition-colors cursor-pointer truncate max-w-24 min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  anc.id === selectedNode.id
  ? "font-bold text-foreground underline underline-offset-2 decoration-primary"
  : "text-muted-foreground"
@@ -328,12 +328,12 @@ export function BuilderInspector({
  )}
 
  {/* ── Abas do Inspetor (Wix Studio / Editor X Standard) ── */}
- <div className="flex p-1 bg-muted/40 border-b border-border/60 gap-1 text-[11px] font-semibold">
+ <div className="flex p-1 bg-muted/40 border-b border-border/60 gap-1 text-xs font-semibold">
  <button
  type="button"
  onClick={() => setInspectorTab("content")}
- className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1",
+ className={cn(
+ "flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1 min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  inspectorTab === "content"
  ? "bg-background text-foreground font-bold shadow-2xs"
  : "text-muted-foreground hover:text-foreground"
@@ -346,8 +346,8 @@ export function BuilderInspector({
  <button
  type="button"
  onClick={() => setInspectorTab("layout")}
- className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1",
+ className={cn(
+ "flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1 min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  inspectorTab === "layout"
  ? "bg-background text-foreground font-bold shadow-2xs"
  : "text-muted-foreground hover:text-foreground"
@@ -360,8 +360,8 @@ export function BuilderInspector({
  <button
  type="button"
  onClick={() => setInspectorTab("design")}
- className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1",
+ className={cn(
+ "flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1 min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  inspectorTab === "design"
  ? "bg-background text-foreground font-bold shadow-2xs"
  : "text-muted-foreground hover:text-foreground"
@@ -374,8 +374,8 @@ export function BuilderInspector({
  <button
  type="button"
  onClick={() => setInspectorTab("animation")}
- className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1",
+ className={cn(
+ "flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1 min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  inspectorTab === "animation"
  ? "bg-background text-foreground font-bold shadow-2xs"
  : "text-muted-foreground hover:text-foreground"
@@ -388,8 +388,8 @@ export function BuilderInspector({
  <button
  type="button"
  onClick={() => setInspectorTab("connection")}
- className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1",
+ className={cn(
+ "flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1 min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  inspectorTab === "connection"
  ? "bg-background text-foreground font-bold shadow-2xs"
  : "text-muted-foreground hover:text-foreground"
@@ -413,17 +413,17 @@ export function BuilderInspector({
  <Sliders className="size-3.5" />
  Conteúdo da Seção
  </span>
- <Badge variant="outline" className="text-[10px] bg-background">
+ <Badge variant="outline" className="text-xs bg-background">
  {childManifest?.name || primaryContentChild.block_type}
  </Badge>
  </div>
- <p className="text-[11px] text-muted-foreground leading-relaxed">
+ <p className="text-xs text-muted-foreground leading-relaxed">
  Esta seção contém o bloco <strong>{childManifest?.name || primaryContentChild.block_type}</strong>. Clique abaixo para editar títulos, imagens e cupons.
  </p>
  <Button
  type="button"
  size="sm"
- className="w-full h-8 text-xs font-semibold rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground gap-2 cursor-pointer shadow-xs"
+ className="w-full h-11 min-h-11 text-xs font-semibold rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground gap-2 cursor-pointer shadow-xs"
  onClick={() => setSelectedNodeId(primaryContentChild.id)}
  >
  <Sliders className="size-3.5" />
@@ -445,24 +445,24 @@ export function BuilderInspector({
  <Tag className="size-3.5" />
  <span>{field.label || "Código do Cupom"}</span>
  </Label>
- <Badge variant="outline" className="text-[9px] border-amber-500/40 text-amber-500 font-mono">
+ <Badge variant="outline" className="text-xs border-amber-500/40 text-amber-500 font-mono">
  1-Toque
  </Badge>
  </div>
  <Input
  value={val}
  onChange={(e) => handleContentChange(field.name, e.target.value.toUpperCase())}
- className="h-9 rounded-lg text-xs font-mono font-bold uppercase tracking-wider bg-background border-amber-500/30"
+ className="h-11 min-h-11 rounded-lg text-xs font-mono font-bold uppercase tracking-wider bg-background border-amber-500/30"
  placeholder={field.placeholder || "EX: RELAMPAGO50"}
  />
  <div className="flex items-center gap-2 flex-wrap pt-1">
- <span className="text-[10px] text-muted-foreground">Sugestões:</span>
+ <span className="text-xs text-muted-foreground">Sugestões:</span>
  {["RELAMPAGO50", "PRIMEIRACOMPRA", "FRETEGRATIS", "VIP10"].map((sug) => (
  <button
  key={sug}
  type="button"
  onClick={() => handleContentChange(field.name, sug)}
- className="text-[10px] font-mono px-2 py-1 rounded-md bg-background border border-border/80 hover:border-amber-500 text-muted-foreground hover:text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="text-xs font-mono px-2 py-1 rounded-md bg-background border border-border/80 hover:border-amber-500 text-muted-foreground hover:text-foreground cursor-pointer transition-colors min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
  >
  {sug}
  </button>
@@ -482,27 +482,27 @@ export function BuilderInspector({
  <div key={field.name} className="space-y-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
  <div className="flex items-center justify-between">
  <Label className="text-xs font-bold text-foreground flex items-center gap-2 text-primary">
- <Link className="size-3.5" />
+ <Link className="shrink-0" />
  <span>{field.label || "Link de Destino / Hotpage"}</span>
  </Label>
- <Badge variant="outline" className="text-[9px] border-primary/40 text-primary">
+ <Badge variant="outline" className="text-xs border-primary/40 text-primary">
  Navegação
  </Badge>
  </div>
  <Input
  value={val}
  onChange={(e) => handleContentChange(field.name, e.target.value)}
- className="h-9 rounded-lg text-xs bg-background"
+ className="h-11 min-h-11 rounded-lg text-xs bg-background"
  placeholder={field.placeholder || "#produtos ou /campanhas"}
  />
  {/* Atalhos Rápidos de Destinos Internos e Hotpages */}
  <div className="space-y-1 pt-1">
- <span className="text-[10px] text-muted-foreground font-medium">Vincular a uma página:</span>
+ <span className="text-xs text-muted-foreground font-medium">Vincular a uma página:</span>
  <div className="flex items-center gap-2 flex-wrap">
  <button
  type="button"
  onClick={() => handleContentChange(field.name, "#produtos")}
- className="text-[10px] px-2 py-1 rounded-md bg-background border border-border/80 hover:border-primary text-muted-foreground hover:text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="text-xs px-2 py-1 rounded-md bg-background border border-border/80 hover:border-primary text-muted-foreground hover:text-foreground cursor-pointer transition-colors min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
  >
  #produtos
  </button>
@@ -512,7 +512,7 @@ export function BuilderInspector({
  key={p.id || p.slug}
  type="button"
  onClick={() => handleContentChange(field.name, p.slug === "home" ? "/" : `/${p.slug}`)}
- className="text-[10px] px-2 py-1 rounded-md bg-background border border-border/80 hover:border-primary text-muted-foreground hover:text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="text-xs px-2 py-1 rounded-md bg-background border border-border/80 hover:border-primary text-muted-foreground hover:text-foreground cursor-pointer transition-colors min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
  >
  /{p.slug}
  </button>
@@ -522,14 +522,14 @@ export function BuilderInspector({
  <button
  type="button"
  onClick={() => handleContentChange(field.name, "/campanhas/ofertas")}
- className="text-[10px] px-2 py-1 rounded-md bg-background border border-border/80 hover:border-primary text-muted-foreground hover:text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="text-xs px-2 py-1 rounded-md bg-background border border-border/80 hover:border-primary text-muted-foreground hover:text-foreground cursor-pointer transition-colors min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
  >
  /campanhas
  </button>
  <button
  type="button"
  onClick={() => handleContentChange(field.name, "/turismo")}
- className="text-[10px] px-2 py-1 rounded-md bg-background border border-border/80 hover:border-primary text-muted-foreground hover:text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="text-xs px-2 py-1 rounded-md bg-background border border-border/80 hover:border-primary text-muted-foreground hover:text-foreground cursor-pointer transition-colors min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
  >
  /turismo
  </button>
@@ -550,7 +550,7 @@ export function BuilderInspector({
  <Input
  value={val}
  onChange={(e) => handleContentChange(field.name, e.target.value)}
- className="h-9 rounded-lg text-xs bg-background"
+ className="h-11 min-h-11 rounded-lg text-xs bg-background"
  placeholder={field.placeholder || ""}
  />
  </div>
@@ -578,7 +578,7 @@ export function BuilderInspector({
  <Textarea
  value={val}
  onChange={(e) => handleContentChange(field.name, e.target.value)}
- className="rounded-lg text-xs min-h-[70px] bg-background"
+ className="rounded-lg text-xs min-h-20 bg-background"
  placeholder={field.placeholder || ""}
  />
  </div>
@@ -607,7 +607,7 @@ export function BuilderInspector({
  {field.label || humanizeLabel(field.name)}
  </Label>
  <ColorPicker
- value={val || "#09090b"}
+ value={val || ""}
  onChange={(c) => handleContentChange(field.name, c)}
  />
  </div>
@@ -638,7 +638,7 @@ export function BuilderInspector({
  type="number"
  value={val}
  onChange={(e) => handleContentChange(field.name, Number(e.target.value))}
- className="h-9 rounded-lg text-xs font-mono bg-background"
+ className="h-11 min-h-11 rounded-lg text-xs font-mono bg-background"
  />
  </div>
  );
@@ -654,7 +654,7 @@ export function BuilderInspector({
  value={val || field.options[0]?.value}
  onValueChange={(newVal) => handleContentChange(field.name, newVal)}
  >
- <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
+ <SelectTrigger className="h-11 min-h-11 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -718,7 +718,7 @@ export function BuilderInspector({
  return (
  <div key={k} className="space-y-2">
  <Label className="text-xs font-bold text-foreground">{humanizeLabel(k)}</Label>
- <Textarea value={v} onChange={(e) => handleContentChange(k, e.target.value)} className="rounded-lg text-xs min-h-[70px] bg-background" />
+ <Textarea value={v} onChange={(e) => handleContentChange(k, e.target.value)} className="rounded-lg text-xs min-h-20 bg-background" />
  </div>
  );
  }
@@ -727,7 +727,7 @@ export function BuilderInspector({
  return (
  <div key={k} className="space-y-2">
  <Label className="text-xs font-bold text-foreground">{humanizeLabel(k)}</Label>
- <Input value={v} onChange={(e) => handleContentChange(k, e.target.value)} className="h-9 rounded-lg text-xs bg-background" />
+ <Input value={v} onChange={(e) => handleContentChange(k, e.target.value)} className="h-11 min-h-11 rounded-lg text-xs bg-background" />
  </div>
  );
  }
@@ -765,7 +765,7 @@ export function BuilderInspector({
  <span className="text-xs font-bold text-foreground uppercase tracking-wider">
  Dimensões (Size)
  </span>
- <Badge variant="outline" className="text-[10px]">
+ <Badge variant="outline" className="text-xs">
  {layout.sizingMode || "Fluid %"}
  </Badge>
  </div>
@@ -774,8 +774,8 @@ export function BuilderInspector({
  <button
  type="button"
  onClick={() => handleLayoutChange("sizingMode", "fluid")}
- className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "py-2 rounded-lg text-xs font-semibold transition-all border cursor-pointer",
+ className={cn(
+ "py-2 rounded-lg text-xs font-semibold transition-all border cursor-pointer min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  (layout.sizingMode || "fluid") === "fluid"
  ? "bg-primary text-primary-foreground font-bold shadow-2xs border-primary"
  : "bg-card border-border/70 text-muted-foreground hover:text-foreground"
@@ -786,8 +786,8 @@ export function BuilderInspector({
  <button
  type="button"
  onClick={() => handleLayoutChange("sizingMode", "fixed")}
- className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "py-2 rounded-lg text-xs font-semibold transition-all border cursor-pointer",
+ className={cn(
+ "py-2 rounded-lg text-xs font-semibold transition-all border cursor-pointer min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  layout.sizingMode === "fixed"
  ? "bg-primary text-primary-foreground font-bold shadow-2xs border-primary"
  : "bg-card border-border/70 text-muted-foreground hover:text-foreground"
@@ -799,12 +799,12 @@ export function BuilderInspector({
 
  <div className="grid grid-cols-2 gap-3 pt-1">
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Largura Máx</Label>
+ <Label className="text-xs font-bold">Largura Máx</Label>
  <Select
  value={layout.maxWidth || "full"}
  onValueChange={(val) => handleLayoutChange("maxWidth", val)}
  >
- <SelectTrigger className="h-8 rounded-lg text-xs bg-background">
+ <SelectTrigger className="h-11 min-h-11 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -817,12 +817,12 @@ export function BuilderInspector({
  </div>
 
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Espaçamento Y</Label>
+ <Label className="text-xs font-bold">Espaçamento Y</Label>
  <Select
  value={layout.paddingY || "md"}
  onValueChange={(val) => handleLayoutChange("paddingY", val)}
  >
- <SelectTrigger className="h-8 rounded-lg text-xs bg-background">
+ <SelectTrigger className="h-11 min-h-11 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -844,7 +844,7 @@ export function BuilderInspector({
               <MapPin className="size-3.5 text-primary" />
               Localidade Alvo
             </span>
-            <Badge variant="outline" className="text-[10px]">
+            <Badge variant="outline" className="text-xs">
               {layout.city_filter === 'all' || !layout.city_filter ? 'Global' : layout.city_filter}
             </Badge>
           </div>
@@ -852,7 +852,7 @@ export function BuilderInspector({
             value={layout.city_filter || 'all'}
             onValueChange={(val) => handleLayoutChange('city_filter', val)}
           >
-            <SelectTrigger className="h-8 rounded-lg text-xs bg-background">
+            <SelectTrigger className="h-11 min-h-11 rounded-lg text-xs bg-background">
               <SelectValue placeholder="Selecione a cidade" />
             </SelectTrigger>
             <SelectContent className="max-h-56">
@@ -864,7 +864,7 @@ export function BuilderInspector({
               ))}
             </SelectContent>
           </Select>
-          <p className="text-[10px] text-muted-foreground leading-relaxed">
+          <p className="text-xs text-muted-foreground leading-relaxed">
             Este bloco só será renderizado na vitrine para clientes navegando ou com GPS na cidade selecionada.
           </p>
         </div>
@@ -882,7 +882,7 @@ export function BuilderInspector({
  {/* Campos Declarados no Manifesto do Bloco (se houver) */}
  {manifestDesignFields && manifestDesignFields.length > 0 && (
  <div className="space-y-3 pb-3 border-b border-border/60">
- <span className="text-[11px] font-bold uppercase tracking-wider text-primary">
+ <span className="text-xs font-bold uppercase tracking-wider text-primary">
  Cores Específicas do Bloco
  </span>
  {manifestDesignFields.map((df: any) => {
@@ -894,7 +894,7 @@ export function BuilderInspector({
  {df.label || humanizeLabel(df.name)}
  </Label>
  <ColorPicker
- value={val || "#ffffff"}
+ value={val || ""}
  onChange={(c) => handleDesignChange(df.name, c)}
  />
  </div>
@@ -909,7 +909,7 @@ export function BuilderInspector({
  <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Cor de Fundo Principal</Label>
  <ColorPicker
- value={design.backgroundColor || "#ffffff"}
+ value={design.backgroundColor || ""}
  onChange={(c) => handleDesignChange("backgroundColor", c)}
  />
  </div>
@@ -917,7 +917,7 @@ export function BuilderInspector({
  <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Cor do Texto</Label>
  <ColorPicker
- value={design.textColor || "#09090b"}
+ value={design.textColor || ""}
  onChange={(c) => handleDesignChange("textColor", c)}
  />
  </div>
@@ -925,27 +925,27 @@ export function BuilderInspector({
  <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Cor de Destaque (Accent)</Label>
  <ColorPicker
- value={design.accentColor || "#f59e0b"}
+ value={design.accentColor || ""}
  onChange={(c) => handleDesignChange("accentColor", c)}
  />
  </div>
 
  {/* Configuração de Caixas / Cards Numéricos */}
  <div className="space-y-3 pt-3 border-t border-border/60">
- <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+ <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
  Caixas Numéricas e Elementos
  </span>
  <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Fundo das Caixas</Label>
  <ColorPicker
- value={design.boxColor || "#09090b"}
+ value={design.boxColor || ""}
  onChange={(c) => handleDesignChange("boxColor", c)}
  />
  </div>
  <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Cor dos Números / Dígitos</Label>
  <ColorPicker
- value={design.boxTextColor || "#ffffff"}
+ value={design.boxTextColor || ""}
  onChange={(c) => handleDesignChange("boxTextColor", c)}
  />
  </div>
@@ -958,7 +958,7 @@ export function BuilderInspector({
  value={design.borderRadius || "rounded-lg"}
  onValueChange={(val) => handleDesignChange("borderRadius", val)}
  >
- <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
+ <SelectTrigger className="h-11 min-h-11 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -988,7 +988,7 @@ export function BuilderInspector({
  value={design.surfaceVariant || "default"}
  onValueChange={(val) => handleDesignChange("surfaceVariant", val)}
  >
- <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
+ <SelectTrigger className="h-11 min-h-11 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -1013,7 +1013,7 @@ export function BuilderInspector({
  <Sliders className="size-3.5 text-primary" />
  Motor de Animações e Scroll (Wix Studio Standard)
  </h4>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  Microinterações fluidas a 60fps com aceleração de hardware e física Apple HIG.
  </p>
  </div>
@@ -1028,7 +1028,7 @@ export function BuilderInspector({
  updateNode(selectedNode.id, "design_tokens", "animation", { ...currAnim, trigger: val });
  }}
  >
- <SelectTrigger className="h-9 text-xs rounded-lg bg-background">
+ <SelectTrigger className="h-11 min-h-11 text-xs rounded-lg bg-background">
  <SelectValue placeholder="Selecione uma animação" />
  </SelectTrigger>
  <SelectContent>
@@ -1061,8 +1061,8 @@ export function BuilderInspector({
  const currAnim = (selectedNode.design_tokens as any)?.animation || {};
  updateNode(selectedNode.id, "design_tokens", "animation", { ...currAnim, speed: speed.id });
  }}
- className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "py-2 px-2 rounded-lg text-[11px] font-semibold border transition-all",
+ className={cn(
+ "py-2 px-2 rounded-lg text-xs font-semibold border transition-all min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  currentSpeed === speed.id
  ? "border-primary bg-primary/10 text-primary"
  : "border-border bg-background text-muted-foreground"
@@ -1094,8 +1094,8 @@ export function BuilderInspector({
  const currAnim = (selectedNode.design_tokens as any)?.animation || {};
  updateNode(selectedNode.id, "design_tokens", "animation", { ...currAnim, hover: hov.id });
  }}
- className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "py-2 px-3 rounded-lg text-xs font-semibold border text-left transition-all",
+ className={cn(
+ "py-2 px-3 rounded-lg text-xs font-semibold border text-left transition-all min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  currentHov === hov.id
  ? "border-primary bg-primary/10 text-primary"
  : "border-border bg-background text-muted-foreground"
@@ -1117,7 +1117,7 @@ export function BuilderInspector({
  <Database className="size-4 text-primary" />
  <span className="text-xs font-bold text-foreground">Fonte de Dados Dinâmica</span>
  </div>
- <p className="text-[11px] text-muted-foreground leading-relaxed">
+ <p className="text-xs text-muted-foreground leading-relaxed">
  Conecte este bloco ao banco de dados para sincronizar produtos, cupons, hotpages, avaliações ou informações da loja em tempo real.
  </p>
 
@@ -1127,7 +1127,7 @@ export function BuilderInspector({
  value={dataBindings.source || "none"}
  onValueChange={(val) => handleBindingChange(val)}
  >
- <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
+ <SelectTrigger className="h-11 min-h-11 rounded-lg text-xs bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent>
@@ -1162,11 +1162,11 @@ export function BuilderInspector({
  handleBindingChange("active_coupon", { coupon_code: code });
  handleContentChange("couponCode", code);
  }}
- className="h-9 rounded-lg text-xs font-mono font-bold uppercase tracking-wider bg-background"
+ className="h-11 min-h-11 rounded-lg text-xs font-mono font-bold uppercase tracking-wider bg-background"
  placeholder="EX: RELAMPAGO50"
  />
  </div>
- <p className="text-[10px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  Ao conectar o cupom, qualquer clique no bloco copiará o código automaticamente.
  </p>
  </div>
@@ -1187,7 +1187,7 @@ export function BuilderInspector({
  handleContentChange("targetLink", slug);
  }}
  >
- <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
+ <SelectTrigger className="h-11 min-h-11 rounded-lg text-xs bg-background">
  <SelectValue placeholder="Escolha a página de destino..." />
  </SelectTrigger>
  <SelectContent>
@@ -1213,7 +1213,7 @@ export function BuilderInspector({
  </SelectContent>
  </Select>
  </div>
- <p className="text-[10px] text-muted-foreground">
+ <p className="text-xs text-muted-foreground">
  O botão de ação principal do bloco direcionará os visitantes diretamente para esta hotpage.
  </p>
  </div>
@@ -1227,7 +1227,7 @@ export function BuilderInspector({
  value={dataBindings.collection_slug || ""}
  onValueChange={(slug) => handleBindingChange("product_collection", { collection_slug: slug })}
  >
- <SelectTrigger className="h-9 rounded-lg text-xs bg-background">
+ <SelectTrigger className="h-11 min-h-11 rounded-lg text-xs bg-background">
  <SelectValue placeholder="Selecione uma coleção..." />
  </SelectTrigger>
  <SelectContent>
@@ -1246,7 +1246,7 @@ export function BuilderInspector({
  )}
 
  {dataBindings.source && dataBindings.source !== "none" && (
- <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[11px] flex items-center gap-2">
+ <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-center gap-2">
  <CheckCircle2 className="size-3.5 shrink-0" />
  <span>Conectado em tempo real com o banco de dados.</span>
  </div>

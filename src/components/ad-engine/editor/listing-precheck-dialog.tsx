@@ -141,8 +141,8 @@ export function ListingPrecheckDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md sm:max-w-lg p-0 overflow-hidden rounded-lg bg-card border border-border/80">
-        <DialogHeader className="p-5 pb-3 border-b border-border/40">
+      <DialogContent className="max-w-md sm:max-w-lg p-0 overflow-y-auto overscroll-contain rounded-none sm:rounded-lg bg-card border-0 sm:border sm:border-border/80">
+        <DialogHeader className="p-5 pt-safe pb-3 border-b border-border/40">
           <div className="flex items-center gap-2">
             <ShieldCheck className="size-5 text-primary shrink-0" />
             <DialogTitle className="text-base font-bold text-foreground">
@@ -155,7 +155,12 @@ export function ListingPrecheckDialog({
         </DialogHeader>
 
         {/* Resumo de Status */}
-        <div className="px-5 py-3 bg-muted/30 border-b border-border/40 flex items-center justify-between text-xs">
+        <div
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          className="px-5 py-3 bg-muted/30 border-b border-border/40 flex items-center justify-between text-xs"
+        >
           <span className="text-muted-foreground">Diagnóstico de Qualidade:</span>
           <div className="flex items-center gap-2">
             {failCount > 0 ? (
@@ -164,7 +169,7 @@ export function ListingPrecheckDialog({
                 {failCount} pendência(s) impeditiva(s)
               </Badge>
             ) : (
-              <Badge className="bg-emerald-600 text-white gap-1 text-2xs font-semibold">
+              <Badge className="bg-emerald-600 text-primary-foreground gap-1 text-2xs font-semibold">
                 <CheckCircle2 className="size-3" />
                 Pronto para Publicar
               </Badge>
@@ -179,7 +184,7 @@ export function ListingPrecheckDialog({
         </div>
 
         {/* Lista de Verificações */}
-        <div className="p-5 max-h-[50vh] overflow-y-auto space-y-3">
+        <div className="p-5 max-h-96 overflow-y-auto overscroll-contain space-y-3">
           {items.map((item) => (
             <div
               key={item.id}
@@ -209,13 +214,13 @@ export function ListingPrecheckDialog({
         </div>
 
         {/* Rodapé de Ações */}
-        <DialogFooter className="p-4 bg-muted/20 border-t border-border/40 flex flex-row items-center justify-between sm:justify-between">
+        <DialogFooter className="p-4 pb-safe bg-muted/20 border-t border-border/40 flex-col-reverse items-stretch gap-2 sm:flex-row sm:items-center sm:justify-between">
           <Button
             type="button"
             variant="ghost"
             size="sm"
             onClick={() => onOpenChange(false)}
-            className="h-10 rounded-lg text-xs cursor-pointer"
+            className="h-11 min-h-11 min-w-11 w-full rounded-lg text-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:w-auto"
           >
             Voltar ao Editor
           </Button>
@@ -223,18 +228,19 @@ export function ListingPrecheckDialog({
           <Button
             type="button"
             disabled={!canPublish || isPublishing}
+            aria-busy={isPublishing || undefined}
             onClick={onConfirmPublish}
-            className="h-10 rounded-lg text-xs font-semibold gap-2 px-4 cursor-pointer"
+            className="h-11 min-h-11 min-w-11 w-full rounded-lg text-xs font-semibold gap-2 px-4 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:w-auto"
           >
             {isPublishing ? (
               <>
-                <Loader2 className="size-4 animate-spin" />
-                <span>Publicando...</span>
+                <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
+                <span aria-live="polite">Publicando...</span>
               </>
             ) : (
               <>
                 <ShieldCheck className="size-4" />
-                <span>Confirmar & Publicar Anúncio</span>
+                <span aria-live="polite">Confirmar & Publicar Anúncio</span>
               </>
             )}
           </Button>

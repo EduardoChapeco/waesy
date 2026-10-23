@@ -172,8 +172,9 @@ export function UnifiedListingEditor({
               type="button"
               variant="ghost"
               size="icon"
-              onClick={handleAttemptExit} /* focus-visible:ring-2 */
-              className="size-8 rounded-md cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+              onClick={handleAttemptExit}
+              aria-label="Voltar"
+              className="size-11 rounded-md cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
               title="Voltar"
             >
               <ArrowLeft className="size-4" />
@@ -189,7 +190,11 @@ export function UnifiedListingEditor({
                 {origin}
               </Badge>
             </div>
-            <div className="flex items-center gap-2 text-2xs text-muted-foreground mt-1">
+            <div
+              className="flex items-center gap-2 text-2xs text-muted-foreground mt-1"
+              aria-live="polite"
+              aria-atomic="true"
+            >
               <span>Status:</span>
               {saveStatus === "saving" && (
                 <span className="flex items-center gap-1 text-primary">
@@ -211,15 +216,16 @@ export function UnifiedListingEditor({
         </div>
 
         {/* Controles de Modo e Publicação */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-2">
           {/* Seletor de Modo: Rápido vs Completo */}
           <div className="p-1 bg-muted/60 rounded-lg border border-border/40 flex items-center gap-1">
             <Button
               type="button"
               variant={mode === "quick" ? "default" : "ghost"}
               size="sm"
-              onClick={() => setMode("quick")} /* focus-visible:ring-2 */
-              className="h-8 rounded-md text-xs font-semibold gap-1 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+              onClick={() => setMode("quick")}
+              aria-pressed={mode === "quick"}
+              className="h-11 rounded-md text-xs font-semibold gap-1 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
             >
               <Zap className="size-3.5" />
               <span>Rápido</span>
@@ -228,8 +234,9 @@ export function UnifiedListingEditor({
               type="button"
               variant={mode === "full" ? "default" : "ghost"}
               size="sm"
-              onClick={() => setMode("full")} /* focus-visible:ring-2 */
-              className="h-8 rounded-md text-xs font-semibold gap-1 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+              onClick={() => setMode("full")}
+              aria-pressed={mode === "full"}
+              className="h-11 rounded-md text-xs font-semibold gap-1 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
             >
               <Sliders className="size-3.5" />
               <span>Completo</span>
@@ -241,7 +248,7 @@ export function UnifiedListingEditor({
             type="button"
             variant={showLivePreview || isSplitLayout ? "secondary" : "outline"}
             size="sm"
-            onClick={() => { /* focus-visible:ring-2 */
+            onClick={() => {
               if (typeof window !== "undefined" && window.innerWidth >= 1280) {
                 setIsSplitLayout(isSplitLayout ? false : true);
                 setShowLivePreview(false);
@@ -250,7 +257,8 @@ export function UnifiedListingEditor({
                 setIsSplitLayout(false);
               }
             }}
-            className="h-8 rounded-md text-xs font-semibold gap-2 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+            aria-pressed={showLivePreview || isSplitLayout}
+            className="h-11 rounded-md text-xs font-semibold gap-2 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
             title="Visualizar Prévia Real em Tempo Real"
           >
             <Eye className="size-3.5 text-primary" />
@@ -264,9 +272,10 @@ export function UnifiedListingEditor({
             type="button"
             variant="outline"
             size="sm"
-            onClick={handleExplicitSaveDraft} /* focus-visible:ring-2 */
+            onClick={handleExplicitSaveDraft}
             disabled={isSavingDraft}
-            className="h-8 rounded-md text-xs font-semibold gap-2 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+            aria-busy={isSavingDraft}
+            className="h-11 rounded-md text-xs font-semibold gap-2 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
           >
             {isSavingDraft ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : <Save className="size-3.5" />}
             <span>Salvar</span>
@@ -276,8 +285,8 @@ export function UnifiedListingEditor({
           <Button
             type="button"
             size="sm"
-            onClick={handleRequestPublish} /* focus-visible:ring-2 */
-            className="h-8 rounded-md text-xs font-bold gap-2 px-4 shadow-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+            onClick={handleRequestPublish}
+            className="h-11 rounded-md text-xs font-bold gap-2 px-4 shadow-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
           >
             <ShieldCheck className="size-3.5" />
             <span>Publicar</span>
@@ -296,8 +305,8 @@ export function UnifiedListingEditor({
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => setShowLivePreview(false)} /* focus-visible:ring-2 */
-              className="h-8 rounded-md text-xs font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+              onClick={() => setShowLivePreview(false)}
+              className="h-11 rounded-md text-xs font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
             >
               Voltar ao Formulário
             </Button>
@@ -373,13 +382,13 @@ export function UnifiedListingEditor({
               Você possui alterações pendentes no anúncio. Se sair agora, as últimas alterações podem ser perdidas.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="flex flex-row justify-end gap-2 pt-3">
+          <DialogFooter className="flex flex-row flex-wrap justify-end gap-2 pt-3">
             <Button
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => setShowExitConfirm(false)} /* focus-visible:ring-2 */
-              className="h-8 rounded-md text-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none"
+              onClick={() => setShowExitConfirm(false)}
+              className="h-11 rounded-md text-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
             >
               Continuar Editando
             </Button>
@@ -387,11 +396,11 @@ export function UnifiedListingEditor({
               type="button"
               variant="destructive"
               size="sm"
-              onClick={() => { /* focus-visible:ring-2 */
+              onClick={() => {
                 setShowExitConfirm(false);
                 if (onBack) onBack();
               }}
-              className="h-8 rounded-md text-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-destructive/50 focus-visible:outline-none"
+              className="h-11 rounded-md text-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
             >
               Sair sem Salvar
             </Button>

@@ -113,7 +113,7 @@ export function ListingVariantsSection({
             variant="outline"
             size="sm"
             onClick={handleAddDeparture}
-            className="h-8 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
+            className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Plus className="size-3.5" />
             <span>Adicionar Saída</span>
@@ -141,7 +141,7 @@ export function ListingVariantsSection({
                     type="date"
                     value={dep.date_start}
                     onChange={(e) => handleUpdateDeparture(idx, { date_start: e.target.value })}
-                    className="h-10 rounded-lg text-xs bg-background"
+                    className="h-11 min-h-11 rounded-lg text-xs bg-background focus-visible:ring-2 focus-visible:ring-ring"
                   />
                 </div>
 
@@ -151,7 +151,7 @@ export function ListingVariantsSection({
                     value={dep.boarding_location}
                     onChange={(e) => handleUpdateDeparture(idx, { boarding_location: e.target.value })}
                     placeholder="Ex: Rodoviária / Aeroporto"
-                    className="h-10 rounded-lg text-xs bg-background"
+                    className="h-11 min-h-11 rounded-lg text-xs bg-background focus-visible:ring-2 focus-visible:ring-ring"
                   />
                 </div>
 
@@ -162,7 +162,7 @@ export function ListingVariantsSection({
                     min={1}
                     value={dep.available_spots}
                     onChange={(e) => handleUpdateDeparture(idx, { available_spots: Number(e.target.value) })}
-                    className="h-10 rounded-lg text-xs bg-background"
+                    className="h-11 min-h-11 rounded-lg text-xs bg-background focus-visible:ring-2 focus-visible:ring-ring"
                   />
                 </div>
 
@@ -172,7 +172,7 @@ export function ListingVariantsSection({
                     <CurrencyField
                       value={dep.price_cents}
                       onChange={(cents) => handleUpdateDeparture(idx, { price_cents: cents })}
-                      className="h-10 rounded-lg text-xs bg-background"
+                      className="h-11 min-h-11 rounded-lg text-xs bg-background focus-visible:ring-2 focus-visible:ring-ring"
                     />
                   </div>
                   <Button
@@ -180,7 +180,7 @@ export function ListingVariantsSection({
                     variant="ghost"
                     size="icon"
                     onClick={() => handleRemoveDeparture(idx)}
-                    className="size-10 rounded-lg text-destructive hover:bg-destructive/10 shrink-0 cursor-pointer"
+                    className="size-11 min-h-11 min-w-11 rounded-lg text-destructive hover:bg-destructive/10 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     title="Remover saída"
                   >
                     <Trash2 className="size-4" />
@@ -207,7 +207,7 @@ export function ListingVariantsSection({
           variant="outline"
           size="sm"
           onClick={handleAddVariant}
-          className="h-8 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
+          className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <Plus className="size-3.5" />
           <span>Nova Variação</span>
@@ -235,7 +235,7 @@ export function ListingVariantsSection({
                   value={v.title}
                   onChange={(e) => handleUpdateVariant(idx, { title: e.target.value })}
                   placeholder="Ex: Azul / Tamanho G"
-                  className="h-10 rounded-lg text-xs bg-background"
+                  className="h-11 min-h-11 rounded-lg text-xs bg-background focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </div>
 
@@ -245,7 +245,7 @@ export function ListingVariantsSection({
                   value={v.sku || ""}
                   onChange={(e) => handleUpdateVariant(idx, { sku: e.target.value })}
                   placeholder="Ex: PROD-AZ-G"
-                  className="h-10 rounded-lg text-xs bg-background font-mono"
+                  className="h-11 min-h-11 rounded-lg text-xs bg-background font-mono focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </div>
 
@@ -256,7 +256,7 @@ export function ListingVariantsSection({
                   min={0}
                   value={v.stock_quantity}
                   onChange={(e) => handleUpdateVariant(idx, { stock_quantity: Number(e.target.value) })}
-                  className="h-10 rounded-lg text-xs bg-background"
+                  className="h-11 min-h-11 rounded-lg text-xs bg-background focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </div>
 
@@ -266,7 +266,7 @@ export function ListingVariantsSection({
                   <CurrencyField
                     value={v.price_override_cents ?? basePriceCents}
                     onChange={(cents) => handleUpdateVariant(idx, { price_override_cents: cents })}
-                    className="h-10 rounded-lg text-xs bg-background"
+                    className="h-11 min-h-11 rounded-lg text-xs bg-background focus-visible:ring-2 focus-visible:ring-ring"
                   />
                 </div>
                 <Button
@@ -274,7 +274,7 @@ export function ListingVariantsSection({
                   variant="ghost"
                   size="icon"
                   onClick={() => handleRemoveVariant(idx)}
-                  className="size-10 rounded-lg text-destructive hover:bg-destructive/10 shrink-0 cursor-pointer"
+                  className="size-11 min-h-11 min-w-11 rounded-lg text-destructive hover:bg-destructive/10 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   title="Remover variação"
                 >
                   <Trash2 className="size-4" />

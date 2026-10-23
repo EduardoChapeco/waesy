@@ -30,14 +30,14 @@ export function BuilderFloatingActionBar({
  const blockName = reg?.name || selectedNode.block_type;
 
  return (
- <div /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */
+ <div
  onClick={(e) => e.stopPropagation()}
- className="inline-flex items-center gap-1 p-1 bg-card/95 backdrop-blur-md border border-border/80 rounded-lg shadow-xl z-40 select-none animate-in fade-in zoom-in-95 duration-150 ring-1 ring-black/5"
+ className="inline-flex items-center gap-1 p-1 bg-card/95 backdrop-blur-md border border-border/80 rounded-lg shadow-xl z-40 select-none animate-in fade-in zoom-in-95 duration-150 ring-1 ring-black/5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
  >
  {/* Tag do Tipo de Bloco */}
  <Badge
  variant="secondary"
- className="text-[10px] font-bold px-2 py-1 rounded-lg bg-primary/10 text-primary border-primary/20 shrink-0 uppercase font-mono mr-1"
+ className="text-xs font-bold px-2 py-1 rounded-lg bg-primary/10 text-primary border-primary/20 shrink-0 uppercase font-mono mr-1"
  >
  {blockName}
  </Badge>
@@ -46,7 +46,7 @@ export function BuilderFloatingActionBar({
  <button
  type="button"
  onClick={onEditContent}
- className="h-7 px-3 rounded-lg text-xs font-semibold flex items-center gap-2 bg-muted/60 hover:bg-muted text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold flex items-center gap-2 bg-muted/60 hover:bg-muted text-foreground transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
  title="Editar Textos e Imagens"
  >
  <Edit3 className="size-3 text-primary" />
@@ -57,7 +57,7 @@ export function BuilderFloatingActionBar({
  <button
  type="button"
  onClick={onChangeLayout}
- className="h-7 px-3 rounded-lg text-xs font-semibold flex items-center gap-2 bg-muted/60 hover:bg-muted text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold flex items-center gap-2 bg-muted/60 hover:bg-muted text-foreground transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
  title="Trocar Formato de Grid / Layout"
  >
  <LayoutGrid className="size-3 text-primary" />
@@ -71,7 +71,7 @@ export function BuilderFloatingActionBar({
  <button
  type="button"
  onClick={onMoveUp}
- className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="size-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
  title="Mover para cima"
  >
  <ArrowUp className="size-3.5" />
@@ -82,7 +82,7 @@ export function BuilderFloatingActionBar({
  <button
  type="button"
  onClick={onMoveDown}
- className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="size-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
  title="Mover para baixo"
  >
  <ArrowDown className="size-3.5" />
@@ -93,7 +93,7 @@ export function BuilderFloatingActionBar({
  <button
  type="button"
  onClick={onDuplicate}
- className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="size-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
  title="Duplicar bloco"
  >
  <Copy className="size-3.5" />
@@ -103,7 +103,7 @@ export function BuilderFloatingActionBar({
  <button
  type="button"
  onClick={onDelete}
- className="size-7 rounded-lg flex items-center justify-center text-destructive hover:bg-destructive/10 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="size-11 rounded-lg flex items-center justify-center text-destructive hover:bg-destructive/10 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
  title="Excluir bloco"
  >
  <Trash2 className="size-3.5" />

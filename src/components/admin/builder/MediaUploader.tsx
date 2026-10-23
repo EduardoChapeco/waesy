@@ -215,7 +215,7 @@ export function MediaUploader({
  {label && (
  <label className="text-xs font-bold text-foreground flex items-center justify-between">
  <span>{label}</span>
- <span className="text-[10px] font-normal text-muted-foreground">
+ <span className="text-xs font-normal text-muted-foreground">
  {value ? "Mídia ativa" : "Vazio"}
  </span>
  </label>
@@ -235,8 +235,8 @@ export function MediaUploader({
 
 	 {/* ── 1. PREVIEW DO ARQUIVO ATIVO (SE HOUVER) ── */}
  {value ? (
- <div className="relative rounded-lg overflow-hidden border border-border/80 bg-muted/30 group transition-all">
- <div className="h-32 w-full flex items-center justify-center p-1 bg-[radial-gradient(#00000010_1px,transparent_1px)] dark:bg-[radial-gradient(#ffffff10_1px,transparent_1px)] [background-size:12px_12px]">
+ <div className="relative rounded-lg overflow-hidden border border-border/80 bg-muted/30 group transition-colors motion-reduce:transition-none">
+ <div className="h-32 w-full flex items-center justify-center p-1 bg-muted/20">
  {isVideo ? (
  <video src={value} className="w-full h-full object-cover rounded-lg" muted />
  ) : hasImageError ? (
@@ -257,12 +257,12 @@ export function MediaUploader({
  </div>
 
  {/* Overlay com Ações Rápidas */}
- <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-2 backdrop-blur-xs">
+ <div className="absolute inset-0 bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none flex items-center justify-center gap-2 p-2 backdrop-blur-xs">
  <Button
  type="button"
  variant="secondary"
  size="sm"
- className="h-8 text-xs font-semibold rounded-lg gap-2 cursor-pointer bg-white text-black hover:bg-white/90"
+ className="h-11 min-h-11 text-xs font-semibold rounded-lg gap-2 cursor-pointer text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  onClick={() => fileInputRef.current?.click()}
  >
  <Upload className="size-3.5" />
@@ -272,7 +272,7 @@ export function MediaUploader({
  type="button"
  variant="destructive"
  size="icon"
- className="h-8 w-8 rounded-lg cursor-pointer"
+ className="size-11 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  onClick={() => handleManualValueChange("")}
  title="Remover mídia"
  >
@@ -282,16 +282,21 @@ export function MediaUploader({
  </div>
  ) : (
  /* ── 2. ÁREA DE DROP / UPLOAD QUANDO VAZIO ── */
- <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
- className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "h-28 rounded-lg border border-dashed border-border/80 flex flex-col items-center justify-center gap-2 text-muted-foreground bg-muted/20 hover:bg-muted/40 hover:border-primary/60 transition-all cursor-pointer select-none",
+ <div
+ className={cn(
+ "h-28 rounded-lg border border-dashed border-border/80 flex flex-col items-center justify-center gap-2 text-muted-foreground bg-muted/20 hover:bg-muted/40 hover:border-primary/60 transition-colors motion-reduce:transition-none cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
  isUploading && "pointer-events-none opacity-60",
  )}
  onClick={() => fileInputRef.current?.click()}
+ onKeyDown={(event) => {
+ if (event.key === "Enter" || event.key === " ") fileInputRef.current?.click();
+ }}
+ role="button"
+ tabIndex={0}
  >
  {isUploading ? (
  <>
- <Loader2 className="size-6 animate-spin text-primary" />
+ <Loader2 className="size-6 animate-spin motion-reduce:animate-none text-primary" />
  <span className="text-xs font-semibold text-foreground">Enviando mídia...</span>
  </>
  ) : (
@@ -301,7 +306,7 @@ export function MediaUploader({
  </div>
  <div className="text-center space-y-1">
  <p className="text-xs font-bold text-foreground">Clique para enviar arquivo</p>
-		 <p className="text-[10px] text-muted-foreground">{studioAssetUsageSlot ? "PNG, JPG, WEBP, AVIF ou GIF" : "PNG, JPG, WEBP, GIF ou MP4"}</p>
+		 <p className="text-xs text-muted-foreground">{studioAssetUsageSlot ? "PNG, JPG, WEBP, AVIF ou GIF" : "PNG, JPG, WEBP, GIF ou MP4"}</p>
  </div>
  </>
  )}
@@ -313,7 +318,7 @@ export function MediaUploader({
  <div className="flex gap-2">
  <div className="relative flex-1">
  <Input
- className="h-8 pl-7 pr-2 text-xs bg-background rounded-lg border-border/70 font-sans"
+ className="h-11 min-h-11 pl-7 pr-2 text-xs bg-background rounded-lg border-border/70 font-sans focus-visible:ring-2 focus-visible:ring-ring"
  placeholder="Cole a URL da imagem (https://...)"
  value={value || ""}
  onChange={(e) => handleManualValueChange(e.target.value)}
@@ -326,7 +331,7 @@ export function MediaUploader({
  variant="outline"
  size="sm"
  onClick={() => setShowPresets(!showPresets)}
- className="h-8 px-2 text-[11px] rounded-lg gap-1 border-border/70 shrink-0 cursor-pointer"
+ className="h-11 min-h-11 px-2 text-xs rounded-lg gap-1 border-border/70 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  title="Escolher uma imagem de amostra"
  >
  <Layers className="size-3 text-amber-500" />
@@ -336,8 +341,8 @@ export function MediaUploader({
 
  {/* Menu rápido de Presets de Imagens */}
  {showPresets && (
- <div className="p-2 rounded-lg bg-muted/40 border border-border/60 space-y-2 animate-in fade-in duration-150">
- <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-1">
+ <div className="p-2 rounded-lg bg-muted/40 border border-border/60 space-y-2 animate-in fade-in duration-150 motion-reduce:animate-none">
+ <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider px-1">
  Imagens de Exemplo em Alta Definição:
  </div>
  <div className="grid grid-cols-2 gap-2">
@@ -350,7 +355,7 @@ export function MediaUploader({
  setShowPresets(false);
  toast.success(`Exemplo "${preset.label}" aplicado!`);
  }}
- className="text-left text-[11px] p-2 rounded-lg bg-background hover:bg-primary/10 hover:text-primary border border-border/50 truncate cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="text-left text-xs min-h-11 p-2 rounded-lg bg-background hover:bg-primary/10 hover:text-primary border border-border/50 truncate cursor-pointer transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {preset.label}
  </button>
