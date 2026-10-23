@@ -4910,3 +4910,50 @@
 
 
 
+
+
+## DEC-308: Declaração Canônica da Tabela travel_contract_templates e Saneamento de Contratos
+
+- **Data:** 2026-10-22
+- **ID da Decisao:** DEC-308
+- **Contexto:** Auditoria forense automatizada de contratos de tabelas (`check-bff-table-contracts.mjs`) identificou violação crítica: `travel_contract_templates` era referenciada em `src/services/travel-contract.functions.ts` para salvar e recuperar templates customizados de agências, porém não existia declaração da tabela em nenhuma das 539 migrations locais, o que geraria falha em runtime do PostgreSQL.
+- **Decisao Adotada:**
+  1. Criação da migration canônica `supabase/migrations/20270301000000_travel_contract_templates.sql` com schema completo (`id`, `store_id`, `title`, `description`, `clauses`, `is_default`, `created_at`, `updated_at`).
+  2. Adicionados índices multi-tenant (`idx_travel_contract_templates_store_id`, `idx_travel_contract_templates_default`).
+  3. Ativada blindagem RLS Zero-Trust (`travel_contract_templates_staff_read`, `travel_contract_templates_staff_write`).
+  4. Validação formal executada: `check-bff-table-contracts.mjs` (Exit Code 0: 607 tabelas, 0 sem declaração) e `check-schema-consolidation.mjs` (Exit Code 0: 540 migrations, 0 colisões).
+- **Fundamentacao Teorica:** AGENTS.md B.1 a B.41, B.25 (Integridade de Parâmetros e Funções BFF) e Zero-Trust RLS.
+- **Consequencias:** Eliminação definitiva de erro 500 no módulo de minutas contratuais de agências, permitindo que a tela de contratos salve e carregue modelos com segurança e isolamento multi-tenant.
+
+
+## DEC-309: Plano Mestre de Continuidade e Remediação Global (2026-10-22)
+
+- **Data:** 2026-10-22
+- **ID da Decisao:** DEC-309
+- **Contexto:** Necessidade de consolidar em documento normativo rastreável no repositório (`docs/audits/PLANO_MESTRE_CONTINUIDADE_REMEDIACAO_GLOBAL_2026-10-22.md`) o inventário holístico de entregas executadas, anomalias sanadas, o catálogo dos 34 serviços BFF órfãos e o cronograma de microfases operacionais para commit no Git.
+- **Decisao Adotada:**
+  1. Criação do documento `docs/audits/PLANO_MESTRE_CONTINUIDADE_REMEDIACAO_GLOBAL_2026-10-22.md` contendo:
+     - Balanço forense auditado (executado vs. pendente).
+     - Mapeamento detalhado dos 34 serviços BFF sem UI agrupados por domínio de negócio.
+     - Sequenciamento das microfases 2 a 6 com escopos, componentes e rotas delimitadas.
+     - Regras de ergonomia mobile (<600px), anti-jank, squircle e piso de toque 44px.
+     - Travas de governança para prevenir interferência com agentes paralelos.
+- **Fundamentacao Teorica:** AGENTS.md B.1 a B.41, B.5 (Fluxo Obrigatório de Trabalho), B.9 (Definition of Done) e B.11 (Registro de Decisões).
+- **Consequencias:** Alinhamento contínuo da equipe e dos agentes autônomos, garantindo execução ordenada fase a fase sem quebras de escopo nem débitos técnicos invisíveis.
+
+
+## DEC-310: Plano Mestre de Classificados, Vitrines e Checkout Holístico
+
+- **Data:** 2026-10-22
+- **ID da Decisao:** DEC-310
+- **Contexto:** Necessidade de consolidar em documento normativo rastreável no GitHub (`docs/specs/PLANO-MESTRE-CLASSIFICADOS-VITRINES-E-CHECKOUT-HOLISTICO.md`) a auditoria forense ponta a ponta do ecossistema de Classificados Multi-Nicho, Vitrines Públicas e Checkout Adaptativo, mapeando a verdade do repositório, discrepâncias ocultas entre colunas/atributos e decompondo as próximas etapas em 4 microfases atômicas.
+- **Decisao Adotada:**
+  1. Criação do documento canônico `docs/specs/PLANO-MESTRE-CLASSIFICADOS-VITRINES-E-CHECKOUT-HOLISTICO.md` contendo:
+     - Balanço de execução auditado (100% implementado vs. pendente).
+     - Matriz forense de gaps (GAP-01 a GAP-07) detalhando causas raiz e impacto sistêmico.
+     - Sequenciamento das microfases 1 a 4 com critérios de aceite EARS.
+     - Rastreabilidade de schemas, colunas JSONB, contratos BFF e rotas/componentes de interface.
+     - Definition of Done alinhada às Invariantes B.20 a B.41 do `AGENTS.md`.
+- **Fundamentacao Teorica:** AGENTS.md B.5 (Fluxo Obrigatório de Trabalho), B.9 (Definition of Done), B.11 (Registro de Decisões) e B.37/B.38 (Isolamento Semântico e Anti-Truncate).
+- **Consequencias:** Visibilidade total e imutável no repositório das correções necessárias, permitindo execução faseada sem conflitos com outros agentes concorrentes e assegurando integridade transacional real em produção.
+
