@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { type Proposal, type Tour } from "@/services/proposals";
-import { Accordion, Card, AddBtn, L, Inp, SMALL_INPUT } from "@/components/proposals/ProposalFormFields";
+import { Accordion, Card, AddButton, L, Inp, SMALL_INPUT } from "@/components/proposals/ProposalFormFields";
 import { replaceAt } from "@/components/proposals/ProposalFormFields";
 import { useAgency } from "@/lib/agency-context";
 import { listGroupTours } from "@/services/group-tours.functions";
@@ -119,7 +119,7 @@ export function SectionTours({ draft, save }: Props) {
         </Card>
       ))}
       <div className="flex gap-2">
-        <AddBtn onClick={add}>Adicionar passeio</AddBtn>
+        <AddButton onClick={add}>Adicionar passeio</AddButton>
         <Button
           type="button"
           onClick={() => {

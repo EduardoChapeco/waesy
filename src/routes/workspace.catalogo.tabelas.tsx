@@ -374,10 +374,7 @@ function WorkspacePriceTablesPage() {
  {tables.map((tbl) => {
  const isSelected = selectedTable?.id === tbl.id;
  return (
- <div
- key={tbl.id}
- onClick={() => handleSelectTable(tbl)}
- className={`p-4 rounded-lg border transition-colors cursor-pointer space-y-2 ${
+ <div key={tbl.id} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleSelectTable(tbl); } }} onClick={() => handleSelectTable(tbl)} className={`p-4 rounded-lg border transition-colors cursor-pointer space-y-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
  isSelected
  ? "bg-card border-primary ring-2 ring-primary/10 shadow-xs"
  : "bg-card/60 border-border/60 hover:bg-card"

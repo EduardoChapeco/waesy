@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Hotel, Plus, Search, Award, MapPin, Utensils, Phone, Globe, Camera, Edit2, Trash2, Check, Building, ExternalLink, ShieldCheck, Zap, Coffee, Waves, HeartHandshake, Compass, Copy, Eye, BedDouble, Users, Maximize2, Info, Clock, Dog, Ban, LayoutGrid, Table as TableIcon, Navigation, CheckCircle2, X, UploadCloud, Building2, Download, FileSpreadsheet } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -16,7 +16,7 @@ import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-cano
 import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { toast } from "sonner";
-import { listHotelsBank, createHotel, updateHotel, deleteHotel, duplicateHotel, listDestinations, type HotelBankDTO, type DestinationDTO, type HotelRoomCategory, type HotelPolicies, type HotelStructure, type HotelRestaurant } from "@/services/travel-catalog.functions";
+import { listHotelsBank, createHotel, updateHotel, deleteHotel, duplicateHotel, listDestinations, checkHotelPreflightMatch, type HotelBankDTO, type DestinationDTO, type HotelRoomCategory, type HotelPolicies, type HotelStructure, type HotelRestaurant, type HotelPreflightMatchDTO } from "@/services/travel-catalog.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
 import { CANONICAL_DESTINATIONS, type CanonicalDestination } from "@/lib/destinations-catalog";
@@ -44,6 +44,7 @@ export const Route = createFileRoute("/workspace/turismo/hoteis")({
  component: WorkspaceHotelsPage,
 });
 
+
 function WorkspaceHotelsPage() {
  const { hotels: initialHotels, destinations = [], store } = ((Route.useLoaderData?.() as any) || {});
  const queryClient = useQueryClient();
@@ -62,6 +63,8 @@ function WorkspaceHotelsPage() {
  const [isMetricsOpen, setIsMetricsOpen] = useState(false);
  const [sheetTab, setSheetTab] = useState<string>("dados");
  const [selectedGlobalHotel, setSelectedGlobalHotel] = useState<GlobalHotelDTO | null>(null);
+ const [preflightMatch, setPreflightMatch] = useState<HotelPreflightMatchDTO | null>(null);
+
 
  // Form State Modular
  const [formData, setFormData] = useState<{
@@ -145,6 +148,32 @@ function WorkspaceHotelsPage() {
  const [newBullet, setNewBullet] = useState("");
  const [newPhotoUrl, setNewPhotoUrl] = useState("");
  const [newRestaurant, setNewRestaurant] = useState({ name: "", cuisine: "", regime: "Incluso" });
+
+ useEffect(() => {
+ if (!formData.name || formData.name.trim().length < 3 || selectedGlobalHotel || editingHotel?.global_hotel_id) {
+ setPreflightMatch(null);
+ return;
+ }
+ const timer = setTimeout(async () => {
+ try {
+ const match = await checkHotelPreflightMatch({
+ data: {
+ name: formData.name.trim(),
+ city: formData.city || undefined,
+ state: formData.state || undefined,
+ },
+ });
+ if (match.hasDuplicate && match.matchedHotel) {
+ setPreflightMatch(match);
+ } else {
+ setPreflightMatch(null);
+ }
+ } catch {
+ setPreflightMatch(null);
+ }
+ }, 350);
+ return () => clearTimeout(timer);
+ }, [formData.name, formData.city, formData.state, selectedGlobalHotel, editingHotel?.global_hotel_id]);
 
  const { data: hotels = initialHotels, refetch } = useQuery({
  queryKey: ["workspace_hotels_bank", selectedDestination],
@@ -1416,6 +1445,40 @@ function WorkspaceHotelsPage() {
  className="h-10 rounded-lg bg-background"
  required
  />
+ {preflightMatch && preflightMatch.matchedHotel && !selectedGlobalHotel && (
+ <div className="p-3 rounded-lg bg-primary/10 border border-primary/30 flex items-start justify-between gap-3 animate-in fade-in duration-200">
+ <div className="space-y-1">
+ <p className="text-xs font-bold text-foreground flex items-center gap-2">
+ <ShieldCheck className="size-3.5 text-primary shrink-0" />
+ <span>Hotel verificado no Catálogo Central</span>
+ </p>
+ <p className="text-xs text-muted-foreground">
+ {preflightMatch.recommendation}
+ </p>
+ </div>
+ <Button
+ type="button"
+ size="sm"
+ variant="outline"
+ onClick={() => {
+ if (preflightMatch.matchedHotel) {
+ handleSelectGlobalHotel({
+ id: preflightMatch.matchedHotel.id,
+ name: preflightMatch.matchedHotel.name,
+ city: preflightMatch.matchedHotel.city,
+ state: preflightMatch.matchedHotel.state,
+ country: preflightMatch.matchedHotel.country,
+ is_canonical: true,
+ } as any);
+ setPreflightMatch(null);
+ }
+ }}
+ className="h-9 px-3 rounded-md text-xs font-bold shrink-0 bg-background hover:bg-primary/10 border-primary/40 text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+ >
+ Vincular
+ </Button>
+ </div>
+ )}
  </div>
 
  {/* Atalho de Destinos Canônicos */}

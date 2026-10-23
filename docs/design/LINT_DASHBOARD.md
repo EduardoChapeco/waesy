@@ -1,33 +1,33 @@
 # LINT_DASHBOARD.md — Painel Canônico de Saúde Visual e Catraca
 
-> Gerado automaticamente pelo Design Lint V2 em: `2026-10-23T08:50:42.371Z`
+> Gerado automaticamente pelo Design Lint V2 em: `2026-10-23T10:14:04.906Z`
 
 ## 1. Resumo Executivo
 
 | Métrica | Atual | Baseline Congelada | Status Catraca |
 | :--- | :--- | :--- | :--- |
-| **Total de Arquivos** | 2324 | 2323 | Estável |
-| **Arquivos com Débito** | 858 | 875 | Monitorado |
-| **Total de Violações** | **10172** | **10458** | PASS (<= Baseline) |
-| **P0 (Bloqueia Entrega)** | **75** | 76 | PASS |
-| **P1 (Bloqueia Merge)** | **7646** | 7890 | PASS |
-| **P2 (Fila de Correção)** | 1274 | 1287 | Acompanhamento |
-| **P3 (Polimento)** | 1177 | 1205 | Acompanhamento |
+| **Total de Arquivos** | 2326 | 2326 | Estável |
+| **Arquivos com Débito** | 855 | 855 | Monitorado |
+| **Total de Violações** | **10097** | **10097** | PASS (<= Baseline) |
+| **P0 (Bloqueia Entrega)** | **0** | 0 | PASS |
+| **P1 (Bloqueia Merge)** | **7646** | 7646 | PASS |
+| **P2 (Fila de Correção)** | 1274 | 1274 | Acompanhamento |
+| **P3 (Polimento)** | 1177 | 1177 | Acompanhamento |
 
 ## 2. Débito Visual por Módulo
 
 | Módulo | Total | P0 | P1 | P2 | P3 |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `components/app` | 4347 | 31 | 3228 | 602 | 486 |
-| `routes/workspace` | 1684 | 20 | 1296 | 109 | 259 |
-| `routes/store` | 1182 | 11 | 810 | 165 | 196 |
+| `components/app` | 4315 | 0 | 3227 | 602 | 486 |
+| `routes/workspace` | 1665 | 0 | 1297 | 109 | 259 |
+| `routes/store` | 1171 | 0 | 810 | 165 | 196 |
 | `routes/admin` | 921 | 0 | 749 | 50 | 122 |
-| `components/tourism` | 908 | 8 | 730 | 126 | 44 |
-| `components/ui` | 279 | 1 | 219 | 19 | 40 |
+| `components/tourism` | 900 | 0 | 730 | 126 | 44 |
+| `components/ui` | 278 | 0 | 219 | 19 | 40 |
 | `lib` | 253 | 0 | 218 | 35 | 0 |
 | `services` | 210 | 0 | 145 | 63 | 2 |
 | `components/chat` | 193 | 0 | 116 | 62 | 15 |
-| `routes/other` | 117 | 4 | 91 | 16 | 6 |
+| `routes/other` | 113 | 0 | 91 | 16 | 6 |
 | `components/builder` | 49 | 0 | 28 | 14 | 7 |
 | `hooks` | 12 | 0 | 8 | 4 | 0 |
 | `styles` | 9 | 0 | 0 | 9 | 0 |
@@ -53,7 +53,6 @@
 | **DL-29** | Diretriz do Catálogo | `P2` | 115 |
 | **DL-08** | Diretriz do Catálogo | `P2` | 93 |
 | **DL-26** | Diretriz do Catálogo | `P2` | 81 |
-| **DL-15** | Diretriz do Catálogo | `P0` | 75 |
 | **DL-12** | Diretriz do Catálogo | `P1` | 29 |
 | **DL-25** | Diretriz do Catálogo | `P2` | 21 |
 | **DL-11** | Diretriz do Catálogo | `P1` | 20 |

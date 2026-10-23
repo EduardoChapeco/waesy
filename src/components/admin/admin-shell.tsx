@@ -434,7 +434,7 @@ export function AdminShell({
  to={item.path}
  activeOptions={{ exact: item.path === "/workspace" }}
  className={cn(
- "flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground",
+ "flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
  collapsed && "justify-center",
  )}
  activeProps={{
@@ -469,7 +469,7 @@ export function AdminShell({
  <Link
  to={mod.path}
  className={cn(
- "flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground",
+ "flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
  isCurrent && "bg-sidebar-accent/50 text-sidebar-foreground",
  collapsed && "justify-center",
  )}
@@ -613,7 +613,7 @@ export function AdminShell({
  <Link
  to={mod.path}
  className={cn(
- "flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground",
+ "flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
  isCurrent && "bg-sidebar-accent/50 text-sidebar-foreground",
  )}
  onClick={() => {

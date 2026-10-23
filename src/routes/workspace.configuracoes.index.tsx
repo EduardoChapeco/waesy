@@ -18,7 +18,7 @@ import { ThemeSelector } from "@/components/settings/theme-selector";
 import { BusinessHoursEditor } from "@/components/commerce/business-hours-editor";
 import { NeighborhoodsManager } from "@/components/commerce/neighborhoods-manager";
 import { DeliveryTimeAndRadiusMatrix, type DeliveryLogisticsConfig } from "@/components/commerce/delivery-time-and-radius-matrix";
-import { CHAPECO_NEIGHBORHOODS, type NeighborhoodPreset } from "@/lib/constants/cities";
+import { CHAPECO_NEIGHBORHOODS, getNeighborhoodsForCity, type NeighborhoodPreset } from "@/lib/constants/cities";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
@@ -129,6 +129,8 @@ export default function WorkspaceConfiguracoesPage() {
   const [email, setEmail] = useState(store?.email || "");
   const [cnpj, setCnpj] = useState(store?.cnpj || "");
   const [address, setAddress] = useState(store?.address || "");
+  const [latitude, setLatitude] = useState<number | null>(store?.latitude ?? store?.settings?.latitude ?? null);
+  const [longitude, setLongitude] = useState<number | null>(store?.longitude ?? store?.settings?.longitude ?? null);
   const [segment, setSegment] = useState(
     store?.settings?.segment || store?.settings?.type || store?.settings?.niche || (store?.name?.toLowerCase()?.includes("tour") ? "tourism" : "gastronomy")
   );
@@ -229,7 +231,7 @@ export default function WorkspaceConfiguracoesPage() {
  const [neighborhoods, setNeighborhoods] = useState<any[]>(
  store?.settings?.delivery_zones && store.settings.delivery_zones.length > 0
  ? store.settings.delivery_zones
- : CHAPECO_NEIGHBORHOODS,
+ : getNeighborhoodsForCity(store?.city),
  );
 
  // Modalidades de Atendimento (Delivery, Retirada, No Local)
@@ -389,6 +391,8 @@ export default function WorkspaceConfiguracoesPage() {
           email: email.trim() || undefined,
           cnpj: cnpj.trim() || undefined,
           address: address.trim() || undefined,
+          latitude: typeof latitude === "number" ? latitude : undefined,
+          longitude: typeof longitude === "number" ? longitude : undefined,
           city: city.trim() || undefined,
           state: state.trim().toUpperCase() || undefined,
           zipCode: zipCode.trim() || undefined,
@@ -1101,11 +1105,8 @@ export default function WorkspaceConfiguracoesPage() {
  ].map((mod) => {
  const isEnabled = enabledModules.includes(mod.id);
  return (
- <div
- key={mod.id}
- onClick={() => handleToggleModule(mod.id)}
- className={cn(
- "flex items-start justify-between p-4 rounded-lg border transition-colors motion-reduce:transition-none cursor-pointer select-none",
+ <div key={mod.id} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleToggleModule(mod.id); } }} onClick={() => handleToggleModule(mod.id)} className={cn(
+                  "flex items-start justify-between p-4 rounded-lg border transition-colors motion-reduce:transition-none cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
  isEnabled
  ? "border-primary/40 bg-primary/5 dark:bg-primary/10"
  : "border-border/60 bg-muted/20 hover:bg-muted/40 opacity-70"
@@ -1192,12 +1193,24 @@ export default function WorkspaceConfiguracoesPage() {
  />
 
  <div className="space-y-2">
- <Label className="text-xs font-bold text-foreground">Endereço Físico / Balcão</Label>
- <Input
- value={address}
- onChange={(e) => setAddress(e.target.value)}
- placeholder="Rua, número, complemento e bairro"
- className="rounded-lg text-xs h-11 min-h-11"
+ <Label className="text-xs font-bold text-foreground">Endereço Físico e Localização no Mapa</Label>
+ <AddressField
+ value={{
+ text: address,
+ lat: latitude ?? undefined,
+ lng: longitude ?? undefined,
+ cep: zipCode,
+ city: city,
+ state: state,
+ }}
+ onChange={(addr) => {
+ if (addr.text) setAddress(addr.text);
+ if (typeof addr.lat === "number") setLatitude(addr.lat);
+ if (typeof addr.lng === "number") setLongitude(addr.lng);
+ if (addr.cep) setZipCode(addr.cep);
+ if (addr.city) setCity(addr.city);
+ if (addr.state) setState(addr.state);
+ }}
  />
  </div>
  </div>

@@ -277,6 +277,7 @@ export function DS4Showcase() {
               title="Nova Cotação Aérea"
               description="Inicie a parametrização de trechos nacionais ou internacionais com tarifas corporativas."
               icon={<Plane className="size-5" />}
+              className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               onClick={() => {}}
             />
           </div>

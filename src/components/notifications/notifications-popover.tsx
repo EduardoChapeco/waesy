@@ -178,11 +178,8 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  {notifications.length > 0 ? (
  <div className="p-1 space-y-1">
  {notifications.map((item) => (
- <div
- key={item.id}
- onClick={() => handleNotificationClick(item)}
- className={cn(
- "p-3 rounded-lg flex items-start gap-3 transition-colors cursor-pointer group text-left",
+ <button type="button" key={item.id} onClick={() => handleNotificationClick(item)} className={cn(
+                  "w-full p-3 rounded-lg flex items-start gap-3 transition-colors cursor-pointer group text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
  item.isRead ? "hover:bg-muted/40" : "bg-muted/30 hover:bg-muted/60"
  )}
  >
@@ -237,9 +234,9 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  <span className="size-2 rounded-full bg-primary sm:group-hover:hidden" />
  </div>
  ) : null}
- </div>
- ))}
- </div>
+ </button>
+                ))}
+              </div>
  ) : (
  <div className="py-12 px-4 text-center space-y-2">
  <Bell className="size-8 text-muted-foreground/40 mx-auto" />

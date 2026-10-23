@@ -25,7 +25,7 @@ import { uploadStoreMedia } from "@/services/storage.functions";
 import { getUserSession } from "@/services/auth.functions";
 import { getPublicLogisticsPresentation } from "@/services/master.functions";
 import { NeighborhoodsManager, type NeighborhoodItem } from "@/components/commerce/neighborhoods-manager";
-import { CHAPECO_NEIGHBORHOODS } from "@/lib/constants/cities";
+import { getNeighborhoodsForCity } from "@/lib/constants/cities";
 import { useMasterLocation } from "@/components/location/location-master-pill";
 import { FastCompanyOnboarding } from "@/components/onboarding/fast-company-onboarding";
 import { setClientContextCookies } from "@/lib/context-auth";
@@ -142,7 +142,7 @@ function CriarNegocioPage() {
  const [hasPickup, setHasPickup] = useState(true);
  const [hasInPersonService, setHasInPersonService] = useState(true);
  const [hasOnlineService, setHasOnlineService] = useState(true);
- const [neighborhoods, setNeighborhoods] = useState<NeighborhoodItem[]>(CHAPECO_NEIGHBORHOODS);
+ const [neighborhoods, setNeighborhoods] = useState<NeighborhoodItem[]>(() => getNeighborhoodsForCity(detectedCity));
  const [workingHours, setWorkingHours] = useState<WeeklySchedule>(() =>
  getPresetForSegment("gastronomia")
  );

@@ -1123,15 +1123,7 @@ function AdminOrdersPage() {
  const isChecked = !!checkedItems[itemKey];
 
  return (
- <div
- key={idx}
- onClick={() =>
- setCheckedItems((prev) => ({
- ...prev,
- [itemKey]: !prev[itemKey],
- }))
- }
- className={`flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer select-none ${
+ <div key={idx} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setCheckedItems((prev) => ({ ...prev, [itemKey]: !prev[itemKey] })); } }} onClick={() => setCheckedItems((prev) => ({ ...prev, [itemKey]: !prev[itemKey] }))} className={`flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
  isChecked
  ? "bg-emerald-500/10 border-emerald-500/30 text-foreground"
  : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/60"

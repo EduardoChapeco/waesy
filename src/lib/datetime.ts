@@ -76,17 +76,24 @@ export type OpenStatusResult = {
  * Suporta múltiplos turnos/intervalos por dia, viradas de madrugada (overnight), pausas e feriados.
  */
 export function getOpenStatus(
- rawHours: any,
- holidayExceptions?: any[] | null | undefined,
- emergencyPauseUntil?: string | null | undefined,
+  rawHours: any,
+  holidayExceptions?: any[] | null | undefined,
+  emergencyPauseUntil?: string | null | undefined,
+  timeZone?: string | null | undefined,
 ): OpenStatusResult {
  try {
- const now = new Date();
- const spTime = new Date(now.toLocaleString("en-US", { timeZone: TZ }));
- const currentHour = spTime.getHours();
- const currentMinute = spTime.getMinutes();
+  const tz = (timeZone && typeof timeZone === 'string' && timeZone.trim()) ? timeZone.trim() : TZ;
+  const now = new Date();
+  let localTime: Date;
+  try {
+    localTime = new Date(now.toLocaleString('en-US', { timeZone: tz }));
+  } catch {
+    localTime = new Date(now.toLocaleString('en-US', { timeZone: TZ }));
+  }
+ const currentHour = localTime.getHours();
+ const currentMinute = localTime.getMinutes();
  const currentTimeMinutes = currentHour * 60 + currentMinute;
- const currentIsoDate = spTime.toISOString().split("T")[0]; // YYYY-MM-DD
+ const currentIsoDate = localTime.toISOString().split("T")[0]; // YYYY-MM-DD
 
  const nationalHoliday = getHolidayOnDate(currentIsoDate);
  const holidayInfo = nationalHoliday
@@ -111,7 +118,7 @@ export function getOpenStatus(
    const pauseDate = new Date(emergencyPauseUntil);
    if (pauseDate.getTime() > now.getTime()) {
      const pauseTimeStr = pauseDate.toLocaleTimeString("pt-BR", {
-       timeZone: TZ,
+       timeZone: tz,
        hour: "2-digit",
        minute: "2-digit",
      });
@@ -156,7 +163,7 @@ export function getOpenStatus(
  // 3. Resolução da Grade Semanal Completa
  const schedule: WeeklySchedule = normalizeWorkingHours(rawHours);
  const dayKeys: Weekday[] = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
- const currentDayIndex = spTime.getDay(); // 0 = Domingo, 1 = Segunda, etc.
+ const currentDayIndex = localTime.getDay(); // 0 = Domingo, 1 = Segunda, etc.
  const currentDayKey = dayKeys[currentDayIndex];
  const todaySchedule = schedule[currentDayKey];
 
@@ -253,9 +260,14 @@ export function getOpenStatus(
  }
 }
 
-export function formatTimeOnly(iso: string | Date): string {
- if (!iso) return '';
- const d = new Date(iso);
- return d.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
+export function formatTimeOnly(iso: string | Date, timeZone = TZ): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const tz = (timeZone && typeof timeZone === 'string' && timeZone.trim()) ? timeZone.trim() : TZ;
+  try {
+    return d.toLocaleTimeString('pt-BR', { timeZone: tz, hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return d.toLocaleTimeString('pt-BR', { timeZone: TZ, hour: '2-digit', minute: '2-digit' });
+  }
 }
 

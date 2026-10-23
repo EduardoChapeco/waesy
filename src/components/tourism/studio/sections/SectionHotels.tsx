@@ -1,5 +1,5 @@
 import { type Proposal, type Hotel, type HotelRoom } from "@/services/proposals";
-import { Accordion, Card, AddBtn, L, Inp, SMALL_INPUT, FileUploadList } from "@/components/proposals/ProposalFormFields";
+import { Accordion, Card, AddButton, L, Inp, SMALL_INPUT, FileUploadList } from "@/components/proposals/ProposalFormFields";
 import { replaceAt } from "@/components/proposals/ProposalFormFields";
 import { MapPin, Star, Utensils, Wifi, Plane as Pool } from "lucide-react";
 import { useAgency } from "@/lib/agency-context";
@@ -279,7 +279,7 @@ export function SectionHotels({ draft, save }: Props) {
         </Card>
       ))}
       <div className="flex gap-2">
-        <AddBtn onClick={add}>Adicionar hotel</AddBtn>
+        <AddButton onClick={add}>Adicionar hotel</AddButton>
         <Button
           type="button"
           onClick={() => setInfotravelOpen(true)}

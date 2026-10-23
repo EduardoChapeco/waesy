@@ -2163,10 +2163,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  const img = product.product_media?.[0]?.url;
 
  return (
- <div
- key={product.id}
- onClick={() => handleSelectProduct(product, variant)}
- className="p-3 rounded-lg border border-border/70 hover:border-primary/50 bg-card hover:bg-muted/30 transition-all flex items-center gap-3 cursor-pointer group"
+ <div key={product.id} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleSelectProduct(product, variant); } }} onClick={() => handleSelectProduct(product, variant)} className="p-3 rounded-lg border border-border/70 hover:border-primary/50 bg-card hover:bg-muted/30 transition-all flex items-center gap-3 cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {img ? (
  <img

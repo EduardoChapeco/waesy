@@ -1,19 +1,18 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-23T08:50:42.371Z",
-  "inspectedFiles": 2324,
-  "totalViolations": 10172,
+  "timestamp": "2026-10-23T10:14:04.906Z",
+  "inspectedFiles": 2326,
+  "totalViolations": 10097,
   "summary": {
-    "totalViolations": 10172,
+    "totalViolations": 10097,
     "bySeverity": {
-      "P0": 75,
+      "P0": 0,
       "P1": 7646,
       "P2": 1274,
       "P3": 1177
     },
     "byRule": {
       "DL-30": 258,
-      "DL-15": 75,
       "DL-27": 919,
       "DL-26": 81,
       "DL-07": 443,
@@ -37,9 +36,9 @@
     },
     "byModule": {
       "components/app": {
-        "total": 4347,
-        "P0": 31,
-        "P1": 3228,
+        "total": 4315,
+        "P0": 0,
+        "P1": 3227,
         "P2": 602,
         "P3": 486
       },
@@ -58,15 +57,15 @@
         "P3": 15
       },
       "components/tourism": {
-        "total": 908,
-        "P0": 8,
+        "total": 900,
+        "P0": 0,
         "P1": 730,
         "P2": 126,
         "P3": 44
       },
       "components/ui": {
-        "total": 279,
-        "P0": 1,
+        "total": 278,
+        "P0": 0,
         "P1": 219,
         "P2": 19,
         "P3": 40
@@ -100,22 +99,22 @@
         "P3": 0
       },
       "routes/other": {
-        "total": 117,
-        "P0": 4,
+        "total": 113,
+        "P0": 0,
         "P1": 91,
         "P2": 16,
         "P3": 6
       },
       "routes/workspace": {
-        "total": 1684,
-        "P0": 20,
-        "P1": 1296,
+        "total": 1665,
+        "P0": 0,
+        "P1": 1297,
         "P2": 109,
         "P3": 259
       },
       "routes/store": {
-        "total": 1182,
-        "P0": 11,
+        "total": 1171,
+        "P0": 0,
         "P1": 810,
         "P2": 165,
         "P3": 196
@@ -142,8 +141,8 @@
         "P3": 0
       }
     },
-    "filesWithViolations": 858,
-    "filesCount": 2324
+    "filesWithViolations": 855,
+    "filesCount": 2326
   },
   "config": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -384,28 +383,6 @@
       "severity": "P3",
       "match": "overflow-x-auto",
       "message": "Overflow horizontal \"overflow-x-auto\" em superfície de aplicação fora de tabela/carrossel."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/admin-shell.tsx",
-      "module": "components/app",
-      "line": 469,
-      "column": 2,
-      "severity": "P0",
-      "match": "onClick sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
-    },
-    {
-      "id": "DL-15",
-      "rule": "DL-15",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/admin-shell.tsx",
-      "module": "components/app",
-      "line": 613,
-      "column": 2,
-      "severity": "P0",
-      "match": "onClick sem focus-visible",
-      "message": "Elemento interativo sem anel de foco teclado (:focus-visible)."
     },
     {
       "id": "DL-27",
@@ -2023,6 +2000,28 @@
       "severity": "P1",
       "match": "text-[11px]",
       "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-27",
+      "rule": "DL-27",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/catalog/quick-option-group-dialog.tsx",
+      "module": "components/app",
+      "line": 321,
+      "column": 134,
+      "severity": "P3",
+      "match": "transition-all",
+      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/admin/catalog/quick-option-group-dialog.tsx",
+      "module": "components/app",
+      "line": 327,
+      "column": 19,
+      "severity": "P1",
+      "match": "text-[10px]",
+      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
     }
   ]
 }

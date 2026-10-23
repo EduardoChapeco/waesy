@@ -85,13 +85,14 @@ export function ExperienceMediaCarousel({
             const isPdf = item.type === "pdf" || item.url.toLowerCase().endsWith(".pdf");
 
             return (
-              <div
+              <button
+                type="button"
                 key={item.id || idx}
                 onClick={(e) => {
                   e.stopPropagation();
                   setSelectedMediaIndex(idx);
                 }}
-                className="group relative shrink-0 w-44 sm:w-56 aspect-video rounded-lg overflow-hidden border border-border/60 bg-muted/20 snap-start shadow-xs hover:border-primary/50 hover:shadow-md transition-all duration-200 cursor-pointer"
+                className="group relative shrink-0 w-44 sm:w-56 aspect-video rounded-lg overflow-hidden border border-border/60 bg-muted/20 snap-start shadow-xs hover:border-primary/50 hover:shadow-md transition-all duration-200 cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 block"
               >
                 {isPdf ? (
                   <div className="size-full flex flex-col items-center justify-center p-3 text-center bg-card">
@@ -126,7 +127,7 @@ export function ExperienceMediaCarousel({
                 <div className="absolute top-2 right-2 px-2 py-1 rounded-md bg-black/60 backdrop-blur-sm text-[9px] font-mono text-white/90">
                   {idx + 1}/{normalizedItems.length}
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
@@ -134,13 +135,14 @@ export function ExperienceMediaCarousel({
 
       {/* ── LIGHTBOX APPLE HIG DE ALTA RESOLUÇÃO ── */}
       {selectedMediaIndex !== null && activeItem && (
-        <div
+        <div /* design-lint-ignore DL-15 reason:"Backdrop overlay modal; fechamento ao clicar fora" expiry:"2027-12-31" */
           role="dialog"
           aria-modal="true"
           className="fixed inset-0 z-50 bg-black/90 backdrop-blur-2xl flex flex-col items-center justify-between p-4 sm:p-6 animate-in fade-in duration-200"
           onClick={() => setSelectedMediaIndex(null)}
         >
           {/* Header Superior Flutuante */}
+          {/* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */}
           <div
             className="w-full max-w-5xl flex items-center justify-between text-white z-10 py-2"
             onClick={(e) => e.stopPropagation()}
@@ -189,6 +191,7 @@ export function ExperienceMediaCarousel({
           </div>
 
           {/* Área Central: Visualizador em Alta Definição */}
+          {/* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */}
           <div
             className="relative flex-1 w-full max-w-5xl flex items-center justify-center p-2 my-auto select-none"
             onClick={(e) => e.stopPropagation()}
@@ -202,7 +205,7 @@ export function ExperienceMediaCarousel({
                     prev !== null ? (prev > 0 ? prev - 1 : normalizedItems.length - 1) : null
                   )
                 }
-                className="absolute left-2 sm:left-4 z-10 size-11 rounded-full bg-black/50 hover:bg-black/80 text-white backdrop-blur-md border border-white/10 flex items-center justify-center transition-all cursor-pointer"
+                className="absolute left-2 sm:left-4 z-10 size-11 rounded-full bg-black/50 hover:bg-black/80 text-white backdrop-blur-md border border-white/10 flex items-center justify-center transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                 title="Anterior (Seta Esquerda)"
               >
                 <ChevronLeft className="size-6" />
@@ -247,7 +250,7 @@ export function ExperienceMediaCarousel({
                     prev !== null ? (prev < normalizedItems.length - 1 ? prev + 1 : 0) : null
                   )
                 }
-                className="absolute right-2 sm:right-4 z-10 size-11 rounded-full bg-black/50 hover:bg-black/80 text-white backdrop-blur-md border border-white/10 flex items-center justify-center transition-all cursor-pointer"
+                className="absolute right-2 sm:right-4 z-10 size-11 rounded-full bg-black/50 hover:bg-black/80 text-white backdrop-blur-md border border-white/10 flex items-center justify-center transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                 title="Próximo (Seta Direita)"
               >
                 <ChevronRight className="size-6" />
@@ -256,6 +259,7 @@ export function ExperienceMediaCarousel({
           </div>
 
           {/* Rodapé Flutuante com Legenda e Indicadores */}
+          {/* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */}
           <div
             className="w-full max-w-2xl text-center py-2 z-10"
             onClick={(e) => e.stopPropagation()}
@@ -274,7 +278,7 @@ export function ExperienceMediaCarousel({
                     type="button"
                     onClick={() => setSelectedMediaIndex(dotIdx)}
                     className={cn(
-                      "size-2 rounded-full transition-all cursor-pointer",
+                      "size-2 rounded-full transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white",
                       dotIdx === selectedMediaIndex
                         ? "bg-white w-5"
                         : "bg-white/30 hover:bg-white/60"

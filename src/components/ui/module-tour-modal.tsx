@@ -203,7 +203,7 @@ export function ModuleTourModal({
 /**
  * Botão discreto de ajuda no cabeçalho do módulo para reabrir o tour quando quiser.
  */
-export function ModuleTourTrigger({
+export function ModuleTourButton({
   onClick,
   label = "Guia do Módulo",
 }: {
@@ -216,7 +216,7 @@ export function ModuleTourTrigger({
       variant="outline"
       size="sm"
       onClick={onClick}
-      className="h-8 px-3 rounded-lg text-[11px] font-semibold gap-2 border-border/60 hover:bg-muted/40 text-muted-foreground hover:text-foreground cursor-pointer shadow-2xs"
+      className="h-8 px-3 rounded-lg text-[11px] font-semibold gap-2 border-border/60 hover:bg-muted/40 text-muted-foreground hover:text-foreground cursor-pointer shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       title={label}
     >
       <HelpCircle className="size-3.5 text-primary" />
@@ -224,3 +224,5 @@ export function ModuleTourTrigger({
     </Button>
   );
 }
+
+export const ModuleTourTrigger = ModuleTourButton;

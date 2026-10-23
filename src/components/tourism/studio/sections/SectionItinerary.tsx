@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { type Proposal, type ItineraryDay } from "@/services/proposals";
-import { Accordion, Card, AddBtn, L, Inp } from "@/components/proposals/ProposalFormFields";
+import { Accordion, Card, AddButton, L, Inp } from "@/components/proposals/ProposalFormFields";
 import { replaceAt, SMALL_INPUT } from "@/components/proposals/ProposalFormFields";
 import { uploadMediaUniversal } from "@/services/storage.functions";
 import { StudioAssetPicker } from "@/components/tourism/studio/StudioUnsplashPicker";
@@ -272,7 +272,7 @@ export function SectionItinerary({ draft, save }: Props) {
           </div>
         </Card>
       ))}
-      <AddBtn onClick={add}>Adicionar dia</AddBtn>
+      <AddButton onClick={add}>Adicionar dia</AddButton>
     </Accordion>
   );
 }

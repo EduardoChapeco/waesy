@@ -12,7 +12,7 @@ import { listStoreTrips, type TourismTripDTO } from "@/services/travel-lifecycle
 import { getStoreSettings } from "@/services/store.functions";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
-import { ModuleTourModal, ModuleTourTrigger, type TourSlide } from "@/components/ui/module-tour-modal";
+import { ModuleTourModal, ModuleTourButton, type TourSlide } from "@/components/ui/module-tour-modal";
 
 const TURISMO_TOUR_SLIDES: TourSlide[] = [
   {
@@ -155,7 +155,7 @@ export default function WorkspaceTripsListPage() {
             <span>Malha Aérea e PNR</span>
           </Link>
         </div>
-        <ModuleTourTrigger onClick={() => setIsTourOpen(true)} label="Guia do Módulo" />
+        <ModuleTourButton onClick={() => setIsTourOpen(true)} label="Guia do Módulo" />
       </div>
 
       {/* ── 1. TOOLBAR CANÔNICA PADRÃO Waesy ── */}

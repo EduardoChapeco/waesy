@@ -1590,7 +1590,7 @@ export default function WorkspaceDestinationsPage() {
  key={tag}
  variant={isSelected ? "default" : "outline"}
  onClick={() => toggleTag(tag)}
- className={`cursor-pointer text-xs py-2 px-3 rounded-lg transition-all ${
+ className={`cursor-pointer text-xs py-2 px-3 rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
  isSelected ? "bg-primary text-primary-foreground font-bold shadow-xs" : "hover:bg-muted"
  }`}
  >

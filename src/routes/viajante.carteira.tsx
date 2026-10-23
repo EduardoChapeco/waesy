@@ -130,7 +130,7 @@ export default function ViajanteCarteiraPage() {
             <button
               type="button"
               onClick={() => setViewMode("cards")}
-              className={`px-3 py-1 rounded-md text-xs font-medium transition-all cursor-pointer ${
+              className={`px-3 py-1 rounded-md text-xs font-medium transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                 viewMode === "cards"
                   ? "bg-card text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -141,7 +141,7 @@ export default function ViajanteCarteiraPage() {
             <button
               type="button"
               onClick={() => setViewMode("list")}
-              className={`px-3 py-1 rounded-md text-xs font-medium transition-all cursor-pointer ${
+              className={`px-3 py-1 rounded-md text-xs font-medium transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                 viewMode === "list"
                   ? "bg-card text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -173,11 +173,7 @@ export default function ViajanteCarteiraPage() {
               if (isHidden) return null;
 
               return (
-                <div
-                  key={pass.id}
-                  id={`pass-card-${pass.id}`}
-                  onClick={() => setSelectedPass(isSelected ? null : pass)}
-                  className={`
+                <div key={pass.id} id={`pass-card-${pass.id}`} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedPass(isSelected ? null : pass); } }} onClick={() => setSelectedPass(isSelected ? null : pass)} className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring 
                     w-full rounded-lg p-6 text-white cursor-pointer transition-all duration-300 border border-border/40
                     ${config.bg}
                     ${isSelected ? "relative z-50 min-h-128" : "h-48 -mb-28 hover:-translate-y-2"}
@@ -236,7 +232,7 @@ export default function ViajanteCarteiraPage() {
                           e.stopPropagation();
                           setFullscreenQrPass(pass);
                         }}
-                        className="p-3 rounded-lg bg-white border border-border/40 hover:shadow-sm transition-all cursor-pointer"
+                        className="p-3 rounded-lg bg-white border border-border/40 hover:shadow-sm transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         title="Toque para tela cheia de embarque"
                       >
                         <img

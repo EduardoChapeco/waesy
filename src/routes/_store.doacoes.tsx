@@ -279,7 +279,7 @@ function DoacoesPage() {
             type="button"
             onClick={() => setIsDonationSheetOpen(true)}
             aria-label="Anunciar Doação"
-            className="h-11 w-11 inline-flex items-center justify-center rounded-full text-primary hover:bg-primary/10 active:scale-95 transition-all"
+            className="h-11 w-11 inline-flex items-center justify-center rounded-full text-primary hover:bg-primary/10 active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           >
             <Plus size={22} weight="bold" />
           </button>
@@ -326,7 +326,7 @@ function DoacoesPage() {
               type="button"
               onClick={() => handleSearchChange("")}
               aria-label="Limpar busca"
-              className="absolute right-2.5 size-7 rounded-full inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted"
+              className="absolute right-2.5 size-7 rounded-full inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <X size={14} weight="bold" />
             </button>
@@ -353,13 +353,8 @@ function DoacoesPage() {
             const Icon = cat.icon;
             const isActive = activeCategory === cat.id;
             return (
-              <button
-                key={cat.id}
-                type="button"
-                role="tab"
-                aria-selected={isActive}
-                onClick={() => handleCategoryChange(cat.id)}
-                className={cn(
+              <button key={cat.id} type="button" role="tab" aria-selected={isActive} onClick={() => handleCategoryChange(cat.id)} className={cn(
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   "snap-start shrink-0 h-9 px-4 rounded-full text-xs font-semibold inline-flex items-center gap-2 transition-all whitespace-nowrap select-none",
                   isActive
                     ? "bg-foreground text-background shadow-xs"
@@ -388,13 +383,8 @@ function DoacoesPage() {
             const Icon = cat.icon;
             const isSelected = activeCategory === cat.id;
             return (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() =>
-                  handleCategoryChange(isSelected ? "todos" : cat.id)
-                }
-                className={cn(
+              <button key={cat.id} type="button" onClick={() => handleCategoryChange(isSelected ? "todos" : cat.id)} className={cn(
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   "w-full min-h-[54px] px-4 py-3 flex items-center justify-between gap-3 text-left transition-colors active:bg-muted/60",
                   isSelected && "bg-primary/5"
                 )}
@@ -445,13 +435,8 @@ function DoacoesPage() {
           const Icon = cat.icon;
           const isSelected = activeCategory === cat.id;
           return (
-            <FrostedCard
-              key={cat.id}
-              intensity="standard"
-              onClick={() =>
-                handleCategoryChange(isSelected ? "todos" : cat.id)
-              }
-              className={cn(
+            <FrostedCard key={cat.id} intensity="standard" role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleCategoryChange(isSelected ? "todos" : cat.id); } }} onClick={() => handleCategoryChange(isSelected ? "todos" : cat.id)} className={cn(
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 cat.bentoSpan,
                 "group relative overflow-hidden cursor-pointer hover:-translate-y-0.5 hover:border-primary/40 transition-all duration-200 min-h-[176px] flex flex-col justify-between",
                 isSelected && "ring-2 ring-primary border-primary"
@@ -638,7 +623,7 @@ function DoacoesPage() {
         type="button"
         onClick={() => setIsDonationSheetOpen(true)}
         aria-label="Anunciar Doação"
-        className="md:hidden fixed bottom-20 right-4 z-40 size-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center active:scale-95 transition-transform"
+        className="md:hidden fixed bottom-20 right-4 z-40 size-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center active:scale-95 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
       >
         <Plus size={24} weight="bold" />
       </button>
@@ -670,7 +655,7 @@ function DoacoesPage() {
                 type="button"
                 onClick={() => setIsDonationSheetOpen(false)}
                 aria-label="Fechar"
-                className="size-10 rounded-full inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted"
+                className="size-10 rounded-full inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <X size={20} weight="bold" />
               </button>
@@ -691,11 +676,8 @@ function DoacoesPage() {
                     (cat) => {
                       const active = subCategory === cat.id;
                       return (
-                        <button
-                          key={cat.id}
-                          type="button"
-                          onClick={() => setSubCategory(cat.id)}
-                          className={cn(
+                        <button key={cat.id} type="button" onClick={() => setSubCategory(cat.id)} className={cn(
+                            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                             "shrink-0 h-9 px-4 rounded-full text-xs font-semibold transition-all",
                             active
                               ? "bg-primary text-primary-foreground"
@@ -732,10 +714,8 @@ function DoacoesPage() {
 
               {/* Estado de Conservação */}
               <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setCondition("used")}
-                  className={cn(
+                <button type="button" onClick={() => setCondition("used")} className={cn(
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                     "h-11 rounded-lg border text-xs font-semibold flex items-center justify-center gap-2 transition-all",
                     condition === "used"
                       ? "border-primary bg-primary/10 text-primary"
@@ -749,10 +729,8 @@ function DoacoesPage() {
                   />
                   Usado em bom estado
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setCondition("new")}
-                  className={cn(
+                <button type="button" onClick={() => setCondition("new")} className={cn(
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                     "h-11 rounded-lg border text-xs font-semibold flex items-center justify-center gap-2 transition-all",
                     condition === "new"
                       ? "border-primary bg-primary/10 text-primary"
@@ -856,7 +834,7 @@ function DoacoesPage() {
                             prev.filter((_, i) => i !== idx)
                           )
                         }
-                        className="absolute top-1 right-1 size-5 rounded-full bg-black/70 text-white flex items-center justify-center"
+                        className="absolute top-1 right-1 size-5 rounded-full bg-black/70 text-white flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                       >
                         <X size={11} />
                       </button>

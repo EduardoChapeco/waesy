@@ -179,7 +179,7 @@ export interface SimResearchRun {
 
 const MUNICIPALITY_OPTIONS = Object.keys(MUNICIPALITY_DEMOGRAPHIC_PRESETS);
 
-function RunHistoryItem({
+function RunHistoryButton({
   run,
   isSelected,
   onClick,
@@ -588,7 +588,7 @@ export function SimLabResearchPanel({ storeId }: { storeId: string }) {
             ) : (
               <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
                 {runs.map((run) => (
-                  <RunHistoryItem
+                  <RunHistoryButton
                     key={run.id}
                     run={run}
                     isSelected={selectedRun?.id === run.id}

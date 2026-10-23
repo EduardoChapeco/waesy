@@ -131,6 +131,7 @@ export function checkHasCustomPageMobileHeader(pathname: string): boolean {
     "/conta/curriculo",
     "/conta/empresa",
     "/conta/ingressos",
+    "/conta/eventos",
     "/conta/contratos",
     "/conta/notificacoes",
     "/conta/pedidos",
@@ -177,7 +178,8 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
     location.pathname.startsWith("/m/") ||
     location.pathname.startsWith("/assinar/") ||
     location.pathname.startsWith("/proposta/") ||
-    location.pathname.startsWith("/entrega/");
+    location.pathname.startsWith("/entrega/") ||
+    (location.pathname.startsWith("/evento/") && (typeof window !== "undefined" && window.location.search.includes("mode=standalone")));
 
   if (isStandalonePage) {
     return (

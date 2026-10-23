@@ -873,10 +873,7 @@ export default function WorkspaceMarketingEncartesPage() {
               </div>
             ) : (
               filteredCatalog.map((prod: any) => (
-                <div
-                  key={prod.id}
-                  onClick={() => handleSelectProductForPin(prod)}
-                  className="p-2 rounded-lg border border-border/60 hover:border-primary hover:bg-primary/5 cursor-pointer flex items-center justify-between gap-3 transition-colors"
+                <div key={prod.id} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleSelectProductForPin(prod); } }} onClick={() => handleSelectProductForPin(prod)} className="p-2 rounded-lg border border-border/60 hover:border-primary hover:bg-primary/5 cursor-pointer flex items-center justify-between gap-3 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     {Array.isArray(prod.images) && prod.images[0] ? (

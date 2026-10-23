@@ -736,7 +736,7 @@ export function NewGroupTourSheet({
  key={item}
  variant={isSelected ? "default" : "outline"}
  onClick={() => toggleInclusion(item)}
- className={`cursor-pointer text-xs py-2 px-3 rounded-lg transition-all ${
+ className={`cursor-pointer text-xs py-2 px-3 rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
  isSelected ? "bg-primary text-primary-foreground" : "hover:bg-muted"
  }`}
  >

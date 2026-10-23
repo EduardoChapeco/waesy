@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { type Proposal, type Flight } from "@/services/proposals";
-import { Accordion, Card, AddBtn, L, Inp, TextField, NumField, SMALL_INPUT } from "@/components/proposals/ProposalFormFields";
+import { Accordion, Card, AddButton, L, Inp, TextField, NumField, SMALL_INPUT } from "@/components/proposals/ProposalFormFields";
 import { replaceAt } from "@/components/proposals/ProposalFormFields";
 import { Trash2, Plus, PlaneTakeoff, PlaneLanding, BaggageClaim, Search, AlertTriangle, Clock } from "lucide-react";
 import { useAgency } from "@/lib/agency-context";
@@ -273,7 +273,7 @@ export function SectionFlights({ draft, save }: Props) {
         );
       })}
       <div className="flex gap-2">
-        <AddBtn onClick={add}>Adicionar voo</AddBtn>
+        <AddButton onClick={add}>Adicionar voo</AddButton>
         <Button
           type="button"
           onClick={() => setInfotravelOpen(true)}

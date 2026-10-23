@@ -293,14 +293,7 @@ export function DataTable<T>({
               const isSelected = selectedIds.includes(rowId);
 
               return (
-                <tr
-                  key={rowId}
-                  onClick={() => onRowClick?.(item)}
-                  className={cn(
-                    "transition-colors duration-100",
-                    isSelected && "bg-primary/5",
-                    onRowClick && "cursor-pointer hover:bg-muted/40"
-                  )}
+                <tr key={rowId} tabIndex={onRowClick ? 0 : undefined} onKeyDown={onRowClick ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onRowClick(item); } } : undefined} onClick={() => onRowClick?.((item))} className={cn("transition-colors duration-100", isSelected && "bg-primary/5", onRowClick && "cursor-pointer hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring")}
                 >
                   {isSelectable && (
                     <td className="w-11 px-3 py-3 text-center">

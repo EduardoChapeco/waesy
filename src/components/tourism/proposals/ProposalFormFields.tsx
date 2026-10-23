@@ -307,19 +307,21 @@ export function PhotoUpload({
   );
 }
 
-export function AddBtn({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
+export function AddButton({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
   return (
     <Button
       variant="outline"
       type="button"
       onClick={onClick}
-      className="flex h-11 sm:h-8 items-center gap-2 rounded-lg border border-border/60 bg-surface px-4 text-xs font-semibold hover:bg-surface-alt transition-colors shadow-none cursor-pointer"
+      className="flex h-11 sm:h-8 items-center gap-2 rounded-lg border border-border/60 bg-surface px-4 text-xs font-semibold hover:bg-surface-alt transition-colors shadow-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <Plus className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
       {children}
     </Button>
   );
 }
+
+export const AddBtn = AddButton;
 
 export function TagsEditor({
   tags,

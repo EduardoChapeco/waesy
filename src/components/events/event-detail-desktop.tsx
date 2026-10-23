@@ -23,6 +23,7 @@ export interface EventDetailDesktopProps {
   handleToggleRsvp: (status: "going" | "interested" | "not_going") => void;
   handleBuyTicket: (lot: any) => void;
   isOwner: boolean;
+  onOpenStory?: () => void;
 }
 
 export function EventDetailDesktop({
@@ -39,6 +40,7 @@ export function EventDetailDesktop({
   handleToggleRsvp,
   handleBuyTicket,
   isOwner,
+  onOpenStory,
 }: EventDetailDesktopProps) {
   const activeLots = lots.filter((l: any) => l.status === "active");
 

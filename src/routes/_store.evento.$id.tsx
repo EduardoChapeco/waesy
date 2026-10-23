@@ -1,3 +1,6 @@
+import { FastLeadRsvpModal } from "@/components/eventos/fast-lead-rsvp-modal";
+import { EventStoryViewerModal } from "@/components/events/event-story-viewer-modal";
+import { Sparkles, Share2 } from "lucide-react";
 import { useIsDesktop } from "@/hooks/use-mobile";
 import { EventDetailMobile } from "@/components/events/event-detail-mobile";
 import { EventDetailDesktop } from "@/components/events/event-detail-desktop";
@@ -83,6 +86,20 @@ function EventDetailPage() {
   const surveys = data?.surveys || [];
   const isOwner = data?.isOwner || false;
   const router = useRouter();
+  const isLinkOnly = event?.visibility === "link_only" || (typeof window !== "undefined" && window.location.search.includes("mode=standalone"));
+  const [isStoryOpen, setIsStoryOpen] = useState(false);
+  const [fastLeadLot, setFastLeadLot] = useState<any | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && event?.id && event?.story_media_url && event?.story_auto_open !== false) {
+      const storageKey = `waesy_event_story_seen_${event.id}`;
+      const hasSeen = sessionStorage.getItem(storageKey);
+      if (!hasSeen) {
+        sessionStorage.setItem(storageKey, "1");
+        setIsStoryOpen(true);
+      }
+    }
+  }, [event?.id, event?.story_media_url, event?.story_auto_open]);
 
   const [userRsvp, setUserRsvp] = useState<string | null>(data?.userRsvp || null);
   const [rsvpCounts, setRsvpCounts] = useState({
@@ -147,6 +164,11 @@ function EventDetailPage() {
   const identity = (data as any)?.identity || null;
 
   const handleBuyTicket = (lot: any) => {
+    const isFreeLot = (lot.price_cents || 0) === 0 || event.is_free;
+    if (isFreeLot && !identity?.id) {
+      setFastLeadLot(lot);
+      return;
+    }
     requireAuth({
       title: "Faça login para emitir ingressos",
       description: `Para emitir seus ingressos com QR Code e segurança nominal para "${event.title}", acesse sua conta Waesy.`,
@@ -258,6 +280,53 @@ function EventDetailPage() {
 
   return (
     <>
+      {isLinkOnly && (
+        <div className="w-full bg-card/90 backdrop-blur-md border-b border-border/60 sticky top-0 z-40 px-4 py-2 flex items-center justify-between">
+          <div className="flex items-center gap-2 overflow-hidden">
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="h-11 min-h-11 px-3 rounded-xl font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <Link to="/agenda">
+                <ArrowLeft size={16} className="mr-1" />
+                Voltar
+              </Link>
+            </Button>
+            <span className="text-xs font-bold text-foreground truncate max-w-[200px] sm:max-w-md">
+              {event.title}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            {event.story_media_url && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsStoryOpen(true)}
+                className="h-11 min-h-11 px-3 rounded-xl text-xs font-semibold text-purple-600 border-purple-500/30 hover:bg-purple-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Sparkles className="size-3.5 mr-1" />
+                Story
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  navigator.clipboard.writeText(window.location.href);
+                  toast.success("Link do evento copiado!");
+                }
+              }}
+              className="h-11 min-h-11 px-3 rounded-xl text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <Share2 className="size-3.5 mr-1" />
+              Compartilhar
+            </Button>
+          </div>
+        </div>
+      )}
       {!isDesktop ? (
         <EventDetailMobile
           event={event}
@@ -273,6 +342,7 @@ function EventDetailPage() {
           handleToggleRsvp={handleToggleRsvp}
           handleBuyTicket={handleBuyTicket}
           isOwner={isOwner}
+          onOpenStory={() => setIsStoryOpen(true)}
         />
       ) : (
         <EventDetailDesktop
@@ -289,6 +359,7 @@ function EventDetailPage() {
           handleToggleRsvp={handleToggleRsvp}
           handleBuyTicket={handleBuyTicket}
           isOwner={isOwner}
+          onOpenStory={() => setIsStoryOpen(true)}
         />
       )}
       <ActionAuthGuardModal {...modalProps} />
@@ -310,6 +381,23 @@ function EventDetailPage() {
             email: identity?.email || "",
             tax_id: identity?.tax_id || identity?.cpf || "",
           }}
+        />
+      )}
+      <FastLeadRsvpModal
+        open={!!fastLeadLot}
+        onOpenChange={(isOpen) => { if (!isOpen) setFastLeadLot(null); }}
+        event={{ id: event.id, title: event.title, event_date: event.event_date || (event as any).start_date, location: event.location }}
+        lot={fastLeadLot}
+        onSuccess={() => { router.invalidate(); }}
+      />
+      {event.story_media_url && (
+        <EventStoryViewerModal
+          open={isStoryOpen}
+          onClose={() => setIsStoryOpen(false)}
+          mediaUrl={event.story_media_url}
+          mediaType={event.story_media_type || "image"}
+          eventTitle={event.title}
+          eventDate={event.event_date ? String(event.event_date).slice(0, 10) : null}
         />
       )}
     </>

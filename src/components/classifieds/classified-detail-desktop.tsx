@@ -483,16 +483,11 @@ export function ClassifiedDetailDesktop({
           </div>
         ) : images.length === 1 ? (
           <div className="w-full aspect-[16/9] max-h-[480px] rounded-lg overflow-hidden bg-muted/20 border border-border/40 relative group">
-            <img
-              src={images[0]}
-              alt={classified.title}
-              className="size-full object-cover cursor-pointer group-hover:scale-[1.01] transition-transform duration-300"
-              onClick={() => setFullscreenImage(images[0])}
-            />
+            <button type="button" aria-label="Ver imagem" onClick={() => setFullscreenImage(images[0])} className="size-full p-0 border-0 bg-transparent text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg overflow-hidden block"><img src={images[0]} alt={classified.title} className="size-full object-cover group-hover:scale-[1.01] transition-transform duration-300" /></button>
             <button
               type="button"
               onClick={() => setFullscreenImage(images[0])}
-              className="absolute bottom-4 right-4 px-4 py-2 rounded-lg bg-background/90 hover:bg-background text-foreground text-xs font-semibold border border-border/60 flex items-center gap-2 transition-all shadow-sm"
+              className="absolute bottom-4 right-4 px-4 py-2 rounded-lg bg-background/90 hover:bg-background text-foreground text-xs font-semibold border border-border/60 flex items-center gap-2 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <Maximize2 className="size-4" />
               <span>Ver em tela cheia</span>
@@ -502,34 +497,19 @@ export function ClassifiedDetailDesktop({
           <div className="grid grid-cols-12 gap-3 aspect-[16/9] max-h-[500px] rounded-lg overflow-hidden border border-border/40 bg-muted/20 relative group">
             {/* Foto Principal Hero (8 colunas) */}
             <div className="col-span-8 relative overflow-hidden bg-muted/30 h-full">
-              <img
-                src={images[0]}
-                alt={classified.title}
-                className="size-full object-cover cursor-pointer hover:scale-[1.01] transition-transform duration-300"
-                onClick={() => setFullscreenImage(images[0])}
-              />
+              <button type="button" aria-label="Ver imagem principal" onClick={() => setFullscreenImage(images[0])} className="size-full p-0 border-0 bg-transparent text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring block"><img src={images[0]} alt={classified.title} className="size-full object-cover hover:scale-[1.01] transition-transform duration-300" /></button>
             </div>
             {/* Fotos Secundárias (4 colunas) */}
             <div className="col-span-4 grid grid-rows-2 gap-3 h-full">
               <div className="relative overflow-hidden bg-muted/30 h-full">
-                <img
-                  src={images[1] || images[0]}
-                  alt=""
-                  className="size-full object-cover cursor-pointer hover:scale-[1.01] transition-transform duration-300"
-                  onClick={() => setFullscreenImage(images[1] || images[0])}
-                />
+                <button type="button" aria-label="Ver imagem secundária 1" onClick={() => setFullscreenImage(images[1] || images[0])} className="size-full p-0 border-0 bg-transparent text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring block"><img src={images[1] || images[0]} alt="" className="size-full object-cover hover:scale-[1.01] transition-transform duration-300" /></button>
               </div>
               <div className="relative overflow-hidden bg-muted/30 h-full">
-                <img
-                  src={images[2] || images[0]}
-                  alt=""
-                  className="size-full object-cover cursor-pointer hover:scale-[1.01] transition-transform duration-300"
-                  onClick={() => setFullscreenImage(images[2] || images[0])}
-                />
+                <button type="button" aria-label="Ver imagem secundária 2" onClick={() => setFullscreenImage(images[2] || images[0])} className="size-full p-0 border-0 bg-transparent text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring block"><img src={images[2] || images[0]} alt="" className="size-full object-cover hover:scale-[1.01] transition-transform duration-300" /></button>
                 <button
                   type="button"
                   onClick={() => setFullscreenImage(images[0])}
-                  className="absolute bottom-4 right-4 px-4 py-2 rounded-lg bg-background/95 border border-border/50 text-foreground text-xs font-semibold flex items-center gap-2 shadow-md hover:bg-background cursor-pointer active:scale-95"
+                  className="absolute bottom-4 right-4 px-4 py-2 rounded-lg bg-background/95 border border-border/50 text-foreground text-xs font-semibold flex items-center gap-2 shadow-md hover:bg-background cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <Maximize2 className="size-3.5" />
                   <span>Ver todas ({images.length})</span>
@@ -1462,9 +1442,7 @@ export function ClassifiedDetailDesktop({
 
       {/* ── LIGHTBOX MODAL ── */}
       {fullscreenImage && (
-        <div
-          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4 select-none animate-in fade-in duration-200"
-          onClick={() => setFullscreenImage(null)}
+        <div /* design-lint-ignore DL-15 reason:"Backdrop overlay modal; fechamento ao clicar fora" expiry:"2027-12-31" */ className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4 select-none animate-in fade-in duration-200" onClick={() => setFullscreenImage(null)}
         >
           <button
             type="button"
@@ -1475,20 +1453,10 @@ export function ClassifiedDetailDesktop({
             <X className="size-6" />
           </button>
           {isVideoUrl(fullscreenImage) ? (
-            <video
-              src={fullscreenImage}
-              controls
-              playsInline
-              autoPlay
-              className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
-              onClick={(e) => e.stopPropagation()}
+            <video /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */ src={fullscreenImage} controls playsInline autoPlay className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg" onClick={(e) => e.stopPropagation()}
             />
           ) : (
-            <img
-              src={fullscreenImage}
-              alt="Tela cheia"
-              className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
-              onClick={(e) => e.stopPropagation()}
+            <img /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */ src={fullscreenImage} alt="Tela cheia" className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg" onClick={(e) => e.stopPropagation()}
             />
           )}
         </div>

@@ -1,5 +1,5 @@
 import { type Proposal } from "@/services/proposals";
-import { Accordion, NumField, TextField, Card, AddBtn, SMALL_INPUT } from "@/components/proposals/ProposalFormFields";
+import { Accordion, NumField, TextField, Card, AddButton, SMALL_INPUT } from "@/components/proposals/ProposalFormFields";
 import { Users, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormInput as Input } from "@/components/ui/input";
@@ -35,14 +35,14 @@ export function SectionTravelers({ draft, save }: Props) {
           <span className="ds-label-caps text-muted-foreground font-bold">
             Nomes dos passageiros
           </span>
-          <AddBtn
+          <AddButton
             onClick={() => {
               const current = (draft as any).pax_names ?? [];
               save({ pax_names: [...current, ""] } as any);
             }}
           >
             Adicionar
-          </AddBtn>
+          </AddButton>
         </div>
         {((draft as any).pax_names ?? []).map((name: string, i: number) => (
           <div key={i} className="flex items-center gap-2">

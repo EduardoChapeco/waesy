@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, Link, isRedirect, useRouter } from "@tans
 import { useState, useMemo, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { ShoppingCart, Search, CreditCard, Banknote, QrCode, MonitorPause, X, Plus, Minus, Receipt, Percent, Utensils, Printer, Barcode, CheckCircle2, Maximize2, Minimize2, ExternalLink, Keyboard, User, Coffee, ShoppingBag, Clock, ArrowUpRight, ArrowDownLeft, Trash2, Layers, Image as ImageIcon, Share2, Loader2, ChefHat, Armchair, Users, FileText, Smartphone } from "lucide-react";
-import { ModuleTourModal, ModuleTourTrigger, type TourSlide } from "@/components/ui/module-tour-modal";
+import { ModuleTourModal, ModuleTourButton, type TourSlide } from "@/components/ui/module-tour-modal";
 import { DigitalCompanionCard, type CompanionCardSectionItem, type CompanionRuleItem, type CompanionContactItem } from "@/components/documents/digital-companion-card";
 
 const PDV_TOUR_SLIDES: TourSlide[] = [
@@ -1157,7 +1157,7 @@ function PdvTerminal() {
  <Keyboard className="size-4" />
  </Button>
 
- <ModuleTourTrigger
+ <ModuleTourButton
  onClick={() => setIsTourOpen(true)}
  label="Guia do PDV"
  />

@@ -746,13 +746,11 @@ function WorkspaceAdvocaciaPage() {
  </TableHeader>
  <TableBody>
  {filteredLawsuits.map((lawsuit: any) => (
- <TableRow
- key={lawsuit.id}
- onClick={() => setSelectedLawsuit(lawsuit)}
- className="cursor-pointer hover:bg-muted/20 transition-colors"
+ <TableRow key={lawsuit.id} tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedLawsuit(lawsuit); } }} onClick={() => setSelectedLawsuit(lawsuit)} className="cursor-pointer hover:bg-muted/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {/* Favorito */}
- <TableCell onClick={(e) => handleToggleFavorite(e, lawsuit)} className="text-center">
+ <TableCell className="text-center">
+                <button type="button" aria-label="Favoritar processo" onClick={(e) => handleToggleFavorite(e, lawsuit)} className="p-1 rounded-md hover:bg-muted/40 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
  <Star
  className={cn(
  "size-4 mx-auto transition-colors",
@@ -761,6 +759,7 @@ function WorkspaceAdvocaciaPage() {
  : "text-muted-foreground/40 hover:text-amber-500"
  )}
  />
+                </button>
  </TableCell>
 
  {/* Processo & Partes */}
@@ -805,7 +804,7 @@ function WorkspaceAdvocaciaPage() {
  </TableCell>
 
  {/* Switch de Monitoramento Ativo */}
- <TableCell onClick={(e) => e.stopPropagation()} className="text-center">
+ <TableCell /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */ onClick={(e) => e.stopPropagation()} className="text-center">
  <Switch
  checked={Boolean(lawsuit.is_monitored)}
  onClick={(e) => handleToggleMonitoring(e, lawsuit)}

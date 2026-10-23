@@ -188,10 +188,7 @@ export function VariantOptionsBuilder({ product, onClose }: VariantOptionsBuilde
  className="px-2 py-1 flex items-center gap-1"
  >
  {val}
- <X
- className="size-3 cursor-pointer hover:text-destructive"
- onClick={() => handleRemoveValue(oIdx, vIdx)}
- />
+ <button type="button" aria-label="Remover valor" onClick={() => handleRemoveValue(oIdx, vIdx)} className="p-1 rounded hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><X className="size-3" /></button>
  </Badge>
  ))}
  <Input

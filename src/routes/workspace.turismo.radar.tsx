@@ -395,10 +395,7 @@ export default function TurismoRadarPage() {
             const isSelected = selectedDest?.id === dest.id;
 
             return (
-              <div
-                key={dest.id}
-                onClick={() => setSelectedDest(isSelected ? null : dest)}
-                className={`relative p-5 rounded-lg border cursor-pointer transition-all duration-300  ${
+              <div key={dest.id} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedDest(isSelected ? null : dest); } }} onClick={() => setSelectedDest(isSelected ? null : dest)} className={`relative p-5 rounded-lg border cursor-pointer transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                   isSelected
                     ? 'border-primary bg-primary/5 ring-1 ring-primary/20 '
                     : 'border-border/70 bg-card hover:border-primary/40'

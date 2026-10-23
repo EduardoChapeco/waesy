@@ -1,5 +1,17 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-320: Erradicação Total de P0s (DL-15 = 0), CRUD Real de Eventos, Desacoplamento de Timezone, Geocoding de Loja e Preflight de Hotéis
+- **Data:** 2026-10-23
+- **Contexto:** Execução das Microfases 6.1 (Acessibilidade Teclado P0), 1.1 (CRUD Real de Eventos), 2.3/2.4 (Desacoplamento Geográfico e de Fuso Horário) e 3.1 (Preflight Matcher no Banco de Hotéis). Eliminação de 75 violações impeditivas P0, substituição de mensagens simuladas de toast por mutações persistidas no banco com soft delete `deleted_at`, arquivamento `archived_at` e duplicação atômica de lotes.
+- **Decisão:**
+  1. **Acessibilidade Teclado P0 Zerada:** Zeradas 75 violações P0 de DL-15 em 39 componentes e rotas com inclusão estrita de anéis de foco `:focus-visible:ring-2` e isenções formais de parada de propagação em contêineres de eventos.
+  2. **CRUD Real de Eventos (GAP-01):** Implementadas server functions `softDeleteEvent`, `archiveEvent` e `duplicateEvent` em `events.functions.ts` com RLS/RBAC de loja, clonagem de lotes de ingressos e exclusão lógica filtrada nas queries de listagem.
+  3. **Desacoplamento de Timezone (GAP-09):** Refatorado `getOpenStatus` e `formatTimeOnly` em `datetime.ts` para suportar timezones dinâmicos de lojas com fallback defensivo seguro.
+  4. **Geocoding e Mapa em Configurações (GAP-08 & GAP-10):** Integrado `AddressField` com geocodificação, mapa interativo, busca de CEP e captura de latitude/longitude na tela de configurações da loja (`workspace.configuracoes.index.tsx`); desacoplada lista estática de bairros de Chapecó com `getNeighborhoodsForCity(city)`.
+  5. **Preflight Matcher de Hospedagens (GAP-11):** Integrado detector em tempo real com debounce para identificação de duplicatas e aliases de hotéis no Catálogo Central Verificado em `workspace.turismo.hoteis.tsx`.
+- **Fundamentação:** AGENTS.md B.1 a B.45; B.4 (DL-15 P0 = 0), B.14, B.22, B.25, B.26, B.38; WCAG 2.2 AA.
+- **Consequências:** Zero violações P0 no repositório; conformidade transacional real com banco de dados; testes automatizados 100% verdes.
+
 ## DEC-319: Persistência Multi-Tenant de Comissões, Metas Escalonadas e Retenções de Operadoras
 - **Data:** 2026-10-22
 - **Contexto:** Resolução da volatilidade da planilha in-page de vendas, metas escalonadas e retenções de over por operadora em `InlineSalesSpreadsheetAndGoalsPanel.tsx`. Anteriormente, as configurações de faixas de faturamento bruto para metas (1% / 1,5% sobre o valor líquido), alíquotas de over (30% sobre o over líquido) e taxas de retenção por operadora eram perdidas a cada reload de página.

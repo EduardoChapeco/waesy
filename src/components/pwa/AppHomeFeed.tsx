@@ -114,10 +114,7 @@ export const AppHomeFeed: React.FC<AppHomeFeedProps> = ({
         ) : (
           <div className="grid grid-cols-2 gap-3">
             {products.map((prod) => (
-              <div
-                key={prod.id}
-                onClick={() => onProductClick?.(prod.id)}
-                className="bg-card border border-border/70 rounded-lg p-3 flex flex-col justify-between space-y-2 transition-all hover:border-primary/40 cursor-pointer shadow-2xs group"
+              <div key={prod.id} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onProductClick?.((prod.id)); } }} onClick={() => onProductClick?.((prod.id))} className="bg-card border border-border/70 rounded-lg p-3 flex flex-col justify-between space-y-2 transition-all hover:border-primary/40 cursor-pointer shadow-2xs group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <div className="aspect-square w-full rounded-lg bg-muted overflow-hidden relative flex items-center justify-center">
                   {prod.coverUrl ? (

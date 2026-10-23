@@ -176,7 +176,7 @@ export function OfferCard({
                   {formatMoney(original_price_cents)}
                 </span>
               )}
-              <div className="text-xs sm:text-sm font-black text-foreground font-mono leading-tight truncate">
+              <div className="text-xs sm:text-sm font-black text-foreground font-mono leading-tight whitespace-nowrap">
                 {formatMoney(price_cents)}
                 <span className="text-xs text-muted-foreground font-normal ml-1">
                   /{selling_unit}
@@ -291,7 +291,7 @@ export function OfferCard({
                 {formatMoney(original_price_cents)}
               </span>
             )}
-            <div className="text-base font-black text-foreground font-mono leading-tight truncate">
+            <div className="text-base font-black text-foreground font-mono leading-tight whitespace-nowrap">
               {formatMoney(price_cents)}
               <span className="text-xs text-muted-foreground font-normal ml-1">
                 /{selling_unit}

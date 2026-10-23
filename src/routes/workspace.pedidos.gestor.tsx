@@ -408,10 +408,7 @@ function KDSPage() {
  </Link>
  </Button>
         {!audioUnlocked && (
-          <Badge
-            variant="warning"
-            className="cursor-pointer text-xs select-none"
-            onClick={() => {
+          <Badge variant="warning" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); unlockAudioContext(); setAudioUnlocked(true); } }} className="cursor-pointer text-xs select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" onClick={() => {
               unlockAudioContext();
               setAudioUnlocked(true);
             }}
@@ -588,10 +585,7 @@ function KDSPage() {
  const ch = getChannelInfo(ord);
 
  return (
- <div
- key={ord.id}
- onClick={() => setSelectedOrder(ord)}
- className="p-4 space-y-3 bg-card hover:bg-muted/30 transition-colors cursor-pointer"
+ <div key={ord.id} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedOrder(ord); } }} onClick={() => setSelectedOrder(ord)} className="p-4 space-y-3 bg-card hover:bg-muted/30 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="flex items-center justify-between gap-2">
  <div className="flex items-center gap-2">
@@ -682,7 +676,7 @@ function KDSPage() {
  const ch = getChannelInfo(ord);
 
  return (
- <TableRow key={ord.id} className="cursor-pointer hover:bg-muted/40" onClick={() => setSelectedOrder(ord)}>
+ <TableRow key={ord.id} tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedOrder(ord); } }} className="cursor-pointer hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" onClick={() => setSelectedOrder(ord)}>
  <TableCell className="font-mono font-bold text-xs">
  #{ord.id.split("-")[0].toUpperCase()}
  </TableCell>
@@ -721,7 +715,7 @@ function KDSPage() {
  </div>
  </div>
  </TableCell>
- <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+ <TableCell /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */ className="text-right" onClick={(e) => e.stopPropagation()}>
  <div className="flex items-center justify-end gap-2">
  {(ord.customer_snapshot?.phone || ord.customer?.phone) && (
  <Button
@@ -889,10 +883,7 @@ function KDSPage() {
  const isLate = elapsedMinutes > 30;
 
  return (
- <div
- key={order.id}
- className="bg-card border border-border/80 rounded-lg p-4 flex flex-col gap-3 cursor-pointer hover:border-primary/50 transition-all shadow-2xs"
- onClick={() => setSelectedOrder(order)}
+ <div key={order.id} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedOrder(order); } }} className="bg-card border border-border/80 rounded-lg p-4 flex flex-col gap-3 cursor-pointer hover:border-primary/50 transition-all shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" onClick={() => setSelectedOrder(order)}
  >
  <div className="flex justify-between items-start gap-2">
  <div className="space-y-1">

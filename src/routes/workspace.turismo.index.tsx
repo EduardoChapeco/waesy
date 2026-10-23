@@ -397,10 +397,7 @@ export default function WorkspaceTurismoCockpitPage() {
                     </div>
                   ) : (
                     stageLeads.map((lead: any) => (
-                      <div
-                        key={lead.id}
-                        className="p-3 rounded-lg border border-border/60 bg-background hover:border-primary/50 transition-colors shadow-sm space-y-2.5 cursor-pointer text-xs"
-                        onClick={() => setSelectedLead(lead)}
+                      <div key={lead.id} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedLead(lead); } }} className="p-3 rounded-lg border border-border/60 bg-background hover:border-primary/50 transition-colors shadow-sm space-y-2.5 cursor-pointer text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" onClick={() => setSelectedLead(lead)}
                       >
                         <div className="flex items-start justify-between gap-2">
                           <span className="font-bold text-foreground truncate block">

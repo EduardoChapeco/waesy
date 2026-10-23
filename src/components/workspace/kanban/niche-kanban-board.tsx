@@ -62,11 +62,8 @@ export function NicheKanbanBoard({
         const allowedTransitions = getAllowedTransitions(entity, item.status);
 
         return (
-          <div
-            key={item.id}
-            onClick={() => onCardClick?.(item)}
-            className={cn(
-              "group relative flex flex-col gap-2 p-3 rounded-lg border border-border/70 bg-card hover:border-primary/40 hover:shadow-xs transition-all duration-150 cursor-pointer select-none",
+          <div key={item.id} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onCardClick?.((item)); } }} onClick={() => onCardClick?.((item))} className={cn(
+              "group relative flex flex-col gap-2 p-3 rounded-lg border border-border/70 bg-card hover:border-primary/40 hover:shadow-xs transition-all duration-150 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               item.status === "won" && "border-success/30 bg-success/5",
               item.status === "lost" && "opacity-70 border-destructive/20 bg-destructive/5"
             )}

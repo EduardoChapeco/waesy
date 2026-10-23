@@ -539,7 +539,7 @@ export function NewClientWizard({
  <Badge
  key={t}
  variant="secondary"
- className="text-xs font-semibold px-3 py-1 rounded-lg gap-2 cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors"
+ className="text-xs font-semibold px-3 py-1 rounded-lg gap-2 cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  onClick={() => handleRemoveTag(t)}
  >
  <span>{t}</span>

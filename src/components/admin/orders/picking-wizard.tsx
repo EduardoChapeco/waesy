@@ -176,8 +176,11 @@ export function PickingWizard({ order, isOpen, onOpenChange, onComplete }: Picki
  return (
  <div
  key={item.id}
- className={`flex gap-4 p-4 border transition-all duration-200 cursor-pointer ${isChecked ? "border-success/40 bg-success/5" : "border-border/50 hover:border-primary/40 hover:bg-muted/20"} ${isProcessing ? "opacity-50 pointer-events-none" : ""}`}
- onClick={() => {
+ className={`flex gap-4 p-4 border transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${isChecked ? "border-success/40 bg-success/5" : "border-border/50 hover:border-primary/40 hover:bg-muted/20"} ${isProcessing ? "opacity-50 pointer-events-none" : ""}`}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (!isChecked) handlePickItem(item); } }}
+          onClick={() => {
  if (!isChecked) handlePickItem(item);
  }}
  >

@@ -1,5 +1,5 @@
 import { type Proposal, type Transfer } from "@/services/proposals";
-import { Accordion, Card, AddBtn, L, Inp, SMALL_INPUT } from "@/components/proposals/ProposalFormFields";
+import { Accordion, Card, AddButton, L, Inp, SMALL_INPUT } from "@/components/proposals/ProposalFormFields";
 import { replaceAt } from "@/components/proposals/ProposalFormFields";
 import { useAgency } from "@/lib/agency-context";
 import { NativeSelect as Select } from "@/components/ui/select";
@@ -112,7 +112,7 @@ export function SectionTransfers({ draft, save }: Props) {
           </div>
         </Card>
       ))}
-      <AddBtn onClick={add}>Adicionar traslado</AddBtn>
+      <AddButton onClick={add}>Adicionar traslado</AddButton>
     </Accordion>
   );
 }

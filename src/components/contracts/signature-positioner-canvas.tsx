@@ -294,9 +294,7 @@ export function SignaturePositionerCanvas({
               const isSelected = selectedFieldId === field.id;
 
               return (
-                <div
-                  key={field.id}
-                  onClick={() => setSelectedFieldId(field.id)}
+                <div key={field.id} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedFieldId(field.id); } }} onClick={() => setSelectedFieldId(field.id)}
                   style={{
                     left: `${field.x}%`,
                     top: `${field.y}%`,
@@ -304,7 +302,7 @@ export function SignaturePositionerCanvas({
                     height: `${field.height}%`,
                     borderColor: signer.colorCode || "#2563eb",
                   }}
-                  className={`absolute border-2 rounded-lg flex items-center justify-between px-2 cursor-move transition-all bg-card/95 shadow-xs ${
+                  className={`absolute border-2 rounded-lg flex items-center justify-between px-2 cursor-move transition-all bg-card/95 shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                     isSelected ? "ring-2 ring-primary/40 shadow-md" : "hover:border-primary"
                   }`}
                 >
