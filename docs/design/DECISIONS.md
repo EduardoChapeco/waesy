@@ -1,5 +1,12 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-298: Terceira Rodada Paralela — Fechamento Parcial
+- **Data:** 2026-10-23
+- **Contexto:** Os maiores agrupamentos restantes estavam no Inspector, painel lateral, modal de layout, painel de páginas e duas superfícies de anúncios.
+- **Decisão:** Integrar quatro frentes concluídas com evidência: `builder-inspector`, `builder-left-panel`, `builder-layout-switcher-modal` e `builder-pages-panel`. As frentes `listing-variants-section` e `canonical-listing-view` não produziram artefato recuperável após o limite operacional e permanecem abertas.
+- **Evidência:** Quatro commits integrados; typecheck PASS; 1 arquivo de teste e 3 testes PASS; design lint reduziu 12.094 para 11.960 violações (-134), com P0 de 1.329 para 1.293 e P1 de 8.197 para 8.110.
+- **Consequências:** Quatro áreas centrais do Builder foram remediadas sem alteração de dados, rotas ou contratos. As duas frentes de anúncios serão retomadas separadamente com escopo menor e validação controlada.
+
 ## DEC-297: Segunda Execução Paralela de Builder e Editor
 - **Data:** 2026-10-23
 - **Contexto:** Após a primeira rodada, os achados restantes estavam concentrados no rail e docking do Builder, no preview do anúncio e nas seções de pré-checagem, modificadores e escopo.
