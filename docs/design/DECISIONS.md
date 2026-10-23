@@ -1,5 +1,12 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-296: Execução Paralela de Seis Componentes Compartilhados
+- **Data:** 2026-10-23
+- **Contexto:** A concentração de achados P0/P1 estava nos componentes centrais do Builder e no editor de anúncios, permitindo frentes independentes sem sobreposição de arquivos.
+- **Decisão:** Executar seis worktrees isolados e integrar commits somente após validação individual: canvas, painel de adição, tema global, CMS, barra flutuante e editor de anúncios. Cada frente recebeu spec própria e preservou props, callbacks, rotas e dados.
+- **Evidência:** Seis commits integrados; typecheck PASS; 2 arquivos de teste e 9 testes focados PASS; build PASS; design lint reduziu 12.241 para 12.130 violações (-111 nesta integração), com P0 de 1.353 para 1.334 e P1 de 8.305 para 8.223.
+- **Consequências:** Componentes compartilhados com foco visível e alvos táteis canônicos, menor uso de classes arbitrárias e redução mensurável do débito sem alterações de persistência ou contratos BFF.
+
 ## DEC-295: Onda 4 de Controles do Builder
 - **Data:** 2026-10-22
 - **Contexto:** Uploader e construtor de arrays tinham gradientes arbitrários, cores literais, `transition-all`, ações menores que 44px e drop zone sem navegação por teclado.
