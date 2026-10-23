@@ -1,5 +1,12 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-292: Onda 1 de Design Silencioso em Canvas e Destaques
+- **Data:** 2026-10-22
+- **Contexto:** O preview de templates e o carrossel de destaques apresentavam descrição conversacional, controles abaixo de 44px, foco visual incompleto, valores arbitrários, gradiente decorativo e título extenso.
+- **Decisão:** Normalizar controles para `h-11`/`size-11`, adicionar foco visível e `motion-reduce`, trocar viewport arbitrário por tokens (`max-w-sm`/`min-h-dvh`), remover gradiente e mover títulos do carrossel para uma superfície sem sobreposição.
+- **Evidência:** Typecheck PASS; 3 arquivos de teste focados e 40 testes PASS; build PASS; design lint reduziu 12.307 para 12.285 violações (-22); `git diff --check` PASS.
+- **Consequências:** Interação mais previsível em mobile e teclado, conteúdo legível sem sobreposição e redução mensurável do débito visual sem alteração de contrato de dados.
+
 ## DEC-291: Blindagem de Tipagem TypeScript Estrita, Resiliência PostgREST e Conclusão de Build Limpo End-to-End
 - **Data:** 2026-10-21
 - **Contexto:** Auditoria sistêmica detalhada nas rotas e BFFs de Turismo, Mobilidade Waesy Go, Carteira $WZ & Gift Cards, Centro Operacional de Pagamentos e Pós-Venda:

@@ -22,18 +22,17 @@ export function LaunchCarousel({ slides }: LaunchCarouselProps) {
 
   return (
     <div className="relative w-full min-w-0 max-w-full overflow-hidden space-y-3">
-      {/* Botões de navegação no desktop */}
       <div className="hidden sm:flex items-center justify-between px-1">
         <span className="text-xs font-bold text-foreground flex items-center gap-2">
           <Star className="size-3.5 text-primary" />
-          Atrações Confirmadas e Destaques do Circuito
+          Destaques do circuito
         </span>
         <div className="flex items-center gap-1">
           <Button
             variant="outline"
             size="icon"
             onClick={() => scroll("left")}
-            className="size-8 rounded-full border-border/70 hover:bg-muted"
+            className="size-11 rounded-full border-border/70 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Slide anterior"
           >
             <ChevronLeft className="size-4" />
@@ -42,7 +41,7 @@ export function LaunchCarousel({ slides }: LaunchCarouselProps) {
             variant="outline"
             size="icon"
             onClick={() => scroll("right")}
-            className="size-8 rounded-full border-border/70 hover:bg-muted"
+            className="size-11 rounded-full border-border/70 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Próximo slide"
           >
             <ChevronRight className="size-4" />
@@ -50,7 +49,6 @@ export function LaunchCarousel({ slides }: LaunchCarouselProps) {
         </div>
       </div>
 
-      {/* Trilho Horizontal com Snap Scroll */}
       <div
         ref={scrollRef}
         className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-2 pt-1 px-0"
@@ -58,36 +56,26 @@ export function LaunchCarousel({ slides }: LaunchCarouselProps) {
         {slides.map((slide) => (
           <div
             key={slide.id}
-            className="snap-start shrink-0 w-[82vw] sm:w-80 rounded-lg overflow-hidden border border-border/80 bg-card shadow-xs group transition-all duration-300 hover:border-border"
+            className="snap-start shrink-0 w-full sm:w-80 rounded-lg overflow-hidden border border-border/80 bg-card shadow-xs group transition-colors duration-200 motion-reduce:transition-none hover:border-border"
           >
-            {/* Imagem com proporção 16:10 proporcional */}
-            <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted flex items-center justify-center">
-              <img
-                src={slide.image_url}
-                alt=""
-                aria-hidden="true"
-                className="absolute inset-0 size-full object-cover blur-2xl opacity-40 scale-110 pointer-events-none select-none"
-              />
+            <div className="relative aspect-video w-full overflow-hidden bg-muted flex items-center justify-center">
               <img
                 src={slide.image_url}
                 alt={slide.title}
-                className="relative size-full object-contain sm:object-cover transition-transform duration-500 group-hover:scale-105 select-none"
+                className="relative size-full object-contain sm:object-cover transition-transform duration-200 motion-reduce:transition-none motion-reduce:transform-none group-hover:scale-105 select-none"
                 loading="lazy"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
-
               <Badge
                 variant="secondary"
-                className="absolute top-2.5 left-2.5 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold border-none"
+                className="absolute left-2 top-2 rounded-md bg-card/95 text-xs font-bold text-foreground shadow-xs"
               >
                 {slide.tag}
               </Badge>
-
-              <div className="absolute bottom-2.5 left-2.5 right-2.5">
-                <h4 className="text-xs font-bold text-white leading-tight drop-shadow-sm">
-                  {slide.title}
-                </h4>
-              </div>
+            </div>
+            <div className="p-3">
+              <h4 className="line-clamp-2 text-sm font-bold leading-tight text-foreground">
+                {slide.title}
+              </h4>
             </div>
           </div>
         ))}
