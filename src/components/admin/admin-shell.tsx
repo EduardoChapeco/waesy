@@ -357,14 +357,14 @@ export function AdminShell({
  });
 
  return (
- <div data-shell="admin" className="min-h-[100dvh] bg-background text-foreground">
+ <div data-shell="admin" className="min-h-dvh bg-background text-foreground">
  {/* Desktop sidebar - Vertical Island Pill Layout */}
  <aside
  onMouseEnter={() => setCollapsed(false)}
  onMouseLeave={() => setCollapsed(true)}
  className={cn(
- "fixed left-0 top-0 bottom-0 z-40 hidden flex-col bg-card shadow-op-md transition-all duration-300 md:flex pb-safe",
- collapsed ? "w-[68px]" : "w-64",
+ "fixed left-0 top-0 bottom-0 z-40 hidden flex-col bg-card shadow-op-md md:flex pb-safe",
+ collapsed ? "w-16" : "w-64",
  )}
  >
  {/* Top: Brand/Logo & Action Button */}
@@ -374,7 +374,7 @@ export function AdminShell({
  <Link
  to={contextualAction.path}
  className={cn(
- "flex h-11 items-center gap-3 rounded-full bg-primary text-primary-foreground hover:bg-primary/95 transition-all ",
+ "flex h-11 items-center gap-3 rounded-full bg-primary text-primary-foreground hover:bg-primary/95 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
  collapsed ? "w-11 justify-center" : "w-full px-4",
  )}
  title={contextualAction.label}
@@ -409,7 +409,7 @@ export function AdminShell({
  className="w-full text-xs font-semibold bg-primary/10 hover:bg-primary/20 text-primary border-transparent"
  asChild
  >
- <Link className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" to="/workspace" onClick={() => setViewMode("modules")}>
+ <Link to="/workspace" onClick={() => setViewMode("modules")} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
  {collapsed ? <Grid className="size-4" /> : "← Voltar aos Módulos"}
  </Link>
  </Button>
@@ -504,19 +504,19 @@ export function AdminShell({
  <div className="mt-2 pt-2 border-t border-sidebar-border/60 flex items-center justify-between gap-2">
  <div className="flex items-center gap-2 overflow-hidden">
  <Avatar className="size-8 ">
- <AvatarFallback className="bg-primary/10 text-primary font-bold text-[10px]">
+ <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">
  {getInitials(session?.email || "Admin")}
  </AvatarFallback>
  </Avatar>
  {!collapsed && (
  <div className="flex flex-col min-w-0 text-left">
  <span
- className="font-semibold text-xs text-foreground truncate max-w-[120px]"
+ className="font-semibold text-xs text-foreground truncate max-w-32"
  title={session?.email}
  >
  {session?.email || "Colaborador"}
  </span>
- <span className="text-[9px] text-muted-foreground capitalize">
+ <span className="text-xs text-muted-foreground capitalize">
  {session?.role || "Acesso"}
  </span>
  </div>
@@ -526,7 +526,7 @@ export function AdminShell({
  <Button
  variant="ghost"
  size="icon"
- className="size-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"
+ className="size-11 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  onClick={handleLogout}
  type="button"
  title="Sair do painel"
@@ -541,7 +541,7 @@ export function AdminShell({
  {/* Main column */}
  <div
  className={cn(
- "flex min-h-[100dvh] flex-col transition-all duration-300",
+ "flex min-h-dvh flex-col",
  collapsed ? "md:pl-20" : "md:pl-72",
  )}
  >
@@ -559,7 +559,7 @@ export function AdminShell({
  <SheetTitle className="sr-only">Menu do painel</SheetTitle>
  <Logo className="h-6" src={logoUrl} />
  </SheetHeader>
- <ScrollArea className="h-[calc(100dvh-4rem)] px-3 py-4">
+ <ScrollArea className="h-dvh px-3 py-4">
  <div className="space-y-6">
  {viewMode === "subpages" && activeGroupNav ? (
  <div className="space-y-4">
@@ -570,10 +570,10 @@ export function AdminShell({
  <Button
  variant="ghost"
  size="sm"
- className="h-8 px-2 text-nav font-semibold text-primary"
+ className="h-11 min-h-11 px-2 text-nav font-semibold text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  asChild
  >
- <Link className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" to="/workspace" onClick={() => setViewMode("modules")}>
+ <Link to="/workspace" onClick={() => setViewMode("modules")} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
  ← Módulos
  </Link>
  </Button>
@@ -667,7 +667,7 @@ export function AdminShell({
  <Link
  to={path}
  activeOptions={{ exact: path === "/workspace" }}
- className="flex min-h-[56px] flex-col items-center justify-center gap-1 px-2 py-2 text-nav font-medium text-muted-foreground"
+ className="flex min-h-14 flex-col items-center justify-center gap-1 px-2 py-2 text-nav font-medium text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  activeProps={{ className: "text-primary" }}
  >
  <Icon className="size-5" aria-hidden />

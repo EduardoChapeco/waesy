@@ -82,7 +82,7 @@ export function ArrayBuilder({ value = [], onChange, label, arrayFields = [] }: 
  <AccordionItem
  key={item._id || index}
  value={`item-${index}`}
- className={`border rounded-lg overflow-hidden transition-all ${isDragged ? "opacity-50" : "bg-card"} ${isDragOver ? "border-primary border-t-2" : ""}`}
+ className={`border rounded-lg overflow-hidden transition-colors motion-reduce:transition-none ${isDragged ? "opacity-50" : "bg-card"} ${isDragOver ? "border-primary border-t-2" : ""}`}
  draggable
  onDragStart={(e) => {
  setDraggedIndex(index);
@@ -113,7 +113,7 @@ export function ArrayBuilder({ value = [], onChange, label, arrayFields = [] }: 
  <Button
  variant="ghost"
  size="icon"
- className="h-6 w-6 text-destructive hover:bg-destructive/10 shrink-0"
+ className="size-11 text-destructive hover:bg-destructive/10 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  onClick={(e) => {
  e.preventDefault();
  handleRemoveItem(index);
@@ -157,7 +157,7 @@ export function ArrayBuilder({ value = [], onChange, label, arrayFields = [] }: 
  {field.label}
  </label>
  <select
- className="w-full text-sm p-2 border bg-background"
+ className="w-full min-h-11 text-sm p-2 border bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  value={item[field.name] || ""}
  onChange={(e) => handleUpdateItem(index, field.name, e.target.value)}
  >
@@ -171,7 +171,7 @@ export function ArrayBuilder({ value = [], onChange, label, arrayFields = [] }: 
  </div>
  ) : field.type === "textarea" ? (
  <textarea
- className="w-full text-sm p-2 border rounded-lg bg-background min-h-[80px]"
+ className="w-full text-sm p-2 border rounded-lg bg-background min-h-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  placeholder={field.label}
  value={item[field.name] || ""}
  onChange={(e) => handleUpdateItem(index, field.name, e.target.value)}
@@ -180,7 +180,7 @@ export function ArrayBuilder({ value = [], onChange, label, arrayFields = [] }: 
  <>
  <label className="text-xs font-medium">{field.label}</label>
  <Input
- className="h-8 text-sm bg-background"
+ className="h-11 min-h-11 text-sm bg-background focus-visible:ring-2 focus-visible:ring-ring"
  value={item[field.name] || ""}
  onChange={(e) => handleUpdateItem(index, field.name, e.target.value)}
  />

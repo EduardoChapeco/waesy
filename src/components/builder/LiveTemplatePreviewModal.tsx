@@ -5,7 +5,7 @@ import { OmniPageRenderer } from "./OmniPageRenderer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Monitor, Smartphone, X, Check, Eye } from "lucide-react";
+import { Monitor, Smartphone, Check, Eye } from "lucide-react";
 
 export interface LiveTemplatePreviewModalProps {
   template: NicheTemplateDefinition | null;
@@ -33,7 +33,6 @@ export const LiveTemplatePreviewModal: React.FC<LiveTemplatePreviewModalProps> =
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="fixed inset-0 z-50 max-w-none w-screen h-[100dvh] m-0 p-0 rounded-none bg-background flex flex-col border-none shadow-none overflow-hidden duration-200">
-        {/* ── 1. TopBar de Controle do Live Preview (Padrão Wix / Webflow) ── */}
         <header className="h-14 border-b border-border/70 bg-card px-4 sm:px-6 flex items-center justify-between gap-3 shrink-0 z-20">
           <div className="flex items-center gap-3 min-w-0">
             <span className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
@@ -49,17 +48,17 @@ export const LiveTemplatePreviewModal: React.FC<LiveTemplatePreviewModalProps> =
                 </Badge>
               </div>
               <DialogDescription className="text-xs text-muted-foreground truncate hidden sm:block">
-                Visualização ao vivo com renderização real dos blocos e interatividade nativa.
+                Blocos e interações do modelo.
               </DialogDescription>
             </div>
           </div>
 
-          {/* Toggle Responsivo Desktop vs Mobile */}
           <div className="flex items-center gap-1 p-1 rounded-lg bg-muted/40 border border-border/60">
             <button
               type="button"
               onClick={() => setViewport("desktop")}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              aria-pressed={viewport === "desktop"}
+              className={`flex min-h-11 items-center gap-2 rounded-lg px-3 text-xs font-semibold transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                 viewport === "desktop"
                   ? "bg-background text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -71,7 +70,8 @@ export const LiveTemplatePreviewModal: React.FC<LiveTemplatePreviewModalProps> =
             <button
               type="button"
               onClick={() => setViewport("mobile")}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              aria-pressed={viewport === "mobile"}
+              className={`flex min-h-11 items-center gap-2 rounded-lg px-3 text-xs font-semibold transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                 viewport === "mobile"
                   ? "bg-background text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -82,14 +82,13 @@ export const LiveTemplatePreviewModal: React.FC<LiveTemplatePreviewModalProps> =
             </button>
           </div>
 
-          {/* Ações: Cancelar ou Usar Template */}
           <div className="flex items-center gap-2 shrink-0">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={onClose}
-              className="h-9 px-3 rounded-lg text-xs font-semibold cursor-pointer"
+              className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               Voltar
             </Button>
@@ -100,21 +99,20 @@ export const LiveTemplatePreviewModal: React.FC<LiveTemplatePreviewModalProps> =
                 onSelectTemplate(template.id);
                 onClose();
               }}
-              className="h-9 px-4 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer"
+              className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <Check className="size-3.5" />
-              <span>Usar este Modelo</span>
+              <span>Usar modelo</span>
             </Button>
           </div>
         </header>
 
-        {/* ── 2. Área de Renderização Ao Vivo (Sandboxed Live Canvas) ── */}
         <div className="flex-1 bg-muted/20 overflow-y-auto p-2 sm:p-8 flex justify-center items-start overflow-x-hidden">
           <div
-            className={`transition-all duration-300 ${
+            className={`transition-[width,box-shadow] duration-200 motion-reduce:transition-none ${
               viewport === "mobile"
-                ? "w-full max-w-[390px] min-h-[780px] shadow-2xl rounded-lg border border-border/80 overflow-hidden bg-background my-2 shrink-0"
-                : "w-full max-w-6xl shadow-sm bg-background rounded-lg border border-border/60 my-2"
+                ? "w-full max-w-sm min-h-dvh shadow-xs rounded-lg border border-border/80 overflow-hidden bg-background my-2 shrink-0"
+                : "w-full max-w-6xl shadow-xs bg-background rounded-lg border border-border/60 my-2"
             }`}
           >
             <OmniPageRenderer document={previewDocument} />

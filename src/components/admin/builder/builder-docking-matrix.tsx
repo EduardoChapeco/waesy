@@ -37,7 +37,7 @@ export function BuilderDockingMatrix({
  <div className="space-y-2">
  <div className="flex items-center justify-between text-xs font-bold text-foreground">
  <span>Ancoragem (Docking)</span>
- <span className="text-[10px] text-muted-foreground font-mono uppercase">{value}</span>
+ <span className="text-xs text-muted-foreground font-mono uppercase">{value}</span>
  </div>
 
  <div className="p-3 rounded-lg bg-muted/30 border border-border/60 flex items-center justify-center">
@@ -52,8 +52,8 @@ export function BuilderDockingMatrix({
  type="button"
  onClick={() => onChange(pos.id)}
  title={pos.label}
- className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "size-6 rounded-md flex items-center justify-center transition-all cursor-pointer",
+ className={cn(
+ "size-11 min-h-11 min-w-11 rounded-md flex items-center justify-center transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  isSelected
  ? "bg-primary text-primary-foreground shadow-2xs ring-2 ring-primary/30"
  : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground"

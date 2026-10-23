@@ -70,6 +70,65 @@
 
 
 ## DEC-305: Motor de Inteligência Comercial e Memória de Oportunidades de Turismo (Travel Commercial Intelligence / Opportunity Engine)
+
+## DEC-299: Fechamento de Variantes e Visualização Canônica
+- **Data:** 2026-10-23
+- **Contexto:** Duas frentes da terceira rodada não produziram artefato recuperável no limite operacional: variantes de anúncio e visualização pública canônica.
+- **Decisão:** Retomar ambas com worktrees isolados e escopo reduzido. Normalizar campos, ações e foco na seção de variantes; limitar a transição das miniaturas da visualização canônica a propriedade específica com suporte a movimento reduzido.
+- **Evidência:** Dois commits integrados; typecheck PASS; 1 arquivo de teste e 6 testes focados PASS; design lint reduziu 11.960 para 11.955 violações (-5), com P0 mantido em 1.293 e P1 reduzido de 8.110 para 8.106.
+- **Consequências:** A terceira rodada foi efetivamente fechada em seis componentes, sem alteração de schema, dados, callbacks ou persistência.
+
+## DEC-298: Terceira Rodada Paralela — Fechamento Parcial
+- **Data:** 2026-10-23
+- **Contexto:** Os maiores agrupamentos restantes estavam no Inspector, painel lateral, modal de layout, painel de páginas e duas superfícies de anúncios.
+- **Decisão:** Integrar quatro frentes concluídas com evidência: `builder-inspector`, `builder-left-panel`, `builder-layout-switcher-modal` e `builder-pages-panel`. As frentes `listing-variants-section` e `canonical-listing-view` não produziram artefato recuperável após o limite operacional e permanecem abertas.
+- **Evidência:** Quatro commits integrados; typecheck PASS; 1 arquivo de teste e 3 testes PASS; design lint reduziu 12.094 para 11.960 violações (-134), com P0 de 1.329 para 1.293 e P1 de 8.197 para 8.110.
+- **Consequências:** Quatro áreas centrais do Builder foram remediadas sem alteração de dados, rotas ou contratos. As duas frentes de anúncios serão retomadas separadamente com escopo menor e validação controlada.
+
+## DEC-297: Segunda Execução Paralela de Builder e Editor
+- **Data:** 2026-10-23
+- **Contexto:** Após a primeira rodada, os achados restantes estavam concentrados no rail e docking do Builder, no preview do anúncio e nas seções de pré-checagem, modificadores e escopo.
+- **Decisão:** Executar seis worktrees isolados e integrar apenas commits validados para `builder-docked-rail`, `builder-docking-matrix`, `canonical-listing-preview-frame`, `listing-precheck-dialog`, `listing-modifiers-section` e `listing-scope-section`.
+- **Evidência:** Seis commits integrados; typecheck PASS; 2 arquivos de teste e 9 testes focados PASS; build PASS; design lint reduziu 12.130 para 12.094 violações (-36), com P0 de 1.334 para 1.329 e P1 de 8.223 para 8.197.
+- **Consequências:** Mais seis superfícies compartilhadas com foco, toque e responsividade normalizados, sem alteração de schemas, callbacks, rotas ou persistência.
+
+## DEC-296: Execução Paralela de Seis Componentes Compartilhados
+- **Data:** 2026-10-23
+- **Contexto:** A concentração de achados P0/P1 estava nos componentes centrais do Builder e no editor de anúncios, permitindo frentes independentes sem sobreposição de arquivos.
+- **Decisão:** Executar seis worktrees isolados e integrar commits somente após validação individual: canvas, painel de adição, tema global, CMS, barra flutuante e editor de anúncios. Cada frente recebeu spec própria e preservou props, callbacks, rotas e dados.
+- **Evidência:** Seis commits integrados; typecheck PASS; 2 arquivos de teste e 9 testes focados PASS; build PASS; design lint reduziu 12.241 para 12.130 violações (-111 nesta integração), com P0 de 1.353 para 1.334 e P1 de 8.305 para 8.223.
+- **Consequências:** Componentes compartilhados com foco visível e alvos táteis canônicos, menor uso de classes arbitrárias e redução mensurável do débito sem alterações de persistência ou contratos BFF.
+
+## DEC-295: Onda 4 de Controles do Builder
+- **Data:** 2026-10-22
+- **Contexto:** Uploader e construtor de arrays tinham gradientes arbitrários, cores literais, `transition-all`, ações menores que 44px e drop zone sem navegação por teclado.
+- **Decisão:** Remover o fundo radial e cores branco/preto, normalizar inputs e ações para 44px, trocar transições genéricas por transições específicas, adicionar foco e transformar a área de upload em controle operável por teclado.
+- **Evidência:** Typecheck PASS; 1 arquivo de teste e 3 testes PASS; design lint reduziu 12.263 para 12.241 violações (-22); `git diff --check` PASS.
+- **Consequências:** Edição de mídia e listas mais acessível, sem alteração de upload, presets, callbacks ou persistência.
+
+## DEC-294: Onda 3 de Estados Vazios e Seletor de Cor
+- **Data:** 2026-10-22
+- **Contexto:** Ações do estado vazio usavam altura de 40px; o seletor de cor declarava `#000000` diretamente no componente e oferecia campo de 32px.
+- **Decisão:** Elevar todas as ações para `h-11 min-h-11`, manter foco visível e encurtar rótulos; calcular a cor inicial a partir de canais RGB para preservar a validade do input sem literal hexadecimal na interface.
+- **Evidência:** Typecheck PASS; 3 arquivos de teste e 15 testes PASS; design lint reduziu 12.270 para 12.263 violações (-7); `git diff --check` PASS.
+- **Consequências:** Estados vazios operáveis em mobile e teclado, com seletor de cor compatível e alinhado à camada de tokens.
+
+## DEC-293: Onda 2 de Acessibilidade no Shell Administrativo
+- **Data:** 2026-10-22
+- **Contexto:** O shell compartilhado concentrava violações P0/P1 de foco, alvos menores que 44px e classes arbitrárias de viewport, largura, tipografia e altura.
+- **Decisão:** Normalizar o shell para `min-h-dvh`, `w-16`, `h-dvh`, `min-h-14`, `size-11` e tokens tipográficos; remover transições genéricas; adicionar foco visível aos links de mudança de módulo, menu mobile, logout e navegação inferior.
+- **Evidência:** Typecheck PASS; design lint reduziu 12.285 para 12.270 violações (-15); `git diff --check` PASS.
+- **Consequências:** Navegação administrativa mais acessível e previsível em teclado e mobile, com menor dependência de valores mágicos.
+
+## DEC-292: Onda 1 de Design Silencioso em Canvas e Destaques
+- **Data:** 2026-10-22
+- **Contexto:** O preview de templates e o carrossel de destaques apresentavam descrição conversacional, controles abaixo de 44px, foco visual incompleto, valores arbitrários, gradiente decorativo e título extenso.
+- **Decisão:** Normalizar controles para `h-11`/`size-11`, adicionar foco visível e `motion-reduce`, trocar viewport arbitrário por tokens (`max-w-sm`/`min-h-dvh`), remover gradiente e mover títulos do carrossel para uma superfície sem sobreposição.
+- **Evidência:** Typecheck PASS; 3 arquivos de teste focados e 40 testes PASS; build PASS; design lint reduziu 12.307 para 12.285 violações (-22); `git diff --check` PASS.
+- **Consequências:** Interação mais previsível em mobile e teclado, conteúdo legível sem sobreposição e redução mensurável do débito visual sem alteração de contrato de dados.
+
+## DEC-291: Blindagem de Tipagem TypeScript Estrita, Resiliência PostgREST e Conclusão de Build Limpo End-to-End
+
 - **Data:** 2026-10-21
 - **Contexto:**
   1. A agência de turismo sofria com o "problema do atendimento esquecido": contatos e passageiros demonstravam interesse em destinos, períodos ou tipos de viagem mas não compravam de imediato. Meses depois surgem promoções compatíveis, mas nenhum corretor lembrava de procurá-los.
