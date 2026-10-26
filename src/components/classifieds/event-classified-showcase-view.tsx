@@ -237,14 +237,14 @@ export function EventClassifiedShowcaseView({
 
   // Navegação Fluida por Âncoras do Menu de Abas (App Nativo Luma)
   const [activeSection, setActiveSection] = useState<string>("sobre");
+  const [hostAvatarFailed, setHostAvatarFailed] = useState(false);
+  const [storeLogoFailed, setStoreLogoFailed] = useState(false);
 
   const scrollToSection = (sectionId: string) => {
     setActiveSection(sectionId);
     const element = document.getElementById(sectionId);
     if (element) {
-      const yOffset = -90;
-      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-      window.scrollTo({ top: y, behavior: "smooth" });
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 
@@ -464,150 +464,166 @@ export function EventClassifiedShowcaseView({
               className="w-full h-full object-cover"
               loading="eager"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+            <div className="absolute inset-0 bg-background/40 backdrop-blur-xs" />
           </div>
-        ) : (
-          <div className="w-full h-32 bg-muted/40" />
-        )}
+        ) : null}
 
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 relative -mt-20 sm:-mt-28 pb-8 space-y-6">
+        <div className={cn("max-w-6xl mx-auto px-4 sm:px-6 relative pb-8 space-y-6", bannerUrl ? "-mt-16 sm:-mt-24" : "pt-8 sm:pt-10")}>
           {/* Convite & Destaques de Abertura (Luma Style) */}
           <div className="flex items-center gap-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-semibold">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-semibold">
               <Sparkles className="size-3.5" />
               <span>Você foi convidado para participar</span>
             </div>
             {storyUrl && (
-              <Badge variant="outline" className="rounded-full text-xs font-semibold py-1 px-2.5 border-primary/30 text-primary bg-primary/5">
+              <Badge variant="outline" className="rounded-full text-xs font-semibold py-1 px-3 border-primary/30 text-primary bg-primary/5">
                 Story 9:16 Disponível
               </Badge>
             )}
           </div>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-6">
-            <div className="flex items-start gap-4 sm:gap-6">
-              {/* Card Calendário Squircle */}
-              <div className="size-20 sm:size-24 rounded-2xl bg-background border border-border shadow-sm flex flex-col items-center justify-center shrink-0 text-center overflow-hidden">
-                <span className="text-xs font-bold text-primary uppercase tracking-wider w-full bg-primary/10 py-1">
-                  {monthAbbr}
-                </span>
-                <span className="text-2xl sm:text-3xl font-black text-foreground leading-none py-1">
-                  {dayNumber}
-                </span>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="outline" className="rounded-lg text-xs font-semibold py-1 px-2.5 bg-primary/10 text-primary border-primary/20">
-                    <Ticket className="size-3 mr-1" />
-                    <span>Eventos & Ingressos</span>
-                  </Badge>
-
-                  {attrs.visibility === "unlisted" && (
-                    <Badge variant="secondary" className="rounded-lg text-xs font-semibold py-1 px-2.5">
-                      Link Direto / Não Listado
-                    </Badge>
-                  )}
-
-                  {attrs.age_rating && (
-                    <Badge variant="outline" className="rounded-lg text-xs font-semibold py-1 px-2.5">
-                      {attrs.age_rating}
-                    </Badge>
-                  )}
-                </div>
-
-                <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-foreground break-words text-wrap leading-tight">
-                  {classified.title}
-                </h1>
-
-                <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-muted-foreground">
-                  <span className="inline-flex items-center gap-1.5 font-medium">
-                    <Calendar className="size-4 text-primary shrink-0" />
-                    <span className="capitalize">{formattedDate}</span>
-                  </span>
-
-                  <span className="inline-flex items-center gap-1.5 font-medium">
-                    <Clock className="size-4 text-primary shrink-0" />
-                    <span>{startTime}{endTime ? ` às ${endTime}` : ""}</span>
-                  </span>
-
-                  <span className="inline-flex items-center gap-1.5 font-medium">
-                    <MapPin className="size-4 text-primary shrink-0" />
-                    <span className="truncate max-w-xs">{venueName}{cityState ? ` • ${cityState}` : ""}</span>
-                  </span>
-                </div>
-              </div>
+          {/* ── CABEÇALHO HERO: Título Não Comprimido em Linha Exclusiva ── */}
+          <div className="flex items-start gap-4 sm:gap-6 w-full">
+            {/* Card Calendário Squircle */}
+            <div className="size-20 sm:size-24 rounded-2xl bg-background border border-border flex flex-col items-center justify-center shrink-0 text-center overflow-hidden">
+              <span className="text-xs font-bold text-primary uppercase tracking-wider w-full bg-primary/10 py-1">
+                {monthAbbr}
+              </span>
+              <span className="text-2xl sm:text-3xl font-black text-foreground leading-none py-1">
+                {dayNumber}
+              </span>
             </div>
 
-            {/* Ações Rápidas do Cabeçalho */}
-            <div className="flex items-center flex-wrap gap-2 shrink-0 w-full sm:w-auto">
-              {storyUrl && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsStoryOpen(true)}
-                  className="rounded-lg h-11 min-h-11 px-4 text-xs font-bold gap-2 cursor-pointer bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-primary/10 border-primary/30 text-foreground hover:bg-primary/20 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-xs"
-                >
-                  <Play className="size-3.5 fill-primary text-primary" />
-                  <span>Story 9:16</span>
-                </Button>
-              )}
+            <div className="flex-1 min-w-0 space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="outline" className="rounded-lg text-xs font-semibold py-1 px-3 bg-primary/10 text-primary border-primary/20">
+                  <Ticket className="size-3 mr-1" />
+                  <span>Eventos & Ingressos</span>
+                </Badge>
 
-              {isOwner && onEditClassified && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onEditClassified}
-                  className="rounded-lg h-11 min-h-11 px-4 text-xs font-bold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border-border"
-                >
-                  <Edit3 className="size-4" />
-                  <span>Editar Evento</span>
-                </Button>
-              )}
+                {attrs.visibility === "unlisted" && (
+                  <Badge variant="secondary" className="rounded-lg text-xs font-semibold py-1 px-3">
+                    Link Direto / Não Listado
+                  </Badge>
+                )}
 
+                {attrs.age_rating && (
+                  <Badge variant="outline" className="rounded-lg text-xs font-semibold py-1 px-3">
+                    {attrs.age_rating}
+                  </Badge>
+                )}
+              </div>
+
+              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-foreground break-words text-wrap leading-tight">
+                {classified.title}
+              </h1>
+
+              <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-muted-foreground">
+                <span className="inline-flex items-center gap-2 font-medium">
+                  <Calendar className="size-4 text-primary shrink-0" />
+                  <span className="capitalize">{formattedDate}</span>
+                </span>
+
+                <span className="inline-flex items-center gap-2 font-medium">
+                  <Clock className="size-4 text-primary shrink-0" />
+                  <span>{startTime}{endTime ? ' às ' + endTime : ''}</span>
+                </span>
+
+                <span className="inline-flex items-center gap-2 font-medium">
+                  <MapPin className="size-4 text-primary shrink-0" />
+                  <span className="truncate max-w-xs">{venueName}{cityState ? ' • ' + cityState : ''}</span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Ações Rápidas do Cabeçalho — Barra Dedicada com Piso 44px ── */}
+          <div className="flex items-center flex-wrap gap-2 pt-2 border-t border-border/40">
+            {ticketTiers.length > 0 && (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => handleOpenSignup(ticketTiers[0])}
+                className="rounded-lg h-11 min-h-11 px-6 text-xs font-bold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-xs"
+              >
+                <Ticket className="size-4" />
+                <span>Garantir Ingresso</span>
+              </Button>
+            )}
+
+            {classified.whatsapp && (
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="rounded-lg h-11 min-h-11 px-4 text-xs font-bold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border-border hover:bg-muted/40"
+              >
+                <a
+                  href={'https://wa.me/' + classified.whatsapp.replace(/\D/g, "") + '?text=' + encodeURIComponent('Olá! Tenho dúvidas sobre o evento "' + classified.title + '".')}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <MessageCircle className="size-4 text-emerald-500" />
+                  <span>Falar com Organizador</span>
+                </a>
+              </Button>
+            )}
+
+            {storyUrl && (
               <Button
                 variant="outline"
                 size="sm"
-                onClick={handleDownloadCalendar}
-                className="rounded-lg h-11 min-h-11 px-4 text-xs font-semibold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border-border"
-                title="Salvar no Google Calendar / Apple Agenda"
+                onClick={() => setIsStoryOpen(true)}
+                className="rounded-lg h-11 min-h-11 px-4 text-xs font-bold gap-2 cursor-pointer bg-primary/10 border-primary/30 text-foreground hover:bg-primary/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-xs"
               >
-                <Download className="size-4 text-muted-foreground" />
-                <span className="hidden sm:inline">Salvar na Agenda</span>
+                <Play className="size-3.5 fill-primary text-primary" />
+                <span>Story 9:16</span>
               </Button>
+            )}
 
+            {isOwner && onEditClassified && (
               <Button
                 variant="outline"
-                size="icon"
-                onClick={handleShare}
-                className="rounded-lg size-11 min-h-11 min-w-11 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border-border"
-                aria-label="Compartilhar evento"
+                size="sm"
+                onClick={onEditClassified}
+                className="rounded-lg h-11 min-h-11 px-4 text-xs font-bold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border-border"
               >
-                <Share2 className="size-4 text-muted-foreground" />
+                <Edit3 className="size-4" />
+                <span>Editar Evento</span>
               </Button>
+            )}
 
-              {ticketTiers.length > 0 && (
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={() => handleOpenSignup(ticketTiers[0])}
-                  className="rounded-lg h-11 min-h-11 px-5 text-xs font-bold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ml-auto sm:ml-0"
-                >
-                  <Ticket className="size-4" />
-                  <span>Garantir Ingresso</span>
-                </Button>
-              )}
-            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDownloadCalendar}
+              className="rounded-lg h-11 min-h-11 px-4 text-xs font-semibold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border-border"
+              title="Salvar no Google Calendar / Apple Agenda"
+            >
+              <Download className="size-4 text-muted-foreground" />
+              <span>Salvar na Agenda</span>
+            </Button>
+
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleShare}
+              className="rounded-lg size-11 min-h-11 min-w-11 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border-border"
+              aria-label="Compartilhar evento"
+            >
+              <Share2 className="size-4 text-muted-foreground" />
+            </Button>
           </div>
 
           {/* Card do Anfitrião / Organizador (Luma Style "Hosted by") & PWA */}
           <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-t border-border/40">
             <div className="flex items-center gap-3 p-3 rounded-2xl bg-card border border-border/70 shadow-xs max-w-md">
-              {hostAvatarUrl ? (
+              {hostAvatarUrl && !hostAvatarFailed ? (
                 <img
                   src={hostAvatarUrl}
                   alt={hostName}
                   className="size-11 min-h-11 min-w-11 rounded-xl object-cover border border-border/80"
+                  onError={() => setHostAvatarFailed(true)}
                 />
               ) : (
                 <div className="size-11 min-h-11 min-w-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-sm border border-primary/20">
@@ -630,7 +646,7 @@ export function EventClassifiedShowcaseView({
                   variant="outline"
                   size="sm"
                   asChild
-                  className="rounded-lg h-11 min-h-11 px-3 text-xs font-semibold gap-1.5 cursor-pointer border-border shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="rounded-lg h-11 min-h-11 px-3 text-xs font-semibold gap-2 cursor-pointer border-border shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   <a
                     href={`https://wa.me/55${hostPhone.replace(/\D/g, "")}?text=${encodeURIComponent(
@@ -647,7 +663,7 @@ export function EventClassifiedShowcaseView({
             </div>
 
             {pwaEnabled && (
-              <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-primary/5 border border-primary/20 text-xs text-foreground max-w-sm">
+              <div className="flex items-center gap-3 p-3 rounded-2xl bg-primary/5 border border-primary/20 text-xs text-foreground max-w-sm">
                 <Smartphone className="size-4 text-primary shrink-0" />
                 <span className="text-xs text-muted-foreground leading-tight">
                   Adicione à tela inicial para acessar ingressos e programação offline.
@@ -659,13 +675,13 @@ export function EventClassifiedShowcaseView({
       </section>
 
       {/* ── Rule B.39 / Luma App-Native Anchor Navigation Bar ── */}
-      <nav aria-label="Navegação das Seções do Evento" className="sticky top-14 z-20 w-full bg-background/95 backdrop-blur-md border-y border-border/50 py-2.5 transition-all shadow-xs">
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar px-4 sm:px-6 max-w-6xl mx-auto">
+      <nav aria-label="Navegação das Seções do Evento" className="sticky top-0 z-30 w-full bg-background border-b border-border py-3 shadow-xs">
+        <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar px-4 sm:px-6 max-w-6xl mx-auto">
           <button
             type="button"
             onClick={() => scrollToSection("sobre")}
             className={cn(
-              "h-10 min-h-10 px-4 rounded-full text-xs font-semibold whitespace-nowrap transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+              "h-11 min-h-11 px-4 rounded-full text-xs font-semibold whitespace-nowrap transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
               activeSection === "sobre"
                 ? "bg-foreground text-background font-bold"
                 : "bg-muted/70 text-muted-foreground hover:text-foreground"
@@ -678,7 +694,7 @@ export function EventClassifiedShowcaseView({
               type="button"
               onClick={() => scrollToSection("ingressos")}
               className={cn(
-                "h-10 min-h-10 px-4 rounded-full text-xs font-semibold whitespace-nowrap transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "h-11 min-h-11 px-4 rounded-full text-xs font-semibold whitespace-nowrap transition-colors shrink-0 flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 activeSection === "ingressos"
                   ? "bg-foreground text-background font-bold"
                   : "bg-muted/70 text-muted-foreground hover:text-foreground"
@@ -693,7 +709,7 @@ export function EventClassifiedShowcaseView({
               type="button"
               onClick={() => scrollToSection("programacao")}
               className={cn(
-                "h-10 min-h-10 px-4 rounded-full text-xs font-semibold whitespace-nowrap transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "h-11 min-h-11 px-4 rounded-full text-xs font-semibold whitespace-nowrap transition-colors shrink-0 flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 activeSection === "programacao"
                   ? "bg-foreground text-background font-bold"
                   : "bg-muted/70 text-muted-foreground hover:text-foreground"
@@ -708,7 +724,7 @@ export function EventClassifiedShowcaseView({
               type="button"
               onClick={() => scrollToSection("palestrantes")}
               className={cn(
-                "h-10 min-h-10 px-4 rounded-full text-xs font-semibold whitespace-nowrap transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "h-11 min-h-11 px-4 rounded-full text-xs font-semibold whitespace-nowrap transition-colors shrink-0 flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 activeSection === "palestrantes"
                   ? "bg-foreground text-background font-bold"
                   : "bg-muted/70 text-muted-foreground hover:text-foreground"
@@ -723,7 +739,7 @@ export function EventClassifiedShowcaseView({
               type="button"
               onClick={() => scrollToSection("enquetes")}
               className={cn(
-                "h-10 min-h-10 px-4 rounded-full text-xs font-semibold whitespace-nowrap transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "h-11 min-h-11 px-4 rounded-full text-xs font-semibold whitespace-nowrap transition-colors shrink-0 flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 activeSection === "enquetes"
                   ? "bg-foreground text-background font-bold"
                   : "bg-muted/70 text-muted-foreground hover:text-foreground"
@@ -738,7 +754,7 @@ export function EventClassifiedShowcaseView({
               type="button"
               onClick={() => scrollToSection("localizacao")}
               className={cn(
-                "h-10 min-h-10 px-4 rounded-full text-xs font-semibold whitespace-nowrap transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "h-11 min-h-11 px-4 rounded-full text-xs font-semibold whitespace-nowrap transition-colors shrink-0 flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 activeSection === "localizacao"
                   ? "bg-foreground text-background font-bold"
                   : "bg-muted/70 text-muted-foreground hover:text-foreground"
@@ -753,7 +769,7 @@ export function EventClassifiedShowcaseView({
               type="button"
               onClick={() => scrollToSection("patrocinadores")}
               className={cn(
-                "h-10 min-h-10 px-4 rounded-full text-xs font-semibold whitespace-nowrap transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "h-11 min-h-11 px-4 rounded-full text-xs font-semibold whitespace-nowrap transition-colors shrink-0 flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 activeSection === "patrocinadores"
                   ? "bg-foreground text-background font-bold"
                   : "bg-muted/70 text-muted-foreground hover:text-foreground"
@@ -767,7 +783,7 @@ export function EventClassifiedShowcaseView({
             type="button"
             onClick={() => scrollToSection("politicas")}
             className={cn(
-              "h-10 min-h-10 px-4 rounded-full text-xs font-semibold whitespace-nowrap transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+              "h-11 min-h-11 px-4 rounded-full text-xs font-semibold whitespace-nowrap transition-colors shrink-0 flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
               activeSection === "politicas"
                 ? "bg-foreground text-background font-bold"
                 : "bg-muted/70 text-muted-foreground hover:text-foreground"
@@ -779,7 +795,7 @@ export function EventClassifiedShowcaseView({
           <button
             type="button"
             onClick={handleShare}
-            className="h-10 min-h-10 px-4 rounded-full text-xs font-semibold whitespace-nowrap bg-muted/70 text-muted-foreground hover:text-foreground transition-colors shrink-0 flex items-center gap-1.5 ml-auto cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="h-11 min-h-11 px-4 rounded-full text-xs font-semibold whitespace-nowrap bg-muted/70 text-muted-foreground hover:text-foreground transition-colors shrink-0 flex items-center gap-2 ml-auto cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <Share2 className="size-3.5" />
             <span>Compartilhar</span>
@@ -793,7 +809,7 @@ export function EventClassifiedShowcaseView({
           {/* Coluna de Conteúdo (8 Cols) */}
           <div className="lg:col-span-8 space-y-10">
             {/* Bloco: Sobre o Evento */}
-            <section id="sobre" className="space-y-4 scroll-mt-28">
+            <section id="sobre" className="space-y-4 scroll-mt-18">
               <h2 className="text-lg sm:text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
                 <Info className="size-5 text-primary" />
                 <span>Sobre o Evento</span>
@@ -833,7 +849,7 @@ export function EventClassifiedShowcaseView({
                     <Sparkles className="size-4 text-primary" />
                     <span>Apresentação em Vídeo</span>
                   </h3>
-                  <div className="aspect-video w-full rounded-2xl overflow-hidden border border-border bg-black">
+                  <div className="aspect-video w-full rounded-2xl overflow-hidden border border-border bg-background">
                     {videoUrl.includes("youtube.com") || videoUrl.includes("youtu.be") ? (
                       <iframe
                         src={videoUrl.replace("watch?v=", "embed/")}
@@ -852,13 +868,13 @@ export function EventClassifiedShowcaseView({
 
             {/* Bloco: Programação Visual (Schedule / Line-up) */}
             {schedule.length > 0 && (
-              <section id="programacao" className="space-y-4 pt-4 border-t border-border/40 scroll-mt-28">
+              <section id="programacao" className="space-y-4 pt-4 border-t border-border/40 scroll-mt-18">
                 <div className="flex items-center justify-between gap-4">
                   <h2 className="text-lg sm:text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
                     <Clock className="size-5 text-primary" />
                     <span>Programação do Evento</span>
                   </h2>
-                  <Badge variant="outline" className="text-xs font-semibold py-1 px-2.5">
+                  <Badge variant="outline" className="text-xs font-semibold py-1 px-3">
                     {schedule.length} {schedule.length === 1 ? "Atividade" : "Atividades"}
                   </Badge>
                 </div>
@@ -876,11 +892,11 @@ export function EventClassifiedShowcaseView({
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                         <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs sm:text-sm font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md">
+                          <span className="font-mono text-xs sm:text-sm font-bold text-primary bg-primary/10 px-2 py-1 rounded-md">
                             {item.time}{item.end_time ? ` - ${item.end_time}` : ""}
                           </span>
                           {item.stage_or_room && (
-                            <Badge variant="secondary" className="text-xs font-semibold py-0.5 px-2">
+                            <Badge variant="secondary" className="text-xs font-semibold py-1 px-2">
                               {item.stage_or_room}
                             </Badge>
                           )}
@@ -899,7 +915,7 @@ export function EventClassifiedShowcaseView({
                       </h3>
 
                       {item.description && (
-                        <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 break-words text-wrap leading-relaxed">
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-2 break-words text-wrap leading-relaxed">
                           {item.description}
                         </p>
                       )}
@@ -911,6 +927,7 @@ export function EventClassifiedShowcaseView({
                               src={item.speaker_photo}
                               alt={item.speaker_name}
                               className="size-7 rounded-full object-cover border border-border"
+                              onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }}
                             />
                           ) : (
                             <div className="size-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">
@@ -933,7 +950,7 @@ export function EventClassifiedShowcaseView({
 
             {/* Bloco: Palestrantes & Atrações */}
             {speakers.length > 0 && (
-              <section id="palestrantes" className="space-y-4 pt-4 border-t border-border/40 scroll-mt-28">
+              <section id="palestrantes" className="space-y-4 pt-4 border-t border-border/40 scroll-mt-18">
                 <h2 className="text-lg sm:text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
                   <Mic className="size-5 text-primary" />
                   <span>Palestrantes & Atrações</span>
@@ -950,6 +967,7 @@ export function EventClassifiedShowcaseView({
                           src={speaker.photo_url}
                           alt={speaker.name}
                           className="size-16 sm:size-20 rounded-2xl object-cover shrink-0 border border-border"
+                          onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }}
                         />
                       ) : (
                         <div className="size-16 sm:size-20 rounded-2xl bg-muted text-muted-foreground flex items-center justify-center shrink-0 text-xl font-bold border border-border">
@@ -989,13 +1007,13 @@ export function EventClassifiedShowcaseView({
 
             {/* Bloco: Enquetes e Interatividade ao Vivo */}
             {surveys.length > 0 && (
-              <section id="enquetes" className="space-y-4 pt-4 border-t border-border/40 scroll-mt-28">
+              <section id="enquetes" className="space-y-4 pt-4 border-t border-border/40 scroll-mt-18">
                 <div className="flex items-center justify-between gap-4">
                   <h2 className="text-lg sm:text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
                     <HelpCircle className="size-5 text-primary" />
                     <span>Interatividade & Enquetes</span>
                   </h2>
-                  <Badge variant="outline" className="text-xs font-semibold py-1 px-2.5">
+                  <Badge variant="outline" className="text-xs font-semibold py-1 px-3">
                     Tempo Real
                   </Badge>
                 </div>
@@ -1014,7 +1032,7 @@ export function EventClassifiedShowcaseView({
                           {survey.question}
                         </h3>
 
-                        <div className="space-y-2.5">
+                        <div className="space-y-3">
                           {survey.options.map((option, optIdx) => {
                             const isSelected = votedSurveys[survey.id] === optIdx;
                             const pct = res?.percentages?.[optIdx] ?? 0;
@@ -1026,7 +1044,7 @@ export function EventClassifiedShowcaseView({
                                 disabled={hasVoted || isVotingSurvey}
                                 onClick={() => handleVoteSurvey(survey, optIdx, option)}
                                 className={cn(
-                                  "w-full text-left p-3.5 rounded-xl border text-xs sm:text-sm font-semibold transition-all relative overflow-hidden flex items-center justify-between gap-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-11",
+                                  "w-full text-left p-4 rounded-xl border text-xs sm:text-sm font-semibold transition-colors relative overflow-hidden flex items-center justify-between gap-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-11",
                                   hasVoted
                                     ? isSelected
                                       ? "border-primary bg-primary/10 text-primary"
@@ -1036,7 +1054,7 @@ export function EventClassifiedShowcaseView({
                               >
                                 {hasVoted && (
                                   <div
-                                    className="absolute inset-y-0 left-0 bg-primary/15 transition-all duration-500"
+                                    className="absolute inset-y-0 left-0 bg-primary/15 transition-colors duration-300"
                                     style={{ width: `${pct}%` }}
                                   />
                                 )}
@@ -1088,13 +1106,13 @@ export function EventClassifiedShowcaseView({
                                 {res.totalVotes} votos
                               </Badge>
                             </div>
-                            <div className="max-h-48 overflow-y-auto space-y-1.5 no-scrollbar">
+                            <div className="max-h-48 overflow-y-auto space-y-2 no-scrollbar">
                               {res.responses.map((resp: any) => (
                                 <div
                                   key={resp.id}
-                                  className="p-2.5 rounded-lg border border-border/40 bg-muted/20 flex items-center justify-between text-xs"
+                                  className="p-3 rounded-lg border border-border/40 bg-muted/20 flex items-center justify-between text-xs"
                                 >
-                                  <div className="space-y-0.5 min-w-0 pr-2">
+                                  <div className="space-y-1 min-w-0 pr-2">
                                     <span className="font-semibold text-foreground truncate block">
                                       {resp.isAnonymous ? "Anônimo" : resp.voterName}
                                     </span>
@@ -1118,7 +1136,7 @@ export function EventClassifiedShowcaseView({
             )}
 
             {/* Bloco: Localização & Como Chegar */}
-            <section id="localizacao" className="space-y-4 pt-4 border-t border-border/40 scroll-mt-28">
+            <section id="localizacao" className="space-y-4 pt-4 border-t border-border/40 scroll-mt-18">
               <h2 className="text-lg sm:text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
                 <Navigation className="size-5 text-primary" />
                 <span>Localização & Acesso</span>
@@ -1150,7 +1168,7 @@ export function EventClassifiedShowcaseView({
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        <MapPin className="size-4 mr-1.5 text-primary" />
+                        <MapPin className="size-4 mr-2 text-primary" />
                         <span>Abrir no Google Maps</span>
                       </a>
                     </Button>
@@ -1158,8 +1176,8 @@ export function EventClassifiedShowcaseView({
                 </div>
 
                 {(policies.parking_info || attrs.parking_info) && (
-                  <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-muted/40 border border-border/40 text-xs text-muted-foreground">
-                    <Car className="size-4 text-primary shrink-0 mt-0.5" />
+                  <div className="flex items-start gap-3 p-4 rounded-xl bg-muted/40 border border-border/40 text-xs text-muted-foreground">
+                    <Car className="size-4 text-primary shrink-0 mt-1" />
                     <p className="leading-relaxed">
                       <strong>Estacionamento:</strong> {policies.parking_info || attrs.parking_info}
                     </p>
@@ -1170,7 +1188,7 @@ export function EventClassifiedShowcaseView({
 
             {/* Bloco: Patrocinadores & Realização */}
             {sponsors.length > 0 && (
-              <section id="patrocinadores" className="space-y-4 pt-4 border-t border-border/40 scroll-mt-28">
+              <section id="patrocinadores" className="space-y-4 pt-4 border-t border-border/40 scroll-mt-18">
                 <h2 className="text-lg sm:text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
                   <Building className="size-5 text-primary" />
                   <span>Patrocinadores & Parceiros</span>
@@ -1182,7 +1200,7 @@ export function EventClassifiedShowcaseView({
                       <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
                         Cota Master
                       </span>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      <div className="grid grid-cols-2 sm:grid-cols-1 sm:grid-cols-3 gap-3">
                         {sponsorsByTier.master.map((s, idx) => (
                           <a
                             key={s.id || idx}
@@ -1191,7 +1209,12 @@ export function EventClassifiedShowcaseView({
                             rel="noopener noreferrer"
                             className="p-4 rounded-xl border border-border/70 bg-card hover:border-primary/50 transition-colors flex items-center justify-center min-h-24"
                           >
-                            <img src={s.logo_url} alt={s.name} className="max-h-12 max-w-full object-contain" />
+                            <img
+                              src={s.logo_url}
+                              alt={s.name}
+                              className="max-h-12 max-w-full object-contain"
+                              onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }}
+                            />
                           </a>
                         ))}
                       </div>
@@ -1212,7 +1235,12 @@ export function EventClassifiedShowcaseView({
                             rel="noopener noreferrer"
                             className="p-3 rounded-xl border border-border/60 bg-card hover:border-primary/40 transition-colors flex items-center justify-center min-h-16"
                           >
-                            <img src={s.logo_url} alt={s.name} className="max-h-10 max-w-full object-contain" />
+                            <img
+                              src={s.logo_url}
+                              alt={s.name}
+                              className="max-h-10 max-w-full object-contain"
+                              onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }}
+                            />
                           </a>
                         ))}
                       </div>
@@ -1224,13 +1252,18 @@ export function EventClassifiedShowcaseView({
                       <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
                         Patrocínio Prata
                       </span>
-                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 sm:grid-cols-5 gap-3">
                         {sponsorsByTier.prata.map((s, idx) => (
                           <div
                             key={s.id || idx}
-                            className="p-2.5 rounded-lg border border-border/50 bg-card flex items-center justify-center min-h-16"
+                            className="p-3 rounded-lg border border-border/50 bg-card flex items-center justify-center min-h-16"
                           >
-                            <img src={s.logo_url} alt={s.name} className="max-h-8 max-w-full object-contain" />
+                            <img
+                              src={s.logo_url}
+                              alt={s.name}
+                              className="max-h-8 max-w-full object-contain"
+                              onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }}
+                            />
                           </div>
                         ))}
                       </div>
@@ -1246,7 +1279,7 @@ export function EventClassifiedShowcaseView({
                         {sponsorsByTier.apoio.map((s, idx) => (
                           <div
                             key={s.id || idx}
-                            className="px-3 py-1.5 rounded-lg border border-border/40 bg-muted/30 text-xs font-semibold text-muted-foreground"
+                            className="px-3 py-2 rounded-lg border border-border/40 bg-muted/30 text-xs font-semibold text-muted-foreground"
                           >
                             {s.name}
                           </div>
@@ -1259,28 +1292,28 @@ export function EventClassifiedShowcaseView({
             )}
 
             {/* Bloco: Políticas do Evento */}
-            <section id="politicas" className="space-y-4 pt-4 border-t border-border/40 scroll-mt-28">
+            <section id="politicas" className="space-y-4 pt-4 border-t border-border/40 scroll-mt-18">
               <h2 className="text-lg sm:text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
                 <ShieldCheck className="size-5 text-primary" />
                 <span>Políticas & Diretrizes</span>
               </h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-4 rounded-2xl border border-border/60 bg-card space-y-1.5">
+                <div className="p-4 rounded-2xl border border-border/60 bg-card space-y-2">
                   <span className="text-xs font-bold text-foreground block">Cancelamento e Reembolso</span>
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     {policies.refund_policy || "Cancelamentos são aceitos em até 7 dias corridos após a compra, conforme o Código de Defesa do Consumidor."}
                   </p>
                 </div>
 
-                <div className="p-4 rounded-2xl border border-border/60 bg-card space-y-1.5">
+                <div className="p-4 rounded-2xl border border-border/60 bg-card space-y-2">
                   <span className="text-xs font-bold text-foreground block">Meia-Entrada & Benefícios</span>
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     {policies.half_price_policy || "Obrigatória a apresentação de documento comprobatório para estudantes, idosos e PCDs no credenciamento."}
                   </p>
                 </div>
 
-                <div className="p-4 rounded-2xl border border-border/60 bg-card space-y-1.5 sm:col-span-2">
+                <div className="p-4 rounded-2xl border border-border/60 bg-card space-y-2 sm:col-span-2">
                   <span className="text-xs font-bold text-foreground block">Acessibilidade PCD</span>
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     {policies.accessibility_info || "Espaço com acesso para cadeirantes, rampas e sanitários adaptados."}
@@ -1293,7 +1326,7 @@ export function EventClassifiedShowcaseView({
           {/* Coluna Comercial Lateral (4 Cols no Desktop) */}
           <aside className="lg:col-span-4 space-y-6">
             {/* Bloco de Ingressos e Lotes */}
-            <div id="ingressos" className="p-5 sm:p-6 rounded-2xl border border-border bg-card space-y-5 shadow-xs sticky top-24 scroll-mt-28">
+            <div id="ingressos" className="p-5 sm:p-6 rounded-2xl border border-border bg-card space-y-5 shadow-xs sticky top-16 scroll-mt-18">
               <div className="flex items-center justify-between gap-2 border-b border-border/50 pb-4">
                 <div>
                   <h3 className="text-base font-bold text-foreground">Ingressos & Lotes</h3>
@@ -1311,7 +1344,7 @@ export function EventClassifiedShowcaseView({
                       <div
                         key={tier.id}
                         className={cn(
-                          "p-4 rounded-xl border transition-all space-y-2.5",
+                          "p-4 rounded-xl border transition-colors space-y-3",
                           isSoldOut
                             ? "border-border/40 bg-muted/20 opacity-60"
                             : "border-border/70 bg-muted/30 hover:border-primary/50"
@@ -1321,7 +1354,7 @@ export function EventClassifiedShowcaseView({
                           <div>
                             <h4 className="text-sm font-bold text-foreground">{tier.name}</h4>
                             {tier.description && (
-                              <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{tier.description}</p>
+                              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{tier.description}</p>
                             )}
                           </div>
                           <span className="font-mono text-sm font-bold text-foreground shrink-0">
@@ -1364,7 +1397,7 @@ export function EventClassifiedShowcaseView({
                     Cadastre-se para receber o aviso e link de abertura de vendas.
                   </p>
                   <Button
-                    variant="default"
+                    variant="outline"
                     onClick={() => handleOpenSignup()}
                     className="w-full rounded-lg h-11 min-h-11 text-xs font-bold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
@@ -1377,14 +1410,15 @@ export function EventClassifiedShowcaseView({
               <div className="pt-4 border-t border-border/40 space-y-2">
                 <span className="text-xs font-semibold text-muted-foreground block">Organizado por</span>
                 <div className="flex items-center gap-3">
-                  {classified.store?.logo_url ? (
+                  {classified.store?.logo_url && !storeLogoFailed ? (
                     <img
                       src={classified.store.logo_url}
                       alt={classified.store.name}
-                      className="size-10 rounded-xl object-cover border border-border"
+                      className="size-11 min-h-11 rounded-xl object-cover border border-border"
+                      onError={() => setStoreLogoFailed(true)}
                     />
                   ) : (
-                    <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
+                    <div className="size-11 min-h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
                       {(classified.store?.name || classified.profiles?.full_name || "O").charAt(0)}
                     </div>
                   )}
@@ -1425,7 +1459,7 @@ export function EventClassifiedShowcaseView({
       </main>
 
       {/* ── 3. Barra Flutuante Mobile (Fixada em z-30 para não ocluir modais em z-50) ── */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-background/95 backdrop-blur-md border-t border-border px-4 py-3 shadow-lg flex items-center justify-between gap-3 pb-safe">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-background/95 backdrop-blur-md border-t border-border px-4 py-3  flex items-center justify-between gap-3 pb-safe">
         <div className="min-w-0">
           <span className="text-xs text-muted-foreground block truncate">Ingressos a partir de</span>
           <span className="text-sm font-bold font-mono text-foreground">
@@ -1438,9 +1472,9 @@ export function EventClassifiedShowcaseView({
         </div>
 
         <Button
-          variant="default"
+          variant="outline"
           onClick={() => handleOpenSignup(ticketTiers[0])}
-          className="rounded-lg h-11 min-h-11 px-6 text-xs font-bold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-sm"
+          className="rounded-lg h-11 min-h-11 px-6 text-xs font-bold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary "
         >
           <Ticket className="size-4" />
           <span>Garantir Vaga</span>
@@ -1543,7 +1577,7 @@ export function EventClassifiedShowcaseView({
                   <span>Salvar na Minha Agenda</span>
                 </Button>
                 <Button
-                  variant="default"
+                  variant="outline"
                   onClick={() => setIsSignupModalOpen(false)}
                   className="rounded-lg h-11 min-h-11 text-xs font-bold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
@@ -1553,7 +1587,7 @@ export function EventClassifiedShowcaseView({
             </div>
           ) : (
             <form onSubmit={handleSubmitLead} className="space-y-4 pt-2">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label htmlFor="lead-name" className="text-xs font-semibold text-foreground">
                   Nome Completo *
                 </Label>
@@ -1567,7 +1601,7 @@ export function EventClassifiedShowcaseView({
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label htmlFor="lead-whatsapp" className="text-xs font-semibold text-foreground">
                   WhatsApp com DDD *
                 </Label>
@@ -1581,7 +1615,7 @@ export function EventClassifiedShowcaseView({
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label htmlFor="lead-email" className="text-xs font-semibold text-foreground">
                   E-mail (opcional)
                 </Label>
@@ -1595,7 +1629,7 @@ export function EventClassifiedShowcaseView({
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label htmlFor="lead-notes" className="text-xs font-semibold text-foreground">
                   Observações ou perguntas ao organizador (opcional)
                 </Label>
@@ -1621,13 +1655,13 @@ export function EventClassifiedShowcaseView({
                 </Button>
                 <Button
                   type="submit"
-                  variant="default"
+                  variant="outline"
                   disabled={isSubmittingLead}
                   className="rounded-lg h-11 min-h-11 px-6 text-xs font-bold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   {isSubmittingLead ? (
                     <>
-                      <Loader2 className="size-4 animate-spin" />
+                      <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                       <span>Confirmando...</span>
                     </>
                   ) : (
@@ -1644,30 +1678,34 @@ export function EventClassifiedShowcaseView({
       {storyUrl && (
         <Dialog open={isStoryOpen} onOpenChange={setIsStoryOpen}>
           <DialogContent
-            style={{ aspectRatio: "9/16", maxHeight: "90vh" }}
-            className="p-0 sm:max-w-sm w-full bg-black text-white border-0 overflow-hidden rounded-2xl flex flex-col justify-between z-50 shadow-2xl"
+            className="aspect-post-moment max-h-sheet p-0 sm:max-w-sm w-full bg-background text-foreground border-0 overflow-hidden rounded-2xl flex flex-col justify-between z-50"
           >
             {/* Barra Superior com Progresso e Host */}
-            <div className="absolute top-0 inset-x-0 z-20 p-3 bg-gradient-to-b from-black/80 via-black/40 to-transparent space-y-2">
-              <div className="w-full bg-white/20 h-1 rounded-full overflow-hidden">
+            <div className="absolute top-0 inset-x-0 z-20 p-3 bg-background/80 backdrop-blur-sm space-y-2">
+              <div className="w-full bg-background/20 h-1 rounded-full overflow-hidden">
                 <div
-                  className="bg-white h-full transition-all duration-100 ease-linear rounded-full"
+                  className="bg-background h-full transition-colors duration-100 ease-linear rounded-full"
                   style={{ width: `${storyProgress}%` }}
                 />
               </div>
 
-              <div className="flex items-center justify-between gap-3 text-white">
+              <div className="flex items-center justify-between gap-3 text-foreground">
                 <div className="flex items-center gap-2 min-w-0">
-                  {hostAvatarUrl ? (
-                    <img src={hostAvatarUrl} alt={hostName} className="size-8 rounded-full object-cover border border-white/30" />
+                  {hostAvatarUrl && !hostAvatarFailed ? (
+                    <img
+                      src={hostAvatarUrl}
+                      alt={hostName}
+                      className="size-8 rounded-full object-cover border border-white/30"
+                      onError={() => setHostAvatarFailed(true)}
+                    />
                   ) : (
-                    <div className="size-8 rounded-full bg-primary/40 text-white flex items-center justify-center font-bold text-xs">
+                    <div className="size-8 rounded-full bg-primary/40 text-foreground flex items-center justify-center font-bold text-xs">
                       {hostName.charAt(0)}
                     </div>
                   )}
                   <div className="min-w-0">
                     <p className="text-xs font-bold truncate leading-tight">{classified.title}</p>
-                    <p className="text-xs text-white/70 truncate">{hostName}</p>
+                    <p className="text-xs text-foreground/70 truncate">{hostName}</p>
                   </div>
                 </div>
 
@@ -1678,7 +1716,7 @@ export function EventClassifiedShowcaseView({
                       variant="ghost"
                       size="icon"
                       onClick={() => setIsStoryMuted(!isStoryMuted)}
-                      className="size-11 min-h-11 min-w-11 text-white hover:bg-white/20 rounded-full"
+                      className="size-11 min-h-11 min-w-11 text-foreground hover:bg-background/20 rounded-full"
                     >
                       {isStoryMuted ? <VolumeX className="size-4" /> : <Volume2 className="size-4" />}
                     </Button>
@@ -1688,7 +1726,7 @@ export function EventClassifiedShowcaseView({
                     variant="ghost"
                     size="icon"
                     onClick={() => setIsStoryOpen(false)}
-                    className="size-11 min-h-11 min-w-11 text-white hover:bg-white/20 rounded-full"
+                    className="size-11 min-h-11 min-w-11 text-foreground hover:bg-background/20 rounded-full"
                   >
                     <X className="size-5" />
                   </Button>
@@ -1697,7 +1735,7 @@ export function EventClassifiedShowcaseView({
             </div>
 
             {/* Visualizador de Mídia 9:16 */}
-            <div className="relative w-full h-full flex items-center justify-center bg-black">
+            <div className="relative w-full h-full flex items-center justify-center bg-background">
               {isVideoUrl(storyUrl) ? (
                 <video
                   ref={storyVideoRef}
@@ -1724,14 +1762,14 @@ export function EventClassifiedShowcaseView({
             </div>
 
             {/* Barra Inferior com CTA de Conversão */}
-            <div className="absolute bottom-0 inset-x-0 z-20 p-4 bg-gradient-to-t from-black/90 via-black/50 to-transparent flex items-center gap-3">
+            <div className="absolute bottom-0 inset-x-0 z-20 p-4 bg-muted/90 backdrop-blur-sm flex items-center gap-3">
               <Button
-                variant="default"
+                variant="outline"
                 onClick={() => {
                   setIsStoryOpen(false);
                   handleOpenSignup(ticketTiers[0]);
                 }}
-                className="w-full rounded-xl h-11 min-h-11 text-xs font-bold gap-2 cursor-pointer shadow-lg"
+                className="w-full rounded-xl h-11 min-h-11 text-xs font-bold gap-2 cursor-pointer "
               >
                 <Ticket className="size-4" />
                 <span>Garantir Ingresso</span>
@@ -1742,14 +1780,16 @@ export function EventClassifiedShowcaseView({
       )}
 
       {/* ── 6. Minimalist White-Label Badge (Feito com amor por Waesy) ── */}
-      <Link
-        to="/"
-        className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-30 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-background/90 backdrop-blur-md border border-border/60 text-xs font-medium text-muted-foreground hover:text-foreground shadow-sm transition-colors cursor-pointer group"
-        title="Waesy Plataforma de Eventos"
-      >
-        <Sparkles className="size-3 text-primary group-hover:scale-110 transition-transform" />
-        <span>Feito com amor por <strong className="font-bold text-foreground">Waesy</strong></span>
-      </Link>
+      <div className="mt-16 pb-8 flex justify-center">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card border border-border/60 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          title="Waesy Plataforma de Eventos"
+        >
+          <Sparkles className="size-3 text-primary group-hover:scale-110 transition-transform" />
+          <span>Feito com amor por <strong className="font-bold text-foreground">Waesy</strong></span>
+        </Link>
+      </div>
     </div>
   );
 }

@@ -24,6 +24,7 @@ async function getHtml2Canvas() {
   }
   return _html2canvas;
 }
+import { exportElementAsPdf, exportElementAsImage } from "@/lib/pdf-export";
 import { type Voucher, type VoucherFlight, type VoucherAccommodation, type VoucherTransfer } from "@/services/vouchers";
 import { StudioFrame, type CanvasFormat } from "@/components/studio/StudioFrame";
 import TemplateVoucherEmbarqueA4 from "./templates/TemplateVoucherEmbarqueA4";
@@ -60,7 +61,7 @@ interface Props {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const SMALL =
-  "w-full h-8 px-3 rounded-full border border-border/50 bg-surface-alt/50 text-xs outline-none transition-all focus:bg-surface focus:border-border-strong";
+  "w-full h-11 min-h-11 px-3 rounded-lg border border-border/50 bg-surface-alt/50 text-xs outline-none transition-colors motion-reduce:transition-none focus:bg-surface focus:border-border-strong";
 
 function Lbl({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -105,7 +106,7 @@ function AccordionSection({
         {icon}
         {label}
         {count !== undefined && (
-          <span className="ml-1 rounded-full bg-surface-alt px-2 py-1 text-[9px] font-mono text-muted-foreground">
+          <span className="ml-1 rounded-full bg-surface-alt px-2 py-1 text-xs font-mono text-muted-foreground">
             {count}
           </span>
         )}
@@ -766,14 +767,14 @@ export function VoucherStudio({
 
   // ── WhatsApp Text Generator ──────────────────────────────────────────────
   function generateWhatsAppText(): string {
-    let text = `✈️ *RESUMO DE EMBARQUE - ${draft.destination || "Sua Viagem"}*\n\n`;
+    let text = `*RESUMO DE EMBARQUE - ${draft.destination || "Sua Viagem"}*\n\n`;
 
     if (draft.general_locator) {
-      text += `🔑 *Localizador Geral:* \`${draft.general_locator}\`\n\n`;
+      text += `*Localizador Geral:* \`${draft.general_locator}\`\n\n`;
     }
 
     if (passengers.length > 0) {
-      text += `👤 *Passageiros:*\n`;
+      text += `*Passageiros:*\n`;
       passengers.forEach((p: any) => {
         text += `- ${p.name}${p.document ? ` (Doc: ${p.document})` : ""}${p.seat ? ` - Assento: ${p.seat}` : ""}\n`;
       });
@@ -781,44 +782,44 @@ export function VoucherStudio({
     }
 
     if (flights.length > 0) {
-      text += `🛫 *Voos Confirmados:*\n`;
+      text += `*Voos Confirmados:*\n`;
       flights.forEach((f: any, idx: number) => {
         text += `*Voo ${idx + 1}:* ${f.airline} ${f.flight_number || ""}\n`;
-        text += `📍 ${f.origin} ➔ ${f.destination}\n`;
-        text += `📅 Data: ${f.date || "A confirmar"} | Saída: ${f.departure_time || "--:--"} | Chegada: ${f.arrival_time || "--:--"}\n`;
-        if (f.locator) text += `🔑 Localizador: \`${f.locator}\`\n`;
-        if (f.class) text += `💺 Classe: ${f.class}\n`;
+        text += `${f.origin} -> ${f.destination}\n`;
+        text += `Data: ${f.date || "A confirmar"} | Saída: ${f.departure_time || "--:--"} | Chegada: ${f.arrival_time || "--:--"}\n`;
+        if (f.locator) text += `Localizador: \`${f.locator}\`\n`;
+        if (f.class) text += `Classe: ${f.class}\n`;
         text += `\n`;
       });
     }
 
     if (accommodation.length > 0) {
-      text += `🏨 *Hospedagem:*\n`;
+      text += `*Hospedagem:*\n`;
       accommodation.forEach((h: any, idx: number) => {
         text += `*Hotel ${idx + 1}:* ${h.name}\n`;
-        if (h.city) text += `📍 Cidade: ${h.city}\n`;
-        text += `📅 Check-in: ${h.checkin || "A confirmar"} | Check-out: ${h.checkout || "A confirmar"}\n`;
-        if (h.room_type) text += `🛏️ Quarto: ${h.room_type}\n`;
-        if (h.meal_plan) text += `☕ Regime: ${h.meal_plan}\n`;
-        if (h.confirmation) text += `🔑 Confirmação: \`${h.confirmation}\`\n`;
+        if (h.city) text += `Cidade: ${h.city}\n`;
+        text += `Check-in: ${h.checkin || "A confirmar"} | Check-out: ${h.checkout || "A confirmar"}\n`;
+        if (h.room_type) text += `Quarto: ${h.room_type}\n`;
+        if (h.meal_plan) text += `Regime: ${h.meal_plan}\n`;
+        if (h.confirmation) text += `Confirmação: \`${h.confirmation}\`\n`;
         text += `\n`;
       });
     }
 
     if (transfers.length > 0) {
-      text += `🚌 *Transfers:*\n`;
+      text += `*Transfers:*\n`;
       transfers.forEach((t: any) => {
-        text += `- ${t.type || "Transfer"}: ${t.origin || "Origem"} ➔ ${t.destination || "Destino"}\n`;
-        if (t.date) text += `  📅 Data: ${t.date}\n`;
-        if (t.vehicle) text += `  🚗 Veículo: ${t.vehicle}\n`;
-        if (t.supplier) text += `  🏢 Operadora: ${t.supplier}\n`;
-        if (t.confirmation) text += `  🔑 Confirmação: \`${t.confirmation}\`\n`;
+        text += `- ${t.type || "Transfer"}: ${t.origin || "Origem"} -> ${t.destination || "Destino"}\n`;
+        if (t.date) text += `  Data: ${t.date}\n`;
+        if (t.vehicle) text += `  Veículo: ${t.vehicle}\n`;
+        if (t.supplier) text += `  Operadora: ${t.supplier}\n`;
+        if (t.confirmation) text += `  Confirmação: \`${t.confirmation}\`\n`;
         text += `\n`;
       });
     }
 
     if (emergency.length > 0) {
-      text += `🚨 *Contatos de Emergência:*\n`;
+      text += `*Contatos de Emergência:*\n`;
       emergency.forEach((c: any) => {
         text += `- ${c.name} (${c.role || "Suporte"}): ${c.phone}\n`;
       });
@@ -826,10 +827,10 @@ export function VoucherStudio({
     }
 
     if (draft.observations) {
-      text += `📝 *Observações Importantes:*\n${draft.observations}\n\n`;
+      text += `*Observações Importantes:*\n${draft.observations}\n\n`;
     }
 
-    text += `💙 *Desejamos uma excelente viagem!*\n\nPlanejado com cuidado por *${agency.name}*`;
+    text += `*Desejamos uma excelente viagem!*\n\nPlanejado com cuidado por *${agency.name}*`;
     return text;
   }
 
@@ -837,57 +838,10 @@ export function VoucherStudio({
   async function exportA4Pdf() {
     setExporting(true);
     try {
-      const { jsPDF } = await import("jspdf");
-      const el = document.getElementById("voucher-canvas");
-      if (!el) throw new Error("Canvas não encontrado");
-      if (document.fonts?.ready) {
-        await document.fonts.ready;
-      }
-      const html2canvas = await getHtml2Canvas();
-      const canvas = await html2canvas(el, {
-        scale: 3,
-        useCORS: true,
-        backgroundColor: "#ffffff",
-        onclone: (clonedDoc) => {
-          const clonedCanvas = clonedDoc.getElementById("proposal-canvas");
-          if (clonedCanvas) {
-            clonedCanvas.style.transform = "none";
-            clonedCanvas.style.transition = "none";
-          }
-        },
-      });
-      const img = canvas.toDataURL("image/jpeg", 0.96);
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-
-      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      const pdfW = 210;
-      const pdfH = 297;
-
-      const pageCanvasHeight = imgWidth * 1.414;
-      const totalPages = Math.ceil(imgHeight / pageCanvasHeight);
-      const totalPdfHeight = pdfW * (imgHeight / imgWidth);
-
-      for (let page = 0; page < totalPages; page++) {
-        if (page > 0) {
-          pdf.addPage("a4", "portrait");
-        }
-        const yOffset = -page * pdfH;
-        pdf.addImage(img, "JPEG", 0, yOffset, pdfW, totalPdfHeight);
-      }
-
-      // Download local
-      pdf.save(`voucher-${draft.destination ?? "viagem"}.pdf`);
-
-      // Fase 6: persistir PDF no Storage via callback do componente pai
-      if (onPdfGenerated) {
-        const blob = pdf.output("blob");
-        await onPdfGenerated(blob);
-      }
-
+      await exportElementAsPdf("voucher-canvas", `voucher-${draft.destination ?? "viagem"}.pdf`);
       toast.success("PDF exportado com sucesso!");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro ao exportar");
+      toast.error(e instanceof Error ? e.message : "Erro ao exportar PDF");
     } finally {
       setExporting(false);
     }
@@ -897,33 +851,11 @@ export function VoucherStudio({
   async function exportStoryPng() {
     setExporting(true);
     try {
-      const el =
-        document.getElementById("story-canvas") || document.getElementById("story-preview-canvas");
-      if (!el) throw new Error("Canvas Story não encontrado");
-      if (document.fonts?.ready) {
-        await document.fonts.ready;
-      }
-      const html2canvas = await getHtml2Canvas();
-      const canvas = await html2canvas(el, {
-        scale: 3,
-        useCORS: true,
-        backgroundColor: null,
-        onclone: (clonedDoc) => {
-          const clonedCanvas = clonedDoc.getElementById("proposal-canvas");
-          if (clonedCanvas) {
-            clonedCanvas.style.transform = "none";
-            clonedCanvas.style.transition = "none";
-          }
-        },
-      });
-      const dataUrl = canvas.toDataURL("image/png");
-      const a = document.createElement("a");
-      a.href = dataUrl;
-      a.download = `story-${draft.destination ?? "viagem"}.png`;
-      a.click();
-      toast.success("Story exportado!");
+      const targetId = document.getElementById("story-canvas") ? "story-canvas" : "story-preview-canvas";
+      await exportElementAsImage(targetId, `story-${draft.destination ?? "viagem"}.png`);
+      toast.success("Story exportado com sucesso!");
     } catch (e) {
-      toast.error("Erro ao gerar Story");
+      toast.error(e instanceof Error ? e.message : "Erro ao gerar Story");
     } finally {
       setExporting(false);
     }
@@ -979,7 +911,7 @@ export function VoucherStudio({
           <Button
             type="button"
             onClick={() => setSidebarOpen(true)}
-            className="xl:hidden flex h-8 items-center gap-2 rounded-full border border-border px-3 text-xs font-semibold hover:bg-surface-alt transition-colors"
+            className="xl:hidden flex h-11 min-h-11 items-center gap-2 rounded-full border border-border px-3 text-xs font-semibold hover:bg-surface-alt transition-colors"
           >
             <SlidersHorizontal className="h-3.5 w-3.5" />
             <span>Campos</span>
@@ -1010,7 +942,7 @@ export function VoucherStudio({
           </div>
 
           {/* Upload PDF */}
-          <label className="flex h-8 cursor-pointer items-center gap-2 rounded-full border border-dashed border-brand/50 bg-brand/5 px-3 text-xs font-bold text-brand hover:bg-brand/10 transition-colors">
+          <label className="flex h-11 min-h-11 cursor-pointer items-center gap-2 rounded-full border border-dashed border-brand/50 bg-brand/5 px-3 text-xs font-bold text-brand hover:bg-brand/10 transition-colors">
             <Upload className="h-3.5 w-3.5" />
             OCR IA
             <Input
@@ -1027,7 +959,7 @@ export function VoucherStudio({
               type="button"
               onClick={exportA4Pdf}
               disabled={exporting}
-              className="flex h-8 items-center gap-2 rounded-full border border-border px-3 text-xs font-medium hover:bg-surface-alt transition-colors disabled:opacity-60"
+              className="flex h-11 min-h-11 items-center gap-2 rounded-full border border-border px-3 text-xs font-medium hover:bg-surface-alt transition-colors disabled:opacity-60"
             >
               <Download className="h-3.5 w-3.5" />
               {exporting ? "Exportando…" : "PDF A4"}
@@ -1037,7 +969,7 @@ export function VoucherStudio({
             <Button
               type="button"
               onClick={() => setStorySheetOpen(true)}
-              className="flex h-8 items-center gap-2 rounded-full border border-border px-3 text-xs font-medium hover:bg-surface-alt transition-colors"
+              className="flex h-11 min-h-11 items-center gap-2 rounded-full border border-border px-3 text-xs font-medium hover:bg-surface-alt transition-colors"
             >
               <Instagram className="h-3.5 w-3.5" />
               Story
@@ -1048,7 +980,7 @@ export function VoucherStudio({
             type="button"
             onClick={onSave}
             disabled={saving}
-            className="flex h-8 items-center gap-2 rounded-full bg-primary px-3 text-xs font-semibold text-primary-foreground disabled:opacity-60 whitespace-nowrap"
+            className="flex h-11 min-h-11 items-center gap-2 rounded-full bg-primary px-3 text-xs font-semibold text-primary-foreground disabled:opacity-60 whitespace-nowrap"
           >
             <Save className="h-3.5 w-3.5" />
             {saving ? "Salvando…" : isEdit ? "Salvar" : "Criar Voucher"}
@@ -1066,10 +998,10 @@ export function VoucherStudio({
         {/* Right: Canvas preview / WhatsApp Chat */}
         <div className="flex-1 min-w-0 overflow-auto bg-surface-alt/30 flex items-start justify-center py-8">
           {mode === "whatsapp" ? (
-            <div className="w-full max-w-sm bg-[#efeae2] rounded-card border border-border/80 overflow-hidden flex flex-col h-[36rem] font-sans">
+            <div className="w-full max-w-sm bg-muted/50 rounded-card border border-border/80 overflow-hidden flex flex-col h-144 font-sans">
               {/* WhatsApp Header */}
-              <div className="bg-[#00a884] text-white px-4 py-3 flex items-center gap-3 shrink-0">
-                <div className="w-9 h-9 rounded-full glass-dark overflow-hidden flex items-center justify-center shrink-0">
+              <div className="bg-emerald-700 text-neutral-100 px-4 py-3 flex items-center gap-3 shrink-0">
+                <div className="w-9 h-11 min-h-11 rounded-full glass-dark overflow-hidden flex items-center justify-center shrink-0">
                   {agency.logo_url ? (
                     <img src={agency.logo_url} alt="Logo" className="w-full h-full object-cover" />
                   ) : (
@@ -1078,26 +1010,26 @@ export function VoucherStudio({
                 </div>
                 <div>
                   <div className="font-bold text-xs">{agency.name}</div>
-                  <div className="text-[9px] text-white/80">Online</div>
+                  <div className="text-xs text-neutral-200">Online</div>
                 </div>
               </div>
 
               {/* Chat area */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png')] bg-repeat">
-                <div className="max-w-[85%] bg-[#d9fdd3] text-[#111b21] rounded-lg p-3 ds-meta self-end ml-auto whitespace-pre-wrap font-mono relative leading-normal border border-border/20">
+              <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-muted/30">
+                <div className="w-11/12 bg-emerald-500/15 text-foreground rounded-lg p-3 ds-meta self-end ml-auto whitespace-pre-wrap font-mono relative leading-normal border border-emerald-500/30">
                   {generateWhatsAppText()}
                 </div>
               </div>
 
               {/* Actions footer */}
-              <div className="bg-[#f0f2f5] p-3 border-t border-border/80 flex gap-2 justify-end shrink-0">
+              <div className="bg-card p-3 border-t border-border/80 flex gap-2 justify-end shrink-0">
                 <Button
                   type="button"
                   onClick={() => {
                     navigator.clipboard.writeText(generateWhatsAppText());
                     toast.success("Mensagem copiada!");
                   }}
-                  className="h-8 rounded-full bg-white border border-border px-3 text-xs font-semibold hover:bg-slate-50 flex items-center gap-2 transition-colors"
+                  className="h-11 min-h-11 rounded-full bg-surface border border-border px-3 text-xs font-semibold hover:bg-surface-alt flex items-center gap-2 transition-colors"
                 >
                   Copiar Mensagem
                 </Button>
@@ -1107,7 +1039,7 @@ export function VoucherStudio({
                     const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(generateWhatsAppText())}`;
                     window.open(url, "_blank");
                   }}
-                  className="h-8 rounded-full bg-[#25d366] text-white px-4 text-xs font-semibold hover:bg-[#20ba5a] flex items-center gap-2 transition-colors"
+                  className="h-11 min-h-11 rounded-full bg-emerald-600 text-neutral-100 px-4 text-xs font-semibold hover:bg-emerald-700 flex items-center gap-2 transition-colors"
                 >
                   Enviar
                 </Button>
@@ -1151,8 +1083,7 @@ export function VoucherStudio({
             {/* Story preview inside sheet */}
             <div
               id="story-canvas"
-              className="relative overflow-hidden shrink-0"
-              style={{ width: "320px", height: "569px" }}
+              className="relative overflow-hidden shrink-0 w-80 aspect-9/16"
             >
               <TemplateVoucherStory
                 voucher={voucherForTemplate}
@@ -1164,7 +1095,7 @@ export function VoucherStudio({
               <Button
                 type="button"
                 onClick={() => setStorySheetOpen(false)}
-                className="flex-1 h-9 rounded-full border border-border text-xs font-medium hover:bg-surface-alt transition-colors"
+                className="flex-1 h-11 min-h-11 rounded-full border border-border text-xs font-medium hover:bg-surface-alt transition-colors"
               >
                 Fechar
               </Button>
@@ -1172,7 +1103,7 @@ export function VoucherStudio({
                 type="button"
                 onClick={exportStoryPng}
                 disabled={exporting}
-                className="flex-1 h-9 rounded-full bg-primary text-primary-foreground text-xs font-semibold disabled:opacity-60 flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
+                className="flex-1 h-11 min-h-11 rounded-full bg-primary text-primary-foreground text-xs font-semibold disabled:opacity-60 flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
               >
                 <Download className="h-3.5 w-3.5" />
                 {exporting ? "Gerando…" : "Baixar 9:16 PNG"}

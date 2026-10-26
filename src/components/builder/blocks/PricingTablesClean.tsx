@@ -33,7 +33,7 @@ export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ id, data
       className={`w-full bg-background border-b border-border/40 ${sectionStyle.className} ${className}`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Cabeçalho */}
         <div className="max-w-2xl mx-auto text-center mb-12">
           <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground mb-4 [text-wrap:balance]">
@@ -51,7 +51,7 @@ export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ id, data
               type="button"
               aria-pressed={!isAnnual}
               onClick={() => setIsAnnual(false)}
-              className={`px-4 py-2 rounded-full transition-all ${
+              className={`min-h-11 px-4 py-2 rounded-full transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                 !isAnnual ? "bg-background text-foreground font-medium" : "text-muted-foreground"
               }`}
             >
@@ -61,7 +61,7 @@ export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ id, data
               type="button"
               aria-pressed={isAnnual}
               onClick={() => setIsAnnual(true)}
-              className={`px-4 py-2 rounded-full transition-all flex items-center gap-2 ${
+              className={`min-h-11 px-4 py-2 rounded-full transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 flex items-center gap-2 ${
                 isAnnual ? "bg-background text-foreground font-medium" : "text-muted-foreground"
               }`}
             >
@@ -81,7 +81,7 @@ export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ id, data
             return (
               <div
                 key={tier.id}
-                className={`relative rounded-lg p-8 sm:p-10 flex flex-col justify-between transition-all ${
+                className={`relative rounded-lg p-8 sm:p-10 flex flex-col justify-between transition-colors motion-reduce:transition-none ${
                   tier.isPopular
                     ? "bg-foreground text-background ring-1 ring-foreground"
                     : "bg-card text-foreground border border-border/80 hover:border-border"

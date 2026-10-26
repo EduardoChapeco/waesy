@@ -2,7 +2,7 @@
  * ============================================================================
  * Canonical Persistent Theme System (Waesy Platform)
  * ============================================================================
- * 
+ *
  * Arquitetura de Tema Reativa e Persistente:
  * 1. Singleton External Store com useSyncExternalStore: Zero descompasso de estado entre componentes e rotas.
  * 2. Sincronização Cross-Tab via storage event.
@@ -51,7 +51,9 @@ function getStoredTheme(): ThemeMode {
  if (stored === "light" || stored === "dark" || stored === "system") {
  return stored;
  }
- } catch {}
+ } catch (e) {
+    console.warn("[theme] Falha ao ler tema do localStorage:", e);
+  }
  return "system";
 }
 

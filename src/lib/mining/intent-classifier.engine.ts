@@ -35,16 +35,36 @@ export interface ClassificationResult {
 // ── 1. PALAVRAS-CHAVE E SELETORES POR TIPO DE ENTIDADE ────────────────────────
 
 const PATH_RULES: Array<{ type: MinedEntityType; pattern: RegExp; weight: number }> = [
-  // Vagas / Empregos
-  { type: "job", pattern: /(vaga|vagas|trabalhe-conosco|carreiras|oportunidade|oportunidades|emprego|empregos|recrutamento|jobs|career)/i, weight: 0.85 },
-  // Eventos / Festas / Shows
-  { type: "event", pattern: /(evento|eventos|show|shows|festival|congresso|seminario|simposio|festa|agenda-cultural|ingressos|sympla|blueticket)/i, weight: 0.85 },
-  // Produtos / Varejo / E-commerce
-  { type: "product", pattern: /(produto|produtos|item|itens|catalogo|comprar|loja-online|carrinho|checkout|preco|departamento|mercadoria)/i, weight: 0.8 },
-  // Empresas / Negócios Locais
-  { type: "business", pattern: /(empresa|empresas|loja|lojas|quem-somos|sobre-nos|institucional|contato|onde-estamos|fornecedores|guia-comercial)/i, weight: 0.85 },
-  // Notícias / Editorial
-  { type: "news", pattern: /(noticia|noticias|artigo|artigos|post|posts|materia|materias|blog|jornal|editorial|coluna|plantao|fato)/i, weight: 0.8 },
+  // 1. Notícias e Editoriais (Prioridade máxima de rota para evitar que matérias sobre festas/shows virem eventos)
+  {
+    type: "news",
+    pattern: /(?:\/|^)(?:noticias?|materias?|artigos?|reportagens?|posts?|blogs?|jornal|editorial|coluna|plantao|fato|seguranca|policia|politica|economia|cidades?|geral)\b|\.ghtml$/i,
+    weight: 0.95,
+  },
+  // 2. Vagas / Empregos
+  {
+    type: "job",
+    pattern: /(?:\/|^)(?:vagas?|trabalhe-conosco|carreiras?|oportunidades?|empregos?|recrutamento|jobs?|careers?)\b/i,
+    weight: 0.9,
+  },
+  // 3. Eventos / Festas / Ingressos (Apenas rotas e diretórios canônicos de eventos ou ticketeiras)
+  {
+    type: "event",
+    pattern: /(?:\/|^)(?:eventos?|agenda|agenda-cultural|ingressos?|bilheteria|shows?)\/(?![\w-]*\b(?:noticia|materia|policia|seguranca)\b)|(?:sympla|blueticket|eventbrite|ticket360|ingressonacional)\.com/i,
+    weight: 0.9,
+  },
+  // 4. Produtos / Varejo / E-commerce
+  {
+    type: "product",
+    pattern: /(?:\/|^)(?:produtos?|itens?|catalogo|loja-online|carrinho|checkout)\b/i,
+    weight: 0.85,
+  },
+  // 5. Empresas / Negócios Locais
+  {
+    type: "business",
+    pattern: /(?:\/|^)(?:empresas?|lojas?|quem-somos|sobre-nos|institucional|onde-estamos|fornecedores|guia-comercial)\b/i,
+    weight: 0.85,
+  },
 ];
 
 const LEXICAL_DICTIONARIES: Record<MinedEntityType, string[]> = {
@@ -83,34 +103,12 @@ export async function classifyMinedEntity(
 ): Promise<ClassificationResult> {
   const signals: string[] = [];
 
-  // CAMADA 1: Análise Semântica de URL e Path
-  try {
-    const parsed = new URL(url.startsWith("http") ? url : `https://${url}`);
-    const pathname = parsed.pathname.toLowerCase();
-
-    for (const rule of PATH_RULES) {
-      if (rule.pattern.test(pathname)) {
-        signals.push(`URL path matched: ${rule.pattern.source}`);
-        if (rule.weight >= 0.8) {
-          return {
-            entityType: rule.type,
-            confidence: rule.weight,
-            signals,
-            method: "url_path",
-          };
-        }
-      }
-    }
-  } catch {
-    // Ignora erro de parsing de URL
-  }
-
-  // CAMADA 2: Metadados Estruturados Schema.org & OpenGraph
+  // CAMADA 1: Metadados Estruturados Schema.org & OpenGraph (Máxima Prioridade Determinística)
   if (context.jsonLd) {
     const rawType = String(context.jsonLd["@type"] || "").toLowerCase();
     if (rawType.includes("newsarticle") || rawType.includes("article") || rawType.includes("blogposting")) {
       signals.push(`Schema.org @type: ${rawType}`);
-      return { entityType: "news", confidence: 0.95, signals, method: "schema_microdata" };
+      return { entityType: "news", confidence: 0.98, signals, method: "schema_microdata" };
     }
     if (rawType.includes("jobposting")) {
       signals.push(`Schema.org @type: ${rawType}`);
@@ -134,12 +132,34 @@ export async function classifyMinedEntity(
     const ogType = context.openGraph.type.toLowerCase();
     if (ogType.includes("article")) {
       signals.push(`OpenGraph type: ${ogType}`);
-      return { entityType: "news", confidence: 0.85, signals, method: "schema_microdata" };
+      return { entityType: "news", confidence: 0.92, signals, method: "schema_microdata" };
     }
     if (ogType.includes("product")) {
       signals.push(`OpenGraph type: ${ogType}`);
       return { entityType: "product", confidence: 0.85, signals, method: "schema_microdata" };
     }
+  }
+
+  // CAMADA 2: Análise Semântica de URL e Path
+  try {
+    const parsed = new URL(url.startsWith("http") ? url : `https://${url}`);
+    const pathname = parsed.pathname.toLowerCase();
+
+    for (const rule of PATH_RULES) {
+      if (rule.pattern.test(pathname)) {
+        signals.push(`URL path matched: ${rule.pattern.source}`);
+        if (rule.weight >= 0.8) {
+          return {
+            entityType: rule.type,
+            confidence: rule.weight,
+            signals,
+            method: "url_path",
+          };
+        }
+      }
+    }
+  } catch {
+    // Ignora erro de parsing de URL
   }
 
   // CAMADA 3: Vetores Léxicos em Português

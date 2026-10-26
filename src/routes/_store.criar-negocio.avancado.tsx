@@ -343,7 +343,7 @@ function CriarNegocioPage() {
  variant="ghost"
  size="sm"
  onClick={() => setStep((prev) => Math.max(1, prev - 1) as OnboardingStep)}
- className="h-8 rounded-lg px-3 text-xs font-bold text-muted-foreground hover:text-foreground gap-2"
+ className="h-11 min-h-11 rounded-lg px-3 text-xs font-bold text-muted-foreground hover:text-foreground gap-2"
  >
  <ArrowLeft className="size-3.5" />
  <span>Voltar</span>
@@ -356,7 +356,7 @@ function CriarNegocioPage() {
  <span className="text-xs font-bold text-foreground truncate max-w-52 sm:max-w-none">
  {name || selectedSegment.title}
  </span>
- <Badge variant="outline" className="text-[10px] hidden sm:inline-flex bg-muted/30">
+ <Badge variant="outline" className="text-3xs hidden sm:inline-flex bg-muted/30">
  {selectedSegment.badge}
  </Badge>
  </div>
@@ -366,14 +366,14 @@ function CriarNegocioPage() {
  variant="outline"
  size="sm"
  onClick={() => setStep(1)}
- className="h-8 rounded-lg text-[11px] font-medium text-muted-foreground hover:text-foreground ml-auto sm:ml-0"
+ className="h-11 min-h-11 rounded-lg text-2xs font-medium text-muted-foreground hover:text-foreground ml-auto sm:ml-0"
  >
  Trocar Segmento
  </Button>
  </div>
 
  {/* Stepper Horizontal */}
- <div className="overflow-x-auto no-scrollbar pt-1">
+ <div className="overflow-x-auto no-scrollbar scroll-area-carousel pt-1">
  <div className="flex sm:grid sm:grid-cols-6 gap-2 min-w-max sm:min-w-0">
  {stepsList.map((s) => {
  const isActive = step === s.number;
@@ -389,7 +389,7 @@ function CriarNegocioPage() {
  }
  }}
  className={cn(
- "flex items-center gap-2 p-2 rounded-lg text-left transition-all",
+ "flex items-center gap-2 p-2 min-h-11 rounded-lg text-left transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
  isActive && "bg-primary text-primary-foreground font-bold shadow-xs",
  isPassed && "bg-muted/40 text-foreground hover:bg-muted/60 cursor-pointer",
  !isActive && !isPassed && "text-muted-foreground/60 opacity-60 cursor-default"
@@ -398,7 +398,7 @@ function CriarNegocioPage() {
  <div
  className={cn(
  "size-6 rounded-lg flex items-center justify-center text-xs font-bold shrink-0",
- isActive && "bg-white/20 text-white",
+ isActive && "bg-background/20 text-primary-foreground",
  isPassed && "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
  !isActive && !isPassed && "bg-muted/50 text-muted-foreground"
  )}
@@ -433,14 +433,14 @@ function CriarNegocioPage() {
 
  {/* Filtros e Busca */}
  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-card p-3 rounded-lg border border-border/70">
- <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full sm:w-auto pb-1 sm:pb-0">
+ <div className="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-area-carousel w-full sm:w-auto pb-1 sm:pb-0">
  {BUSINESS_CATEGORIES.map((cat) => (
  <button
  key={cat.id}
  type="button"
  onClick={() => setActiveCategoryFilter(cat.id)}
  className={cn(
- "px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all",
+ "px-3 py-2 min-h-11 rounded-lg text-xs font-medium whitespace-nowrap transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
  activeCategoryFilter === cat.id
  ? "bg-foreground text-background font-bold"
  : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/70"
@@ -473,7 +473,7 @@ function CriarNegocioPage() {
  key={segment.id}
  onClick={() => handleSelectNicheAndProceed(segment.id)}
  className={cn(
- "group relative h-64 rounded-lg overflow-hidden cursor-pointer transition-all duration-200 border flex flex-col justify-between p-5 select-none active:scale-[0.98]",
+ "group relative h-64 rounded-lg overflow-hidden cursor-pointer transition-colors motion-reduce:transition-none duration-200 border flex flex-col justify-between p-5 select-none active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
  isSelected
  ? "border-primary ring-2 ring-primary shadow-xs"
  : "border-border/60 hover:border-foreground/30 hover:shadow-xs"
@@ -482,24 +482,24 @@ function CriarNegocioPage() {
  <img
  src={segment.coverImage}
  alt={segment.title}
- className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-105"
+ className="absolute inset-0 size-full object-cover transition-transform motion-reduce:transition-none duration-300 group-hover:scale-105"
  />
- <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/30" />
+ <div className="absolute inset-0 bg-foreground/60" />
 
  <div className="relative z-10 flex items-start justify-between gap-2">
- <div className="size-9 rounded-lg flex items-center justify-center backdrop-blur-md bg-black/40 border border-white/15 text-white">
+ <div className="size-9 rounded-lg flex items-center justify-center backdrop-blur-md bg-foreground/40 border border-white/15 text-background">
  <IconComp className="size-4" />
  </div>
- <Badge className="bg-white/15 backdrop-blur-md text-white border-white/20 text-[10px] font-semibold px-2 py-1">
+ <Badge className="bg-background/15 backdrop-blur-md text-background border-white/20 text-3xs font-semibold px-2 py-1">
  {segment.badge}
  </Badge>
  </div>
 
- <div className="relative z-10 space-y-1 text-white">
+ <div className="relative z-10 space-y-1 text-background">
  <h3 className="font-bold text-sm tracking-tight leading-snug">
  {segment.title}
  </h3>
- <p className="text-[11px] text-white/80 line-clamp-2 leading-relaxed">
+ <p className="text-2xs text-background/80 line-clamp-2 leading-relaxed">
  {segment.shortDesc}
  </p>
  </div>
@@ -685,7 +685,7 @@ function CriarNegocioPage() {
  />
  <div className="space-y-1 text-left">
  <p className="text-xs font-bold text-foreground">Ícone / Avatar Quadrado (1:1)</p>
- <p className="text-[11px] text-muted-foreground leading-relaxed">
+ <p className="text-2xs text-muted-foreground leading-relaxed">
  Recomendado: 512x512px. Exibido na busca, no topo do cardápio e nos comprovantes de pedido.
  </p>
  </div>
@@ -718,7 +718,7 @@ function CriarNegocioPage() {
  {/* Banner de Logística — EXCLUSIVO para negócios de Delivery/Varejo */}
  {isDeliverySegment && (
  <div className="relative rounded-lg overflow-hidden border border-border/80 bg-card shadow-xs">
- <div className="relative h-44 sm:h-52 w-full overflow-hidden bg-gradient-to-br from-zinc-900 via-zinc-800 to-black">
+ <div className="relative h-44 sm:h-52 w-full overflow-hidden bg-foreground">
  {logisticsInfo?.image_desktop_url && (
  <img
  src={logisticsInfo.image_desktop_url}
@@ -726,18 +726,18 @@ function CriarNegocioPage() {
  className="size-full object-cover"
  />
  )}
- <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+ <div className="absolute inset-0 bg-foreground/60" />
 
- <div className="absolute inset-x-0 bottom-0 p-5 text-white space-y-2">
+ <div className="absolute inset-x-0 bottom-0 p-5 text-background space-y-2">
  <div className="flex items-center gap-2">
- <Badge className="bg-emerald-500 text-white text-[10px] font-extrabold px-3 py-1 border-none">
+ <Badge className="bg-emerald-500 text-background text-3xs font-extrabold px-3 py-1 border-none">
  Zero Taxa de Intermediação
  </Badge>
  </div>
- <h2 className="text-base sm:text-xl font-black tracking-tight text-white">
+ <h2 className="text-base sm:text-xl font-black tracking-tight text-background">
  {logisticsInfo?.title || "Logística"}
  </h2>
- <p className="text-xs text-white/90 line-clamp-2 leading-relaxed">
+ <p className="text-xs text-background/90 line-clamp-2 leading-relaxed">
  {logisticsInfo?.subtitle ||
  "Conecte-se aos entregadores autônomos da sua cidade com 1 clique sem taxas abusivas."}
  </p>
@@ -769,7 +769,7 @@ function CriarNegocioPage() {
  <Truck className="size-4 text-primary" />
  <span>Delivery e MotoLink</span>
  </p>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Entregas no endereço do cliente via motoboys ou frota própria.
  </p>
  </div>
@@ -782,7 +782,7 @@ function CriarNegocioPage() {
  <Store className="size-4 text-primary" />
  <span>Retirada no Balcão</span>
  </p>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Permita que clientes retirem pessoalmente na sua loja.
  </p>
  </div>
@@ -797,7 +797,7 @@ function CriarNegocioPage() {
  <Building2 className="size-4 text-primary" />
  <span>Atendimento Presencial no Escritório / Sede</span>
  </p>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Receba clientes e viajantes pessoalmente no seu endereço físico.
  </p>
  </div>
@@ -810,7 +810,7 @@ function CriarNegocioPage() {
  <Phone className="size-4 text-primary" />
  <span>Atendimento Online / WhatsApp / Remoto</span>
  </p>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Cotações, reservas e suporte digital direto via canais virtuais.
  </p>
  </div>
@@ -874,7 +874,7 @@ function CriarNegocioPage() {
  <div className="space-y-1 pb-2 border-b border-border/60">
  <div className="flex items-center justify-between">
  <h2 className="text-lg font-bold text-foreground">Documentos e Regularização</h2>
- <Badge variant="outline" className="text-[10px]">Opcional</Badge>
+ <Badge variant="outline" className="text-3xs">Opcional</Badge>
  </div>
  <p className="text-xs text-muted-foreground">
  Anexe cartão CNPJ, alvarás ou documentos de sócios. Você também pode anexar depois nas configurações.
@@ -887,7 +887,7 @@ function CriarNegocioPage() {
  <p className="text-xs font-bold text-foreground">
  Anexar Cartão CNPJ, Alvará ou Contrato Social
  </p>
- <p className="text-[11px] text-muted-foreground mt-1">
+ <p className="text-2xs text-muted-foreground mt-1">
  Formatos aceitos: PDF, PNG ou JPG (até 10MB)
  </p>
  <label className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold cursor-pointer hover:opacity-90 transition-opacity shadow-xs">
@@ -920,7 +920,7 @@ function CriarNegocioPage() {
  variant="ghost"
  size="icon"
  onClick={() => setComplianceDocs((prev) => prev.filter((_, i) => i !== dIdx))}
- className="size-7 text-muted-foreground hover:text-destructive"
+ className="size-11 min-h-11 text-muted-foreground hover:text-destructive"
  >
  <Trash2 className="size-3.5" />
  </Button>
@@ -956,7 +956,7 @@ function CriarNegocioPage() {
  <div className="space-y-1 pb-2 border-b border-border/60">
  <div className="flex items-center justify-between">
  <h2 className="text-lg font-bold text-foreground">Equipe e Permissões</h2>
- <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px] font-bold">
+ <Badge className="bg-primary/10 text-primary border-primary/20 text-3xs font-bold">
  Última Etapa
  </Badge>
  </div>
@@ -973,7 +973,7 @@ function CriarNegocioPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
  <div className="sm:col-span-5 space-y-1">
- <Label className="text-[11px] text-muted-foreground">E-mail *</Label>
+ <Label className="text-2xs text-muted-foreground">E-mail *</Label>
  <Input
  type="email"
  value={newMemberEmail}
@@ -984,7 +984,7 @@ function CriarNegocioPage() {
  </div>
 
  <div className="sm:col-span-4 space-y-1">
- <Label className="text-[11px] text-muted-foreground">Nome</Label>
+ <Label className="text-2xs text-muted-foreground">Nome</Label>
  <Input
  value={newMemberName}
  onChange={(e) => setNewMemberName(e.target.value)}
@@ -994,7 +994,7 @@ function CriarNegocioPage() {
  </div>
 
  <div className="sm:col-span-3 space-y-1">
- <Label className="text-[11px] text-muted-foreground">Cargo</Label>
+ <Label className="text-2xs text-muted-foreground">Cargo</Label>
  <Select
  value={newMemberRole}
  onValueChange={(val: any) => setNewMemberRole(val)}
@@ -1044,19 +1044,19 @@ function CriarNegocioPage() {
  </div>
  <div>
  <p className="font-bold text-foreground">{m.fullName || m.email}</p>
- <p className="text-[11px] text-muted-foreground font-mono">{m.email}</p>
+ <p className="text-2xs text-muted-foreground font-mono">{m.email}</p>
  </div>
  </div>
 
  <div className="flex items-center gap-2">
- <Badge variant="outline" className="text-[10px] font-bold capitalize bg-muted/40">
+ <Badge variant="outline" className="text-3xs font-bold capitalize bg-muted/40">
  {m.role}
  </Badge>
  <Button
  variant="ghost"
  size="icon"
  onClick={() => handleRemoveTeamMember(m.email)}
- className="size-7 text-muted-foreground hover:text-destructive"
+ className="size-11 min-h-11 text-muted-foreground hover:text-destructive"
  >
  <Trash2 className="size-3.5" />
  </Button>
@@ -1069,7 +1069,7 @@ function CriarNegocioPage() {
  <div className="p-6 text-center rounded-lg border border-dashed border-border/70 space-y-1">
  <Users className="size-6 mx-auto text-muted-foreground opacity-40 mb-1" />
  <p className="text-xs font-medium text-foreground">Nenhum membro adicionado ainda</p>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Você pode convidar sócios e colaboradores a qualquer momento pelo Workspace.
  </p>
  </div>
@@ -1116,13 +1116,13 @@ function CriarNegocioPage() {
  <Eye className="size-3.5 text-primary" />
  <span>Prévia da Loja ao Vivo</span>
  </div>
- <Badge variant="outline" className="text-[10px] font-mono bg-background">
+ <Badge variant="outline" className="text-3xs font-mono bg-background">
  Vitrine Waesy
  </Badge>
  </div>
 
  {/* Capa Panorâmica da Loja */}
- <div className="relative aspect-[21/9] sm:aspect-[16/7] w-full bg-muted overflow-hidden">
+ <div className="relative aspect-banner-ifood w-full bg-muted overflow-hidden">
  {bannerUrl ? (
  <img src={bannerUrl} alt="Capa da Loja" className="size-full object-cover" />
  ) : (
@@ -1132,11 +1132,11 @@ function CriarNegocioPage() {
  className="size-full object-cover opacity-80"
  />
  )}
- <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+ <div className="absolute inset-0 bg-foreground/50" />
 
  {/* Badge de Nicho sobre a Foto */}
  <div className="absolute top-3 left-3">
- <Badge className="bg-black/60 backdrop-blur-md text-white border-white/20 text-[10px] font-bold gap-1">
+ <Badge className="bg-foreground/60 backdrop-blur-md text-background border-white/20 text-3xs font-bold gap-1">
  <selectedSegment.icon className="size-3" />
  <span>{selectedSegment.badge}</span>
  </Badge>
@@ -1147,17 +1147,17 @@ function CriarNegocioPage() {
  <div className="p-5 pt-0 relative space-y-4">
  <div className="flex items-end justify-between -mt-8 mb-2">
  {/* Logotipo Redondo/Squircle */}
- <div className="size-16 sm:size-20 rounded-lg overflow-hidden border-[3px] border-card bg-background flex items-center justify-center shrink-0">
+ <div className="size-16 sm:size-20 rounded-lg overflow-hidden border-2 border-card bg-background flex items-center justify-center shrink-0">
  {logoUrl ? (
  <img src={logoUrl} alt={name || "Logo"} className="size-full object-cover" />
  ) : (
- <div className={cn("size-full flex items-center justify-center font-black text-xl text-white", selectedSegment.gradient)}>
- {name ? name.charAt(0).toUpperCase() : <Store className="size-8 text-white/80" />}
+ <div className={cn("size-full flex items-center justify-center font-black text-xl text-background", selectedSegment.gradient)}>
+ {name ? name.charAt(0).toUpperCase() : <Store className="size-8 text-background/80" />}
  </div>
  )}
  </div>
 
- <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-[10px] font-bold gap-1">
+ <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-3xs font-bold gap-1">
  <ShieldCheck className="size-3" />
  <span>Verificado</span>
  </Badge>
@@ -1180,7 +1180,7 @@ function CriarNegocioPage() {
  </span>
  </p>
  {!locationData.isAddressPublic && (
- <p className="text-[10px] text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1">
+ <p className="text-3xs text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1">
  <Eye className="size-2.5" />
  <span>Endereço protegido (Atendimento remoto/delivery)</span>
  </p>
@@ -1191,7 +1191,7 @@ function CriarNegocioPage() {
  <div className="flex flex-wrap gap-2 pt-1">
  {isDeliverySegment ? (
  <>
- <Badge variant="secondary" className="text-[10px] font-bold gap-1 bg-primary/10 text-primary border-primary/20">
+ <Badge variant="secondary" className="text-3xs font-bold gap-1 bg-primary/10 text-primary border-primary/20">
  {locationData.businessModel === "physical_and_delivery" && "Loja Física"}
  {locationData.businessModel === "delivery_only" && "Apenas Delivery"}
  {locationData.businessModel === "home_office" && "Home Office"}
@@ -1199,13 +1199,13 @@ function CriarNegocioPage() {
  {locationData.businessModel === "digital_only" && "100% Online"}
  </Badge>
  {hasDelivery && (
- <Badge variant="secondary" className="text-[10px] font-semibold gap-1 bg-muted/60">
+ <Badge variant="secondary" className="text-3xs font-semibold gap-1 bg-muted/60">
  <Truck className="size-3 text-primary" />
  <span>Delivery ({locationData.serviceRadiusKm > 0 ? `${locationData.serviceRadiusKm} km` : "Nacional"})</span>
  </Badge>
  )}
  {hasPickup && locationData.businessModel === "physical_and_delivery" && (
- <Badge variant="secondary" className="text-[10px] font-semibold gap-1 bg-muted/60">
+ <Badge variant="secondary" className="text-3xs font-semibold gap-1 bg-muted/60">
  <Store className="size-3 text-primary" />
  <span>Retirada no Balcão</span>
  </Badge>
@@ -1214,18 +1214,18 @@ function CriarNegocioPage() {
  ) : (
  <>
  {hasInPersonService && (
- <Badge variant="secondary" className="text-[10px] font-bold gap-1 bg-primary/10 text-primary border-primary/20">
+ <Badge variant="secondary" className="text-3xs font-bold gap-1 bg-primary/10 text-primary border-primary/20">
  <Building2 className="size-3" />
  <span>Atendimento Presencial</span>
  </Badge>
  )}
  {hasOnlineService && (
- <Badge variant="secondary" className="text-[10px] font-semibold gap-1 bg-muted/60">
+ <Badge variant="secondary" className="text-3xs font-semibold gap-1 bg-muted/60">
  <Phone className="size-3 text-primary" />
  <span>Atendimento Online / WhatsApp</span>
  </Badge>
  )}
- <Badge variant="secondary" className="text-[10px] font-semibold gap-1 bg-muted/60">
+ <Badge variant="secondary" className="text-3xs font-semibold gap-1 bg-muted/60">
  <Sliders className="size-3 text-primary" />
  <span>{selectedSegment.badge}</span>
  </Badge>
@@ -1237,28 +1237,28 @@ function CriarNegocioPage() {
  <div className="pt-3 border-t border-border/50 grid grid-cols-2 gap-2">
  {selectedSegment.id === "tourism" ? (
  <>
- <div className="py-2 px-3 rounded-lg bg-muted/40 text-center text-[11px] font-bold text-foreground border border-border/40 truncate">
+ <div className="py-2 px-3 rounded-lg bg-muted/40 text-center text-2xs font-bold text-foreground border border-border/40 truncate">
  Ver Roteiros e Pacotes
  </div>
- <div className="py-2 px-3 rounded-lg bg-primary text-center text-[11px] font-bold text-primary-foreground shadow-xs truncate">
+ <div className="py-2 px-3 rounded-lg bg-primary text-center text-2xs font-bold text-primary-foreground shadow-xs truncate">
  Solicitar Cotação
  </div>
  </>
  ) : selectedSegment.category === "servicos" ? (
  <>
- <div className="py-2 px-3 rounded-lg bg-muted/40 text-center text-[11px] font-bold text-foreground border border-border/40 truncate">
+ <div className="py-2 px-3 rounded-lg bg-muted/40 text-center text-2xs font-bold text-foreground border border-border/40 truncate">
  Conhecer Serviços
  </div>
- <div className="py-2 px-3 rounded-lg bg-primary text-center text-[11px] font-bold text-primary-foreground shadow-xs truncate">
+ <div className="py-2 px-3 rounded-lg bg-primary text-center text-2xs font-bold text-primary-foreground shadow-xs truncate">
  Agendar Horário
  </div>
  </>
  ) : (
  <>
- <div className="py-2 px-3 rounded-lg bg-muted/40 text-center text-[11px] font-bold text-foreground border border-border/40 truncate">
+ <div className="py-2 px-3 rounded-lg bg-muted/40 text-center text-2xs font-bold text-foreground border border-border/40 truncate">
  Ver Catálogo
  </div>
- <div className="py-2 px-3 rounded-lg bg-primary text-center text-[11px] font-bold text-primary-foreground shadow-xs truncate">
+ <div className="py-2 px-3 rounded-lg bg-primary text-center text-2xs font-bold text-primary-foreground shadow-xs truncate">
  Fazer Pedido
  </div>
  </>
@@ -1273,7 +1273,7 @@ function CriarNegocioPage() {
  <Sliders className="size-3.5 text-primary" />
  <span>Configuração Automática</span>
  </p>
- <p className="text-[11px] leading-relaxed">
+ <p className="text-2xs leading-relaxed">
  Ao concluir o cadastro, o seu PDV, controle de estoque e catálogo já nascem pré-configurados para o segmento de <strong>{selectedSegment.title}</strong>.
  </p>
  </div>

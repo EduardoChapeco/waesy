@@ -12,12 +12,29 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Download, ImagePlus, Star, Palette, Check, Loader2, ArrowLeft, Sliders, Type, ImageIcon, ShieldCheck, Maximize2, RefreshCw, Dices, Play, Sparkles, Film, Video } from "lucide-react";
+import { Download, ImagePlus, Star, Palette, Check, Loader2, ArrowLeft, Sliders, Type, ImageIcon, ShieldCheck, Maximize2, RefreshCw, Dices, Play, Sparkles, Film, Video, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 import { TravelPromoArtboard, type TravelPromoData, type PromoAspectRatio } from "./travel-promo-artboard";
 import { uploadClassifiedMedia } from "@/lib/classifieds/upload-classified-media";
 import { convertToCorsSafeDataUri, preloadImage } from "@/lib/canvas/cors-safe-image";
 import { formatMoney } from "@/lib/money";
 import { getAllSocialTemplates, getDefaultTemplateForNiche, getNextTemplateInNiche, getDynamicCTAsForNiche, getNextCTAOption } from "@/components/social-templates";
+
+/**
+ * Resolve um token CSS (ex.: "--background") para rgba() em runtime.
+ * Canvas 2D e html2canvas nao interpretam var(--token); a conversao via
+ * pixel garante rgb mesmo quando o token e declarado em oklch/hsl.
+ */
+function resolveTokenColor(token: string): string {
+  if (typeof document === "undefined") return "transparent";
+  const probe = document.createElement("span");
+  probe.style.color = `var(${token})`;
+  probe.style.display = "none";
+  document.documentElement.appendChild(probe);
+  const resolved = getComputedStyle(probe).color || "transparent";
+  probe.remove();
+  return resolved;
+}
+
 
 export interface TravelPromoFlyerModalProps {
   open?: boolean;
@@ -229,10 +246,18 @@ export function TravelPromoFlyerModal({
     }
   }, [aspectRatio]);
 
-  // Cálculo matemático da escala responsiva para NUNCA cortar a arte e manter margens limpas
-  const previewScale = useMemo(() => {
+  // Multiplicador de zoom do operador (1.0 = auto-fit proporcional perfeito)
+  const [zoomMultiplier, setZoomMultiplier] = useState<number>(1.0);
+
+  // Auto-reset zoom ao trocar proporção de tela para enquadramento perfeito imediato
+  useEffect(() => {
+    setZoomMultiplier(1.0);
+  }, [aspectRatio]);
+
+  // Cálculo matemático da escala responsiva para NUNCA cortar a arte e manter proporção perfeita
+  const autoFitScale = useMemo(() => {
     const paddingX = 48;
-    const paddingY = 48;
+    const paddingY = 64;
     const maxAvailableW = Math.max(containerSize.width - paddingX, 240);
     const maxAvailableH = Math.max(containerSize.height - paddingY, 240);
 
@@ -240,8 +265,16 @@ export function TravelPromoFlyerModal({
     const scaleH = maxAvailableH / artDimensions.height;
 
     // Escala ideal mantendo a proporção exata sem estouro
-    return Math.min(scaleW, scaleH, 0.48);
+    return Math.min(scaleW, scaleH);
   }, [containerSize, artDimensions]);
+
+  // Escala efetiva aplicando o multiplicador de zoom do usuário
+  const effectiveScale = useMemo(() => {
+    return Math.max(0.1, Math.min(3.0, +(autoFitScale * zoomMultiplier).toFixed(4)));
+  }, [autoFitScale, zoomMultiplier]);
+
+  // Percentual visual de zoom para exibição na UI
+  const displayedZoomPercent = Math.round((effectiveScale / autoFitScale) * 100);
 
   const parsedInclusions = useMemo(() => {
     return inclusionsText
@@ -290,7 +323,7 @@ export function TravelPromoFlyerModal({
       scale: 2, // Ultra HD export (1080x1920 nativo)
       useCORS: true,
       allowTaint: false,
-      backgroundColor: "#0a192f",
+      backgroundColor: resolveTokenColor("--background"),
       logging: false,
       imageTimeout: 15000,
     });
@@ -324,7 +357,7 @@ export function TravelPromoFlyerModal({
         scale: 1.5,
         useCORS: true,
         allowTaint: false,
-        backgroundColor: "#0a192f",
+        backgroundColor: resolveTokenColor("--background"),
         logging: false,
       });
 
@@ -371,7 +404,7 @@ export function TravelPromoFlyerModal({
         const zoom = 1 + progress * 0.05; // 5% de zoom cinematográfico contínuo
         const alpha = Math.min(progress * 4, 1); // Fade in suave no início
 
-        ctx.fillStyle = "#070b12";
+        ctx.fillStyle = resolveTokenColor("--background");
         ctx.fillRect(0, 0, videoWidth, videoHeight);
 
         ctx.save();
@@ -384,8 +417,11 @@ export function TravelPromoFlyerModal({
 
         // Barra sutil de pulso visual inferior
         const pulseAlpha = 0.3 + 0.2 * Math.sin(progress * Math.PI * 4);
-        ctx.fillStyle = `rgba(255, 215, 0, ${pulseAlpha})`;
+        ctx.save();
+        ctx.globalAlpha = pulseAlpha;
+        ctx.fillStyle = resolveTokenColor("--primary");
         ctx.fillRect(0, videoHeight - 8, videoWidth * progress, 8);
+        ctx.restore();
 
         await new Promise((r) => setTimeout(r, 33)); // ~30 FPS
       }
@@ -483,7 +519,7 @@ export function TravelPromoFlyerModal({
               variant="ghost"
               size="icon"
               onClick={() => handleModalClose(false)}
-              className="size-9 rounded-lg hover:bg-muted shrink-0 cursor-pointer"
+              className="size-11 min-h-11 rounded-lg hover:bg-muted shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               title="Fechar Estúdio"
             >
               <ArrowLeft className="size-4.5" />
@@ -493,11 +529,11 @@ export function TravelPromoFlyerModal({
                 <h2 className="text-xs sm:text-sm font-bold text-foreground truncate">
                   Estúdio de Flyers Promocionais
                 </h2>
-                <Badge variant="outline" className="hidden sm:inline-flex text-[10px] font-mono">
+                <Badge variant="outline" className="hidden sm:inline-flex text-xs font-mono">
                   {aspectRatio === "9:16" ? "Story 9:16" : aspectRatio === "4:5" ? "Feed 4:5" : "Quadrado 1:1"}
                 </Badge>
               </div>
-              <p className="text-[10px] text-muted-foreground truncate hidden sm:block">
+              <p className="text-xs text-muted-foreground truncate hidden sm:block">
                 Ultra HD (1080×1920) • Auto-binding do anúncio • Blindagem anti-CORS
               </p>
             </div>
@@ -508,7 +544,7 @@ export function TravelPromoFlyerModal({
             <button
               type="button"
               onClick={() => setAspectRatio("9:16")}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary px-3 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
                 aspectRatio === "9:16" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -517,7 +553,7 @@ export function TravelPromoFlyerModal({
             <button
               type="button"
               onClick={() => setAspectRatio("4:5")}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary px-3 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
                 aspectRatio === "4:5" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -526,7 +562,7 @@ export function TravelPromoFlyerModal({
             <button
               type="button"
               onClick={() => setAspectRatio("1:1")}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary px-3 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
                 aspectRatio === "1:1" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -538,8 +574,8 @@ export function TravelPromoFlyerModal({
           <div className="flex items-center gap-2">
             {/* Status sutil da imagem */}
             {isConvertingImage && (
-              <div className="hidden lg:flex items-center gap-2 text-[11px] text-muted-foreground">
-                <Loader2 className="size-3 animate-spin text-primary" />
+              <div className="hidden lg:flex items-center gap-2 text-xs text-muted-foreground">
+                <Loader2 className="size-3 animate-spin motion-reduce:animate-none text-primary" />
                 <span>Otimizando imagem...</span>
               </div>
             )}
@@ -550,7 +586,7 @@ export function TravelPromoFlyerModal({
               variant="outline"
               size="sm"
               onClick={handleShuffleLayout}
-              className="h-9 px-3 rounded-lg text-xs gap-2 font-semibold cursor-pointer border-border/80 hover:bg-primary/10 hover:text-primary transition-all"
+              className="h-11 min-h-11 px-4 rounded-lg text-xs gap-2 font-semibold cursor-pointer border-border/80 hover:bg-primary/10 hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               title="Alternar entre templates do mesmo nicho"
             >
               <Dices className="size-4 text-amber-500" />
@@ -568,7 +604,7 @@ export function TravelPromoFlyerModal({
                   toast.success("Modo Motion Ativo: Micro-animações de entrada renderizadas!");
                 }
               }}
-              className={`h-9 px-3 rounded-lg text-xs gap-1.5 font-semibold cursor-pointer transition-all ${
+              className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary h-11 min-h-11 px-4 rounded-lg text-xs gap-2 font-semibold cursor-pointer transition-colors ${
                 isAnimatedPreview ? "bg-amber-500 text-slate-950 font-bold" : "border-border/80 text-foreground"
               }`}
               title="Alternar modo de animação dinâmica para pré-visualização"
@@ -583,7 +619,7 @@ export function TravelPromoFlyerModal({
               variant="outline"
               size="sm"
               onClick={() => setIsMobileControlsOpen(!isMobileControlsOpen)}
-              className="lg:hidden h-9 px-3 rounded-lg text-xs gap-2"
+              className="lg:hidden h-11 min-h-11 px-4 rounded-lg text-xs gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <Sliders className="size-3.5" />
               <span>Ajustes</span>
@@ -595,10 +631,10 @@ export function TravelPromoFlyerModal({
               size="sm"
               onClick={handleDownloadVideo}
               disabled={isExportingVideo}
-              className="h-9 px-3 sm:px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer border-amber-500/30 hover:bg-amber-500/10 text-amber-500 hover:text-amber-400"
+              className="h-11 min-h-11 px-4 sm:px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer border-amber-500/30 hover:bg-amber-500/10 text-amber-500 hover:text-amber-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               title="Gerar e baixar vídeo animado de 3s (Stories/Reels)"
             >
-              {isExportingVideo ? <Loader2 className="size-3.5 animate-spin" /> : <Film className="size-3.5" />}
+              {isExportingVideo ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : <Film className="size-3.5" />}
               <span className="hidden sm:inline">Gerar Vídeo Animado</span>
               <span className="sm:hidden">Vídeo</span>
             </Button>
@@ -609,9 +645,9 @@ export function TravelPromoFlyerModal({
               size="sm"
               onClick={handleDownload}
               disabled={isExporting}
-              className="h-9 px-3 sm:px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
+              className="h-11 min-h-11 px-4 sm:px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
-              {isExporting ? <Loader2 className="size-3.5 animate-spin" /> : <Download className="size-3.5" />}
+              {isExporting ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : <Download className="size-3.5" />}
               <span className="hidden sm:inline">Baixar Imagem PNG</span>
               <span className="sm:hidden">Baixar</span>
             </Button>
@@ -622,9 +658,9 @@ export function TravelPromoFlyerModal({
                 size="sm"
                 onClick={handleSaveToClassified}
                 disabled={isSavingToAd}
-                className="h-9 px-3 sm:px-4 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer shadow-xs"
+                className="h-11 min-h-11 px-4 sm:px-4 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
-                {isSavingToAd ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />}
+                {isSavingToAd ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : <Check className="size-3.5" />}
                 <span className="hidden sm:inline">Usar no Anúncio</span>
                 <span className="sm:hidden">Salvar</span>
               </Button>
@@ -634,45 +670,114 @@ export function TravelPromoFlyerModal({
 
         {/* ── 2. Split-Screen Studio Body ── */}
         <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden relative">
-          {/* ── Coluna Esquerda/Central: O Canvas de Arte (Preview Respirável e Responsivo) ── */}
+          {/* ── Coluna Esquerda/Central: O Canvas de Arte (Preview Respirável, Proporcional e com Zoom) ── */}
           <div
             ref={previewWrapperRef}
-            className="flex-1 min-h-0 bg-[#070b12] flex items-center justify-center p-3 sm:p-6 lg:p-8 relative overflow-hidden select-none"
+            className="flex-1 min-h-0 bg-background flex flex-col relative select-none overflow-hidden"
           >
             {/* Padrão de estúdio neutro no fundo */}
-            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
+            <div className="absolute inset-0 opacity-10 bg-muted/20 [background-size:16px_16px] pointer-events-none" />
 
-            {/* Container escalado responsivamente sem cortes */}
+            {/* Barra Flutuante de Zoom e Enquadramento Proporcional */}
+            <div className="absolute top-4 right-4 z-20 flex items-center gap-1 p-1 bg-card/90 backdrop-blur-md rounded-xl border border-border/60 shadow-xs">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setZoomMultiplier((prev) => Math.max(0.3, +(prev - 0.15).toFixed(2)))}
+                disabled={effectiveScale <= 0.2}
+                title="Reduzir zoom (Zoom Out)"
+                className="h-11 min-h-11 w-11 min-w-11 p-0 rounded-lg text-foreground hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+              >
+                <ZoomOut className="size-4" />
+                <span className="sr-only">Reduzir Zoom</span>
+              </Button>
+
+              <span className="px-2 text-xs font-mono font-medium text-foreground select-none min-w-12 text-center">
+                {displayedZoomPercent}%
+              </span>
+
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setZoomMultiplier((prev) => Math.min(3.0, +(prev + 0.15).toFixed(2)))}
+                disabled={effectiveScale >= 2.8}
+                title="Aumentar zoom (Zoom In)"
+                className="h-11 min-h-11 w-11 min-w-11 p-0 rounded-lg text-foreground hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+              >
+                <ZoomIn className="size-4" />
+                <span className="sr-only">Aumentar Zoom</span>
+              </Button>
+
+              <div className="h-4 w-px bg-border/60 mx-1" />
+
+              <Button
+                type="button"
+                variant={zoomMultiplier === 1.0 ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setZoomMultiplier(1.0)}
+                title="Ajustar à tela (Auto-Fit Proporcional)"
+                className="h-11 min-h-11 px-3 rounded-lg text-xs font-medium gap-1 text-foreground hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+              >
+                <Maximize2 className="size-3.5" />
+                <span className="hidden sm:inline">Ajustar</span>
+              </Button>
+
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setZoomMultiplier(+(1.0 / autoFitScale).toFixed(2))}
+                title="Visualizar em tamanho real (100% nativo)"
+                className="h-11 min-h-11 px-3 rounded-lg text-xs font-medium text-foreground hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+              >
+                1:1
+              </Button>
+            </div>
+
+            {/* Viewport com Rolagem Suave Centralizada — Previne qualquer travamento visual */}
             <div
-              className="relative shadow-2xl rounded-lg border border-white/10 bg-[#0a192f] transition-all duration-150 overflow-hidden"
-              style={{
-                width: `${artDimensions.width * previewScale}px`,
-                height: `${artDimensions.height * previewScale}px`,
+              className="flex-1 min-h-0 overflow-auto p-4 sm:p-8 flex items-center justify-center relative"
+              onWheel={(e) => {
+                if (e.ctrlKey || e.metaKey) {
+                  e.preventDefault();
+                  const delta = e.deltaY < 0 ? 0.15 : -0.15;
+                  setZoomMultiplier((prev) => Math.max(0.3, Math.min(3.0, +(prev + delta).toFixed(2))));
+                }
               }}
             >
               <div
+                className="relative rounded-lg border border-border/40 bg-background transition-transform duration-150 shrink-0 m-auto overflow-hidden"
                 style={{
-                  transform: `scale(${previewScale})`,
-                  transformOrigin: "top left",
-                  width: `${artDimensions.width}px`,
-                  height: `${artDimensions.height}px`,
+                  width: `${artDimensions.width * effectiveScale}px`,
+                  height: `${artDimensions.height * effectiveScale}px`,
                 }}
               >
-                <TravelPromoArtboard data={promoData} isAnimated={isAnimatedPreview} />
+                <div
+                  style={{
+                    transform: `scale(${effectiveScale})`,
+                    transformOrigin: "top left",
+                    width: `${artDimensions.width}px`,
+                    height: `${artDimensions.height}px`,
+                  }}
+                >
+                  <TravelPromoArtboard data={promoData} isAnimated={isAnimatedPreview} />
+                </div>
               </div>
             </div>
 
             {/* Rodapé informativo discreto do Canvas */}
-            <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-[11px] text-white/50 pointer-events-none">
+            <div className="h-9 px-4 border-t border-border/40 flex items-center justify-between text-xs text-foreground/50 shrink-0 bg-card/40 z-10">
               <span>{artDimensions.width} × {artDimensions.height} px • Ultra HD</span>
-              <span className="hidden sm:inline">Preview renderizado com fidelidade 100% à exportação</span>
+              <span className="hidden sm:inline">Preview proporcional renderizado com fidelidade 100% à exportação</span>
             </div>
           </div>
 
           {/* ── Coluna Direita: Painel de Controlo Silencioso (Desktop Sidebar / Mobile Drawer) ── */}
           <aside
-            className={`w-full lg:w-[380px] xl:w-[420px] shrink-0 border-t lg:border-t-0 lg:border-l border-border/80 bg-card flex flex-col z-10 transition-all duration-200 ${
-              isMobileControlsOpen ? "h-[65dvh] max-sm:fixed max-sm:bottom-0 max-sm:left-0 max-sm:right-0 max-sm:pb-safe shadow-2xl" : "max-lg:hidden h-full"
+            className={`w-full lg:w-96 xl:w-112 shrink-0 border-t lg:border-t-0 lg:border-l border-border/80 bg-card flex flex-col z-10 transition-colors duration-200 ${
+              isMobileControlsOpen ? "h-128 max-sm:fixed max-sm:bottom-0 max-sm:left-0 max-sm:right-0 max-sm:pb-safe " : "max-lg:hidden h-full"
             }`}
           >
             <div className="p-4 border-b border-border/60 flex items-center justify-between shrink-0">
@@ -686,7 +791,7 @@ export function TravelPromoFlyerModal({
                   variant="ghost"
                   size="sm"
                   onClick={() => setIsMobileControlsOpen(false)}
-                  className="lg:hidden text-xs h-7 px-2"
+                  className="lg:hidden text-xs h-11 min-h-11 px-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   Fechar Ajustes
                 </Button>
@@ -695,16 +800,16 @@ export function TravelPromoFlyerModal({
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
               <div className="px-3 pt-2 shrink-0">
-                <TabsList className="grid grid-cols-3 h-9 rounded-lg bg-muted/60 p-1">
-                  <TabsTrigger value="template" className="text-[11px] font-semibold gap-1">
+                <TabsList className="grid grid-cols-1 sm:grid-cols-3 h-9 rounded-lg bg-muted/60 p-1">
+                  <TabsTrigger value="template" className="text-xs font-semibold gap-1">
                     <Maximize2 className="size-3" />
                     <span>Template</span>
                   </TabsTrigger>
-                  <TabsTrigger value="textos" className="text-[11px] font-semibold gap-1">
+                  <TabsTrigger value="textos" className="text-xs font-semibold gap-1">
                     <Type className="size-3" />
                     <span>Textos</span>
                   </TabsTrigger>
-                  <TabsTrigger value="imagem" className="text-[11px] font-semibold gap-1">
+                  <TabsTrigger value="imagem" className="text-xs font-semibold gap-1">
                     <ImageIcon className="size-3" />
                     <span>Mídia</span>
                   </TabsTrigger>
@@ -724,7 +829,7 @@ export function TravelPromoFlyerModal({
                       <button
                         type="button"
                         onClick={handleShuffleLayout}
-                        className="text-[11px] text-primary hover:underline font-semibold flex items-center gap-1 cursor-pointer"
+                        className="text-xs text-primary hover:underline font-semibold flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       >
                         <Dices className="size-3 text-amber-500" />
                         <span>Sortear Modelo</span>
@@ -745,7 +850,7 @@ export function TravelPromoFlyerModal({
                           key={t.id}
                           type="button"
                           onClick={() => setTemplateId(t.id)}
-                          className={`p-3 rounded-lg border text-left transition-all cursor-pointer flex items-start gap-3 ${
+                          className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary p-3 rounded-lg border text-left transition-colors cursor-pointer flex items-start gap-3 ${
                             templateId === t.id
                               ? "border-primary bg-primary/10 text-foreground ring-1 ring-primary/40 font-semibold"
                               : "border-border/70 bg-card hover:bg-muted text-muted-foreground"
@@ -755,11 +860,11 @@ export function TravelPromoFlyerModal({
                           <div className="min-w-0 flex-1">
                             <div className="text-xs font-bold text-foreground flex items-center justify-between">
                               <span className="truncate">{t.name}</span>
-                              <span className="text-[10px] font-mono uppercase text-muted-foreground px-2 py-1 rounded bg-muted/60">
+                              <span className="text-xs font-mono uppercase text-muted-foreground px-2 py-1 rounded bg-muted/60">
                                 {t.niche}
                               </span>
                             </div>
-                            <p className="text-[11px] text-muted-foreground mt-1 line-clamp-1 leading-snug">
+                            <p className="text-xs text-muted-foreground mt-1 line-clamp-1 leading-snug">
                               {t.description}
                             </p>
                           </div>
@@ -778,7 +883,7 @@ export function TravelPromoFlyerModal({
                       <button
                         type="button"
                         onClick={handleCycleCTA}
-                        className="text-[10px] text-primary hover:underline cursor-pointer font-medium"
+                        className="text-xs text-primary hover:underline cursor-pointer font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       >
                         Próximo CTA ↻
                       </button>
@@ -789,7 +894,7 @@ export function TravelPromoFlyerModal({
                           key={cta}
                           type="button"
                           onClick={() => setCtaLabel(cta)}
-                          className={`px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                          className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary px-3 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
                             ctaLabel === cta
                               ? "bg-amber-400 text-slate-950 font-black shadow-xs"
                               : "bg-muted/70 text-muted-foreground hover:bg-muted"
@@ -810,7 +915,7 @@ export function TravelPromoFlyerModal({
                   {/* Formato / Aspect Ratio no painel */}
                   <div className="space-y-2 pt-2 border-t border-border/50">
                     <Label className="text-xs font-semibold">Proporção da Arte</Label>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                       {[
                         { id: "9:16", label: "Story (9:16)", desc: "1080×1920" },
                         { id: "4:5", label: "Feed (4:5)", desc: "1080×1350" },
@@ -820,14 +925,14 @@ export function TravelPromoFlyerModal({
                           key={item.id}
                           type="button"
                           onClick={() => setAspectRatio(item.id as PromoAspectRatio)}
-                          className={`p-3 rounded-lg border text-left transition-all cursor-pointer ${
+                          className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary p-3 rounded-lg border text-left transition-colors cursor-pointer ${
                             aspectRatio === item.id
                               ? "border-primary bg-primary/10 text-foreground ring-1 ring-primary/40 font-bold"
                               : "border-border/70 bg-card hover:bg-muted text-muted-foreground"
                           }`}
                         >
                           <div className="text-xs leading-none font-bold">{item.label}</div>
-                          <div className="text-[10px] text-muted-foreground mt-1 font-mono">{item.desc}</div>
+                          <div className="text-xs text-muted-foreground mt-1 font-mono">{item.desc}</div>
                         </button>
                       ))}
                     </div>
@@ -852,7 +957,7 @@ export function TravelPromoFlyerModal({
                           key={t.id}
                           type="button"
                           onClick={() => setThemeGradient(t.id as any)}
-                          className={`flex items-center gap-2 p-2 rounded-lg border text-xs transition-all cursor-pointer ${
+                          className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary flex items-center gap-2 p-2 rounded-lg border text-xs transition-colors cursor-pointer ${
                             themeGradient === t.id
                               ? "border-primary bg-primary/10 text-foreground font-semibold"
                               : "border-border/70 bg-card hover:bg-muted text-muted-foreground"
@@ -876,7 +981,7 @@ export function TravelPromoFlyerModal({
                         <button
                           type="button"
                           onClick={() => setPromoBadge("")}
-                          className="text-[10px] text-muted-foreground hover:text-foreground underline cursor-pointer"
+                          className="text-xs text-muted-foreground hover:text-foreground underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         >
                           Remover
                         </button>
@@ -895,7 +1000,7 @@ export function TravelPromoFlyerModal({
                           key={badge}
                           type="button"
                           onClick={() => setPromoBadge(promoBadge === badge ? "" : badge)}
-                          className={`px-3 py-1 rounded-lg text-[10px] font-bold tracking-wider transition-all cursor-pointer ${
+                          className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary px-3 py-1 rounded-lg text-xs font-bold tracking-wider transition-colors cursor-pointer ${
                             promoBadge === badge
                               ? "bg-amber-400 text-slate-950 font-black shadow-xs"
                               : "bg-muted/70 text-muted-foreground hover:bg-muted"
@@ -956,7 +1061,7 @@ export function TravelPromoFlyerModal({
 
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-1">
-                        <Label className="text-[11px] text-muted-foreground">Valor (em centavos)</Label>
+                        <Label className="text-xs text-muted-foreground">Valor (em centavos)</Label>
                         <Input
                           type="number"
                           value={priceCents ?? ""}
@@ -965,7 +1070,7 @@ export function TravelPromoFlyerModal({
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-[11px] text-muted-foreground">Parcelas ({maxInstallments}x)</Label>
+                        <Label className="text-xs text-muted-foreground">Parcelas ({maxInstallments}x)</Label>
                         <select
                           value={maxInstallments}
                           onChange={(e) => setMaxInstallments(Number(e.target.value))}
@@ -984,7 +1089,7 @@ export function TravelPromoFlyerModal({
                       <button
                         type="button"
                         onClick={() => setPricingMode("per_person")}
-                        className={`flex-1 py-2 rounded-lg border text-xs font-semibold transition-all cursor-pointer ${
+                        className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary flex-1 py-2 rounded-lg border text-xs font-semibold transition-colors cursor-pointer ${
                           pricingMode === "per_person"
                             ? "bg-primary/10 border-primary text-foreground"
                             : "border-border/70 text-muted-foreground hover:bg-muted"
@@ -995,7 +1100,7 @@ export function TravelPromoFlyerModal({
                       <button
                         type="button"
                         onClick={() => setPricingMode("total_package")}
-                        className={`flex-1 py-2 rounded-lg border text-xs font-semibold transition-all cursor-pointer ${
+                        className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary flex-1 py-2 rounded-lg border text-xs font-semibold transition-colors cursor-pointer ${
                           pricingMode === "total_package"
                             ? "bg-primary/10 border-primary text-foreground"
                             : "border-border/70 text-muted-foreground hover:bg-muted"
@@ -1009,7 +1114,7 @@ export function TravelPromoFlyerModal({
                   <div className="pt-2 border-t border-border/50 space-y-2">
                     <div className="flex items-center justify-between">
                       <Label className="text-xs font-semibold">Inclusões (separadas por vírgula)</Label>
-                      <span className="text-[10px] text-muted-foreground font-mono">
+                      <span className="text-xs text-muted-foreground font-mono">
                         {parsedInclusions.length}/4 itens
                       </span>
                     </div>
@@ -1021,7 +1126,7 @@ export function TravelPromoFlyerModal({
                     />
                     <div className="flex flex-wrap gap-1 pt-1">
                       {parsedInclusions.map((item, idx) => (
-                        <Badge key={idx} variant="outline" className="text-[10px] font-normal">
+                        <Badge key={idx} variant="outline" className="text-xs font-normal">
                           {item}
                         </Badge>
                       ))}
@@ -1033,7 +1138,7 @@ export function TravelPromoFlyerModal({
                 <TabsContent value="imagem" className="space-y-4 m-0 focus-visible:outline-none">
                   <div className="space-y-2">
                     <Label className="text-xs font-semibold">Foto de Fundo Realista</Label>
-                    
+
                     {/* Miniatura da Imagem Atual */}
                     <div className="relative w-full h-32 rounded-lg overflow-hidden border border-border/80 bg-muted/40">
                       <img
@@ -1041,28 +1146,28 @@ export function TravelPromoFlyerModal({
                         alt="Preview de Fundo"
                         className="w-full h-full object-cover"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-3">
-                        <span className="text-[10px] text-white/90 font-mono truncate">
+                      <div className="absolute inset-0 bg-background/70 backdrop-blur-xs flex items-end p-3">
+                        <span className="text-xs text-foreground/90 font-mono truncate">
                           {bgImageUrl.startsWith("data:") ? "Imagem local carregada" : bgImageUrl}
                         </span>
                       </div>
                     </div>
 
                     <div className="space-y-2 pt-1">
-                      <Label className="text-[11px] text-muted-foreground">URL da Imagem</Label>
+                      <Label className="text-xs text-muted-foreground">URL da Imagem</Label>
                       <div className="flex items-center gap-2">
                         <Input
                           value={bgImageUrl}
                           onChange={(e) => setBgImageUrl(e.target.value)}
                           placeholder="https://exemplo.com/foto.jpg"
-                          className="h-8 text-xs font-mono flex-1"
+                          className="h-11 min-h-11 text-xs font-mono flex-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         />
                         <Button
                           type="button"
                           variant="outline"
                           size="sm"
                           onClick={() => fileUploadInputRef.current?.click()}
-                          className="h-8 text-xs gap-1 rounded-lg shrink-0 cursor-pointer"
+                          className="h-11 min-h-11 px-4 text-xs gap-1 rounded-lg shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         >
                           <ImagePlus className="size-3.5" />
                           <span>Upload</span>
@@ -1081,8 +1186,8 @@ export function TravelPromoFlyerModal({
                     <div className="p-3 rounded-lg bg-muted/40 border border-border/60 flex items-start gap-2 text-xs">
                       <ShieldCheck className="size-4 text-emerald-500 shrink-0 mt-1" />
                       <div className="space-y-1">
-                        <p className="font-semibold text-foreground text-[11px]">Proteção Anti-CORS Ativa</p>
-                        <p className="text-[10px] text-muted-foreground leading-relaxed">
+                        <p className="font-semibold text-foreground text-xs">Proteção Anti-CORS Ativa</p>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
                           A imagem externa é convertida para Base64 antes da exportação, eliminando bloqueios de rede.
                         </p>
                       </div>

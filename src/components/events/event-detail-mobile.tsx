@@ -164,7 +164,7 @@ export function EventDetailMobile({
         </div>
 
         {/* Título Principal */}
-        <h1 className="text-2xl font-black tracking-tight text-foreground leading-tight">
+        <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground leading-tight break-words text-wrap">
           {event.title}
         </h1>
 
@@ -175,6 +175,68 @@ export function EventDetailMobile({
             <span>Organizado por <strong className="text-foreground font-semibold">{event.organizer_name}</strong></span>
           </div>
         )}
+
+        {/* Ações Rápidas: WhatsApp & SAC */}
+        <div className="flex items-center gap-2 pt-1">
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="flex-1 h-11 min-h-11 text-xs font-bold rounded-lg gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border-border"
+          >
+            <a
+              href={'https://wa.me/?text=' + encodeURIComponent('Confira este evento: ' + event.title + (event.city ? ' em ' + event.city : ''))}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <ArrowSquareOut size={16} weight="bold" className="text-emerald-500" />
+              <span>WhatsApp</span>
+            </a>
+          </Button>
+
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="flex-1 h-11 min-h-11 text-xs font-bold rounded-lg gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border-border"
+          >
+            <Link to="/workspace/atendimento" search={{}} as any>
+              <Users size={16} weight="bold" className="text-primary" />
+              <span>SAC & Suporte</span>
+            </Link>
+          </Button>
+        </div>
+
+        {/* Ações Rápidas: WhatsApp & SAC */}
+        <div className="flex items-center gap-2 pt-1">
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="flex-1 h-11 min-h-11 text-xs font-bold rounded-lg gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border-border"
+          >
+            <a
+              href={'https://wa.me/?text=' + encodeURIComponent('Confira este evento: ' + event.title + (event.city ? ' em ' + event.city : ''))}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <ArrowSquareOut size={16} weight="bold" className="text-emerald-500" />
+              <span>WhatsApp</span>
+            </a>
+          </Button>
+
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="flex-1 h-11 min-h-11 text-xs font-bold rounded-lg gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border-border"
+          >
+            <Link to="/workspace/atendimento" search={{}} as any>
+              <Users size={16} weight="bold" className="text-primary" />
+              <span>SAC & Suporte</span>
+            </Link>
+          </Button>
+        </div>
 
         {/* ── 4. RSVP: Confirmação de Presença ── */}
         <div className="p-4 rounded-lg border border-border/70 bg-card space-y-3">

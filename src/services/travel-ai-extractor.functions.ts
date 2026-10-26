@@ -219,6 +219,32 @@ Retorne ESTRITAMENTE um JSON minificado compatível com este formato:
         if (matchedHotel.regime_options?.length > 0 && !extracted.meal_plan) {
           extracted.meal_plan = matchedHotel.regime_options[0];
         }
+      } else if (identity?.store_id && extracted.hotel_name.trim().length >= 3) {
+        try {
+          const { data: autoCreatedHotel } = await supabase
+            .from("hotels_bank")
+            .insert({
+              store_id: identity.store_id,
+              created_by_profile_id: identity.id || null,
+              destination_id: matchedDestinationId,
+              name: extracted.hotel_name.trim(),
+              city: (extracted.destination_city || data.destinationHint || "Destino").split(",")[0].trim(),
+              state: extracted.destination_state || null,
+              country: extracted.destination_country || "Brasil",
+              stars: 4,
+              regime_options: extracted.meal_plan ? [extracted.meal_plan] : ["Café da Manhã"],
+              description: `Catalogado automaticamente via OCR: ${extracted.title || extracted.hotel_name}`,
+              badges: ["Catalogado via OCR"],
+              is_active: true,
+            })
+            .select("id")
+            .maybeSingle();
+          if (autoCreatedHotel?.id) {
+            matchedHotelId = autoCreatedHotel.id;
+          }
+        } catch (autoHotelErr: any) {
+          console.warn("[parseTravelMediaAI] Notice auto-cataloging hotel:", autoHotelErr?.message);
+        }
       }
     }
 
@@ -270,14 +296,26 @@ Retorne ESTRITAMENTE um JSON minificado compatível com este formato:
             daysToDeparture = Math.ceil((depTime - now) / (1000 * 60 * 60 * 24));
           }
         }
-        await supabase.from("travel_price_history").insert({
-          package_id: data.packageId,
-          store_id: identity.store_id || null,
-          snapshot_date: new Date().toISOString().slice(0, 10),
-          price_cents: finalResult.price_cents,
-          days_to_departure: daysToDeparture,
-          notes: `OCR extraction: ${finalResult.title}`,
-        });
+        const todayIso = new Date().toISOString().slice(0, 10);
+        const { data: existingSnap } = await supabase
+          .from("travel_price_history")
+          .select("id")
+          .eq("package_id", data.packageId)
+          .eq("snapshot_date", todayIso)
+          .eq("price_cents", finalResult.price_cents)
+          .limit(1)
+          .maybeSingle();
+
+        if (!existingSnap) {
+          await supabase.from("travel_price_history").insert({
+            package_id: data.packageId,
+            store_id: identity.store_id || null,
+            snapshot_date: todayIso,
+            price_cents: finalResult.price_cents,
+            days_to_departure: daysToDeparture,
+            notes: `OCR extraction: ${finalResult.title}`,
+          });
+        }
       } catch (err: any) {
         console.warn("[parseTravelMediaAI] Erro ao gravar histórico de preço:", err?.message);
       }

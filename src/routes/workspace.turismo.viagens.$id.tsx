@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { ArrowLeft, Plane, Building2, Users, FileText, Ticket, Calendar, Phone, Mail, Copy, Check, ExternalLink, Plus, Printer, Download, Luggage, Shield, Clock, Car, RefreshCw, FileCheck2, Loader2, Compass, AlertTriangle, CheckCircle2, Trash2, Edit2, CreditCard, Receipt, ShieldAlert, DollarSign, Building, Barcode } from "lucide-react";
+import { ArrowLeft, Plane, Building2, Users, FileText, Ticket, Calendar, Phone, Mail, Copy, Check, ExternalLink, Plus, Printer, Download, Luggage, Shield, Clock, Car, RefreshCw, FileCheck2, Loader2, Compass, AlertTriangle, CheckCircle2, Trash2, Edit2, CreditCard, Receipt, ShieldAlert, DollarSign, Building, Barcode, Globe } from "lucide-react";
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { NativeBackButton } from "@/components/ui/native-back-button";
@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { getTripAggregate, saveConfirmationItem, saveTripPassenger, deleteTripPassenger, saveTripFinancialDetails, type TripAggregateDTO, type TripConfirmationItemDTO, type TripPassengerDTO } from "@/services/travel-lifecycle.functions";
+import { getTripAggregate, saveConfirmationItem, saveTripPassenger, deleteTripPassenger, saveTripFinancialDetails, publishTripToPublicStorefront, type TripAggregateDTO, type TripConfirmationItemDTO, type TripPassengerDTO } from "@/services/travel-lifecycle.functions";
 import { importInfotravelBookingToTrip, syncInfotravelTrip } from "@/services/infotravel";
 import { processBoletoOcr } from "@/services/travel-operator-ocr.functions";
 import { VoucherBoardingCard } from "@/components/tourism/voucher-boarding-card";
@@ -19,6 +19,7 @@ import { OperatorVoucherImportSheet } from "@/components/tourism/vouchers/operat
 import { exportElementAsPdf } from "@/lib/pdf-export";
 import { formatMoney } from "@/lib/money";
 import { FAMOUS_HOTEL_PRESETS } from "@/lib/hotel-presets";
+import { CommercialBudgetPadSheet } from "@/components/documents/CommercialBudgetPadSheet";
 
 export const Route = createFileRoute("/workspace/turismo/viagens/$id")({
   head: ({ loaderData }: any) => ({
@@ -86,6 +87,25 @@ function WorkspaceTripDetailPage() {
   const [isCopied, setIsCopied] = useState(false);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [isImportVoucherOpen, setIsImportVoucherOpen] = useState(false);
+  const [isBudgetPadOpen, setIsBudgetPadOpen] = useState(false);
+  const [isPublishingStorefront, setIsPublishingStorefront] = useState(false);
+
+  const handlePublishStorefront = async () => {
+    setIsPublishingStorefront(true);
+    try {
+      const res = await publishTripToPublicStorefront({ data: { tripId: trip.id } });
+      toast.success("Roteiro publicado na Vitrine Pública com sucesso!", {
+        action: {
+          label: "Ver na Vitrine",
+          onClick: () => window.open(res.publicUrl, "_blank"),
+        },
+      });
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao publicar na vitrine.");
+    } finally {
+      setIsPublishingStorefront(false);
+    }
+  };
   const [isInfotravelBusy, setIsInfotravelBusy] = useState(false);
 
   // ── Estados Financeiros & Boletos 3-em-1 ──
@@ -417,6 +437,16 @@ function WorkspaceTripDetailPage() {
             >
               <RefreshCw className={`size-4 sm:size-3.5 ${isInfotravelBusy ? "animate-spin" : ""}`} />
               <span>Sincronizar GDS</span>
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handlePublishStorefront}
+              disabled={isPublishingStorefront}
+              className="rounded-lg text-xs font-bold gap-2 h-11 px-4 sm:px-3 border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {isPublishingStorefront ? <Loader2 className="size-4 sm:size-3.5 animate-spin" /> : <Globe className="size-4 sm:size-3.5 text-emerald-600 dark:text-emerald-400" />}
+              <span>Publicar na Vitrine</span>
             </Button>
             <Button
               type="button"
@@ -1144,14 +1174,38 @@ function WorkspaceTripDetailPage() {
               </p>
             </div>
 
-            <Button
-              type="button"
-              onClick={() => setIsAddLocatorOpen(true)} /* focus-visible:ring-2 */
-              className="rounded-lg text-xs font-bold gap-2 h-11 px-4 cursor-pointer shadow-xs"
-            >
-              <Plus className="size-4 sm:size-3.5" />
-              <span>Novo Localizador</span>
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                asChild
+                variant="outline"
+                className="rounded-lg text-xs font-bold gap-2 h-11 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Link to="/workspace/turismo/reacomodacao">
+                  <RefreshCw className="size-3.5 text-amber-500" />
+                  <span>Reacomodação ANAC</span>
+                </Link>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setLocatorForm((prev) => ({ ...prev, itemType: "tour" as any }));
+                  setIsAddLocatorOpen(true);
+                }}
+                className="rounded-lg text-xs font-bold gap-2 h-11 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Compass className="size-3.5 text-primary" />
+                <span>+ Passeio / Receptivo</span>
+              </Button>
+              <Button
+                type="button"
+                onClick={() => setIsAddLocatorOpen(true)} /* focus-visible:ring-2 */
+                className="rounded-lg text-xs font-bold gap-2 h-11 px-4 cursor-pointer shadow-xs focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Plus className="size-4 sm:size-3.5" />
+                <span>Novo Localizador</span>
+              </Button>
+            </div>
           </div>
 
           {aggregate.confirmationItems.length === 0 ? (
@@ -1258,19 +1312,39 @@ function WorkspaceTripDetailPage() {
                   {aggregate.contract.package_summary}
                 </p>
                 <div className="pt-2 flex items-center gap-2">
-                  <Button asChild  variant="outline" className="rounded-lg text-xs font-bold h-11 min-h-11 px-3 text-xs">
+                  <Button asChild variant="outline" className="rounded-lg text-xs font-bold h-11 min-h-11 px-3 text-xs focus-visible:ring-2 focus-visible:ring-ring">
                     <Link to="/workspace/turismo/contratos">Abrir Central de Contratos</Link>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setIsBudgetPadOpen(true)}
+                    className="rounded-lg text-xs font-bold h-11 min-h-11 px-3 text-xs gap-2 cursor-pointer text-primary focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <Receipt className="size-3.5" />
+                    <span>Emitir Fatura Comercial Adicional</span>
                   </Button>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="py-8 text-center text-xs text-muted-foreground space-y-2">
+            <div className="py-8 text-center text-xs text-muted-foreground space-y-3">
               <FileCheck2 className="size-8 mx-auto text-muted-foreground/50" />
               <p>Nenhum contrato digital foi gerado automaticamente.</p>
-              <Button asChild  className="rounded-lg text-xs font-bold h-11 min-h-11 px-3 text-xs">
-                <Link to="/workspace/turismo/contratos">Emitir Novo Contrato</Link>
-              </Button>
+              <div className="flex items-center justify-center gap-2 pt-1 flex-wrap">
+                <Button
+                  type="button"
+                  onClick={() => setIsBudgetPadOpen(true)}
+                  variant="outline"
+                  className="rounded-lg text-xs font-bold h-11 min-h-11 px-4 text-xs gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <Receipt className="size-3.5 text-primary" />
+                  <span>Emitir Fatura / Contrato no Bloco</span>
+                </Button>
+                <Button asChild className="rounded-lg text-xs font-bold h-11 min-h-11 px-4 text-xs focus-visible:ring-2 focus-visible:ring-ring">
+                  <Link to="/workspace/turismo/contratos">Central de Contratos</Link>
+                </Button>
+              </div>
             </div>
           )}
         </div>
@@ -2116,6 +2190,28 @@ function WorkspaceTripDetailPage() {
       </Sheet>
 
       {/* ── SHEET DE IMPORTAÇÃO DE VOUCHER DA OPERADORA COM OCR IA ── */}
+      <CommercialBudgetPadSheet
+        open={isBudgetPadOpen}
+        onOpenChange={setIsBudgetPadOpen}
+        initialClientData={{
+          name: trip.client_name || "",
+          phone: trip.client_whatsapp || "",
+          email: trip.client_email || "",
+          cityState: trip.destination_city || "",
+        }}
+        initialItems={[
+          {
+            id: "trip-package",
+            title: `Pacote de Viagem: ${trip.destination_city || trip.title || "Roteiro"} (${trip.trip_number})`,
+            sku: trip.trip_number,
+            unit: "pct",
+            quantity: 1,
+            unitPriceStr: ((trip.total_cents || 0) / 100).toFixed(2),
+            discountStr: "0,00",
+          },
+        ]}
+      />
+
       <OperatorVoucherImportSheet
         open={isImportVoucherOpen}
         onOpenChange={setIsImportVoucherOpen}

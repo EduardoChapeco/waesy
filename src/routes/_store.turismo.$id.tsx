@@ -17,10 +17,12 @@ import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
 import { ProtectedContactButton } from "@/components/common/protected-contact-button";
 import { ProductTelemetry } from "@/components/commerce/product-telemetry";
 import { WeatherWidget } from "@/components/classifieds/weather-widget";
+import { MapLibreCanvas, type MapMarkerItem } from "@/components/mobility/maplibre-canvas";
 import { InstagramTravelView } from "@/components/classifieds/instagram-travel-view";
 import { ActionAuthGuardModal } from "@/components/common/action-auth-guard-modal";
 import { useActionAuthGuard } from "@/hooks/use-action-auth-guard";
 import { TravelItineraryTimeline } from "@/components/commerce/dynamic-sections/travel-itinerary-timeline";
+import { SmartTravelBookingModal } from "@/components/tourism/booking/SmartTravelBookingModal";
 
 export const Route = createFileRoute("/_store/turismo/$id")({
   head: ({
@@ -236,7 +238,29 @@ function TourismDetailPage() {
   };
 
   // ── Booking Dialog compartilhado ──────────────────────────────────
-  const renderBookingDialog = (triggerElement?: React.ReactNode) => (
+  const isGroupExcursion = experience?.category === "group_tour" || experience?.category === "excursion";
+
+  const renderBookingDialog = (triggerElement?: React.ReactNode) => {
+    if (isGroupExcursion) {
+      return (
+        <SmartTravelBookingModal
+          open={isBookingOpen}
+          onOpenChange={setIsBookingOpen}
+          tourId={experience.id}
+          tourTitle={experience.title}
+          destination={experience.destination || experience.location || "Destino"}
+          basePriceCents={unitPriceCents}
+          allowSharedRooms={true}
+          singleSupplementCents={Math.round(unitPriceCents * 0.35)}
+          onSuccess={(_res) => {
+            setIsBookingOpen(false);
+            toast.success("Reserva realizada com sucesso!");
+          }}
+        />
+      );
+    }
+
+    return (
     <Dialog open={isBookingOpen} onOpenChange={setIsBookingOpen}>
       {triggerElement && <DialogTrigger asChild>{triggerElement}</DialogTrigger>}
       <DialogContent className="sm:max-w-lg sm:rounded-lg p-5 sm:p-8 bg-card border-border">
@@ -407,7 +431,8 @@ function TourismDetailPage() {
         )}
       </DialogContent>
     </Dialog>
-  );
+    );
+  };
 
   // ── Rule 23: Modo Proprietário Canônico derivado da sessão segura ────
   const isOwner = Boolean(
@@ -654,6 +679,32 @@ function TourismDetailPage() {
               </div>
             )}
 
+            {/* Mapa de Localização e Destino Oficial */}
+            {(meta.lat && meta.lng) ? (
+              <section className="space-y-3">
+                <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                  <MapPin size={18} weight="bold" className="text-primary" />
+                  <span>Localização e Pontos de Referência</span>
+                </h3>
+                <div className="h-56 sm:h-64 w-full rounded-lg overflow-hidden border border-border/60 shadow-2xs">
+                  <MapLibreCanvas
+                    center={{ lat: Number(meta.lat), lng: Number(meta.lng) }}
+                    zoom={13}
+                    markers={[
+                      {
+                        id: "tour-loc",
+                        lat: Number(meta.lat),
+                        lng: Number(meta.lng),
+                        title: experience.title,
+                        category: "Passeio / Destino",
+                      },
+                    ]}
+                    className="size-full"
+                  />
+                </div>
+              </section>
+            ) : null}
+
             {/* Roteiro Dia a Dia (Regra 19 — só renderiza se cadastrado) */}
             {canonicalItinerary.length > 0 && (
               <TravelItineraryTimeline days={canonicalItinerary} />
@@ -792,7 +843,7 @@ function TourismDetailPage() {
       </div>
 
       {/* ── Sticky Bottom CTA Bar (Mobile Only) — Regra 12: Thumb Zone / 3 Toques ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden pb-[env(safe-area-inset-bottom)] bg-background/95 backdrop-blur-md border-t border-border/60 px-4 py-3">
+      <div className="fixed bottom-0 left-0 right-0 z-30 md:hidden pb-safe bg-background/95 backdrop-blur-md border-t border-border/60 px-4 py-3">
         <div className="flex items-center gap-2">
           <div className="flex-1">
             <span className="text-xs text-muted-foreground font-semibold block leading-none">A partir de</span>

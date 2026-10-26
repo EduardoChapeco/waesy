@@ -100,7 +100,7 @@ export function MobilityTipModal({
             <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
               Escolha o valor da contribuição
             </span>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {PRESET_TIPS.map((tip) => (
                 <button
                   key={tip.cents}

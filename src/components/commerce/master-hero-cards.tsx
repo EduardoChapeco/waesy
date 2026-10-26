@@ -71,19 +71,19 @@ const DEFAULT_HERO_MODULES = [
 
 // ── 2. Supercategorias de Continuação (Chips que NÃO repetem os módulos do topo) ──
 const DEFAULT_CONTINUATION_CHIPS = [
- { slug: "farmacia", to: "/farmacia", label: "Farmácia", emoji: "💊", icon: Heartbeat },
- { slug: "bebidas", to: "/bebidas", label: "Bebidas", emoji: "🍷", icon: Coffee },
- { slug: "acougue", to: "/acougue", label: "Açougue", emoji: "🥩", icon: Flame },
- { slug: "eletronicos", to: "/eletronicos", label: "Eletrônicos", emoji: "📱", icon: Storefront },
- { slug: "moda", to: "/moda", label: "Moda", emoji: "👗", icon: TShirt },
- { slug: "casa", to: "/casa", label: "Casa", emoji: "🛋️", icon: Storefront },
- { slug: "pet", to: "/pet", label: "Pet Shop", emoji: "🐾", icon: Heartbeat },
- { slug: "beleza", to: "/beleza", label: "Beleza", emoji: "✂️", icon: Scissors },
- { slug: "construcao", to: "/construcao", label: "Construção", emoji: "🧱", icon: Storefront },
- { slug: "servicos", to: "/servicos", label: "Serviços", emoji: "🛠️", icon: Briefcase },
- { slug: "imoveis", to: "/imoveis", label: "Imóveis", emoji: "🏡", icon: House },
- { slug: "doacoes", to: "/doacoes", label: "Doações", emoji: "❤️", icon: Heartbeat },
- { slug: "diretorio", to: "/diretorio", label: "Diretório", emoji: "🧭", icon: Compass },
+ { slug: "farmacia", to: "/farmacia", label: "Farmácia", icon: Heartbeat },
+ { slug: "bebidas", to: "/bebidas", label: "Bebidas", icon: Coffee },
+ { slug: "acougue", to: "/acougue", label: "Açougue", icon: Flame },
+ { slug: "eletronicos", to: "/eletronicos", label: "Eletrônicos", icon: Storefront },
+ { slug: "moda", to: "/moda", label: "Moda", icon: TShirt },
+ { slug: "casa", to: "/casa", label: "Casa", icon: Storefront },
+ { slug: "pet", to: "/pet", label: "Pet Shop", icon: Heartbeat },
+ { slug: "beleza", to: "/beleza", label: "Beleza", icon: Scissors },
+ { slug: "construcao", to: "/construcao", label: "Construção", icon: Storefront },
+ { slug: "servicos", to: "/servicos", label: "Serviços", icon: Briefcase },
+ { slug: "imoveis", to: "/imoveis", label: "Imóveis", icon: House },
+ { slug: "doacoes", to: "/doacoes", label: "Doações", icon: Heartbeat },
+ { slug: "diretorio", to: "/diretorio", label: "Diretório", icon: Compass },
 ];
 
 export function MasterHeroCards({
@@ -182,7 +182,7 @@ export function MasterHeroCards({
  to: (hp.target_route && hp.target_route !== "null" && hp.target_route.startsWith("/")) ? hp.target_route : (defaultMatch?.to || `/${cleanSlug}`),
  icon: defaultMatch?.icon || Compass,
  icon_url: hp.custom_icon_url || hp.icon_url || undefined,
- emoji: (hp as any).emoji || defaultMatch?.emoji || undefined,
+ emoji: (hp as any).emoji || (defaultMatch as any)?.emoji || undefined,
  badge: hp.badge_label || undefined,
  bg_media_type: hp.bg_media_type || "none",
  bg_media_url: hp.bg_media_url || undefined,
@@ -205,7 +205,7 @@ export function MasterHeroCards({
  to: item.to,
  icon: item.icon,
  icon_url: customMatch?.icon_url,
- emoji: item.emoji,
+ emoji: (item as any).emoji,
  badge: undefined,
  bg_media_type: "none" as const,
  bg_media_url: undefined,
@@ -224,7 +224,7 @@ export function MasterHeroCards({
       {/* ── 1. Carrossel Horizontal de Cards de Destaque (Apenas se houver capas cadastradas) ── */}
       {hasValidHeroCards && (
         <div
-          className="flex gap-3 sm:gap-4 overflow-x-auto no-scrollbar pb-2 snap-x snap-mandatory focus:outline-none"
+          className="flex gap-3 sm:gap-4 overflow-x-auto no-scrollbar pb-2 snap-x snap-mandatory focus:outline-none scroll-area-carousel"
           tabIndex={0}
           aria-label="Destaques Principais"
         >
@@ -239,7 +239,7 @@ export function MasterHeroCards({
  <Link
  key={card.id || card.slug}
  to={card.to as any}
- className="group relative flex flex-col justify-end overflow-hidden rounded-lg bg-card shrink-0 snap-start w-80 sm:w-[420px] md:w-[500px] lg:w-[540px] h-[190px] sm:h-[240px] md:h-[280px] lg:h-[300px] transition-all duration-300 active:scale-[0.99] select-none block border border-border/60 hover:border-primary/60 shadow-md hover:shadow-xl"
+ className="group relative flex flex-col justify-end overflow-hidden rounded-lg bg-card shrink-0 snap-start w-80 sm:w-96 md:w-128 lg:w-136 h-48 sm:h-60 md:h-72 lg:h-80 transition-transform motion-reduce:transition-none duration-200 active:scale-98 select-none block border border-border/60 hover:border-primary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {card.isVideo && card.videoUrl ? (
  <video
@@ -248,17 +248,17 @@ export function MasterHeroCards({
  loop
  muted
  playsInline
- className="absolute inset-0 size-full object-cover group-hover:scale-103 transition-transform duration-500"
+ className="absolute inset-0 size-full object-cover group-hover:scale-103 transition-transform duration-300 motion-reduce:transition-none"
  />
  ) : card.coverUrl ? (
  <img
  src={card.coverUrl}
  alt={card.title}
- className="absolute inset-0 size-full object-cover group-hover:scale-103 transition-transform duration-500"
+ className="absolute inset-0 size-full object-cover group-hover:scale-103 transition-transform duration-300 motion-reduce:transition-none"
  loading="eager"
  />
  ) : (
- <div className="absolute inset-0 size-full bg-gradient-to-br from-primary/15 via-muted/50 to-muted flex items-center justify-center">
+ <div className="absolute inset-0 size-full bg-muted flex items-center justify-center">
  <Compass size={36} className="text-primary/30" />
  </div>
  )}
@@ -273,7 +273,7 @@ export function MasterHeroCards({
  <div className="absolute top-2 left-2 right-2 flex items-center justify-between z-10">
  <div className="flex items-center gap-1 flex-wrap">
  {card.badgeLabel && (
- <span className="inline-block px-2 py-0.2 rounded-md text-[8px] font-mono font-bold uppercase tracking-wider bg-white/30 backdrop-blur-md text-white border border-white/20 shadow-xs">
+ <span className="inline-block px-2 py-1 rounded-md text-xs font-mono font-bold uppercase tracking-wider bg-background/80 backdrop-blur-md text-foreground border border-border/60 shadow-xs">
  {card.badgeLabel}
  </span>
  )}
@@ -284,7 +284,7 @@ export function MasterHeroCards({
                     {/* Título e Ícone (Apenas se explicitamente habilitado) */}
                     {card.showTitle && card.title && (
                       <div className="relative z-10 p-2 text-left w-full bg-linear-to-t from-black/80 via-black/20 to-transparent">
-                        <h3 className="text-[11px] sm:text-xs font-bold text-white leading-tight drop-shadow-sm truncate">
+                        <h3 className="text-xs font-bold text-foreground leading-tight truncate">
                           {card.title}
                         </h3>
                       </div>
@@ -297,7 +297,7 @@ export function MasterHeroCards({
 
         {/* ── 2. Botões / Chips de Supercategorias (Continuação - Ícones PNG Transparentes / Emojis / Rotas) ── */}
         <div
-          className="flex items-center gap-2 sm:gap-3 overflow-x-auto no-scrollbar pb-2 pt-1 w-full px-1 focus:outline-none"
+          className="flex items-center gap-2 sm:gap-3 overflow-x-auto no-scrollbar pb-2 pt-1 w-full px-1 focus:outline-none scroll-area-carousel"
           tabIndex={0}
           aria-label="Supercategorias Rápidas"
         >

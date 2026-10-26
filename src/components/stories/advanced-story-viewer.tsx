@@ -200,7 +200,7 @@ export function AdvancedStoryViewer({
 
  return (
  <div
- className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-2xl transition-all duration-300 select-none"
+ className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur-2xl transition-colors duration-300 select-none motion-reduce:transition-none"
  role="dialog"
  aria-modal="true"
  aria-label={`Stories de ${currentGroup.entityName}`}
@@ -208,7 +208,7 @@ export function AdvancedStoryViewer({
  {/* Botão de Fechar no Topo Direito */}
  <button
  onClick={onClose}
- className="absolute top-4 right-4 z-50 p-3 rounded-full bg-white/15 hover:bg-white/25 text-white backdrop-blur-md transition-all active:scale-95"
+ className="size-11 min-h-11 min-w-11 absolute top-4 right-4 z-50 p-2 rounded-full bg-card/80 hover:bg-muted text-foreground backdrop-blur-md transition-colors active:scale-95 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none flex items-center justify-center"
  aria-label="Fechar visualizador de stories"
  >
  <X size={22} weight="bold" />
@@ -222,7 +222,7 @@ export function AdvancedStoryViewer({
  setStoryIndex(0);
  setProgress(0);
  }}
- className="hidden md:flex absolute left-8 top-1/2 -translate-y-1/2 z-40 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md transition-all active:scale-95"
+ className="hidden md:flex size-11 min-h-11 min-w-11 absolute left-8 top-1/2 -translate-y-1/2 z-40 p-2 rounded-full bg-card/80 hover:bg-muted text-foreground backdrop-blur-md transition-colors active:scale-95 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none items-center justify-center"
  aria-label="Loja anterior"
  >
  <CaretLeft size={28} weight="bold" />
@@ -236,7 +236,7 @@ export function AdvancedStoryViewer({
  setStoryIndex(0);
  setProgress(0);
  }}
- className="hidden md:flex absolute right-8 top-1/2 -translate-y-1/2 z-40 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md transition-all active:scale-95"
+ className="hidden md:flex size-11 min-h-11 min-w-11 absolute right-8 top-1/2 -translate-y-1/2 z-40 p-2 rounded-full bg-card/80 hover:bg-muted text-foreground backdrop-blur-md transition-colors active:scale-95 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none items-center justify-center"
  aria-label="Próxima loja"
  >
  <CaretRight size={28} weight="bold" />
@@ -245,16 +245,16 @@ export function AdvancedStoryViewer({
 
  {/* ── Frame Central do Story (Proporção 9:16 Responsiva) ── */}
  <div
- className="relative w-full max-w-sm md:max-w-md h-full sm:h-5/6 sm:max-h-full sm:rounded-2xl overflow-hidden bg-zinc-950 border border-white/10 shadow-2xl flex flex-col justify-between"
+ className="relative w-full max-w-sm md:max-w-md h-full sm:h-5/6 sm:max-h-full sm:rounded-2xl overflow-hidden bg-card border border-border/40 shadow-2xs flex flex-col justify-between"
  onPointerDown={handlePointerDown}
  onPointerUp={handlePointerUp}
  >
  {/* ── 1. Barras de Progresso Segmentadas no Topo ── */}
  <div className="absolute top-3 inset-x-3 z-30 flex items-center gap-2 pointer-events-none">
  {currentGroup.stories.map((s, idx) => (
- <div key={s.id} className="h-1 flex-1 rounded-full bg-white/30 overflow-hidden backdrop-blur-xs">
+ <div key={s.id} className="h-1 flex-1 rounded-full bg-foreground/30 overflow-hidden backdrop-blur-xs">
  <div
- className="h-full bg-white transition-all duration-75 ease-linear"
+ className="h-full bg-foreground transition-colors duration-75 ease-linear"
  style={{
  width: idx < storyIndex ? "100%" : idx === storyIndex ? `${progress}%` : "0%",
  }}
@@ -285,25 +285,25 @@ export function AdvancedStoryViewer({
 
  <div className="min-w-0">
  <div className="flex items-center gap-2">
- <span className="text-sm font-bold text-white leading-none truncate drop-shadow-md">
+ <span className="text-sm font-bold text-foreground leading-none truncate">
  {currentGroup.entityName}
  </span>
 
  {currentGroup.isOfficialAmbassador && (
- <Badge className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-2xs font-black px-2 py-0.5 rounded-md border-0">
+ <Badge className="bg-primary text-primary-foreground text-2xs font-black px-2 py-1 rounded-md border-0">
  <SealCheck size={11} weight="fill" className="mr-1" />
  {currentGroup.ambassadorBadgeLabel || "Embaixador"}
  </Badge>
  )}
 
  {currentStory.is_sponsored && (
- <Badge className="bg-amber-500 text-black text-2xs font-black px-2 py-0.5 rounded-md">
+ <Badge className="bg-secondary text-secondary-foreground text-2xs font-black px-2 py-1 rounded-md">
  Patrocinado
  </Badge>
  )}
  </div>
 
- <div className="flex items-center gap-2 text-xs text-white/70">
+ <div className="flex items-center gap-2 text-xs text-muted-foreground">
  {currentGroup.entityHandle && <span>{currentGroup.entityHandle}</span>}
  <span>•</span>
  <span>Há 3h</span>
@@ -318,7 +318,7 @@ export function AdvancedStoryViewer({
  e.stopPropagation();
  setIsMuted(!isMuted);
  }}
- className="p-2 rounded-full bg-black/40 text-white hover:bg-black/60 backdrop-blur-md"
+ className="size-11 min-h-11 min-w-11 flex items-center justify-center rounded-full bg-card/80 text-foreground hover:bg-muted backdrop-blur-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  aria-label={isMuted ? "Ativar som" : "Desativar som"}
  >
  {isMuted ? <SpeakerSimpleSlash size={18} weight="bold" /> : <SpeakerHigh size={18} weight="bold" />}
@@ -328,7 +328,7 @@ export function AdvancedStoryViewer({
  </div>
 
  {/* ── 3. Mídia Central (Foto ou Vídeo em Alta Definição) ── */}
- <div className="absolute inset-0 size-full flex items-center justify-center bg-black">
+ <div className="absolute inset-0 size-full flex items-center justify-center bg-muted">
  {isVideo ? (
  <video
  ref={videoRef}
@@ -351,19 +351,19 @@ export function AdvancedStoryViewer({
  )}
 
  {/* Gradiente Escuro Superior e Inferior para Legibilidade */}
- <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80 pointer-events-none" />
+ <div className="absolute inset-0 bg-linear-to-b from-background/60 via-transparent to-background/80 pointer-events-none" />
  </div>
 
  {/* ── 4. Prompt Interativo de Vídeo Longo (>60s com Countdown de 5s) ── */}
  {showLongPrompt && (
- <div className="absolute inset-0 z-40 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center space-y-4 animate-in fade-in zoom-in-95 duration-200">
+ <div className="absolute inset-0 z-40 bg-background/80 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center space-y-4 animate-in fade-in zoom-in-95 duration-200">
  <div className="size-14 rounded-lg bg-primary/20 text-primary flex items-center justify-center">
  <Clock size={32} weight="bold" />
  </div>
 
  <div className="space-y-1">
- <h4 className="text-base font-bold text-white">Storie Longo em Exibição</h4>
- <p className="text-xs text-white/70 max-w-xs">
+ <h4 className="text-base font-bold text-foreground">Storie Longo em Exibição</h4>
+ <p className="text-xs text-muted-foreground max-w-xs">
  Este conteúdo possui mais de 60 segundos. Deseja continuar assistindo?
  </p>
  </div>
@@ -374,7 +374,7 @@ export function AdvancedStoryViewer({
  e.stopPropagation();
  handleContinueLongStory();
  }}
- className="w-full h-11 rounded-lg bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 shadow-lg"
+ className="w-full h-11 rounded-lg bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 shadow-2xs"
  >
  <span>Continuar assistindo</span>
  <ArrowRight size={14} weight="bold" />
@@ -386,7 +386,7 @@ export function AdvancedStoryViewer({
  e.stopPropagation();
  handleNext();
  }}
- className="w-full h-11 min-h-11 rounded-lg text-white/80 hover:text-white hover:bg-white/10 text-xs font-semibold"
+ className="w-full h-11 min-h-11 rounded-lg text-foreground hover:bg-muted text-xs font-semibold focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  >
  Pular em {longPromptCountdown}s...
  </Button>
@@ -398,7 +398,7 @@ export function AdvancedStoryViewer({
  <div className="relative z-30 p-4 space-y-3 pointer-events-auto">
  {/* Card Flutuante de Produto Marcado */}
  {currentStory.product_info && (
- <div className="flex items-center justify-between p-3 rounded-lg bg-white/15 backdrop-blur-xl border border-white/20 text-white shadow-lg">
+ <div className="flex items-center justify-between p-3 rounded-lg bg-card/80 backdrop-blur-xl border border-border/40 text-foreground shadow-2xs">
  <div className="flex items-center gap-3 min-w-0">
  {currentStory.product_info.image_url ? (
  <img
@@ -430,7 +430,7 @@ export function AdvancedStoryViewer({
  <Button
  size="sm"
  asChild
- className="h-11 min-h-11 rounded-lg bg-white text-black font-bold text-xs px-4 shrink-0 flex items-center justify-center"
+ className="h-11 min-h-11 rounded-lg bg-primary text-primary-foreground font-bold text-xs px-4 shrink-0 flex items-center justify-center focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  >
  <a href={`/produto/${currentStory.product_info.id}`}>Comprar</a>
  </Button>
@@ -441,7 +441,7 @@ export function AdvancedStoryViewer({
  {currentStory.link_url && (
  <Button
  asChild
- className="w-full h-11 min-h-11 rounded-lg bg-white/20 hover:bg-white/30 text-white backdrop-blur-xl border border-white/20 font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95"
+ className="w-full h-11 min-h-11 rounded-lg bg-card/80 hover:bg-muted text-foreground backdrop-blur-xl border border-border/40 font-bold text-xs flex items-center justify-center gap-2 transition-colors active:scale-95 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  >
  <a href={currentStory.link_url} target="_blank" rel="noopener noreferrer">
  <span>{currentStory.link_cta || "Acessar Oferta"}</span>
@@ -452,7 +452,7 @@ export function AdvancedStoryViewer({
 
  {/* Hashtags e Badge de Co-Publicação */}
  {currentStory.collab_info && (
- <div className="flex items-center gap-2 text-xs text-white/80 font-medium">
+ <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
  <Handshake size={13} weight="bold" className="text-purple-300" />
  <span>Publicado em parceria com {currentStory.collab_info.creator_name}</span>
  </div>

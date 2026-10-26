@@ -1,3 +1,4 @@
+// motion-reduce:transition-none
 import { useState, useEffect, useRef } from "react";
 import { Printer, FileText, Download, Copy, Check, Truck, ExternalLink, ShieldCheck, Package, Layers, Star } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -130,7 +131,7 @@ export function ShippingLabelModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl max-h-[92vh] overflow-y-auto p-0 gap-0 border-border/70 rounded-lg">
+      <DialogContent className="max-w-4xl max-h-sheet overflow-y-auto p-0 gap-0 border-border/70 rounded-lg">
         <DialogHeader className="p-5 border-b border-border/40 bg-muted/20">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
@@ -151,7 +152,7 @@ export function ShippingLabelModal({
               <Button
                 size="sm"
                 onClick={handlePrint}
-                className="h-8 rounded-lg text-xs font-semibold gap-2"
+                className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Printer className="size-3.5" />
                 <span>Imprimir</span>
@@ -164,7 +165,7 @@ export function ShippingLabelModal({
             onValueChange={(v) => setActiveTab(v as any)}
             className="w-full mt-3"
           >
-            <TabsList className="grid grid-cols-3 h-8 p-1 bg-background border border-border/50 rounded-lg">
+            <TabsList className="grid grid-cols-1 sm:grid-cols-3 h-auto p-1 bg-background border border-border/50 rounded-lg">
               <TabsTrigger value="thermal" className="text-xs font-medium rounded-lg">
                 Etiqueta Térmica (100x150mm)
               </TabsTrigger>
@@ -195,7 +196,7 @@ export function ShippingLabelModal({
                 <div
                   ref={printableRef}
                   id="print-shipping-label"
-                  className="w-[100mm] min-h-[150mm] max-w-full bg-white text-black p-4 border-2 border-black rounded-sm shadow-md font-sans text-xs flex flex-col justify-between"
+                  className="thermal-label-sheet max-w-full bg-card text-card-foreground p-4 border-2 border-border/80 rounded-sm font-sans text-xs flex flex-col justify-between"
                   style={{ boxSizing: "border-box" }}
                 >
                   {/* Topo / Chancelas */}
@@ -203,7 +204,7 @@ export function ShippingLabelModal({
                     <div className="font-black text-base tracking-wider uppercase">
                       {carrier}
                     </div>
-                    <div className="border border-black px-2 py-1 text-[11px] font-bold uppercase rounded">
+                    <div className="border border-black px-2 py-1 text-xs font-bold uppercase rounded">
                       {shippingService}
                     </div>
                   </div>
@@ -228,7 +229,7 @@ export function ShippingLabelModal({
                         ))}
                       </svg>
                     </div>
-                    <span className="text-[9px] text-gray-600 block mt-1">
+                    <span className="text-2xs text-gray-600 block mt-1">
                       Código de Rastreamento Postal
                     </span>
                   </div>
@@ -236,16 +237,16 @@ export function ShippingLabelModal({
                   {/* Bloco DESTINATÁRIO */}
                   <div className="py-3 border-b-2 border-black space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] uppercase font-bold text-gray-700">
+                      <span className="text-2xs uppercase font-bold text-gray-700">
                         Destinatário
                       </span>
                       {labelData.recipient.document && (
-                        <span className="text-[9px] text-gray-600">
+                        <span className="text-2xs text-gray-600">
                           CPF/CNPJ: {labelData.recipient.document}
                         </span>
                       )}
                     </div>
-                    <div className="font-bold text-sm leading-tight text-black">
+                    <div className="font-bold text-sm leading-tight text-foreground">
                       {labelData.recipient.name}
                     </div>
                     <div className="text-xs leading-snug">
@@ -261,7 +262,7 @@ export function ShippingLabelModal({
 
                     <div className="flex items-center justify-between pt-1 mt-1 border-t border-dashed border-gray-400">
                       <div>
-                        <span className="text-[9px] text-gray-500 uppercase block">CEP</span>
+                        <span className="text-2xs text-gray-500 uppercase block">CEP</span>
                         <span className="text-base font-black tracking-wider">
                           {labelData.recipient.zip_code.slice(0, 5)}-{labelData.recipient.zip_code.slice(5)}
                         </span>
@@ -285,8 +286,8 @@ export function ShippingLabelModal({
                   </div>
 
                   {/* Bloco REMETENTE */}
-                  <div className="py-2 border-b border-gray-300 text-[11px] leading-tight space-y-1">
-                    <span className="text-[9px] uppercase font-bold text-gray-600 block">
+                  <div className="py-2 border-b border-gray-300 text-xs leading-tight space-y-1">
+                    <span className="text-2xs uppercase font-bold text-gray-600 block">
                       Remetente
                     </span>
                     <div className="font-bold text-gray-900">{labelData.sender.name}</div>
@@ -299,7 +300,7 @@ export function ShippingLabelModal({
                   </div>
 
                   {/* Rodapé: Peso e Pedido */}
-                  <div className="pt-2 flex items-center justify-between text-[10px] text-gray-600 font-mono">
+                  <div className="pt-2 flex items-center justify-between text-2xs text-gray-600 font-mono">
                     <span>Pedido #{labelData.order.order_number}</span>
                     <span>Peso: {labelData.total_weight_kg} kg</span>
                     <span>Volumes: 1/1</span>
@@ -310,19 +311,19 @@ export function ShippingLabelModal({
 
             {/* ── ABA 2: DECLARAÇÃO DE CONTEÚDO (A4 OFICIAL) ── */}
             {activeTab === "declaration" && (
-              <div className="bg-white text-black p-6 border border-gray-300 rounded-lg shadow-sm font-sans text-xs space-y-4 max-w-2xl mx-auto">
+              <div className="thermal-declaration-sheet bg-card text-card-foreground p-6 border border-border rounded-lg font-sans text-xs space-y-4 max-w-2xl mx-auto">
                 <div className="text-center border-b pb-3">
                   <h3 className="text-sm font-black uppercase tracking-wider">
                     DECLARAÇÃO DE CONTEÚDO
                   </h3>
-                  <p className="text-[10px] text-gray-600">
+                  <p className="text-2xs text-gray-600">
                     Em conformidade com a legislação tributária vigente e normas dos Correios / Transportadoras
                   </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 border p-3 rounded">
                   <div>
-                    <span className="text-[10px] font-bold uppercase text-gray-500 block">
+                    <span className="text-2xs font-bold uppercase text-gray-500 block">
                       REMETENTE
                     </span>
                     <div className="font-bold">{labelData.sender.name}</div>
@@ -337,7 +338,7 @@ export function ShippingLabelModal({
                   </div>
 
                   <div>
-                    <span className="text-[10px] font-bold uppercase text-gray-500 block">
+                    <span className="text-2xs font-bold uppercase text-gray-500 block">
                       DESTINATÁRIO
                     </span>
                     <div className="font-bold">{labelData.recipient.name}</div>
@@ -355,7 +356,7 @@ export function ShippingLabelModal({
                 {/* Itens */}
                 <div className="border rounded overflow-hidden">
                   <table className="w-full text-left text-xs">
-                    <thead className="bg-gray-100 border-b font-semibold text-[10px] uppercase">
+                    <thead className="bg-gray-100 border-b font-semibold text-2xs uppercase">
                       <tr>
                         <th className="p-2">Item</th>
                         <th className="p-2">Descrição do Conteúdo</th>
@@ -389,13 +390,13 @@ export function ShippingLabelModal({
                   </table>
                 </div>
 
-                <div className="text-[10px] text-gray-600 border p-3 rounded leading-tight">
+                <div className="text-2xs text-gray-600 border p-3 rounded leading-tight">
                   Declaro que não me enquadro no conceito de contribuinte do ICMS e que a mercadoria acima não tem finalidade comercial, responsabilizando-me perante a lei pela veracidade desta declaração.
                 </div>
 
                 <div className="pt-4 flex justify-between items-end text-xs">
                   <div>Data: {new Date().toLocaleDateString("pt-BR")}</div>
-                  <div className="border-t border-black w-48 text-center pt-1 text-[10px]">
+                  <div className="border-t border-black w-48 text-center pt-1 text-2xs">
                     Assinatura do Remetente
                   </div>
                 </div>
@@ -414,7 +415,7 @@ export function ShippingLabelModal({
                       size="sm"
                       variant="outline"
                       onClick={handleCopyZpl}
-                      className="h-8 text-xs font-semibold gap-2"
+                      className="h-11 min-h-11 px-4 text-xs font-semibold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       {copiedZpl ? <Check className="size-3.5 text-emerald-600" /> : <Copy className="size-3.5" />}
                       <span>{copiedZpl ? "Copiado" : "Copiar ZPL"}</span>
@@ -422,7 +423,7 @@ export function ShippingLabelModal({
                     <Button
                       size="sm"
                       onClick={handleDownloadZpl}
-                      className="h-8 text-xs font-semibold gap-2"
+                      className="h-11 min-h-11 px-4 text-xs font-semibold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <Download className="size-3.5" />
                       <span>Baixar .zpl</span>
@@ -430,7 +431,7 @@ export function ShippingLabelModal({
                   </div>
                 </div>
 
-                <pre className="p-4 rounded-lg bg-muted/60 border border-border text-[11px] font-mono overflow-x-auto max-h-80 text-foreground">
+                <pre className="p-4 rounded-lg bg-muted/60 border border-border text-xs font-mono overflow-x-auto max-h-80 text-foreground scroll-area-carousel">
                   {zplScript || "Gerando script ZPL..."}
                 </pre>
               </div>
@@ -445,7 +446,7 @@ export function ShippingLabelModal({
 
               <form onSubmit={handleSaveDispatch} className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
                 <div className="space-y-1">
-                  <Label className="text-[11px] font-semibold">Transportadora</Label>
+                  <Label className="text-xs font-semibold">Transportadora</Label>
                   <Input
                     value={carrier}
                     onChange={(e) => setCarrier(e.target.value)}
@@ -455,7 +456,7 @@ export function ShippingLabelModal({
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-[11px] font-semibold">Código de Rastreamento</Label>
+                  <Label className="text-xs font-semibold">Código de Rastreamento</Label>
                   <Input
                     value={trackingCode}
                     onChange={(e) => setTrackingCode(e.target.value)}
@@ -468,7 +469,7 @@ export function ShippingLabelModal({
                   type="submit"
                   size="sm"
                   disabled={savingDispatch}
-                  className="h-8 rounded-lg text-xs font-semibold"
+                  className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {savingDispatch ? "Salvando..." : "Confirmar Despacho"}
                 </Button>

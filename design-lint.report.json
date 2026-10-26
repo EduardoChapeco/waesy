@@ -1,74 +1,74 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-23T07:21:54.951Z",
-  "inspectedFiles": 2237,
-  "totalViolations": 11955,
+  "timestamp": "2026-10-26T03:25:21.428Z",
+  "inspectedFiles": 2259,
+  "totalViolations": 8230,
   "summary": {
-    "totalViolations": 11955,
+    "totalViolations": 8230,
     "bySeverity": {
-      "P0": 1293,
-      "P1": 8106,
-      "P2": 1306,
-      "P3": 1250
+      "P0": 928,
+      "P1": 5587,
+      "P2": 802,
+      "P3": 913
     },
     "byRule": {
-      "DL-30": 266,
-      "DL-15": 1290,
-      "DL-27": 984,
-      "DL-26": 84,
-      "DL-07": 472,
-      "DL-29": 119,
-      "DL-02": 3274,
-      "DL-14": 1941,
-      "DL-28": 278,
-      "DL-18": 1141,
-      "DL-03": 437,
-      "DL-09": 141,
-      "DL-08": 106,
-      "DL-01": 845,
-      "DL-23": 354,
-      "DL-25": 25,
-      "DL-05": 128,
+      "DL-30": 216,
+      "DL-15": 925,
+      "DL-27": 697,
+      "DL-26": 57,
+      "DL-07": 324,
+      "DL-29": 86,
+      "DL-02": 2328,
+      "DL-14": 1462,
+      "DL-28": 243,
+      "DL-18": 651,
+      "DL-03": 256,
+      "DL-08": 63,
+      "DL-01": 527,
+      "DL-23": 246,
       "DL-24": 2,
-      "DL-11": 22,
-      "DL-12": 29,
-      "DL-13": 11,
-      "DL-06": 3,
+      "DL-11": 19,
+      "DL-12": 25,
+      "DL-13": 10,
+      "DL-05": 66,
+      "DL-25": 20,
+      "DL-06": 2,
+      "DL-09": 2,
       "DL-04": 3
     },
     "byModule": {
       "components/app": {
-        "total": 5243,
-        "P0": 495,
-        "P1": 3546,
-        "P2": 680,
-        "P3": 522
+        "total": 3494,
+        "P0": 347,
+        "P1": 2359,
+        "P2": 413,
+        "P3": 375
       },
       "components/builder": {
-        "total": 120,
-        "P0": 40,
-        "P1": 47,
-        "P2": 19,
-        "P3": 14
+        "total": 6,
+        "P0": 0,
+        "P1": 6,
+        "P2": 0,
+        "P3": 0
       },
       "components/chat": {
-        "total": 81,
+        "total": 66,
         "P0": 4,
-        "P1": 70,
-        "P2": 2,
+        "P1": 56,
+        "P2": 1,
         "P3": 5
       },
       "components/tourism": {
-        "total": 1034,
-        "P0": 76,
-        "P1": 769,
-        "P2": 129,
-        "P3": 60
+        "total": 563,
+        "P0": 42,
+        "P1": 416,
+        "P2": 73,
+        "P3": 32
       },
       "components/ui": {
-        "total": 310,
+        "total": 308,
         "P0": 38,
-        "P1": 219,
+        "P1": 217,
         "P2": 14,
         "P3": 39
       },
@@ -80,32 +80,18 @@
         "P3": 0
       },
       "lib": {
-        "total": 254,
+        "total": 103,
         "P0": 1,
-        "P1": 218,
+        "P1": 67,
         "P2": 35,
         "P3": 0
       },
-      "routes/other": {
-        "total": 124,
-        "P0": 11,
-        "P1": 91,
-        "P2": 16,
-        "P3": 6
-      },
-      "routes/store": {
-        "total": 1418,
-        "P0": 113,
-        "P1": 922,
-        "P2": 175,
-        "P3": 208
-      },
       "routes/admin": {
-        "total": 1002,
-        "P0": 86,
-        "P1": 748,
-        "P2": 50,
-        "P3": 118
+        "total": 574,
+        "P0": 39,
+        "P1": 438,
+        "P2": 23,
+        "P3": 74
       },
       "routes/api": {
         "total": 6,
@@ -114,12 +100,26 @@
         "P2": 0,
         "P3": 0
       },
+      "routes/other": {
+        "total": 120,
+        "P0": 10,
+        "P1": 89,
+        "P2": 15,
+        "P3": 6
+      },
       "routes/workspace": {
-        "total": 2125,
-        "P0": 424,
-        "P1": 1315,
-        "P2": 110,
-        "P3": 276
+        "total": 1773,
+        "P0": 358,
+        "P1": 1116,
+        "P2": 81,
+        "P3": 218
+      },
+      "routes/store": {
+        "total": 979,
+        "P0": 84,
+        "P1": 662,
+        "P2": 71,
+        "P3": 162
       },
       "services": {
         "total": 210,
@@ -143,8 +143,8 @@
         "P3": 0
       }
     },
-    "filesWithViolations": 874,
-    "filesCount": 2237
+    "filesWithViolations": 789,
+    "filesCount": 2259
   },
   "config": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -346,7 +346,7 @@
     {
       "id": "DL-30",
       "rule": "DL-30",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/ad-engine/public/canonical-listing-view.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/ad-engine/public/canonical-listing-view.tsx",
       "module": "components/app",
       "line": 246,
       "column": 55,
@@ -357,7 +357,7 @@
     {
       "id": "DL-15",
       "rule": "DL-15",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/admin-shell.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/admin-shell.tsx",
       "module": "components/app",
       "line": 469,
       "column": 2,
@@ -368,7 +368,7 @@
     {
       "id": "DL-15",
       "rule": "DL-15",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/admin-shell.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/admin-shell.tsx",
       "module": "components/app",
       "line": 613,
       "column": 2,
@@ -379,7 +379,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/animation-inspector-phase7.test.ts",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
       "module": "components/app",
       "line": 8,
       "column": 30,
@@ -390,7 +390,7 @@
     {
       "id": "DL-26",
       "rule": "DL-26",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/animation-inspector-phase7.test.ts",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
       "module": "components/app",
       "line": 11,
       "column": 58,
@@ -401,7 +401,7 @@
     {
       "id": "DL-26",
       "rule": "DL-26",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/animation-inspector-phase7.test.ts",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
       "module": "components/app",
       "line": 13,
       "column": 46,
@@ -412,7 +412,7 @@
     {
       "id": "DL-26",
       "rule": "DL-26",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/animation-inspector-phase7.test.ts",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
       "module": "components/app",
       "line": 15,
       "column": 56,
@@ -423,7 +423,7 @@
     {
       "id": "DL-26",
       "rule": "DL-26",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/animation-inspector-phase7.test.ts",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
       "module": "components/app",
       "line": 17,
       "column": 70,
@@ -434,7 +434,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/animation-inspector-phase7.test.ts",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
       "module": "components/app",
       "line": 21,
       "column": 45,
@@ -445,7 +445,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/animation-inspector-phase7.test.ts",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
       "module": "components/app",
       "line": 21,
       "column": 55,
@@ -456,7 +456,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/animation-inspector-phase7.test.ts",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
       "module": "components/app",
       "line": 23,
       "column": 57,
@@ -467,7 +467,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/animation-inspector-phase7.test.ts",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
       "module": "components/app",
       "line": 23,
       "column": 67,
@@ -478,7 +478,7 @@
     {
       "id": "DL-26",
       "rule": "DL-26",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/animation-inspector-phase7.test.ts",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
       "module": "components/app",
       "line": 41,
       "column": 35,
@@ -489,7 +489,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/animation-inspector-phase7.test.ts",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
       "module": "components/app",
       "line": 54,
       "column": 44,
@@ -500,7 +500,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-canvas.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-canvas.tsx",
       "module": "components/app",
       "line": 80,
       "column": 146,
@@ -511,7 +511,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-canvas.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-canvas.tsx",
       "module": "components/app",
       "line": 160,
       "column": 147,
@@ -522,7 +522,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-canvas.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-canvas.tsx",
       "module": "components/app",
       "line": 224,
       "column": 144,
@@ -533,7 +533,7 @@
     {
       "id": "DL-29",
       "rule": "DL-29",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-docking-matrix.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-docking-matrix.tsx",
       "module": "components/app",
       "line": 45,
       "column": 22,
@@ -544,7 +544,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-docking-matrix.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-docking-matrix.tsx",
       "module": "components/app",
       "line": 56,
       "column": 73,
@@ -555,7 +555,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-floating-action-bar.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-floating-action-bar.tsx",
       "module": "components/app",
       "line": 35,
       "column": 111,
@@ -566,7 +566,7 @@
     {
       "id": "DL-30",
       "rule": "DL-30",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-inspector.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-inspector.tsx",
       "module": "components/app",
       "line": 307,
       "column": 120,
@@ -577,7 +577,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-inspector.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-inspector.tsx",
       "module": "components/app",
       "line": 336,
       "column": 26,
@@ -588,7 +588,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-inspector.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-inspector.tsx",
       "module": "components/app",
       "line": 350,
       "column": 26,
@@ -599,7 +599,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-inspector.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-inspector.tsx",
       "module": "components/app",
       "line": 364,
       "column": 26,
@@ -610,7 +610,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-inspector.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-inspector.tsx",
       "module": "components/app",
       "line": 378,
       "column": 26,
@@ -621,7 +621,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-inspector.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-inspector.tsx",
       "module": "components/app",
       "line": 392,
       "column": 26,
@@ -632,7 +632,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-inspector.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-inspector.tsx",
       "module": "components/app",
       "line": 778,
       "column": 41,
@@ -643,7 +643,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-inspector.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-inspector.tsx",
       "module": "components/app",
       "line": 790,
       "column": 41,
@@ -654,7 +654,7 @@
     {
       "id": "DL-29",
       "rule": "DL-29",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-inspector.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-inspector.tsx",
       "module": "components/app",
       "line": 1049,
       "column": 22,
@@ -665,7 +665,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-inspector.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-inspector.tsx",
       "module": "components/app",
       "line": 1065,
       "column": 53,
@@ -676,7 +676,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-inspector.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-inspector.tsx",
       "module": "components/app",
       "line": 1098,
       "column": 63,
@@ -687,7 +687,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-top-bar.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-top-bar.tsx",
       "module": "components/app",
       "line": 75,
       "column": 62,
@@ -698,7 +698,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-top-bar.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-top-bar.tsx",
       "module": "components/app",
       "line": 75,
       "column": 79,
@@ -709,7 +709,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-top-bar.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-top-bar.tsx",
       "module": "components/app",
       "line": 81,
       "column": 3,
@@ -720,7 +720,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-top-bar.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-top-bar.tsx",
       "module": "components/app",
       "line": 90,
       "column": 19,
@@ -731,7 +731,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-top-bar.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-top-bar.tsx",
       "module": "components/app",
       "line": 103,
       "column": 69,
@@ -742,7 +742,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-top-bar.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-top-bar.tsx",
       "module": "components/app",
       "line": 118,
       "column": 69,
@@ -753,7 +753,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-top-bar.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-top-bar.tsx",
       "module": "components/app",
       "line": 65,
       "column": 13,
@@ -764,7 +764,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-top-bar.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-top-bar.tsx",
       "module": "components/app",
       "line": 103,
       "column": 3,
@@ -775,7 +775,7 @@
     {
       "id": "DL-15",
       "rule": "DL-15",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-top-bar.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-top-bar.tsx",
       "module": "components/app",
       "line": 98,
       "column": 2,
@@ -786,7 +786,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-top-bar.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-top-bar.tsx",
       "module": "components/app",
       "line": 118,
       "column": 3,
@@ -797,7 +797,7 @@
     {
       "id": "DL-15",
       "rule": "DL-15",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-top-bar.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-top-bar.tsx",
       "module": "components/app",
       "line": 113,
       "column": 2,
@@ -808,7 +808,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-top-bar.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-top-bar.tsx",
       "module": "components/app",
       "line": 138,
       "column": 13,
@@ -819,7 +819,7 @@
     {
       "id": "DL-15",
       "rule": "DL-15",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-top-bar.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-top-bar.tsx",
       "module": "components/app",
       "line": 133,
       "column": 2,
@@ -830,7 +830,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-top-bar.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-top-bar.tsx",
       "module": "components/app",
       "line": 147,
       "column": 13,
@@ -841,7 +841,7 @@
     {
       "id": "DL-15",
       "rule": "DL-15",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-top-bar.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-top-bar.tsx",
       "module": "components/app",
       "line": 142,
       "column": 2,
@@ -852,7 +852,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-top-bar.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-top-bar.tsx",
       "module": "components/app",
       "line": 159,
       "column": 13,
@@ -863,7 +863,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-top-bar.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-top-bar.tsx",
       "module": "components/app",
       "line": 170,
       "column": 13,
@@ -874,7 +874,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-top-bar.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-top-bar.tsx",
       "module": "components/app",
       "line": 185,
       "column": 13,
@@ -885,7 +885,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-top-bar.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-top-bar.tsx",
       "module": "components/app",
       "line": 201,
       "column": 13,
@@ -896,7 +896,7 @@
     {
       "id": "DL-28",
       "rule": "DL-28",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/builder-top-bar.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/builder-top-bar.tsx",
       "module": "components/app",
       "line": 1,
       "column": 1,
@@ -907,7 +907,7 @@
     {
       "id": "DL-18",
       "rule": "DL-18",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/guided-section-picker.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/guided-section-picker.tsx",
       "module": "components/app",
       "line": 48,
       "column": 34,
@@ -918,7 +918,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/guided-section-picker.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/guided-section-picker.tsx",
       "module": "components/app",
       "line": 53,
       "column": 84,
@@ -929,7 +929,7 @@
     {
       "id": "DL-30",
       "rule": "DL-30",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/guided-section-picker.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/guided-section-picker.tsx",
       "module": "components/app",
       "line": 90,
       "column": 38,
@@ -940,7 +940,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/guided-section-picker.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/guided-section-picker.tsx",
       "module": "components/app",
       "line": 97,
       "column": 145,
@@ -951,7 +951,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/guided-section-picker.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/guided-section-picker.tsx",
       "module": "components/app",
       "line": 125,
       "column": 132,
@@ -962,7 +962,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/guided-section-picker.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/guided-section-picker.tsx",
       "module": "components/app",
       "line": 132,
       "column": 59,
@@ -973,7 +973,7 @@
     {
       "id": "DL-15",
       "rule": "DL-15",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/guided-section-picker.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/guided-section-picker.tsx",
       "module": "components/app",
       "line": 47,
       "column": 7,
@@ -984,7 +984,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/guided-section-picker.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/guided-section-picker.tsx",
       "module": "components/app",
       "line": 72,
       "column": 35,
@@ -995,7 +995,7 @@
     {
       "id": "DL-15",
       "rule": "DL-15",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/guided-section-picker.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/guided-section-picker.tsx",
       "module": "components/app",
       "line": 92,
       "column": 15,
@@ -1006,7 +1006,7 @@
     {
       "id": "DL-15",
       "rule": "DL-15",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/builder/guided-section-picker.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/builder/guided-section-picker.tsx",
       "module": "components/app",
       "line": 119,
       "column": 17,
@@ -1017,7 +1017,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/advanced-variant-editor.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/advanced-variant-editor.tsx",
       "module": "components/app",
       "line": 160,
       "column": 16,
@@ -1028,7 +1028,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/import-catalog-modal.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/import-catalog-modal.tsx",
       "module": "components/app",
       "line": 98,
       "column": 114,
@@ -1039,7 +1039,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/import-catalog-modal.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/import-catalog-modal.tsx",
       "module": "components/app",
       "line": 107,
       "column": 38,
@@ -1050,7 +1050,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/import-catalog-modal.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/import-catalog-modal.tsx",
       "module": "components/app",
       "line": 143,
       "column": 16,
@@ -1061,7 +1061,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/import-catalog-modal.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/import-catalog-modal.tsx",
       "module": "components/app",
       "line": 161,
       "column": 16,
@@ -1072,7 +1072,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/import-catalog-modal.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/import-catalog-modal.tsx",
       "module": "components/app",
       "line": 177,
       "column": 16,
@@ -1083,7 +1083,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/import-catalog-modal.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/import-catalog-modal.tsx",
       "module": "components/app",
       "line": 192,
       "column": 25,
@@ -1094,7 +1094,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/import-catalog-modal.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/import-catalog-modal.tsx",
       "module": "components/app",
       "line": 200,
       "column": 70,
@@ -1105,7 +1105,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/import-catalog-modal.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/import-catalog-modal.tsx",
       "module": "components/app",
       "line": 203,
       "column": 40,
@@ -1116,7 +1116,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/import-catalog-modal.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/import-catalog-modal.tsx",
       "module": "components/app",
       "line": 215,
       "column": 55,
@@ -1127,7 +1127,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/import-catalog-modal.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/import-catalog-modal.tsx",
       "module": "components/app",
       "line": 219,
       "column": 16,
@@ -1138,7 +1138,7 @@
     {
       "id": "DL-18",
       "rule": "DL-18",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/import-catalog-modal.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/import-catalog-modal.tsx",
       "module": "components/app",
       "line": 270,
       "column": 88,
@@ -1149,7 +1149,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/import-catalog-modal.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/import-catalog-modal.tsx",
       "module": "components/app",
       "line": 186,
       "column": 21,
@@ -1160,7 +1160,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/import-catalog-modal.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/import-catalog-modal.tsx",
       "module": "components/app",
       "line": 255,
       "column": 13,
@@ -1171,7 +1171,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/import-catalog-modal.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/import-catalog-modal.tsx",
       "module": "components/app",
       "line": 270,
       "column": 13,
@@ -1182,7 +1182,7 @@
     {
       "id": "DL-28",
       "rule": "DL-28",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/import-catalog-modal.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/import-catalog-modal.tsx",
       "module": "components/app",
       "line": 1,
       "column": 1,
@@ -1193,7 +1193,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/master-catalog-search-dialog.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
       "module": "components/app",
       "line": 99,
       "column": 55,
@@ -1204,7 +1204,7 @@
     {
       "id": "DL-30",
       "rule": "DL-30",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/master-catalog-search-dialog.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
       "module": "components/app",
       "line": 132,
       "column": 51,
@@ -1215,7 +1215,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/master-catalog-search-dialog.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
       "module": "components/app",
       "line": 138,
       "column": 90,
@@ -1226,7 +1226,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/master-catalog-search-dialog.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
       "module": "components/app",
       "line": 173,
       "column": 124,
@@ -1237,7 +1237,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/master-catalog-search-dialog.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
       "module": "components/app",
       "line": 173,
       "column": 103,
@@ -1248,7 +1248,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/master-catalog-search-dialog.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
       "module": "components/app",
       "line": 193,
       "column": 44,
@@ -1259,7 +1259,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/master-catalog-search-dialog.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
       "module": "components/app",
       "line": 196,
       "column": 44,
@@ -1270,7 +1270,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/master-catalog-search-dialog.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
       "module": "components/app",
       "line": 197,
       "column": 44,
@@ -1281,7 +1281,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/master-catalog-search-dialog.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
       "module": "components/app",
       "line": 210,
       "column": 44,
@@ -1292,7 +1292,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/master-catalog-search-dialog.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
       "module": "components/app",
       "line": 218,
       "column": 98,
@@ -1303,7 +1303,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/master-catalog-search-dialog.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
       "module": "components/app",
       "line": 236,
       "column": 51,
@@ -1314,7 +1314,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/master-catalog-search-dialog.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
       "module": "components/app",
       "line": 240,
       "column": 69,
@@ -1325,7 +1325,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/master-catalog-search-dialog.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
       "module": "components/app",
       "line": 248,
       "column": 42,
@@ -1336,7 +1336,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/master-catalog-search-dialog.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
       "module": "components/app",
       "line": 259,
       "column": 179,
@@ -1347,7 +1347,7 @@
     {
       "id": "DL-15",
       "rule": "DL-15",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/master-catalog-search-dialog.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
       "module": "components/app",
       "line": 121,
       "column": 15,
@@ -1358,7 +1358,7 @@
     {
       "id": "DL-15",
       "rule": "DL-15",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/master-catalog-search-dialog.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
       "module": "components/app",
       "line": 134,
       "column": 15,
@@ -1369,7 +1369,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/master-catalog-search-dialog.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
       "module": "components/app",
       "line": 259,
       "column": 41,
@@ -1380,7 +1380,7 @@
     {
       "id": "DL-28",
       "rule": "DL-28",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/master-catalog-search-dialog.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
       "module": "components/app",
       "line": 1,
       "column": 1,
@@ -1391,7 +1391,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-bom-card.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-bom-card.tsx",
       "module": "components/app",
       "line": 136,
       "column": 38,
@@ -1402,7 +1402,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-bom-card.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-bom-card.tsx",
       "module": "components/app",
       "line": 165,
       "column": 19,
@@ -1413,7 +1413,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-bom-card.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-bom-card.tsx",
       "module": "components/app",
       "line": 174,
       "column": 19,
@@ -1424,7 +1424,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-bom-card.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-bom-card.tsx",
       "module": "components/app",
       "line": 183,
       "column": 19,
@@ -1435,7 +1435,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-bom-card.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-bom-card.tsx",
       "module": "components/app",
       "line": 192,
       "column": 19,
@@ -1446,7 +1446,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-bom-card.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-bom-card.tsx",
       "module": "components/app",
       "line": 213,
       "column": 20,
@@ -1457,7 +1457,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-bom-card.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-bom-card.tsx",
       "module": "components/app",
       "line": 223,
       "column": 20,
@@ -1468,7 +1468,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-bom-card.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-bom-card.tsx",
       "module": "components/app",
       "line": 241,
       "column": 20,
@@ -1479,7 +1479,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-bom-card.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-bom-card.tsx",
       "module": "components/app",
       "line": 253,
       "column": 20,
@@ -1490,7 +1490,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-bom-card.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-bom-card.tsx",
       "module": "components/app",
       "line": 281,
       "column": 16,
@@ -1501,7 +1501,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-bom-card.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-bom-card.tsx",
       "module": "components/app",
       "line": 305,
       "column": 19,
@@ -1512,7 +1512,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-bom-card.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-bom-card.tsx",
       "module": "components/app",
       "line": 321,
       "column": 13,
@@ -1523,7 +1523,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-bom-card.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-bom-card.tsx",
       "module": "components/app",
       "line": 321,
       "column": 24,
@@ -1534,7 +1534,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-edit-media-manager.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-edit-media-manager.tsx",
       "module": "components/app",
       "line": 172,
       "column": 36,
@@ -1545,7 +1545,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-edit-media-manager.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-edit-media-manager.tsx",
       "module": "components/app",
       "line": 181,
       "column": 36,
@@ -1556,7 +1556,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-edit-media-manager.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-edit-media-manager.tsx",
       "module": "components/app",
       "line": 198,
       "column": 36,
@@ -1567,7 +1567,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-edit-media-manager.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-edit-media-manager.tsx",
       "module": "components/app",
       "line": 211,
       "column": 36,
@@ -1578,7 +1578,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-editor-header.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-editor-header.tsx",
       "module": "components/app",
       "line": 37,
       "column": 30,
@@ -1589,7 +1589,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-editor-header.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-editor-header.tsx",
       "module": "components/app",
       "line": 48,
       "column": 31,
@@ -1600,7 +1600,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-editor-header.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-editor-header.tsx",
       "module": "components/app",
       "line": 60,
       "column": 31,
@@ -1611,7 +1611,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-editor-header.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-editor-header.tsx",
       "module": "components/app",
       "line": 75,
       "column": 36,
@@ -1622,7 +1622,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-editor-header.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-editor-header.tsx",
       "module": "components/app",
       "line": 89,
       "column": 37,
@@ -1633,7 +1633,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-editor-header.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-editor-header.tsx",
       "module": "components/app",
       "line": 94,
       "column": 42,
@@ -1644,7 +1644,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
       "module": "components/app",
       "line": 201,
       "column": 29,
@@ -1655,7 +1655,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
       "module": "components/app",
       "line": 219,
       "column": 29,
@@ -1666,7 +1666,7 @@
     {
       "id": "DL-03",
       "rule": "DL-03",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
       "module": "components/app",
       "line": 230,
       "column": 65,
@@ -1677,7 +1677,7 @@
     {
       "id": "DL-03",
       "rule": "DL-03",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
       "module": "components/app",
       "line": 241,
       "column": 65,
@@ -1688,7 +1688,7 @@
     {
       "id": "DL-03",
       "rule": "DL-03",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
       "module": "components/app",
       "line": 252,
       "column": 65,
@@ -1699,7 +1699,7 @@
     {
       "id": "DL-03",
       "rule": "DL-03",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
       "module": "components/app",
       "line": 264,
       "column": 29,
@@ -1710,7 +1710,7 @@
     {
       "id": "DL-03",
       "rule": "DL-03",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
       "module": "components/app",
       "line": 338,
       "column": 47,
@@ -1721,7 +1721,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
       "module": "components/app",
       "line": 342,
       "column": 31,
@@ -1732,7 +1732,7 @@
     {
       "id": "DL-03",
       "rule": "DL-03",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
       "module": "components/app",
       "line": 357,
       "column": 29,
@@ -1743,7 +1743,7 @@
     {
       "id": "DL-03",
       "rule": "DL-03",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
       "module": "components/app",
       "line": 366,
       "column": 29,
@@ -1754,7 +1754,7 @@
     {
       "id": "DL-03",
       "rule": "DL-03",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
       "module": "components/app",
       "line": 417,
       "column": 31,
@@ -1765,7 +1765,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
       "module": "components/app",
       "line": 419,
       "column": 31,
@@ -1776,7 +1776,7 @@
     {
       "id": "DL-03",
       "rule": "DL-03",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
       "module": "components/app",
       "line": 431,
       "column": 31,
@@ -1787,7 +1787,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
       "module": "components/app",
       "line": 433,
       "column": 31,
@@ -1798,7 +1798,7 @@
     {
       "id": "DL-03",
       "rule": "DL-03",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
       "module": "components/app",
       "line": 445,
       "column": 31,
@@ -1809,7 +1809,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
       "module": "components/app",
       "line": 447,
       "column": 31,
@@ -1820,7 +1820,7 @@
     {
       "id": "DL-03",
       "rule": "DL-03",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
       "module": "components/app",
       "line": 459,
       "column": 31,
@@ -1831,7 +1831,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
       "module": "components/app",
       "line": 461,
       "column": 31,
@@ -1842,7 +1842,7 @@
     {
       "id": "DL-03",
       "rule": "DL-03",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
       "module": "components/app",
       "line": 478,
       "column": 29,
@@ -1853,7 +1853,7 @@
     {
       "id": "DL-03",
       "rule": "DL-03",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
       "module": "components/app",
       "line": 487,
       "column": 29,
@@ -1864,7 +1864,7 @@
     {
       "id": "DL-03",
       "rule": "DL-03",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
       "module": "components/app",
       "line": 498,
       "column": 47,
@@ -1875,7 +1875,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
       "module": "components/app",
       "line": 502,
       "column": 31,
@@ -1886,7 +1886,7 @@
     {
       "id": "DL-15",
       "rule": "DL-15",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
       "module": "components/app",
       "line": 188,
       "column": 13,
@@ -1897,7 +1897,7 @@
     {
       "id": "DL-15",
       "rule": "DL-15",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-editor/product-pricing-tab.tsx",
       "module": "components/app",
       "line": 206,
       "column": 13,
@@ -1908,7 +1908,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-food-specs-card.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
       "module": "components/app",
       "line": 124,
       "column": 49,
@@ -1919,7 +1919,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-food-specs-card.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
       "module": "components/app",
       "line": 148,
       "column": 25,
@@ -1930,7 +1930,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-food-specs-card.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
       "module": "components/app",
       "line": 164,
       "column": 25,
@@ -1941,7 +1941,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-food-specs-card.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
       "module": "components/app",
       "line": 178,
       "column": 27,
@@ -1952,7 +1952,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-food-specs-card.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
       "module": "components/app",
       "line": 224,
       "column": 78,
@@ -1963,7 +1963,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-food-specs-card.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
       "module": "components/app",
       "line": 246,
       "column": 33,
@@ -1974,7 +1974,7 @@
     {
       "id": "DL-27",
       "rule": "DL-27",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-food-specs-card.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
       "module": "components/app",
       "line": 258,
       "column": 109,
@@ -1985,7 +1985,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "/home/ubuntu/waesy-design-remediation/src/components/admin/catalog/product-food-specs-card.tsx",
+      "file": "C:/Users/aline/.gemini/antigravity/scratch/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
       "module": "components/app",
       "line": 285,
       "column": 27,

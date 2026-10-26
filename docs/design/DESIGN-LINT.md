@@ -21,7 +21,7 @@ Este catálogo estabelece as regras determinísticas de detecção de defeitos v
 ### DL-02: Classe arbitrária com valor entre colchetes
 - **Severidade:** P1
 - **Fundamentação:** Bringhurst / Grid Systems (Müller-Brockmann) / Refactoring UI.
-- **Regra:** Proibido uso de utilitários Tailwind com colchetes contendo valores arbitrários (ex: `w-[327px]`, `p-[13px]`, `text-[#333]`).
+- **Regra:** Proibido uso de utilitários Tailwind com colchetes contendo valores arbitrários (ex: `w-[327px]`, `p-[13px]`, `text-[#333]`). Casos de safe-area, viewports dinâmicos e margens móveis devem consumir os utilitários semânticos canônicos (`pt-safe-modal`, `top-safe-notch`, `px-mobile-edge`, `min-h-screen-dvh`, `pb-safe`).
 - **Detecção:** Regex `\b[a-zA-Z0-9_-]+-\[[^\]]+\]` em atributos `className`.
 
 ### DL-03: Espaçamento fora da grade de 4px
@@ -63,7 +63,7 @@ Este catálogo estabelece as regras determinísticas de detecção de defeitos v
 ### DL-09: Mais de 4 raios distintos na base de componentes
 - **Severidade:** P2
 - **Fundamentação:** Apple HIG Squircle System / Consistência Geométrica.
-- **Regra:** O sistema utiliza estritamente 4 raios: `none` (0), `sm` (4px), `md` (8px), `lg` (12px) e `full`.
+- **Regra:** O sistema utiliza os raios canônicos do Design Tokens (tokens.json): `none` (0), `xs` (2px), `sm` (4px), `md` (8px), `lg` (12px), `xl` (16px), `2xl` (24px) e `full`/`pill` (9999px). Proibidos raios arbitrários com colchetes.
 - **Detecção:** Verificação do conjunto de classes `rounded-` presentes na tela.
 
 ### DL-10: Cardinalidade de tamanhos de fonte acima de 8
@@ -93,7 +93,7 @@ Este catálogo estabelece as regras determinísticas de detecção de defeitos v
 ### DL-14: Alvo interativo abaixo de 44px no mobile
 - **Severidade:** P1
 - **Fundamentação:** Apple HIG Touch Targets / Parhi, Karlson, Bederson (2006) / WCAG 2.2 AA 2.5.8.
-- **Regra:** Todo elemento clicável em telas compactas (<600px) possui altura e largura mínimas de 44x44px (`h-11`).
+- **Regra:** Todo elemento clicável em telas compactas (<600px) e ações primárias de vitrine possui altura e largura mínimas de 44x44px (`h-11 min-h-11`). Em viewports desktop (>=840px) no Workspace/Admin denso, controles secundários de 32-36px (`h-8`/`h-9`) são aceitos em tabelas e barras de ferramentas.
 - **Detecção:** Classes `h-` e `size-` inferiores a `11` em botões, links e tags interativas.
 
 ### DL-15: Elemento interativo sem foco visível

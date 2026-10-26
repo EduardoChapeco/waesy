@@ -241,7 +241,7 @@ function GroupTourBoardingPage() {
             type="button"
             variant="outline"
             onClick={handleExportCsv}
-            className="h-11 sm:h-10 px-4 sm:px-3 rounded-lg text-xs font-bold gap-2 cursor-pointer"
+            className="h-11 sm:h-10 px-4 sm:px-3 rounded-lg text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Download className="size-4 sm:size-3.5" /> Planilha CSV
           </Button>
@@ -258,7 +258,7 @@ function GroupTourBoardingPage() {
           <Button
             type="button"
             onClick={() => setPointModalOpen(true)}
-            className="h-11 sm:h-10 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer shadow-xs"
+            className="h-11 sm:h-10 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer shadow-xs focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Plus className="size-4 sm:size-3.5" /> Pontos de Parada
           </Button>
@@ -365,9 +365,9 @@ function GroupTourBoardingPage() {
  className={cn(
  "size-11 rounded-lg flex items-center justify-center font-mono font-bold text-sm shrink-0 border",
  isCheckedIn
- ? "bg-emerald-600 text-white border-emerald-600"
+ ? "bg-emerald-600 text-primary-foreground border-emerald-600"
  : isNoShow
- ? "bg-rose-600 text-white border-rose-600"
+ ? "bg-rose-600 text-destructive-foreground border-rose-600"
  : "bg-muted text-foreground border-border/80"
  )}
  >
@@ -380,12 +380,12 @@ function GroupTourBoardingPage() {
  {passenger.passenger_name || "Nome não informado"}
  </p>
  {isCheckedIn && (
- <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white text-xs px-2 py-0 h-4">
+ <Badge className="bg-emerald-600 hover:bg-emerald-600 text-primary-foreground text-xs px-2 py-0 h-4">
  A bordo
  </Badge>
  )}
  {isNoShow && (
- <Badge className="bg-rose-600 hover:bg-rose-600 text-white text-xs px-2 py-0 h-4">
+ <Badge className="bg-rose-600 hover:bg-rose-600 text-primary-foreground text-xs px-2 py-0 h-4">
  Ausente
  </Badge>
  )}
@@ -449,7 +449,7 @@ function GroupTourBoardingPage() {
  )
  }
  title={isNoShow ? "Cancelar ausência" : "Marcar como ausente"}
- className="size-11 sm:size-10 rounded-lg cursor-pointer text-muted-foreground hover:text-rose-600 shrink-0"
+ className="h-11 min-h-11 w-11 min-w-11 sm:h-10 sm:min-h-10 sm:w-10 sm:min-w-10 rounded-lg cursor-pointer text-muted-foreground hover:text-rose-600 shrink-0 focus-visible:ring-2 focus-visible:ring-ring"
  >
  <UserX className="size-4" />
  </Button>

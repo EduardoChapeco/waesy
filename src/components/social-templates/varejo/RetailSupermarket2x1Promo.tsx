@@ -8,7 +8,7 @@ import { Tag, ShoppingBag, ArrowRight } from "lucide-react";
 import { formatMoney } from "@/lib/money";
 import type { SocialTemplateProps } from "../types";
 
-export function RetailSupermarket2x1Promo({ data, scale = 1, className = "" }: SocialTemplateProps) {
+export function RetailSupermarket2x1Promo({ data, className = "" }: SocialTemplateProps) {
   const isNineSixteen = data.aspectRatio === "9:16";
   const canvasWidth = isNineSixteen ? 1080 : data.aspectRatio === "4:5" ? 1080 : 1080;
   const canvasHeight = isNineSixteen ? 1920 : data.aspectRatio === "4:5" ? 1350 : 1080;
@@ -18,9 +18,7 @@ export function RetailSupermarket2x1Promo({ data, scale = 1, className = "" }: S
       style={{
         width: `${canvasWidth}px`,
         height: `${canvasHeight}px`,
-        transform: `scale(${scale})`,
-        transformOrigin: "top left",
-      }}
+              }}
       className={`relative bg-white text-slate-900 overflow-hidden font-sans select-none flex flex-col justify-between ${className}`}
     >
       {/* ── 1. Topo: Bloco Turquesa/Ciano de Alto Impacto (OFERTA 2x1) ── */}

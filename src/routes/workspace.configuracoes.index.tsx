@@ -481,54 +481,12 @@ export default function WorkspaceConfiguracoesPage() {
   const hasDeliveryModule = enabledModules.includes("delivery") && isPhysicalDeliveryNiche;
 
  return (
- <div className="space-y-6 animate-in fade-in duration-200 max-w-6xl mx-auto w-full px-0 sm:px-4 md:px-0 pb-20">
+ <div className="space-y-6 animate-in fade-in duration-200 motion-reduce:transition-none motion-reduce:animate-none max-w-6xl mx-auto w-full px-0 sm:px-4 md:px-0 pb-20">
  {/* ── 1. Header Minimalista & Direto ── */}
  <PageHeader
  eyebrow={`Loja • ${currentNiche.name}`}
  title="Configurações"
- actions={
- <div className="flex items-center gap-2">
-            <Button asChild variant="outline" size="sm" className="rounded-lg text-xs font-semibold gap-2 h-9">
-              <Link to="/workspace/configuracoes/privacidade-loja">
-                <ShieldCheck className="size-3.5 text-primary" />
-                <span>Privacidade</span>
-              </Link>
-            </Button>
-
-            <Button asChild variant="outline" size="sm" className="rounded-lg text-xs font-semibold gap-2 h-9">
-              <Link to="/workspace/configuracoes/sessoes">
-                <ShieldCheck className="size-3.5 text-primary" />
-                <span>Sessões</span>
-              </Link>
-            </Button>
-
-            <Button asChild variant="outline" size="sm" className="rounded-lg text-xs font-semibold gap-2 h-9">
-              <Link to="/workspace/configuracoes/equipe">
-                <Building2 className="size-3.5" />
-                <span>Equipe</span>
-              </Link>
-            </Button>
-
- <Button
- onClick={handleSaveAll}
- disabled={isSaving}
- size="sm"
- className="rounded-lg text-xs font-bold gap-2 bg-foreground text-background hover:bg-foreground/90 h-9 cursor-pointer"
- >
- {isSaving ? (
- <>
- <Loader2 className="size-3.5 animate-spin" />
- <span>Salvando...</span>
- </>
- ) : (
- <>
- <Save className="size-3.5" />
- <span>Salvar</span>
- </>
- )}
- </Button>
- </div>
- }
+ actions={headerActions}
  />
 
  {/* ── 2. Abas de Governança Nichadas ── */}
@@ -573,15 +531,15 @@ export default function WorkspaceConfiguracoesPage() {
  <div className="space-y-3 pb-4 border-b border-border/40">
  <div className="flex items-center justify-between">
  <Label className="text-xs font-bold text-foreground">Identidade do Perfil (1:1 Squircle + Capa 21:9)</Label>
- <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary">
+ <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary">
  Padrão Canônico
  </Badge>
  </div>
 
  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full">
  {/* Logotipo 1:1 Squircle */}
- <div className="w-full sm:w-auto shrink-0 space-y-1.5">
- <span className="text-[11px] font-medium text-muted-foreground block">Logotipo (1:1)</span>
+ <div className="w-full sm:w-auto shrink-0 space-y-2">
+ <span className="text-xs font-medium text-muted-foreground block">Logotipo (1:1)</span>
  <div className="size-24 sm:size-28">
  <ImageUpload
  value={logoUrl}
@@ -596,9 +554,9 @@ export default function WorkspaceConfiguracoesPage() {
  </div>
 
  {/* Capa Panorâmica 21:9 ao lado */}
- <div className="flex-1 min-w-0 w-full space-y-1.5">
- <span className="text-[11px] font-medium text-muted-foreground block">Capa Panorâmica (21:9)</span>
- <div className="w-full aspect-[21/9] rounded-lg overflow-hidden">
+ <div className="flex-1 min-w-0 w-full space-y-2">
+ <span className="text-xs font-medium text-muted-foreground block">Capa Panorâmica (21:9)</span>
+ <div className="w-full aspect-video rounded-lg overflow-hidden">
  <ImageUpload
  value={bannerUrl}
  onChange={(url) => setBannerUrl(url)}
@@ -931,7 +889,7 @@ export default function WorkspaceConfiguracoesPage() {
    toast.success(`Nicho alterado para ${n.title}. Módulos recomendados foram ativados.`);
  }}
  className={cn(
- "flex flex-col text-left p-4 rounded-lg border transition-all cursor-pointer relative",
+                  "flex flex-col text-left p-4 rounded-lg border transition-colors duration-150 cursor-pointer relative focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-11",
  isSelected
  ? "border-primary bg-primary/5 ring-1 ring-primary/40"
  : "border-border/60 bg-muted/20 hover:bg-muted/50 text-muted-foreground"
@@ -941,7 +899,7 @@ export default function WorkspaceConfiguracoesPage() {
  <span className={cn("text-xs font-bold", isSelected ? "text-primary" : "text-foreground")}>
  {n.title}
  </span>
- {isSelected && <Check className="size-3.5 text-primary shrink-0" />}
+ {isSelected && <Check className="size-4 text-primary shrink-0" />}
  </div>
  <p className="text-xs leading-relaxed text-muted-foreground">
  {n.desc}
@@ -974,7 +932,7 @@ export default function WorkspaceConfiguracoesPage() {
    setEnabledModules(newDefaults);
    toast.success(`Módulos restaurados para o padrão ${semantics.name}.`);
  }}
- className="text-xs h-7 rounded-lg"
+ className="text-xs h-11 min-h-11 px-3 rounded-lg focus-visible:ring-2 focus-visible:ring-primary"
  >
  {semantics.nicheId === "tourism"
  ? "Padrão Turismo & Viagens"
@@ -1104,7 +1062,7 @@ export default function WorkspaceConfiguracoesPage() {
  key={mod.id}
  onClick={() => handleToggleModule(mod.id)}
  className={cn(
- "flex items-start justify-between p-4 rounded-lg border transition-all cursor-pointer select-none",
+                      "flex items-start justify-between p-4 rounded-lg border transition-colors duration-150 cursor-pointer select-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-11",
  isEnabled
  ? "border-primary/40 bg-primary/5 dark:bg-primary/10"
  : "border-border/60 bg-muted/20 hover:bg-muted/40 opacity-70"
@@ -1153,7 +1111,7 @@ export default function WorkspaceConfiguracoesPage() {
  value={phone}
  onChange={(e) => setPhone(e.target.value)}
  placeholder="(49) 99999-9999"
- className="rounded-lg text-xs h-9"
+ className="rounded-lg text-xs h-11 min-h-11 px-4"
  />
  </div>
 
@@ -1167,7 +1125,7 @@ export default function WorkspaceConfiguracoesPage() {
  value={email}
  onChange={(e) => setEmail(e.target.value)}
  placeholder="contato@minhaloja.com.br"
- className="rounded-lg text-xs h-9"
+ className="rounded-lg text-xs h-11 min-h-11 px-4"
  />
  </div>
 
@@ -1177,7 +1135,7 @@ export default function WorkspaceConfiguracoesPage() {
  value={cnpj}
  onChange={(e) => setCnpj(e.target.value)}
  placeholder="00.000.000/0001-00"
- className="rounded-lg text-xs h-9"
+ className="rounded-lg text-xs h-11 min-h-11 px-4"
  />
  </div>
  </div>
@@ -1196,7 +1154,7 @@ export default function WorkspaceConfiguracoesPage() {
  value={address}
  onChange={(e) => setAddress(e.target.value)}
  placeholder="Rua, número, complemento e bairro"
- className="rounded-lg text-xs h-9"
+ className="rounded-lg text-xs h-11 min-h-11 px-4"
  />
  </div>
  </div>
@@ -1443,7 +1401,7 @@ export default function WorkspaceConfiguracoesPage() {
                 key={opt.id}
                 onClick={() => setCheckoutLayoutMode(opt.id as any)}
                 className={cn(
-                  "p-4 rounded-lg border text-left cursor-pointer transition-all space-y-2",
+                  "p-4 rounded-lg border text-left cursor-pointer transition-colors duration-150 space-y-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-11",
                   checkoutLayoutMode === opt.id
                     ? "border-primary bg-primary/5 ring-1 ring-primary"
                     : "border-border/60 hover:border-border"
@@ -1477,7 +1435,7 @@ export default function WorkspaceConfiguracoesPage() {
                 key={dOpt.id}
                 onClick={() => setDigitalDeliveryType(dOpt.id as any)}
                 className={cn(
-                  "p-3 rounded-lg border cursor-pointer transition-all space-y-1",
+                  "p-3 rounded-lg border cursor-pointer transition-colors duration-150 space-y-1 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-11",
                   digitalDeliveryType === dOpt.id
                     ? "border-primary bg-primary/5 ring-1 ring-primary"
                     : "border-border/60 hover:border-border"
@@ -1527,7 +1485,7 @@ export default function WorkspaceConfiguracoesPage() {
                 key={pOpt.id}
                 onClick={() => setWeighablePricingMode(pOpt.id as any)}
                 className={cn(
-                  "p-4 rounded-lg border cursor-pointer transition-all space-y-2",
+                  "p-4 rounded-lg border cursor-pointer transition-colors duration-150 space-y-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-11",
                   weighablePricingMode === pOpt.id
                     ? "border-primary bg-primary/5 ring-1 ring-primary"
                     : "border-border/60 hover:border-border"
@@ -1561,7 +1519,7 @@ export default function WorkspaceConfiguracoesPage() {
                 key={sOpt.id}
                 onClick={() => setServicePaymentPolicy(sOpt.id as any)}
                 className={cn(
-                  "p-3 rounded-lg border cursor-pointer transition-all space-y-1",
+                  "p-3 rounded-lg border cursor-pointer transition-colors duration-150 space-y-1 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-11",
                   servicePaymentPolicy === sOpt.id
                     ? "border-primary bg-primary/5 ring-1 ring-primary"
                     : "border-border/60 hover:border-border"
@@ -1581,7 +1539,7 @@ export default function WorkspaceConfiguracoesPage() {
                 max={90}
                 value={serviceDepositPercentage}
                 onChange={(e) => setServiceDepositPercentage(parseInt(e.target.value, 10) || 30)}
-                className="w-24 h-9 text-xs rounded-lg"
+                className="w-24 h-11 min-h-11 px-4 text-xs rounded-lg"
               />
             </div>
           )}
@@ -1604,7 +1562,7 @@ export default function WorkspaceConfiguracoesPage() {
  <div
  onClick={() => setPaymentProcessingMode("platform_gateway")}
  className={cn(
- "rounded-lg border p-4 cursor-pointer transition-all space-y-2",
+ "rounded-lg border p-4 cursor-pointer transition-colors duration-150 space-y-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-11",
  paymentProcessingMode === "platform_gateway"
  ? "border-primary bg-primary/5 ring-1 ring-primary"
  : "border-border/70 hover:border-border"
@@ -1624,7 +1582,7 @@ export default function WorkspaceConfiguracoesPage() {
  <div
  onClick={() => setPaymentProcessingMode("direct_store")}
  className={cn(
- "rounded-lg border p-4 cursor-pointer transition-all space-y-2",
+ "rounded-lg border p-4 cursor-pointer transition-colors duration-150 space-y-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none min-h-11",
  paymentProcessingMode === "direct_store"
  ? "border-primary bg-primary/5 ring-1 ring-primary"
  : "border-border/70 hover:border-border"
@@ -1686,7 +1644,7 @@ export default function WorkspaceConfiguracoesPage() {
  onClick={() => setIsAddingMethod(!isAddingMethod)}
  className="rounded-lg text-xs font-bold gap-2 shrink-0 bg-primary text-primary-foreground cursor-pointer"
  >
- <Plus className="size-3.5" />
+ <Plus className="size-4" />
  <span>Nova Forma</span>
  </Button>
  </div>
@@ -1699,7 +1657,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-lg text-xs h-8"
+ className="rounded-lg text-xs h-11 min-h-11 px-3 focus-visible:ring-2 focus-visible:ring-primary"
  onClick={() => {
  setNewMethodName("Maquininha de Cartão (Débito e Crédito)");
  setNewMethodInstructions("Levamos a maquininha até você. Aceitamos Visa, Master, Elo e Hipercard.");
@@ -1712,7 +1670,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-lg text-xs h-8"
+ className="rounded-lg text-xs h-11 min-h-11 px-3 focus-visible:ring-2 focus-visible:ring-primary"
  onClick={() => {
  setNewMethodName("Dinheiro (Informar Troco)");
  setNewMethodInstructions("Pagamento em dinheiro no momento da entrega.");
@@ -1725,7 +1683,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-lg text-xs h-8"
+ className="rounded-lg text-xs h-11 min-h-11 px-3 focus-visible:ring-2 focus-visible:ring-primary"
  onClick={() => {
  setNewMethodName("Pix no Balcão");
  setNewMethodInstructions("Pague via QR Code exibido diretamente no balcão da loja.");
@@ -1821,9 +1779,9 @@ export default function WorkspaceConfiguracoesPage() {
  variant="ghost"
  size="sm"
  onClick={() => handleDeleteManualMethod(method.id)}
- className="size-8 p-0 text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer"
+ className="size-11 min-h-11 min-w-11 p-0 text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
  >
- <Trash2 className="size-3.5" />
+ <Trash2 className="size-4" />
  </Button>
  </div>
  </div>
@@ -1862,7 +1820,7 @@ export default function WorkspaceConfiguracoesPage() {
  }}
  className="rounded-lg text-xs font-bold gap-2 shrink-0 bg-primary text-primary-foreground cursor-pointer"
  >
- <Plus className="size-3.5" />
+ <Plus className="size-4" />
  <span>Adicionar Campo</span>
  </Button>
  </div>
@@ -1877,7 +1835,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-lg text-xs h-8"
+ className="rounded-lg text-xs h-11 min-h-11 px-3 focus-visible:ring-2 focus-visible:ring-primary"
  onClick={() => setCustomFields((p) => [...p, { id: `f_${Date.now()}`, label: "Documento / Passaporte do Titular", placeholder: "RG, CPF ou Passaporte", type: "text", required: true }])}
  >
  + Documento / Passaporte
@@ -1886,7 +1844,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-lg text-xs h-8"
+ className="rounded-lg text-xs h-11 min-h-11 px-3 focus-visible:ring-2 focus-visible:ring-primary"
  onClick={() => setCustomFields((p) => [...p, { id: `f_${Date.now()}`, label: "Data de Nascimento dos Passageiros", placeholder: "Ex: Passageiro 1: 15/04/1990", type: "text", required: true }])}
  >
  + Data de Nascimento
@@ -1895,7 +1853,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-lg text-xs h-8"
+ className="rounded-lg text-xs h-11 min-h-11 px-3 focus-visible:ring-2 focus-visible:ring-primary"
  onClick={() => setCustomFields((p) => [...p, { id: `f_${Date.now()}`, label: "Preferência de Assento / Acomodação", placeholder: "Ex: Janela, Quarto Casal", type: "text", required: false }])}
  >
  + Preferência de Assento
@@ -1907,7 +1865,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-lg text-xs h-8"
+ className="rounded-lg text-xs h-11 min-h-11 px-3 focus-visible:ring-2 focus-visible:ring-primary"
  onClick={() => setCustomFields((p) => [...p, { id: `f_${Date.now()}`, label: "Observações / Alergias", placeholder: "Sem cebola, alergia a glúten...", type: "text", required: false }])}
  >
  + Observações / Alergias
@@ -1916,7 +1874,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-lg text-xs h-8"
+ className="rounded-lg text-xs h-11 min-h-11 px-3 focus-visible:ring-2 focus-visible:ring-primary"
  onClick={() => setCustomFields((p) => [...p, { id: `f_${Date.now()}`, label: "Precisa de Troco?", placeholder: "Ex: Troco para R$ 50", type: "text", required: false }])}
  >
  + Troco em Dinheiro
@@ -1925,7 +1883,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-lg text-xs h-8"
+ className="rounded-lg text-xs h-11 min-h-11 px-3 focus-visible:ring-2 focus-visible:ring-primary"
  onClick={() => setCustomFields((p) => [...p, { id: `f_${Date.now()}`, label: "Ponto de Referência", placeholder: "Próximo à praça central...", type: "text", required: false }])}
  >
  + Ponto de Referência
@@ -1937,7 +1895,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-lg text-xs h-8"
+ className="rounded-lg text-xs h-11 min-h-11 px-3 focus-visible:ring-2 focus-visible:ring-primary"
  onClick={() => setCustomFields((p) => [...p, { id: `f_${Date.now()}`, label: "CPF na Nota Fiscal", placeholder: "000.000.000-00", type: "text", required: false }])}
  >
  + CPF na Nota
@@ -1946,7 +1904,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-lg text-xs h-8"
+ className="rounded-lg text-xs h-11 min-h-11 px-3 focus-visible:ring-2 focus-visible:ring-primary"
  onClick={() => setCustomFields((p) => [...p, { id: `f_${Date.now()}`, label: "Instruções Especiais", placeholder: "Digite aqui suas orientações...", type: "textarea", required: false }])}
  >
  + Instruções Especiais
@@ -1984,9 +1942,9 @@ export default function WorkspaceConfiguracoesPage() {
  onClick={() => {
  setCustomFields((prev) => prev.filter((_, i) => i !== idx));
  }}
- className="size-7 text-rose-500 hover:bg-rose-500/10 rounded-lg"
+ className="size-11 min-h-11 min-w-11 text-rose-500 hover:bg-rose-500/10 rounded-lg focus-visible:ring-2 focus-visible:ring-primary"
  >
- <Trash2 className="size-3.5" />
+ <Trash2 className="size-4" />
  </Button>
  </div>
 
@@ -2002,7 +1960,7 @@ export default function WorkspaceConfiguracoesPage() {
  );
  }}
  placeholder="ex: Placa do Veículo, Nome para Gravação, etc."
- className="rounded-lg text-xs h-9"
+ className="rounded-lg text-xs h-11 min-h-11 px-4"
  />
  </div>
 
@@ -2016,7 +1974,7 @@ export default function WorkspaceConfiguracoesPage() {
  prev.map((f, i) => (i === idx ? { ...f, type: val } : f)),
  );
  }}
- className="w-full h-9 px-3 rounded-lg bg-card text-xs font-semibold"
+ className="w-full h-11 min-h-11 px-4 px-3 rounded-lg bg-card text-xs font-semibold"
  >
  <option value="text">Texto Curto</option>
  <option value="textarea">Texto Longo (Mensagem)</option>
@@ -2038,7 +1996,7 @@ export default function WorkspaceConfiguracoesPage() {
  );
  }}
  placeholder="ex: ABC-1234 ou Maria & João"
- className="rounded-lg text-xs h-9"
+ className="rounded-lg text-xs h-11 min-h-11 px-4"
  />
  </div>
 

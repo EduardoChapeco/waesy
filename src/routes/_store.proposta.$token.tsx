@@ -44,6 +44,8 @@ function PublicTravelProposalPage() {
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [isAccepted, setIsAccepted] = useState(proposal?.acceptance_status === "accepted");
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
+  const [pinInput, setPinInput] = useState("");
+  const [isPinUnlocked, setIsPinUnlocked] = useState(() => !proposal?.access_pin);
   const [selectedOptionIndex, setSelectedOptionIndex] = useState(() => {
     const acceptedIndex = proposal?.options?.findIndex((option: { id?: string }) => option.id === proposal?.accepted_option_id) ?? -1;
     return acceptedIndex >= 0 ? acceptedIndex : 0;
@@ -124,11 +126,11 @@ function PublicTravelProposalPage() {
           {loadError ? "Não foi possível carregar esta proposta. Tente novamente." : "A proposta pode ter expirado ou o link informado está incorreto."}
         </p>
         {loadError ? (
-          <Button type="button" size="sm" variant="outline" className="h-11 min-h-11 focus-visible:ring-2 focus-visible:ring-ring" onClick={() => window.location.reload()}>
+          <Button type="button" variant="outline" className="h-11 min-h-11 focus-visible:ring-2 focus-visible:ring-ring" onClick={() => window.location.reload()}>
             Tentar novamente
           </Button>
         ) : (
-          <Button asChild size="sm" variant="outline" className="h-11 min-h-11 rounded-lg focus-visible:ring-2 focus-visible:ring-ring">
+          <Button asChild variant="outline" className="h-11 min-h-11 rounded-lg focus-visible:ring-2 focus-visible:ring-ring">
             <Link to="/turismo">Explorar outros destinos</Link>
           </Button>
         )}
@@ -158,6 +160,45 @@ function PublicTravelProposalPage() {
 
   const activeOption = options[selectedOptionIndex] || null;
 
+  if (proposal.access_pin && !isPinUnlocked) {
+    return (
+      <div className="max-w-md mx-auto py-20 px-4 space-y-4">
+        <div className="p-6 rounded-lg border border-border bg-card space-y-4 text-center">
+          <ShieldCheck className="size-10 text-primary mx-auto" />
+          <div className="space-y-1">
+            <h2 className="text-base font-bold text-foreground">Proposta Protegida por Senha</h2>
+            <p className="text-xs text-muted-foreground">
+              Informe a senha enviada pelo seu consultor da {proposal.agency_name} para acessar os orçamentos.
+            </p>
+          </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (pinInput.trim() === proposal.access_pin) {
+                setIsPinUnlocked(true);
+                toast.success("Acesso liberado!");
+              } else {
+                toast.error("Senha incorreta. Solicite ao seu consultor.");
+              }
+            }}
+            className="space-y-3"
+          >
+            <Input
+              type="password"
+              placeholder="Digite a senha da proposta..."
+              value={pinInput}
+              onChange={(e) => setPinInput(e.target.value)}
+              className="h-11 text-center font-mono text-sm"
+            />
+            <Button type="submit" className="w-full h-11 min-h-11 font-bold text-xs focus-visible:ring-2 focus-visible:ring-ring">
+              Desbloquear Proposta
+            </Button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-5xl mx-auto py-4 sm:py-6 px-2 sm:px-4 space-y-4 sm:space-y-6 pb-28 sm:pb-8 animate-in fade-in duration-200">
       
@@ -172,7 +213,7 @@ function PublicTravelProposalPage() {
             <span className="text-[11px] text-muted-foreground">Toque para alternar</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+          <div className="carousel flex flex-nowrap overflow-x-auto no-scrollbar gap-2 pb-1" role="tablist" aria-label="Opções de orçamento agrupadas">
             {options.map((opt, idx) => {
               const isSelected = selectedOptionIndex === idx;
               const optPrice = opt.pricing?.total_price_cents || 0;
@@ -184,7 +225,9 @@ function PublicTravelProposalPage() {
                   key={opt.id || idx}
                   type="button"
                   onClick={() => setSelectedOptionIndex(idx)}
-                  className={`relative text-left p-3 rounded-lg border transition-all duration-150 cursor-pointer ${
+                  role="tab"
+                  aria-selected={isSelected}
+                  className={`relative shrink-0 min-w-64 text-left p-3 rounded-lg border transition-all duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring ${
                     isSelected
                       ? "border-emerald-600 bg-emerald-500/10 "
                       : "border-border/60 bg-background hover:bg-muted/40"

@@ -681,7 +681,7 @@ function EventosPage() {
                 key={pill.id}
                 type="button"
                 onClick={() => setSelectedDateFilter(pill.id)}
-                className={`h-11 px-3.5 rounded-lg text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer shrink-0 snap-start whitespace-nowrap ${
+                className={`h-11 px-4 rounded-lg text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer shrink-0 snap-start whitespace-nowrap ${
                   isSelected
                     ? "bg-foreground text-background font-bold shadow-xs"
                     : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"

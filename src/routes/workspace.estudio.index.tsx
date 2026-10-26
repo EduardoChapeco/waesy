@@ -514,8 +514,8 @@ function StudioWorkspacePage() {
  {studioMode === "graphic" ? (
  <div className="flex-1 flex items-center justify-center overflow-auto p-4">
  <StudioCanvas
- aspectRatio={aspectRatio}
- background={background}
+ aspectRatio={aspectRatio === "4:5" ? "9:16" : aspectRatio === "1.91:1" ? "16:9" : aspectRatio}
+ background={{ type: background.type, value: background.value || "" }}
  elements={elements}
  selectedElementId={selectedElementId}
  onSelectElement={setSelectedElementId}

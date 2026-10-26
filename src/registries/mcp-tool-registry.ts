@@ -2312,6 +2312,125 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
       };
     },
   },
+
+  search_hotels_and_resorts: {
+    name: "search_hotels_and_resorts",
+    module: "tourism",
+    description: "Busca hotéis, resorts e pousadas catalogados com filtros geográficos, estrelas e comodidades.",
+    tier: "public",
+    requiredScope: "public:read",
+    permission: { action: "read", resource: "products" },
+    idempotent: true,
+    rateLimitBucket: "webmcp_tool_call_public",
+    inputZodSchema: z.object({
+      query: z.string().optional(),
+      city: z.string().optional(),
+      state: z.string().optional(),
+      minStars: z.number().int().min(1).max(5).optional(),
+      limit: z.number().int().min(1).max(50).default(10),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "Nome ou palavra-chave da acomodação" },
+        city: { type: "string", description: "Nome do município" },
+        state: { type: "string", description: "UF do estado (ex: PE, AL, BA, SC)" },
+        minStars: { type: "integer", description: "Classificação mínima por estrelas (1 a 5)" },
+        limit: { type: "integer", default: 10 },
+      },
+    },
+    handler: async (ctx, args) => {
+      let query = ctx.supabase
+        .from("hotels_bank")
+        .select("id, name, city, state, stars, regime_options, cover_photo_url, description, internal_rating, website, phone, address")
+        .eq("is_active", true);
+
+      if (args.city) query = query.ilike("city", `%${args.city}%`);
+      if (args.state) query = query.ilike("state", `%${args.state}%`);
+      if (args.minStars) query = query.gte("stars", args.minStars);
+      if (args.query) query = query.ilike("name", `%${args.query}%`);
+
+      const { data, error } = await query.order("internal_rating", { ascending: false }).limit(args.limit || 10);
+      if (error) throw new Error(`Falha ao buscar hospedagens: ${error.message}`);
+      return { total: data?.length || 0, hotels: data || [] };
+    },
+  },
+
+  search_public_tenders: {
+    name: "search_public_tenders",
+    module: "governance",
+    description: "Consulta editais e licitações públicas municipais (PNCP) auditadas com score de risco e resumo de IA.",
+    tier: "public",
+    requiredScope: "public:read",
+    permission: { action: "read", resource: "orders" },
+    idempotent: true,
+    rateLimitBucket: "webmcp_tool_call_public",
+    inputZodSchema: z.object({
+      query: z.string().optional(),
+      city: z.string().optional(),
+      uf: z.string().optional(),
+      limit: z.number().int().min(1).max(50).default(10),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "Termo de busca no título ou objeto da licitação" },
+        city: { type: "string", description: "Município da contratação" },
+        uf: { type: "string", description: "Sigla do estado (ex: SC, PR, RS)" },
+        limit: { type: "integer", default: 10 },
+      },
+    },
+    handler: async (ctx, args) => {
+      let query = ctx.supabase
+        .from("mined_tenders")
+        .select("id, pncp_id, title, agency_name, modality, estimated_amount_cents, publication_date, closing_date, city, uf, portal_url, ai_risk_score, ai_curated_digest");
+
+      if (args.city) query = query.ilike("city", `%${args.city}%`);
+      if (args.uf) query = query.ilike("uf", `%${args.uf}%`);
+      if (args.query) query = query.or(`title.ilike.%${args.query}%,description.ilike.%${args.query}%`);
+
+      const { data, error } = await query.order("publication_date", { ascending: false }).limit(args.limit || 10);
+      if (error) throw new Error(`Falha ao consultar licitações: ${error.message}`);
+      return { total: data?.length || 0, tenders: data || [] };
+    },
+  },
+
+  search_news_articles: {
+    name: "search_news_articles",
+    module: "marketing",
+    description: "Busca notícias jornalísticas apuradas com lead 5W1H e metadados de credibilidade.",
+    tier: "public",
+    requiredScope: "public:read",
+    permission: { action: "read", resource: "marketing" },
+    idempotent: true,
+    rateLimitBucket: "webmcp_tool_call_public",
+    inputZodSchema: z.object({
+      query: z.string().optional(),
+      category: z.string().optional(),
+      limit: z.number().int().min(1).max(50).default(10),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "Termo de busca no título ou conteúdo da notícia" },
+        category: { type: "string", description: "Categoria jornalística (ex: cidade, economia, politica)" },
+        limit: { type: "integer", default: 10 },
+      },
+    },
+    handler: async (ctx, args) => {
+      let query = ctx.supabase
+        .from("news_articles")
+        .select("id, title, slug, subtitle, kicker, category, published_at, reading_time_minutes, source_name, cover_image_url")
+        .eq("status", "published");
+
+      if (args.category) query = query.eq("category", args.category);
+      if (args.query) query = query.ilike("title", `%${args.query}%`);
+
+      const { data, error } = await query.order("published_at", { ascending: false }).limit(args.limit || 10);
+      if (error) throw new Error(`Falha ao buscar notícias: ${error.message}`);
+      return { total: data?.length || 0, articles: data || [] };
+    },
+  },
 };
 
 /**

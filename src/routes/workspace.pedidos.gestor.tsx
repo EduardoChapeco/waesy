@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo, useEffect, Fragment } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, ChefHat, Clock, CheckCircle2, Bike, PackageSearch, Maximize, Printer, FileText, MessageCircle, AlertTriangle, TrendingUp, Activity, Kanban, LayoutDashboard, Users, UtensilsCrossed, MapPin, Phone, Navigation, History } from "lucide-react";
+import { ArrowLeft, ChefHat, Clock, CheckCircle2, Bike, PackageSearch, Maximize, Printer, FileText, MessageCircle, AlertTriangle, TrendingUp, Activity, Kanban, LayoutDashboard, Users, UtensilsCrossed, MapPin, Phone, Navigation, History, X } from "lucide-react";
 
 import { getRealtimeChannel } from "@/services/realtime-channel";
 import { listOrders, updateOrderStatus } from "@/services/order.functions";
@@ -325,7 +325,7 @@ function KDSPage() {
  toolDescription="O painel KDS (Kitchen Display System) em tempo real, com divisão de praças e tempos de cocção, é projetado especificamente para restaurantes e delivery de alimentação."
  store={store}
  >
- <div className="fixed inset-0 z-50 bg-background flex flex-col h-screen overflow-hidden text-foreground">
+ <div className="fixed inset-0 z-50 bg-background flex flex-col h-screen overflow-hidden text-foreground motion-reduce:transition-none">
  {/* Estilos de Impressão (Bobina 80mm) */}
  <style>{`
  @media print {
@@ -343,8 +343,8 @@ function KDSPage() {
  padding: 0;
  margin: 0;
  font-family: monospace;
- color: #000;
- background: #fff;
+ color: black;
+ background: white;
  }
  .no-print {
  display: none;
@@ -356,7 +356,7 @@ function KDSPage() {
  <header className="flex-none h-16 bg-card px-4 flex items-center justify-between no-print">
  <div className="flex items-center gap-4">
  {!isFullscreen && (
- <Button variant="ghost" size="icon" asChild>
+ <Button variant="ghost" size="icon" asChild className="size-11 min-h-11 min-w-11 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
  <Link to="/workspace/pedidos">
  <ArrowLeft className="size-5" />
  </Link>
@@ -380,7 +380,7 @@ function KDSPage() {
  variant={viewMode === "kanban" ? "default" : "ghost"}
  size="sm"
  onClick={() => setViewMode("kanban")}
- className="h-8 text-xs font-bold rounded-lg gap-2"
+ className="h-11 min-h-11 px-3 text-xs font-bold rounded-lg gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  >
  <Kanban className="size-3.5" />
  Kanban KDS
@@ -389,7 +389,7 @@ function KDSPage() {
  variant={viewMode === "live_dashboard" ? "default" : "ghost"}
  size="sm"
  onClick={() => setViewMode("live_dashboard")}
- className="h-8 text-xs font-bold rounded-lg gap-2"
+ className="h-11 min-h-11 px-3 text-xs font-bold rounded-lg gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  >
  <LayoutDashboard className="size-3.5" />
  Live Dashboard
@@ -400,7 +400,7 @@ function KDSPage() {
  variant="outline"
  size="sm"
  asChild
- className="gap-2 text-xs font-bold bg-primary/5 text-primary border-primary/20 hover:bg-primary/10"
+ className="h-11 min-h-11 px-3 gap-2 text-xs font-bold bg-primary/5 text-primary border-primary/20 hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  >
  <Link to="/workspace/pdv/cozinha">
  <ChefHat className="size-3.5" />
@@ -408,18 +408,18 @@ function KDSPage() {
  </Link>
  </Button>
         {!audioUnlocked && (
-          <Badge
-            variant="warning"
-            className="cursor-pointer text-xs select-none"
+          <button
+            type="button"
             onClick={() => {
               unlockAudioContext();
               setAudioUnlocked(true);
             }}
+            className="h-11 min-h-11 px-3 inline-flex items-center gap-2 rounded-lg border text-xs font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/20 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer"
           >
             Ativar Áudio
-          </Badge>
+          </button>
         )}
- <Button variant="outline" size="sm" onClick={toggleFullscreen} className="gap-2 text-xs font-bold">
+ <Button variant="outline" size="sm" onClick={toggleFullscreen} className="h-11 min-h-11 px-3 gap-2 text-xs font-bold focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
  <Maximize className="size-3.5" />
  {isFullscreen ? "Sair" : "Tela Cheia"}
  </Button>
@@ -434,7 +434,7 @@ function KDSPage() {
  type="button"
  onClick={() => setTimingTab("now")}
  className={cn(
- "px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer",
+ "px-3 py-2 min-h-11 h-11 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
  timingTab === "now"
  ? "bg-background text-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground",
@@ -450,7 +450,7 @@ function KDSPage() {
  type="button"
  onClick={() => setTimingTab("scheduled")}
  className={cn(
- "px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer",
+ "px-3 py-2 min-h-11 h-11 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
  timingTab === "scheduled"
  ? "bg-background text-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground",
@@ -464,7 +464,7 @@ function KDSPage() {
  </div>
 
  {/* Chips de Canais Omnichannel */}
- <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-1">
+ <div className="flex items-center gap-1 scroll-area overflow-x-auto no-scrollbar py-1">
  {[
  { id: "all", label: "Todos os Canais" },
  { id: "ifood", label: "iFood" },
@@ -478,7 +478,7 @@ function KDSPage() {
  type="button"
  onClick={() => setChannelFilter(ch.id)}
  className={cn(
- "px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer border",
+ "px-3 min-h-11 h-11 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer border focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
  channelFilter === ch.id
  ? "bg-foreground text-background border-foreground"
  : "bg-background text-muted-foreground border-border hover:text-foreground hover:border-foreground/40",
@@ -495,16 +495,16 @@ function KDSPage() {
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
  placeholder="Buscar cliente, pedido, rua..."
- className="h-8 text-xs rounded-lg pl-3 pr-8 bg-background border-border/80"
+ className="h-11 min-h-11 text-xs rounded-lg pl-3 pr-8 bg-background border-border/80 focus-visible:ring-2 focus-visible:ring-ring"
  />
  {searchQuery && (
  <button
- type="button"
- onClick={() => setSearchQuery("")}
- className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
- >
- 
- </button>
+            type="button"
+            onClick={() => setSearchQuery("")}
+            className="absolute right-1 top-1/2 -translate-y-1/2 size-11 min-h-11 min-w-11 flex items-center justify-center text-xs text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none rounded-lg"
+          >
+            <X className="size-4" />
+          </button>
  )}
  </div>
  </div>
@@ -521,7 +521,7 @@ function KDSPage() {
  <button
  type="button"
  onClick={() => setAlertModalOpen(true)}
- className="font-bold underline hover:text-rose-900 dark:hover:text-rose-200 cursor-pointer"
+ className="font-bold underline hover:text-rose-900 dark:hover:text-rose-200 cursor-pointer min-h-11 h-11 px-2 inline-flex items-center focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  >
  Intervir e Avisar Cozinha / Cliente
  </button>
@@ -589,10 +589,18 @@ function KDSPage() {
 
  return (
  <div
- key={ord.id}
- onClick={() => setSelectedOrder(ord)}
- className="p-4 space-y-3 bg-card hover:bg-muted/30 transition-colors cursor-pointer"
- >
+                key={ord.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => setSelectedOrder(ord)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setSelectedOrder(ord);
+                  }
+                }}
+                className="p-4 space-y-3 bg-card hover:bg-muted/30 transition-colors cursor-pointer rounded-lg focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              >
  <div className="flex items-center justify-between gap-2">
  <div className="flex items-center gap-2">
  <span className="font-mono font-bold text-sm text-foreground">
@@ -626,7 +634,7 @@ function KDSPage() {
  <div className="w-full bg-muted h-2 rounded-full overflow-hidden">
  <div
  className={cn(
- "h-full transition-all",
+ "h-full transition-colors",
  isLate ? "bg-rose-500" : elapsed > 20 ? "bg-amber-500" : "bg-emerald-500",
  )}
  style={{ width: `${Math.min(100, Math.round((elapsed / 30) * 100))}%` }}
@@ -634,14 +642,14 @@ function KDSPage() {
  </div>
  </div>
 
- <div className="flex items-center gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
+ <div className="flex items-center gap-2 pt-2" onPointerDown={(e) => e.stopPropagation()}>
  {(ord.customer_snapshot?.phone || ord.customer?.phone) && (
  <Button
  size="icon"
  variant="outline"
  title="Avisar cliente WhatsApp"
  onClick={(e) => handleNotifyCustomerWhatsApp(ord, e)}
- className="size-11 sm:size-9 rounded-lg text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer shrink-0"
+ className="size-11 min-h-11 min-w-11 rounded-lg text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  >
  <MessageCircle className="size-4" />
  </Button>
@@ -650,7 +658,7 @@ function KDSPage() {
  size="sm"
  variant="outline"
  onClick={() => setSelectedOrder(ord)}
- className="flex-1 h-11 sm:h-9 rounded-lg text-xs font-bold cursor-pointer"
+ className="flex-1 h-11 min-h-11 rounded-lg text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  >
  Ver Detalhes
  </Button>
@@ -682,7 +690,18 @@ function KDSPage() {
  const ch = getChannelInfo(ord);
 
  return (
- <TableRow key={ord.id} className="cursor-pointer hover:bg-muted/40" onClick={() => setSelectedOrder(ord)}>
+ <TableRow
+                        key={ord.id}
+                        tabIndex={0}
+                        className="cursor-pointer hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                        onClick={() => setSelectedOrder(ord)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            setSelectedOrder(ord);
+                          }
+                        }}
+                      >
  <TableCell className="font-mono font-bold text-xs">
  #{ord.id.split("-")[0].toUpperCase()}
  </TableCell>
@@ -713,7 +732,7 @@ function KDSPage() {
  <div className="w-full bg-muted h-1.5 rounded-full overflow-hidden">
  <div
  className={cn(
- "h-full transition-all",
+ "h-full transition-colors",
  isLate ? "bg-rose-500" : elapsed > 20 ? "bg-amber-500" : "bg-emerald-500",
  )}
  style={{ width: `${Math.min(100, Math.round((elapsed / 30) * 100))}%` }}
@@ -721,7 +740,7 @@ function KDSPage() {
  </div>
  </div>
  </TableCell>
- <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+ <TableCell className="text-right" onPointerDown={(e) => e.stopPropagation()}>
  <div className="flex items-center justify-end gap-2">
  {(ord.customer_snapshot?.phone || ord.customer?.phone) && (
  <Button
@@ -729,7 +748,7 @@ function KDSPage() {
  variant="ghost"
  title="Avisar cliente WhatsApp"
  onClick={(e) => handleNotifyCustomerWhatsApp(ord, e)}
- className="size-8 rounded-lg text-emerald-600 hover:bg-emerald-500/10 cursor-pointer"
+ className="size-11 min-h-11 min-w-11 rounded-lg text-emerald-600 hover:bg-emerald-500/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  >
  <MessageCircle className="size-4" />
  </Button>
@@ -738,7 +757,7 @@ function KDSPage() {
  size="sm"
  variant="outline"
  onClick={() => setSelectedOrder(ord)}
- className="h-8 rounded-lg text-xs font-bold cursor-pointer"
+ className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  >
  Detalhes
  </Button>
@@ -823,7 +842,7 @@ function KDSPage() {
  </div>
  ) : (
  /* Kanban Board */
- <main className="flex-1 overflow-x-auto no-scrollbar p-4 flex gap-4 bg-muted/30 no-print">
+ <main className="flex-1 scroll-area overflow-x-auto no-scrollbar p-4 flex gap-4 bg-muted/30 no-print">
  {columns.map((col) => {
  const isPrepCol = col.id === "processing";
  const colOrders = orders
@@ -868,7 +887,7 @@ function KDSPage() {
  .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
  return (
- <div key={col.id} className="flex-shrink-0 w-[350px] flex flex-col gap-3 h-full">
+ <div key={col.id} className="flex-shrink-0 w-88 flex flex-col gap-3 h-full">
  <div
  className={`rounded-lg border ${col.color} p-3 flex items-center justify-between bg-surface-paper `}
  >
@@ -891,7 +910,7 @@ function KDSPage() {
  return (
  <div
  key={order.id}
- className="bg-card border border-border/80 rounded-lg p-4 flex flex-col gap-3 cursor-pointer hover:border-primary/50 transition-all shadow-2xs"
+ className="bg-card border border-border/80 rounded-lg p-4 flex flex-col gap-3 cursor-pointer hover:border-primary/50 transition-colors shadow-2xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  onClick={() => setSelectedOrder(order)}
  >
  <div className="flex justify-between items-start gap-2">
@@ -943,7 +962,7 @@ function KDSPage() {
  <div className="w-full bg-muted/60 h-1.5 rounded-full overflow-hidden mt-1">
  <div
  className={cn(
- "h-full transition-all duration-500",
+ "h-full transition-colors duration-300",
  elapsedMinutes > 30
  ? "bg-rose-500"
  : elapsedMinutes > 20
@@ -995,7 +1014,7 @@ function KDSPage() {
  variant="outline"
  size="icon"
  title="Imprimir comanda térmica (80mm)"
- className="size-11 sm:size-9 rounded-lg text-foreground/80 border-border/80 hover:bg-muted cursor-pointer shrink-0"
+ className="size-11 min-h-11 min-w-11 rounded-lg text-foreground/80 border-border/80 hover:bg-muted cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  onClick={(e) => {
  e.stopPropagation();
  setSelectedOrder(order);
@@ -1011,7 +1030,7 @@ function KDSPage() {
  variant="outline"
  size="icon"
  title="Imprimir Recibo"
- className="size-11 sm:size-9 rounded-lg text-foreground/80 border-border/80 hover:bg-muted cursor-pointer shrink-0"
+ className="size-11 min-h-11 min-w-11 rounded-lg text-foreground/80 border-border/80 hover:bg-muted cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  onClick={(e) => {
  e.stopPropagation();
  window.open(`/workspace/pedidos/${order.id}/recibo`, "_blank");
@@ -1027,7 +1046,7 @@ function KDSPage() {
  variant="outline"
  size="icon"
  title="Avisar cliente no WhatsApp"
- className="size-11 sm:size-9 rounded-lg text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer shrink-0"
+ className="size-11 min-h-11 min-w-11 rounded-lg text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  onClick={(e) => handleNotifyCustomerWhatsApp(order, e)}
  >
  <MessageCircle className="size-4" />
@@ -1038,7 +1057,7 @@ function KDSPage() {
  type="button"
  variant="outline"
  size="sm"
- className="flex-1 h-11 sm:h-9 rounded-lg text-xs font-bold text-rose-500 border-rose-500/20 hover:bg-rose-500/10 cursor-pointer"
+ className="flex-1 h-11 min-h-11 rounded-lg text-xs font-bold text-rose-500 border-rose-500/20 hover:bg-rose-500/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  onClick={(e) => {
  e.stopPropagation();
  handleStatusChange(e, order.id, "cancelled");
@@ -1051,7 +1070,7 @@ function KDSPage() {
  <Button
  type="button"
  size="sm"
- className="flex-1 h-11 sm:h-9 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs cursor-pointer"
+ className="flex-1 h-11 min-h-11 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  onClick={(e) => handleStatusChange(e, order.id, col.nextStatus!)}
  >
  {col.nextLabel}
@@ -1121,7 +1140,7 @@ function KDSPage() {
  type="button"
  onClick={() => setSheetTab("details")}
  className={cn(
- "flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer",
+ "flex-1 min-h-11 h-11 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
  sheetTab === "details"
  ? "bg-background text-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground",
@@ -1133,7 +1152,7 @@ function KDSPage() {
  type="button"
  onClick={() => setSheetTab("customer")}
  className={cn(
- "flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer",
+ "flex-1 min-h-11 h-11 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
  sheetTab === "customer"
  ? "bg-background text-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground",
@@ -1145,7 +1164,7 @@ function KDSPage() {
  type="button"
  onClick={() => setSheetTab("history")}
  className={cn(
- "flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer",
+ "flex-1 min-h-11 h-11 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
  sheetTab === "history"
  ? "bg-background text-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground",
@@ -1306,7 +1325,7 @@ function KDSPage() {
  const addr = encodeURIComponent(`${selectedOrder.shipping_address.street}, ${selectedOrder.shipping_address.number || ""}, ${selectedOrder.shipping_address.city || ""}`);
  window.open(`https://www.google.com/maps/search/?api=1&query=${addr}`, "_blank");
  }}
- className="h-9 rounded-lg text-xs font-semibold gap-2"
+ className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  >
  <Navigation className="size-3.5 text-primary" />
  Google Maps
@@ -1319,7 +1338,7 @@ function KDSPage() {
  const addr = encodeURIComponent(`${selectedOrder.shipping_address.street}, ${selectedOrder.shipping_address.number || ""}, ${selectedOrder.shipping_address.city || ""}`);
  window.open(`https://waze.com/ul?q=${addr}`, "_blank");
  }}
- className="h-9 rounded-lg text-xs font-semibold gap-2"
+ className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  >
  <Navigation className="size-3.5 text-info" />
  Waze
@@ -1461,85 +1480,57 @@ function KDSPage() {
 
  {/* Printable Receipt (Escondido na tela normal) */}
  {selectedOrder && (
- <div id="printable-receipt" className="hidden">
- <div
- style={{
- textAlign: "center",
- marginBottom: "15px",
- paddingBottom: "10px",
- borderBottom: "1px dashed #000",
- }}
- >
- <h2 style={{ margin: "0 0 5px 0", fontSize: "16px" }}>
- PEDIDO #{selectedOrder.id.split("-")[0].toUpperCase()}
- </h2>
- <p style={{ margin: "0", fontSize: "12px" }}>
- {new Date(selectedOrder.created_at).toLocaleString("pt-BR")}
- </p>
- {selectedOrder.origin_type && (
- <p style={{ margin: "5px 0 0 0", fontSize: "14px", fontWeight: "bold" }}>
- {selectedOrder.origin_type === "table"
- ? "MESA" + (selectedOrder.table_identifier || "")
- : "BALCÃO"}
- </p>
- )}
- </div>
+        <div id="printable-receipt" className="hidden text-foreground bg-background">
+          <div className="text-center mb-4 pb-2 border-b border-dashed border-foreground">
+            <h2 className="m-0 mb-1 text-base font-bold">
+              PEDIDO #{selectedOrder.id.split("-")[0].toUpperCase()}
+            </h2>
+            <p className="m-0 text-xs">
+              {new Date(selectedOrder.created_at).toLocaleString("pt-BR")}
+            </p>
+            {selectedOrder.origin_type && (
+              <p className="mt-1 text-sm font-bold">
+                {selectedOrder.origin_type === "table"
+                  ? "MESA" + (selectedOrder.table_identifier || "")
+                  : "BALCÃO"}
+              </p>
+            )}
+          </div>
 
- <div
- style={{ marginBottom: "15px", paddingBottom: "10px", borderBottom: "1px dashed #000" }}
- >
- <p style={{ margin: "0 0 5px 0", fontSize: "14px", fontWeight: "bold" }}>CLIENTE:</p>
- <p style={{ margin: "0", fontSize: "14px" }}>
- {selectedOrder.customer_snapshot?.name || selectedOrder.customer?.name || "Avulso"}
- </p>
- </div>
+          <div className="mb-4 pb-2 border-b border-dashed border-foreground">
+            <p className="m-0 mb-1 text-sm font-bold">CLIENTE:</p>
+            <p className="m-0 text-sm">
+              {selectedOrder.customer_snapshot?.name || selectedOrder.customer?.name || "Avulso"}
+            </p>
+          </div>
 
- <div style={{ marginBottom: "15px" }}>
- <p style={{ margin: "0 0 10px 0", fontSize: "14px", fontWeight: "bold" }}>ITENS:</p>
- {selectedOrder.order_items?.map((item: any) => {
- const options = item.selected_options ? Object.values(item.selected_options) : [];
- return (
- <div key={item.id} style={{ marginBottom: "10px" }}>
- <div
- style={{
- display: "flex",
- justifyContent: "space-between",
- fontSize: "14px",
- fontWeight: "bold",
- }}
- >
- <span>
- {item.qty}x {item.product_title}
- </span>
- </div>
- {options.map((opt: any, idx: number) => (
- <div
- key={idx}
- style={{ fontSize: "12px", marginLeft: "15px", marginTop: "2px" }}
- >
- + {opt.label}
- </div>
- ))}
- </div>
- );
- })}
- </div>
+          <div className="mb-4">
+            <p className="m-0 mb-2 text-sm font-bold">ITENS:</p>
+            {selectedOrder.order_items?.map((item: any) => {
+              const options = item.selected_options ? Object.values(item.selected_options) : [];
+              return (
+                <div key={item.id} className="mb-2">
+                  <div className="flex justify-between text-sm font-bold">
+                    <span>
+                      {item.qty}x {item.product_title}
+                    </span>
+                  </div>
+                  {options.map((opt: any, idx: number) => (
+                    <div key={idx} className="text-xs ml-4 mt-1">
+                      + {opt.label}
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
 
- <div
- style={{
- borderTop: "1px dashed #000",
- paddingTop: "10px",
- display: "flex",
- justifyContent: "space-between",
- fontSize: "16px",
- fontWeight: "bold",
- }}
- >
- <span>TOTAL:</span>
- <span>{formatMoney(selectedOrder.total_cents)}</span>
- </div>
- </div>
- )}
+          <div className="border-t border-dashed border-foreground pt-2 flex justify-between text-base font-bold">
+            <span>TOTAL:</span>
+            <span>{formatMoney(selectedOrder.total_cents)}</span>
+          </div>
+        </div>
+      )}
 
  {/* ── MODAL DE ALERTA INTELIGENTE DE SLA ── */}
  <Dialog open={alertModalOpen} onOpenChange={setAlertModalOpen}>
@@ -1586,7 +1577,7 @@ function KDSPage() {
  size="sm"
  variant="outline"
  onClick={() => handleNotifyCustomerWhatsApp(ord)}
- className="h-8 text-xs font-bold text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 rounded-lg"
+ className="h-11 min-h-11 px-3 text-xs font-bold text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 rounded-lg focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  >
  <MessageCircle className="size-3.5 mr-1" />
  WhatsApp
@@ -1598,7 +1589,7 @@ function KDSPage() {
  setSelectedOrder(ord);
  setAlertModalOpen(false);
  }}
- className="h-8 text-xs font-bold rounded-lg"
+ className="h-11 min-h-11 px-3 text-xs font-bold rounded-lg focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  >
  Abrir
  </Button>
@@ -1614,7 +1605,7 @@ function KDSPage() {
  variant="outline"
  size="sm"
  onClick={() => setAlertModalOpen(false)}
- className="rounded-lg text-xs font-semibold"
+ className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  >
  Fechar
  </Button>

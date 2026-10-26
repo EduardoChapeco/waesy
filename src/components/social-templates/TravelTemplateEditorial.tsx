@@ -9,216 +9,187 @@ import { formatMoney } from "@/lib/money";
 import type { SocialTemplateProps } from "./types";
 
 export function TravelTemplateEditorial({ data, className = "" }: SocialTemplateProps) {
-  const {
-    title,
-    subtitle,
-    datesOrAvailability,
-    highlights = [],
-    priceCents = null,
-    maxInstallments = 12,
-    installmentCents,
-    pricingMode = "per_person",
-    backgroundImageUrl,
-    paymentMethodsLabel = "no boleto ou cartão",
-    aspectRatio = "9:16",
-    themeGradient = "ocean_blue",
-    promoBadge,
-    storeName,
-    ctaLabel,
-  } = data;
+ const {
+ title,
+ subtitle,
+ datesOrAvailability,
+ highlights = [],
+ priceCents = null,
+ maxInstallments = 12,
+ installmentCents,
+ pricingMode = "per_person",
+ backgroundImageUrl,
+ paymentMethodsLabel = "no boleto ou cartão",
+ aspectRatio = "9:16",
+ themeGradient = "ocean_blue",
+ promoBadge,
+ storeName,
+ ctaLabel,
+ } = data;
 
-  const effectiveInstallmentCents = useMemo(() => {
-    if (installmentCents && installmentCents > 0) return installmentCents;
-    if (priceCents && priceCents > 0 && maxInstallments > 0) {
-      return Math.round(priceCents / maxInstallments);
-    }
-    return null;
-  }, [installmentCents, priceCents, maxInstallments]);
+ const isOneOne = aspectRatio === "1:1";
 
-  const formattedInclusions = useMemo(() => {
-    const list = (highlights || []).slice(0, 4);
+ const effectiveInstallmentCents = useMemo(() => {
+ if (installmentCents && installmentCents > 0) return installmentCents;
+ if (priceCents && priceCents > 0 && maxInstallments > 0) {
+ return Math.round(priceCents / maxInstallments);
+ }
+ return null;
+ }, [installmentCents, priceCents, maxInstallments]);
 
-    return list.map((item) => {
-      const lower = item.toLowerCase();
-      let Icon = Compass;
-      if (lower.includes("aéreo") || lower.includes("voo") || lower.includes("avião")) Icon = Plane;
-      else if (lower.includes("café") || lower.includes("hospedag") || lower.includes("hotel")) Icon = Coffee;
-      else if (lower.includes("all inclusive") || lower.includes("almoço") || lower.includes("refeição")) Icon = Utensils;
-      else if (lower.includes("traslado") || lower.includes("transfer") || lower.includes("carro")) Icon = Car;
-      else if (lower.includes("praia") || lower.includes("resort") || lower.includes("sol")) Icon = Sun;
-      else if (lower.includes("neve") || lower.includes("esqui")) Icon = Snowflake;
-      else if (lower.includes("cruzeiro") || lower.includes("barco") || lower.includes("navio")) Icon = Anchor;
+ const formattedInclusions = useMemo(() => {
+ const list = (highlights || []).slice(0, 4);
 
-      return { label: item, Icon };
-    });
-  }, [highlights]);
+ return list.map((item) => {
+ const lower = item.toLowerCase();
+ let Icon = Compass;
+ if (lower.includes("aéreo") || lower.includes("voo") || lower.includes("avião")) Icon = Plane;
+ else if (lower.includes("café") || lower.includes("hospedag") || lower.includes("hotel")) Icon = Coffee;
+ else if (lower.includes("all inclusive") || lower.includes("almoço") || lower.includes("refeição")) Icon = Utensils;
+ else if (lower.includes("traslado") || lower.includes("transfer") || lower.includes("carro")) Icon = Car;
+ else if (lower.includes("praia") || lower.includes("resort") || lower.includes("sol")) Icon = Sun;
+ else if (lower.includes("neve") || lower.includes("esqui")) Icon = Snowflake;
+ else if (lower.includes("cruzeiro") || lower.includes("barco") || lower.includes("navio")) Icon = Anchor;
 
-  const gradientClass = useMemo(() => {
-    switch (themeGradient) {
-      case "sunset_amber":
-        return "from-[#1e140d] via-[#3a2012] to-transparent";
-      case "emerald_nature":
-        return "from-[#081c15] via-[#1b4332] to-transparent";
-      case "midnight_luxury":
-        return "from-[#0a0a0f] via-[#161726] to-transparent";
-      case "caribbean_turquoise":
-        return "from-[#04242e] via-[#083b4a] to-transparent";
-      case "nordic_snow":
-        return "from-[#111827] via-[#1f293d] to-transparent";
-      case "ocean_blue":
-      default:
-        return "from-[#061e38] via-[#0b335c] to-transparent";
-    }
-  }, [themeGradient]);
+ return { label: item, Icon };
+ });
+ }, [highlights]);
 
-  return (
-    <div className={`relative w-full h-full overflow-hidden bg-[#0a192f] text-white select-none ${className}`}>
-      {/* 1. Imagem de Fundo Realista */}
-      <div className="absolute inset-x-0 bottom-0 top-[38%] overflow-hidden">
-        <img
-          src={backgroundImageUrl}
-          alt={title}
-          crossOrigin={backgroundImageUrl?.startsWith("data:") ? undefined : "anonymous"}
-          className="w-full h-full object-cover object-center transform scale-105"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
-      </div>
+ const gradientClass = useMemo(() => {
+ switch (themeGradient) {
+ case "sunset_amber":
+ return "from-[#1e140d] via-[#3a2012] to-transparent";
+ case "emerald_nature":
+ return "from-[#081c15] via-[#1b4332] to-transparent";
+ case "midnight_luxury":
+ return "from-[#0a0a0f] via-[#161726] to-transparent";
+ case "caribbean_turquoise":
+ return "from-[#04242e] via-[#083b4a] to-transparent";
+ case "nordic_snow":
+ return "from-[#111827] via-[#1f293d] to-transparent";
+ case "ocean_blue":
+ default:
+ return "from-[#061e38] via-[#0b335c] to-transparent";
+ }
+ }, [themeGradient]);
 
-      {/* 2. Topo com Fundo Limpo / Gradiente */}
-      <div className={`absolute inset-x-0 top-0 h-[52%] bg-gradient-to-b ${gradientClass}`} />
+ return (
+ <div className={`relative w-full h-full overflow-hidden bg-[#0a192f] text-white select-none ${className}`}>
+ {/* 1. Imagem de Fundo Realista */}
+ <div className="absolute inset-x-0 bottom-0 top-[35%] overflow-hidden">
+ <img
+ src={backgroundImageUrl}
+ alt={title}
+ crossOrigin={backgroundImageUrl?.startsWith("data:") ? undefined : "anonymous"}
+ className="w-full h-full object-cover object-center transform scale-105"
+ />
+ <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+ </div>
 
-      {/* 3. Camada de Conteúdo e Tipografia Editorial */}
-      <div
-        className={`relative z-10 w-full h-full flex flex-col justify-between ${
-          aspectRatio === "1:1" ? "p-10" : aspectRatio === "4:5" ? "p-12" : "p-16"
-        }`}
-      >
-        {/* Bloco Superior: Título & Datas */}
-        <div className={`w-full text-center space-y-3 ${aspectRatio === "1:1" ? "pt-4" : "pt-8"}`}>
-          {promoBadge && (
-            <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-300 font-bold uppercase tracking-widest text-sm sm:text-base shadow-sm backdrop-blur-md mb-2">
-              <Star className="size-4.5 text-amber-400 shrink-0" />
-              <span>{promoBadge}</span>
-            </div>
-          )}
+ {/* 2. Topo com Fundo Limpo / Gradiente */}
+ <div className={`absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b ${gradientClass}`} />
 
-          <h1
-            className={`font-black uppercase tracking-tight text-white drop-shadow-md leading-[1.05] max-w-4xl mx-auto line-clamp-2 ${
-              aspectRatio === "1:1" ? "text-5xl md:text-6xl" : "text-7xl md:text-8xl"
-            }`}
-          >
-            {title}
-          </h1>
+ {/* 3. Camada de Conteúdo e Tipografia Editorial */}
+ <div
+ className={`relative z-10 w-full h-full flex flex-col justify-between ${
+ isOneOne ? "p-10" : aspectRatio === "4:5" ? "p-12" : "p-16"
+ }`}
+ >
+ {/* Bloco Superior: Título & Datas */}
+ <div className={`w-full text-center space-y-4 ${isOneOne ? "pt-4" : "pt-8"}`}>
+ {promoBadge && (
+ <div className="inline-flex items-center gap-3 px-7 py-3 rounded-full bg-amber-400/25 border border-amber-400/50 text-amber-300 font-black uppercase tracking-widest text-xl backdrop-blur-md mb-2">
+ <Star className="size-6 text-amber-400 shrink-0 fill-amber-400" />
+ <span>{promoBadge}</span>
+ </div>
+ )}
 
-          <p
-            className={`font-medium tracking-wide text-white/90 drop-shadow-sm ${
-              aspectRatio === "1:1" ? "text-2xl" : "text-3xl"
-            }`}
-          >
-            {datesOrAvailability || subtitle || "Período não informado"}
-          </p>
+ <h1
+ className={`font-black uppercase tracking-tight text-white drop- leading-none max-w-4xl mx-auto line-clamp-2 ${
+ isOneOne ? "text-5xl" : "text-7xl"
+ }`}
+ >
+ {title}
+ </h1>
 
-          {/* Inclusões com Ícones */}
-          <div
-            className={`flex items-center justify-center flex-wrap max-w-4xl mx-auto ${
-              aspectRatio === "1:1" ? "pt-4 gap-3" : "pt-8 gap-6"
-            }`}
-          >
-            {formattedInclusions.map((inc, i) => {
-              const IncIcon = inc.Icon;
-              return (
-                <div
-                  key={i}
-                  className={`flex items-center rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-white shadow-sm ${
-                    aspectRatio === "1:1" ? "gap-2 px-4 py-2" : "gap-3 px-5 py-3"
-                  }`}
-                >
-                  <IncIcon
-                    className={`text-white shrink-0 ${aspectRatio === "1:1" ? "size-4.5" : "size-6"}`}
-                    strokeWidth={2.2}
-                  />
-                  <span
-                    className={`font-semibold tracking-tight whitespace-nowrap ${
-                      aspectRatio === "1:1" ? "text-base" : "text-xl"
-                    }`}
-                  >
-                    {inc.label}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+ <p
+ className={`font-bold tracking-wide text-white/95 drop- ${
+ isOneOne ? "text-2xl" : "text-3xl"
+ }`}
+ >
+ {datesOrAvailability || subtitle || "Período não informado"}
+ </p>
 
-        {/* Bloco Inferior: Preço em Frosted Glass & Selo da Loja & CTA */}
-        <div
-          className={`w-full flex items-end justify-between gap-6 ${
-            aspectRatio === "1:1" ? "pb-4" : "pb-8"
-          }`}
-        >
-          <div
-            className={`rounded-lg bg-black/55 backdrop-blur-xl border border-white/25 shadow-2xl space-y-2 text-white ${
-              aspectRatio === "1:1" ? "max-w-xs p-4" : "max-w-md p-6"
-            }`}
-          >
-            <span
-              className={`font-medium text-white/80 block uppercase tracking-wider ${
-                aspectRatio === "1:1" ? "text-sm" : "text-lg"
-              }`}
-            >
-              Por apenas
-            </span>
+ {/* Inclusões com Ícones */}
+ <div
+ className={`flex items-center justify-center flex-wrap max-w-4xl mx-auto ${
+ isOneOne ? "pt-4 gap-4" : "pt-6 gap-5"
+ }`}
+ >
+ {formattedInclusions.map((inc, i) => {
+ const IncIcon = inc.Icon;
+ return (
+ <div
+ key={i}
+ className="flex items-center gap-4 rounded-full bg-white/20 backdrop-blur-md border border-white/25 text-white px-7 py-4 "
+ >
+ <IncIcon className="size-7 text-white shrink-0" strokeWidth={2.5} />
+ <span className="font-bold tracking-tight text-xl">
+ {inc.label}
+ </span>
+ </div>
+ );
+ })}
+ </div>
+ </div>
 
-            <div className="flex items-baseline gap-2">
-              <span
-                className={`font-black text-amber-400 font-mono ${
-                  aspectRatio === "1:1" ? "text-2xl" : "text-3xl"
-                }`}
-              >
-                {priceCents !== null && priceCents !== undefined ? `${maxInstallments}x` : "Preço"}
-              </span>
-              <span className={`text-white/80 ${aspectRatio === "1:1" ? "text-sm" : "text-lg"}`}>
-                {priceCents !== null && priceCents !== undefined ? "de" : "não informado"}
-              </span>
-              <span
-                className={`font-black text-white tracking-tight font-mono ${
-                  aspectRatio === "1:1" ? "text-3xl" : "text-5xl"
-                }`}
-              >
-                {effectiveInstallmentCents !== null ? formatMoney(effectiveInstallmentCents) : "—"}
-              </span>
-            </div>
+ {/* Bloco Inferior: Preço em Frosted Glass & Selo da Loja & CTA */}
+ <div className={`w-full flex items-end justify-between gap-6 ${isOneOne ? "pb-4" : "pb-8"}`}>
+ <div className="rounded-3xl bg-black/60 backdrop-blur-2xl border border-white/30 p-8 space-y-2 text-white max-w-xl">
+ <span className="font-bold text-white/80 block uppercase tracking-wider text-xl">
+ Por apenas
+ </span>
 
-            <div className="pt-1 flex flex-col text-sm text-white/90 space-y-1 font-medium">
-              <span className="text-amber-300 font-bold uppercase tracking-wider text-xs">
-                {pricingMode === "per_person" ? "Por pessoa" : "Pacote fechado"}
-              </span>
-              <span className="text-white/70 text-xs">
-                {paymentMethodsLabel}
-              </span>
-            </div>
-          </div>
+ <div className="flex items-baseline gap-3">
+ <span className="font-black text-amber-400 text-4xl">
+ {priceCents !== null && priceCents !== undefined ? `${maxInstallments}x` : "Preço"}
+ </span>
+ <span className="text-white/80 text-2xl font-bold">
+ {priceCents !== null && priceCents !== undefined ? "de" : "não informado"}
+ </span>
+ <span className="font-black text-white tracking-tight leading-none text-6xl">
+ {effectiveInstallmentCents !== null ? formatMoney(effectiveInstallmentCents) : "—"}
+ </span>
+ </div>
 
-          {/* Lado Direito Inferior: Selo da Agência e Botão CTA */}
-          <div className="flex flex-col items-end gap-4 shrink-0">
-            {/* Selo da Agência / Loja */}
-            <div className="flex items-center gap-2 px-5 py-3 rounded-lg bg-black/40 backdrop-blur-md border border-white/10 text-white/80">
-              <ShieldCheck className="size-5 sm:size-6 text-emerald-400 shrink-0" />
-              <span className="text-sm sm:text-base font-semibold tracking-tight truncate max-w-52">
-                {storeName || "Agência não informada"}
-              </span>
-            </div>
+ <div className="pt-2 flex flex-col space-y-1 font-semibold">
+ <span className="text-amber-300 font-bold uppercase tracking-wider text-xl">
+ {pricingMode === "per_person" ? "Por pessoa" : "Pacote fechado"}
+ </span>
+ <span className="text-white/75 text-xl">
+ {paymentMethodsLabel}
+ </span>
+ </div>
+ </div>
 
-            {/* Botão de Chamada para Ação */}
-            <div className="bg-amber-400 hover:bg-amber-300 text-slate-950 px-8 py-5 rounded-lg shadow-xl flex items-center gap-3 transition-transform active:scale-95">
-              <span className="text-xl font-black tracking-wide">
-                {ctaLabel || "Garantir Vaga"}
-              </span>
-              <ArrowRight className="size-6 text-slate-950" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+ {/* Lado Direito Inferior: Selo da Agência e Botão CTA */}
+ <div className="flex flex-col items-end gap-5 shrink-0">
+ {/* Selo da Agência / Loja */}
+ <div className="flex items-center gap-3 px-7 py-4 rounded-2xl bg-black/50 backdrop-blur-md border border-white/20 text-white/95 ">
+ <ShieldCheck className="size-7 text-emerald-400 shrink-0" />
+ <span className="text-2xl font-black tracking-tight">
+ {storeName || "Waesy Turismo"}
+ </span>
+ </div>
+
+ {/* Botão de Chamada para Ação */}
+ <div className={`bg-amber-400 hover:bg-amber-300 text-slate-950 ${isOneOne ? "px-8 py-5 text-xl" : "px-10 py-6 text-2xl"} rounded-2xl flex items-center gap-4 transition-transform active:scale-95 font-black`}>
+ <span>{ctaLabel || "Garantir Vaga"}</span>
+ <ArrowRight className="size-8 text-slate-950" strokeWidth={2.5} />
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ );
 }

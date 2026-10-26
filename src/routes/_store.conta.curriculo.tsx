@@ -8,6 +8,7 @@ import {
   type ResumeItemDTO,
 } from "@/services/resumes.functions";
 import { ResumeDocument } from "@/components/resume/resume-document";
+import { exportElementAsPdf } from "@/lib/pdf-export";
 import { ResumeAnalysisCard } from "@/components/resume/resume-analysis-card";
 import { ResumeJobMatchingRail } from "@/components/resume/resume-job-matching-rail";
 import { LinkedInProfileImportModal, type LinkedInImportResult } from "@/components/profile/linkedin-profile-import-modal";
@@ -292,28 +293,14 @@ export default function MeuCurriculoPage() {
     if (!previewRef.current || typeof window === "undefined") return;
     try {
       setIsExporting(true);
-      const html2canvas = (await import("html2canvas")).default;
-      const { jsPDF } = await import("jspdf");
-
-      const canvas = await html2canvas(previewRef.current, {
-        scale: 2.5,
-        useCORS: true,
-        // design-lint-ignore DL-01 reason:"HTML2Canvas print media requires pure white background" expiry:"2030-01-01"
-        backgroundColor: "#ffffff",
-      });
-
-      const imgData = canvas.toDataURL("image/jpeg", 0.98);
-      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      pdf.addImage(imgData, "JPEG", 0, 0, 210, 297);
-
       const cleanName = (fullName || "curriculo")
         .toLowerCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
         .replace(/[^a-z0-9]+/g, "-");
-
-      pdf.save(`${cleanName}-waesy.pdf`);
+      await exportElementAsPdf("resume-document-target", `${cleanName}-waesy.pdf`, "p");
       toast.success("PDF gerado com sucesso!");
+      return;
     } catch (err) {
       console.error("[curriculo] Erro ao exportar PDF:", err);
       toast.error("Não foi possível gerar o PDF. Recomendamos usar o botão Imprimir para salvar como PDF nativo.");
@@ -1153,6 +1140,7 @@ export default function MeuCurriculoPage() {
 
           {/* Container do Documento com Escala Controlada */}
           <div
+            id="resume-document-target"
             className="w-full flex justify-center transition-transform origin-top"
           >
             <ResumeDocument

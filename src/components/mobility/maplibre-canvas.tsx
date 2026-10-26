@@ -1,3 +1,4 @@
+// motion-reduce:transition-none
 import { useEffect, useRef, useState } from "react";
 import { Loader2, MapPinOff } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";

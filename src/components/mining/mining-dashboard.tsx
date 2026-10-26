@@ -614,9 +614,9 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
             size="sm"
             onClick={loadStats}
             disabled={isLoadingStats}
-            className="h-10 px-3 rounded-lg font-normal"
+            className="h-11 min-h-11 px-3 rounded-lg font-normal min-h-11"
           >
-            <RefreshCw className={`w-4 h-4 mr-2 ${isLoadingStats ? "animate-spin" : ""}`} />
+            <RefreshCw className={`w-4 h-4 mr-2 ${isLoadingStats ? "animate-spin motion-reduce:animate-none" : ""}`} />
             Atualizar
           </Button>
 
@@ -624,10 +624,10 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
             size="sm"
             onClick={() => handleRunScraper("continuous-crawler")}
             disabled={Boolean(isRunningScraper)}
-            className="h-10 px-4 rounded-lg font-medium shadow-none"
+            className="h-11 min-h-11 px-4 rounded-lg font-medium shadow-none min-h-11"
           >
             {isRunningScraper === "continuous-crawler" ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
             ) : (
               <Play className="w-4 h-4 mr-2 fill-current" />
             )}
@@ -858,13 +858,13 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                   placeholder="https://exemplo.com.br/artigo"
                   value={customUrl}
                   onChange={(e) => setCustomUrl(e.target.value)}
-                  className="rounded-lg border-border/50 text-xs h-10"
+                  className="rounded-lg border-border/50 text-xs h-11 min-h-11"
                 />
                 <Button
                   variant="outline"
                   onClick={() => handleRunScraper("continuous-crawler", { targetUrl: customUrl })}
                   disabled={!customUrl || Boolean(isRunningScraper)}
-                  className="h-10 px-4 rounded-lg font-normal shrink-0"
+                  className="h-11 min-h-11 px-4 rounded-lg font-normal shrink-0 min-h-11"
                 >
                   Rastrear
                 </Button>
@@ -881,13 +881,13 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                   placeholder="00.000.000/0000-00"
                   value={customCnpj}
                   onChange={(e) => setCustomCnpj(e.target.value)}
-                  className="rounded-lg border-border/50 text-xs h-10"
+                  className="rounded-lg border-border/50 text-xs h-11 min-h-11"
                 />
                 <Button
                   variant="outline"
                   onClick={() => handleRunScraper("cnpj-enrichment", { cnpj: customCnpj })}
                   disabled={!customCnpj || Boolean(isRunningScraper)}
-                  className="h-10 px-4 rounded-lg font-normal shrink-0"
+                  className="h-11 min-h-11 px-4 rounded-lg font-normal shrink-0 min-h-11"
                 >
                   Enriquecer
                 </Button>
@@ -905,7 +905,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                     variant="ghost"
                     size="sm"
                     onClick={() => setSelectedProductIds([])}
-                    className="text-xs h-7 px-2 text-muted-foreground hover:text-foreground"
+                    className="text-xs h-11 min-h-11 px-2 text-muted-foreground hover:text-foreground min-h-11"
                   >
                     Desmarcar todos
                   </Button>
@@ -917,7 +917,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                     size="sm"
                     onClick={handleBatchApproveProducts}
                     disabled={isProcessingBatch}
-                    className="h-8 rounded-lg text-xs gap-1 border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
+                    className="h-11 min-h-11 rounded-lg text-xs gap-1 border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer min-h-11"
                   >
                     <CheckCircle2 className="size-3.5" />
                     <span>Aprovar ({selectedProductIds.length})</span>
@@ -928,7 +928,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                     size="sm"
                     onClick={handleBatchRejectProducts}
                     disabled={isProcessingBatch}
-                    className="h-8 rounded-lg text-xs gap-1 border-border/60 text-muted-foreground hover:text-foreground cursor-pointer"
+                    className="h-11 min-h-11 rounded-lg text-xs gap-1 border-border/60 text-muted-foreground hover:text-foreground cursor-pointer min-h-11"
                   >
                     <XCircle className="size-3.5" />
                     <span>Rejeitar</span>
@@ -938,7 +938,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                     size="sm"
                     onClick={() => setIsBatchImportModalOpen(true)}
                     disabled={isProcessingBatch}
-                    className="h-8 rounded-lg text-xs gap-1 font-semibold bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
+                    className="h-11 min-h-11 rounded-lg text-xs gap-1 font-semibold bg-foreground text-background hover:bg-foreground/90 cursor-pointer min-h-11"
                   >
                     <ShoppingBag className="size-3.5" />
                     <span>Importar para Loja...</span>
@@ -949,7 +949,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                     size="sm"
                     onClick={handleBatchDeleteProducts}
                     disabled={isProcessingBatch}
-                    className="h-8 w-8 p-0 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                    className="h-11 min-h-11 w-8 p-0 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer min-h-11"
                     title="Excluir selecionados"
                   >
                     <Trash2 className="size-3.5" />
@@ -984,16 +984,16 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                   value={benchmarkQuery}
                   onChange={(e) => setBenchmarkQuery(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleBenchmark()}
-                  className="pl-8 h-10 rounded-lg text-xs border-border/50"
+                  className="pl-8 h-11 min-h-11 rounded-lg text-xs border-border/50 min-h-11"
                 />
               </div>
               <Button
                 onClick={() => handleBenchmark()}
                 disabled={isLoadingBenchmark}
-                className="h-10 px-4 rounded-lg text-xs font-medium cursor-pointer shrink-0"
+                className="h-11 min-h-11 px-4 rounded-lg text-xs font-medium cursor-pointer shrink-0 min-h-11"
               >
                 {isLoadingBenchmark ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-2" />
                 ) : (
                   <Search className="w-3.5 h-3.5 mr-2" />
                 )}
@@ -1009,7 +1009,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                   key={chip}
                   type="button"
                   onClick={() => handleBenchmark(chip)}
-                  className="text-xs px-2 py-1 rounded-md border border-border/40 hover:bg-muted/30 text-muted-foreground transition-colors cursor-pointer"
+                  className="text-xs px-3 py-2 min-h-11 inline-flex items-center justify-center rounded-md border border-border/40 hover:bg-muted/30 text-muted-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   {chip}
                 </button>
@@ -1105,13 +1105,13 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                     value={productSearch}
                     onChange={(e) => setProductSearch(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && loadProducts()}
-                    className="pl-8 h-9 rounded-lg text-xs border-border/50"
+                    className="pl-8 h-11 min-h-11 rounded-lg text-xs border-border/50 min-h-11"
                   />
                 </div>
                 <Button
                   variant="outline"
                   onClick={loadProducts}
-                  className="h-9 px-4 rounded-lg text-xs font-normal cursor-pointer"
+                  className="h-11 min-h-11 px-4 rounded-lg text-xs font-normal cursor-pointer min-h-11"
                 >
                   Buscar
                 </Button>
@@ -1134,7 +1134,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                     size="sm"
                     disabled={isProcessingBatch}
                     onClick={handleBatchApproveProducts}
-                    className="h-7 px-3 rounded-lg text-xs font-normal"
+                    className="h-11 min-h-11 px-3 rounded-lg text-xs font-normal min-h-11"
                   >
                     Aprovar
                   </Button>
@@ -1143,7 +1143,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                     size="sm"
                     disabled={isProcessingBatch}
                     onClick={handleBatchRejectProducts}
-                    className="h-7 px-3 rounded-lg text-xs font-normal"
+                    className="h-11 min-h-11 px-3 rounded-lg text-xs font-normal min-h-11"
                   >
                     Rejeitar
                   </Button>
@@ -1152,7 +1152,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                     size="sm"
                     disabled={isProcessingBatch}
                     onClick={handleBatchDeleteProducts}
-                    className="h-7 px-3 rounded-lg text-xs font-normal text-destructive hover:bg-destructive/10"
+                    className="h-11 min-h-11 px-3 rounded-lg text-xs font-normal text-destructive hover:bg-destructive/10 min-h-11"
                   >
                     Excluir
                   </Button>
@@ -1164,7 +1164,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
             <div className="block sm:hidden divide-y divide-border/40 rounded-lg border border-border/40 bg-card overflow-hidden">
               {isLoadingProducts ? (
                 <div className="py-8 text-center text-xs text-muted-foreground">
-                  <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" /> Carregando produtos...
+                  <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mx-auto mb-2" /> Carregando produtos...
                 </div>
               ) : minedProducts.length === 0 ? (
                 <div className="py-8 text-center text-xs text-muted-foreground">
@@ -1182,7 +1182,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                         className="size-4"
                       />
                     </div>
-                    <div className="w-10 h-10 rounded-lg border border-border/40 bg-muted/20 flex items-center justify-center shrink-0 overflow-hidden">
+                    <div className="w-10 h-11 min-h-11 rounded-lg border border-border/40 bg-muted/20 flex items-center justify-center shrink-0 overflow-hidden min-h-11">
                       {p.image_url ? (
                         <img src={p.image_url} alt="" className="w-full h-full object-cover" />
                       ) : (
@@ -1207,7 +1207,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                         variant="outline"
                         size="sm"
                         onClick={() => handleOpenImportProduct(p)}
-                        className="h-8 px-2 rounded-lg text-xs gap-1 font-medium cursor-pointer"
+                        className="h-11 min-h-11 px-2 rounded-lg text-xs gap-1 font-medium cursor-pointer min-h-11"
                         title="Importar para Loja"
                       >
                         <ShoppingBag className="w-3 h-3" />
@@ -1254,18 +1254,18 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/20 border-b border-border/40">
-                    <TableHead className="w-[40px] text-xs font-normal text-muted-foreground">
+                    <TableHead className="w-10 text-xs font-normal text-muted-foreground">
                       <Checkbox
                         checked={minedProducts.length > 0 && selectedProductIds.length === minedProducts.length}
                         onCheckedChange={handleToggleSelectAllProducts}
                         className="size-4"
                       />
                     </TableHead>
-                    <TableHead className="w-[50px] text-xs font-normal text-muted-foreground"></TableHead>
+                    <TableHead className="w-12 text-xs font-normal text-muted-foreground"></TableHead>
                     <TableHead className="text-xs font-normal text-muted-foreground">Produto</TableHead>
-                    <TableHead className="w-[130px] text-xs font-normal text-muted-foreground">Origem</TableHead>
-                    <TableHead className="w-[110px] text-xs font-normal text-muted-foreground">Preço</TableHead>
-                    <TableHead className="w-[100px] text-xs font-normal text-muted-foreground">Status</TableHead>
+                    <TableHead className="w-32 text-xs font-normal text-muted-foreground">Origem</TableHead>
+                    <TableHead className="w-28 text-xs font-normal text-muted-foreground">Preço</TableHead>
+                    <TableHead className="w-24 text-xs font-normal text-muted-foreground">Status</TableHead>
                     <TableHead className="w-52 text-right text-xs font-normal text-muted-foreground">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -1273,7 +1273,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                   {isLoadingProducts ? (
                     <TableRow>
                       <TableCell colSpan={6} className="h-28 text-center text-xs text-muted-foreground">
-                        <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" />
+                        <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mx-auto mb-2" />
                         Carregando catálogo de produtos...
                       </TableCell>
                     </TableRow>
@@ -1288,7 +1288,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                       const isChecked = selectedProductIds.includes(p.id);
                       return (
                       <TableRow key={p.id} className="border-b border-border/30 hover:bg-muted/10">
-                        <TableCell className="w-[40px] p-2 pl-3">
+                        <TableCell className="w-10 p-2 pl-3">
                           <Checkbox
                             checked={isChecked}
                             onCheckedChange={() => handleToggleSelectProduct(p.id)}
@@ -1296,7 +1296,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                           />
                         </TableCell>
                         <TableCell className="p-2">
-                          <div className="w-9 h-9 rounded-lg border border-border/30 bg-muted/20 flex items-center justify-center overflow-hidden">
+                          <div className="w-9 h-11 min-h-11 rounded-lg border border-border/30 bg-muted/20 flex items-center justify-center overflow-hidden min-h-11">
                             {p.image_url ? (
                               <img src={p.image_url} alt="" className="w-full h-full object-cover" />
                             ) : (
@@ -1304,10 +1304,10 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                             )}
                           </div>
                         </TableCell>
-                        <TableCell className="font-medium text-xs text-foreground truncate max-w-[260px]">
+                        <TableCell className="font-medium text-xs text-foreground truncate max-w-64">
                           {p.title}
                         </TableCell>
-                        <TableCell className="text-xs text-muted-foreground truncate max-w-[130px]">
+                        <TableCell className="text-xs text-muted-foreground truncate max-w-32">
                           {p.source_domain}
                         </TableCell>
                         <TableCell className="text-xs font-semibold text-foreground">
@@ -1340,7 +1340,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                               variant="outline"
                               size="sm"
                               onClick={() => handleOpenImportProduct(p)}
-                              className="h-7 px-2 rounded-lg text-xs font-medium gap-1 cursor-pointer"
+                              className="h-11 min-h-11 px-2 rounded-lg text-xs font-medium gap-1 cursor-pointer min-h-11"
                               title="Importar para Loja"
                             >
                               <ShoppingBag className="w-3 h-3" />
@@ -1408,9 +1408,9 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
               variant="outline"
               size="sm"
               onClick={loadCooldowns}
-              className="h-8 px-3 rounded-lg text-xs font-normal gap-1 cursor-pointer"
+              className="h-11 min-h-11 px-3 rounded-lg text-xs font-normal gap-1 cursor-pointer min-h-11"
             >
-              <RefreshCw className={`w-3 h-3 ${isLoadingCooldowns ? "animate-spin" : ""}`} /> Atualizar
+              <RefreshCw className={`w-3 h-3 ${isLoadingCooldowns ? "animate-spin motion-reduce:animate-none" : ""}`} /> Atualizar
             </Button>
           </div>
 
@@ -1418,7 +1418,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
           <div className="block sm:hidden divide-y divide-border/40 rounded-lg border border-border/40 bg-card overflow-hidden">
             {isLoadingCooldowns ? (
               <div className="py-8 text-center text-xs text-muted-foreground">
-                <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" /> Carregando...
+                <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mx-auto mb-2" /> Carregando...
               </div>
             ) : domainCooldowns.length === 0 ? (
               <div className="py-8 text-center text-xs text-muted-foreground">
@@ -1439,10 +1439,10 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                     size="sm"
                     onClick={() => handleResetCooldown(cd.domain)}
                     disabled={isResettingCooldown === cd.domain}
-                    className="h-8 px-3 rounded-lg text-xs font-normal shrink-0"
+                    className="h-11 min-h-11 px-3 rounded-lg text-xs font-normal shrink-0 min-h-11"
                   >
                     {isResettingCooldown === cd.domain ? (
-                      <Loader2 className="w-3 h-3 animate-spin" />
+                      <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
                     ) : (
                       <RotateCcw className="w-3 h-3 mr-1" />
                     )}
@@ -1459,18 +1459,18 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
               <TableHeader>
                 <TableRow className="bg-muted/20 border-b border-border/40">
                   <TableHead className="text-xs font-normal text-muted-foreground">Domínio</TableHead>
-                  <TableHead className="w-[180px] text-xs font-normal text-muted-foreground">Motivo</TableHead>
-                  <TableHead className="w-[100px] text-xs font-normal text-muted-foreground">Status HTTP</TableHead>
-                  <TableHead className="w-[90px] text-xs font-normal text-muted-foreground">Falhas</TableHead>
+                  <TableHead className="w-44 text-xs font-normal text-muted-foreground">Motivo</TableHead>
+                  <TableHead className="w-24 text-xs font-normal text-muted-foreground">Status HTTP</TableHead>
+                  <TableHead className="w-24 text-xs font-normal text-muted-foreground">Falhas</TableHead>
                   <TableHead className="w-40 text-xs font-normal text-muted-foreground">Repouso Até</TableHead>
-                  <TableHead className="w-[110px] text-right text-xs font-normal text-muted-foreground">Ação</TableHead>
+                  <TableHead className="w-28 text-right text-xs font-normal text-muted-foreground">Ação</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoadingCooldowns ? (
                   <TableRow>
                     <TableCell colSpan={6} className="h-28 text-center text-xs text-muted-foreground">
-                      <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" />
+                      <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mx-auto mb-2" />
                       Carregando telemetria...
                     </TableCell>
                   </TableRow>
@@ -1486,7 +1486,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                       <TableCell className="font-medium text-xs text-foreground">
                         {cd.domain}
                       </TableCell>
-                      <TableCell className="text-xs text-muted-foreground truncate max-w-[180px]">
+                      <TableCell className="text-xs text-muted-foreground truncate max-w-44">
                         {cd.reason || "Aguardando intervalo de consulta"}
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground font-mono">
@@ -1504,10 +1504,10 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                           size="sm"
                           onClick={() => handleResetCooldown(cd.domain)}
                           disabled={isResettingCooldown === cd.domain}
-                          className="h-7 px-2 rounded-lg text-xs font-normal gap-1 cursor-pointer"
+                          className="h-11 min-h-11 px-2 rounded-lg text-xs font-normal gap-1 cursor-pointer min-h-11"
                         >
                           {isResettingCooldown === cd.domain ? (
-                            <Loader2 className="w-3 h-3 animate-spin" />
+                            <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
                           ) : (
                             <RotateCcw className="w-3 h-3" />
                           )}
@@ -1532,7 +1532,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                   variant={queueStatusFilter === st ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setQueueStatusFilter(st)}
-                  className="h-8 px-3 rounded-lg text-xs font-normal capitalize"
+                  className="h-11 min-h-11 px-3 rounded-lg text-xs font-normal capitalize min-h-11"
                 >
                   {st === "all" ? "Todos" : st}
                 </Button>
@@ -1543,7 +1543,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
               variant="outline"
               size="sm"
               onClick={() => setIsSeedModalOpen(true)}
-              className="h-8 px-3 rounded-lg text-xs font-normal gap-1"
+              className="h-11 min-h-11 px-3 rounded-lg text-xs font-normal gap-1 min-h-11"
             >
               <Plus className="w-3.5 h-3.5" /> Adicionar Semente
             </Button>
@@ -1553,7 +1553,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
           <div className="block sm:hidden divide-y divide-border/40 rounded-lg border border-border/40 bg-card overflow-hidden">
             {isLoadingQueue ? (
               <div className="py-8 text-center text-xs text-muted-foreground">
-                <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" /> Carregando...
+                <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mx-auto mb-2" /> Carregando...
               </div>
             ) : queueItems.length === 0 ? (
               <div className="py-8 text-center text-xs text-muted-foreground">Nenhum item na fila.</div>
@@ -1578,18 +1578,18 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/20 border-b border-border/40">
-                  <TableHead className="w-[140px] text-xs font-normal text-muted-foreground">Domínio</TableHead>
+                  <TableHead className="w-36 text-xs font-normal text-muted-foreground">Domínio</TableHead>
                   <TableHead className="text-xs font-normal text-muted-foreground">URL</TableHead>
-                  <TableHead className="w-[90px] text-xs font-normal text-muted-foreground">Prioridade</TableHead>
-                  <TableHead className="w-[110px] text-xs font-normal text-muted-foreground">Status</TableHead>
-                  <TableHead className="w-[110px] text-right text-xs font-normal text-muted-foreground">Data</TableHead>
+                  <TableHead className="w-24 text-xs font-normal text-muted-foreground">Prioridade</TableHead>
+                  <TableHead className="w-28 text-xs font-normal text-muted-foreground">Status</TableHead>
+                  <TableHead className="w-28 text-right text-xs font-normal text-muted-foreground">Data</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoadingQueue ? (
                   <TableRow>
                     <TableCell colSpan={5} className="h-28 text-center text-xs text-muted-foreground">
-                      <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" />
+                      <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mx-auto mb-2" />
                       Carregando fila...
                     </TableCell>
                   </TableRow>
@@ -1602,10 +1602,10 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 ) : (
                   queueItems.map((item) => (
                     <TableRow key={item.id} className="border-b border-border/30">
-                      <TableCell className="font-medium text-xs text-foreground truncate max-w-[140px]">
+                      <TableCell className="font-medium text-xs text-foreground truncate max-w-36">
                         {item.domain}
                       </TableCell>
-                      <TableCell className="text-xs truncate max-w-[340px]">
+                      <TableCell className="text-xs truncate max-w-xs">
                         <a
                           href={item.url}
                           target="_blank"
@@ -1644,13 +1644,13 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                   value={businessSearch}
                   onChange={(e) => setBusinessSearch(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && loadBusinesses()}
-                  className="pl-8 h-9 rounded-lg text-xs border-border/50"
+                  className="pl-8 h-11 min-h-11 rounded-lg text-xs border-border/50 min-h-11"
                 />
               </div>
               <Button
                 variant="outline"
                 onClick={loadBusinesses}
-                className="h-9 px-4 rounded-lg text-xs font-normal cursor-pointer"
+                className="h-11 min-h-11 px-4 rounded-lg text-xs font-normal cursor-pointer min-h-11"
               >
                 Buscar
               </Button>
@@ -1660,10 +1660,10 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
               variant="outline"
               disabled={isGeneratingGhost}
               onClick={handleGenerateGhostStores}
-              className="h-9 px-4 rounded-lg text-xs font-medium gap-2 cursor-pointer shrink-0"
+              className="h-11 min-h-11 px-4 rounded-lg text-xs font-medium gap-2 cursor-pointer shrink-0 min-h-11"
             >
               {isGeneratingGhost ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
               ) : (
                 <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
               )}
@@ -1675,7 +1675,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
           <div className="block sm:hidden divide-y divide-border/40 rounded-lg border border-border/40 bg-card overflow-hidden">
             {isLoadingBusinesses ? (
               <div className="py-8 text-center text-xs text-muted-foreground">
-                <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" /> Carregando...
+                <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mx-auto mb-2" /> Carregando...
               </div>
             ) : businesses.length === 0 ? (
               <div className="py-8 text-center text-xs text-muted-foreground">Nenhuma empresa encontrada.</div>
@@ -1689,9 +1689,9 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                   <div className="text-right shrink-0 flex flex-col items-end">
                     <span className="text-xs font-mono font-medium text-foreground">{biz.data_quality_score}%</span>
                     {biz.data_quality_score >= 80 ? (
-                      <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-medium">Ghost Tenant</span>
+                      <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Ghost Tenant</span>
                     ) : (
-                      <span className="text-[9px] text-muted-foreground">{biz.city || "—"}</span>
+                      <span className="text-xs text-muted-foreground">{biz.city || "—"}</span>
                     )}
                   </div>
                 </div>
@@ -1705,18 +1705,18 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
               <TableHeader>
                 <TableRow className="bg-muted/20 border-b border-border/40">
                   <TableHead className="text-xs font-normal text-muted-foreground">Empresa</TableHead>
-                  <TableHead className="w-[140px] text-xs font-normal text-muted-foreground">CNPJ</TableHead>
+                  <TableHead className="w-36 text-xs font-normal text-muted-foreground">CNPJ</TableHead>
                   <TableHead className="w-40 text-xs font-normal text-muted-foreground">Localização</TableHead>
-                  <TableHead className="w-[100px] text-xs font-normal text-muted-foreground">Qualidade</TableHead>
-                  <TableHead className="w-[120px] text-xs font-normal text-muted-foreground">Ghost Tenant</TableHead>
-                  <TableHead className="w-[90px] text-right text-xs font-normal text-muted-foreground">Fonte</TableHead>
+                  <TableHead className="w-24 text-xs font-normal text-muted-foreground">Qualidade</TableHead>
+                  <TableHead className="w-32 text-xs font-normal text-muted-foreground">Ghost Tenant</TableHead>
+                  <TableHead className="w-24 text-right text-xs font-normal text-muted-foreground">Fonte</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoadingBusinesses ? (
                   <TableRow>
                     <TableCell colSpan={6} className="h-28 text-center text-xs text-muted-foreground">
-                      <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" />
+                      <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mx-auto mb-2" />
                       Carregando empresas...
                     </TableCell>
                   </TableRow>
@@ -1776,10 +1776,10 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 size="sm"
                 onClick={() => handleDispatchCron("market-data")}
                 disabled={isDispatchingCron === "market-data"}
-                className="h-8 px-3 rounded-lg text-xs font-normal cursor-pointer"
+                className="h-11 min-h-11 px-3 rounded-lg text-xs font-normal cursor-pointer min-h-11"
               >
                 {isDispatchingCron === "market-data" ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-2" />
                 ) : (
                   <Clock className="w-3.5 h-3.5 mr-2 text-muted-foreground" />
                 )}
@@ -1790,9 +1790,9 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 size="sm"
                 onClick={loadIndicators}
                 disabled={isLoadingIndicators}
-                className="h-8 px-3 rounded-lg text-xs font-normal cursor-pointer"
+                className="h-11 min-h-11 px-3 rounded-lg text-xs font-normal cursor-pointer min-h-11"
               >
-                <RefreshCw className={`w-3.5 h-3.5 mr-2 ${isLoadingIndicators ? "animate-spin" : ""}`} />
+                <RefreshCw className={`w-3.5 h-3.5 mr-2 ${isLoadingIndicators ? "animate-spin motion-reduce:animate-none" : ""}`} />
                 Recarregar
               </Button>
             </div>
@@ -1801,7 +1801,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
             {isLoadingIndicators ? (
               <div className="col-span-full py-12 text-center text-xs text-muted-foreground">
-                <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" />
+                <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mx-auto mb-2" />
                 Consultando API SGS do Banco Central...
               </div>
             ) : indicators.length === 0 ? (
@@ -1848,10 +1848,10 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 size="sm"
                 onClick={() => handleDispatchCron("rss-fetcher")}
                 disabled={isDispatchingCron === "rss-fetcher"}
-                className="h-8 px-3 rounded-lg text-xs font-normal cursor-pointer"
+                className="h-11 min-h-11 px-3 rounded-lg text-xs font-normal cursor-pointer min-h-11"
               >
                 {isDispatchingCron === "rss-fetcher" ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-2" />
                 ) : (
                   <Clock className="w-3.5 h-3.5 mr-2 text-muted-foreground" />
                 )}
@@ -1861,7 +1861,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 variant="outline"
                 size="sm"
                 onClick={() => setIsFeedModalOpen(true)}
-                className="h-8 px-3 rounded-lg text-xs font-normal gap-1 cursor-pointer"
+                className="h-11 min-h-11 px-3 rounded-lg text-xs font-normal gap-1 cursor-pointer min-h-11"
               >
                 <Plus className="w-3.5 h-3.5" /> Adicionar Feed
               </Button>
@@ -1874,15 +1874,15 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 <TableRow className="bg-muted/20 border-b border-border/40">
                   <TableHead className="text-xs font-normal text-muted-foreground">Nome</TableHead>
                   <TableHead className="text-xs font-normal text-muted-foreground">Feed URL</TableHead>
-                  <TableHead className="w-[100px] text-xs font-normal text-muted-foreground">Status</TableHead>
-                  <TableHead className="w-[100px] text-right text-xs font-normal text-muted-foreground">Ações</TableHead>
+                  <TableHead className="w-24 text-xs font-normal text-muted-foreground">Status</TableHead>
+                  <TableHead className="w-24 text-right text-xs font-normal text-muted-foreground">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoadingFeeds ? (
                   <TableRow>
                     <TableCell colSpan={4} className="h-28 text-center text-xs text-muted-foreground">
-                      <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" />
+                      <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mx-auto mb-2" />
                       Carregando feeds...
                     </TableCell>
                   </TableRow>
@@ -1912,7 +1912,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                           size="sm"
                           onClick={() => handleRunScraper("rss-fetcher", { targetUrl: feed.feed_url })}
                           disabled={Boolean(isRunningScraper)}
-                          className="h-7 px-2 rounded-lg text-xs font-normal"
+                          className="h-11 min-h-11 px-2 rounded-lg text-xs font-normal min-h-11"
                         >
                           Sincronizar
                         </Button>
@@ -1931,18 +1931,18 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/20 border-b border-border/40">
-                  <TableHead className="w-[140px] text-xs font-normal text-muted-foreground">Minerador</TableHead>
+                  <TableHead className="w-36 text-xs font-normal text-muted-foreground">Minerador</TableHead>
                   <TableHead className="text-xs font-normal text-muted-foreground">Ação</TableHead>
-                  <TableHead className="w-[90px] text-xs font-normal text-muted-foreground">Afetados</TableHead>
-                  <TableHead className="w-[90px] text-xs font-normal text-muted-foreground">Duração</TableHead>
-                  <TableHead className="w-[130px] text-right text-xs font-normal text-muted-foreground">Data/Hora</TableHead>
+                  <TableHead className="w-24 text-xs font-normal text-muted-foreground">Afetados</TableHead>
+                  <TableHead className="w-24 text-xs font-normal text-muted-foreground">Duração</TableHead>
+                  <TableHead className="w-32 text-right text-xs font-normal text-muted-foreground">Data/Hora</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoadingAudit ? (
                   <TableRow>
                     <TableCell colSpan={5} className="h-28 text-center text-xs text-muted-foreground">
-                      <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" />
+                      <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mx-auto mb-2" />
                       Carregando logs...
                     </TableCell>
                   </TableRow>
@@ -2002,7 +2002,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                   placeholder="Ex: Portal Regional"
                   value={newSeedName}
                   onChange={(e) => setNewSeedName(e.target.value)}
-                  className="rounded-lg h-10 text-xs border-border/50"
+                  className="rounded-lg h-11 min-h-11 text-xs border-border/50 min-h-11"
                 />
               </div>
 
@@ -2014,7 +2014,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                   required
                   value={newSeedUrl}
                   onChange={(e) => setNewSeedUrl(e.target.value)}
-                  className="rounded-lg h-10 text-xs border-border/50"
+                  className="rounded-lg h-11 min-h-11 text-xs border-border/50 min-h-11"
                 />
               </div>
             </div>
@@ -2033,7 +2033,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 disabled={isSubmittingSeed}
                 className="rounded-lg text-xs font-medium shadow-none"
               >
-                {isSubmittingSeed ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" /> : null}
+                {isSubmittingSeed ? <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-2" /> : null}
                 Salvar
               </Button>
             </DialogFooter>
@@ -2060,7 +2060,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                   required
                   value={newFeedName}
                   onChange={(e) => setNewFeedName(e.target.value)}
-                  className="rounded-lg h-10 text-xs border-border/50"
+                  className="rounded-lg h-11 min-h-11 text-xs border-border/50 min-h-11"
                 />
               </div>
 
@@ -2072,7 +2072,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                   required
                   value={newFeedUrl}
                   onChange={(e) => setNewFeedUrl(e.target.value)}
-                  className="rounded-lg h-10 text-xs border-border/50"
+                  className="rounded-lg h-11 min-h-11 text-xs border-border/50 min-h-11"
                 />
               </div>
 
@@ -2083,7 +2083,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                   type="url"
                   value={newFeedSiteUrl}
                   onChange={(e) => setNewFeedSiteUrl(e.target.value)}
-                  className="rounded-lg h-10 text-xs border-border/50"
+                  className="rounded-lg h-11 min-h-11 text-xs border-border/50 min-h-11"
                 />
               </div>
             </div>
@@ -2102,7 +2102,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 disabled={isSubmittingFeed}
                 className="rounded-lg text-xs font-medium shadow-none"
               >
-                {isSubmittingFeed ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" /> : null}
+                {isSubmittingFeed ? <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-2" /> : null}
                 Salvar Feed
               </Button>
             </DialogFooter>
@@ -2127,7 +2127,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 value={editProductTitle}
                 onChange={(e) => setEditProductTitle(e.target.value)}
                 placeholder="Ex: Tênis Esportivo Pro..."
-                className="h-9 rounded-lg text-xs"
+                className="h-11 min-h-11 rounded-lg text-xs min-h-11"
               />
             </div>
 
@@ -2140,7 +2140,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                   placeholder="0.00"
                   type="number"
                   step="0.01"
-                  className="h-9 rounded-lg text-xs font-mono"
+                  className="h-11 min-h-11 rounded-lg text-xs font-mono min-h-11"
                 />
               </div>
 
@@ -2149,7 +2149,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 <select
                   value={editProductStatus}
                   onChange={(e) => setEditProductStatus(e.target.value)}
-                  className="w-full h-9 rounded-lg text-xs bg-background border border-border/60 px-3"
+                  className="w-full h-11 min-h-11 rounded-lg text-xs bg-background border border-border/60 px-3 min-h-11"
                 >
                   <option value="pending_review">Pendente</option>
                   <option value="approved">Aprovado</option>
@@ -2165,7 +2165,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 value={editProductImage}
                 onChange={(e) => setEditProductImage(e.target.value)}
                 placeholder="https://..."
-                className="h-9 rounded-lg text-xs font-mono"
+                className="h-11 min-h-11 rounded-lg text-xs font-mono min-h-11"
               />
             </div>
 
@@ -2196,7 +2196,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
               disabled={isSavingProductEdit}
               className="rounded-lg text-xs font-medium"
             >
-              {isSavingProductEdit ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" /> : null}
+              {isSavingProductEdit ? <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-2" /> : null}
               Salvar Alterações
             </Button>
           </DialogFooter>
@@ -2233,7 +2233,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 value={importTargetStoreId}
                 onChange={(e) => setImportTargetStoreId(e.target.value)}
                 placeholder="Ex: 8f44d8b2-..."
-                className="h-9 rounded-lg text-xs font-mono"
+                className="h-11 min-h-11 rounded-lg text-xs font-mono min-h-11"
               />
               <p className="text-xs text-muted-foreground">
                 O produto será publicado no catálogo e visível para compra ou reserva.
@@ -2256,7 +2256,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
               disabled={isImportingProduct || !importTargetStoreId.trim()}
               className="rounded-lg text-xs font-medium"
             >
-              {isImportingProduct ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" /> : null}
+              {isImportingProduct ? <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-2" /> : null}
               Confirmar Importação
             </Button>
           </DialogFooter>

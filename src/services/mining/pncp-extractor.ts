@@ -73,7 +73,7 @@ export async function fetchPncpContracts(options: PncpSearchOptions = {}): Promi
     dataFinal,
     codigoModalidadeContratacao: String(modalidade),
     pagina: "1",
-    tamanhoPagina: String(Math.min(limit, 30)),
+    tamanhoPagina: String(Math.max(10, Math.min(limit, 50))),
   });
 
   if (ibge) {

@@ -43,7 +43,9 @@ export default function ViajanteCarteiraPage() {
       if (saved) {
         setCachedPasses(JSON.parse(saved));
       }
-    } catch (_) {}
+    } catch (err) {
+      console.warn("[viajante.carteira] Falha ao recuperar passes do cache offline:", err);
+    }
   }, []);
 
   const { data: serverPasses = [] } = useQuery({
@@ -59,7 +61,9 @@ export default function ViajanteCarteiraPage() {
       try {
         localStorage.setItem(OFFLINE_STORAGE_KEY, JSON.stringify(serverPasses));
         setCachedPasses(serverPasses);
-      } catch (_) {}
+      } catch (err) {
+        console.warn("[viajante.carteira] Falha ao gravar passes no cache offline:", err);
+      }
     }
   }, [serverPasses]);
 
@@ -307,7 +311,7 @@ export default function ViajanteCarteiraPage() {
 
                   <div className="flex items-center gap-2 shrink-0">
                     <Button
-        
+
                       variant="outline"
                       onClick={() => handleDownloadPdf(pass)}
                       className="h-8 px-3 rounded-lg text-xs font-medium"
@@ -316,7 +320,7 @@ export default function ViajanteCarteiraPage() {
                       PDF
                     </Button>
                     <Button
-        
+
                       onClick={() => setFullscreenQrPass(pass)}
                       className="h-8 px-3 rounded-lg text-xs font-medium"
                     >

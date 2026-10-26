@@ -3,6 +3,7 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { DEFAULT_BRAND_NAME } from "@/lib/brand";
 import { LocationMasterPill } from "@/components/location/location-master-pill";
 import { UtilityCluster } from "@/components/shell/utility-cluster";
+import { GlobalTripCompanionWidget } from "@/components/tourism/traveler/GlobalTripCompanionWidget";
 import { MagnifyingGlass } from "@phosphor-icons/react";
 import { BetaExplanationModal } from "@/components/shell/beta-explanation-modal";
 
@@ -102,6 +103,7 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
             <MagnifyingGlass size={20} weight="bold" />
           </Link>
 
+          <GlobalTripCompanionWidget />
           <UtilityCluster session={session} embedded={true} />
         </div>
       </div>

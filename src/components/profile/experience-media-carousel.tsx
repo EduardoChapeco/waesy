@@ -80,28 +80,36 @@ export function ExperienceMediaCarousel({
         </div>
 
         {/* Trilho Deslizante Snap (LinkedIn / Apple HIG Experience Rail) */}
-        <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-2 pt-1 scroll-smooth">
+        <div className="flex gap-3 scroll-area overflow-x-auto snap-x snap-mandatory scrollbar-none pb-2 pt-1 scroll-smooth motion-reduce:transition-none">
           {normalizedItems.map((item, idx) => {
             const isPdf = item.type === "pdf" || item.url.toLowerCase().endsWith(".pdf");
 
             return (
               <div
                 key={item.id || idx}
+                role="button"
+                tabIndex={0}
                 onClick={(e) => {
                   e.stopPropagation();
                   setSelectedMediaIndex(idx);
                 }}
-                className="group relative shrink-0 w-44 sm:w-56 aspect-video rounded-lg overflow-hidden border border-border/60 bg-muted/20 snap-start shadow-xs hover:border-primary/50 hover:shadow-md transition-all duration-200 cursor-pointer"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setSelectedMediaIndex(idx);
+                  }
+                }}
+                className="group relative shrink-0 w-44 sm:w-56 aspect-video rounded-lg overflow-hidden border border-border/60 bg-muted/20 snap-start shadow-xs hover:border-primary/50 transition-colors duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               >
                 {isPdf ? (
                   <div className="size-full flex flex-col items-center justify-center p-3 text-center bg-card">
                     <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
                       <FileText className="size-5" />
                     </div>
-                    <span className="text-[11px] font-bold text-foreground line-clamp-1">
+                    <span className="text-xs font-bold text-foreground line-clamp-1">
                       {item.title || "Documento PDF"}
                     </span>
-                    <span className="text-[10px] text-muted-foreground font-mono">
+                    <span className="text-xs text-muted-foreground font-mono">
                       Certificado / Anexo
                     </span>
                   </div>
@@ -113,8 +121,8 @@ export function ExperienceMediaCarousel({
                       className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
                       loading="lazy"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
-                      <span className="text-[10px] font-medium text-white truncate flex items-center gap-1">
+                    <div className="absolute inset-0 bg-linear-to-t from-foreground/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
+                      <span className="text-xs font-medium text-background truncate flex items-center gap-1">
                         <Maximize2 className="size-3" />
                         {item.title || "Ver em alta resolução"}
                       </span>
@@ -123,7 +131,7 @@ export function ExperienceMediaCarousel({
                 )}
 
                 {/* Badge indicador discreto */}
-                <div className="absolute top-2 right-2 px-2 py-1 rounded-md bg-black/60 backdrop-blur-sm text-[9px] font-mono text-white/90">
+                <div className="absolute top-2 right-2 px-2 py-1 rounded-md bg-foreground/80 backdrop-blur-xs text-xs font-mono text-background">
                   {idx + 1}/{normalizedItems.length}
                 </div>
               </div>
@@ -137,25 +145,25 @@ export function ExperienceMediaCarousel({
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-2xl flex flex-col items-center justify-between p-4 sm:p-6 animate-in fade-in duration-200"
-          onClick={() => setSelectedMediaIndex(null)}
-        >
+          className="fixed inset-0 z-50 bg-background/95 backdrop-blur-2xl flex flex-col items-center justify-between p-4 sm:p-6 animate-in fade-in duration-200 text-foreground"
+          >
+          <button type="button" aria-label="Fechar" onClick={() => setSelectedMediaIndex(null)} className="absolute inset-0 size-full cursor-default focus-visible:outline-none" />
           {/* Header Superior Flutuante */}
           <div
-            className="w-full max-w-5xl flex items-center justify-between text-white z-10 py-2"
-            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-5xl flex items-center justify-between text-foreground z-10 py-2"
+            onPointerDown={(e) => e.stopPropagation()}
           >
-            <div className="space-y-1 max-w-[70%]">
+            <div className="space-y-1 max-w-3/4">
               <h4 className="text-sm sm:text-base font-bold truncate">
                 {activeItem.title || itemTitle || "Evidência Profissional"}
               </h4>
               {companyName && (
-                <p className="text-xs text-white/70 truncate">{companyName}</p>
+                <p className="text-xs text-muted-foreground truncate">{companyName}</p>
               )}
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-xs font-mono text-white/70 mr-2">
+              <span className="text-xs font-mono text-muted-foreground mr-2">
                 {selectedMediaIndex + 1} de {normalizedItems.length}
               </span>
 
@@ -163,7 +171,7 @@ export function ExperienceMediaCarousel({
                 asChild
                 size="sm"
                 variant="ghost"
-                className="size-9 p-0 rounded-full text-white/80 hover:text-white hover:bg-white/10"
+                className="size-11 min-h-11 min-w-11 p-0 rounded-full text-foreground hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               >
                 <a
                   href={activeItem.url}
@@ -179,7 +187,7 @@ export function ExperienceMediaCarousel({
               <Button
                 size="sm"
                 variant="ghost"
-                className="size-9 p-0 rounded-full text-white/80 hover:text-white hover:bg-white/10"
+                className="size-11 min-h-11 min-w-11 p-0 rounded-full text-foreground hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                 onClick={() => setSelectedMediaIndex(null)}
                 title="Fechar (ESC)"
               >
@@ -191,7 +199,7 @@ export function ExperienceMediaCarousel({
           {/* Área Central: Visualizador em Alta Definição */}
           <div
             className="relative flex-1 w-full max-w-5xl flex items-center justify-center p-2 my-auto select-none"
-            onClick={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
           >
             {/* Botão Anterior */}
             {normalizedItems.length > 1 && (
@@ -202,7 +210,7 @@ export function ExperienceMediaCarousel({
                     prev !== null ? (prev > 0 ? prev - 1 : normalizedItems.length - 1) : null
                   )
                 }
-                className="absolute left-2 sm:left-4 z-10 size-11 rounded-full bg-black/50 hover:bg-black/80 text-white backdrop-blur-md border border-white/10 flex items-center justify-center transition-all cursor-pointer"
+                className="absolute left-2 sm:left-4 z-10 size-11 min-h-11 min-w-11 rounded-full bg-card/80 hover:bg-muted text-foreground backdrop-blur-md border border-border/40 flex items-center justify-center transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                 title="Anterior (Seta Esquerda)"
               >
                 <ChevronLeft className="size-6" />
@@ -211,7 +219,7 @@ export function ExperienceMediaCarousel({
 
             {/* Conteúdo da Mídia */}
             {activeItem.type === "pdf" || activeItem.url.toLowerCase().endsWith(".pdf") ? (
-              <div className="w-full max-w-2xl h-[65vh] rounded-lg bg-card p-6 flex flex-col items-center justify-center text-center space-y-4 border border-border shadow-2xl">
+              <div className="w-full max-w-2xl h-full max-h-screen rounded-lg bg-card p-6 flex flex-col items-center justify-center text-center space-y-4 border border-border shadow-2xs">
                 <div className="size-16 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                   <FileText className="size-8" />
                 </div>
@@ -234,7 +242,7 @@ export function ExperienceMediaCarousel({
               <img
                 src={activeItem.url}
                 alt={activeItem.title || "Visualização ampliada"}
-                className="max-h-[75vh] max-w-full object-contain rounded-lg shadow-2xl border border-white/10 animate-in zoom-in-95 duration-200"
+                className="max-h-full max-w-full object-contain rounded-lg shadow-2xs border border-white/10 animate-in zoom-in-95 duration-200"
               />
             )}
 
@@ -247,7 +255,7 @@ export function ExperienceMediaCarousel({
                     prev !== null ? (prev < normalizedItems.length - 1 ? prev + 1 : 0) : null
                   )
                 }
-                className="absolute right-2 sm:right-4 z-10 size-11 rounded-full bg-black/50 hover:bg-black/80 text-white backdrop-blur-md border border-white/10 flex items-center justify-center transition-all cursor-pointer"
+                className="absolute right-2 sm:right-4 z-10 size-11 min-h-11 min-w-11 rounded-full bg-card/80 hover:bg-muted text-foreground backdrop-blur-md border border-border/40 flex items-center justify-center transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                 title="Próximo (Seta Direita)"
               >
                 <ChevronRight className="size-6" />
@@ -258,10 +266,10 @@ export function ExperienceMediaCarousel({
           {/* Rodapé Flutuante com Legenda e Indicadores */}
           <div
             className="w-full max-w-2xl text-center py-2 z-10"
-            onClick={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
           >
             {activeItem.description && (
-              <p className="text-xs text-white/80 max-w-lg mx-auto mb-2 line-clamp-2">
+              <p className="text-xs text-foreground/80 max-w-lg mx-auto mb-2 line-clamp-2">
                 {activeItem.description}
               </p>
             )}
@@ -273,14 +281,18 @@ export function ExperienceMediaCarousel({
                     key={dotIdx}
                     type="button"
                     onClick={() => setSelectedMediaIndex(dotIdx)}
-                    className={cn(
-                      "size-2 rounded-full transition-all cursor-pointer",
-                      dotIdx === selectedMediaIndex
-                        ? "bg-white w-5"
-                        : "bg-white/30 hover:bg-white/60"
-                    )}
+                    className="size-11 min-h-11 min-w-11 flex items-center justify-center cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none rounded-full"
                     aria-label={`Ir para mídia ${dotIdx + 1}`}
-                  />
+                  >
+                    <span
+                      className={cn(
+                        "h-2 rounded-full transition-colors",
+                        dotIdx === selectedMediaIndex
+                          ? "bg-foreground w-5"
+                          : "bg-muted-foreground/30 hover:bg-muted-foreground/60 w-2"
+                      )}
+                    />
+                  </button>
                 ))}
               </div>
             )}

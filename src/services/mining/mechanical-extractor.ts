@@ -1,6 +1,6 @@
 /**
  * mechanical-extractor.ts — Motor Mecânico de Extração em 4 Camadas (Zero IA)
- * 
+ *
  * Arquitetura de Resiliência:
  * 1. Stealth HTTP Fetcher: Cabeçalhos reais de navegador anti-bloqueio (Akamai, Cloudflare, G1)
  * 2. Camada 1: JSON-LD Schema.org (NewsArticle, Article, Event)
@@ -9,7 +9,7 @@
  * 5. Camada 4: Algoritmo de Densidade Textual / Pure Readability (Fall-back universal)
  */
 
-import { getRandomUserAgent, cleanHtmlText } from "@/lib/mining/scraper-utils";
+import { getRandomUserAgent, getRealisticBrowserHeaders, cleanHtmlText } from "@/lib/mining/scraper-utils";
 import { globalCrawlerCircuitBreaker } from "@/lib/mining/crawler-circuit-breaker";
 import { validateBrandSourceUrl } from "@/lib/brand-source-url";
 export { cleanHtmlText };
@@ -111,6 +111,19 @@ export function sanitizeParagraphs(paragraphs: string[]): string[] {
     "confira também",
     "foto: divulgação",
     "crédito:",
+    "compartilhe",
+    "compartilhar",
+    "acesse nosso grupo",
+    "cadastre-se",
+    "publicidade",
+    "anúncio",
+    "anuncie conosco",
+    "fale com a redação",
+    "envie sua sugestão de pauta",
+    "termos de uso",
+    "direitos autorais",
+    "todos os direitos",
+    "fonte: divulgação",
   ];
 
   return paragraphs.filter((p) => {
@@ -129,23 +142,11 @@ export function sanitizeParagraphs(paragraphs: string[]): string[] {
 export async function fetchHtmlWithStealth(url: string, timeoutMs = 20000): Promise<string> {
   const parsedUrl = new URL(url);
   const domain = parsedUrl.hostname;
-  const userAgent = getRandomUserAgent();
 
-  const headers: Record<string, string> = {
-    "User-Agent": userAgent,
-    Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-    "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
-    "Sec-Ch-Ua": '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
-    "Sec-Ch-Ua-Mobile": "?0",
-    "Sec-Ch-Ua-Platform": '"Windows"',
-    "Sec-Fetch-Dest": "document",
-    "Sec-Fetch-Mode": "navigate",
-    "Sec-Fetch-Site": "none",
-    "Sec-Fetch-User": "?1",
-    "Upgrade-Insecure-Requests": "1",
-    "Cache-Control": "max-age=0",
+  const headers = getRealisticBrowserHeaders({
     Referer: `${parsedUrl.protocol}//${parsedUrl.hostname}/`,
-  };
+    Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+  });
 
   let lastError: any = null;
   const retries = 2;
@@ -180,19 +181,38 @@ export async function fetchHtmlWithStealth(url: string, timeoutMs = 20000): Prom
     }
   }
 
-  // Camada de Contingência: Jina Reader Proxy (Converte URLs com anti-bot em conteúdo limpo)
+  // Camada de Contingência: Jina Reader Proxy (Converte URLs com anti-bot em conteúdo limpo com título real)
   try {
     const jinaRes = await fetch(`https://r.jina.ai/${url}`, {
       headers: {
         Accept: "text/plain",
         "X-Return-Format": "text",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
       },
-      signal: AbortSignal.timeout(12000),
+      signal: AbortSignal.timeout(15000),
     });
     if (jinaRes.ok) {
       const text = await jinaRes.text();
       if (text && text.length >= 80) {
-        return `<html><head><title>Jina Extracted</title></head><body><article>${text.replace(/\n/g, "<p>")}</article></body></html>`;
+        // Extrai título real do markdown (ex: "Title: ..." ou "# ...")
+        const titleMatch = text.match(/^Title:\s*([^\n]+)/im) || text.match(/^#\s+([^\n]+)/m);
+        const resolvedTitle = titleMatch ? cleanHtmlText(titleMatch[1].trim()) : "Notícia Regional";
+
+        // Remove cabeçalhos de metadados do Jina
+        const cleanBody = text
+          .replace(/^Title:[^\n]*\n/im, "")
+          .replace(/^URL Source:[^\n]*\n/im, "")
+          .replace(/^Markdown Content:[^\n]*\n/im, "")
+          .trim();
+
+        const paragraphs = cleanBody
+          .split(/\n\n+/)
+          .map((p) => p.trim())
+          .filter((p) => p.length > 20 && !p.startsWith("#"))
+          .map((p) => `<p>${cleanHtmlText(p)}</p>`)
+          .join("");
+
+        return `<html><head><title>${resolvedTitle}</title></head><body><article><h1>${resolvedTitle}</h1>${paragraphs}</article></body></html>`;
       }
     }
   } catch {

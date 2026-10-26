@@ -189,6 +189,7 @@ import { Route as StoreEntregaTokenRouteImport } from './routes/_store.entrega.$
 import { Route as StoreEntregadorCadastroRouteImport } from './routes/_store.entregador.cadastro'
 import { Route as StoreEventoIdRouteImport } from './routes/_store.evento.$id'
 import { Route as StoreFSlugRouteImport } from './routes/_store.f.$slug'
+import { Route as StoreFaturaTokenRouteImport } from './routes/_store.fatura.$token'
 import { Route as StoreGiftCardClaimTokenRouteImport } from './routes/_store.gift-card.$claimToken'
 import { Route as StoreGiftCardsIndexRouteImport } from './routes/_store.gift-cards.index'
 import { Route as StoreLojaSlugRouteImport } from './routes/_store.loja.$slug'
@@ -1326,6 +1327,11 @@ const StoreEventoIdRoute = StoreEventoIdRouteImport.update({
 const StoreFSlugRoute = StoreFSlugRouteImport.update({
   id: '/f/$slug',
   path: '/f/$slug',
+  getParentRoute: () => StoreRoute,
+} as any)
+const StoreFaturaTokenRoute = StoreFaturaTokenRouteImport.update({
+  id: '/fatura/$token',
+  path: '/fatura/$token',
   getParentRoute: () => StoreRoute,
 } as any)
 const StoreGiftCardClaimTokenRoute = StoreGiftCardClaimTokenRouteImport.update({
@@ -2809,6 +2815,7 @@ export interface FileRoutesByFullPath {
   '/entregador/cadastro': typeof StoreEntregadorCadastroRoute
   '/evento/$id': typeof StoreEventoIdRoute
   '/f/$slug': typeof StoreFSlugRoute
+  '/fatura/$token': typeof StoreFaturaTokenRoute
   '/gift-card/$claimToken': typeof StoreGiftCardClaimTokenRoute
   '/loja/$slug': typeof StoreLojaSlugRouteWithChildren
   '/marketplace/$storeSlug': typeof StoreMarketplaceStoreSlugRoute
@@ -3217,6 +3224,7 @@ export interface FileRoutesByTo {
   '/entregador/cadastro': typeof StoreEntregadorCadastroRoute
   '/evento/$id': typeof StoreEventoIdRoute
   '/f/$slug': typeof StoreFSlugRoute
+  '/fatura/$token': typeof StoreFaturaTokenRoute
   '/gift-card/$claimToken': typeof StoreGiftCardClaimTokenRoute
   '/loja/$slug': typeof StoreLojaSlugRouteWithChildren
   '/marketplace/$storeSlug': typeof StoreMarketplaceStoreSlugRoute
@@ -3634,6 +3642,7 @@ export interface FileRoutesById {
   '/_store/entregador/cadastro': typeof StoreEntregadorCadastroRoute
   '/_store/evento/$id': typeof StoreEventoIdRoute
   '/_store/f/$slug': typeof StoreFSlugRoute
+  '/_store/fatura/$token': typeof StoreFaturaTokenRoute
   '/_store/gift-card/$claimToken': typeof StoreGiftCardClaimTokenRoute
   '/_store/loja/$slug': typeof StoreLojaSlugRouteWithChildren
   '/_store/marketplace/$storeSlug': typeof StoreMarketplaceStoreSlugRoute
@@ -4052,6 +4061,7 @@ export interface FileRouteTypes {
     | '/entregador/cadastro'
     | '/evento/$id'
     | '/f/$slug'
+    | '/fatura/$token'
     | '/gift-card/$claimToken'
     | '/loja/$slug'
     | '/marketplace/$storeSlug'
@@ -4460,6 +4470,7 @@ export interface FileRouteTypes {
     | '/entregador/cadastro'
     | '/evento/$id'
     | '/f/$slug'
+    | '/fatura/$token'
     | '/gift-card/$claimToken'
     | '/loja/$slug'
     | '/marketplace/$storeSlug'
@@ -4876,6 +4887,7 @@ export interface FileRouteTypes {
     | '/_store/entregador/cadastro'
     | '/_store/evento/$id'
     | '/_store/f/$slug'
+    | '/_store/fatura/$token'
     | '/_store/gift-card/$claimToken'
     | '/_store/loja/$slug'
     | '/_store/marketplace/$storeSlug'
@@ -6427,6 +6439,13 @@ declare module '@tanstack/react-router' {
       path: '/f/$slug'
       fullPath: '/f/$slug'
       preLoaderRoute: typeof StoreFSlugRouteImport
+      parentRoute: typeof StoreRoute
+    }
+    '/_store/fatura/$token': {
+      id: '/_store/fatura/$token'
+      path: '/fatura/$token'
+      fullPath: '/fatura/$token'
+      preLoaderRoute: typeof StoreFaturaTokenRouteImport
       parentRoute: typeof StoreRoute
     }
     '/_store/gift-card/$claimToken': {
@@ -8319,6 +8338,7 @@ interface StoreRouteChildren {
   StoreEntregadorCadastroRoute: typeof StoreEntregadorCadastroRoute
   StoreEventoIdRoute: typeof StoreEventoIdRoute
   StoreFSlugRoute: typeof StoreFSlugRoute
+  StoreFaturaTokenRoute: typeof StoreFaturaTokenRoute
   StoreGiftCardClaimTokenRoute: typeof StoreGiftCardClaimTokenRoute
   StoreLojaSlugRoute: typeof StoreLojaSlugRouteWithChildren
   StoreMarketplaceStoreSlugRoute: typeof StoreMarketplaceStoreSlugRoute
@@ -8415,6 +8435,7 @@ const StoreRouteChildren: StoreRouteChildren = {
   StoreEntregadorCadastroRoute: StoreEntregadorCadastroRoute,
   StoreEventoIdRoute: StoreEventoIdRoute,
   StoreFSlugRoute: StoreFSlugRoute,
+  StoreFaturaTokenRoute: StoreFaturaTokenRoute,
   StoreGiftCardClaimTokenRoute: StoreGiftCardClaimTokenRoute,
   StoreLojaSlugRoute: StoreLojaSlugRouteWithChildren,
   StoreMarketplaceStoreSlugRoute: StoreMarketplaceStoreSlugRoute,

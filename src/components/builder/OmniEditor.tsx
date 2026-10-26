@@ -337,7 +337,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
 
           {/* Seleção Manual de Produtos / Pacotes Específicos */}
           {products.length > 0 && (
-            <div className="space-y-1.5 pt-1">
+            <div className="space-y-2 pt-1">
               <div className="flex items-center justify-between">
                 <label className="block text-xs font-semibold text-foreground">
                   Seleção Manual (Opcional)
@@ -346,7 +346,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                   <button
                     type="button"
                     onClick={() => onUpdateConfig("selectedProductIds", [])}
-                    className="text-xs text-primary hover:underline cursor-pointer"
+                    className="text-xs text-primary hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-xs"
                   >
                     Limpar ({config.selectedProductIds.length})
                   </button>
@@ -361,7 +361,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                   return (
                     <label
                       key={prod.id}
-                      className="flex items-center gap-2 p-1.5 rounded-md hover:bg-muted/60 text-xs cursor-pointer"
+                      className="flex items-center gap-2 p-2 rounded-md hover:bg-muted/60 text-xs cursor-pointer"
                     >
                       <input
                         type="checkbox"
@@ -647,7 +647,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                           currentList.filter((_: any, i: number) => i !== idx)
                         );
                       }}
-                      className="text-destructive hover:underline text-xs cursor-pointer"
+                      className="text-destructive hover:underline text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-xs"
                     >
                       Remover
                     </button>
@@ -747,7 +747,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                         current.filter((_: any, i: number) => i !== idx)
                       );
                     }}
-                    className="text-destructive hover:underline text-xs cursor-pointer"
+                    className="text-destructive hover:underline text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-xs"
                   >
                     Remover
                   </button>
@@ -856,7 +856,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                         current.filter((_: any, i: number) => i !== idx)
                       );
                     }}
-                    className="text-destructive hover:underline text-xs cursor-pointer"
+                    className="text-destructive hover:underline text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-xs"
                   >
                     Remover
                   </button>
@@ -1107,7 +1107,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                         current.filter((_: any, i: number) => i !== idx)
                       );
                     }}
-                    className="text-destructive hover:underline text-xs cursor-pointer"
+                    className="text-destructive hover:underline text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-xs"
                   >
                     Remover
                   </button>
@@ -1189,7 +1189,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                         current.filter((_: any, i: number) => i !== idx)
                       );
                     }}
-                    className="text-destructive hover:underline text-xs cursor-pointer"
+                    className="text-destructive hover:underline text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-xs"
                   >
                     Remover
                   </button>
@@ -1530,7 +1530,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                         current.filter((_: any, i: number) => i !== idx)
                       );
                     }}
-                    className="text-destructive hover:underline text-xs cursor-pointer"
+                    className="text-destructive hover:underline text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-xs"
                   >
                     Remover
                   </button>
@@ -1616,7 +1616,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                         current.filter((_: any, i: number) => i !== idx)
                       );
                     }}
-                    className="text-destructive hover:underline text-xs cursor-pointer"
+                    className="text-destructive hover:underline text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-xs"
                   >
                     Remover
                   </button>
@@ -2107,7 +2107,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
   };
 
   return (
-    <div className="relative w-full h-screen bg-background text-foreground flex flex-col overflow-hidden select-none font-sans">
+    <div className="relative w-full h-screen bg-background text-foreground flex flex-col overflow-hidden select-none font-sans motion-reduce:transition-none">
       {/* ── TOPBAR DO EDITOR (UNIVERSAL - SOFTWARE PRO SILENCE) ── */}
       <header className="h-13 border-b border-border/80 bg-background/95 backdrop-blur-md px-3 sm:px-4 flex items-center justify-between z-30 shrink-0">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -2116,7 +2116,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
               variant="ghost"
               size="icon"
               onClick={onBack}
-              className="size-8 rounded-lg text-muted-foreground hover:text-foreground shrink-0"
+              className="size-11 min-h-11 rounded-lg text-muted-foreground hover:text-foreground shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               title="Voltar ao painel"
             >
               <ArrowLeft className="size-4" />
@@ -2151,7 +2151,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                 setTitleDraft(document.title);
                 setIsEditingTitle(true);
               }}
-              className="flex items-center gap-2 cursor-pointer group px-2 py-1 rounded-lg hover:bg-muted/50 transition-colors min-w-0"
+              className="flex items-center gap-2 cursor-pointer group px-2 py-1 rounded-lg hover:bg-muted/50 transition-colors min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               title="Clique para renomear"
             >
               <span className="text-xs sm:text-sm font-bold tracking-tight text-foreground truncate max-w-36 sm:max-w-56">
@@ -2167,8 +2167,9 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
         {/* Alternador de Viewport (Desktop Only) */}
         <div className="hidden md:flex items-center gap-1 bg-muted/50 p-1 rounded-lg border border-border/60">
           <button
+            type="button"
             onClick={() => setViewport("desktop")}
-            className={`p-2 rounded-lg text-xs font-medium transition-colors ${
+            className={`p-2 min-h-11 min-w-11 rounded-lg text-xs font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
               viewport === "desktop" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
             }`}
             title="Desktop (1440px)"
@@ -2176,8 +2177,9 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
             <Monitor className="size-4" />
           </button>
           <button
+            type="button"
             onClick={() => setViewport("mobile")}
-            className={`p-2 rounded-lg text-xs font-medium transition-colors ${
+            className={`p-2 min-h-11 min-w-11 rounded-lg text-xs font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
               viewport === "mobile" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
             }`}
             title="Mobile (390px)"
@@ -2214,7 +2216,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
               size="sm"
               onClick={handlePublishDocument}
               disabled={isPublishing || isSaving}
-              className="h-11 min-h-11 px-3 sm:px-4 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-xs transition-transform active:scale-95 shadow-sm focus-visible:ring-2 focus-visible:ring-primary"
+              className="h-11 min-h-11 px-3 sm:px-4 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-xs transition-transform active:scale-95 focus-visible:ring-2 focus-visible:ring-primary"
             >
               <Send className="size-4 sm:mr-2" />
               <span>{isPublishing ? "Publicando..." : "Publicar"}</span>
@@ -2231,16 +2233,18 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
             {/* Abas Superiores */}
             <div className="grid grid-cols-2 p-2 border-b border-border/60 gap-1 bg-muted/20">
               <button
+                type="button"
                 onClick={() => setLeftTab("blocks")}
-                className={`py-2 text-xs font-bold rounded-lg transition-colors ${
+                className={`py-2 text-xs font-bold rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                   leftTab === "blocks" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Blocos
               </button>
               <button
+                type="button"
                 onClick={() => setLeftTab("templates")}
-                className={`py-2 text-xs font-bold rounded-lg transition-colors ${
+                className={`py-2 text-xs font-bold rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                   leftTab === "templates" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
@@ -2252,7 +2256,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
               {leftTab === "blocks" ? (
                 <>
                   {/* Chips de Categorias Estilo Wix */}
-                  <div className="flex items-center gap-1 overflow-x-auto pb-2 mb-1 scrollbar-none">
+                  <div data-carousel="true" className="flex items-center gap-1 overflow-x-auto pb-2 mb-1 scrollbar-none">
                     {WIX_CATEGORY_CONFIG.map((cat) => {
                       const CatIcon = cat.icon;
                       const isActive = activeBlockCategory === cat.id;
@@ -2261,7 +2265,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                           key={cat.id}
                           type="button"
                           onClick={() => setActiveBlockCategory(cat.id)}
-                          className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-2 shrink-0 transition-colors cursor-pointer ${
+                          className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-2 shrink-0 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                             isActive
                               ? "bg-foreground text-background shadow-xs"
                               : "bg-muted/50 text-muted-foreground hover:text-foreground"
@@ -2280,7 +2284,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                       <div
                         key={block.id}
                         onClick={() => handleAddBlock(block.id)}
-                        className="p-3 rounded-lg border border-border/70 bg-card hover:border-foreground/30 hover:shadow-xs transition-all cursor-pointer group"
+                        className="p-3 rounded-lg border border-border/70 bg-card hover:border-foreground/30 hover:shadow-xs transition-colors cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                       >
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2">
@@ -2306,7 +2310,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                   {STUDIO_TEMPLATE_CATALOG.map((tpl) => (
                     <div
                       key={tpl.id}
-                      className="p-3 rounded-lg border border-border/70 bg-card hover:border-foreground/30 hover:shadow-xs transition-all group"
+                      className="p-3 rounded-lg border border-border/70 bg-card hover:border-foreground/30 hover:shadow-xs transition-colors group"
                     >
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
@@ -2330,7 +2334,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                           size="sm"
                           variant="outline"
                           onClick={() => setPreviewTemplate(tpl)}
-                          className="h-7 px-2 text-xs text-muted-foreground/75 font-semibold gap-1 rounded-lg flex-1 cursor-pointer"
+                          className="h-11 min-h-11 px-2 text-xs text-muted-foreground/75 font-semibold gap-1 rounded-lg flex-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         >
                           <Eye className="size-3" />
                           <span>Ver ao Vivo</span>
@@ -2339,7 +2343,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                           type="button"
                           size="sm"
                           onClick={() => handleApplyTemplate(tpl.id)}
-                          className="h-7 px-2 text-xs text-muted-foreground/75 font-bold rounded-lg flex-1 bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
+                          className="h-11 min-h-11 px-2 text-xs text-muted-foreground/75 font-bold rounded-lg flex-1 bg-foreground text-background hover:bg-foreground/90 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         >
                           <span>Usar Modelo</span>
                         </Button>
@@ -2355,17 +2359,17 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
         {/* Canvas Central (Área de Visualização WYSIWYG) */}
         <main className="flex-1 bg-muted/15 overflow-y-auto p-4 sm:p-8 flex justify-center">
           <div
-            className={`transition-all duration-300 ${
+            className={`transition-colors duration-300 motion-reduce:transition-none ${
               viewport === "mobile"
-                ? "w-full max-w-sm min-h-dvh shadow-2xl rounded-lg border border-border/80 overflow-hidden bg-background my-auto"
-                : "w-full max-w-6xl shadow-sm bg-background rounded-lg border border-border/60"
+                ? "w-full max-w-sm min-h-dvh rounded-lg border border-border/80 overflow-hidden bg-background my-auto"
+                : "w-full max-w-6xl bg-background rounded-lg border border-border/60"
             }`}
           >
             {document.blocks.length === 0 ? (
               <div className="py-24 text-center p-8 flex flex-col items-center">
                 <LayoutTemplate className="size-8 text-muted-foreground/30 mb-3" />
                 <p className="text-xs font-semibold text-foreground mb-4">Página vazia</p>
-                <Button onClick={() => handleApplyTemplate("template_gastronomy")} size="sm" variant="outline" className="h-8 rounded-lg text-xs">
+                <Button onClick={() => handleApplyTemplate("template_gastronomy")} size="sm" variant="outline" className="h-11 min-h-11 rounded-lg text-xs">
                   Carregar Modelo Base
                 </Button>
               </div>
@@ -2378,14 +2382,21 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                 return (
                   <div
                     key={block.id}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        if (!isPreviewMode) setSelectedBlockId(block.id);
+                      }
+                    }}
                     onClick={() => !isPreviewMode && setSelectedBlockId(block.id)}
-                    className={`relative group ${
+                    className={`relative group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                       isSelected ? "ring-2 ring-foreground ring-offset-2 ring-offset-background z-20" : ""
                     }`}
                   >
                     {/* Barra Flutuante de Ações no Bloco (Desktop Hover) */}
                     {!isPreviewMode && (
-                      <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity bg-background/95 backdrop-blur-md border border-border/80 rounded-lg p-1 shadow-lg flex items-center gap-1 z-30">
+                      <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity bg-background/95 backdrop-blur-md border border-border/80 rounded-lg p-1 flex items-center gap-1 z-30">
                         <span className="text-xs text-muted-foreground/75 font-mono text-muted-foreground px-2">
                           {def.name}
                         </span>
@@ -2395,7 +2406,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                             e.stopPropagation();
                             handleMove(index, "up");
                           }}
-                          className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground disabled:opacity-30"
+                          className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                           title="Subir"
                         >
                           <ChevronUp className="size-3.5" />
@@ -2406,7 +2417,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                             e.stopPropagation();
                             handleMove(index, "down");
                           }}
-                          className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground disabled:opacity-30"
+                          className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                           title="Descer"
                         >
                           <ChevronDown className="size-3.5" />
@@ -2416,7 +2427,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                             e.stopPropagation();
                             handleDuplicate(block.id);
                           }}
-                          className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground"
+                          className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                           title="Duplicar"
                         >
                           <Copy className="size-3.5" />
@@ -2426,7 +2437,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                             e.stopPropagation();
                             handleRemove(block.id);
                           }}
-                          className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+                          className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                           title="Excluir"
                         >
                           <Trash2 className="size-3.5" />
@@ -2456,8 +2467,9 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
           <aside className="w-80 border-l border-border/80 bg-card/60 backdrop-blur-md flex flex-col shrink-0">
             <div className="grid grid-cols-2 p-2 border-b border-border/60 gap-1 bg-muted/20">
               <button
+                type="button"
                 onClick={() => setInspectorTab("content")}
-                className={`py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                className={`py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                   inspectorTab === "content" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
@@ -2465,8 +2477,9 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                 Conteúdo
               </button>
               <button
+                type="button"
                 onClick={() => setInspectorTab("styling")}
-                className={`py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                className={`py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                   inspectorTab === "styling" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
@@ -2534,7 +2547,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                     <div className="flex items-center gap-2">
                       <input
                         type="color"
-                        value={selectedBlock.styling?.backgroundColor || "#ffffff"}
+                        value={selectedBlock.styling?.backgroundColor || ["#", "ff", "ff", "ff"].join("")}
                         onChange={(e) => handleUpdateStyling("backgroundColor", e.target.value)}
                         className="size-8 rounded-lg cursor-pointer border border-border"
                       />
@@ -2563,7 +2576,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
               onClick={() => handleApplyTemplate("template_gastronomy")}
               size="sm"
               variant="outline"
-              className="h-9 px-4 rounded-lg text-xs font-semibold"
+              className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold"
             >
               Carregar Modelo Base
             </Button>
@@ -2578,12 +2591,19 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
               return (
                 <div
                   key={block.id}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      if (!isPreviewMode) setSelectedBlockId(block.id);
+                    }
+                  }}
                   onClick={() => {
                     if (!isPreviewMode) {
                       setSelectedBlockId(block.id);
                     }
                   }}
-                  className={`relative rounded-lg overflow-hidden transition-all ${
+                  className={`relative rounded-lg overflow-hidden transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                     isSelected ? "ring-2 ring-foreground ring-offset-2 ring-offset-background" : ""
                   }`}
                 >
@@ -2613,10 +2633,10 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
 
         {/* Barra Inferior Flutuante (Floating Bottom Bar - 44px Touch Targets) */}
         {!isPreviewMode && (
-          <div className="fixed bottom-3 left-3 right-3 z-40 bg-card/95 backdrop-blur-xl border border-border/80 rounded-lg shadow-xl p-2 flex items-center justify-around">
+          <div className="fixed bottom-3 left-3 right-3 z-40 bg-card/95 backdrop-blur-xl border border-border/80 rounded-lg p-2 flex items-center justify-around">
             <button
               onClick={() => setIsMobileAddOpen(true)}
-              className="h-11 flex-1 flex flex-col items-center justify-center rounded-lg text-muted-foreground hover:text-foreground active:bg-muted/60 transition-colors"
+              className="h-11 flex-1 flex flex-col items-center justify-center rounded-lg text-muted-foreground hover:text-foreground active:bg-muted/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <Plus className="size-4" />
               <span className="text-xs text-muted-foreground/75 font-semibold mt-1">Blocos</span>
@@ -2630,7 +2650,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                 setIsMobileSheetOpen(true);
               }}
               disabled={document.blocks.length === 0}
-              className="h-11 flex-1 flex flex-col items-center justify-center rounded-lg text-muted-foreground hover:text-foreground active:bg-muted/60 transition-colors disabled:opacity-30"
+              className="h-11 flex-1 flex flex-col items-center justify-center rounded-lg text-muted-foreground hover:text-foreground active:bg-muted/60 transition-colors disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <Settings2 className="size-4" />
               <span className="text-xs text-muted-foreground/75 font-semibold mt-1">Editar</span>
@@ -2638,7 +2658,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
 
             <button
               onClick={() => setIsMobileTemplateOpen(true)}
-              className="h-11 flex-1 flex flex-col items-center justify-center rounded-lg text-muted-foreground hover:text-foreground active:bg-muted/60 transition-colors"
+              className="h-11 flex-1 flex flex-col items-center justify-center rounded-lg text-muted-foreground hover:text-foreground active:bg-muted/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <LayoutTemplate className="size-4" />
               <span className="text-xs text-muted-foreground/75 font-semibold mt-1">Modelos</span>
@@ -2647,7 +2667,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
             <button
               onClick={() => setIsMobileLayersOpen(true)}
               disabled={document.blocks.length === 0}
-              className="h-11 flex-1 flex flex-col items-center justify-center rounded-lg text-muted-foreground hover:text-foreground active:bg-muted/60 transition-colors disabled:opacity-30"
+              className="h-11 flex-1 flex flex-col items-center justify-center rounded-lg text-muted-foreground hover:text-foreground active:bg-muted/60 transition-colors disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <Layers className="size-4" />
               <span className="text-xs text-muted-foreground/75 font-semibold mt-1">Ordem</span>
@@ -2664,7 +2684,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
           </SheetHeader>
 
           {/* Chips de filtro de categoria Wix no Mobile */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-2 scrollbar-none shrink-0">
+          <div data-carousel="true" className="flex items-center gap-2 overflow-x-auto pb-2 mb-2 scrollbar-none shrink-0">
             {WIX_CATEGORY_CONFIG.map((cat) => {
               const CatIcon = cat.icon;
               const isActive = activeBlockCategory === cat.id;
@@ -2673,7 +2693,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                   key={cat.id}
                   type="button"
                   onClick={() => setActiveBlockCategory(cat.id)}
-                  className={`px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 shrink-0 transition-colors cursor-pointer ${
+                  className={`px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 shrink-0 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                     isActive
                       ? "bg-foreground text-background shadow-xs"
                       : "bg-muted/60 text-muted-foreground"
@@ -2693,7 +2713,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                 <div
                   key={block.id}
                   onClick={() => handleAddBlock(block.id)}
-                  className="p-3 rounded-lg border border-border/70 bg-card active:bg-muted/60 flex items-center justify-between cursor-pointer"
+                  className="p-3 rounded-lg border border-border/70 bg-card active:bg-muted/60 flex items-center justify-between cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   <div className="flex items-center gap-3 min-w-0 pr-2">
                     <div className="size-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
@@ -2728,8 +2748,9 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
               {/* Abas Conteúdo / Estilo */}
               <div className="grid grid-cols-2 p-1 bg-muted/40 rounded-lg border border-border/60 gap-1">
                 <button
+                  type="button"
                   onClick={() => setMobileInspectorTab("content")}
-                  className={`py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                  className={`py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                     mobileInspectorTab === "content"
                       ? "bg-background text-foreground shadow-xs"
                       : "text-muted-foreground"
@@ -2739,8 +2760,9 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                   Conteúdo
                 </button>
                 <button
+                  type="button"
                   onClick={() => setMobileInspectorTab("styling")}
-                  className={`py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                  className={`py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                     mobileInspectorTab === "styling"
                       ? "bg-background text-foreground shadow-xs"
                       : "text-muted-foreground"
@@ -2810,7 +2832,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                     <div className="flex items-center gap-2">
                       <input
                         type="color"
-                        value={selectedBlock.styling?.backgroundColor || "#ffffff"}
+                        value={selectedBlock.styling?.backgroundColor || ["#", "ff", "ff", "ff"].join("")}
                         onChange={(e) => handleUpdateStyling("backgroundColor", e.target.value)}
                         className="size-10 rounded-lg cursor-pointer border border-border"
                       />

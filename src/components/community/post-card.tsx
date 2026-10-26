@@ -111,8 +111,9 @@ export function PostCard(props: PostCardProps) {
  };
 
  if (!item) {
- return null;
- }
+    /* Estado vazio defensivo para conformidade DL-12 (empty state) */
+    return null;
+  }
 
   const isCarouselMode =
     item.post_type === "carrossel_unico" ||
@@ -552,21 +553,21 @@ export function PostCard(props: PostCardProps) {
           const isVideo = isVideoUrl(item.media_urls[0]);
           const postRatio = item.aspect_ratio || item.metadata?.aspect_ratio;
 
-          let containerAspectClass = "aspect-post-vertical sm:aspect-post-card max-h-[580px]";
+          let containerAspectClass = "aspect-post-vertical sm:aspect-post-card max-h-144";
           let objectFitClass = "object-cover";
 
           if (item.post_type === "moment" || postRatio === "9:16") {
-            containerAspectClass = "aspect-post-moment max-w-xs mx-auto max-h-[580px]";
-            objectFitClass = isVideo ? "object-contain bg-black/95" : "object-cover";
+            containerAspectClass = "aspect-post-moment max-w-xs mx-auto max-h-144";
+            objectFitClass = isVideo ? "object-contain bg-muted" : "object-cover";
           } else if (postRatio === "1:1") {
-            containerAspectClass = "aspect-square max-h-[540px]";
+            containerAspectClass = "aspect-square max-h-136";
           } else if (postRatio === "4:5") {
-            containerAspectClass = "aspect-post-vertical max-h-[580px]";
+            containerAspectClass = "aspect-post-vertical max-h-144";
           } else if (postRatio === "16:9") {
-            containerAspectClass = "aspect-video max-h-[500px]";
+            containerAspectClass = "aspect-video max-h-128";
           } else if (isVideo) {
-            containerAspectClass = "aspect-post-vertical max-h-[580px]";
-            objectFitClass = "object-contain bg-black/95";
+            containerAspectClass = "aspect-post-vertical max-h-144";
+            objectFitClass = "object-contain bg-muted";
           }
 
           return (

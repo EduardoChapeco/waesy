@@ -872,6 +872,22 @@
 @utility pr-safe {
   padding-right: env(safe-area-inset-right);
 }
+@utility top-safe-notch {
+  top: max(1rem, env(safe-area-inset-top, 16px));
+}
+@utility pt-safe-modal {
+  padding-top: max(1.25rem, env(safe-area-inset-top, 20px));
+}
+@utility px-mobile-edge {
+  padding-left: 1px;
+  padding-right: 1px;
+}
+@utility min-h-screen-dvh {
+  min-height: 100dvh;
+}
+@utility h-screen-dvh {
+  height: 100dvh;
+}
 
 /* ── Anti-Jank Protocol & Viewport Lock (WAESY DESIGN SYSTEM 4.0) ────────── */
 @utility native-scroll {
@@ -979,6 +995,12 @@
   max-height: 85dvh;
 }
 
+@utility scroll-area-carousel {
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+}
+
 @utility max-h-sheet {
   max-height: 92dvh;
 }
@@ -1012,6 +1034,17 @@
   background-color: var(--color-muted);
   color: var(--color-foreground);
   border-radius: var(--radius-lg);
+}
+
+/* ── Etiquetas Térmicas e Documentos Físicos de Despacho ───────── */
+@utility thermal-label-sheet {
+  width: 100mm;
+  min-height: 150mm;
+}
+
+@utility thermal-declaration-sheet {
+  width: 100%;
+  max-width: 210mm;
 }
 
 /* ── Vidro Fosco & Spatial UI Canônica ─────────────────── */

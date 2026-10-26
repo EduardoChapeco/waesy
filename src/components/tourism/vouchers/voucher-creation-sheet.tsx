@@ -79,9 +79,9 @@ export function VoucherCreationSheet({
 
       let defaultTitle = title.trim();
       if (!defaultTitle) {
-        if (voucherType === "flight") defaultTitle = `Cartão de Embarque: ${airline} (${originAirport} ➔ ${destinationAirport})`;
+        if (voucherType === "flight") defaultTitle = `Cartão de Embarque: ${airline} (${originAirport} para ${destinationAirport})`;
         else if (voucherType === "hotel") defaultTitle = `Voucher de Hospedagem: ${hotelName || "Hotel & Resort"}`;
-        else if (voucherType === "transfer") defaultTitle = `Voucher de Transfer: ${pickupLocation} ➔ ${dropoffLocation}`;
+        else if (voucherType === "transfer") defaultTitle = `Voucher de Transfer: ${pickupLocation} para ${dropoffLocation}`;
         else defaultTitle = `Voucher Oficial de Serviço`;
       }
 
@@ -167,54 +167,54 @@ export function VoucherCreationSheet({
           {/* 1. SELETOR DE MODALIDADE DE VOUCHER */}
           <div className="space-y-2">
             <Label className="text-xs font-semibold">Tipo de Documento / Serviço</Label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={() => setVoucherType("flight")}
                 className={cn(
-                  "p-3 rounded-lg border flex flex-col items-center gap-2 transition-all cursor-pointer text-center",
+                  "p-3 min-h-11 rounded-lg border flex flex-col items-center gap-2 transition-colors cursor-pointer text-center focus-visible:ring-2 focus-visible:outline-none",
                   voucherType === "flight"
                     ? "border-primary bg-primary/10 text-primary font-bold shadow-2xs"
                     : "border-border/70 hover:bg-muted/40 text-muted-foreground"
                 )}
               >
                 <Plane className="size-4" />
-                <span className="text-[11px]">Aéreo / Voo</span>
+                <span className="text-xs">Aéreo / Voo</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setVoucherType("hotel")}
                 className={cn(
-                  "p-3 rounded-lg border flex flex-col items-center gap-2 transition-all cursor-pointer text-center",
+                  "p-3 min-h-11 rounded-lg border flex flex-col items-center gap-2 transition-colors cursor-pointer text-center focus-visible:ring-2 focus-visible:outline-none",
                   voucherType === "hotel"
                     ? "border-primary bg-primary/10 text-primary font-bold shadow-2xs"
                     : "border-border/70 hover:bg-muted/40 text-muted-foreground"
                 )}
               >
                 <Building2 className="size-4" />
-                <span className="text-[11px]">Hospedagem</span>
+                <span className="text-xs">Hospedagem</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setVoucherType("transfer")}
                 className={cn(
-                  "p-3 rounded-lg border flex flex-col items-center gap-2 transition-all cursor-pointer text-center",
+                  "p-3 min-h-11 rounded-lg border flex flex-col items-center gap-2 transition-colors cursor-pointer text-center focus-visible:ring-2 focus-visible:outline-none",
                   voucherType === "transfer"
                     ? "border-primary bg-primary/10 text-primary font-bold shadow-2xs"
                     : "border-border/70 hover:bg-muted/40 text-muted-foreground"
                 )}
               >
                 <Car className="size-4" />
-                <span className="text-[11px]">Transfer</span>
+                <span className="text-xs">Transfer</span>
               </button>
             </div>
           </div>
 
           {/* 2. DADOS DO PASSAGEIRO */}
           <div className="space-y-3 pt-2">
-            <div className="flex items-center gap-2 pb-1 border-b border-border/40 font-bold text-foreground uppercase tracking-wider text-[11px]">
+            <div className="flex items-center gap-2 pb-1 border-b border-border/40 font-bold text-foreground uppercase tracking-wider text-xs">
               <User className="size-3.5 text-primary" />
               <span>Passageiro Titular</span>
             </div>
@@ -242,7 +242,7 @@ export function VoucherCreationSheet({
               <div className="space-y-2">
                 <Label className="text-xs font-semibold">Título Personalizado (Opcional)</Label>
                 <Input
-                  placeholder="Ex: Voo São Paulo ➔ Florianópolis"
+                  placeholder="Ex: Voo São Paulo para Florianópolis"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   className="h-10 rounded-lg"
@@ -254,7 +254,7 @@ export function VoucherCreationSheet({
           {/* 3. DADOS ESPECÍFICOS: AÉREO */}
           {voucherType === "flight" && (
             <div className="space-y-3 pt-2">
-              <div className="flex items-center gap-2 pb-1 border-b border-border/40 font-bold text-foreground uppercase tracking-wider text-[11px]">
+              <div className="flex items-center gap-2 pb-1 border-b border-border/40 font-bold text-foreground uppercase tracking-wider text-xs">
                 <Plane className="size-3.5 text-primary" />
                 <span>Detalhes do Voo e Cartão de Embarque</span>
               </div>
@@ -322,7 +322,7 @@ export function VoucherCreationSheet({
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="space-y-2">
                   <Label className="text-xs font-semibold">Poltrona / Assento</Label>
                   <Input
@@ -357,7 +357,7 @@ export function VoucherCreationSheet({
           {/* 3. DADOS ESPECÍFICOS: HOSPEDAGEM */}
           {voucherType === "hotel" && (
             <div className="space-y-3 pt-2">
-              <div className="flex items-center gap-2 pb-1 border-b border-border/40 font-bold text-foreground uppercase tracking-wider text-[11px]">
+              <div className="flex items-center gap-2 pb-1 border-b border-border/40 font-bold text-foreground uppercase tracking-wider text-xs">
                 <Building2 className="size-3.5 text-primary" />
                 <span>Detalhes da Hospedagem e Quarto</span>
               </div>
@@ -435,7 +435,7 @@ export function VoucherCreationSheet({
           {/* 3. DADOS ESPECÍFICOS: TRANSFER */}
           {voucherType === "transfer" && (
             <div className="space-y-3 pt-2">
-              <div className="flex items-center gap-2 pb-1 border-b border-border/40 font-bold text-foreground uppercase tracking-wider text-[11px]">
+              <div className="flex items-center gap-2 pb-1 border-b border-border/40 font-bold text-foreground uppercase tracking-wider text-xs">
                 <Car className="size-3.5 text-primary" />
                 <span>Detalhes do Receptivo e Transfer</span>
               </div>
@@ -515,7 +515,7 @@ export function VoucherCreationSheet({
           >
             {createMutation.isPending ? (
               <>
-                <Loader2 className="size-3.5 animate-spin" />
+                <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
                 <span>Emitindo Voucher...</span>
               </>
             ) : (

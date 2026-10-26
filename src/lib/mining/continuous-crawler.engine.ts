@@ -26,6 +26,26 @@ export interface ExtractedProductData {
   attributes?: Record<string, unknown>;
 }
 
+export interface ExtractedJobData {
+  title: string;
+  companyName: string;
+  location?: string;
+  salary?: string;
+  contractType?: string;
+  description?: string;
+  url: string;
+}
+
+export interface ExtractedEventData {
+  title: string;
+  startDate?: string;
+  endDate?: string;
+  venueName?: string;
+  location?: string;
+  ticketUrl?: string;
+  isFree?: boolean;
+}
+
 export interface ExtractedBusinessData {
   name: string;
   description?: string;
@@ -342,6 +362,80 @@ export function extractBusinessData(
     state,
     socialLinks,
   };
+}
+
+
+export function extractJobData(
+  html: string,
+  jsonLd: Record<string, unknown> | null,
+  og: Record<string, any>,
+  url: string,
+  fallbackTitle: string
+): ExtractedJobData | null {
+  if (jsonLd) {
+    const type = String(jsonLd["@type"] || "");
+    if (/JobPosting/i.test(type)) {
+      const company = jsonLd.hiringOrganization as Record<string, any> | undefined;
+      const baseSalary = jsonLd.baseSalary as Record<string, any> | undefined;
+      return {
+        title: String(jsonLd.title || fallbackTitle).trim(),
+        companyName: company?.name ? String(company.name) : "Empresa Confidencial",
+        location: typeof jsonLd.jobLocation === "object" ? String((jsonLd.jobLocation as any)?.address?.addressLocality || "") : undefined,
+        salary: baseSalary?.value ? String(baseSalary.value) : undefined,
+        contractType: jsonLd.employmentType ? String(jsonLd.employmentType) : undefined,
+        description: typeof jsonLd.description === "string" ? jsonLd.description.slice(0, 1500) : og.description,
+        url,
+      };
+    }
+  }
+
+  // Heurística de vaga via OpenGraph ou texto
+  if (
+    /vagas+de|oportunidades+de|contrata-se|estamoss+contratando/i.test(html) &&
+    (html.includes("requisitos") || html.includes("benefícios") || html.includes("salário") || html.includes("atribuições"))
+  ) {
+    return {
+      title: og.title || fallbackTitle,
+      companyName: og.siteName || "Empresa Local",
+      description: og.description,
+      url,
+    };
+  }
+
+  return null;
+}
+
+export function extractEventData(
+  html: string,
+  jsonLd: Record<string, unknown> | null,
+  og: Record<string, any>,
+  url: string,
+  fallbackTitle: string
+): ExtractedEventData | null {
+  if (jsonLd) {
+    const type = String(jsonLd["@type"] || "");
+    if (/Event/i.test(type)) {
+      const loc = jsonLd.location as Record<string, any> | undefined;
+      return {
+        title: String(jsonLd.name || fallbackTitle).trim(),
+        startDate: typeof jsonLd.startDate === "string" ? jsonLd.startDate : undefined,
+        endDate: typeof jsonLd.endDate === "string" ? jsonLd.endDate : undefined,
+        venueName: typeof loc === "object" ? loc?.name : typeof loc === "string" ? loc : undefined,
+        ticketUrl: typeof jsonLd.url === "string" ? jsonLd.url : url,
+        isFree: jsonLd.isAccessibleForFree === true,
+      };
+    }
+  }
+
+  // Heurística de evento via OpenGraph
+  if (og.type === "event" || (html.includes("ingressos") && html.includes("data do evento"))) {
+    return {
+      title: og.title || fallbackTitle,
+      ticketUrl: url,
+    };
+  }
+
+  return null;
 }
 
 export async function executeContinuousCrawl(

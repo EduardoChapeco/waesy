@@ -350,7 +350,7 @@ O ecossistema Waesy rejeita o paradigma clássico de "site responsivo fluido" qu
 ### 1. Mobile Native App Shell (Compact < 600px)
 - **Comportamento Nativo Compilado:** A interface mimetiza as convenções de design da Apple (iOS HIG) e Google (Android Material 3).
 - **Thumb Zone e Ancoragem Inferior:** Barras globais de navegação, seletores de filtros essenciais e botões de ação primária residem no terço inferior da tela móvel (`bottom-0` ou `sticky bottom-safe`), acessíveis sem esforço pelo polegar.
-- **Safe-Area Inset Defensivo:** Aplicação rigorosa de `pt-[max(1rem,env(safe-area-inset-top))]` no topo e `pb-[max(1rem,env(safe-area-inset-bottom))]` na base, impedindo que ilhas dinâmicas, entalhes ou barras de gestos sobreponham textos ou botões.
+- **Safe-Area Inset Defensivo:** Aplicação rigorosa dos utilitários canônicos `pt-safe-modal` (ou `safe-top`) no topo, `top-safe-notch` para botões de fechar, `px-mobile-edge` nas margens móveis e `pb-safe` (ou `safe-bottom`) na base, impedindo que ilhas dinâmicas, entalhes ou barras de gestos sobreponham textos ou botões. Proibido o uso de classes com colchetes arbitrários.
 - **Metamorfose de Diálogos:** Caixas de diálogo modais são terminantemente proibidas no mobile; convertem-se automaticamente em **Bottom Sheets / Gavetas Deslizantes de 100dvh** com detente inicial de 50% e fechamento por gesto descendente.
 - **Trilhos Horizontais Táteis:** Categorias, atalhos rápidos e filtros utilizam trilhos contínuos com física de mola (`overflow-x-auto snap-x mandatory no-scrollbar gap-2`), erradicando quebras de linha em blocos verticais inflados.
 - **Interação sem Hover:** Resposta visual tátil instantânea no toque (`active:scale-[0.985] active:opacity-85 transition-transform duration-100`) e proibição de dependência de hover para revelar ações essenciais.
@@ -397,3 +397,30 @@ O "Efeito Sanfona" (Accordion Jank) — caracterizado pelo empurrão súbito de 
 1. **Travamento Geométrico Prévio:** Banners, imagens de capa, sliders e avatares DEVEM declarar sua proporção exata e altura mínima diretamente no CSS (`aspect-[4/3]`, `aspect-[28/9]`, `aspect-[16/9]`, `min-h-44 sm:min-h-72`), impedindo que o navegador repinte ou reorganize o layout quando a imagem chegar da rede. O Cumulative Layout Shift (CLS) DEVE ser matematicamente inferior a 0.01.
 2. **Skeletons Isomórficos 1:1:** O estado de carregamento de qualquer superfície deve espelhar com precisão micrométrica a geometria do componente final carregado (mesma altura de card, mesma pílula de categoria, mesma posição do botão de compra). Proibido substituir telas inteiras ou grades de produtos por um spinner de loading isolado girando no centro da tela.
 3. **Animações Contidas em Transform e Opacity:** Toda transição visual deve operar exclusivamente nas propriedades de GPU (`transform` e `opacity`), sem alterar `height`, `margin` ou `padding` que forçam recálculo de layout do documento inteiro.
+---
+
+## C.20 O Mandato Soberano do Design Bidirecional, Stacks Mobile-First e Governança Anti-Chunks
+
+### 1. Simetria Bilateral do CMS (Master ⇄ Vitrine ⇄ Workspace)
+- Todo componente de vitrine pública (`_store.*`) — sejam hero banners, atalhos rápidos de nicho, docks de categorias ou vitrines de ofertas — DEVE possuir reflexo funcional de edição no Admin Master (`admin-master.*`) e no Workspace (`workspace.*`).
+- Proibida a introdução de blocos estáticos isolados sem contrato no banco de dados (`marketplace_surfaces`, `marketplace_sections`, `hotpages`).
+
+### 2. Stacks Mobile-First Native App
+- O código de interface móvel (<600px) deve seguir o padrão de apps nativos modernos (iOS/Android):
+  1. **Thumb Zone e Pilhas de Ação:** Controles primários acessíveis com uma mão no terço inferior.
+  2. **Zero Safari Auto-Zoom:** Tamanho de fonte base de no mínimo 16px (`text-base sm:text-sm`) em inputs e textareas.
+  3. **Gavetas de Ação:** Diálogos convertidos em sheets de 100dvh com arrasto para fechar.
+  4. **Padrão WhatsApp List:** Listas verticais densas ponta a ponta (`px-mobile-edge sm:rounded-2xl`).
+
+### 3. Desktop Web App de Alta Densidade
+- Em viewports expandidas (>=840px), o ecossistema transforma-se em software profissional:
+  1. **Zero Inflação:** Controles compactos de 32px a 36px (`h-8`/`h-9`) em tabelas densas e toolbars.
+  2. **Multi-Painel:** Split-views com painel lateral fixo (280px) e atalhos rápidos (`Cmd+K`).
+  3. **Números Tabulares:** Uso obrigatório de `tabular-nums` em moedas, datas e quantidades.
+
+### 4. Governança Anti-Chunks & Orçamento Cloudflare
+- O ecossistema protege a performance web (Core Web Vitals):
+  1. **Code-Splitting Cirúrgico:** Importações dinâmicas por rota para impedir bundles monolíticos pesados.
+  2. **Zero Dependências Circulares:** Validação contínua via `scripts/check-circular-deps.mjs`.
+  3. **Zero Código Morto:** Varredura determinística via `scripts/dead-code-detector.mjs`.
+  4. **Orçamento Gzip:** Rotas monitoradas e limitadas rigorosamente por `scripts/route-budget-guard.mjs`.

@@ -1,6 +1,6 @@
 /**
  * RealEstateEditorialGrid.tsx — Template Imóveis 02: Split-Card Modernista com Moldura Editorial (9:16)
- * Blueprint: Moldura externa clara, janela fotográfica 58% no topo, base editorial branca com grid matricial 2x2 e barra escura de CTA
+ * Blueprint: Moldura externa clara, janela fotográfica no topo, base editorial branca com grid matricial 2x2 e barra escura de CTA
  */
 
 import React, { useMemo } from "react";
@@ -9,124 +9,126 @@ import { formatMoney } from "@/lib/money";
 import type { SocialTemplateProps } from "../types";
 
 export function RealEstateEditorialGrid({ data, className = "" }: SocialTemplateProps) {
-  const {
-    title,
-    subtitle,
-    destinationOrLocation,
-    highlights = [],
-    priceCents = 89000000,
-    maxInstallments = 120,
-    installmentCents,
-    pricingMode = "total_package",
-    backgroundImageUrl,
-    paymentMethodsLabel = "Financiamento bancário facilitado",
-    promoBadge = "EXCLUSIVIDADE WAESY",
-    storeName = "Waesy Imóveis",
-    ctaLabel = "Falar com Corretor",
-  } = data;
+ const {
+ title,
+ subtitle,
+ destinationOrLocation,
+ highlights = [],
+ priceCents = 89000000,
+ maxInstallments = 120,
+ installmentCents,
+ pricingMode = "total_package",
+ backgroundImageUrl,
+ paymentMethodsLabel = "Financiamento bancário facilitado",
+ promoBadge = "EXCLUSIVIDADE WAESY",
+ storeName = "Waesy Imóveis",
+ ctaLabel = "Falar com Corretor",
+ } = data;
 
-  const effectiveInstallmentCents = useMemo(() => {
-    if (installmentCents && installmentCents > 0) return installmentCents;
-    if (priceCents && priceCents > 0 && maxInstallments > 0) {
-      return Math.round(priceCents / maxInstallments);
-    }
-    return 741600;
-  }, [installmentCents, priceCents, maxInstallments]);
+ const isOneOne = data.aspectRatio === "1:1";
 
-  const defaultSpecs = [
-    { label: "Área Privativa", value: "192 m²" },
-    { label: "Dormitórios", value: "3 Suítes" },
-    { label: "Garagem", value: "2 Vagas" },
-    { label: "Andar", value: "Alto Padrão" },
-  ];
+ const effectiveInstallmentCents = useMemo(() => {
+ if (installmentCents && installmentCents > 0) return installmentCents;
+ if (priceCents && priceCents > 0 && maxInstallments > 0) {
+ return Math.round(priceCents / maxInstallments);
+ }
+ return 741600;
+ }, [installmentCents, priceCents, maxInstallments]);
 
-  const resolvedSpecs = highlights && highlights.length >= 4
-    ? highlights.slice(0, 4).map((h, idx) => ({ label: `Destaque 0${idx + 1}`, value: h }))
-    : defaultSpecs;
+ const defaultSpecs = [
+ { label: "Área Privativa", value: "192 m²" },
+ { label: "Dormitórios", value: "3 Suítes" },
+ { label: "Garagem", value: "2 Vagas" },
+ { label: "Andar", value: "Alto Padrão" },
+ ];
 
-  return (
-    <div className={`relative w-full h-full overflow-hidden bg-[#f1f5f9] text-slate-900 select-none p-6 sm:p-8 flex flex-col justify-between ${className}`}>
-      {/* ── 1. Janela Panorâmica Superior (58% de altura) ── */}
-      <div className="relative w-full h-[58%] rounded-lg overflow-hidden shadow-xl border border-slate-300/80 bg-slate-900 shrink-0">
-        <img
-          src={backgroundImageUrl}
-          alt={title}
-          crossOrigin={backgroundImageUrl?.startsWith("data:") ? undefined : "anonymous"}
-          className="w-full h-full object-cover object-center"
-        />
+ const resolvedSpecs = highlights && highlights.length >= 4
+ ? highlights.slice(0, 4).map((h, idx) => ({ label: `Destaque 0${idx + 1}`, value: h }))
+ : defaultSpecs;
 
-        {/* Tag Minimalista de Topo */}
-        <div className="absolute top-5 left-5">
-          <span className="px-4 py-2 rounded-full bg-slate-950/85 backdrop-blur-md text-white font-mono uppercase tracking-widest text-xs font-bold shadow-md">
-            {promoBadge || "EDIFÍCIO RESIDENCIAL"}
-          </span>
-        </div>
+ return (
+ <div className={`relative w-full h-full overflow-hidden bg-[#f1f5f9] text-slate-900 select-none ${isOneOne ? "p-8" : "p-12"} flex flex-col justify-between ${className}`}>
+ {/* ── 1. Janela Panorâmica Superior ── */}
+ <div className={`relative w-full ${isOneOne ? "h-2/5" : "h-1/2"} rounded-3xl overflow-hidden border border-slate-300/80 bg-slate-900 shrink-0`}>
+ <img
+ src={backgroundImageUrl}
+ alt={title}
+ crossOrigin={backgroundImageUrl?.startsWith("data:") ? undefined : "anonymous"}
+ className="w-full h-full object-cover object-center"
+ />
 
-        {/* Localização em Pílula Flutuante */}
-        <div className="absolute bottom-5 left-5 right-5 flex items-center justify-between">
-          <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-950/80 backdrop-blur-md text-white/90 text-xs sm:text-sm font-semibold">
-            <MapPin className="size-4 text-amber-400 shrink-0" />
-            <span className="truncate max-w-[260px]">{destinationOrLocation || "Localização Privilegiada"}</span>
-          </div>
+ {/* Tag Minimalista de Topo */}
+ <div className="absolute top-6 left-6">
+ <span className="px-6 py-3 rounded-full bg-slate-950/85 backdrop-blur-md text-white font-mono uppercase tracking-widest text-xl font-bold ">
+ {promoBadge || "EDIFÍCIO RESIDENCIAL"}
+ </span>
+ </div>
 
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/90 backdrop-blur-md text-slate-900 text-xs font-bold shadow-sm">
-            <ShieldCheck className="size-3.5 text-emerald-600 shrink-0" />
-            <span className="truncate max-w-[120px]">{storeName}</span>
-          </div>
-        </div>
-      </div>
+ {/* Localização em Pílula Flutuante */}
+ <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between">
+ <div className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-slate-950/85 backdrop-blur-md text-white text-xl font-bold">
+ <MapPin className="size-6 text-amber-400 shrink-0" />
+ <span className="truncate">{destinationOrLocation || "Localização Privilegiada"}</span>
+ </div>
 
-      {/* ── 2. Bloco Editorial Inferior (Tipografia & Grid Matricial) ── */}
-      <div className="flex-1 min-h-0 pt-5 flex flex-col justify-between">
-        {/* Título e Subtítulo */}
-        <div className="space-y-1">
-          <p className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500">
-            {subtitle || "Imóvel Selecionado para Venda"}
-          </p>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-950 tracking-tight uppercase line-clamp-2 leading-[1.08]">
-            {title}
-          </h1>
-        </div>
+ <div className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-white/95 backdrop-blur-md text-slate-900 text-xl font-black ">
+ <ShieldCheck className="size-6 text-emerald-600 shrink-0" />
+ <span className="truncate">{storeName}</span>
+ </div>
+ </div>
+ </div>
 
-        {/* Grid Matricial 2x2 com Divisórias Finas */}
-        <div className="grid grid-cols-2 gap-2 my-2">
-          {resolvedSpecs.map((spec, i) => (
-            <div
-              key={i}
-              className="p-3 rounded-lg bg-white border border-slate-200 shadow-2xs flex flex-col justify-center"
-            >
-              <span className="text-[10px] font-mono uppercase text-slate-500 font-semibold truncate">
-                {spec.label}
-              </span>
-              <span className="text-sm sm:text-base font-black text-slate-900 truncate">
-                {spec.value}
-              </span>
-            </div>
-          ))}
-        </div>
+ {/* ── 2. Bloco Editorial Inferior (Tipografia & Grid Matricial) ── */}
+ <div className="flex-1 min-h-0 pt-6 flex flex-col justify-between">
+ {/* Título e Subtítulo */}
+ <div className="space-y-2">
+ <p className="text-xl font-mono font-bold uppercase tracking-wider text-slate-500">
+ {subtitle || "Imóvel Selecionado para Venda"}
+ </p>
+ <h1 className={`font-black text-slate-950 tracking-tight uppercase line-clamp-2 leading-tight ${isOneOne ? "text-4xl" : "text-5xl"}`}>
+ {title}
+ </h1>
+ </div>
 
-        {/* Barra Integrada em Preto Carvão com Preço e CTA */}
-        <div className="w-full p-4 rounded-lg bg-slate-950 text-white flex items-center justify-between gap-3 shadow-lg shrink-0">
-          <div className="space-y-1">
-            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">
-              {pricingMode === "monthly" ? "Locação Mensal" : "Valor Total"}
-            </span>
-            <div className="text-2xl sm:text-3xl font-black font-mono text-white tracking-tight">
-              {formatMoney(priceCents)}
-            </div>
-            {maxInstallments > 1 && (
-              <span className="text-[10px] text-amber-400 font-mono block">
-                {maxInstallments}x de {formatMoney(effectiveInstallmentCents)}
-              </span>
-            )}
-          </div>
+ {/* Grid Matricial 2x2 de Atributos */}
+ <div className="grid grid-cols-2 gap-4 py-3">
+ {resolvedSpecs.map((spec, i) => (
+ <div
+ key={i}
+ className="bg-white rounded-2xl p-4 border border-slate-200/90 flex items-center justify-between"
+ >
+ <span className="text-xl font-bold text-slate-400 uppercase">
+ {spec.label}
+ </span>
+ <span className="text-xl font-black text-slate-900 font-mono">
+ {spec.value}
+ </span>
+ </div>
+ ))}
+ </div>
 
-          <div className="h-11 px-5 rounded-lg bg-amber-400 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider flex items-center gap-2 shadow-md active:scale-95 transition-all shrink-0">
-            <span>{ctaLabel}</span>
-            <ArrowRight className="size-4 stroke-[3]" />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+ {/* Linha de Fechamento: Preço e Botão */}
+ <div className="flex items-end justify-between gap-6 pt-4 border-t-2 border-slate-200">
+ <div>
+ <span className="text-xl font-bold uppercase tracking-wider text-slate-400 block mb-1">
+ {pricingMode === "monthly" ? "Aluguel Mensal" : "Valor de Venda"}
+ </span>
+ <div className={`font-black text-slate-950 tracking-tight font-mono leading-none ${isOneOne ? "text-5xl" : "text-7xl"}`}>
+ {formatMoney(priceCents)}
+ </div>
+ {maxInstallments > 1 && (
+ <span className="text-xl font-semibold text-slate-500 block mt-1">
+ Financiamento em até {maxInstallments} meses
+ </span>
+ )}
+ </div>
+
+ <div className={`bg-slate-950 hover:bg-slate-800 text-white ${isOneOne ? "px-8 py-5 text-xl" : "px-10 py-6 text-2xl"} rounded-2xl font-black flex items-center gap-4 shrink-0 transition-transform active:scale-95`}>
+ <span>{ctaLabel}</span>
+ <ArrowRight className="size-8 text-white" strokeWidth={2.5} />
+ </div>
+ </div>
+ </div>
+ </div>
+ );
 }

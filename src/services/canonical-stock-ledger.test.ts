@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { recordStockMovementSchema } from './canonical-stock-ledger.functions';
 
 describe('Canonical Stock Ledger Service (G39–G46)', () => {

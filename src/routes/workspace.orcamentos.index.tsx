@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
-import { FileText, Plus, ChevronRight, Clock, CheckCircle2, XCircle, Send, AlertTriangle, Loader2, Kanban, List, ArrowRight, TrendingUp, DollarSign } from "lucide-react";
+import { FileText, Plus, ChevronRight, Clock, CheckCircle2, XCircle, Send, AlertTriangle, Loader2, Kanban, List, ArrowRight, TrendingUp, DollarSign, Receipt } from "lucide-react";
+import { CommercialBudgetPadSheet } from "@/components/documents/CommercialBudgetPadSheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -66,6 +67,7 @@ function QuotesListPage() {
   const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
   const [search, setSearch] = useState("");
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
+  const [isBudgetPadOpen, setIsBudgetPadOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const { data, isLoading, isError } = useQuery({
@@ -143,6 +145,11 @@ function QuotesListPage() {
         ]}
         onMetricsClick={() => setIsDashboardOpen(true)}
         metricsBadge={totalVolumeCents > 0 ? formatMoney(totalVolumeCents) : undefined}
+        secondaryAction={{
+          label: "Bloco de Orçamento",
+          icon: Receipt,
+          onClick: () => setIsBudgetPadOpen(true),
+        }}
         primaryAction={{
           label: "Novo Orçamento",
           icon: Plus,
@@ -288,6 +295,11 @@ function QuotesListPage() {
           })}
         </div>
       )}
+
+      <CommercialBudgetPadSheet
+        open={isBudgetPadOpen}
+        onOpenChange={setIsBudgetPadOpen}
+      />
 
       {/* ── 3. Painel de Métricas / Dashboard Sob Demanda ── */}
       <WorkspaceDashboardSheet

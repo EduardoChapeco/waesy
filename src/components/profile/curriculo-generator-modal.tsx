@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Printer, Download, Share2, Eye, EyeOff, Star, QrCode, Globe, Phone, Mail, MapPin, Building2, GraduationCap, Award, HeartHandshake, Check, Copy, Sliders, Layers, FileText, Smartphone, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { generateQrCodeDataUri } from "@/lib/qr-code";
+import { exportElementAsPdf, exportElementAsImage } from "@/lib/pdf-export";
 
 export type CurriculoFormat = "a4" | "story";
 export type CurriculoTemplate = "minimal" | "modern" | "editorial";
@@ -16,10 +18,16 @@ export interface CurriculoGeneratorModalProps {
   resumeData: any;
 }
 
+// design-lint-ignore DL-01 reason:"Curriculum accent preset theme colors" expiry:"2030-01-01"
+// design-lint-ignore DL-01 reason:"Curriculum accent preset theme colors" expiry:"2030-01-01"
 const ACCENT_COLORS = [
+  // design-lint-ignore DL-01 reason:"Curriculum accent theme color" expiry:"2030-01-01"
   { id: "slate", label: "Grafite Executivo", hex: "#18181b", class: "bg-zinc-900" },
+  // design-lint-ignore DL-01 reason:"Curriculum accent theme color" expiry:"2030-01-01"
   { id: "navy", label: "Azul Navy", hex: "#1e3a8a", class: "bg-blue-900" },
+  // design-lint-ignore DL-01 reason:"Curriculum accent theme color" expiry:"2030-01-01"
   { id: "emerald", label: "Verde Esmeralda", hex: "#065f46", class: "bg-emerald-800" },
+  // design-lint-ignore DL-01 reason:"Curriculum accent theme color" expiry:"2030-01-01"
   { id: "burgundy", label: "Borgonha", hex: "#831843", class: "bg-pink-900" },
 ];
 
@@ -62,9 +70,7 @@ export function CurriculoGeneratorModal({
     ? `${window.location.origin}/u/${profile?.username || profile?.id}`
     : `https://waesy.com/u/${profile?.username || profile?.id}`;
 
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
-    profileUrl
-  )}&bgcolor=ffffff&color=000000&margin=1`;
+  const qrCodeUrl = generateQrCodeDataUri(profileUrl, { border: 1 });
 
   // 🖨️ Ação: Imprimir nativamente via window.print()
   const handlePrint = () => {
@@ -76,39 +82,8 @@ export function CurriculoGeneratorModal({
     if (!previewRef.current || typeof window === "undefined") return;
     try {
       setIsExporting(true);
-      setExportMessage("Renderizando documento em alta resolução (300 DPI)...");
-
-      const html2canvas = (await import("html2canvas")).default;
-      const { jsPDF } = await import("jspdf");
-
-      const canvas = await html2canvas(previewRef.current, {
-        scale: 2.5,
-        useCORS: true,
-        backgroundColor: "#ffffff",
-        logging: false,
-      });
-
-      const imgData = canvas.toDataURL("image/jpeg", 0.98);
-
-      if (format === "a4") {
-        const pdf = new jsPDF({
-          orientation: "portrait",
-          unit: "mm",
-          format: "a4",
-        });
-        pdf.addImage(imgData, "JPEG", 0, 0, 210, 297);
-        pdf.save(`curriculo-${profile?.username || "profissional"}.pdf`);
-      } else {
-        // Formato Story / Mobile (1080x1920 pt)
-        const pdf = new jsPDF({
-          orientation: "portrait",
-          unit: "pt",
-          format: [540, 960],
-        });
-        pdf.addImage(imgData, "JPEG", 0, 0, 540, 960);
-        pdf.save(`curriculo-story-${profile?.username || "profissional"}.pdf`);
-      }
-
+      setExportMessage("Compilando PDF em alta definição...");
+      await exportElementAsPdf("curriculo-printable-canvas", `curriculo-${format}-${profile?.username || "profissional"}.pdf`);
       toast.success("Currículo em PDF baixado com sucesso!");
     } catch (err: any) {
       console.error("[CurriculoGenerator] Falha ao exportar PDF:", err);
@@ -125,24 +100,11 @@ export function CurriculoGeneratorModal({
     try {
       setIsExporting(true);
       setExportMessage("Gerando imagem para compartilhamento...");
-
-      const html2canvas = (await import("html2canvas")).default;
-      const canvas = await html2canvas(previewRef.current, {
-        scale: 2.5,
-        useCORS: true,
-        backgroundColor: "#ffffff",
-        logging: false,
-      });
-
-      const link = document.createElement("a");
-      link.download = `curriculo-${format}-${profile?.username || "waesy"}.png`;
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-
+      await exportElementAsImage("curriculo-printable-canvas", `curriculo-${format}-${profile?.username || "waesy"}.png`);
       toast.success("Imagem gerada e baixada com sucesso!");
     } catch (err: any) {
       console.error("[CurriculoGenerator] Falha ao exportar imagem:", err);
-      toast.error("Erro ao gerar imagem.");
+      toast.error("Erro ao exportar imagem.");
     } finally {
       setIsExporting(false);
       setExportMessage("");
@@ -158,7 +120,7 @@ export function CurriculoGeneratorModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl w-[95vw] h-[92vh] max-h-[95vh] p-0 flex flex-col bg-background overflow-hidden rounded-lg border border-border shadow-2xl">
+      <DialogContent className="max-w-6xl w-full h-full max-h-screen sm:max-h-sheet p-0 flex flex-col bg-background overflow-hidden rounded-lg border border-border">
         {/* ── TopBar do Gerador ── */}
         <div className="px-6 py-4 border-b border-border/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-muted/20 shrink-0">
           <div>
@@ -177,7 +139,7 @@ export function CurriculoGeneratorModal({
               size="sm"
               onClick={handlePrint}
               disabled={isExporting}
-              className="rounded-lg text-xs font-semibold gap-2 h-9 cursor-pointer"
+              className="rounded-lg text-xs font-semibold gap-2 h-11 min-h-11 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
             >
               <Printer className="size-3.5" />
               <span>Imprimir</span>
@@ -187,7 +149,7 @@ export function CurriculoGeneratorModal({
               size="sm"
               onClick={handleDownloadImage}
               disabled={isExporting}
-              className="rounded-lg text-xs font-semibold gap-2 h-9 cursor-pointer"
+              className="rounded-lg text-xs font-semibold gap-2 h-11 min-h-11 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
             >
               <Download className="size-3.5" />
               <span>Baixar Imagem</span>
@@ -196,7 +158,7 @@ export function CurriculoGeneratorModal({
               size="sm"
               onClick={handleDownloadPdf}
               disabled={isExporting}
-              className="rounded-lg text-xs font-bold gap-2 h-9 bg-primary text-primary-foreground shadow-xs cursor-pointer"
+              className="rounded-lg text-xs font-bold gap-2 h-11 min-h-11 bg-primary text-primary-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
             >
               <Download className="size-3.5" />
               <span>{isExporting ? exportMessage || "Gerando..." : "Baixar PDF Oficial"}</span>
@@ -218,7 +180,7 @@ export function CurriculoGeneratorModal({
                   type="button"
                   onClick={() => setFormat("a4")}
                   className={cn(
-                    "flex flex-col items-center justify-center p-3 rounded-lg border text-xs font-semibold gap-2 transition-all cursor-pointer",
+                    "flex flex-col items-center justify-center p-3 rounded-lg border text-xs font-semibold gap-2 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary",
                     format === "a4"
                       ? "bg-primary/10 border-primary text-primary shadow-xs"
                       : "bg-card border-border text-muted-foreground hover:text-foreground"
@@ -226,13 +188,13 @@ export function CurriculoGeneratorModal({
                 >
                   <FileText className="size-5" />
                   <span>A4 Vertical</span>
-                  <span className="text-[10px] opacity-70">Impressão / PDF</span>
+                  <span className="text-xs font-mono opacity-70">Impressão / PDF</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setFormat("story")}
                   className={cn(
-                    "flex flex-col items-center justify-center p-3 rounded-lg border text-xs font-semibold gap-2 transition-all cursor-pointer",
+                    "flex flex-col items-center justify-center p-3 rounded-lg border text-xs font-semibold gap-2 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary",
                     format === "story"
                       ? "bg-primary/10 border-primary text-primary shadow-xs"
                       : "bg-card border-border text-muted-foreground hover:text-foreground"
@@ -240,7 +202,7 @@ export function CurriculoGeneratorModal({
                 >
                   <Smartphone className="size-5" />
                   <span>Story 9:16</span>
-                  <span className="text-[10px] opacity-70">Redes / WhatsApp</span>
+                  <span className="text-xs font-mono opacity-70">Redes / WhatsApp</span>
                 </button>
               </div>
             </div>
@@ -250,7 +212,7 @@ export function CurriculoGeneratorModal({
               <label className="text-xs font-bold text-foreground uppercase tracking-wider">
                 Modelo Visual
               </label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 {[
                   { id: "minimal", label: "Executivo" },
                   { id: "modern", label: "Moderno" },
@@ -261,7 +223,7 @@ export function CurriculoGeneratorModal({
                     type="button"
                     onClick={() => setTemplate(t.id as CurriculoTemplate)}
                     className={cn(
-                      "h-8 px-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer truncate",
+                      "h-11 min-h-11 px-3 rounded-lg text-xs font-semibold border transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary truncate",
                       template === t.id
                         ? "bg-primary text-primary-foreground border-primary"
                         : "bg-card border-border text-muted-foreground hover:text-foreground"
@@ -286,12 +248,12 @@ export function CurriculoGeneratorModal({
                     onClick={() => setAccentColor(c)}
                     title={c.label}
                     className={cn(
-                      "size-7 rounded-full transition-transform cursor-pointer flex items-center justify-center ring-2",
+                      "size-11 min-h-11 rounded-full transition-transform cursor-pointer flex items-center justify-center ring-2 focus-visible:ring-2 focus-visible:ring-primary",
                       c.class,
                       accentColor.id === c.id ? "ring-primary scale-110" : "ring-transparent opacity-70 hover:opacity-100"
                     )}
                   >
-                    {accentColor.id === c.id && <Check className="size-3 text-white" />}
+                    {accentColor.id === c.id && <Check className="size-4 text-primary-foreground" />}
                   </button>
                 ))}
               </div>
@@ -418,7 +380,7 @@ export function CurriculoGeneratorModal({
 
             {/* 5. Link Direto */}
             <div className="p-3 rounded-lg bg-muted/40 border border-border/50 space-y-2">
-              <span className="text-[11px] font-bold text-muted-foreground block">
+              <span className="text-xs font-mono font-bold text-muted-foreground block">
                 Link do Perfil Profissional
               </span>
               <div className="flex items-center justify-between text-xs font-mono text-foreground truncate">
@@ -426,7 +388,7 @@ export function CurriculoGeneratorModal({
                 <button
                   type="button"
                   onClick={handleCopyLink}
-                  className="size-6 p-0 hover:text-primary cursor-pointer shrink-0 ml-1"
+                  className="size-11 min-h-11 p-2 hover:text-primary cursor-pointer shrink-0 ml-1 focus-visible:ring-2 focus-visible:ring-primary flex items-center justify-center"
                 >
                   <Copy className="size-3.5" />
                 </button>
@@ -440,10 +402,10 @@ export function CurriculoGeneratorModal({
               ref={previewRef}
               id="curriculo-printable-canvas"
               className={cn(
-                "bg-white text-zinc-900 shadow-2xl transition-all select-none overflow-hidden curriculo-canvas",
+                "bg-card text-card-foreground transition-opacity select-none overflow-hidden curriculo-canvas mx-auto",
                 format === "a4"
-                  ? "w-full max-w-[680px] min-h-[960px] p-8 sm:p-10 space-y-6 rounded-lg border border-zinc-200"
-                  : "w-full max-w-[420px] aspect-[9/16] p-6 space-y-4 rounded-lg border border-zinc-200 flex flex-col justify-between"
+                  ? "a4-page w-full max-w-3xl min-h-screen p-8 sm:p-10 space-y-6 rounded-lg border border-border/80"
+                  : "w-full max-w-sm aspect-9/16 p-6 space-y-4 rounded-lg border border-border/80 flex flex-col justify-between"
               )}
               style={{
                 fontFamily:
@@ -462,7 +424,7 @@ export function CurriculoGeneratorModal({
                 <div className="space-y-1 flex-1 min-w-0">
                   <h1
                     className="text-2xl sm:text-3xl font-black tracking-tight text-zinc-950 uppercase"
-                    style={{ color: accentColor.hex }}
+                    /* design-lint-ignore DL-05 reason:"User selected curriculum accent theme color" expiry:"2030-01-01" */ style={{ color: accentColor.hex }}
                   >
                     {profile?.full_name}
                   </h1>
@@ -505,7 +467,7 @@ export function CurriculoGeneratorModal({
                 {/* Foto / Avatar ou QR Code */}
                 <div className="flex items-center gap-3 shrink-0">
                   {showPhoto && profile?.avatar_url && (
-                    <div className="size-16 sm:size-20 rounded-lg overflow-hidden border border-zinc-200 bg-zinc-100 shadow-2xs">
+                    <div className="size-16 sm:size-20 rounded-lg overflow-hidden border border-zinc-200 bg-zinc-100 ">
                       <img
                         src={profile.avatar_url}
                         alt={profile.full_name}
@@ -516,14 +478,14 @@ export function CurriculoGeneratorModal({
                   )}
 
                   {showQrCode && (
-                    <div className="hidden sm:flex flex-col items-center gap-1 p-1 rounded-lg border border-zinc-200 bg-white">
+                    <div className="hidden sm:flex flex-col items-center gap-1 p-2 rounded-lg border border-border bg-card">
                       <img
                         src={qrCodeUrl}
                         alt="QR Code"
                         className="size-14 object-contain"
                         crossOrigin="anonymous"
                       />
-                      <span className="text-[8px] font-bold text-zinc-500 tracking-tighter uppercase">
+                      <span className="text-xs font-mono font-bold text-zinc-500 tracking-tighter uppercase">
                         Perfil Digital
                       </span>
                     </div>
@@ -536,11 +498,11 @@ export function CurriculoGeneratorModal({
                 <div className="space-y-2">
                   <h2
                     className="text-xs font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-100 pb-1"
-                    style={{ color: accentColor.hex }}
+                    /* design-lint-ignore DL-05 reason:"User selected curriculum accent theme color" expiry:"2030-01-01" */ style={{ color: accentColor.hex }}
                   >
                     Resumo Profissional
                   </h2>
-                  <p className="text-xs sm:text-[13px] text-zinc-700 leading-relaxed whitespace-pre-line text-justify">
+                  <p className="text-xs sm:text-xs text-zinc-700 leading-relaxed whitespace-pre-line text-justify">
                     {summary}
                   </p>
                 </div>
@@ -551,7 +513,7 @@ export function CurriculoGeneratorModal({
                 <div className="space-y-3">
                   <h2
                     className="text-xs font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-100 pb-1"
-                    style={{ color: accentColor.hex }}
+                    /* design-lint-ignore DL-05 reason:"User selected curriculum accent theme color" expiry:"2030-01-01" */ style={{ color: accentColor.hex }}
                   >
                     Trajetória Profissional
                   </h2>
@@ -563,10 +525,10 @@ export function CurriculoGeneratorModal({
                             <span className="font-bold text-zinc-900 text-sm">{exp.title}</span>
                             <span className="text-zinc-600 font-medium"> • {exp.company}</span>
                             {exp.location && (
-                              <span className="text-zinc-500 text-[11px]"> ({exp.location})</span>
+                              <span className="text-zinc-500 text-xs font-mono"> ({exp.location})</span>
                             )}
                           </div>
-                          <span className="text-zinc-500 font-mono text-[11px] shrink-0 font-medium">
+                          <span className="text-zinc-500 font-mono text-xs font-mono shrink-0 font-medium">
                             {exp.start_date} – {exp.is_current ? "Atual" : exp.end_date}
                           </span>
                         </div>
@@ -576,7 +538,7 @@ export function CurriculoGeneratorModal({
                           </p>
                         )}
                         {exp.skills && exp.skills.length > 0 && (
-                          <p className="text-[11px] text-zinc-500 pt-1">
+                          <p className="text-xs font-mono text-zinc-500 pt-1">
                             <strong className="text-zinc-700">Competências:</strong>{" "}
                             {exp.skills.join(" • ")}
                           </p>
@@ -592,7 +554,7 @@ export function CurriculoGeneratorModal({
                 <div className="space-y-2">
                   <h2
                     className="text-xs font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-100 pb-1"
-                    style={{ color: accentColor.hex }}
+                    /* design-lint-ignore DL-05 reason:"User selected curriculum accent theme color" expiry:"2030-01-01" */ style={{ color: accentColor.hex }}
                   >
                     Formação Acadêmica
                   </h2>
@@ -605,7 +567,7 @@ export function CurriculoGeneratorModal({
                             {[edu.degree, edu.field_of_study].filter(Boolean).join(" em ")}
                           </p>
                         </div>
-                        <span className="text-zinc-500 font-mono text-[11px] shrink-0">
+                        <span className="text-zinc-500 font-mono text-xs font-mono shrink-0">
                           {edu.start_date} – {edu.end_date || "Presente"}
                         </span>
                       </div>
@@ -619,7 +581,7 @@ export function CurriculoGeneratorModal({
                 <div className="space-y-2">
                   <h2
                     className="text-xs font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-100 pb-1"
-                    style={{ color: accentColor.hex }}
+                    /* design-lint-ignore DL-05 reason:"User selected curriculum accent theme color" expiry:"2030-01-01" */ style={{ color: accentColor.hex }}
                   >
                     Certificações
                   </h2>
@@ -627,7 +589,7 @@ export function CurriculoGeneratorModal({
                     {certifications.map((cert: any, i: number) => (
                       <div key={i} className="p-2 rounded-lg bg-zinc-50 border border-zinc-100">
                         <span className="font-bold text-zinc-900 block truncate">{cert.name}</span>
-                        <span className="text-zinc-500 text-[11px] block">
+                        <span className="text-zinc-500 text-xs font-mono block">
                           {cert.issuer} {cert.issue_date && `• ${cert.issue_date}`}
                         </span>
                       </div>
@@ -641,7 +603,7 @@ export function CurriculoGeneratorModal({
                 <div className="space-y-2">
                   <h2
                     className="text-xs font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-100 pb-1"
-                    style={{ color: accentColor.hex }}
+                    /* design-lint-ignore DL-05 reason:"User selected curriculum accent theme color" expiry:"2030-01-01" */ style={{ color: accentColor.hex }}
                   >
                     Projetos Realizados
                   </h2>
@@ -650,12 +612,12 @@ export function CurriculoGeneratorModal({
                       <div key={i} className="text-xs space-y-1">
                         <div className="flex items-center justify-between">
                           <span className="font-bold text-zinc-900">{proj.title}</span>
-                          <span className="text-zinc-500 font-mono text-[11px]">
+                          <span className="text-zinc-500 font-mono text-xs font-mono">
                             {proj.start_date} {proj.end_date ? `– ${proj.end_date}` : ""}
                           </span>
                         </div>
                         {proj.description && (
-                          <p className="text-zinc-600 text-[11px] line-clamp-2">
+                          <p className="text-zinc-600 text-xs font-mono line-clamp-2">
                             {proj.description}
                           </p>
                         )}
@@ -670,8 +632,8 @@ export function CurriculoGeneratorModal({
                 {showLanguages && languages.length > 0 && (
                   <div className="space-y-2">
                     <h3
-                      className="text-[11px] font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-100 pb-1"
-                      style={{ color: accentColor.hex }}
+                      className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-100 pb-1"
+                      /* design-lint-ignore DL-05 reason:"User selected curriculum accent theme color" expiry:"2030-01-01" */ style={{ color: accentColor.hex }}
                     >
                       Idiomas
                     </h3>
@@ -679,7 +641,7 @@ export function CurriculoGeneratorModal({
                       {languages.map((l: any, i: number) => (
                         <span
                           key={i}
-                          className="px-2 py-1 rounded-md bg-zinc-100 text-zinc-800 text-[11px] font-medium"
+                          className="px-2 py-1 rounded-md bg-zinc-100 text-zinc-800 text-xs font-mono font-medium"
                         >
                           <strong>{l.language}:</strong> {l.proficiency}
                         </span>
@@ -691,8 +653,8 @@ export function CurriculoGeneratorModal({
                 {showVolunteering && volunteering.length > 0 && (
                   <div className="space-y-2">
                     <h3
-                      className="text-[11px] font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-100 pb-1"
-                      style={{ color: accentColor.hex }}
+                      className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-100 pb-1"
+                      /* design-lint-ignore DL-05 reason:"User selected curriculum accent theme color" expiry:"2030-01-01" */ style={{ color: accentColor.hex }}
                     >
                       Voluntariado
                     </h3>
@@ -700,7 +662,7 @@ export function CurriculoGeneratorModal({
                       {volunteering.slice(0, 2).map((v: any, i: number) => (
                         <div key={i} className="truncate">
                           <span className="font-bold text-zinc-900">{v.role}</span>
-                          <span className="text-zinc-500 text-[11px]"> • {v.organization}</span>
+                          <span className="text-zinc-500 text-xs font-mono"> • {v.organization}</span>
                         </div>
                       ))}
                     </div>
@@ -709,7 +671,7 @@ export function CurriculoGeneratorModal({
               </div>
 
               {/* ── RODAPÉ DE VALIDAÇÃO DIGITAL WAESY ── */}
-              <div className="pt-4 mt-auto border-t border-zinc-200 flex items-center justify-between text-[10px] text-zinc-400 font-mono">
+              <div className="pt-4 mt-auto border-t border-zinc-200 flex items-center justify-between text-xs font-mono text-zinc-400 font-mono">
                 <span>Certificado e Verificado via Waesy Ecosystem</span>
                 <span>{profileUrl.replace(/^https?:\/\//, "")}</span>
               </div>

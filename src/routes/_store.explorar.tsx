@@ -258,7 +258,7 @@ function CommunityHomePage() {
         showOverlay: match?.show_overlay === true,
         showShadow: match?.show_shadow === true,
         bgOverlayOpacity: typeof match?.bg_overlay_opacity === "number" ? match.bg_overlay_opacity : 30,
-        bgColor: match?.bg_color || "#000000",
+        bgColor: match?.bg_color || "currentColor",
         showTitle: match?.show_title !== false,
         textColor: match?.text_color || null,
       };
@@ -566,13 +566,13 @@ function CommunityHomePage() {
             <Link
               key={card.slug}
               to={card.to as any}
-              className={`min-w-48 sm:min-w-56 md:min-w-60 max-w-64 shrink-0 snap-start group relative flex flex-col justify-end overflow-hidden rounded-lg bg-card aspect-video sm:aspect-video border border-border/60 hover:border-foreground/30 transition-all duration-300 active:active:scale-95 ${(card as any).showShadow ? " hover:shadow-xs" : "shadow-none"}`}
+              className={`min-w-48 sm:min-w-56 md:min-w-60 max-w-64 shrink-0 snap-start group relative flex flex-col justify-end overflow-hidden rounded-lg bg-card aspect-video sm:aspect-video border border-border/60 hover:border-foreground/30 transition-colors duration-300 active:active:scale-95 ${(card as any).showShadow ? " hover:shadow-xs" : "shadow-none"}`}
             >
               {(card as any).coverUrl ? (
                 <img
                   src={(card as any).coverUrl}
                   alt={card.title}
-                  className="absolute inset-0 size-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="absolute inset-0 size-full object-cover group-hover:scale-105 transition-transform duration-300"
                   loading="eager"
                 />
               ) : (
@@ -584,10 +584,10 @@ function CommunityHomePage() {
               {/* Overlay configurável — Zero por padrão, somente se ativado no Admin com opacidade > 0 */}
               {(card as any).showOverlay && ((card as any).bgOverlayOpacity ?? 30) > 0 && (
                 <div
-                  className="absolute inset-0 bg-gradient-to-t to-transparent pointer-events-none"
+                  className="absolute inset-0 bg-linear-to-t to-transparent pointer-events-none"
                   style={{
                     background: `linear-gradient(to top, ${
-                      (card as any).bgColor || "#000000"
+                      (card as any).bgColor || "currentColor"
                     }${Math.round(((card as any).bgOverlayOpacity ?? 30) * 2.55).toString(16).padStart(2, "0")} 0%, transparent 60%)`,
                   }}
                 />
@@ -599,14 +599,14 @@ function CommunityHomePage() {
                   {(card as any).isPlacesBadge ? (
                     <PlacesHighlightBadge
                       className={`text-xs font-bold drop- ${
-                        (card as any).textColor ? "" : (card as any).showOverlay ? "text-white" : "text-foreground"
+                        (card as any).textColor ? "" : (card as any).showOverlay ? "text-primary-foreground" : "text-foreground"
                       }`}
                       style={(card as any).textColor ? { color: (card as any).textColor } : undefined}
                     />
                   ) : (
                     <h2
                       className={`text-xs font-bold leading-tight drop- truncate backdrop-blur-xs ${
-                        (card as any).textColor ? "" : (card as any).showOverlay ? "text-white" : "text-foreground"
+                        (card as any).textColor ? "" : (card as any).showOverlay ? "text-primary-foreground" : "text-foreground"
                       }`}
                       style={(card as any).textColor ? { color: (card as any).textColor } : undefined}
                     >
@@ -676,7 +676,7 @@ function CommunityHomePage() {
                   return (
                     <div
                       key={item.id}
-                      className="min-w-72 sm:min-w-80 max-w-xs shrink-0 group flex flex-col justify-between rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all h-72"
+                      className="min-w-72 sm:min-w-80 max-w-xs shrink-0 group flex flex-col justify-between rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-colors h-72"
                     >
                       <Link to="/diretorio/$id" params={{ id: item.id }} className="block">
                         <div className="relative aspect-video w-full overflow-hidden bg-muted/40">
@@ -684,7 +684,7 @@ function CommunityHomePage() {
                             <img
                               src={coverImage}
                               alt={item.business_name || undefined}
-                              className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
                               loading="lazy"
                             />
                           ) : (
@@ -734,7 +734,7 @@ function CommunityHomePage() {
                                 niche: item.category || undefined,
                               })
                             }
-                            className="inline-flex items-center gap-1 text-xs text-muted-foreground/75 font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 cursor-pointer"
+                            className="inline-flex items-center gap-1 min-h-11 h-11 px-2 rounded-lg text-xs font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                           >
                             <WhatsappLogo size={14} weight="bold" />
                             <span>WhatsApp</span>
@@ -801,14 +801,14 @@ function CommunityHomePage() {
                       key={item.id}
                       to="/classificados/$id"
                       params={{ id: item.id }}
-                      className="min-w-60 sm:min-w-68 max-w-72 shrink-0 group flex flex-col justify-between rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all h-80"
+                      className="min-w-60 sm:min-w-68 max-w-72 shrink-0 group flex flex-col justify-between rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-colors h-80"
                     >
                       <div className="relative aspect-square w-full overflow-hidden bg-muted/30">
                         {coverImage ? (
                           <img
                             src={coverImage}
                             alt={item.title}
-                            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
                             loading="lazy"
                           />
                         ) : (
@@ -856,7 +856,7 @@ function CommunityHomePage() {
                     <Link
                       key={post.id}
                       to="/feed"
-                      className="min-w-64 sm:min-w-72 max-w-xs shrink-0 p-4 rounded-lg border border-border/60 bg-card hover:border-foreground/30 hover: transition-all flex flex-col justify-between group space-y-3"
+                      className="min-w-64 sm:min-w-72 max-w-xs shrink-0 p-4 rounded-lg border border-border/60 bg-card hover:border-foreground/30 hover: transition-colors flex flex-col justify-between group space-y-3"
                     >
                       <div className="flex items-center gap-3">
                         <div className="size-8 rounded-full bg-muted/60 overflow-hidden flex items-center justify-center text-muted-foreground shrink-0 border border-border/40">
@@ -885,7 +885,7 @@ function CommunityHomePage() {
                           <img
                             src={coverImage}
                             alt=""
-                            className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
                             loading="lazy"
                           />
                         </div>
@@ -944,7 +944,7 @@ function CommunityHomePage() {
                       key={job.id}
                       to="/empregos/$id"
                       params={{ id: job.id }}
-                      className="min-w-72 sm:min-w-80 max-w-xs shrink-0 p-4 rounded-lg border border-border/60 bg-card hover:border-foreground/30 hover: transition-all space-y-3 group flex flex-col justify-between"
+                      className="min-w-72 sm:min-w-80 max-w-xs shrink-0 p-4 rounded-lg border border-border/60 bg-card hover:border-foreground/30 hover: transition-colors space-y-3 group flex flex-col justify-between"
                     >
                       <div className="flex items-start gap-3">
                         <div className="size-12 rounded-lg overflow-hidden bg-muted/40 border border-border/60 shrink-0 flex items-center justify-center">
@@ -1003,14 +1003,14 @@ function CommunityHomePage() {
                       key={ev.id}
                       to="/evento/$id"
                       params={{ id: ev.id }}
-                      className="min-w-72 sm:min-w-80 max-w-xs shrink-0 rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover: transition-all flex flex-col justify-between group"
+                      className="min-w-72 sm:min-w-80 max-w-xs shrink-0 rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover: transition-colors flex flex-col justify-between group"
                     >
                       <div className="relative aspect-video w-full overflow-hidden bg-muted/40">
                         {coverImage ? (
                           <img
                             src={coverImage}
                             alt={ev.title}
-                            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
                             loading="lazy"
                           />
                         ) : (
@@ -1024,7 +1024,7 @@ function CommunityHomePage() {
                           </Badge>
                         </div>
                         <div className="absolute bottom-2.5 right-2.5">
-                          <span className="bg-black/75 text-white text-xs font-mono font-bold px-2 py-1 rounded-md">
+                          <span className="bg-foreground/80 text-background text-xs font-mono font-bold px-2 py-1 rounded-md">
                             {ev.date_display || "A Confirmar"}
                           </span>
                         </div>
@@ -1063,14 +1063,14 @@ function CommunityHomePage() {
                     <Link
                       key={`agenda-${ev.id}`}
                       to="/agenda"
-                      className="min-w-72 sm:min-w-80 max-w-xs shrink-0 rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover: transition-all flex flex-col justify-between group"
+                      className="min-w-72 sm:min-w-80 max-w-xs shrink-0 rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover: transition-colors flex flex-col justify-between group"
                     >
                       <div className="relative aspect-video w-full overflow-hidden bg-muted/40">
                         {coverImage ? (
                           <img
                             src={coverImage}
                             alt={ev.title}
-                            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
                             loading="lazy"
                           />
                         ) : (
@@ -1084,7 +1084,7 @@ function CommunityHomePage() {
                           </Badge>
                         </div>
                         <div className="absolute bottom-2.5 right-2.5">
-                          <span className="bg-black/75 text-white text-xs font-mono font-bold px-2 py-1 rounded-md">
+                          <span className="bg-foreground/80 text-background text-xs font-mono font-bold px-2 py-1 rounded-md">
                             {ev.date_display || "Data confirmada"}
                           </span>
                         </div>
@@ -1116,7 +1116,7 @@ function CommunityHomePage() {
                 >
                   <Link
                     to={(middleBanners[0].link_url || "/afiliados") as any}
-                    className="group relative block w-full aspect-video sm:aspect-video rounded-lg overflow-hidden bg-card border border-border/60 hover:border-foreground/30 transition-all"
+                    className="group relative block w-full aspect-video sm:aspect-video rounded-lg overflow-hidden bg-card border border-border/60 hover:border-foreground/30 transition-colors"
                   >
                     {middleBanners[0].media_type === "video" ? (
                       <video
@@ -1125,27 +1125,27 @@ function CommunityHomePage() {
                         muted
                         loop
                         playsInline
-                        className="size-full object-cover group-hover:scale-102 transition-transform duration-500"
+                        className="size-full object-cover group-hover:scale-102 transition-transform duration-300"
                       />
                     ) : (
                       <img
                         src={middleBanners[0].image_url}
                         alt={middleBanners[0].title || "Destaque"}
-                        className="size-full object-cover group-hover:scale-102 transition-transform duration-500"
+                        className="size-full object-cover group-hover:scale-102 transition-transform duration-300"
                       />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    <div className="absolute inset-0 bg-linear-to-t from-foreground/80 via-foreground/20 to-transparent" />
                     <div className="absolute bottom-4 left-4 right-4 text-left">
                       {middleBanners[0].badge_text && (
-                        <span className="inline-block px-3 py-1 rounded-md text-xs font-mono font-bold uppercase tracking-wider bg-white/20 text-white border border-white/20 mb-2">
+                        <span className="inline-block px-3 py-1 rounded-md text-xs font-mono font-bold uppercase tracking-wider bg-background/20 text-background border border-background/20 mb-2">
                           {middleBanners[0].badge_text}
                         </span>
                       )}
-                      <h3 className="text-base sm:text-lg font-bold text-white leading-tight drop-">
+                      <h3 className="text-base sm:text-lg font-bold text-background leading-tight drop-">
                         {middleBanners[0].title}
                       </h3>
                       {middleBanners[0].subtitle && (
-                        <p className="text-xs text-white/85 line-clamp-1 mt-1">
+                        <p className="text-xs text-background/85 line-clamp-1 mt-1">
                           {middleBanners[0].subtitle}
                         </p>
                       )}
@@ -1166,7 +1166,7 @@ function CommunityHomePage() {
                       Indique empresas para a plataforma e receba comissões e benefícios na sua conta.
                     </p>
                   </div>
-                  <Button asChild size="sm" className="h-10 px-5 rounded-lg text-xs font-bold shrink-0 cursor-pointer">
+                  <Button asChild size="sm" className="h-11 min-h-11 px-5 rounded-lg text-xs font-bold shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
                     <Link to="/afiliados">
                       <span>Conhecer Afiliados</span>
                       <ArrowRight size={13} className="ml-2" />
@@ -1205,7 +1205,7 @@ function CommunityHomePage() {
               {unifiedItems.map((item) => (
                 <div
                   key={item.id}
-                  className="group rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover: transition-all flex flex-col justify-between"
+                  className="group rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover: transition-colors flex flex-col justify-between"
                 >
                   <Link to={item.to as any} className="flex-1 flex flex-col cursor-pointer">
                     <div className="relative aspect-video w-full overflow-hidden bg-muted/40 shrink-0">
@@ -1213,7 +1213,7 @@ function CommunityHomePage() {
                         <img
                           src={item.image}
                           alt={item.title}
-                          className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
                           loading="lazy"
                         />
                       ) : (
@@ -1265,7 +1265,7 @@ function CommunityHomePage() {
                             entityTitle: item.title,
                           })
                         }
-                        className="inline-flex items-center gap-1 text-xs text-muted-foreground/75 font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 cursor-pointer"
+                        className="inline-flex items-center gap-1 min-h-11 h-11 px-2 rounded-lg text-xs font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                       >
                         <WhatsappLogo size={14} weight="bold" />
                         <span>WhatsApp</span>
@@ -1295,7 +1295,7 @@ function CommunityHomePage() {
             unifiedItems.map((item) => (
               <div
                 key={item.id}
-                className="group flex flex-col sm:flex-row items-stretch justify-between rounded-lg border border-border/60 bg-card hover:border-foreground/30 hover: transition-all overflow-hidden p-0 w-full"
+                className="group flex flex-col sm:flex-row items-stretch justify-between rounded-lg border border-border/60 bg-card hover:border-foreground/30 hover: transition-colors overflow-hidden p-0 w-full"
               >
                 <Link
                   to={item.to as any}
@@ -1305,7 +1305,7 @@ function CommunityHomePage() {
                     <img
                       src={item.image}
                       alt={item.title}
-                      className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
                       loading="lazy"
                     />
                   ) : (
@@ -1354,7 +1354,7 @@ function CommunityHomePage() {
                               entityTitle: item.title,
                             })
                           }
-                          className="h-10 sm:h-8 px-3 rounded-lg text-xs gap-2 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
+                          className="h-11 min-h-11 px-3 rounded-lg text-xs gap-2 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                         >
                           <WhatsappLogo size={15} weight="bold" />
                           <span>WhatsApp</span>
@@ -1364,7 +1364,7 @@ function CommunityHomePage() {
                       <Button
                         asChild
                         size="sm"
-                        className="h-10 sm:h-8 px-4 rounded-lg text-xs font-bold transition-all cursor-pointer"
+                        className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                       >
                         <Link to={item.to as any}>
                           <span>Ver</span>
@@ -1389,7 +1389,7 @@ function CommunityHomePage() {
           >
             <Link
               to={(footerBanners[0].link_url || "/criar-negocio") as any}
-              className="group relative block w-full aspect-video sm:aspect-video rounded-lg overflow-hidden bg-card border border-border/60 hover:border-foreground/30 transition-all"
+              className="group relative block w-full aspect-video sm:aspect-video rounded-lg overflow-hidden bg-card border border-border/60 hover:border-foreground/30 transition-colors"
             >
               {footerBanners[0].media_type === "video" ? (
                 <video
@@ -1398,27 +1398,27 @@ function CommunityHomePage() {
                   muted
                   loop
                   playsInline
-                  className="size-full object-cover group-hover:scale-102 transition-transform duration-500"
+                  className="size-full object-cover group-hover:scale-102 transition-transform duration-300"
                 />
               ) : (
                 <img
                   src={footerBanners[0].image_url}
                   alt={footerBanners[0].title || "Divulgue sua empresa"}
-                  className="size-full object-cover group-hover:scale-102 transition-transform duration-500"
+                  className="size-full object-cover group-hover:scale-102 transition-transform duration-300"
                 />
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
+              <div className="absolute inset-0 bg-linear-to-t from-foreground/80 via-foreground/25 to-transparent" />
               <div className="absolute bottom-5 left-5 right-5 text-left">
                 {footerBanners[0].badge_text && (
-                  <span className="inline-block px-3 py-1 rounded-md text-xs font-mono font-bold uppercase tracking-wider bg-white/20 text-white border border-white/20 mb-2">
+                  <span className="inline-block px-3 py-1 rounded-md text-xs font-mono font-bold uppercase tracking-wider bg-background/20 text-background border border-background/20 mb-2">
                     {footerBanners[0].badge_text}
                   </span>
                 )}
-                <h3 className="text-lg sm:text-xl font-bold text-white leading-tight drop-">
+                <h3 className="text-lg sm:text-xl font-bold text-background leading-tight drop-">
                   {footerBanners[0].title}
                 </h3>
                 {footerBanners[0].subtitle && (
-                  <p className="text-xs sm:text-sm text-white/85 line-clamp-1 mt-1">
+                  <p className="text-xs sm:text-sm text-background/85 line-clamp-1 mt-1">
                     {footerBanners[0].subtitle}
                   </p>
                 )}
@@ -1440,13 +1440,13 @@ function CommunityHomePage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3 pt-1">
-              <Button asChild className="h-10 px-5 rounded-lg font-bold text-xs cursor-pointer">
+              <Button asChild className="h-11 min-h-11 px-5 rounded-lg font-bold text-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
                 <Link to="/criar-negocio">
                   <Storefront size={15} weight="bold" className="mr-2" />
                   Cadastrar Empresa
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="h-10 px-5 rounded-lg font-bold text-xs border-border/80 hover:bg-muted/60 cursor-pointer">
+              <Button asChild variant="outline" className="h-11 min-h-11 px-5 rounded-lg font-bold text-xs border-border/80 hover:bg-muted/60 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
                 <Link to="/portal-completo">
                   Conhecer o Sistema Pro
                 </Link>

@@ -206,9 +206,11 @@ export function ModuleTourModal({
 export function ModuleTourTrigger({
   onClick,
   label = "Guia do Módulo",
+  className,
 }: {
   onClick: () => void;
   label?: string;
+  className?: string;
 }) {
   return (
     <Button
@@ -216,7 +218,7 @@ export function ModuleTourTrigger({
       variant="outline"
       size="sm"
       onClick={onClick}
-      className="h-8 px-3 rounded-lg text-[11px] font-semibold gap-2 border-border/60 hover:bg-muted/40 text-muted-foreground hover:text-foreground cursor-pointer shadow-2xs"
+      className={cn("h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 border-border/60 hover:bg-muted/40 text-muted-foreground hover:text-foreground cursor-pointer shadow-2xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none", className)}
       title={label}
     >
       <HelpCircle className="size-3.5 text-primary" />

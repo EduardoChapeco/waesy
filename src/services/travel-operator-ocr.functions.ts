@@ -287,9 +287,17 @@ Retorne ESTRITAMENTE um JSON compatível com o schema BoletoExtractionResult:
     }
 
     const validated = BoletoExtractionResultSchema.parse(rawJson);
+    const sanitizedData: BoletoExtractionResult = {
+      ...validated,
+      installments: (validated.installments || []).map((inst) => ({
+        ...inst,
+        digitable_line: inst.digitable_line ? inst.digitable_line.replace(/\D/g, "") : undefined,
+        barcode: inst.barcode ? inst.barcode.replace(/\D/g, "") : undefined,
+      })),
+    };
 
     return {
       success: true,
-      data: validated,
+      data: sanitizedData,
     };
   });

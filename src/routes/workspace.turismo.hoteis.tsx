@@ -807,7 +807,7 @@ function WorkspaceHotelsPage() {
  return (
  <div
  key={hotel.id}
- className="bg-card rounded-lg overflow-hidden border border-border/70 hover:border-primary/40 transition-all group flex flex-col shadow-2xs hover:shadow-sm"
+ className="bg-card rounded-lg overflow-hidden border border-border/70 hover:border-primary/40 transition-colors duration-150 group flex flex-col shadow-2xs "
  >
  {/* Foto de Capa & Badges */}
  <div className="relative aspect-video w-full bg-muted/30 overflow-hidden">
@@ -815,7 +815,7 @@ function WorkspaceHotelsPage() {
  <img
  src={hotel.cover_photo_url}
  alt={hotel.name}
- className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
+ className="size-full object-cover group-hover:scale-105 transition-transform duration-200 motion-reduce:transition-none"
  />
  ) : (
  <div className="size-full flex flex-col items-center justify-center text-muted-foreground/40 gap-2">
@@ -823,31 +823,31 @@ function WorkspaceHotelsPage() {
  <span className="text-xs">Sem foto de capa</span>
  </div>
  )}
- <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent pointer-events-none" />
+ <div className="absolute inset-0 bg-background/70 backdrop-blur-xs pointer-events-none" />
 
  {/* Top Badges */}
  <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
- <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-bold font-mono tracking-wide">
+ <span className="px-3 py-1 rounded-full bg-background/80 backdrop-blur-md text-foreground text-xs font-bold font-mono tracking-wide border border-border/60">
  {hotel.stars || 4} Estrelas
  </span>
 
  <div className="flex items-center gap-2">
  {photosCount > 1 && (
- <span className="px-2 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-semibold flex items-center gap-1">
+ <span className="px-2 py-1 rounded-full bg-background/80 backdrop-blur-md text-foreground text-xs font-semibold flex items-center gap-1 border border-border/60">
  <Camera className="size-3" />
  <span>{photosCount} fotos</span>
  </span>
  )}
- <Badge className="bg-emerald-600 text-white font-semibold text-xs border-none shadow-xs">
+ <Badge className="bg-emerald-600 text-emerald-50 font-semibold text-xs border-none shadow-xs">
  {hotel.internal_rating ? `Nota ${hotel.internal_rating}` : "Novo"}
  </Badge>
  </div>
  </div>
 
  {/* Bottom Info on Capa */}
- <div className="absolute bottom-3 left-3 right-3 text-white space-y-1">
- <h4 className="text-base font-bold drop-shadow-sm truncate">{hotel.name}</h4>
- <p className="text-xs text-white/80 truncate flex items-center gap-1">
+ <div className="absolute bottom-3 left-3 right-3 text-foreground space-y-1">
+ <h4 className="text-base font-bold  truncate">{hotel.name}</h4>
+ <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
  <MapPin className="size-3 shrink-0 text-primary-foreground/90" />
  <span>
  {hotel.city}, {hotel.state || hotel.country}
@@ -928,7 +928,7 @@ function WorkspaceHotelsPage() {
  type="button"
  variant="secondary"
  onClick={() => setPreviewHotel(hotel)}
- className="h-11 sm:h-8 px-4 sm:px-3 rounded-lg text-xs gap-2 font-bold cursor-pointer"
+ className="h-11 min-h-11 px-4 sm:px-3 rounded-lg text-xs gap-2 font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
  title="Visualizar Raio-X Completo do Hotel"
  >
  <Eye className="size-4 sm:size-3.5" />
@@ -939,7 +939,7 @@ function WorkspaceHotelsPage() {
  type="button"
  variant="outline"
  onClick={() => handleOpenEdit(hotel)}
- className="h-11 sm:h-8 px-4 sm:px-3 rounded-lg text-xs gap-1 font-bold cursor-pointer"
+ className="h-11 min-h-11 px-4 sm:px-3 rounded-lg text-xs gap-1 font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
  >
  <Edit2 className="size-4 sm:size-3" />
  <span>Editar</span>
@@ -950,7 +950,7 @@ function WorkspaceHotelsPage() {
  size="icon"
  variant="ghost"
  onClick={() => duplicateMut.mutate(hotel.id)}
- className="size-11 sm:size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+ className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
  title="Duplicar Hotel"
  >
  <Copy className="size-4 sm:size-3.5" />
@@ -961,7 +961,7 @@ function WorkspaceHotelsPage() {
  size="icon"
  variant="ghost"
  onClick={() => handleExportHotelsRoomsCSV([hotel], `hotel-${hotel.name.toLowerCase().replace(/\s+/g, "-")}-quartos.csv`)}
- className="size-11 sm:size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+ className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
  title="Exportar Ficha de Quartos (CSV)"
  >
  <Download className="size-4 sm:size-3.5" />
@@ -988,7 +988,7 @@ function WorkspaceHotelsPage() {
  ) : (
  /* ── MODO TABELA OPERACIONAL ── */
  <div className="rounded-lg border border-border/70 bg-card overflow-hidden shadow-2xs">
- <div className="overflow-x-auto no-scrollbar">
+ <div className="overflow-x-auto table no-scrollbar">
  <table className="w-full text-left text-xs">
  <thead className="bg-muted/40 border-b border-border/60 text-muted-foreground font-semibold">
  <tr>
@@ -1018,7 +1018,7 @@ function WorkspaceHotelsPage() {
                         </div>
                       )}
  <div>
- <p className="font-bold text-foreground hover:text-primary transition-colors cursor-pointer" onClick={() => setPreviewHotel(hotel)}>
+ <p tabIndex={0} onKeyDown={(e) => e.key === "Enter" && setPreviewHotel(hotel)} className="font-bold text-foreground hover:text-primary transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded" onClick={() => setPreviewHotel(hotel)}>
  {hotel.name}
  </p>
  <p className="text-xs text-muted-foreground/75 text-muted-foreground truncate max-w-xs">
@@ -1058,7 +1058,7 @@ function WorkspaceHotelsPage() {
  size="icon"
  variant="ghost"
  onClick={() => setPreviewHotel(hotel)}
- className="size-9 sm:size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+ className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
  title="Raio-X do Hotel"
  >
  <Eye className="size-4 sm:size-3.5" />
@@ -1067,7 +1067,7 @@ function WorkspaceHotelsPage() {
  size="icon"
  variant="ghost"
  onClick={() => handleOpenEdit(hotel)}
- className="size-9 sm:size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+ className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
  title="Editar"
  >
  <Edit2 className="size-4 sm:size-3.5" />
@@ -1076,7 +1076,7 @@ function WorkspaceHotelsPage() {
  size="icon"
  variant="ghost"
  onClick={() => duplicateMut.mutate(hotel.id)}
- className="size-9 sm:size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+ className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
  title="Duplicar"
  >
  <Copy className="size-4 sm:size-3.5" />
@@ -1085,7 +1085,7 @@ function WorkspaceHotelsPage() {
  size="icon"
  variant="ghost"
  onClick={() => handleExportHotelsRoomsCSV([hotel], `hotel-${hotel.name.toLowerCase().replace(/\s+/g, "-")}-quartos.csv`)}
- className="size-9 sm:size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+ className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
  title="Exportar Ficha de Quartos (CSV)"
  >
  <Download className="size-4 sm:size-3.5" />
@@ -1130,16 +1130,16 @@ function WorkspaceHotelsPage() {
                       <span className="text-xs font-medium">Sem foto de capa cadastrada</span>
                     </div>
                   )}
- <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
- <div className="absolute bottom-4 left-5 right-5 text-white">
+ <div className="absolute inset-0 bg-background/70 backdrop-blur-xs" />
+ <div className="absolute bottom-4 left-5 right-5 text-foreground">
  <div className="flex items-center gap-2 text-xs font-bold mb-1">
- <span className="px-2 py-1 rounded-full bg-white/20 backdrop-blur-md text-white font-mono text-xs">
+ <span className="px-2 py-1 rounded-full bg-background/80 backdrop-blur-md text-foreground font-mono text-xs border border-border/60">
  {previewHotel.stars || 4} Estrelas
  </span>
- {(previewHotel.internal_rating || 0) > 0 ? <span className="text-white/80 font-normal ml-1">Nota {previewHotel.internal_rating} / 5.0</span> : null}
+ {(previewHotel.internal_rating || 0) > 0 ? <span className="text-muted-foreground font-normal ml-1">Nota {previewHotel.internal_rating} / 5.0</span> : null}
  </div>
  <h2 className="text-xl font-bold">{previewHotel.name}</h2>
- <p className="text-xs text-white/80 flex items-center gap-1">
+ <p className="text-xs text-muted-foreground flex items-center gap-1">
  <MapPin className="size-3 text-primary-foreground" />
  <span>{previewHotel.address || `${previewHotel.city}, ${previewHotel.state || previewHotel.country}`}</span>
  </p>
@@ -1313,13 +1313,13 @@ function WorkspaceHotelsPage() {
  <span>Preencher com Preset de Resort Famoso (1 Toque):</span>
  </span>
  </div>
- <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+ <div className="flex items-center gap-2 overflow-x-auto tab-list pb-1 no-scrollbar">
  {FAMOUS_HOTEL_PRESETS.map((preset) => (
  <button
  key={preset.id}
  type="button"
  onClick={() => handleApplyPreset(preset)}
- className="px-3 py-1 rounded-lg bg-background border border-border/70 hover:border-primary/50 text-xs text-muted-foreground/75 font-semibold text-foreground whitespace-nowrap cursor-pointer transition-colors"
+ className="px-3 h-11 min-h-11 rounded-lg bg-background border border-border/70 hover:border-primary/50 text-xs text-muted-foreground/75 font-semibold text-foreground whitespace-nowrap cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
  >
  {preset.name.split(" ")[0]} {preset.name.split(" ")[1]}
  </button>
@@ -1329,7 +1329,7 @@ function WorkspaceHotelsPage() {
  </SheetHeader>
 
  <Tabs value={sheetTab} onValueChange={setSheetTab} className="flex-1 flex flex-col">
- <div className="px-5 pt-3 border-b border-border/60 bg-muted/10 shrink-0 overflow-x-auto no-scrollbar">
+ <div className="px-5 pt-3 border-b border-border/60 bg-muted/10 shrink-0 overflow-x-auto tab-list no-scrollbar">
  <TabsList className="bg-transparent border-b-0 h-9 p-0 gap-4">
  <TabsTrigger
  value="dados"
@@ -1406,7 +1406,7 @@ function WorkspaceHotelsPage() {
  key={cd.id}
  type="button"
  onClick={() => handleSelectCanonicalDestination(cd)}
- className="px-2 py-1 rounded-md bg-background text-xs text-muted-foreground/75 border border-border/60 hover:border-primary/50 text-foreground cursor-pointer transition-colors"
+ className="px-3 h-11 min-h-11 rounded-md bg-background text-xs text-muted-foreground/75 border border-border/60 hover:border-primary/50 text-foreground cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
  >
  {cd.city} ({cd.iata})
  </button>
@@ -1628,7 +1628,7 @@ function WorkspaceHotelsPage() {
  <button
  type="button"
  onClick={() => handleRemovePhoto(idx)}
- className="absolute top-1.5 right-1.5 size-6 rounded-full bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive"
+ className="absolute top-1.5 right-1.5 size-11 min-h-11 min-w-11 rounded-full bg-foreground/80 text-background flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
  >
  <X className="size-3.5" />
  </button>
@@ -1652,7 +1652,7 @@ function WorkspaceHotelsPage() {
  type="button"
  
  onClick={handleAddRoomCategory}
- className="rounded-lg font-semibold gap-2 h-8 bg-primary text-primary-foreground h-11 min-h-11 px-3 text-xs"
+ className="rounded-lg font-semibold gap-2 bg-primary text-primary-foreground h-11 min-h-11 px-3 text-xs focus-visible:ring-2 focus-visible:ring-primary"
  >
  <Plus className="size-3.5" />
  <span>Adicionar Quarto</span>
@@ -1684,7 +1684,7 @@ function WorkspaceHotelsPage() {
  size="sm"
  variant="ghost"
  onClick={() => handleRemoveRoomCategory(room.id)}
- className="size-7 p-0 rounded-lg text-destructive hover:bg-destructive/10"
+ className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-destructive hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-primary"
  >
  <Trash2 className="size-3.5" />
  </Button>
@@ -1788,7 +1788,7 @@ function WorkspaceHotelsPage() {
  type="button"
  onClick={() => toggleAmenityBadge(opt)}
  className={cn(
- "p-3 rounded-lg text-left text-xs font-semibold border transition-all cursor-pointer flex items-center justify-between",
+ "p-3 min-h-11 rounded-lg text-left text-xs font-semibold border transition-colors duration-150 cursor-pointer flex items-center justify-between focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
  isActive
  ? "bg-primary/10 text-primary border-primary shadow-xs"
  : "bg-background text-muted-foreground border-border/70 hover:text-foreground hover:bg-muted/30"
@@ -1865,7 +1865,7 @@ function WorkspaceHotelsPage() {
  <button
  type="button"
  onClick={() => handleRemoveRestaurant(idx)}
- className="text-destructive hover:underline text-xs text-muted-foreground/75 cursor-pointer"
+ className="text-destructive hover:underline text-xs text-muted-foreground/75 cursor-pointer h-11 min-h-11 px-2 flex items-center focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
  >
  Remover
  </button>
@@ -2014,7 +2014,7 @@ function WorkspaceHotelsPage() {
  bio_bullets: formData.bio_bullets.filter((_, i) => i !== idx),
  })
  }
- className="size-8 sm:size-5 text-muted-foreground hover:text-destructive flex items-center justify-center cursor-pointer rounded-lg"
+ className="size-11 min-h-11 min-w-11 text-muted-foreground hover:text-destructive flex items-center justify-center cursor-pointer rounded-lg focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
  >
  ×
  </button>

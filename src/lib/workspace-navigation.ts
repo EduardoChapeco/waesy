@@ -1,4 +1,4 @@
-import { Package, Tags, Tag, Store, LayoutDashboard, Settings, Calendar, Users, ShoppingBag, Truck, Boxes, Banknote, FileText, LayoutTemplate, Link2, Image as ImageIcon, ClipboardList, ShieldAlert, Megaphone, Share2, Star, Bell, Flame, Kanban, Newspaper, Plus, Sliders, DollarSign, Ticket, ArrowRightLeft, Building2, ShieldCheck, UtensilsCrossed, ChefHat, Coins, Zap, MessageSquare, Scale, Wrench, MapPin, Palette, Target, LayoutGrid, Navigation, Briefcase, Plane, ShoppingCart, Eye, Receipt, AlertTriangle, ArrowDownUp, Clock, Car, Smartphone, Layers, HeartPulse, GraduationCap, Dog, CarFront, PenTool, Layers2, FileSpreadsheet, Gift, Globe, Bus, Award, Bot, LifeBuoy, Compass, UserCheck, Lock, HandHeart, Database, Calculator } from "lucide-react";
+import { Package, Tags, Tag, Store, LayoutDashboard, Settings, Calendar, Users, ShoppingBag, Truck, Boxes, Banknote, FileText, LayoutTemplate, Link2, Image as ImageIcon, ClipboardList, ShieldAlert, Megaphone, Share2, Star, Bell, Flame, Kanban, Newspaper, Plus, Sliders, DollarSign, Ticket, ArrowRightLeft, Building2, ShieldCheck, UtensilsCrossed, ChefHat, Coins, Zap, MessageSquare, Scale, Wrench, MapPin, Palette, Target, LayoutGrid, Navigation, Briefcase, Plane, ShoppingCart, Eye, Receipt, AlertTriangle, RefreshCw, ArrowDownUp, Clock, Car, Smartphone, Layers, HeartPulse, GraduationCap, Dog, CarFront, PenTool, Layers2, FileSpreadsheet, Gift, Globe, Bus, Award, Bot, LifeBuoy, Compass, UserCheck, Lock, HandHeart, Database, Calculator } from "lucide-react";
 
 export type NavItem = {
   path: string;
@@ -252,7 +252,8 @@ const GROUP_TURISMO_OPERATIONS: NavGroup = {
     { path: "/workspace/turismo/viagens", label: "Viagens Confirmadas", icon: Compass },
     { path: "/workspace/turismo/grupos", label: "Excursões & Frota", icon: Bus },
     { path: "/workspace/turismo/vouchers", label: "Vouchers & Bilhetes", icon: Ticket },
-    { path: "/workspace/turismo/incidentes", label: "SAC & Reacomodação", icon: AlertTriangle },
+    { path: "/workspace/turismo/reacomodacao", label: "Reacomodação ANAC", icon: RefreshCw },
+    { path: "/workspace/turismo/incidentes", label: "SAC & Contingências", icon: AlertTriangle },
   ],
 };
 
@@ -1135,6 +1136,76 @@ export function resolveWorkspaceNavigation(
         ],
       },
     ];
+  }
+
+  // Financeiro / Contador / Faturamento: acesso focado em Finanças, Comissões, Contratos e Clientes
+  if (userRole === "finance" || userRole === "financeiro" || userRole === "contador" || userRole === "billing") {
+    return resolvedGroups
+      .filter(
+        (g) =>
+          g.id === "overview" ||
+          g.id === "finance" ||
+          g.id === "billing" ||
+          g.id === "customers" ||
+          g.id === "tourism-catalog" ||
+          g.id === "tourism-operations"
+      )
+      .map((g) => {
+        if (g.id === "tourism-catalog") {
+          return {
+            ...g,
+            items: g.items.filter(
+              (i) =>
+                i.path.includes("comissoes") ||
+                i.path.includes("contratos") ||
+                i.path.includes("fornecedores")
+            ),
+          };
+        }
+        if (g.id === "tourism-operations") {
+          return {
+            ...g,
+            items: g.items.filter((i) => i.path.includes("viagens") || i.path.includes("vouchers")),
+          };
+        }
+        return g;
+      })
+      .filter((g) => g.items.length > 0);
+  }
+
+  // Operacional de Turismo / Embarques / Suporte Pós-Venda: foco em Viagens, Embarques, Vouchers, Reacomodação e Clientes
+  if (
+    userRole === "operations" ||
+    userRole === "operacional" ||
+    userRole === "embarques" ||
+    userRole === "suporte" ||
+    userRole === "support"
+  ) {
+    return resolvedGroups
+      .filter(
+        (g) =>
+          g.id === "overview" ||
+          g.id === "tourism-operations" ||
+          g.id === "tourism-boarding" ||
+          g.id === "tourism-catalog" ||
+          g.id === "customers" ||
+          g.id === "orders"
+      )
+      .map((g) => {
+        if (g.id === "tourism-catalog") {
+          return {
+            ...g,
+            items: g.items.filter(
+              (i) =>
+                i.path.includes("hoteis") ||
+                i.path.includes("fornecedores") ||
+                i.path.includes("contratos")
+            ),
+          };
+        }
+        return g;
+      })
+      .filter((g) => g.items.length > 0);
   }
 
   // RH / Recrutador: Colaboradores, Vagas e Candidatos

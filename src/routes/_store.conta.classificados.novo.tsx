@@ -390,7 +390,7 @@ function NovoClassificadoPage() {
       try {
         const saved = sessionStorage.getItem("waesy_ai_prefill");
         if (saved) return JSON.parse(saved);
-      } catch (e) {}
+      } catch (e) { console.warn("[classificados.novo] Operação de storage/parse ignorada defensivamente:", e); }
     }
     return null;
   });
@@ -414,7 +414,7 @@ function NovoClassificadoPage() {
             setIsLoadingEdit(false);
             return;
           }
-        } catch (e) {}
+        } catch (e) { console.warn("[classificados.novo] Operação de storage/parse ignorada defensivamente:", e); }
       }
       setInitialData(null);
       setIsLoadingEdit(false);
@@ -622,7 +622,7 @@ function NovoClassificadoPage() {
           if (typeof window !== "undefined") {
             try {
               sessionStorage.setItem("waesy_ai_prefill", JSON.stringify(prefillPayload));
-            } catch (e) {}
+            } catch (e) { console.warn("[classificados.novo] Operação de storage/parse ignorada defensivamente:", e); }
           }
 
           setInitialData(prefillPayload);
@@ -650,7 +650,7 @@ function NovoClassificadoPage() {
         if (typeof window !== "undefined") {
           try {
             sessionStorage.removeItem("waesy_ai_prefill");
-          } catch (e) {}
+          } catch (e) { console.warn("[classificados.novo] Operação de storage/parse ignorada defensivamente:", e); }
         }
         setInitialData(null);
         navigate({ to: "/conta/classificados/novo", search: { editId: editId || undefined, storeId: storeId || undefined } });
@@ -860,7 +860,7 @@ function CreateTypePicker({
               <Wand2 className="size-4 text-primary" />
             )}
             <span>{isAiGenerating ? "Gerando..." : "Criar com IA"}</span>
-            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground bg-muted/60 px-2 py-0.5 rounded border border-border/50">
+            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground bg-muted/60 px-2 py-1 rounded border border-border/50">
               Copilot
             </span>
           </Button>
@@ -3261,7 +3261,7 @@ function SpecializedClassifiedEditor({
       if (typeof window !== "undefined") {
         try {
           sessionStorage.removeItem("waesy_ai_prefill");
-        } catch (e) {}
+        } catch (e) { console.warn("[classificados.novo] Operação de storage/parse ignorada defensivamente:", e); }
       }
 
       if (editId) {
@@ -3361,7 +3361,7 @@ function SpecializedClassifiedEditor({
             setDraftInfo({ step: parsed.step || 2, savedAt: parsed.savedAt });
           }
         }
-      } catch {}
+      } catch (e) { console.warn("[classificados.novo] Exceção defensiva capturada:", e); }
     }
   }, [niche.id, editId]);
 
@@ -4104,7 +4104,7 @@ function SpecializedClassifiedEditor({
               <span className="text-xs font-bold text-foreground uppercase tracking-wider">
                 Visualização do Comprador
               </span>
-              <div className="flex items-center gap-1 bg-muted p-0.5 rounded-lg text-xs">
+              <div className="flex items-center gap-1 bg-muted p-1 rounded-lg text-xs">
                 {[
                   { id: "standard", label: "Padrão" },
                   { id: "editorial", label: "Editorial" },
@@ -4119,7 +4119,7 @@ function SpecializedClassifiedEditor({
                     type="button"
                     onClick={() => setTemplateStyle(t.id as any)}
                     className={cn(
-                      "px-2.5 py-1 text-xs font-semibold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      "px-3 py-1 text-xs font-semibold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       templateStyle === t.id
                         ? "bg-primary text-primary-foreground font-bold shadow-xs"
                         : "text-muted-foreground hover:text-foreground"
@@ -4411,7 +4411,7 @@ function SpecializedClassifiedEditor({
                   size="sm"
                   disabled={isRefiningDescription}
                   onClick={handleRefineDescriptionWithAI}
-                  className="h-11 min-h-11 px-3 text-xs font-semibold text-primary hover:text-primary hover:bg-primary/10 gap-1.5 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="h-11 min-h-11 px-3 text-xs font-semibold text-primary hover:text-primary hover:bg-primary/10 gap-2 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   {isRefiningDescription ? (
                     <>
@@ -5880,7 +5880,7 @@ function SpecializedClassifiedEditor({
                   </p>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-date" className="text-xs font-medium text-foreground">
                         Data de Início *
                       </Label>
@@ -5893,7 +5893,7 @@ function SpecializedClassifiedEditor({
                       />
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-end-date" className="text-xs font-medium text-foreground">
                         Data de Término (Opcional)
                       </Label>
@@ -5908,7 +5908,7 @@ function SpecializedClassifiedEditor({
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-start-time" className="text-xs font-medium text-foreground">
                         Horário de Início
                       </Label>
@@ -5921,7 +5921,7 @@ function SpecializedClassifiedEditor({
                       />
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-end-time" className="text-xs font-medium text-foreground">
                         Horário de Encerramento
                       </Label>
@@ -5934,7 +5934,7 @@ function SpecializedClassifiedEditor({
                       />
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-gates-open" className="text-xs font-medium text-foreground">
                         Abertura dos Portões
                       </Label>
@@ -5949,7 +5949,7 @@ function SpecializedClassifiedEditor({
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-age-rating" className="text-xs font-medium text-foreground">
                         Classificação Indicativa
                       </Label>
@@ -5968,7 +5968,7 @@ function SpecializedClassifiedEditor({
                       </Select>
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-visibility" className="text-xs font-medium text-foreground">
                         Visibilidade do Evento
                       </Label>
@@ -5996,7 +5996,7 @@ function SpecializedClassifiedEditor({
                   </p>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-venue-name" className="text-xs font-medium text-foreground">
                         Nome do Local / Pavilhão
                       </Label>
@@ -6009,7 +6009,7 @@ function SpecializedClassifiedEditor({
                       />
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-venue-address" className="text-xs font-medium text-foreground">
                         Endereço Completo do Local
                       </Label>
@@ -6023,7 +6023,7 @@ function SpecializedClassifiedEditor({
                     </div>
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label htmlFor="event-parking-info" className="text-xs font-medium text-foreground">
                       Estacionamento e Acessibilidade do Local
                     </Label>
@@ -6045,7 +6045,7 @@ function SpecializedClassifiedEditor({
                   </p>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-host-name" className="text-xs font-medium text-foreground">
                         Nome do Anfitrião ou Entidade
                       </Label>
@@ -6058,7 +6058,7 @@ function SpecializedClassifiedEditor({
                       />
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-host-role" className="text-xs font-medium text-foreground">
                         Papel / Título do Anfitrião
                       </Label>
@@ -6073,7 +6073,7 @@ function SpecializedClassifiedEditor({
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-host-avatar" className="text-xs font-medium text-foreground">
                         Foto / Avatar do Anfitrião
                       </Label>
@@ -6091,7 +6091,7 @@ function SpecializedClassifiedEditor({
                       />
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-host-phone" className="text-xs font-medium text-foreground">
                         WhatsApp de Contato Direto
                       </Label>
@@ -6113,7 +6113,7 @@ function SpecializedClassifiedEditor({
                     <span>Story 9:16 e Experiência Mobile</span>
                   </p>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label htmlFor="event-story-url" className="text-xs font-medium text-foreground">
                       Mídia do Story 9:16 (Vídeo ou Foto Vertical)
                     </Label>
@@ -6134,8 +6134,8 @@ function SpecializedClassifiedEditor({
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                    <div className="flex items-center justify-between p-3.5 rounded-lg border border-border/60 bg-muted/20 gap-3">
-                      <div className="space-y-0.5">
+                    <div className="flex items-center justify-between p-4 rounded-lg border border-border/60 bg-muted/20 gap-3">
+                      <div className="space-y-1">
                         <Label htmlFor="story-auto-open" className="text-xs font-bold text-foreground cursor-pointer">
                           Abertura Automática do Story
                         </Label>
@@ -6150,8 +6150,8 @@ function SpecializedClassifiedEditor({
                       />
                     </div>
 
-                    <div className="flex items-center justify-between p-3.5 rounded-lg border border-border/60 bg-muted/20 gap-3">
-                      <div className="space-y-0.5">
+                    <div className="flex items-center justify-between p-4 rounded-lg border border-border/60 bg-muted/20 gap-3">
+                      <div className="space-y-1">
                         <Label htmlFor="event-pwa-enabled" className="text-xs font-bold text-foreground cursor-pointer">
                           Habilitar App PWA do Evento
                         </Label>
@@ -6189,7 +6189,7 @@ function SpecializedClassifiedEditor({
                         };
                         setEventTicketTiers([...eventTicketTiers, newTier]);
                       }}
-                      className="h-9 px-3 text-xs gap-1.5 border-dashed"
+                      className="h-11 min-h-11 px-4 text-xs gap-2 border-dashed"
                     >
                       <Plus className="size-3.5" />
                       Adicionar Lote
@@ -6203,7 +6203,7 @@ function SpecializedClassifiedEditor({
                   ) : (
                     <div className="space-y-3">
                       {eventTicketTiers.map((tier, idx) => (
-                        <div key={tier.id} className="p-3.5 rounded-lg border border-border/60 bg-muted/20 space-y-3">
+                        <div key={tier.id} className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-bold text-foreground">Lote #{idx + 1}</span>
                             <Button
@@ -6211,7 +6211,7 @@ function SpecializedClassifiedEditor({
                               variant="ghost"
                               size="sm"
                               onClick={() => setEventTicketTiers(eventTicketTiers.filter((_, i) => i !== idx))}
-                              className="size-8 p-0 text-muted-foreground hover:text-destructive"
+                              className="size-11 min-h-11 min-w-11 p-0 text-muted-foreground hover:text-destructive"
                             >
                               <Trash2 className="size-4" />
                             </Button>
@@ -6322,7 +6322,7 @@ function SpecializedClassifiedEditor({
                         };
                         setEventSchedule([...eventSchedule, newItem]);
                       }}
-                      className="h-9 px-3 text-xs gap-1.5 border-dashed"
+                      className="h-11 min-h-11 px-4 text-xs gap-2 border-dashed"
                     >
                       <Plus className="size-3.5" />
                       Adicionar Atividade
@@ -6336,7 +6336,7 @@ function SpecializedClassifiedEditor({
                   ) : (
                     <div className="space-y-3">
                       {eventSchedule.map((item, idx) => (
-                        <div key={item.id} className="p-3.5 rounded-lg border border-border/60 bg-muted/20 space-y-3">
+                        <div key={item.id} className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <span className="text-xs font-bold text-foreground">Horário #{idx + 1}</span>
@@ -6351,7 +6351,7 @@ function SpecializedClassifiedEditor({
                               variant="ghost"
                               size="sm"
                               onClick={() => setEventSchedule(eventSchedule.filter((_, i) => i !== idx))}
-                              className="size-8 p-0 text-muted-foreground hover:text-destructive"
+                              className="size-11 min-h-11 min-w-11 p-0 text-muted-foreground hover:text-destructive"
                             >
                               <Trash2 className="size-4" />
                             </Button>
@@ -6453,7 +6453,7 @@ function SpecializedClassifiedEditor({
                         };
                         setEventSpeakers([...eventSpeakers, newSpeaker]);
                       }}
-                      className="h-9 px-3 text-xs gap-1.5 border-dashed"
+                      className="h-11 min-h-11 px-4 text-xs gap-2 border-dashed"
                     >
                       <Plus className="size-3.5" />
                       Adicionar Palestrante
@@ -6467,7 +6467,7 @@ function SpecializedClassifiedEditor({
                   ) : (
                     <div className="space-y-3">
                       {eventSpeakers.map((speaker, idx) => (
-                        <div key={speaker.id} className="p-3.5 rounded-lg border border-border/60 bg-muted/20 space-y-3">
+                        <div key={speaker.id} className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-bold text-foreground">Palestrante #{idx + 1}</span>
                             <Button
@@ -6475,7 +6475,7 @@ function SpecializedClassifiedEditor({
                               variant="ghost"
                               size="sm"
                               onClick={() => setEventSpeakers(eventSpeakers.filter((_, i) => i !== idx))}
-                              className="size-8 p-0 text-muted-foreground hover:text-destructive"
+                              className="size-11 min-h-11 min-w-11 p-0 text-muted-foreground hover:text-destructive"
                             >
                               <Trash2 className="size-4" />
                             </Button>
@@ -6587,7 +6587,7 @@ function SpecializedClassifiedEditor({
                         };
                         setEventSponsors([...eventSponsors, newSponsor]);
                       }}
-                      className="h-9 px-3 text-xs gap-1.5 border-dashed"
+                      className="h-11 min-h-11 px-4 text-xs gap-2 border-dashed"
                     >
                       <Plus className="size-3.5" />
                       Adicionar Patrocinador
@@ -6601,7 +6601,7 @@ function SpecializedClassifiedEditor({
                   ) : (
                     <div className="space-y-3">
                       {eventSponsors.map((sponsor, idx) => (
-                        <div key={sponsor.id} className="p-3.5 rounded-lg border border-border/60 bg-muted/20 space-y-3">
+                        <div key={sponsor.id} className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-bold text-foreground">Marca #{idx + 1}</span>
                             <Button
@@ -6609,7 +6609,7 @@ function SpecializedClassifiedEditor({
                               variant="ghost"
                               size="sm"
                               onClick={() => setEventSponsors(eventSponsors.filter((_, i) => i !== idx))}
-                              className="size-8 p-0 text-muted-foreground hover:text-destructive"
+                              className="size-11 min-h-11 min-w-11 p-0 text-muted-foreground hover:text-destructive"
                             >
                               <Trash2 className="size-4" />
                             </Button>
@@ -6702,7 +6702,7 @@ function SpecializedClassifiedEditor({
                         };
                         setEventSurveys([...eventSurveys, newSurvey]);
                       }}
-                      className="h-9 px-3 text-xs gap-1.5 border-dashed"
+                      className="h-11 min-h-11 px-4 text-xs gap-2 border-dashed"
                     >
                       <Plus className="size-3.5" />
                       Adicionar Enquete
@@ -6716,7 +6716,7 @@ function SpecializedClassifiedEditor({
                   ) : (
                     <div className="space-y-3">
                       {eventSurveys.map((survey, idx) => (
-                        <div key={survey.id} className="p-3.5 rounded-lg border border-border/60 bg-muted/20 space-y-3">
+                        <div key={survey.id} className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-bold text-foreground">Enquete #{idx + 1}</span>
                             <Button
@@ -6724,7 +6724,7 @@ function SpecializedClassifiedEditor({
                               variant="ghost"
                               size="sm"
                               onClick={() => setEventSurveys(eventSurveys.filter((_, i) => i !== idx))}
-                              className="size-8 p-0 text-muted-foreground hover:text-destructive"
+                              className="size-11 min-h-11 min-w-11 p-0 text-muted-foreground hover:text-destructive"
                             >
                               <Trash2 className="size-4" />
                             </Button>
@@ -6769,7 +6769,7 @@ function SpecializedClassifiedEditor({
                                       updated[idx] = { ...updated[idx], options: opts };
                                       setEventSurveys(updated);
                                     }}
-                                    className="size-8 p-0 text-muted-foreground hover:text-destructive"
+                                    className="size-11 min-h-11 min-w-11 p-0 text-muted-foreground hover:text-destructive"
                                   >
                                     <Trash2 className="size-3.5" />
                                   </Button>
@@ -6787,7 +6787,7 @@ function SpecializedClassifiedEditor({
                                   updated[idx] = { ...updated[idx], options: opts };
                                   setEventSurveys(updated);
                                 }}
-                                className="h-8 px-2.5 text-xs gap-1 border-dashed mt-1"
+                                className="h-11 min-h-11 px-4 text-xs gap-2 border-dashed mt-1"
                               >
                                 <Plus className="size-3" />
                                 Adicionar Opção
@@ -6808,7 +6808,7 @@ function SpecializedClassifiedEditor({
                   </p>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-refund-policy" className="text-xs font-medium text-foreground">
                         Política de Cancelamento e Reembolso
                       </Label>
@@ -6821,7 +6821,7 @@ function SpecializedClassifiedEditor({
                       />
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-half-price" className="text-xs font-medium text-foreground">
                         Regras de Meia-Entrada e Benefícios
                       </Label>
@@ -6835,7 +6835,7 @@ function SpecializedClassifiedEditor({
                     </div>
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label htmlFor="event-accessibility" className="text-xs font-medium text-foreground">
                       Acessibilidade e Inclusão no Local
                     </Label>
@@ -9281,7 +9281,7 @@ function SpecializedClassifiedEditor({
  <Tag className="size-4 text-primary" />
  <span>2. Especificações</span>
  </div>
- 
+
  </div>
 
  {/* Seletor de Subcategoria de Desapego */}
@@ -9609,7 +9609,7 @@ function SpecializedClassifiedEditor({
  <Briefcase className="size-4 text-primary" />
  <span>Parâmetros de Contratação</span>
  </div>
- 
+
  </div>
 
  {/* Cargo / Título Profissional */}
@@ -10392,7 +10392,7 @@ function SpecializedClassifiedEditor({
                     )}
                   </div>
 
-                  
+
                     {/* Link de Pagamento Seguro / Checkout Externo */}
                     <div className="pt-2 border-t border-border/40 space-y-2">
                       <Label className="text-xs text-muted-foreground/75 font-semibold text-foreground flex items-center justify-between">
@@ -10833,15 +10833,15 @@ function SpecializedClassifiedEditor({
 
                       <div className="flex items-center justify-between pt-1">
                         {selectedFormId && (
-                          <Link
-                            to="/f/$slug"
-                            params={{ slug: storeForms.find((f: any) => f.id === selectedFormId)?.slug || selectedFormId }}
+                          <a
+                            href={`/f/${storeForms.find((f: any) => f.id === selectedFormId)?.slug || selectedFormId}`}
                             target="_blank"
+                            rel="noreferrer"
                             className="text-xs text-primary hover:underline flex items-center gap-1 font-medium"
                           >
                             <Eye className="size-3" />
                             <span>Ver landing page do formulário</span>
-                          </Link>
+                          </a>
                         )}
                         <Link
                           to="/workspace/marketing/formularios"
@@ -11262,12 +11262,12 @@ function SpecializedClassifiedEditor({
  >
         <div className="bg-card rounded-lg overflow-hidden border border-border/60">
           <div className="bg-muted/40 px-3 py-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 border-b border-border/40 text-xs">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="font-semibold flex items-center gap-1.5 text-foreground shrink-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-semibold flex items-center gap-2 text-foreground shrink-0">
                 <Eye className="size-4 text-primary" />
                 <span>Prévia ao vivo</span>
               </span>
-              <div className="flex items-center gap-1 bg-background/80 p-0.5 rounded-lg border border-border/50">
+              <div className="flex items-center gap-1 bg-background/80 p-1 rounded-lg border border-border/50">
                 {[
                   { id: "standard", label: "Padrão" },
                   { id: "editorial", label: "Editorial" },
@@ -11282,7 +11282,7 @@ function SpecializedClassifiedEditor({
                     type="button"
                     onClick={() => setTemplateStyle(tpl.id as any)}
                     className={cn(
-                      "px-2 py-0.5 text-xs font-semibold rounded transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      "px-2 py-1 text-xs font-semibold rounded transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       templateStyle === tpl.id
                         ? "bg-primary text-primary-foreground font-bold shadow-xs"
                         : "text-muted-foreground hover:text-foreground"
@@ -11294,12 +11294,12 @@ function SpecializedClassifiedEditor({
               </div>
             </div>
 
-            <div className="flex items-center gap-1 bg-background p-0.5 rounded-lg border border-border/50 self-end sm:self-auto">
+            <div className="flex items-center gap-1 bg-background p-1 rounded-lg border border-border/50 self-end sm:self-auto">
               <button
                 type="button"
                 onClick={() => setPreviewDevice("mobile")}
                 className={cn(
-                  "px-2.5 py-1 text-xs font-bold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  "px-3 py-1 text-xs font-bold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   previewDevice === "mobile"
                     ? "bg-primary text-primary-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -11311,7 +11311,7 @@ function SpecializedClassifiedEditor({
                 type="button"
                 onClick={() => setPreviewDevice("desktop")}
                 className={cn(
-                  "px-2.5 py-1 text-xs font-bold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  "px-3 py-1 text-xs font-bold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   previewDevice === "desktop"
                     ? "bg-primary text-primary-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -11322,7 +11322,7 @@ function SpecializedClassifiedEditor({
             </div>
           </div>
 
-          <div className="max-h-[calc(100vh-140px)] overflow-y-auto">
+          <div className="max-h-screen overflow-y-auto">
             {templateStyle === "conveniencia" || niche.id === "mercado" ? (
               <ConvenienceShowcaseView
                 classified={livePreviewClassified}
@@ -11415,7 +11415,7 @@ function SpecializedClassifiedEditor({
         <DialogContent className="max-w-3xl rounded-lg bg-card border border-border/60 p-0 overflow-hidden shadow-2xl">
           <DialogHeader className="p-4 sm:p-5 border-b border-border/40 bg-muted/20">
             <div className="flex items-center gap-2">
-              <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+              <div className="size-11 min-h-11 min-w-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
                 <Wand2 className="size-4" />
               </div>
               <div>
@@ -11429,14 +11429,17 @@ function SpecializedClassifiedEditor({
             </div>
           </DialogHeader>
 
-          <div className="p-4 sm:p-5 space-y-4 max-h-[70vh] overflow-y-auto">
+          <div className="p-4 sm:p-5 space-y-4 max-h-96 overflow-y-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Opção 1: Comercial & Direta */}
               {copilotSuggestions?.version1 && (
                 <div
+                  role="button"
+                  tabIndex={0}
                   onClick={() => setSelectedCopilotVersion("version1")}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedCopilotVersion("version1"); } }}
                   className={cn(
-                    "p-4 rounded-lg border text-left transition-colors cursor-pointer space-y-3",
+                    "p-4 rounded-lg border text-left transition-colors cursor-pointer space-y-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                     selectedCopilotVersion === "version1"
                       ? "border-primary bg-primary/5 ring-2 ring-primary/30"
                       : "border-border/60 bg-muted/10 hover:border-border hover:bg-muted/20"
@@ -11458,7 +11461,7 @@ function SpecializedClassifiedEditor({
 
                   <div>
                     <span className="text-xs uppercase font-semibold text-muted-foreground block">Título Sugerido</span>
-                    <h4 className="text-sm font-bold text-foreground mt-0.5 leading-snug">
+                    <h4 className="text-sm font-bold text-foreground mt-1 leading-snug">
                       {copilotSuggestions.version1.title}
                     </h4>
                   </div>
@@ -11475,9 +11478,12 @@ function SpecializedClassifiedEditor({
               {/* Opção 2: Storytelling & Detalhada */}
               {copilotSuggestions?.version2 && (
                 <div
+                  role="button"
+                  tabIndex={0}
                   onClick={() => setSelectedCopilotVersion("version2")}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedCopilotVersion("version2"); } }}
                   className={cn(
-                    "p-4 rounded-lg border text-left transition-colors cursor-pointer space-y-3",
+                    "p-4 rounded-lg border text-left transition-colors cursor-pointer space-y-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                     selectedCopilotVersion === "version2"
                       ? "border-primary bg-primary/5 ring-2 ring-primary/30"
                       : "border-border/60 bg-muted/10 hover:border-border hover:bg-muted/20"
@@ -11499,7 +11505,7 @@ function SpecializedClassifiedEditor({
 
                   <div>
                     <span className="text-xs uppercase font-semibold text-muted-foreground block">Título Sugerido</span>
-                    <h4 className="text-sm font-bold text-foreground mt-0.5 leading-snug">
+                    <h4 className="text-sm font-bold text-foreground mt-1 leading-snug">
                       {copilotSuggestions.version2.title}
                     </h4>
                   </div>
@@ -11516,11 +11522,11 @@ function SpecializedClassifiedEditor({
 
             {/* Tags Sugeridas */}
             {copilotSuggestions?.suggestedTags && copilotSuggestions.suggestedTags.length > 0 && (
-              <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-1.5">
+              <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-2">
                 <span className="text-xs uppercase font-semibold text-muted-foreground block">
                   Palavras-chave de Descoberta Sugeridas
                 </span>
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap gap-2">
                   {copilotSuggestions.suggestedTags.map((tag, idx) => (
                     <Badge key={idx} variant="secondary" className="text-xs font-mono">
                       #{tag}

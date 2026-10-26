@@ -32,22 +32,22 @@ export function SlideRenderer({
 }: SlideRendererProps) {
  const aspectClass =
  aspectRatio === '9:16'
- ? 'aspect-[9/16]'
+ ? 'aspect-story'
  : aspectRatio === '16:9'
- ? 'aspect-[16/9]'
+ ? 'aspect-video'
  : aspectRatio === '4:5'
- ? 'aspect-[4/5]'
+ ? 'aspect-portrait'
  : 'aspect-square';
 
  const isDark = slide.theme !== 'light';
- const bgColor = slide.backgroundColor || (isDark ? '#090d16' : '#ffffff');
- const accent = slide.accentColor || '#38bdf8';
+ const bgColor = slide.backgroundColor || (isDark ? 'var(--card)' : 'var(--background)');
+ const accent = slide.accentColor || 'var(--primary)';
 
  return (
  <div
- style={{ backgroundColor: bgColor }}
- className={`w-full ${aspectClass} rounded-lg p-8 flex flex-col justify-between relative overflow-hidden shadow-2xl border border-white/10 ${
- isDark ? 'text-white' : 'text-slate-900'
+ style={{ backgroundColor: `var(--slide-bg, ${bgColor})` }}
+ className={`w-full ${aspectClass} rounded-lg p-8 flex flex-col justify-between relative overflow-hidden border border-white/10 ${
+ isDark ? 'text-foreground' : 'text-foreground'
  } ${className}`}
  >
  {/* Background ambient glow */}
@@ -62,7 +62,7 @@ export function SlideRenderer({
  <div className="relative z-10 flex items-center justify-between">
  <div className="flex items-center gap-2">
  <div
- style={{ backgroundColor: accent }}
+ style={{ backgroundColor: `var(--slide-accent, ${accent})` }}
  className="w-2.5 h-2.5 rounded-full"
  />
  <span className="text-xs font-bold uppercase tracking-wider opacity-80">
@@ -73,7 +73,7 @@ export function SlideRenderer({
  {slide.badge && (
  <span
  style={{ borderColor: `${accent}40`, backgroundColor: `${accent}15`, color: accent }}
- className="px-3 py-1 rounded-full text-[11px] font-bold tracking-wide uppercase border flex items-center gap-1"
+ className="px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase border flex items-center gap-1"
  >
  <Layers className="w-3 h-3" />
  {slide.badge}
@@ -88,7 +88,7 @@ export function SlideRenderer({
  </h2>
  {slide.subtitle && (
  <p
- style={{ color: accent }}
+ style={{ color: `var(--slide-accent, ${accent})` }}
  className="text-sm sm:text-base font-semibold"
  >
  {slide.subtitle}
@@ -100,7 +100,7 @@ export function SlideRenderer({
  </p>
  )}
  {slide.imageUrl && (
- <div className="rounded-lg overflow-hidden border border-white/10 shadow-lg max-h-48 mt-2">
+ <div className="rounded-lg overflow-hidden border border-white/10 max-h-48 mt-2">
  <img
  src={slide.imageUrl}
  alt="Slide visual"
@@ -112,19 +112,19 @@ export function SlideRenderer({
 
  {/* Footer: Handle & CTA */}
  <div className="relative z-10 flex items-center justify-between pt-4 border-t border-white/10">
- <span className="text-[11px] font-medium opacity-60">
+ <span className="text-xs font-medium opacity-60">
  {brandHandle}
  </span>
  {slide.ctaText ? (
  <div
- style={{ backgroundColor: accent }}
- className="px-4 py-2 rounded-lg text-slate-950 text-xs font-bold flex items-center gap-2 shadow-lg"
+ style={{ backgroundColor: `var(--slide-accent-cta, ${accent})` }}
+ className="px-4 py-2 rounded-lg text-slate-950 text-xs font-bold flex items-center gap-2"
  >
  {slide.ctaText}
  <ArrowRight className="w-3.5 h-3.5" />
  </div>
  ) : (
- <span className="text-[10px] font-mono opacity-50">
+ <span className="text-xs font-mono opacity-50">
  Página {slide.index}
  </span>
  )}

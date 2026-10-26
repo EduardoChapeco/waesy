@@ -90,10 +90,10 @@ function QuickOpenRegisterInlineCard() {
  };
 
   return (
-  <div className="flex min-h-[70vh] items-center justify-center w-full sm:px-0 animate-in fade-in duration-200">
-  <div className="w-full max-w-md p-6 sm:p-10 bg-card sm:rounded-lg sm:border border-border/60 sm:shadow-sm space-y-6 text-center">
+  <div className="flex min-h-96 items-center justify-center w-full sm:px-0 animate-in fade-in duration-200">
+  <div className="w-full max-w-md p-6 sm:p-10 bg-card sm:rounded-lg sm:border border-border/60 sm: space-y-6 text-center">
  <div className="size-14 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto">
- <Banknote className="size-7" />
+ <Banknote className="h-11 min-h-11" />
  </div>
  <div className="space-y-1">
  <h2 className="text-xl font-bold text-foreground">Abertura de Caixa</h2>
@@ -121,7 +121,7 @@ function QuickOpenRegisterInlineCard() {
  key={val}
  type="button"
  onClick={() => setInitialAmountStr(val)}
- className={`px-3 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer border ${
+ className={`px-3 py-2 min-h-11 rounded-lg text-xs font-bold transition-colors cursor-pointer border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
  initialAmountStr === val
  ? "bg-primary text-primary-foreground border-primary"
  : "bg-muted/40 text-muted-foreground hover:text-foreground border-border/40"
@@ -139,7 +139,7 @@ function QuickOpenRegisterInlineCard() {
  value={notes}
  onChange={(e) => setNotes(e.target.value)}
  placeholder="Ex: Turno da Tarde / Balcão 1"
- className="text-xs rounded-lg h-10"
+ className="text-xs rounded-lg h-11 min-h-11"
  />
  </div>
 
@@ -148,7 +148,7 @@ function QuickOpenRegisterInlineCard() {
  disabled={isOpening}
  className="w-full text-xs font-bold rounded-lg h-11 bg-primary text-primary-foreground gap-2 cursor-pointer"
  >
- {isOpening ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />}
+ {isOpening ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> : <CheckCircle2 className="size-4" />}
  <span>{isOpening ? "Abrindo Turno..." : "Abrir Caixa & Iniciar Vendas"}</span>
  </Button>
  </form>
@@ -196,10 +196,10 @@ export const Route = createFileRoute("/workspace/pdv/")({
  (error instanceof Error ? error.message : String(error)).includes("CAIXA_EXPIRADO")
  ) {
   return (
-  <div className="flex min-h-[70vh] items-center justify-center w-full sm:px-0">
-  <div className="w-full max-w-md text-center bg-card sm:border border-destructive/30 p-8 sm:p-10 sm:rounded-lg space-y-5 sm:shadow-sm">
+  <div className="flex min-h-96 items-center justify-center w-full sm:px-0">
+  <div className="w-full max-w-md text-center bg-card sm:border border-destructive/30 p-8 sm:p-10 sm:rounded-lg space-y-5 sm:">
  <div className="size-16 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
- <MonitorPause className="size-8" />
+ <MonitorPause className="h-11 min-h-11" />
  </div>
  <div className="space-y-1">
  <h2 className="text-xl font-bold text-foreground">Turno Expirado (+24h)</h2>
@@ -881,10 +881,10 @@ function PdvTerminal() {
 
   if (activeRegister.isExpired) {
     return (
-      <div className="flex min-h-[70vh] items-center justify-center w-full px-4 sm:px-0 animate-in fade-in duration-200">
-        <div className="w-full max-w-md p-6 sm:p-10 bg-card sm:rounded-lg sm:border border-border/60 sm:shadow-sm space-y-6 text-center">
+      <div className="flex min-h-96 items-center justify-center w-full px-4 sm:px-0 animate-in fade-in duration-200">
+        <div className="w-full max-w-md p-6 sm:p-10 bg-card sm:rounded-lg sm:border border-border/60 sm: space-y-6 text-center">
           <div className="size-14 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center mx-auto">
-            <Clock className="size-7" />
+            <Clock className="h-11 min-h-11" />
           </div>
           <div className="space-y-1">
             <h2 className="text-xl font-bold text-foreground">Turno Expirado (+24h)</h2>
@@ -920,7 +920,7 @@ function PdvTerminal() {
             variant="ghost"
             size="sm"
             onClick={() => setCart([])}
-            className="h-8 px-3 rounded-lg text-xs font-semibold text-destructive hover:bg-destructive/10 cursor-pointer"
+            className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold text-destructive hover:bg-destructive/10 cursor-pointer"
           >
             Limpar
           </Button>
@@ -931,7 +931,7 @@ function PdvTerminal() {
       <ScrollArea className="flex-1 p-3">
         {cart.length === 0 ? (
           <div className="py-24 text-center text-muted-foreground space-y-2">
-            <ShoppingCart className="size-10 opacity-20 mx-auto" />
+            <ShoppingCart className="h-11 min-h-11 opacity-20 mx-auto" />
             <p className="text-xs font-bold text-foreground">Ticket Vazio</p>
             <p className="text-xs opacity-70">Toque nos produtos ao lado para adicionar</p>
           </div>
@@ -966,7 +966,7 @@ function PdvTerminal() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="size-9 sm:size-8 rounded-lg cursor-pointer"
+                      className="h-11 min-h-11 sm:h-11 min-h-11 rounded-lg cursor-pointer"
                       onClick={() => updateQty(item.id, -1)}
                     >
                       <Minus className="size-3.5" />
@@ -975,7 +975,7 @@ function PdvTerminal() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="size-9 sm:size-8 rounded-lg cursor-pointer"
+                      className="h-11 min-h-11 sm:h-11 min-h-11 rounded-lg cursor-pointer"
                       onClick={() => updateQty(item.id, 1)}
                     >
                       <Plus className="size-3.5" />
@@ -985,7 +985,7 @@ function PdvTerminal() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="size-9 sm:size-8 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
+                    className="h-11 min-h-11 sm:h-11 min-h-11 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
                     onClick={() => removeItem(item.id)}
                   >
                     <X className="size-4" />
@@ -1033,7 +1033,7 @@ function PdvTerminal() {
               size="sm"
               onClick={handleOpenCheckout}
               disabled={cart.length === 0}
-              className="w-full h-9 rounded-lg font-bold text-xs gap-2 cursor-pointer"
+              className="w-full h-11 min-h-11 rounded-lg font-bold text-xs gap-2 cursor-pointer"
             >
               <CreditCard className="size-3.5" />
               <span>Receber / Cobrar no Balcão [F4]</span>
@@ -1056,7 +1056,7 @@ function PdvTerminal() {
   );
 
  return (
- <div className="flex flex-col h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] overflow-hidden bg-background rounded-lg border border-border/80 shadow-xs">
+ <div className="flex flex-col h-full max-h-full overflow-hidden bg-background rounded-lg border border-border/80 shadow-xs">
  {/* ── BARRA SUPERIOR OPERACIONAL (POS Header) ── */}
  <header className="p-3 px-4 border-b border-border/70 bg-card flex flex-wrap items-center justify-between gap-3 shrink-0">
  <div className="flex items-center gap-3 flex-1 min-w-72 max-w-xl">
@@ -1067,7 +1067,7 @@ function PdvTerminal() {
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
  placeholder={semantics.searchItemPlaceholder || "Buscar por nome ou código de barras... [F2]"}
- className="pl-9 h-10 text-xs rounded-lg bg-background border-border/80 focus-visible:ring-1"
+ className="pl-9 h-11 min-h-11 text-xs rounded-lg bg-background border-border/80 focus-visible:ring-1"
  autoFocus
  />
  </div>
@@ -1082,7 +1082,7 @@ function PdvTerminal() {
  key={mode.id}
  type="button"
  onClick={() => setServiceMode(mode.id)}
- className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+ className={`px-3 py-2 min-h-11 rounded-lg text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
  isSelected
  ? "bg-primary text-primary-foreground shadow-xs"
  : "text-muted-foreground hover:text-foreground"
@@ -1104,7 +1104,7 @@ function PdvTerminal() {
  placeholder={currentModeObj.placeholder}
  value={tableOrComandaNumber}
  onChange={(e) => setTableOrComandaNumber(e.target.value)}
- className="h-9 text-xs rounded-lg font-mono text-center bg-background"
+ className="h-11 min-h-11 text-xs rounded-lg font-mono text-center bg-background"
  />
  </div>
  );
@@ -1118,7 +1118,7 @@ function PdvTerminal() {
  variant="outline"
  size="sm"
  onClick={() => openQuickMovement("sangria")}
- className="h-9 rounded-lg text-xs font-bold gap-1 px-3"
+ className="h-11 min-h-11 rounded-lg text-xs font-bold gap-1 px-3"
  title="Sangria Rápida [F7]"
  >
  <ArrowUpRight className="size-3.5 text-rose-500" />
@@ -1129,7 +1129,7 @@ function PdvTerminal() {
  variant="outline"
  size="sm"
  onClick={() => openQuickMovement("suprimento")}
- className="h-9 rounded-lg text-xs font-bold gap-1 px-3"
+ className="h-11 min-h-11 rounded-lg text-xs font-bold gap-1 px-3"
  title="Suprimento Rápido [F8]"
  >
  <ArrowDownLeft className="size-3.5 text-emerald-500" />
@@ -1140,7 +1140,7 @@ function PdvTerminal() {
  variant="outline"
  size="sm"
  onClick={handlePrintBlindClosing}
- className="h-9 rounded-lg text-xs font-bold gap-1 px-3 border-border/80 text-foreground hover:bg-muted"
+ className="h-11 min-h-11 rounded-lg text-xs font-bold gap-1 px-3 border-border/80 text-foreground hover:bg-muted"
  title="Fechamento de Turno"
  >
  <Printer className="size-3.5 text-primary" />
@@ -1151,14 +1151,13 @@ function PdvTerminal() {
  variant="ghost"
  size="icon"
  onClick={() => setShortcutsModalOpen(true)}
- className="size-9 rounded-lg text-muted-foreground hover:text-foreground"
+ className="h-11 min-h-11 rounded-lg text-muted-foreground hover:text-foreground"
  title="Atalhos de Teclado"
  >
  <Keyboard className="size-4" />
  </Button>
 
- <ModuleTourTrigger
- onClick={() => setIsTourOpen(true)}
+ <ModuleTourTrigger className="focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" onClick={() => setIsTourOpen(true)}
  label="Guia do PDV"
  />
 
@@ -1166,7 +1165,7 @@ function PdvTerminal() {
  variant="ghost"
  size="icon"
  onClick={toggleFullscreen}
- className="size-9 rounded-lg text-muted-foreground hover:text-foreground"
+ className="h-11 min-h-11 rounded-lg text-muted-foreground hover:text-foreground"
  title="Alternar Tela Cheia"
  >
  {isFullscreen ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
@@ -1176,7 +1175,7 @@ function PdvTerminal() {
  asChild
  variant="outline"
  size="sm"
- className="h-9 rounded-lg text-xs font-bold gap-1"
+ className="h-11 min-h-11 rounded-lg text-xs font-bold gap-1"
  title="Cozinha (KDS)"
  >
  <Link to="/workspace/pdv/cozinha">
@@ -1189,7 +1188,7 @@ function PdvTerminal() {
  asChild
  variant="outline"
  size="sm"
- className="h-9 rounded-lg text-xs font-bold gap-1"
+ className="h-11 min-h-11 rounded-lg text-xs font-bold gap-1"
  title="Comandas"
  >
  <Link to="/workspace/pdv/comandas">
@@ -1202,7 +1201,7 @@ function PdvTerminal() {
  asChild
  variant="outline"
  size="sm"
- className="h-9 rounded-lg text-xs font-bold gap-1"
+ className="h-11 min-h-11 rounded-lg text-xs font-bold gap-1"
  title="Mapa de Reservas do Salão"
  >
  <Link to="/workspace/reservas">
@@ -1215,7 +1214,7 @@ function PdvTerminal() {
  asChild
  variant="outline"
  size="sm"
- className="h-9 rounded-lg text-xs font-bold gap-1"
+ className="h-11 min-h-11 rounded-lg text-xs font-bold gap-1"
  >
  <Link to="/workspace/financeiro/caixa">
  <Clock className="size-3.5 text-emerald-500" />
@@ -1230,11 +1229,11 @@ function PdvTerminal() {
  {/* Coluna Esquerda: Catálogo Tátil de Produtos */}
  <div className="flex-1 flex flex-col min-w-0 border-r border-border/70 overflow-hidden">
  {/* Carrossel Tátil de Categorias */}
- <div className="p-3 sm:p-3 border-b border-border/70 bg-card/60 overflow-x-auto no-scrollbar flex items-center gap-2 shrink-0 snap-x snap-mandatory">
+ <div className="p-3 sm:p-3 border-b border-border/70 bg-card/60 overflow-x-auto scroll-area no-scrollbar flex items-center gap-2 shrink-0 snap-x snap-mandatory">
  <button
  type="button"
  onClick={() => setSelectedCategory("all")}
- className={`px-4 py-2 min-h-11 rounded-lg text-xs font-bold shrink-0 snap-start transition-all cursor-pointer ${
+ className={`px-4 py-2 min-h-11 rounded-lg text-xs font-bold shrink-0 snap-start transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
  selectedCategory === "all"
  ? "bg-foreground text-background shadow-xs"
  : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/70 border border-border/40"
@@ -1249,7 +1248,7 @@ function PdvTerminal() {
  key={cat}
  type="button"
  onClick={() => setSelectedCategory(cat)}
- className={`px-4 py-2 min-h-11 rounded-lg text-xs font-bold shrink-0 snap-start transition-all cursor-pointer ${
+ className={`px-4 py-2 min-h-11 rounded-lg text-xs font-bold shrink-0 snap-start transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
  selectedCategory === cat
  ? "bg-primary text-primary-foreground shadow-xs"
  : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/70 border border-border/40"
@@ -1265,7 +1264,7 @@ function PdvTerminal() {
  <div className="flex-1 p-4 overflow-y-auto no-scrollbar">
  {filteredProducts.length === 0 ? (
  <div className="py-24 text-center space-y-3 text-muted-foreground">
- <Search className="size-10 opacity-30 mx-auto" />
+ <Search className="h-11 min-h-11 opacity-30 mx-auto" />
  <p className="text-sm font-bold text-foreground">Nenhum produto encontrado</p>
  <p className="text-xs">Tente buscar por outro termo ou mude a categoria acima.</p>
  </div>
@@ -1285,7 +1284,7 @@ function PdvTerminal() {
  <div
  key={`${product.id}-${variant.id || "def"}`}
  onClick={() => handleProductClick(product, variant)}
- className={`relative rounded-lg bg-card border transition-all cursor-pointer flex flex-col justify-between overflow-hidden group select-none hover:shadow-xs hover:border-primary/50 active:scale-[0.98] ${
+ className={`relative rounded-lg bg-card border transition-colors cursor-pointer flex flex-col justify-between overflow-hidden group select-none hover:shadow-xs hover:border-primary/50 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
  inCartQty > 0 ? "border-primary ring-1 ring-primary/40" : "border-border/80"
  }`}
  >
@@ -1300,7 +1299,7 @@ function PdvTerminal() {
  />
  ) : (
  <div className="size-full flex flex-col items-center justify-center text-muted-foreground/40 bg-muted/20">
- <ImageIcon className="size-8 stroke-[1.5]" />
+ <ImageIcon className="size-8" strokeWidth={1.5} />
  </div>
  )}
 
@@ -1363,7 +1362,7 @@ function PdvTerminal() {
           <DialogHeader className="p-5 pb-3 border-b border-border/80 bg-muted/20">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                <div className="h-11 min-h-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                   <Armchair className="size-5" />
                 </div>
                 <div>
@@ -1385,7 +1384,7 @@ function PdvTerminal() {
                     setIsFloorPlanModalOpen(false);
                     toast.info("Atendimento alterado para Balcão");
                   }}
-                  className="text-xs h-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+                  className="text-xs h-11 min-h-11 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
                 >
                   Desvincular Mesa
                 </Button>
@@ -1393,7 +1392,7 @@ function PdvTerminal() {
             </div>
           </DialogHeader>
 
-          <div className="p-5 space-y-4 max-h-[75vh] overflow-y-auto">
+          <div className="p-5 space-y-4 max-h-screen overflow-y-auto">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {((floorPlan?.tables as any[]) || [
                 { id: "m1", label: "Mesa 01", seats: 4 },
@@ -1420,7 +1419,7 @@ function PdvTerminal() {
                       setIsFloorPlanModalOpen(false);
                       toast.success(`${table.label} selecionada para atendimento`);
                     }}
-                    className={`flex flex-col items-center justify-center p-4 rounded-lg border text-center transition-all cursor-pointer min-h-[96px] ${
+                    className={`flex flex-col items-center justify-center p-4 rounded-lg border text-center transition-colors cursor-pointer min-h-24 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                       isSelected
                         ? "bg-primary/10 border-primary text-primary shadow-xs ring-2 ring-primary/20"
                         : "bg-card border-border/70 hover:border-primary/50 hover:bg-muted/30 text-foreground"
@@ -1488,7 +1487,7 @@ function PdvTerminal() {
  key={count}
  type="button"
  onClick={() => handleSplitBillByPeople(count)}
- className={`flex-1 py-2 px-2 rounded-lg text-xs font-bold font-mono transition-all cursor-pointer border ${
+ className={`flex-1 py-2 px-2 min-h-11 rounded-lg text-xs font-bold font-mono transition-colors cursor-pointer border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
  splitCount === count
  ? "bg-primary text-primary-foreground border-primary shadow-xs"
  : "bg-card border-border/70 hover:bg-muted text-muted-foreground hover:text-foreground"
@@ -1515,7 +1514,7 @@ function PdvTerminal() {
  key={m.id}
  type="button"
  onClick={() => setSelectedPaymentMethod(m.id as any)}
- className={`p-3 rounded-lg border flex flex-col items-center justify-center gap-2 text-xs font-bold transition-all cursor-pointer ${
+ className={`p-3 min-h-11 rounded-lg border flex flex-col items-center justify-center gap-2 text-xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
  active
  ? "border-primary bg-primary/10 text-primary shadow-xs"
  : "border-border/70 hover:bg-muted/40 text-foreground"
@@ -1558,7 +1557,7 @@ function PdvTerminal() {
                     key={val}
                     type="button"
                     onClick={() => setPaymentAmountInput(`${val},00`)}
-                    className="flex-1 h-10 sm:h-9 rounded-lg border border-border/80 text-xs font-bold font-mono hover:bg-muted active:scale-95 transition-all flex items-center justify-center cursor-pointer"
+                    className="flex-1 h-11 min-h-11 rounded-lg border border-border/80 text-xs font-bold font-mono hover:bg-muted active:scale-95 transition-colors flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   >
                     R$ {val}
                   </button>
@@ -1591,7 +1590,7 @@ function PdvTerminal() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="size-8 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
+                        className="h-11 min-h-11 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
                         onClick={() => handleRemoveSplitPayment(idx)}
                       >
                         <Trash2 className="size-3.5" />
@@ -1612,7 +1611,7 @@ function PdvTerminal() {
  placeholder="Ex: 000.000.000-00"
  value={customerDoc}
  onChange={(e) => setCustomerDoc(e.target.value)}
- className="h-10 text-xs rounded-lg font-mono"
+ className="h-11 min-h-11 text-xs rounded-lg font-mono"
  />
  </div>
  </div>
@@ -1722,7 +1721,7 @@ function PdvTerminal() {
               className="w-full h-11 rounded-lg text-xs font-bold gap-2 border-primary/40 text-foreground hover:bg-primary/5 cursor-pointer shadow-2xs"
             >
               {isPrintingDirectEscPos ? (
-                <Loader2 className="size-4 animate-spin text-primary" />
+                <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-primary" />
               ) : (
                 <Printer className="size-4 text-primary" />
               )}
@@ -1791,7 +1790,7 @@ function PdvTerminal() {
  <DialogFooter>
  <Button
  onClick={() => setShortcutsModalOpen(false)}
- className="w-full h-10 rounded-lg text-xs font-bold"
+ className="w-full h-11 min-h-11 rounded-lg text-xs font-bold"
  >
  Fechar
  </Button>
@@ -1820,7 +1819,7 @@ function PdvTerminal() {
  placeholder="Ex: 50,00"
  value={quickMovementAmount}
  onChange={(e) => setQuickMovementAmount(e.target.value)}
- className="h-10 text-sm font-mono rounded-lg"
+ className="h-11 min-h-11 text-sm font-mono rounded-lg"
  autoFocus
  />
  </div>
@@ -1835,7 +1834,7 @@ function PdvTerminal() {
  }
  value={quickMovementReason}
  onChange={(e) => setQuickMovementReason(e.target.value)}
- className="h-10 text-xs rounded-lg"
+ className="h-11 min-h-11 text-xs rounded-lg"
  />
  </div>
 
@@ -1844,13 +1843,13 @@ function PdvTerminal() {
  type="button"
  variant="outline"
  onClick={() => setQuickMovementModalOpen(false)}
- className="h-10 rounded-lg text-xs"
+ className="h-11 min-h-11 rounded-lg text-xs"
  >
  Cancelar
  </Button>
  <Button
  type="submit"
- className="h-10 rounded-lg text-xs font-bold bg-primary text-primary-foreground"
+ className="h-11 min-h-11 rounded-lg text-xs font-bold bg-primary text-primary-foreground"
  >
  Confirmar {quickMovementType === "sangria" ? "Sangria" : "Suprimento"}
  </Button>
@@ -1881,7 +1880,7 @@ function PdvTerminal() {
 
       {/* ── MODAL DIGITAL COMPANION CARD 9:16 (COMPROVANTE DE BALCÃO / CARNÊ WHATSAPP) ── */}
       <Dialog open={companionCardOpen} onOpenChange={setCompanionCardOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-lg bg-background border border-border shadow-xs">
+        <DialogContent className="max-w-4xl max-h-screen overflow-y-auto p-4 sm:p-6 rounded-lg bg-background border border-border shadow-xs">
           <DialogHeader className="sr-only">
             <DialogTitle>Comprovante Digital 9:16 de Venda</DialogTitle>
           </DialogHeader>
@@ -1906,7 +1905,7 @@ function PdvTerminal() {
       {cart.length > 0 && (
         <div className="lg:hidden fixed bottom-3 inset-x-3 z-40 p-3 rounded-lg bg-card/95 backdrop-blur-md border border-border shadow-xs flex items-center justify-between gap-3 animate-in slide-in-from-bottom-3">
           <div className="flex items-center gap-3 min-w-0 pl-1">
-            <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <div className="h-11 min-h-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
               <ShoppingCart className="size-4" />
             </div>
             <div className="truncate">
@@ -1921,7 +1920,7 @@ function PdvTerminal() {
           <Button
             size="sm"
             onClick={() => setMobileTicketOpen(true)}
-            className="h-10 px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground shrink-0 gap-2 shadow-xs cursor-pointer"
+            className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground shrink-0 gap-2 shadow-xs cursor-pointer"
           >
             <span>Ver Ticket / Cobrar</span>
             <ArrowUpRight className="size-3.5" />

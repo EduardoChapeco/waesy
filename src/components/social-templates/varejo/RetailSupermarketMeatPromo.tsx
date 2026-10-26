@@ -7,7 +7,7 @@ import React from "react";
 import { formatMoney } from "@/lib/money";
 import type { SocialTemplateProps } from "../types";
 
-export function RetailSupermarketMeatPromo({ data, scale = 1, className = "" }: SocialTemplateProps) {
+export function RetailSupermarketMeatPromo({ data, className = "" }: SocialTemplateProps) {
   const isNineSixteen = data.aspectRatio === "9:16";
   const canvasWidth = isNineSixteen ? 1080 : data.aspectRatio === "4:5" ? 1080 : 1080;
   const canvasHeight = isNineSixteen ? 1920 : data.aspectRatio === "4:5" ? 1350 : 1080;
@@ -17,9 +17,7 @@ export function RetailSupermarketMeatPromo({ data, scale = 1, className = "" }: 
       style={{
         width: `${canvasWidth}px`,
         height: `${canvasHeight}px`,
-        transform: `scale(${scale})`,
-        transformOrigin: "top left",
-      }}
+              }}
       className={`relative bg-[#E62429] text-white overflow-hidden font-sans select-none flex flex-col justify-between p-10 ${className}`}
     >
       {/* ── 1. Topo: Identidade da Loja e Título OFERTAS ── */}

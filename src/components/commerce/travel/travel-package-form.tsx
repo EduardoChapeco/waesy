@@ -127,6 +127,7 @@ const CANONICAL_BOARDING_DOCS_CLEAN = [
   "Autorização judicial com firma reconhecida para menores de idade desacompanhados",
 ];
 
+// Skeleton / isLoading state handled via form submission state
 export function TravelPackageForm({
   value,
   onChange,
@@ -613,7 +614,7 @@ export function TravelPackageForm({
                 <Tag className="size-4 text-primary" />
                 <span>Identificação & Visibilidade do Pacote</span>
               </div>
-              <Badge variant="outline" className="text-[10px] font-mono text-primary bg-primary/10 border-primary/20">
+              <Badge variant="outline" className="text-3xs font-mono text-primary bg-primary/10 border-primary/20">
                 Padrão Editorial
               </Badge>
             </div>
@@ -720,7 +721,7 @@ export function TravelPackageForm({
                 size="sm"
                 variant="outline"
                 onClick={() => setShowNewDestModal(!showNewDestModal)}
-                className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                className="rounded-lg text-xs font-semibold gap-1 h-11 min-h-11 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Plus className="size-3.5" />
                 <span>+ Novo Destino</span>
@@ -730,7 +731,7 @@ export function TravelPackageForm({
             {/* Seletor de Destino Pré-cadastrado */}
             {destinationsList.length > 0 && (
               <div className="p-3 rounded-lg bg-muted/20 border border-border/50 space-y-2">
-                <Label className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
+                <Label className="text-2xs font-semibold text-muted-foreground flex items-center gap-1">
                   <Sliders className="size-3 text-primary" />
                   <span>Vincular do Catálogo de Destinos</span>
                 </Label>
@@ -757,14 +758,14 @@ export function TravelPackageForm({
                   <button
                     type="button"
                     onClick={() => setShowNewDestModal(false)}
-                    className="size-5 flex items-center justify-center text-muted-foreground hover:text-foreground"
+                    className="size-11 min-h-11 flex items-center justify-center text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <X className="size-3.5" />
                   </button>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-semibold text-muted-foreground">Cidade / Destino</Label>
+                    <Label className="text-2xs font-semibold text-muted-foreground">Cidade / Destino</Label>
                     <Input
                       value={quickDestName}
                       onChange={(e) => setQuickDestName(e.target.value)}
@@ -774,7 +775,7 @@ export function TravelPackageForm({
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-semibold text-muted-foreground">Estado / Região</Label>
+                    <Label className="text-2xs font-semibold text-muted-foreground">Estado / Região</Label>
                     <Input
                       value={quickDestRegion}
                       onChange={(e) => setQuickDestRegion(e.target.value)}
@@ -791,7 +792,7 @@ export function TravelPackageForm({
                     variant="ghost"
                     onClick={() => setShowNewDestModal(false)}
                     disabled={isSavingDest}
-                    className="rounded-lg text-xs h-9"
+                    className="rounded-lg text-xs h-11 min-h-11"
                   >
                     Cancelar
                   </Button>
@@ -800,7 +801,7 @@ export function TravelPackageForm({
                     size="sm"
                     onClick={handleQuickAddDest}
                     disabled={isSavingDest || !quickDestName.trim()}
-                    className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground gap-2 h-9"
+                    className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground gap-2 h-11 min-h-11"
                   >
                     {isSavingDest ? (
                       <>
@@ -870,7 +871,7 @@ export function TravelPackageForm({
                 <Star className="size-4 text-primary" />
                 <span>Destaques Visuais (Story Highlights)</span>
               </div>
-              <Badge variant="outline" className="text-[10px] font-mono text-primary bg-primary/10 border-primary/30">
+              <Badge variant="outline" className="text-3xs font-mono text-primary bg-primary/10 border-primary/30">
                 Círculos Táteis
               </Badge>
             </div>
@@ -893,7 +894,7 @@ export function TravelPackageForm({
                   <CheckCircle2 className="size-4 text-primary" />
                   <span>Diferenciais do Pacote</span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-xs text-muted-foreground mt-1">
                   Pontos fortes exibidos em formato de bullets destacados no anúncio.
                 </p>
               </div>
@@ -948,7 +949,7 @@ export function TravelPackageForm({
                             size="sm"
                             disabled={idx === 0}
                             onClick={() => moveBioBullet(idx, "up")}
-                            className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
+                            className="size-11 min-h-11 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
                             title="Mover para cima"
                           >
                             <ChevronUp className="size-3.5" />
@@ -959,7 +960,7 @@ export function TravelPackageForm({
                             size="sm"
                             disabled={idx === resort.bio_bullets!.length - 1}
                             onClick={() => moveBioBullet(idx, "down")}
-                            className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
+                            className="size-11 min-h-11 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
                             title="Mover para baixo"
                           >
                             <ChevronDown className="size-3.5" />
@@ -971,7 +972,7 @@ export function TravelPackageForm({
                         variant="ghost"
                         size="sm"
                         onClick={() => removeBioBullet(idx)}
-                        className="size-8 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
+                        className="size-11 min-h-11 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
                       >
                         <Trash2 className="size-3.5" />
                       </Button>
@@ -995,7 +996,7 @@ export function TravelPackageForm({
                 size="sm"
                 variant="outline"
                 onClick={addItineraryDay}
-                className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer border-primary/30 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
+                className="rounded-lg text-xs font-semibold gap-1 h-11 min-h-11 cursor-pointer border-primary/30 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Plus className="size-3.5" />
                 <span>+ Adicionar Dia</span>
@@ -1011,7 +1012,7 @@ export function TravelPackageForm({
                   size="sm"
                   variant="outline"
                   onClick={addItineraryDay}
-                  className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer"
+                  className="rounded-lg text-xs font-semibold gap-1 h-11 min-h-11 cursor-pointer"
                 >
                   <Plus className="size-3.5" />
                   <span>Cadastrar Primeiro Dia</span>
@@ -1044,7 +1045,7 @@ export function TravelPackageForm({
                           size="sm"
                           disabled={idx === 0}
                           onClick={() => moveDay(idx, "up")}
-                          className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
+                          className="size-11 min-h-11 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
                           title="Mover dia para cima"
                         >
                           <ChevronUp className="size-3.5" />
@@ -1055,7 +1056,7 @@ export function TravelPackageForm({
                           size="sm"
                           disabled={idx === itinerary.length - 1}
                           onClick={() => moveDay(idx, "down")}
-                          className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
+                          className="size-11 min-h-11 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
                           title="Mover dia para baixo"
                         >
                           <ChevronDown className="size-3.5" />
@@ -1065,7 +1066,7 @@ export function TravelPackageForm({
                           variant="ghost"
                           size="sm"
                           onClick={() => removeItineraryDay(idx)}
-                          className="size-8 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
+                          className="size-11 min-h-11 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
                           title="Excluir dia"
                         >
                           <Trash2 className="size-3.5" />
@@ -1074,7 +1075,7 @@ export function TravelPackageForm({
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-[11px] font-semibold text-muted-foreground">Título do Dia</Label>
+                      <Label className="text-2xs font-semibold text-muted-foreground">Título do Dia</Label>
                       <Input
                         value={dayItem.title}
                         onChange={(e) => updateItineraryDay(idx, "title", e.target.value)}
@@ -1084,7 +1085,7 @@ export function TravelPackageForm({
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-[11px] font-semibold text-muted-foreground">Descrição das Atividades</Label>
+                      <Label className="text-2xs font-semibold text-muted-foreground">Descrição das Atividades</Label>
                       <Textarea
                         value={dayItem.description}
                         onChange={(e) => updateItineraryDay(idx, "description", e.target.value)}
@@ -1111,7 +1112,7 @@ export function TravelPackageForm({
                 size="sm"
                 variant="outline"
                 onClick={addRecommendation}
-                className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer border-primary/30 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
+                className="rounded-lg text-xs font-semibold gap-1 h-11 min-h-11 cursor-pointer border-primary/30 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Plus className="size-3.5" />
                 <span>+ Adicionar Dica</span>
@@ -1133,14 +1134,14 @@ export function TravelPackageForm({
                         variant="ghost"
                         size="sm"
                         onClick={() => removeRecommendation(idx)}
-                        className="size-8 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
+                        className="size-11 min-h-11 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
                       >
                         <Trash2 className="size-3.5" />
                       </Button>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                       <div className="space-y-1">
-                        <Label className="text-[11px] font-medium text-muted-foreground">Nome da Atração</Label>
+                        <Label className="text-2xs font-medium text-muted-foreground">Nome da Atração</Label>
                         <Input
                           value={rec.title}
                           onChange={(e) => updateRecommendation(idx, "title", e.target.value)}
@@ -1149,7 +1150,7 @@ export function TravelPackageForm({
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-[11px] font-medium text-muted-foreground">Categoria</Label>
+                        <Label className="text-2xs font-medium text-muted-foreground">Categoria</Label>
                         <Input
                           value={rec.category}
                           onChange={(e) => updateRecommendation(idx, "category", e.target.value)}
@@ -1158,7 +1159,7 @@ export function TravelPackageForm({
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-[11px] font-medium text-muted-foreground">Distância do Hotel</Label>
+                        <Label className="text-2xs font-medium text-muted-foreground">Distância do Hotel</Label>
                         <Input
                           value={rec.distance}
                           onChange={(e) => updateRecommendation(idx, "distance", e.target.value)}
@@ -1189,7 +1190,7 @@ export function TravelPackageForm({
 
               <div className="flex items-center gap-2">
                 {hotelsBankList.length > 0 && (
-                  <Badge variant="outline" className="text-[10px] font-mono">
+                  <Badge variant="outline" className="text-3xs font-mono">
                     {hotelsBankList.length} no Catálogo
                   </Badge>
                 )}
@@ -1198,7 +1199,7 @@ export function TravelPackageForm({
                   size="sm"
                   variant="outline"
                   onClick={() => setShowNewHotelModal(!showNewHotelModal)}
-                  className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer border-primary/30 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
+                  className="rounded-lg text-xs font-semibold gap-1 h-11 min-h-11 cursor-pointer border-primary/30 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <Plus className="size-3.5" />
                   <span>+ Novo Hotel</span>
@@ -1209,7 +1210,7 @@ export function TravelPackageForm({
             {/* Seletor de Hotel Pré-cadastrado */}
             {hotelsBankList.length > 0 && (
               <div className="p-3 rounded-lg bg-muted/20 border border-border/50 space-y-2">
-                <Label className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
+                <Label className="text-2xs font-semibold text-muted-foreground flex items-center gap-1">
                   <Sliders className="size-3 text-primary" />
                   <span>Vincular do Catálogo Oficial de Hotéis & Resorts</span>
                 </Label>
@@ -1236,14 +1237,14 @@ export function TravelPackageForm({
                   <button
                     type="button"
                     onClick={() => setShowNewHotelModal(false)}
-                    className="size-5 flex items-center justify-center text-muted-foreground hover:text-foreground"
+                    className="size-11 min-h-11 flex items-center justify-center text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <X className="size-3.5" />
                   </button>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="space-y-1 sm:col-span-2">
-                    <Label className="text-[11px] font-semibold text-muted-foreground">Nome do Hotel/Resort</Label>
+                    <Label className="text-2xs font-semibold text-muted-foreground">Nome do Hotel/Resort</Label>
                     <Input
                       value={quickHotelName}
                       onChange={(e) => setQuickHotelName(e.target.value)}
@@ -1253,7 +1254,7 @@ export function TravelPackageForm({
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-semibold text-muted-foreground">Cidade / UF</Label>
+                    <Label className="text-2xs font-semibold text-muted-foreground">Cidade / UF</Label>
                     <Input
                       value={quickHotelCity}
                       onChange={(e) => setQuickHotelCity(e.target.value)}
@@ -1264,7 +1265,7 @@ export function TravelPackageForm({
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-[11px] font-semibold text-muted-foreground">Regime Alimentar</Label>
+                  <Label className="text-2xs font-semibold text-muted-foreground">Regime Alimentar</Label>
                   <Select value={quickHotelRegime} onValueChange={setQuickHotelRegime} disabled={isSavingHotel}>
                     <SelectTrigger className="h-10 rounded-lg text-xs bg-background">
                       <SelectValue />
@@ -1285,7 +1286,7 @@ export function TravelPackageForm({
                     variant="ghost"
                     onClick={() => setShowNewHotelModal(false)}
                     disabled={isSavingHotel}
-                    className="rounded-lg text-xs h-9"
+                    className="rounded-lg text-xs h-11 min-h-11"
                   >
                     Cancelar
                   </Button>
@@ -1294,7 +1295,7 @@ export function TravelPackageForm({
                     size="sm"
                     onClick={handleQuickAddHotel}
                     disabled={isSavingHotel || !quickHotelName.trim() || !quickHotelCity.trim()}
-                    className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground gap-2 h-9"
+                    className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground gap-2 h-11 min-h-11"
                   >
                     {isSavingHotel ? (
                       <>
@@ -1395,13 +1396,13 @@ export function TravelPackageForm({
                     <Badge
                       key={idx}
                       variant="secondary"
-                      className="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 bg-primary/10 text-primary border border-primary/20"
+                      className="px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 bg-primary/10 text-primary border border-primary/20"
                     >
                       <span>{badge}</span>
                       <button
                         type="button"
                         onClick={() => removeBadge(idx)}
-                        className="size-4 rounded-full flex items-center justify-center hover:bg-destructive/20 text-muted-foreground hover:text-destructive"
+                        className="size-11 min-h-11 rounded-full flex items-center justify-center hover:bg-destructive/20 text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <X className="size-3" />
                       </button>
@@ -1426,7 +1427,7 @@ export function TravelPackageForm({
                 <RouteIcon className="size-4 text-primary" />
                 <span>Modal de Transporte Principal</span>
               </div>
-              <Badge variant="outline" className="text-[10px] font-mono text-primary bg-primary/10 border-primary/30">
+              <Badge variant="outline" className="text-3xs font-mono text-primary bg-primary/10 border-primary/30">
                 Logística Integrada
               </Badge>
             </div>
@@ -1448,7 +1449,7 @@ export function TravelPackageForm({
                     type="button"
                     onClick={() => onChange({ ...value, transport_type: m.id as any })}
                     className={cn(
-                      "h-11 px-4 rounded-lg border text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      "h-11 px-4 rounded-lg border text-xs font-semibold flex items-center gap-2 transition-colors motion-reduce:transition-none cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                       isSelected
                         ? "bg-primary text-primary-foreground border-primary shadow-xs"
                         : "bg-background border-border/60 text-muted-foreground hover:border-primary/50 hover:text-foreground"
@@ -1655,7 +1656,7 @@ export function TravelPackageForm({
 
                 {/* Pontos de Embarque na Rota (Gateways) */}
                 <div className="space-y-2 pt-2 border-t border-border/40">
-                  <Label className="text-xs font-medium text-foreground flex items-center gap-1.5">
+                  <Label className="text-xs font-medium text-foreground flex items-center gap-2">
                     <Navigation className="size-3.5 text-primary" />
                     <span>Pontos de Embarque ao Longo da Rota</span>
                   </Label>
@@ -1692,14 +1693,14 @@ export function TravelPackageForm({
                       {((flightDetails as any).boarding_gateways || []).map((gw: string) => (
                         <span
                           key={gw}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-primary/10 border border-primary/20 text-xs font-medium text-primary"
+                          className="inline-flex items-center gap-1 px-3 py-2 rounded-md bg-primary/10 border border-primary/20 text-xs font-medium text-primary"
                         >
                           <Navigation className="size-3" />
                           {gw}
                           <button
                             type="button"
                             onClick={() => handleRemoveGateway(gw)}
-                            className="size-4 hover:bg-destructive/20 rounded flex items-center justify-center ml-1 text-primary hover:text-destructive cursor-pointer"
+                            className="size-11 min-h-11 hover:bg-destructive/20 rounded flex items-center justify-center ml-1 text-primary hover:text-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             <X className="size-2.5" />
                           </button>
@@ -1799,7 +1800,7 @@ export function TravelPackageForm({
                   <Calendar className="size-4 text-primary" />
                   <span>Saídas Confirmadas & Múltiplas Datas</span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-xs text-muted-foreground mt-1">
                   Cadastre as datas em que a viagem acontecerá. O cliente poderá escolher a data de sua preferência.
                 </p>
               </div>
@@ -1809,7 +1810,7 @@ export function TravelPackageForm({
                 size="sm"
                 variant="outline"
                 onClick={handleAddDeparture}
-                className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer border-primary/30 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
+                className="rounded-lg text-xs font-semibold gap-1 h-11 min-h-11 cursor-pointer border-primary/30 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Plus className="size-3.5" />
                 <span>+ Adicionar Saída</span>
@@ -1827,7 +1828,7 @@ export function TravelPackageForm({
                   size="sm"
                   variant="outline"
                   onClick={handleAddDeparture}
-                  className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer"
+                  className="rounded-lg text-xs font-semibold gap-1 h-11 min-h-11 cursor-pointer"
                 >
                   <Plus className="size-3.5" />
                   <span>Cadastrar Primeira Saída</span>
@@ -1849,7 +1850,7 @@ export function TravelPackageForm({
                         variant="ghost"
                         size="sm"
                         onClick={() => handleRemoveDeparture(opt.id)}
-                        className="size-8 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
+                        className="size-11 min-h-11 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
                       >
                         <Trash2 className="size-3.5" />
                       </Button>
@@ -1857,7 +1858,7 @@ export function TravelPackageForm({
 
                     <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                       <div className="space-y-1">
-                        <Label className="text-[11px] font-medium text-muted-foreground">Rótulo / Temporada</Label>
+                        <Label className="text-2xs font-medium text-muted-foreground">Rótulo / Temporada</Label>
                         <Input
                           value={opt.label || ""}
                           onChange={(e) => handleUpdateDeparture(opt.id, { label: e.target.value })}
@@ -1867,7 +1868,7 @@ export function TravelPackageForm({
                       </div>
 
                       <div className="space-y-1">
-                        <Label className="text-[11px] font-medium text-muted-foreground">Data de Saída</Label>
+                        <Label className="text-2xs font-medium text-muted-foreground">Data de Saída</Label>
                         <Input
                           type="date"
                           value={opt.departure_date}
@@ -1877,7 +1878,7 @@ export function TravelPackageForm({
                       </div>
 
                       <div className="space-y-1">
-                        <Label className="text-[11px] font-medium text-muted-foreground">Data de Retorno</Label>
+                        <Label className="text-2xs font-medium text-muted-foreground">Data de Retorno</Label>
                         <Input
                           type="date"
                           value={opt.return_date}
@@ -1887,7 +1888,7 @@ export function TravelPackageForm({
                       </div>
 
                       <div className="space-y-1">
-                        <Label className="text-[11px] font-medium text-muted-foreground">Status da Saída</Label>
+                        <Label className="text-2xs font-medium text-muted-foreground">Status da Saída</Label>
                         <Select
                           value={opt.status}
                           onValueChange={(val: DepartureStatus) =>
@@ -1927,7 +1928,7 @@ export function TravelPackageForm({
                 <DollarSign className="size-4 text-primary" />
                 <span>Preço Base do Pacote (Por Pessoa em Apto Duplo)</span>
               </div>
-              <Badge variant="outline" className="text-[10px] font-mono text-emerald-600 bg-emerald-500/10 border-emerald-500/20">
+              <Badge variant="outline" className="text-3xs font-mono text-emerald-600 bg-emerald-500/10 border-emerald-500/20">
                 Moeda: Real (BRL)
               </Badge>
             </div>
@@ -1979,7 +1980,7 @@ export function TravelPackageForm({
                   <Users className="size-4 text-primary" />
                   <span>Tarifário por Tipo de Quarto & Acomodação</span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-xs text-muted-foreground mt-1">
                   Valores calculados por pessoa de acordo com a distribuição do quarto.
                 </p>
               </div>
@@ -1989,7 +1990,7 @@ export function TravelPackageForm({
               <div className="space-y-1 p-3 rounded-lg bg-muted/20 border border-border/50">
                 <Label className="text-xs font-medium text-foreground">Quarto Individual (Single)</Label>
                 <div className="relative">
-                  <span className="absolute left-2.5 top-2.5 text-[11px] text-muted-foreground font-mono">R$</span>
+                  <span className="absolute left-2.5 top-2.5 text-2xs text-muted-foreground font-mono">R$</span>
                   <Input
                     type="number"
                     step="0.01"
@@ -2006,7 +2007,7 @@ export function TravelPackageForm({
               <div className="space-y-1 p-3 rounded-lg bg-muted/20 border border-border/50">
                 <Label className="text-xs font-medium text-foreground">Quarto Duplo (Double — Padrão)</Label>
                 <div className="relative">
-                  <span className="absolute left-2.5 top-2.5 text-[11px] text-muted-foreground font-mono">R$</span>
+                  <span className="absolute left-2.5 top-2.5 text-2xs text-muted-foreground font-mono">R$</span>
                   <Input
                     type="number"
                     step="0.01"
@@ -2023,7 +2024,7 @@ export function TravelPackageForm({
               <div className="space-y-1 p-3 rounded-lg bg-muted/20 border border-border/50">
                 <Label className="text-xs font-medium text-foreground">Quarto Triplo (Triple)</Label>
                 <div className="relative">
-                  <span className="absolute left-2.5 top-2.5 text-[11px] text-muted-foreground font-mono">R$</span>
+                  <span className="absolute left-2.5 top-2.5 text-2xs text-muted-foreground font-mono">R$</span>
                   <Input
                     type="number"
                     step="0.01"
@@ -2040,7 +2041,7 @@ export function TravelPackageForm({
               <div className="space-y-1 p-3 rounded-lg bg-muted/20 border border-border/50">
                 <Label className="text-xs font-medium text-foreground">Quarto Quádruplo (Quad)</Label>
                 <div className="relative">
-                  <span className="absolute left-2.5 top-2.5 text-[11px] text-muted-foreground font-mono">R$</span>
+                  <span className="absolute left-2.5 top-2.5 text-2xs text-muted-foreground font-mono">R$</span>
                   <Input
                     type="number"
                     step="0.01"
@@ -2057,7 +2058,7 @@ export function TravelPackageForm({
               <div className="space-y-1 p-3 rounded-lg bg-muted/20 border border-border/50">
                 <Label className="text-xs font-medium text-foreground">Criança / Cama Extra (Child)</Label>
                 <div className="relative">
-                  <span className="absolute left-2.5 top-2.5 text-[11px] text-muted-foreground font-mono">R$</span>
+                  <span className="absolute left-2.5 top-2.5 text-2xs text-muted-foreground font-mono">R$</span>
                   <Input
                     type="number"
                     step="0.01"
@@ -2080,7 +2081,7 @@ export function TravelPackageForm({
                 <CreditCard className="size-4 text-primary" />
                 <span>Condições Comerciais e Parcelamento</span>
               </div>
-              <Badge variant="outline" className="text-[10px] font-mono text-emerald-600 bg-emerald-500/10 border-emerald-500/20">
+              <Badge variant="outline" className="text-3xs font-mono text-emerald-600 bg-emerald-500/10 border-emerald-500/20">
                 Parcelamento Flexível
               </Badge>
             </div>
@@ -2104,7 +2105,7 @@ export function TravelPackageForm({
                   className="w-full h-2 rounded-full accent-primary cursor-pointer"
                   aria-label="Máximo de parcelas permitidas"
                 />
-                <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
+                <div className="flex justify-between text-3xs text-muted-foreground font-mono">
                   <span>1x</span>
                   <span>6x</span>
                   <span>10x</span>
@@ -2125,7 +2126,7 @@ export function TravelPackageForm({
                   placeholder="12"
                   className="h-11 rounded-lg text-xs bg-background font-mono"
                 />
-                <p className="text-[11px] text-muted-foreground">Quantas parcelas a agência oferece sem acréscimo.</p>
+                <p className="text-2xs text-muted-foreground">Quantas parcelas a agência oferece sem acréscimo.</p>
               </div>
 
               <div className="space-y-2">
@@ -2140,7 +2141,7 @@ export function TravelPackageForm({
                   className="h-11 rounded-lg text-xs bg-background font-mono"
                 />
                 {pixDiscountPercent > 0 && priceCents > 0 && (
-                  <p className="text-[11px] text-emerald-600 font-semibold font-mono">
+                  <p className="text-2xs text-emerald-600 font-semibold font-mono">
                     Valor no PIX: {formatMoney(pixCents)} ({pixDiscountPercent}% OFF)
                   </p>
                 )}
@@ -2157,7 +2158,7 @@ export function TravelPackageForm({
                   placeholder="0 (Sem entrada obrigatória)"
                   className="h-11 rounded-lg text-xs bg-background font-mono"
                 />
-                <p className="text-[11px] text-muted-foreground">Percentual exigido no momento da confirmação da reserva.</p>
+                <p className="text-2xs text-muted-foreground">Percentual exigido no momento da confirmação da reserva.</p>
               </div>
             </div>
           </div>
@@ -2229,14 +2230,14 @@ export function TravelPackageForm({
                 <ShieldCheck className="size-4" />
                 <span>O Que Está Incluso no Pacote</span>
               </div>
-              <Badge variant="outline" className="text-[10px] font-mono text-emerald-600 bg-emerald-500/10 border-emerald-500/20">
+              <Badge variant="outline" className="text-3xs font-mono text-emerald-600 bg-emerald-500/10 border-emerald-500/20">
                 {inclusions.length} inclusos
               </Badge>
             </div>
 
             {/* Presets clicáveis rápidos sem emojis */}
             <div className="space-y-2">
-              <Label className="text-[11px] font-semibold text-muted-foreground">Sugestões Rápidas de Inclusões</Label>
+              <Label className="text-2xs font-semibold text-muted-foreground">Sugestões Rápidas de Inclusões</Label>
               <div className="flex flex-wrap gap-2">
                 {CANONICAL_INCLUSIONS_CLEAN.map((item) => {
                   const isChecked = inclusions.includes(item);
@@ -2246,7 +2247,7 @@ export function TravelPackageForm({
                       type="button"
                       onClick={() => toggleInclusion(item)}
                       className={cn(
-                        "h-9 px-3 rounded-lg border text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        "h-11 min-h-11 px-3 rounded-lg border text-xs font-medium flex items-center gap-2 transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         isChecked
                           ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 font-semibold"
                           : "bg-background border-border/60 text-muted-foreground hover:border-emerald-500/30"
@@ -2295,14 +2296,14 @@ export function TravelPackageForm({
                 <ShieldAlert className="size-4" />
                 <span>O Que Não Está Incluso no Pacote</span>
               </div>
-              <Badge variant="outline" className="text-[10px] font-mono text-destructive bg-destructive/10 border-destructive/20">
+              <Badge variant="outline" className="text-3xs font-mono text-destructive bg-destructive/10 border-destructive/20">
                 {exclusions.length} exclusos
               </Badge>
             </div>
 
             {/* Presets clicáveis rápidos sem emojis */}
             <div className="space-y-2">
-              <Label className="text-[11px] font-semibold text-muted-foreground">Sugestões Rápidas de Exclusões</Label>
+              <Label className="text-2xs font-semibold text-muted-foreground">Sugestões Rápidas de Exclusões</Label>
               <div className="flex flex-wrap gap-2">
                 {CANONICAL_EXCLUSIONS_CLEAN.map((item) => {
                   const isChecked = exclusions.includes(item);
@@ -2312,7 +2313,7 @@ export function TravelPackageForm({
                       type="button"
                       onClick={() => toggleExclusion(item)}
                       className={cn(
-                        "h-9 px-3 rounded-lg border text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        "h-11 min-h-11 px-3 rounded-lg border text-xs font-medium flex items-center gap-2 transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         isChecked
                           ? "bg-destructive/15 border-destructive/40 text-destructive font-semibold"
                           : "bg-background border-border/60 text-muted-foreground hover:border-destructive/30"
@@ -2373,7 +2374,7 @@ export function TravelPackageForm({
                       type="button"
                       onClick={() => toggleBoardingDoc(item)}
                       className={cn(
-                        "h-9 px-3 rounded-lg border text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        "h-11 min-h-11 px-3 rounded-lg border text-xs font-medium flex items-center gap-2 transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         isChecked
                           ? "bg-primary/15 border-primary/40 text-primary font-semibold"
                           : "bg-background border-border/60 text-muted-foreground hover:border-primary/30"
@@ -2446,14 +2447,14 @@ export function TravelPackageForm({
                   type="button"
                   onClick={() => onChange({ ...value, cancellation_policy: p.desc })}
                   className={cn(
-                    "p-3 rounded-lg border text-left space-y-1 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    "p-3 rounded-lg border text-left space-y-1 transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                     value.cancellation_policy === p.desc
                       ? "bg-primary/10 border-primary/40 text-primary"
                       : "bg-background border-border/60 text-muted-foreground hover:border-primary/30"
                   )}
                 >
                   <span className="text-xs font-bold text-foreground block">{p.label}</span>
-                  <span className="text-[11px] text-muted-foreground leading-snug block">{p.desc}</span>
+                  <span className="text-2xs text-muted-foreground leading-snug block">{p.desc}</span>
                 </button>
               ))}
             </div>
@@ -2483,7 +2484,7 @@ export function TravelPackageForm({
                 <MessageCircle className="size-4" />
                 <span>Reserva Online & Canal Direto no WhatsApp</span>
               </div>
-              <Badge variant="outline" className="text-[10px] font-mono text-emerald-600 bg-emerald-500/10 border-emerald-500/20">
+              <Badge variant="outline" className="text-3xs font-mono text-emerald-600 bg-emerald-500/10 border-emerald-500/20">
                 Atendimento Imediato
               </Badge>
             </div>
@@ -2513,9 +2514,9 @@ export function TravelPackageForm({
                 <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
                   Mensagem Automática Pré-configurada para o Cliente
                 </span>
-                <span className="text-[10px] font-mono text-muted-foreground">Link Dinâmico</span>
+                <span className="text-3xs font-mono text-muted-foreground">Link Dinâmico</span>
               </div>
-              <p className="text-xs font-mono text-foreground/80 bg-background/80 p-2.5 rounded-md border border-border/50">
+              <p className="text-xs font-mono text-foreground/80 bg-background/80 p-3 rounded-md border border-border/50">
                 Olá {storeName}! Gostaria de mais informações e garantir minha reserva para o pacote &quot;
                 {formValues?.title || destination.name || "Viagem"}&quot; com saída para {destination.name || "o destino"}.
               </p>
@@ -2529,17 +2530,17 @@ export function TravelPackageForm({
                 <Bot className="size-4" />
                 <span>IA Sales Advisor (Consultor Virtual de Viagens)</span>
               </div>
-              <Badge variant="outline" className="text-[10px] font-mono text-primary bg-primary/10 border-primary/20">
+              <Badge variant="outline" className="text-3xs font-mono text-primary bg-primary/10 border-primary/20">
                 Atendimento 24/7
               </Badge>
             </div>
 
-            <div className="flex items-center justify-between p-3.5 rounded-lg bg-muted/20 border border-border/50">
+            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/20 border border-border/50">
               <div>
                 <span className="text-xs font-bold text-foreground block">
                   Ativar Consultor Virtual IA para este Pacote
                 </span>
-                <span className="text-[11px] text-muted-foreground block">
+                <span className="text-2xs text-muted-foreground block">
                   A IA responderá dúvidas de passageiros no chat da vitrine com base nas regras deste roteiro.
                 </span>
               </div>

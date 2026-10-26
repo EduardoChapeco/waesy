@@ -158,6 +158,7 @@ export interface TravelProposalDTO {
   ai_sales_advisor_enabled?: boolean;
   ai_sales_advisor_prompt?: string | null;
   special_notes?: string | null;
+  access_pin?: string | null;
   status: ProposalStatus;
   snapshot_hash?: string | null;
   acceptance_status?: string | null;
@@ -320,6 +321,11 @@ function rowToProposalDTO(row: any, storeRow?: any): TravelProposalDTO {
     ai_sales_advisor_enabled: row.ai_sales_advisor_enabled ?? meta.ai_sales_advisor_enabled ?? false,
     ai_sales_advisor_prompt: row.ai_sales_advisor_prompt || meta.ai_sales_advisor_prompt || null,
     special_notes: row.special_notes || meta.special_notes || null,
+    access_pin: (() => {
+      const notesStr = String(row.special_notes || meta.special_notes || "");
+      const match = notesStr.match(/\[SENHA:([^\]]+)\]/i);
+      return match ? match[1].trim() : null;
+    })(),
     status: (row.status === "approved"
       ? "approved"
       : row.status === "rejected"
@@ -499,6 +505,7 @@ function toPublicTravelProposalDTO(dto: TravelProposalDTO): TravelProposalDTO {
     ai_sales_advisor_enabled: false,
     ai_sales_advisor_prompt: null,
     special_notes: null,
+    access_pin: dto.access_pin || null,
   };
 }
 
@@ -1019,6 +1026,7 @@ export const approveTravelProposal = createServerFn({ method: "POST" })
         birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
         phone: z.string().trim().max(40).nullable().optional(),
         email: z.string().email().nullable().optional(),
+        roomPreference: z.string().trim().max(120).nullable().optional(),
         isLead: z.boolean().optional(),
       })).min(1).max(40),
       paymentPreference: z.enum(["pix", "cartao_operadora", "financiamento_bancario", "faturado_agencia"]),
@@ -1380,4 +1388,71 @@ Mantenha a resposta concisa e legível em smartphones.`;
     const reply = typeof aiResponse.text === "string" ? aiResponse.text.trim() : "";
     if (!reply) throw new Error("O consultor de viagens está indisponível no momento.");
     return { reply };
+  });
+
+
+// ─── 11. Agrupar Múltiplos Orçamentos/Propostas em Link Único Multi-Abas ──────
+
+export const bundleTravelProposalsIntoSingleLink = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      proposalIds: z.array(z.string().min(1)).min(2).max(12),
+      bundleTitle: z.string().trim().max(160).optional(),
+    }),
+  )
+  .handler(async ({ data }): Promise<{ success: boolean; masterId: string; publicToken: string; optionsCount: number }> => {
+    const identity = await requireStaff();
+    const loadedProposals: TravelProposalDTO[] = [];
+
+    for (const pid of data.proposalIds) {
+      const p = await getTravelProposalById({ data: { id: pid } });
+      if (p) loadedProposals.push(p);
+    }
+
+    if (loadedProposals.length < 2) {
+      throw new Error("Selecione pelo menos 2 propostas válidas da agência para agrupar.");
+    }
+
+    const primary = loadedProposals[0];
+    const bundledOptions: TravelProposalOptionDTO[] = loadedProposals.map((prop, idx) => ({
+      id: prop.id || `opt-${idx + 1}`,
+      name: prop.title || `Opção ${idx + 1}: ${prop.destination_city || "Roteiro"}`,
+      badge: idx === 0 ? "Opção Principal" : `Cotação ${idx + 1}`,
+      hotel_name: prop.hotels?.[0]?.hotel_name || prop.destination_city || "Hospedagem Selecionada",
+      hotel_stars: prop.hotels?.[0]?.stars || 4,
+      room_type: prop.hotels?.[0]?.room_type || "Standard",
+      meal_plan: prop.hotels?.[0]?.board_basis || "Café da Manhã",
+      airline: prop.flights?.[0]?.airline || prop.flights?.[0]?.airline_name || "Voo Incluso",
+      flights: prop.flights || [],
+      hotels: prop.hotels || [],
+      itinerary: prop.itinerary || [],
+      transfers: prop.transfers || [],
+      tours: prop.tours || [],
+      includes: prop.includes || [],
+      excludes: prop.excludes || [],
+      pricing: prop.pricing,
+      is_recommended: idx === 0,
+    }));
+
+    const mergedTitle =
+      data.bundleTitle?.trim() ||
+      `Comparativo de Cotações (${loadedProposals.length} Opções) — ${primary.destination_city || primary.client_name}`;
+
+    await updateTravelProposal({
+      data: {
+        id: primary.id,
+        patch: {
+          title: mergedTitle,
+          options: bundledOptions,
+          status: "sent",
+        },
+      },
+    });
+
+    return {
+      success: true,
+      masterId: primary.id,
+      publicToken: primary.public_token,
+      optionsCount: bundledOptions.length,
+    };
   });

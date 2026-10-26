@@ -260,7 +260,7 @@ export function OperatorVoucherImportSheet({
                 <button
                   type="button"
                   onClick={() => setActiveInputTab("files")}
-                  className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                  className={`flex-1 h-11 min-h-11 py-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer focus-visible:ring-2 focus-visible:outline-none ${
                     activeInputTab === "files"
                       ? "bg-card text-foreground shadow-xs font-bold"
                       : "text-muted-foreground hover:text-foreground"
@@ -271,7 +271,7 @@ export function OperatorVoucherImportSheet({
                 <button
                   type="button"
                   onClick={() => setActiveInputTab("text")}
-                  className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                  className={`flex-1 h-11 min-h-11 py-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer focus-visible:ring-2 focus-visible:outline-none ${
                     activeInputTab === "text"
                       ? "bg-card text-foreground shadow-xs font-bold"
                       : "text-muted-foreground hover:text-foreground"
@@ -288,7 +288,7 @@ export function OperatorVoucherImportSheet({
                     onClick={() => fileInputRef.current?.click()}
                     onPaste={handlePaste}
                     tabIndex={0}
-                    className="border-2 border-dashed border-border hover:border-primary/50 hover:bg-muted/30 transition-all rounded-lg p-8 text-center cursor-pointer flex flex-col items-center justify-center gap-3 outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                    className="border-2 border-dashed border-border hover:border-primary/50 hover:bg-muted/30 transition-colors rounded-lg p-8 text-center cursor-pointer flex flex-col items-center justify-center gap-3 outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                   >
                     <input
                       ref={fileInputRef}
@@ -328,7 +328,7 @@ export function OperatorVoucherImportSheet({
                         <button
                           type="button"
                           onClick={() => setDocuments([])}
-                          className="text-xs text-destructive hover:underline cursor-pointer"
+                          className="text-xs text-destructive hover:underline cursor-pointer h-11 min-h-11 flex items-center px-2 focus-visible:ring-2 focus-visible:outline-none"
                         >
                           Limpar todos
                         </button>
@@ -352,7 +352,7 @@ export function OperatorVoucherImportSheet({
                                 e.stopPropagation();
                                 removeDocument(doc.id);
                               }}
-                              className="size-6 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer shrink-0 transition-colors"
+                              className="size-11 min-h-11 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer shrink-0 transition-colors focus-visible:ring-2 focus-visible:outline-none"
                             >
                               <X className="size-3.5" />
                             </button>
@@ -383,11 +383,11 @@ export function OperatorVoucherImportSheet({
           {step === "review" && parsedData && (
             <div className="space-y-5">
               {/* Navegação por Abas do Studio */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-border text-xs font-bold">
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-border text-xs font-bold carousel">
                 <button
                   type="button"
                   onClick={() => setActiveReviewTab("resumo")}
-                  className={`px-3 py-2 rounded-lg transition-all cursor-pointer shrink-0 ${
+                  className={`px-3 py-2 h-11 min-h-11 rounded-lg transition-colors cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:outline-none ${
                     activeReviewTab === "resumo"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted/50 text-muted-foreground hover:text-foreground"
@@ -398,7 +398,7 @@ export function OperatorVoucherImportSheet({
                 <button
                   type="button"
                   onClick={() => setActiveReviewTab("passageiros")}
-                  className={`px-3 py-2 rounded-lg transition-all cursor-pointer shrink-0 flex items-center gap-1 ${
+                  className={`px-3 py-2 h-11 min-h-11 rounded-lg transition-colors cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:outline-none flex items-center gap-1 ${
                     activeReviewTab === "passageiros"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted/50 text-muted-foreground hover:text-foreground"
@@ -412,7 +412,7 @@ export function OperatorVoucherImportSheet({
                 <button
                   type="button"
                   onClick={() => setActiveReviewTab("voos")}
-                  className={`px-3 py-2 rounded-lg transition-all cursor-pointer shrink-0 flex items-center gap-1 ${
+                  className={`px-3 py-2 h-11 min-h-11 rounded-lg transition-colors cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:outline-none flex items-center gap-1 ${
                     activeReviewTab === "voos"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted/50 text-muted-foreground hover:text-foreground"
@@ -426,7 +426,7 @@ export function OperatorVoucherImportSheet({
                 <button
                   type="button"
                   onClick={() => setActiveReviewTab("hospedagem")}
-                  className={`px-3 py-2 rounded-lg transition-all cursor-pointer shrink-0 flex items-center gap-1 ${
+                  className={`px-3 py-2 h-11 min-h-11 rounded-lg transition-colors cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:outline-none flex items-center gap-1 ${
                     activeReviewTab === "hospedagem"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted/50 text-muted-foreground hover:text-foreground"
@@ -440,7 +440,7 @@ export function OperatorVoucherImportSheet({
                 <button
                   type="button"
                   onClick={() => setActiveReviewTab("transfers")}
-                  className={`px-3 py-2 rounded-lg transition-all cursor-pointer shrink-0 ${
+                  className={`px-3 py-2 h-11 min-h-11 rounded-lg transition-colors cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:outline-none ${
                     activeReviewTab === "transfers"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted/50 text-muted-foreground hover:text-foreground"
@@ -451,7 +451,7 @@ export function OperatorVoucherImportSheet({
                 <button
                   type="button"
                   onClick={() => setActiveReviewTab("financeiro")}
-                  className={`px-3 py-2 rounded-lg transition-all cursor-pointer shrink-0 ${
+                  className={`px-3 py-2 h-11 min-h-11 rounded-lg transition-colors cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:outline-none ${
                     activeReviewTab === "financeiro"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted/50 text-muted-foreground hover:text-foreground"
@@ -564,7 +564,7 @@ export function OperatorVoucherImportSheet({
                             })
                           }
                           placeholder="+55 11..."
-                          className="text-xs h-8"
+                          className="text-xs h-11 min-h-11 focus-visible:ring-2 focus-visible:outline-none"
                         />
                       </div>
                       <div>
@@ -583,7 +583,7 @@ export function OperatorVoucherImportSheet({
                             })
                           }
                           placeholder="+55 11 9..."
-                          className="text-xs h-8"
+                          className="text-xs h-11 min-h-11 focus-visible:ring-2 focus-visible:outline-none"
                         />
                       </div>
                       <div>
@@ -602,7 +602,7 @@ export function OperatorVoucherImportSheet({
                             })
                           }
                           placeholder="Ramal 1042"
-                          className="text-xs h-8"
+                          className="text-xs h-11 min-h-11 focus-visible:ring-2 focus-visible:outline-none"
                         />
                       </div>
                     </div>
@@ -638,7 +638,7 @@ export function OperatorVoucherImportSheet({
                           ],
                         })
                       }
-                      className="text-xs h-8"
+                      className="text-xs h-11 min-h-11 focus-visible:ring-2 focus-visible:outline-none"
                     >
                       <Plus className="size-3 mr-1" /> Adicionar Passageiro
                     </Button>
@@ -658,7 +658,7 @@ export function OperatorVoucherImportSheet({
                         >
                           <div className="flex items-center justify-between border-b border-border pb-2">
                             <div className="flex items-center gap-2">
-                              <span className="size-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center">
+                              <span className="size-11 min-h-11 rounded-full focus-visible:ring-2 focus-visible:outline-none bg-primary/10 text-primary text-xs font-bold flex items-center justify-center">
                                 {index + 1}
                               </span>
                               <span className="text-xs font-bold text-foreground">
@@ -697,7 +697,7 @@ export function OperatorVoucherImportSheet({
                                     passengers: parsedData.passengers.filter((_, i) => i !== index),
                                   })
                                 }
-                                className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer transition-colors"
+                                className="size-11 min-h-11 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer transition-colors focus-visible:ring-2 focus-visible:outline-none"
                               >
                                 <Trash2 className="size-3.5" />
                               </button>
@@ -716,7 +716,7 @@ export function OperatorVoucherImportSheet({
                                   updated[index].name = e.target.value;
                                   setParsedData({ ...parsedData, passengers: updated });
                                 }}
-                                className="text-xs h-8"
+                                className="text-xs h-11 min-h-11 focus-visible:ring-2 focus-visible:outline-none"
                               />
                             </div>
                             <div>
@@ -767,7 +767,7 @@ export function OperatorVoucherImportSheet({
                                   updated[index].document_expiry = e.target.value;
                                   setParsedData({ ...parsedData, passengers: updated });
                                 }}
-                                className="text-xs h-8"
+                                className="text-xs h-11 min-h-11 focus-visible:ring-2 focus-visible:outline-none"
                               />
                             </div>
                             <div>
@@ -782,7 +782,7 @@ export function OperatorVoucherImportSheet({
                                   updated[index].birth_date = e.target.value;
                                   setParsedData({ ...parsedData, passengers: updated });
                                 }}
-                                className="text-xs h-8"
+                                className="text-xs h-11 min-h-11 focus-visible:ring-2 focus-visible:outline-none"
                               />
                             </div>
                             <div>
@@ -838,7 +838,7 @@ export function OperatorVoucherImportSheet({
                           ],
                         })
                       }
-                      className="text-xs h-8"
+                      className="text-xs h-11 min-h-11 focus-visible:ring-2 focus-visible:outline-none"
                     >
                       <Plus className="size-3 mr-1" /> Adicionar Trecho
                     </Button>
@@ -851,7 +851,7 @@ export function OperatorVoucherImportSheet({
                           <div className="flex items-center gap-2">
                             <Plane className="size-4 text-primary" />
                             <span className="text-xs font-bold text-foreground">
-                              {flight.airline} {flight.flight_number} ({flight.origin} ➔ {flight.destination})
+                              {flight.airline} {flight.flight_number} ({flight.origin} para {flight.destination})
                             </span>
                           </div>
                           <button
@@ -862,7 +862,7 @@ export function OperatorVoucherImportSheet({
                                 flights: parsedData.flights.filter((_, i) => i !== index),
                               })
                             }
-                            className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer transition-colors"
+                            className="size-11 min-h-11 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer transition-colors focus-visible:ring-2 focus-visible:outline-none"
                           >
                             <Trash2 className="size-3.5" />
                           </button>
@@ -880,7 +880,7 @@ export function OperatorVoucherImportSheet({
                                 updated[index].airline = e.target.value;
                                 setParsedData({ ...parsedData, flights: updated });
                               }}
-                              className="text-xs h-8"
+                              className="text-xs h-11 min-h-11 focus-visible:ring-2 focus-visible:outline-none"
                             />
                           </div>
                           <div>
@@ -894,7 +894,7 @@ export function OperatorVoucherImportSheet({
                                 updated[index].flight_number = e.target.value;
                                 setParsedData({ ...parsedData, flights: updated });
                               }}
-                              className="text-xs h-8"
+                              className="text-xs h-11 min-h-11 focus-visible:ring-2 focus-visible:outline-none"
                             />
                           </div>
                           <div>
@@ -940,7 +940,7 @@ export function OperatorVoucherImportSheet({
                                 updated[index].date = e.target.value;
                                 setParsedData({ ...parsedData, flights: updated });
                               }}
-                              className="text-xs h-8"
+                              className="text-xs h-11 min-h-11 focus-visible:ring-2 focus-visible:outline-none"
                             />
                           </div>
                           <div>
@@ -954,7 +954,7 @@ export function OperatorVoucherImportSheet({
                                 updated[index].departure_time = e.target.value;
                                 setParsedData({ ...parsedData, flights: updated });
                               }}
-                              className="text-xs h-8"
+                              className="text-xs h-11 min-h-11 focus-visible:ring-2 focus-visible:outline-none"
                             />
                           </div>
                           <div>
@@ -983,7 +983,7 @@ export function OperatorVoucherImportSheet({
                                 setParsedData({ ...parsedData, flights: updated });
                               }}
                               placeholder="1x 23kg"
-                              className="text-xs h-8"
+                              className="text-xs h-11 min-h-11 focus-visible:ring-2 focus-visible:outline-none"
                             />
                           </div>
                         </div>
@@ -1021,7 +1021,7 @@ export function OperatorVoucherImportSheet({
                           ],
                         })
                       }
-                      className="text-xs h-8"
+                      className="text-xs h-11 min-h-11 focus-visible:ring-2 focus-visible:outline-none"
                     >
                       <Plus className="size-3 mr-1" /> Adicionar Hotel
                     </Button>
@@ -1043,7 +1043,7 @@ export function OperatorVoucherImportSheet({
                                 hotels: parsedData.hotels.filter((_, i) => i !== index),
                               })
                             }
-                            className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer transition-colors"
+                            className="size-11 min-h-11 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer transition-colors focus-visible:ring-2 focus-visible:outline-none"
                           >
                             <Trash2 className="size-3.5" />
                           </button>
@@ -1061,7 +1061,7 @@ export function OperatorVoucherImportSheet({
                                 updated[index].name = e.target.value;
                                 setParsedData({ ...parsedData, hotels: updated });
                               }}
-                              className="text-xs h-8"
+                              className="text-xs h-11 min-h-11 focus-visible:ring-2 focus-visible:outline-none"
                             />
                           </div>
                           <div>
@@ -1075,7 +1075,7 @@ export function OperatorVoucherImportSheet({
                                 updated[index].city = e.target.value;
                                 setParsedData({ ...parsedData, hotels: updated });
                               }}
-                              className="text-xs h-8"
+                              className="text-xs h-11 min-h-11 focus-visible:ring-2 focus-visible:outline-none"
                             />
                           </div>
                           <div>
@@ -1107,7 +1107,7 @@ export function OperatorVoucherImportSheet({
                                 updated[index].checkin = e.target.value;
                                 setParsedData({ ...parsedData, hotels: updated });
                               }}
-                              className="text-xs h-8"
+                              className="text-xs h-11 min-h-11 focus-visible:ring-2 focus-visible:outline-none"
                             />
                           </div>
                           <div>
@@ -1122,7 +1122,7 @@ export function OperatorVoucherImportSheet({
                                 updated[index].checkout = e.target.value;
                                 setParsedData({ ...parsedData, hotels: updated });
                               }}
-                              className="text-xs h-8"
+                              className="text-xs h-11 min-h-11 focus-visible:ring-2 focus-visible:outline-none"
                             />
                           </div>
                           <div>
@@ -1136,7 +1136,7 @@ export function OperatorVoucherImportSheet({
                                 updated[index].room_type = e.target.value;
                                 setParsedData({ ...parsedData, hotels: updated });
                               }}
-                              className="text-xs h-8"
+                              className="text-xs h-11 min-h-11 focus-visible:ring-2 focus-visible:outline-none"
                             />
                           </div>
                           <div>
@@ -1150,7 +1150,7 @@ export function OperatorVoucherImportSheet({
                                 updated[index].meal_plan = e.target.value;
                                 setParsedData({ ...parsedData, hotels: updated });
                               }}
-                              className="text-xs h-8"
+                              className="text-xs h-11 min-h-11 focus-visible:ring-2 focus-visible:outline-none"
                             />
                           </div>
                         </div>
@@ -1181,7 +1181,7 @@ export function OperatorVoucherImportSheet({
                                 updated[index].supplier = e.target.value;
                                 setParsedData({ ...parsedData, transfers: updated });
                               }}
-                              className="text-xs h-8"
+                              className="text-xs h-11 min-h-11 focus-visible:ring-2 focus-visible:outline-none"
                             />
                           </div>
                           <div>
@@ -1189,15 +1189,15 @@ export function OperatorVoucherImportSheet({
                               Trecho:
                             </label>
                             <Input
-                              value={`${trf.origin || ""} ➔ ${trf.destination || ""}`}
+                              value={`${trf.origin || ""} para ${trf.destination || ""}`}
                               onChange={(e) => {
                                 const updated = [...parsedData.transfers];
-                                const parts = e.target.value.split("➔");
+                                const parts = e.target.value.split(/ para |/);
                                 updated[index].origin = parts[0]?.trim();
                                 updated[index].destination = parts[1]?.trim();
                                 setParsedData({ ...parsedData, transfers: updated });
                               }}
-                              className="text-xs h-8"
+                              className="text-xs h-11 min-h-11 focus-visible:ring-2 focus-visible:outline-none"
                             />
                           </div>
                           <div>
@@ -1211,7 +1211,7 @@ export function OperatorVoucherImportSheet({
                                 updated[index].emergency_phone = e.target.value;
                                 setParsedData({ ...parsedData, transfers: updated });
                               }}
-                              className="text-xs h-8"
+                              className="text-xs h-11 min-h-11 focus-visible:ring-2 focus-visible:outline-none"
                             />
                           </div>
                         </div>
@@ -1238,7 +1238,7 @@ export function OperatorVoucherImportSheet({
                               insurance: { ...parsedData.insurance, provider: e.target.value },
                             })
                           }
-                          className="text-xs h-8"
+                          className="text-xs h-11 min-h-11 focus-visible:ring-2 focus-visible:outline-none"
                         />
                       </div>
                       <div>
@@ -1268,7 +1268,7 @@ export function OperatorVoucherImportSheet({
                               insurance: { ...parsedData.insurance, emergency_phone: e.target.value },
                             })
                           }
-                          className="text-xs h-8"
+                          className="text-xs h-11 min-h-11 focus-visible:ring-2 focus-visible:outline-none"
                         />
                       </div>
                     </div>
@@ -1328,7 +1328,7 @@ export function OperatorVoucherImportSheet({
                             })
                           }
                           placeholder="Ex: Cartão 10x sem juros"
-                          className="text-xs h-8"
+                          className="text-xs h-11 min-h-11 focus-visible:ring-2 focus-visible:outline-none"
                         />
                       </div>
                       <div>
@@ -1369,7 +1369,7 @@ export function OperatorVoucherImportSheet({
                           })
                         }
                         placeholder="Nº do Recibo ou status faturado junto à operadora"
-                        className="text-xs h-8"
+                        className="text-xs h-11 min-h-11 focus-visible:ring-2 focus-visible:outline-none"
                       />
                     </div>
                   </div>
@@ -1398,7 +1398,7 @@ export function OperatorVoucherImportSheet({
                               },
                             })
                           }
-                          className="text-xs h-8"
+                          className="text-xs h-11 min-h-11 focus-visible:ring-2 focus-visible:outline-none"
                         />
                       </div>
                       <div>
@@ -1417,7 +1417,7 @@ export function OperatorVoucherImportSheet({
                             })
                           }
                           placeholder="Ex: 1x 23kg por pessoa"
-                          className="text-xs h-8"
+                          className="text-xs h-11 min-h-11 focus-visible:ring-2 focus-visible:outline-none"
                         />
                       </div>
                     </div>
@@ -1471,7 +1471,7 @@ export function OperatorVoucherImportSheet({
                         navigator.clipboard.writeText(`${window.location.origin}${createdVoucherUrl}`);
                         toast.success("Link copiado para a área de transferência!");
                       }}
-                      className="text-primary hover:underline flex items-center gap-1 cursor-pointer font-bold"
+                      className="text-primary hover:underline flex items-center gap-1 cursor-pointer font-bold h-11 min-h-11 px-2 focus-visible:ring-2 focus-visible:outline-none"
                     >
                       <Copy className="size-3" /> Copiar Link
                     </button>
@@ -1479,7 +1479,7 @@ export function OperatorVoucherImportSheet({
                   <div className="p-3 rounded-lg bg-background border border-border text-xs font-mono truncate text-foreground select-all">
                     {`${window.location.origin}${createdVoucherUrl}`}
                   </div>
-                  <Button asChild className="w-full h-9 text-xs font-bold">
+                  <Button asChild className="w-full h-11 min-h-11 text-xs font-bold focus-visible:ring-2 focus-visible:outline-none">
                     <a href={createdVoucherUrl} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="size-3.5 mr-2" /> Abrir Voucher do Passageiro
                     </a>
@@ -1504,7 +1504,7 @@ export function OperatorVoucherImportSheet({
               >
                 {isAnalyzing ? (
                   <>
-                    <Loader2 className="size-3.5 animate-spin" /> Processando OCR ({documents.length} arq)...
+                    <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> Processando OCR ({documents.length} arq)...
                   </>
                 ) : (
                   <>
@@ -1527,7 +1527,7 @@ export function OperatorVoucherImportSheet({
               >
                 {isApplying ? (
                   <>
-                    <Loader2 className="size-3.5 animate-spin" /> Sincronizando Viagem...
+                    <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> Sincronizando Viagem...
                   </>
                 ) : (
                   <>

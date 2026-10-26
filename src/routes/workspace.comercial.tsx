@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import { Kanban, Users, Plus, Search, DollarSign, Phone, Mail, UserCheck, CheckCircle2, Clock, MoreVertical, Plane, Edit3, Calendar, MapPin, Tag, CheckSquare, Square, AlertTriangle, ChevronRight, ChevronLeft, X, Trash2, Layers, Upload, Calculator, FileText, ExternalLink, BarChart3, Settings2, Brain, FileSignature, History, Copy, Check, Star } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Kanban, Bus, MessageSquare, Pencil, Users, Plus, Search, DollarSign, Phone, Mail, UserCheck, CheckCircle2, Clock, MoreVertical, Plane, Edit3, Calendar, MapPin, Tag, CheckSquare, Square, AlertTriangle, ChevronRight, ChevronLeft, X, Trash2, Layers, Upload, Calculator, FileText, ExternalLink, BarChart3, Settings2, Brain, FileSignature, History, Copy, Check, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ModuleTourModal, ModuleTourTrigger, type TourSlide } from "@/components/ui/module-tour-modal";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +17,7 @@ import { toast } from "sonner";
 import { listLeads, updateLeadStatus, updateLeadDetails, promoteLeadToCustomer, createLead, toggleLeadChecklist, deleteLead, persistLeadMove, getCustomer360Profile, calculateStoreLtvAndAdSpend, type StoreLtvAndAdSpendDTO, issueLeadContract } from "@/services/crm.functions";
 import { listTeamMembers } from "@/services/admin-team.functions";
 import { getStoreSettings } from "@/services/store.functions";
+import { getStoreOnboardingForms } from "@/services/lead-forms.functions";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
@@ -26,6 +28,9 @@ import { UnifiedProposalWorkspace } from "@/components/tourism/unified-proposal-
 import { LeadCommissionCalculatorSheet } from "@/components/commercial/lead-commission-calculator-sheet";
 import { LeadFlightGridSheet } from "@/components/commercial/lead-flight-grid-sheet";
 import { LeadCard } from "@/components/tourism/crm/LeadCard";
+import { Customer360PrintableDossier } from "@/components/dossier/customer-360-printable-dossier";
+import { exportElementAsPdf } from "@/lib/pdf-export";
+import { CommercialBudgetPadSheet } from "@/components/documents/CommercialBudgetPadSheet";
 
 export const Route = createFileRoute("/workspace/comercial")({
   head: () => ({ meta: [{ title: "Pipeline Comercial e Funil de Oportunidades | Workspace" }] }),
@@ -240,6 +245,21 @@ function WorkspaceComercialPage() {
   const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
   const [isTourOpen, setIsTourOpen] = useState(false);
   const [stages, setStages] = useState(STAGES);
+  const [isExportingLeadDossier, setIsExportingLeadDossier] = useState(false);
+
+  const handleExportLeadDossier = async () => {
+    if (!selectedLead) return;
+    setIsExportingLeadDossier(true);
+    try {
+      const cleanName = (selectedLead.full_name || "lead").replace(/\s+/g, "_");
+      await exportElementAsPdf("customer-360-lead-dossier", `Dossie_Lead_${cleanName}.pdf`);
+      toast.success("Dossiê 360° do Lead exportado com sucesso!");
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao gerar Dossiê 360° do Lead.");
+    } finally {
+      setIsExportingLeadDossier(false);
+    }
+  };
 
   // Formulário Avançado de Novo Lead (Padrão TravelAgências Enterprise)
   const initialNewLeadState = {
@@ -309,6 +329,64 @@ function WorkspaceComercialPage() {
 
   const [newChecklistItemText, setNewChecklistItemText] = useState("");
   const [activeTabDetail, setActiveTabDetail] = useState<"viagem" | "cliente360" | "contratos" | "telemetria" | "checklist" | "comercial" | "notas">("viagem");
+  const [selectedOnboardingFormSlug, setSelectedOnboardingFormSlug] = useState<string>("");
+  const [budgetPadLeadOpen, setBudgetPadLeadOpen] = useState(false);
+
+  const { data: onboardingFormsData } = useQuery({
+    queryKey: ["store-onboarding-forms", storeId],
+    queryFn: () => getStoreOnboardingForms({ data: { storeId: storeId || undefined } }),
+    enabled: Boolean(storeId),
+  });
+
+  const activeOnboardingForm =
+    (onboardingFormsData?.availableForms || []).find((f: any) => f.slug === selectedOnboardingFormSlug) ||
+    onboardingFormsData?.defaultForm ||
+    null;
+
+  const handleCopyOnboardingFormLink = async () => {
+    if (!activeOnboardingForm || !selectedLead) {
+      toast.info("Nenhum formulário de onboarding configurado para este atendimento.");
+      return;
+    }
+    const cleanPhone = (selectedLead.phone || "").replace(/\D/g, "");
+    const params = new URLSearchParams();
+    params.set("leadId", selectedLead.id);
+    if (selectedLead.full_name) params.set("nome", selectedLead.full_name);
+    if (cleanPhone) params.set("tel", cleanPhone);
+    if (selectedLead.email) params.set("email", selectedLead.email);
+
+    const url = `${window.location.origin}/f/${activeOnboardingForm.slug}?${params.toString()}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link do formulário de onboarding copiado com sucesso!");
+    } catch {
+      toast.error("Não foi possível copiar o link.");
+    }
+  };
+
+  const handleSendOnboardingFormWhatsApp = () => {
+    if (!activeOnboardingForm || !selectedLead) {
+      toast.info("Nenhum formulário de onboarding configurado para este atendimento.");
+      return;
+    }
+    const cleanPhone = (selectedLead.phone || "").replace(/\D/g, "");
+    if (!cleanPhone) {
+      toast.error("O lead não possui telefone cadastrado para envio via WhatsApp.");
+      return;
+    }
+    const params = new URLSearchParams();
+    params.set("leadId", selectedLead.id);
+    if (selectedLead.full_name) params.set("nome", selectedLead.full_name);
+    if (cleanPhone) params.set("tel", cleanPhone);
+    if (selectedLead.email) params.set("email", selectedLead.email);
+
+    const url = `${window.location.origin}/f/${activeOnboardingForm.slug}?${params.toString()}`;
+    const firstName = (selectedLead.full_name || "Olá").split(" ")[0];
+    const msg = `Olá, ${firstName}! Para que possamos montar sua proposta e roteiro com precisão, por favor preencha seus dados na nossa ficha rápida:\n\n${url}`;
+
+    const formattedPhone = cleanPhone.startsWith("55") ? cleanPhone : `55${cleanPhone}`;
+    window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(msg)}`, "_blank");
+  };
   const [customer360Data, setCustomer360Data] = useState<{
     customer: any;
     otherLeads: any[];
@@ -1099,7 +1177,7 @@ function WorkspaceComercialPage() {
                 </SheetHeader>
 
                 {/* Ações Rápidas no Topo — Conexão Sistêmica com Cotações, Propostas, Comissões e Voos */}
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
                   {selectedLead.phone && (
                     <a
                       href={`https://wa.me/55${selectedLead.phone.replace(/\D/g, "")}?text=${encodeURIComponent(
@@ -1281,6 +1359,85 @@ function WorkspaceComercialPage() {
                 {/* Aba 1: Viagem & Destino */}
                 {activeTabDetail === "viagem" && (
                   <div className="space-y-4 pt-1">
+                    {/* Bloco de Formulário de Onboarding Personalizável */}
+                    <div className="p-4 rounded-lg border border-primary/30 bg-primary/5 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-foreground flex items-center gap-2">
+                          <FileText className="size-4 text-primary" />
+                          <span>Formulário de Onboarding do Cliente</span>
+                        </span>
+                        <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary">
+                          {activeOnboardingForm ? activeOnboardingForm.title : "Ficha Cadastral"}
+                        </Badge>
+                      </div>
+
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        Envie o formulário editável para o cliente preencher dados pessoais, documentos, acompanhantes e preferências. As respostas alimentam este lead e a Ficha 360° automaticamente.
+                      </p>
+
+                      {onboardingFormsData?.availableForms && onboardingFormsData.availableForms.length > 1 && (
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground font-semibold">Formulário Vinculado:</Label>
+                          <Select
+                            value={selectedOnboardingFormSlug || activeOnboardingForm?.slug || ""}
+                            onValueChange={(val) => setSelectedOnboardingFormSlug(val)}
+                          >
+                            <SelectTrigger className="h-9 text-xs rounded-lg">
+                              <SelectValue placeholder="Selecione o formulário..." />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-lg">
+                              {onboardingFormsData.availableForms.map((f: any) => (
+                                <SelectItem key={f.id} value={f.slug} className="text-xs">
+                                  {f.title} ({f.niche_id})
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+
+                      <div className="flex flex-wrap items-center gap-2 pt-1">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleCopyOnboardingFormLink}
+                          className="h-11 min-h-11 px-4 text-xs font-bold gap-2 rounded-lg focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          <Copy className="size-3.5 text-primary" />
+                          <span>Copiar Link do Formulário</span>
+                        </Button>
+
+                        <Button
+                          type="button"
+                          onClick={handleSendOnboardingFormWhatsApp}
+                          className="h-11 min-h-11 px-4 text-xs font-bold gap-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          <MessageSquare className="size-3.5" />
+                          <span>Enviar por WhatsApp</span>
+                        </Button>
+
+                        <Button
+                          asChild
+                          variant="ghost"
+                          className="h-11 min-h-11 px-3 text-xs text-muted-foreground hover:text-foreground gap-2 rounded-lg focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          <Link to="/workspace/marketing/formularios">
+                            <Pencil className="size-3" />
+                            <span>Personalizar no Módulo Formulários</span>
+                          </Link>
+                        </Button>
+
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setBudgetPadLeadOpen(true)}
+                          className="h-11 min-h-11 px-4 text-xs font-bold gap-2 rounded-lg border-primary/40 text-primary hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          <FileText className="size-3.5" />
+                          <span>Abrir Bloco de Orçamento</span>
+                        </Button>
+                      </div>
+                    </div>
                     <div className="space-y-2">
                       <Label className="text-xs font-semibold">Destino de Interesse</Label>
                       <Input
@@ -1377,6 +1534,37 @@ function WorkspaceComercialPage() {
                       </div>
                     </div>
 
+                    {/* Atalho para Excursão Rodoviária e Alocação de Poltrona */}
+                    {(editLeadForm.interest_type === "package_ground" || (selectedLead as any)?.travel_type === "package_ground") && (
+                      <div className="p-4 rounded-lg border border-primary/30 bg-primary/5 space-y-2 text-xs">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-foreground flex items-center gap-2">
+                            <Bus className="size-3.5 text-primary" />
+                            <span>Excursão Rodoviária / Grupo Terrestre</span>
+                          </span>
+                          <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary">
+                            Gestão de Ônibus
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          Vincule este viajante diretamente a uma excursão ativa para reservar poltrona no mapa 2D, alocar quarto no rooming list e emitir contrato integrado.
+                        </p>
+                        <div className="flex items-center gap-2 pt-1">
+                          <Button
+                            asChild
+                            size="sm"
+                            variant="outline"
+                            className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                          >
+                            <Link to="/workspace/turismo/grupos">
+                              <Bus className="size-3 text-primary" />
+                              <span>Ver Roteiros & Grupos</span>
+                            </Link>
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="space-y-2">
                       <Label className="text-xs font-semibold">Idades das Crianças (separadas por vírgula)</Label>
                       <Input
@@ -1422,9 +1610,24 @@ function WorkspaceComercialPage() {
                               <span className="font-semibold text-foreground">Canal Origem:</span> {customer360Data.customer.channel || "Direto"}
                             </div>
                           </div>
-                          <div className="pt-2 border-t border-border/40 flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">Ciclo de Vida do Cliente:</span>
-                            <span className="font-bold text-foreground font-mono">{customer360Data.customer.lifetime_lead_count || 1} oportunidade(s)</span>
+                          <div className="pt-2 border-t border-border/40 flex flex-wrap items-center justify-between gap-2 text-xs">
+                            <span className="text-muted-foreground">
+                              Ciclo de Vida: <strong className="text-foreground font-mono">{customer360Data.customer.lifetime_lead_count || 1} oportunidade(s)</strong>
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <Button asChild variant="outline" className="h-11 min-h-11 text-xs font-bold gap-1 focus-visible:ring-2 focus-visible:ring-ring">
+                                <Link to="/workspace/agenda">
+                                  <Calendar className="size-3.5 text-primary" />
+                                  <span>Agendar Reunião</span>
+                                </Link>
+                              </Button>
+                              <Button asChild variant="outline" className="h-11 min-h-11 text-xs font-bold gap-1 border-primary/40 text-primary focus-visible:ring-2 focus-visible:ring-ring">
+                                <Link to="/workspace/clientes/$id" params={{ id: customer360Data.customer.id }}>
+                                  <ExternalLink className="size-3.5" />
+                                  <span>Abrir Ficha 360°</span>
+                                </Link>
+                              </Button>
+                            </div>
                           </div>
                         </div>
 
@@ -1986,6 +2189,18 @@ function WorkspaceComercialPage() {
         onCreated={() => router.invalidate()}
       />
 
+      <CommercialBudgetPadSheet
+        open={budgetPadLeadOpen}
+        onOpenChange={setBudgetPadLeadOpen}
+        initialLeadId={selectedLead?.id}
+        initialClientData={{
+          name: selectedLead?.name,
+          phone: selectedLead?.phone,
+          email: selectedLead?.email,
+          cityState: selectedLead?.destination,
+        }}
+      />
+
       <LeadCommissionCalculatorSheet
         isOpen={!!calculatorLead}
         onClose={() => setCalculatorLead(null)}
@@ -2000,7 +2215,7 @@ function WorkspaceComercialPage() {
         storeId={storeId}
         onSuccess={() => router.invalidate()}
       />
-    
+
       {/* ── ONBOARDING GUIADO DO COMERCIAL ── */}
       <ModuleTourModal
         moduleId="comercial"

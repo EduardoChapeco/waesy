@@ -37,13 +37,13 @@ const SearchSchema = z.object({
 type GastronomiaSearch = z.infer<typeof SearchSchema>;
 
 const GASTRONOMIA_DEPARTMENTS: FilterChipOption[] = [
- { id: "todos", label: "Tudo", emoji: "🍽️", icon: Tag },
- { id: "burgers", label: "Burgers e Sandubas", emoji: "🍔", icon: Hamburger },
- { id: "pizzas", label: "Pizzas e Massas", emoji: "🍕", icon: Pizza },
- { id: "oriental", label: "Sushi e Oriental", emoji: "🍣", icon: Fish },
- { id: "marmitas", label: "Marmitas e Almoço", emoji: "🍱", icon: ForkKnife },
- { id: "churrasco", label: "Carnes e Grelhados", emoji: "🥩", icon: Flame },
- { id: "doces", label: "Cafés e Sobremesas", emoji: "🍰", icon: Coffee },
+ { id: "todos", label: "Tudo", icon: Tag },
+ { id: "burgers", label: "Burgers e Sandubas", icon: Hamburger },
+ { id: "pizzas", label: "Pizzas e Massas", icon: Pizza },
+ { id: "oriental", label: "Sushi e Oriental", icon: Fish },
+ { id: "marmitas", label: "Marmitas e Almoço", icon: ForkKnife },
+ { id: "churrasco", label: "Carnes e Grelhados", icon: Flame },
+ { id: "doces", label: "Cafés e Sobremesas", icon: Coffee },
 ];
 
 export const Route = createFileRoute("/_store/gastronomia")({
@@ -271,7 +271,7 @@ function GastronomiaVerticalPage() {
               <ShoppingBag className="size-5" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] text-background/70 font-mono uppercase tracking-wider">
+              <span className="text-xs font-semibold text-background/70 font-mono uppercase tracking-wider">
                 {cartItemsCount} {cartItemsCount === 1 ? "item adicionado" : "itens adicionados"}
               </span>
               <span className="text-sm font-black font-mono">
@@ -283,7 +283,7 @@ function GastronomiaVerticalPage() {
           <Button
             size="sm"
             onClick={() => setIsCartOpen(true)}
-            className="h-10 px-4 rounded-lg bg-primary text-primary-foreground font-bold text-xs gap-2 shadow-xs cursor-pointer shrink-0"
+            className="h-11 min-h-11 px-4 rounded-lg bg-primary text-primary-foreground font-bold text-xs gap-2 shadow-xs cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <span>Ver Sacola</span>
             <ArrowRight className="size-3.5" />

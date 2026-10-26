@@ -69,10 +69,10 @@ export const HeroInteractiveCarousel: React.FC<HeroInteractiveCarouselProps> = (
       style={sectionStyle.style}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
-      className={`relative w-full bg-background text-foreground overflow-hidden border-b border-border/40 select-none ${sectionStyle.className} ${className}`}
+      className={`relative w-full bg-background text-foreground overflow-hidden border-b border-border/40 select-none motion-reduce:transition-none ${sectionStyle.className} ${className}`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center min-h-[460px] sm:min-h-[500px]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center min-h-96 sm:min-h-128">
           {/* Lado Esquerdo: Conteúdo Editorial do Slide */}
           <div className="lg:col-span-7 flex flex-col items-start text-left z-10 animate-in fade-in duration-300 key={currentIndex}">
             {/* Badge de Contexto do Slide */}
@@ -84,7 +84,7 @@ export const HeroInteractiveCarousel: React.FC<HeroInteractiveCarouselProps> = (
             )}
 
             {/* Título Display do Slide */}
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-[1.12] text-foreground mb-4 sm:mb-6 [text-wrap:balance]">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight text-foreground mb-4 sm:mb-6 [text-wrap:balance]">
               {currentSlide.title}
             </h1>
 
@@ -100,7 +100,7 @@ export const HeroInteractiveCarousel: React.FC<HeroInteractiveCarouselProps> = (
               {currentSlide.primaryCta && (
                 <Button
                   size="lg"
-                  className="h-11 sm:h-12 px-6 sm:px-7 text-xs sm:text-sm font-semibold rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-transform active:scale-95 group shadow-xs cursor-pointer"
+                  className="h-11 sm:h-12 px-6 sm:px-7 text-xs sm:text-sm font-semibold rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-transform active:scale-95 group shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none"
                   asChild
                 >
                   <a href={primaryHref} className="flex items-center gap-2">
@@ -114,7 +114,7 @@ export const HeroInteractiveCarousel: React.FC<HeroInteractiveCarouselProps> = (
                 <Button
                   variant="outline"
                   size="lg"
-                  className="h-11 sm:h-12 px-5 sm:px-6 text-xs sm:text-sm font-semibold rounded-lg border-border bg-card/60 backdrop-blur-xs hover:bg-muted text-foreground transition-all cursor-pointer"
+                  className="h-11 sm:h-12 px-5 sm:px-6 text-xs sm:text-sm font-semibold rounded-lg border-border bg-card/60 backdrop-blur-xs hover:bg-muted text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none"
                   asChild
                 >
                   <a href={secondaryHref}>
@@ -127,15 +127,15 @@ export const HeroInteractiveCarousel: React.FC<HeroInteractiveCarouselProps> = (
 
           {/* Lado Direito: Visual Imersivo & Card Flutuante */}
           <div className="lg:col-span-5 relative w-full flex items-center justify-center">
-            <div className="relative w-full aspect-4/3 sm:aspect-16/10 lg:aspect-4/3 rounded-lg sm:rounded-lg overflow-hidden border border-border/60 bg-muted/30 shadow-lg">
+            <div className="relative w-full aspect-4/3 sm:aspect-16/10 lg:aspect-4/3 rounded-lg sm:rounded-lg overflow-hidden border border-border/60 bg-muted/30">
               {currentSlide.imageUrl ? (
                 <img
                   src={currentSlide.imageUrl}
                   alt={currentSlide.imageAlt || currentSlide.title}
-                  className="w-full h-full object-cover transition-transform duration-700 hover:scale-102"
+                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-102 motion-reduce:transform-none"
                 />
               ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-gradient-to-tr from-muted/50 to-card">
+                <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-muted/40">
                   <Tag className="size-12 text-primary/40 mb-3" />
                   <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                     {currentSlide.highlightTag || "Destaque Principal"}
@@ -148,19 +148,19 @@ export const HeroInteractiveCarousel: React.FC<HeroInteractiveCarouselProps> = (
 
               {/* Tag Superior */}
               {currentSlide.highlightTag && (
-                <div className="absolute top-3 left-3 px-3 py-1 rounded-lg bg-background/80 backdrop-blur-md border border-border/60 text-[10px] font-bold text-foreground uppercase tracking-wider">
+                <div className="absolute top-3 left-3 px-3 py-1 rounded-lg bg-background/80 backdrop-blur-md border border-border/60 text-2xs font-bold text-foreground uppercase tracking-wider">
                   {currentSlide.highlightTag}
                 </div>
               )}
 
               {/* Card Flutuante de Indicador */}
               {currentSlide.floatingStat && (
-                <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 px-4 py-3 rounded-lg bg-card/90 backdrop-blur-md border border-border/60 shadow-md flex items-center gap-3">
+                <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 px-4 py-3 rounded-lg bg-card/90 backdrop-blur-md border border-border/60 flex items-center gap-3">
                   {currentSlide.floatingStat.statusDot && (
                     <span className="size-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
                   )}
                   <div>
-                    <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground block">
+                    <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
                       {currentSlide.floatingStat.label}
                     </span>
                     <span className="text-xs font-bold font-mono text-foreground">
@@ -182,7 +182,7 @@ export const HeroInteractiveCarousel: React.FC<HeroInteractiveCarouselProps> = (
                 type="button"
                 onClick={prevSlide}
                 aria-label="Slide anterior"
-                className="size-9 rounded-lg border border-border bg-card/60 hover:bg-muted flex items-center justify-center text-foreground transition-all cursor-pointer"
+                className="size-11 min-h-11 rounded-lg border border-border bg-card/60 hover:bg-muted flex items-center justify-center text-foreground transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <ChevronLeft className="size-4" />
               </button>
@@ -190,29 +190,33 @@ export const HeroInteractiveCarousel: React.FC<HeroInteractiveCarouselProps> = (
                 type="button"
                 onClick={nextSlide}
                 aria-label="Próximo slide"
-                className="size-9 rounded-lg border border-border bg-card/60 hover:bg-muted flex items-center justify-center text-foreground transition-all cursor-pointer"
+                className="size-11 min-h-11 rounded-lg border border-border bg-card/60 hover:bg-muted flex items-center justify-center text-foreground transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <ChevronRight className="size-4" />
               </button>
-              <span className="text-[11px] font-mono font-semibold text-muted-foreground ml-2">
+              <span className="text-xs font-mono font-semibold text-muted-foreground ml-2">
                 0{currentIndex + 1} / 0{slides.length}
               </span>
             </div>
 
             {/* Dots / Pílulas Interativas */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               {slides.map((slide, idx) => (
                 <button
                   key={slide.id || idx}
                   type="button"
                   onClick={() => setCurrentIndex(idx)}
                   aria-label={`Ir para slide ${idx + 1}`}
-                  className={`transition-all rounded-full cursor-pointer ${
-                    currentIndex === idx
-                      ? "w-8 h-2 bg-foreground"
-                      : "w-2 h-2 bg-muted-foreground/30 hover:bg-muted-foreground/60"
-                  }`}
-                />
+                  className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <span
+                    className={`transition-colors duration-200 motion-reduce:transition-none rounded-full ${
+                      currentIndex === idx
+                        ? "w-8 h-2 bg-foreground"
+                        : "w-2 h-2 bg-muted-foreground/30 hover:bg-muted-foreground/60"
+                    }`}
+                  />
+                </button>
               ))}
             </div>
           </div>

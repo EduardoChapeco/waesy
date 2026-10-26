@@ -150,7 +150,7 @@ export function FlyerInteractiveViewerModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={cn(
-          "max-w-4xl p-0 border-0 overflow-hidden shadow-2xl bg-black/95 text-white sm:rounded-lg flex flex-col h-[92vh] sm:h-[88vh]",
+          "max-w-4xl p-0 border-0 overflow-hidden shadow-2xs bg-background text-foreground sm:rounded-lg flex flex-col h-full max-h-screen motion-reduce:transition-none",
           isRetro && "ring-4 ring-amber-400/80"
         )}
       >
@@ -169,11 +169,11 @@ export function FlyerInteractiveViewerModal({
         >
           <div className="flex items-center gap-3 min-w-0">
             {isRetro ? (
-              <span className="px-2 py-1 rounded bg-red-600 text-amber-100 text-[10px] font-black uppercase tracking-wider shadow-xs animate-pulse">
+              <span className="px-2 py-1 rounded bg-red-600 text-amber-100 text-xs font-black uppercase tracking-wider shadow-xs animate-pulse">
                 {currentFlyer.badge_text || "OFERTAÇO"}
               </span>
             ) : (
-              <span className="px-2 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-bold">
+              <span className="px-2 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold">
                 {currentFlyer.badge_text || "Encarte da Semana"}
               </span>
             )}
@@ -187,7 +187,7 @@ export function FlyerInteractiveViewerModal({
               >
                 {currentFlyer.title}
               </h2>
-              <div className="flex items-center gap-2 text-[10px] text-muted-foreground sm:text-[11px]">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground sm:text-xs">
                 {storeName && <span>{storeName}</span>}
                 {currentFlyer.time_left_display && (
                   <span
@@ -220,7 +220,7 @@ export function FlyerInteractiveViewerModal({
               onClick={handleDownload}
               title="Baixar Encarte em Alta Resolução"
               className={cn(
-                "size-8 rounded-full cursor-pointer",
+                "size-11 min-h-11 min-w-11 rounded-full cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
                 isRetro ? "hover:bg-amber-300 text-red-950" : "hover:bg-accent text-foreground"
               )}
             >
@@ -233,7 +233,7 @@ export function FlyerInteractiveViewerModal({
               onClick={handleShare}
               title="Compartilhar Encarte"
               className={cn(
-                "size-8 rounded-full cursor-pointer",
+                "size-11 min-h-11 min-w-11 rounded-full cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
                 isRetro ? "hover:bg-amber-300 text-red-950" : "hover:bg-accent text-foreground"
               )}
             >
@@ -245,8 +245,8 @@ export function FlyerInteractiveViewerModal({
               variant="ghost"
               onClick={() => onOpenChange(false)}
               className={cn(
-                "size-8 rounded-full cursor-pointer ml-1",
-                isRetro ? "hover:bg-red-600 hover:text-white text-red-950" : "hover:bg-accent text-foreground"
+                "size-11 min-h-11 min-w-11 rounded-full cursor-pointer ml-1 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+                isRetro ? "hover:bg-red-600 hover:text-primary-foreground text-red-950" : "hover:bg-accent text-foreground"
               )}
             >
               <X className="size-4" />
@@ -255,7 +255,7 @@ export function FlyerInteractiveViewerModal({
         </div>
 
         {/* ─── Palco Central da Imagem com Hotspots Interativos ────────── */}
-        <div className="relative flex-1 bg-black/90 flex items-center justify-center overflow-hidden select-none">
+        <div className="relative flex-1 bg-muted/30 flex items-center justify-center overflow-hidden select-none">
           {/* Navegação Anterior / Próximo Lateral */}
           {flyers.length > 1 && (
             <>
@@ -263,7 +263,7 @@ export function FlyerInteractiveViewerModal({
                 type="button"
                 onClick={handlePrev}
                 aria-label="Encarte anterior"
-                className="absolute left-2 top-1/2 -translate-y-1/2 z-30 size-10 rounded-full bg-black/60 backdrop-blur-md text-white border border-white/20 flex items-center justify-center hover:bg-black/80 hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-lg"
+                className="absolute left-2 top-1/2 -translate-y-1/2 z-30 size-11 min-h-11 min-w-11 rounded-full bg-card/90 backdrop-blur-md text-foreground border border-border/40 flex items-center justify-center hover:bg-muted hover:scale-105 active:scale-95 transition-transform cursor-pointer shadow-2xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               >
                 <ChevronLeft className="size-6" />
               </button>
@@ -272,7 +272,7 @@ export function FlyerInteractiveViewerModal({
                 type="button"
                 onClick={handleNext}
                 aria-label="Próximo encarte"
-                className="absolute right-2 top-1/2 -translate-y-1/2 z-30 size-10 rounded-full bg-black/60 backdrop-blur-md text-white border border-white/20 flex items-center justify-center hover:bg-black/80 hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-lg"
+                className="absolute right-2 top-1/2 -translate-y-1/2 z-30 size-11 min-h-11 min-w-11 rounded-full bg-card/90 backdrop-blur-md text-foreground border border-border/40 flex items-center justify-center hover:bg-muted hover:scale-105 active:scale-95 transition-transform cursor-pointer shadow-2xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               >
                 <ChevronRight className="size-6" />
               </button>
@@ -281,11 +281,11 @@ export function FlyerInteractiveViewerModal({
 
           {/* Container do Encarte (Preserva Proporção e Alinha Pins) */}
           <div className="relative max-h-full max-w-full flex items-center justify-center p-2 sm:p-4">
-            <div className="relative inline-block overflow-hidden shadow-2xl rounded-lg">
+            <div className="relative inline-block overflow-hidden shadow-2xs rounded-lg">
               <img
                 src={currentFlyer.image_url}
                 alt={currentFlyer.title}
-                className="max-h-[75vh] sm:max-h-[78vh] w-auto object-contain rounded-lg select-none"
+                className="max-h-full w-auto object-contain rounded-lg select-none"
               />
 
               {/* Botões Redondos Interativos (Hotspots de Destaque) */}
@@ -304,7 +304,7 @@ export function FlyerInteractiveViewerModal({
                       setActiveHotspot(isActive ? null : spot);
                     }}
                     className={cn(
-                      "absolute -translate-x-1/2 -translate-y-1/2 z-20 group focus:outline-none transition-transform cursor-pointer",
+                      "absolute -translate-x-1/2 -translate-y-1/2 z-20 group focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none transition-transform cursor-pointer",
                       isActive ? "scale-125 z-30" : "hover:scale-115"
                     )}
                     aria-label={`Ver oferta de ${spot.title || "produto"}`}
@@ -320,14 +320,14 @@ export function FlyerInteractiveViewerModal({
                     {/* Botão Redondo com Ícone ou Preço */}
                     <div
                       className={cn(
-                        "relative flex items-center justify-center size-8 sm:size-9 rounded-full shadow-lg font-black text-xs border-2 transition-all",
+                        "relative flex items-center justify-center size-8 sm:size-9 rounded-full shadow-2xs font-black text-xs border-2 transition-colors",
                         isRetro
                           ? "bg-red-600 text-amber-300 border-amber-300 shadow-red-950/80 hover:bg-red-700"
-                          : "bg-white text-zinc-900 border-primary shadow-black/40 hover:bg-zinc-100 dark:bg-zinc-900 dark:text-white"
+                          : "bg-card text-foreground border-primary hover:bg-muted"
                       )}
                     >
                       {spot.price_cents ? (
-                        <span className="text-[10px] leading-tight font-black">
+                        <span className="text-xs leading-tight font-black">
                           R$
                         </span>
                       ) : (
@@ -342,7 +342,7 @@ export function FlyerInteractiveViewerModal({
 
           {/* ─── Mini-Card Flutuante do Produto Selecionado (Bottom-Right) ─── */}
           {activeHotspot && (
-            <div className="absolute bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 sm:w-84 z-40 bg-background/95 backdrop-blur-xl p-4 rounded-lg border border-border/80 shadow-2xl text-foreground animate-in fade-in slide-in-from-bottom-3 duration-200">
+            <div className="absolute bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 sm:w-84 z-40 bg-background/95 backdrop-blur-xl p-4 rounded-lg border border-border/80 shadow-2xs text-foreground animate-in fade-in slide-in-from-bottom-3 duration-200">
               <div className="flex items-start justify-between gap-2 pb-2 border-b border-border/40">
                 <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   <Tag className="size-3.5 text-primary" />
@@ -351,7 +351,7 @@ export function FlyerInteractiveViewerModal({
                 <button
                   type="button"
                   onClick={() => setActiveHotspot(null)}
-                  className="p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/50 cursor-pointer"
+                  className="size-11 min-h-11 min-w-11 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/50 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                 >
                   <X className="size-3.5" />
                 </button>
@@ -390,7 +390,7 @@ export function FlyerInteractiveViewerModal({
                   <Button
                     onClick={() => handleAddToCart(activeHotspot)}
                     disabled={isAddingToCart}
-                    className="w-full h-10 rounded-lg font-bold text-xs gap-2 cursor-pointer shadow-md bg-emerald-600 hover:bg-emerald-700 text-white"
+                    className="w-full h-11 min-h-11 rounded-lg font-bold text-xs gap-2 cursor-pointer shadow-2xs bg-emerald-600 hover:bg-emerald-700 text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                   >
                     <ShoppingBag className="size-4" />
                     <span>Adicionar à Sacola</span>
@@ -401,9 +401,10 @@ export function FlyerInteractiveViewerModal({
                   <Button
                     asChild
                     variant="outline"
-                    className="w-full h-8 rounded-lg font-semibold text-xs gap-2 cursor-pointer border-border/60"
+                    className="w-full h-11 min-h-11 rounded-lg font-semibold text-xs gap-2 cursor-pointer border-border/60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                   >
                     <Link
+                      className="focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                       to="/produto/$slug"
                       params={{ slug: activeHotspot.product_slug }}
                       onClick={() => onOpenChange(false)}
@@ -419,7 +420,7 @@ export function FlyerInteractiveViewerModal({
         </div>
 
         {/* ─── Footer: Dica de Toque & Gaveta de Todos os Produtos ──── */}
-        <div className="px-4 py-3 bg-black/80 border-t border-white/10 flex items-center justify-between text-[11px] text-zinc-400 shrink-0">
+        <div className="px-4 py-3 bg-card border-t border-border/40 flex items-center justify-between text-xs text-muted-foreground shrink-0">
           <div className="flex items-center gap-2">
             <span className="inline-block size-2 rounded-full bg-emerald-500 animate-pulse" />
             <span>
@@ -433,7 +434,7 @@ export function FlyerInteractiveViewerModal({
             <button
               type="button"
               onClick={() => setShowProductDrawer(!showProductDrawer)}
-              className="text-primary font-bold hover:underline cursor-pointer flex items-center gap-1"
+              className="text-primary font-bold hover:underline cursor-pointer flex items-center gap-1 min-h-11 h-11 px-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             >
               <span>{showProductDrawer ? "Ocultar lista" : `Ver todas as ofertas (${hotspots.length})`}</span>
             </button>
@@ -442,15 +443,15 @@ export function FlyerInteractiveViewerModal({
 
         {/* Gaveta Inferior com Lista de Todas as Ofertas Marcadas */}
         {showProductDrawer && hotspots.length > 0 && (
-          <div className="bg-zinc-950 border-t border-zinc-800 p-4 max-h-48 overflow-y-auto space-y-2 animate-in slide-in-from-bottom-2">
+          <div className="bg-card border-t border-border/60 p-4 max-h-48 overflow-y-auto space-y-2 animate-in slide-in-from-bottom-2">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {hotspots.map((spot, idx) => (
                 <div
                   key={spot.id || idx}
-                  className="flex items-center justify-between p-2 rounded-lg bg-zinc-900 border border-zinc-800 gap-2"
+                  className="flex items-center justify-between p-2 rounded-lg bg-muted/40 border border-border/40 gap-2"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs font-bold text-white truncate">{spot.title || "Produto"}</p>
+                    <p className="text-xs font-bold text-foreground truncate">{spot.title || "Produto"}</p>
                     {spot.price_cents !== undefined && (
                       <p className="text-xs font-semibold text-emerald-400">{formatMoney(spot.price_cents)}</p>
                     )}
@@ -459,7 +460,7 @@ export function FlyerInteractiveViewerModal({
                     <Button
                       size="sm"
                       onClick={() => handleAddToCart(spot)}
-                      className="h-7 px-3 rounded-lg text-[10px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white shrink-0"
+                      className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-primary-foreground shrink-0 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                     >
                       + Sacola
                     </Button>

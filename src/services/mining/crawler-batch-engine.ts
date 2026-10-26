@@ -1,10 +1,10 @@
 /**
  * crawler-batch-engine.ts — Motor Puro e Desacoplado de Processamento da Fila de Crawling
- * 
+ *
  * Executa lotes da crawl_queue sem dependência de contexto de requisição HTTP (AsyncLocalStorage),
  * permitindo acionamento seguro por pg_cron, jobs de borda, workers serverless e CLI scripts.
  * Roteamento polimórfico industrial para as 8 entidades do ecossistema Waesy.
- * 
+ *
  * Regra: ZERO MOCKS. Todos os dados são extraídos de fontes reais e auditados.
  */
 
@@ -90,47 +90,72 @@ export async function executeCrawlQueueBatchDirect(
   options?: CrawlBatchOptions
 ): Promise<CrawlBatchResult> {
   const supabase = getServerClient();
+  const startTime = Date.now();
   const batchSize = options?.batchSize || options?.limit || 2;
 
   // 0. Auto-reset / Reaper de itens presos em 'processing' há mais de 10 minutos
   await reapStalledProcessingQueueItems(supabase);
 
-  // 1. Busca itens pendentes ordenados por prioridade decrescente e idade
-  let query = supabase
-    .from("crawl_queue")
-    .select("*")
-    .eq("status", "pending")
-    .order("priority", { ascending: false })
-    .order("created_at", { ascending: true })
-    .limit(batchSize);
+  // 1. Claim atômico anti-concorrência via RPC PostgreSQL (FOR UPDATE SKIP LOCKED)
+  let queueItems: any[] = [];
+  let isAlreadyClaimed = false;
+  const workerId = `worker-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 
-  if (options?.storeId) {
-    query = query.eq("store_id", options.storeId);
+  try {
+    const { data: claimed, error: rpcErr } = await supabase.rpc("claim_crawl_queue_batch", {
+      p_worker_id: workerId,
+      p_batch_size: batchSize,
+      p_lease_seconds: 300,
+    });
+    if (!rpcErr && Array.isArray(claimed) && claimed.length > 0) {
+      queueItems = claimed;
+      isAlreadyClaimed = true;
+    }
+  } catch {
+    // Fallback gracioso para query clássica se a migration da RPC ainda não estiver aplicada
   }
 
-  const { data: queueItems, error: fetchErr } = await query;
-  if (fetchErr != null || queueItems == null || queueItems.length === 0) {
-    return {
-      processed: 0,
-      succeeded: 0,
-      failed: 0,
-      items: [],
-      message: "Fila de crawling vazia no momento.",
-    };
+  // 1.1. Fallback clássico caso a RPC não tenha retornado registros
+  if (queueItems.length === 0) {
+    let query = supabase
+      .from("crawl_queue")
+      .select("*")
+      .eq("status", "pending")
+      .order("priority", { ascending: false })
+      .order("created_at", { ascending: true })
+      .limit(batchSize);
+
+    if (options?.storeId) {
+      query = query.eq("store_id", options.storeId);
+    }
+
+    const { data: items, error: fetchErr } = await query;
+    if (fetchErr != null || items == null || items.length === 0) {
+      return {
+        processed: 0,
+        succeeded: 0,
+        failed: 0,
+        items: [],
+        message: "Fila de crawling vazia no momento.",
+      };
+    }
+    queueItems = items;
   }
 
   const results: CrawlBatchItemResult[] = [];
 
   for (const item of queueItems) {
-    // 2. Marca status como processing
-    await supabase
-      .from("crawl_queue")
-      .update({
-        status: "processing",
-        processed_at: new Date().toISOString(),
-        retry_count: (item.retry_count || 0) + 1,
-      })
-      .eq("id", item.id);
+    // 2. Marca status como processing apenas se não foi reservado via RPC
+    if (!isAlreadyClaimed) {
+      await supabase
+        .from("crawl_queue")
+        .update({
+          status: "processing",
+          processed_at: new Date().toISOString(),
+          retry_count: (item.retry_count || 0) + 1,
+        })
+        .eq("id", item.id);
+    }
 
     try {
       const entityType = (item.entity_type || "news").toLowerCase();
@@ -356,24 +381,48 @@ export async function executeCrawlQueueBatchDirect(
           sourceName: item.metadata?.source_name,
         });
 
-        await supabase
-          .from("crawl_queue")
-          .update({
-            status: eventRes.success ? "completed" : "failed",
-            last_error: eventRes.error || null,
-            processing_error: eventRes.error || null,
-            completed_at: new Date().toISOString(),
-          })
-          .eq("id", item.id);
+        if (eventRes.isNewsArticle) {
+          // Reclassificação determinística: artigo jornalístico colhido na fila de eventos vai para a fila de notícias
+          await supabase
+            .from("crawl_queue")
+            .update({
+              entity_type: "news",
+              status: "pending",
+              metadata: {
+                ...(item.metadata || {}),
+                reclassified_from: "event",
+                reclassification_reason: "identified_as_editorial_news",
+              },
+            })
+            .eq("id", item.id);
 
-        results.push({
-          id: item.id,
-          url: item.url,
-          entityType: "event",
-          status: eventRes.success ? "completed" : "failed",
-          eventId: eventRes.eventId,
-          error: eventRes.error,
-        });
+          results.push({
+            id: item.id,
+            url: item.url,
+            entityType: "event",
+            status: "completed",
+            error: "Reclassificado para fila de notícias (artigo editorial sem bilheteria).",
+          });
+        } else {
+          await supabase
+            .from("crawl_queue")
+            .update({
+              status: eventRes.success ? "completed" : "failed",
+              last_error: eventRes.error || null,
+              processing_error: eventRes.error || null,
+              completed_at: new Date().toISOString(),
+            })
+            .eq("id", item.id);
+
+          results.push({
+            id: item.id,
+            url: item.url,
+            entityType: "event",
+            status: eventRes.success ? "completed" : "failed",
+            eventId: eventRes.eventId,
+            error: eventRes.error,
+          });
+        }
 
       } else {
         // ── 8. NOTÍCIAS & ARTIGOS HTML (news_articles) ───────────────────
@@ -533,17 +582,6 @@ export async function executeCrawlQueueBatchDirect(
                   })
                   .eq("id", minedArticle.id);
               }
-
-              // Se a matéria descreve um evento cultural, feira, show ou congresso, promove também para public.events
-              if (/(show|festival|feira|exposi[çc][ãa]o|congresso|oktoberfest|agenda cultural|espet[áa]culo|campeonato)/i.test(cleanTitle)) {
-                await harvestAndPersistEvent({
-                  url: item.url,
-                  city,
-                  state,
-                  storeId: defaultStoreId || undefined,
-                  sourceName: new URL(item.url).hostname,
-                }).catch(() => null);
-              }
             }
           }
         }
@@ -592,6 +630,24 @@ export async function executeCrawlQueueBatchDirect(
 
   const succeeded = results.filter((r) => r.status === "completed").length;
   const failed = results.filter((r) => r.status === "failed").length;
+
+  try {
+    await supabase.from("scraper_audit_log").insert({
+      scraper_name: "crawler-batch-engine",
+      action: "batch_crawl",
+      target_table: "multiple",
+      status: failed === 0 ? "success" : succeeded > 0 ? "partial" : "failed",
+      duration_ms: Date.now() - startTime,
+      records_affected: succeeded,
+      result_summary: {
+        workerId,
+        processed: results.length,
+        succeeded,
+        failed,
+        entities: results.map((r) => r.entityType),
+      },
+    });
+  } catch {}
 
   return {
     processed: results.length,

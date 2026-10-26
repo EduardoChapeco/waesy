@@ -411,7 +411,7 @@ export function ClassifiedDetailDesktop({
   }, [attrs, classified, images, locationText]);
 
   return (
-    <div className="w-full min-h-[100dvh] bg-background text-foreground pb-16">
+    <div className="w-full min-h-screen bg-background text-foreground pb-16">
       {/* ── BREADCRUMBS & TOP BAR ACTIONS (Desktop) ── */}
       <div className="w-full max-w-7xl mx-auto px-6 pt-5 pb-4 flex items-center justify-between gap-4">
         {/* Breadcrumb Limpo */}
@@ -432,7 +432,7 @@ export function ClassifiedDetailDesktop({
               variant="outline"
               size="sm"
               onClick={onOpenCompanion}
-              className="h-10 px-4 rounded-lg text-xs font-semibold border-border/70 bg-card hover:bg-muted/50 text-foreground flex items-center gap-2 cursor-pointer active:scale-98"
+              className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold border-border/70 bg-card hover:bg-muted/50 text-foreground flex items-center gap-2 cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <Smartphone className="size-4 text-primary" />
               <span>Guia Digital</span>
@@ -443,7 +443,7 @@ export function ClassifiedDetailDesktop({
             variant="outline"
             size="sm"
             onClick={handleShare}
-            className="h-10 px-4 rounded-lg text-xs font-semibold border-border/70 bg-card hover:bg-muted/50 text-foreground flex items-center gap-2 cursor-pointer"
+            className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold border-border/70 bg-card hover:bg-muted/50 text-foreground flex items-center gap-2 cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <Share2 className="size-4" />
             <span>Compartilhar</span>
@@ -452,7 +452,7 @@ export function ClassifiedDetailDesktop({
           <FavoriteButton
             itemId={classified.id}
             itemType="classified"
-            className="size-10 rounded-lg border border-border/70 bg-card hover:bg-muted/50 flex items-center justify-center text-muted-foreground hover:text-foreground"
+            className="size-11 min-h-11 rounded-lg border border-border/70 bg-card hover:bg-muted/50 flex items-center justify-center text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           />
 
           {isOwner && onEdit && (
@@ -460,7 +460,7 @@ export function ClassifiedDetailDesktop({
               variant="outline"
               size="sm"
               onClick={onEdit}
-              className="h-10 px-3 rounded-lg border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-200 text-xs font-bold flex items-center gap-2"
+              className="h-11 min-h-11 px-3 rounded-lg border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-200 text-xs font-bold flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
             >
               <Edit3 className="size-3.5 text-amber-600" />
               <span>Editar Anúncio</span>
@@ -472,35 +472,35 @@ export function ClassifiedDetailDesktop({
       {/* ── MOSAICO BENTO DE MÍDIA (Desktop Airbnb Layout) ── */}
       <div className="w-full max-w-7xl mx-auto px-6 mb-8">
         {images.length === 0 ? (
-          <div className="w-full aspect-[21/9] max-h-[420px] rounded-lg bg-muted/20 border border-border/40 flex flex-col items-center justify-center text-muted-foreground gap-2">
-            <Package className="size-12 stroke-[1.5]" />
+          <div className="w-full aspect-banner-ultrawide max-h-112 rounded-lg bg-muted/20 border border-border/40 flex flex-col items-center justify-center text-muted-foreground gap-2">
+            <Package className="size-12 stroke-1" />
             <span className="text-sm">Nenhuma foto cadastrada para este anúncio</span>
           </div>
         ) : images.length === 1 ? (
-          <div className="w-full aspect-[16/9] max-h-[480px] rounded-lg overflow-hidden bg-muted/20 border border-border/40 relative group">
+          <div className="w-full aspect-video max-h-128 rounded-lg overflow-hidden bg-muted/20 border border-border/40 relative group">
             <img
               src={images[0]}
               alt={classified.title}
-              className="size-full object-cover cursor-pointer group-hover:scale-[1.01] transition-transform duration-300"
+              className="size-full object-cover cursor-pointer group-hover:scale-105 transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               onClick={() => setFullscreenImage(images[0])}
             />
             <button
               type="button"
               onClick={() => setFullscreenImage(images[0])}
-              className="absolute bottom-4 right-4 px-4 py-2 rounded-lg bg-background/90 hover:bg-background text-foreground text-xs font-semibold border border-border/60 flex items-center gap-2 transition-all shadow-sm"
+              className="absolute bottom-4 right-4 h-11 min-h-11 px-4 rounded-lg bg-background/90 hover:bg-background text-foreground text-xs font-semibold border border-border/60 flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <Maximize2 className="size-4" />
               <span>Ver em tela cheia</span>
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-12 gap-3 aspect-[16/9] max-h-[500px] rounded-lg overflow-hidden border border-border/40 bg-muted/20 relative group">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 aspect-video max-h-128 rounded-lg overflow-hidden border border-border/40 bg-muted/20 relative group">
             {/* Foto Principal Hero (8 colunas) */}
             <div className="col-span-8 relative overflow-hidden bg-muted/30 h-full">
               <img
                 src={images[0]}
                 alt={classified.title}
-                className="size-full object-cover cursor-pointer hover:scale-[1.01] transition-transform duration-300"
+                className="size-full object-cover cursor-pointer hover:scale-105 transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 onClick={() => setFullscreenImage(images[0])}
               />
             </div>
@@ -510,7 +510,9 @@ export function ClassifiedDetailDesktop({
                 <img
                   src={images[1] || images[0]}
                   alt=""
-                  className="size-full object-cover cursor-pointer hover:scale-[1.01] transition-transform duration-300"
+                  tabIndex={0}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setFullscreenImage(images[1] || images[0]); }}
+                  className="size-full object-cover cursor-pointer hover:scale-105 transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   onClick={() => setFullscreenImage(images[1] || images[0])}
                 />
               </div>
@@ -518,13 +520,15 @@ export function ClassifiedDetailDesktop({
                 <img
                   src={images[2] || images[0]}
                   alt=""
-                  className="size-full object-cover cursor-pointer hover:scale-[1.01] transition-transform duration-300"
+                  tabIndex={0}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setFullscreenImage(images[2] || images[0]); }}
+                  className="size-full object-cover cursor-pointer hover:scale-105 transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   onClick={() => setFullscreenImage(images[2] || images[0])}
                 />
                 <button
                   type="button"
                   onClick={() => setFullscreenImage(images[0])}
-                  className="absolute bottom-4 right-4 px-4 py-2 rounded-lg bg-background/95 border border-border/50 text-foreground text-xs font-semibold flex items-center gap-2 shadow-md hover:bg-background cursor-pointer active:scale-95"
+                  className="absolute bottom-4 right-4 h-11 min-h-11 px-4 rounded-lg bg-background/95 border border-border/50 text-foreground text-xs font-semibold flex items-center gap-2 hover:bg-background cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   <Maximize2 className="size-3.5" />
                   <span>Ver todas ({images.length})</span>
@@ -536,7 +540,7 @@ export function ClassifiedDetailDesktop({
       </div>
 
       {/* ── SPLIT-SCREEN GRID (Desktop 2-Column: 7 cols esquerda + 5 cols direita) ── */}
-      <div className="w-full max-w-7xl mx-auto px-6 grid grid-cols-12 gap-8 items-start">
+      <div className="w-full max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* ══ COLUNA ESQUERDA: Detalhes, Especificações, Vendedor, Mapa (7 Colunas) ══ */}
         <div className="col-span-7 space-y-6">
           {/* Cabeçalho do Anúncio */}
@@ -714,7 +718,7 @@ export function ClassifiedDetailDesktop({
                     {travelDetails.hotelPhotos.length > 0 && (
                       <div className="space-y-2">
                         <span className="text-xs text-muted-foreground block font-medium">Fotos da Acomodação</span>
-                        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1 snap-x">
+                        <div className="flex gap-3 overflow-x-auto scroll-area-carousel no-scrollbar pb-1 snap-x">
                           {travelDetails.hotelPhotos.map((photo, pIdx) => (
                             <button
                               key={pIdx}
@@ -779,7 +783,7 @@ export function ClassifiedDetailDesktop({
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {/* Item 1: Alimentação */}
                       <div className="p-3 rounded-lg bg-muted/20 border border-border/40 flex items-start gap-3">
-                        <div className="size-9 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+                        <div className="size-9 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
                           <Utensils className="size-4" />
                         </div>
                         <div className="min-w-0 text-xs leading-snug space-y-1">
@@ -790,7 +794,7 @@ export function ClassifiedDetailDesktop({
 
                       {/* Item 2: Traslados */}
                       <div className="p-3 rounded-lg bg-muted/20 border border-border/40 flex items-start gap-3">
-                        <div className="size-9 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+                        <div className="size-9 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
                           <Truck className="size-4" />
                         </div>
                         <div className="min-w-0 text-xs leading-snug space-y-1">
@@ -801,7 +805,7 @@ export function ClassifiedDetailDesktop({
 
                       {/* Item 3: Passeios */}
                       <div className="p-3 rounded-lg bg-muted/20 border border-border/40 flex items-start gap-3">
-                        <div className="size-9 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+                        <div className="size-9 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
                           <Compass className="size-4" />
                         </div>
                         <div className="min-w-0 text-xs leading-snug space-y-1">
@@ -812,7 +816,7 @@ export function ClassifiedDetailDesktop({
 
                       {/* Item 4: Suporte e Seguro */}
                       <div className="p-3 rounded-lg bg-muted/20 border border-border/40 flex items-start gap-3">
-                        <div className="size-9 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
+                        <div className="size-9 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-1">
                           <ShieldCheck className="size-4" />
                         </div>
                         <div className="min-w-0 text-xs leading-snug space-y-1">
@@ -1104,7 +1108,7 @@ export function ClassifiedDetailDesktop({
                       <div>
                         <span className="text-muted-foreground block font-medium">Avaliação da Empresa</span>
                         <span className="font-semibold text-foreground">
-                          {Number(classified.rating).toFixed(1)} ★ {classified.review_count ? `(${classified.review_count} avaliações)` : ""}
+                          {Number(classified.rating).toFixed(1)} / 5.0 {classified.review_count ? `(${classified.review_count} avaliações)` : ""}
                         </span>
                       </div>
                     </div>
@@ -1186,7 +1190,7 @@ export function ClassifiedDetailDesktop({
 
         {/* ══ COLUNA DIREITA: Card Sticky de Preço & Conversão (5 Colunas) ══ */}
         <div className="col-span-5">
-          <div className="sticky top-20 rounded-lg border border-border/60 bg-card p-6 shadow-sm space-y-6">
+          <div className="sticky top-20 rounded-lg border border-border/60 bg-card p-6 space-y-6">
             {/* Bloco de Preço */}
             <div className="space-y-2 pb-4 border-b border-border/50">
               {isDonation ? (
@@ -1278,7 +1282,7 @@ export function ClassifiedDetailDesktop({
                 <Button
                   type="button"
                   onClick={() => setIsLeadFormModalOpen(true)}
-                  className="h-12 w-full rounded-lg text-sm font-bold bg-primary text-primary-foreground shadow-sm hover:opacity-95 active:scale-[0.99] transition-all cursor-pointer flex items-center justify-center gap-2"
+                  className="h-12 min-h-11 w-full rounded-lg text-sm font-bold bg-primary text-primary-foreground hover:opacity-95 active:scale-95 transition-opacity cursor-pointer flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   <FileText className="size-4" />
                   <span>{attrs?.inquiry_config?.title || "Tenho Interesse neste Anúncio"}</span>
@@ -1290,7 +1294,7 @@ export function ClassifiedDetailDesktop({
                 onClick={primaryCta.action}
                 disabled={isBooking || isBuyingDirect || isDownloadingDigital}
                 className={cn(
-                  "h-12 w-full rounded-lg text-sm font-bold shadow-sm hover:opacity-95 active:scale-[0.99] transition-all cursor-pointer",
+                  "h-12 min-h-11 w-full rounded-lg text-sm font-bold hover:opacity-95 active:scale-95 transition-opacity cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   classified.lead_form || classified.form_id
                     ? "bg-secondary text-secondary-foreground hover:bg-secondary/80"
                     : "bg-primary text-primary-foreground"
@@ -1354,33 +1358,43 @@ export function ClassifiedDetailDesktop({
       {/* ── LIGHTBOX MODAL ── */}
       {fullscreenImage && (
         <div
-          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4 select-none animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 bg-background/95 backdrop-blur-md flex items-center justify-center p-4 select-none animate-in fade-in duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           onClick={() => setFullscreenImage(null)}
         >
           <button
             type="button"
             onClick={() => setFullscreenImage(null)}
-            className="absolute top-4 right-4 z-10 size-10 rounded-lg bg-muted/80 hover:bg-muted text-foreground flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="absolute top-4 right-4 z-10 size-11 min-h-11 rounded-lg bg-muted/80 hover:bg-muted text-foreground flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             aria-label="Fechar tela cheia"
           >
             <X className="size-6" />
           </button>
           {isVideoUrl(fullscreenImage) ? (
-            <video
-              src={fullscreenImage}
-              controls
-              playsInline
-              autoPlay
-              className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
+            <div
+              className="max-h-sheet max-w-7xl flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              tabIndex={0}
               onClick={(e) => e.stopPropagation()}
-            />
+            >
+              <video
+                src={fullscreenImage}
+                controls
+                playsInline
+                autoPlay
+                className="size-full object-contain rounded-lg"
+              />
+            </div>
           ) : (
-            <img
-              src={fullscreenImage}
-              alt="Tela cheia"
-              className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
+            <div
+              className="max-h-sheet max-w-7xl flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              tabIndex={0}
               onClick={(e) => e.stopPropagation()}
-            />
+            >
+              <img
+                src={fullscreenImage}
+                alt="Tela cheia"
+                className="size-full object-contain rounded-lg"
+              />
+            </div>
           )}
         </div>
       )}

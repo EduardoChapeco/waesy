@@ -50,12 +50,12 @@ export function HeroCarousel({
   const heightMode = String(content.desktopHeight || "proportional");
   const heightClass =
     heightMode === "full"
-      ? "h-[85dvh] @md:h-[100dvh]"
+      ? "h-screen-dvh"
       : heightMode === "square"
       ? "aspect-square"
       : heightMode === "natural"
       ? ""
-      : "aspect-[16/9] sm:aspect-[2.4/1] @md:aspect-[21/9] lg:aspect-[3/1] w-full h-auto"; // Escala proporcional sem cortes no mobile
+      : "aspect-banner-cinema sm:aspect-banner-classic @md:aspect-banner-ultrawide lg:aspect-banner-slim w-full h-auto"; // Escala proporcional sem cortes no mobile
 
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -90,7 +90,7 @@ export function HeroCarousel({
   if (banners.length === 0) {
     return (
       <section className="relative overflow-hidden bg-secondary">
-        <div className="flex aspect-[4/5] @md:aspect-[21/9] w-full flex-col items-center justify-center gap-3 text-muted-foreground border-y border-border">
+        <div className="flex aspect-post-vertical @md:aspect-banner-ultrawide w-full flex-col items-center justify-center gap-3 text-muted-foreground border-y border-border">
           <ImageOff className="size-10" aria-hidden />
           <p>Nenhum banner configurado</p>
         </div>
@@ -139,16 +139,16 @@ export function HeroCarousel({
                           heightMode === "natural"
                             ? "h-auto object-contain"
                             : "h-full object-contain"
-                        } transition-transform duration-1000 group-hover:scale-105 select-none`}
+                        } transition-transform duration-300 motion-reduce:transition-none group-hover:scale-105 select-none`}
                       />
                     </picture>
                   </div>
                 ) : (
-                  <div className="absolute inset-0 w-full h-full from-[#1a1a2e] to-[#16213e] flex flex-col items-center justify-center border border-dashed border-white/10 p-4">
-                    <span className="text-white/60 text-sm font-semibold tracking-wide uppercase mb-1">
+                  <div className="absolute inset-0 w-full h-full bg-muted flex flex-col items-center justify-center border border-dashed border-border/40 p-4">
+                    <span className="text-foreground/80 text-sm font-semibold tracking-wide uppercase mb-1">
                       Banner Principal
                     </span>
-                    <span className="text-white/30 text-xs">
+                    <span className="text-muted-foreground text-xs">
                       Arraste/selecione uma imagem ou cole uma URL no painel à direita
                     </span>
                   </div>
@@ -164,7 +164,7 @@ export function HeroCarousel({
                 {/* Content Overlay */}
                 <div className="absolute inset-0 z-10 mx-auto flex w-full max-w-screen-xl flex-col items-start justify-end pb-12 sm:pb-16 px-4 sm:px-6 @md:justify-center @md:pb-0 @md:px-12 pointer-events-none">
                   {title && (
-                    <h2 className="text-balance text-2xl sm:text-4xl text-white @md:text-6xl @xl:text-7xl font-light tracking-tight drop- max-w-3xl pointer-events-auto leading-none">
+                    <h2 className="text-balance text-2xl sm:text-4xl text-foreground @md:text-6xl @xl:text-7xl font-light tracking-tight max-w-3xl pointer-events-auto leading-none">
                       {title}
                     </h2>
                   )}
@@ -172,12 +172,13 @@ export function HeroCarousel({
                     <div className="mt-4 sm:mt-6 @md:mt-8 pointer-events-auto">
                       <Button
                         size="lg"
-                        className="bg-white/95 text-black hover:bg-white border border-transparent hover:scale-[1.02] transition-all font-medium rounded-full px-6 sm:px-8 h-10 sm:h-12 text-xs sm:text-sm"
+                        className="bg-primary text-primary-foreground hover:opacity-90 active:scale-98 transition-colors motion-reduce:transition-none font-medium rounded-full px-6 sm:px-8 h-11 min-h-11 text-xs sm:text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
                         asChild
                       >
                         <Link
                           to={button_link as never}
                           onClick={() => trackClick({ index, title, link: button_link })}
+                          className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           {button_text}
                           <ChevronRight className="size-4 ml-1" aria-hidden />
@@ -196,14 +197,14 @@ export function HeroCarousel({
         <>
           <button
             onClick={scrollPrev}
-            className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-black/20 p-2 text-white backdrop-blur hover:bg-black/40 z-20 hidden @md:block transition-all cursor-pointer"
+            className="absolute left-4 top-1/2 -translate-y-1/2 size-11 min-h-11 rounded-full bg-background/80 p-2 text-foreground backdrop-blur border border-border/60 hover:bg-background z-20 hidden @md:flex items-center justify-center transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Anterior"
           >
             <ChevronLeft className="size-6" />
           </button>
           <button
             onClick={scrollNext}
-            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-black/20 p-2 text-white backdrop-blur hover:bg-black/40 z-20 hidden @md:block transition-all cursor-pointer"
+            className="absolute right-4 top-1/2 -translate-y-1/2 size-11 min-h-11 rounded-full bg-background/80 p-2 text-foreground backdrop-blur border border-border/60 hover:bg-background z-20 hidden @md:flex items-center justify-center transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Próximo"
           >
             <ChevronRight className="size-6" />

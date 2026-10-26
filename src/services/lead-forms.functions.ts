@@ -200,6 +200,7 @@ export const submitPublicLeadForm = createServerFn({ method: "POST" })
   .validator(
     z.object({
       formSlug: z.string().min(1),
+      leadId: z.string().uuid().optional().nullable(),
       classifiedId: z.string().uuid().optional().nullable(),
       contactName: z.string().min(2, "Nome deve ter ao menos 2 caracteres"),
       contactEmail: z.string().email("E-mail inválido").optional().nullable().or(z.literal("")),
@@ -317,6 +318,80 @@ export const submitPublicLeadForm = createServerFn({ method: "POST" })
         } catch (regErr) {
           console.warn("[lead-forms] Aviso ao criar perfil rápido provisório:", regErr);
         }
+      }
+    }
+
+    // 2.1 Atualização Atômica do Lead e Cliente se leadId foi fornecido ou por matching de telefone
+    let matchedLeadId = data.leadId || null;
+    if (!matchedLeadId && cleanPhone) {
+      try {
+        const { data: matchedLeads } = await supabase
+          .from("leads_crm")
+          .select("id")
+          .eq("store_id", formRow.store_id)
+          .eq("phone", cleanPhone)
+          .order("created_at", { ascending: false })
+          .limit(1);
+        if (matchedLeads && matchedLeads.length > 0) {
+          matchedLeadId = matchedLeads[0].id;
+        }
+      } catch (err) {
+        console.warn("[lead-forms] notice matching lead by phone:", err);
+      }
+    }
+
+    if (matchedLeadId) {
+      try {
+        const answers = data.answers || {};
+        const dest = answers.destino || answers.destination || answers.cidade_destino;
+        const start = answers.data_embarque || answers.data_ida || answers.data_viagem || answers.travel_start;
+        const end = answers.data_retorno || answers.data_volta || answers.travel_end;
+        const paxRaw = answers.passageiros || answers.pax;
+        let paxCount: number | undefined = undefined;
+        if (paxRaw) {
+          const num = parseInt(String(paxRaw), 10);
+          if (!isNaN(num) && num > 0) paxCount = num;
+          else if (String(paxRaw).toLowerCase().includes("casal")) paxCount = 2;
+          else if (String(paxRaw).toLowerCase().includes("familia")) paxCount = 4;
+          else if (String(paxRaw).toLowerCase().includes("grupo")) paxCount = 6;
+        }
+
+        const leadPatch: Record<string, any> = {
+          updated_at: new Date().toISOString(),
+        };
+        if (dest && typeof dest === "string") leadPatch.destination = dest.trim();
+        if (start && typeof start === "string") leadPatch.travel_start = start.trim();
+        if (end && typeof end === "string") leadPatch.travel_end = end.trim();
+        if (paxCount) leadPatch.pax_count = paxCount;
+
+        await supabase
+          .from("leads_crm")
+          .update(leadPatch)
+          .eq("id", matchedLeadId);
+
+        const { data: leadRow } = await supabase
+          .from("leads_crm")
+          .select("customer_id")
+          .eq("id", matchedLeadId)
+          .single();
+
+        if (leadRow?.customer_id) {
+          const custPatch: Record<string, any> = {
+            updated_at: new Date().toISOString(),
+          };
+          if (answers.cpf || answers.documento) {
+            custPatch.document = String(answers.cpf || answers.documento).trim();
+          }
+          if (answers.endereco) {
+            custPatch.address = String(answers.endereco).trim();
+          }
+          await supabase
+            .from("customers_crm")
+            .update(custPatch)
+            .eq("id", leadRow.customer_id);
+        }
+      } catch (patchErr) {
+        console.warn("[lead-forms] notice updating lead from onboarding submission:", patchErr);
       }
     }
 
@@ -1084,5 +1159,34 @@ export const submitCivilInquiryLead = createServerFn({ method: "POST" })
       contactName: data.contactName.trim(),
       answers: data.answers,
       isNewRegisteredUser: false,
+    };
+  });
+
+// ─── 11. Busca Formulários de Onboarding da Loja (Template Padrão do Nicho) ────
+
+export const getStoreOnboardingForms = createServerFn({ method: "GET" })
+  .validator(z.object({ storeId: z.string().uuid().optional() }).optional())
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    const storeId = data?.storeId || identity.store_id;
+    if (!storeId) return { defaultForm: null, availableForms: [] };
+
+    const supabase = getServerClient();
+    const { data: rows } = await supabase
+      .from("lead_forms")
+      .select("id, store_id, title, slug, description, niche_id, status, submissions_count")
+      .eq("store_id", storeId)
+      .eq("status", "active")
+      .order("created_at", { ascending: false });
+
+    const forms = (rows || []) as LeadFormDTO[];
+    const defaultForm =
+      forms.find((f: any) => f.niche_id === "turismo" || /onboarding|ficha|viajante|cadastr/i.test(f.title)) ||
+      forms[0] ||
+      null;
+
+    return {
+      defaultForm,
+      availableForms: forms,
     };
   });

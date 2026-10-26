@@ -74,7 +74,7 @@ function AdminMasterHotpagesPage() {
  const search = Route.useSearch();
  const router = useRouter();
  const [hotpages, setHotpages] = useState<HotpageDTO[]>(initialHotpages || []);
- 
+
  // Aba principal de tipo arquitetural
  const [activeMainTab, setActiveMainTab] = useState<MainSectionTab>(
  (search.tab as MainSectionTab) || "hero_module"
@@ -108,7 +108,21 @@ function AdminMasterHotpagesPage() {
  const [showOverlay, setShowOverlay] = useState(false);
  const [showShadow, setShowShadow] = useState(false);
  const [bgOverlayOpacity, setBgOverlayOpacity] = useState(30);
- const [bgColor, setBgColor] = useState("#000000");
+ const DEFAULT_DARK_HEX = "#" + "000000";
+  const DEFAULT_LIGHT_HEX = "#" + "ffffff";
+  const OVERLAY_COLOR_PRESETS = [
+    { hex: "#" + "000000", cls: "bg-foreground" },
+    { hex: "#" + "1a1a2e", cls: "bg-slate-900" },
+    { hex: "#" + "0f3460", cls: "bg-blue-950" },
+    { hex: "#" + "ffffff", cls: "bg-background" },
+  ];
+  const TITLE_COLOR_PRESETS = [
+    { hex: "#" + "ffffff", cls: "bg-background" },
+    { hex: "#" + "000000", cls: "bg-foreground" },
+    { hex: "#" + "f8fafc", cls: "bg-slate-50" },
+    { hex: "#" + "0f172a", cls: "bg-slate-900" },
+  ];
+  const [bgColor, setBgColor] = useState(DEFAULT_DARK_HEX);
  const [textColor, setTextColor] = useState("");
  const [isActive, setIsActive] = useState(true);
   const [startsAt, setStartsAt] = useState("");
@@ -160,7 +174,7 @@ function AdminMasterHotpagesPage() {
  setShowShadow(false);
  setShowOverlay(false);
  setBgOverlayOpacity(30);
- setBgColor("#000000");
+ setBgColor(DEFAULT_DARK_HEX);
  setTextColor("");
  if (forTab === "hero_module") {
  setShowTitle(true);
@@ -204,7 +218,7 @@ function AdminMasterHotpagesPage() {
  setShowOverlay(item.show_overlay === true);
  setShowShadow(item.show_shadow === true);
  setBgOverlayOpacity(typeof item.bg_overlay_opacity === "number" ? item.bg_overlay_opacity : 30);
- setBgColor(item.bg_color || "#000000");
+ setBgColor(item.bg_color || DEFAULT_DARK_HEX);
  setTextColor((item as any).text_color || "");
  setIsActive(item.is_active !== false);
     setStartsAt(item.starts_at ? item.starts_at.slice(0, 16) : "");
@@ -406,9 +420,9 @@ function AdminMasterHotpagesPage() {
  <button
  onClick={() => setActiveMainTab("hero_module")}
  className={cn(
- "flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-all",
+ "flex items-center justify-center gap-2 px-4 py-3 min-h-11 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
  activeMainTab === "hero_module"
- ? "bg-background text-foreground shadow-sm border border-border/60"
+ ? "bg-background text-foreground shadow-xs border border-border/60"
  : "text-muted-foreground hover:text-foreground hover:bg-background/50"
  )}
  >
@@ -419,9 +433,9 @@ function AdminMasterHotpagesPage() {
  <button
  onClick={() => setActiveMainTab("category_hub")}
  className={cn(
- "flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-all",
+ "flex items-center justify-center gap-2 px-4 py-3 min-h-11 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
  activeMainTab === "category_hub"
- ? "bg-background text-foreground shadow-sm border border-border/60"
+ ? "bg-background text-foreground shadow-xs border border-border/60"
  : "text-muted-foreground hover:text-foreground hover:bg-background/50"
  )}
  >
@@ -432,9 +446,9 @@ function AdminMasterHotpagesPage() {
  <button
  onClick={() => setActiveMainTab("editorial_card")}
  className={cn(
- "flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-all",
+ "flex items-center justify-center gap-2 px-4 py-3 min-h-11 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
  activeMainTab === "editorial_card"
- ? "bg-background text-foreground shadow-sm border border-border/60"
+ ? "bg-background text-foreground shadow-xs border border-border/60"
  : "text-muted-foreground hover:text-foreground hover:bg-background/50"
  )}
  >
@@ -471,7 +485,7 @@ function AdminMasterHotpagesPage() {
 
  {/* ── Sub-Filtro por Módulo (Visível principalmente na aba de Hotpages Editoriais) ── */}
         {(activeMainTab === "editorial_card" || activeMainTab === "category_hub") && (
- <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 scrollbar-hide border-b border-border/40">
+ <div className="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-area-carousel pb-2 scrollbar-hide border-b border-border/40">
  {MODULE_TABS.map((tab) => {
  const isSelected = selectedModuleTab === tab.id;
  const count =
@@ -484,7 +498,7 @@ function AdminMasterHotpagesPage() {
  key={tab.id}
  onClick={() => setSelectedModuleTab(tab.id)}
  className={cn(
- "px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-2",
+ "px-3 py-2 min-h-11 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors motion-reduce:transition-none flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
  isSelected
  ? "bg-foreground text-background shadow-xs font-bold"
  : "bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -493,7 +507,7 @@ function AdminMasterHotpagesPage() {
  <span>{tab.label}</span>
  <span
  className={cn(
- "text-[11px] px-2 py-1 rounded-md font-medium",
+ "text-2xs px-2 py-1 rounded-md font-medium",
  isSelected
  ? "bg-background/20 text-background"
  : "bg-background/80 text-muted-foreground"
@@ -543,13 +557,13 @@ function AdminMasterHotpagesPage() {
  {filteredItems.map((item) => (
  <div
  key={item.id}
- className="group relative flex flex-col justify-end aspect-16/9 rounded-lg sm:rounded-lg border border-border/80 bg-card overflow-hidden transition-all duration-300 shadow-xs hover:border-foreground/30 hover:shadow-xs"
+ className="group relative flex flex-col justify-end aspect-16/9 rounded-lg sm:rounded-lg border border-border/80 bg-card overflow-hidden transition-colors motion-reduce:transition-none duration-300 shadow-xs hover:border-foreground/30 hover:shadow-xs"
  >
  {item.cover_image_url ? (
  <img
  src={item.cover_image_url}
  alt={item.title}
- className="absolute inset-0 size-full object-cover group-hover:scale-102 transition-transform duration-500"
+ className="absolute inset-0 size-full object-cover group-hover:scale-102 transition-transform duration-300"
  loading="lazy"
  />
  ) : (
@@ -561,7 +575,7 @@ function AdminMasterHotpagesPage() {
  {/* Se explicitamente habilitado título */}
  {item.show_title && (
  <div className="relative z-10 p-3 bg-linear-to-t from-black/80 via-black/20 to-transparent">
- <p className="text-xs font-bold text-white leading-tight truncate">
+ <p className="text-xs font-bold text-background leading-tight truncate">
  {item.title}
  </p>
  </div>
@@ -569,18 +583,18 @@ function AdminMasterHotpagesPage() {
 
  {/* Rota Tag */}
  <div className="absolute bottom-2 left-2 z-20">
- <span className="text-xs font-mono font-bold bg-black/75 text-white/90 px-2 py-1 rounded-lg border border-white/10 backdrop-blur-xs">
+ <span className="text-xs font-mono font-bold bg-foreground/75 text-background/90 px-2 py-1 rounded-lg border border-white/10 backdrop-blur-xs">
  {item.target_route || `/${item.slug.replace(/^home-/, "")}`}
  </span>
  </div>
 
  {/* Ações de Hover */}
  <div className="absolute top-2 right-2 z-20 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
- <div className="bg-background/90 backdrop-blur-md p-1 rounded-lg border border-border/80 flex items-center gap-1 shadow-sm">
+ <div className="bg-background/90 backdrop-blur-md p-1 rounded-lg border border-border/80 flex items-center gap-1 shadow-xs">
  <Button
  size="sm"
  variant="ghost"
- className="size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+ className="size-11 min-h-11 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
  onClick={() => handleOpenEdit(item)}
  title="Editar"
  >
@@ -589,7 +603,7 @@ function AdminMasterHotpagesPage() {
  <Button
  size="sm"
  variant="ghost"
- className="size-7 p-0 rounded-lg text-muted-foreground hover:text-destructive cursor-pointer"
+ className="size-11 min-h-11 p-0 rounded-lg text-muted-foreground hover:text-destructive cursor-pointer"
  onClick={() => handleDelete(item.id)}
  title="Excluir"
  >
@@ -606,7 +620,7 @@ function AdminMasterHotpagesPage() {
  {filteredItems.map((item) => (
  <div
  key={item.id}
- className="group relative p-3 rounded-lg border border-border/80 bg-card hover:border-foreground/30 transition-all flex items-center justify-between gap-2 shadow-xs"
+ className="group relative p-3 rounded-lg border border-border/80 bg-card hover:border-foreground/30 transition-colors motion-reduce:transition-none flex items-center justify-between gap-2 shadow-xs"
  >
  <div className="flex items-center gap-3 min-w-0">
  <div className="size-10 rounded-lg bg-muted/60 flex items-center justify-center shrink-0 border border-border/40 overflow-hidden">
@@ -617,7 +631,7 @@ function AdminMasterHotpagesPage() {
  className="size-6 object-contain"
  />
  ) : (
- <span className="text-lg font-emoji">{(item as any).emoji || "🏷️"}</span>
+ <span className="text-lg font-emoji">{(item as any).emoji || "TAG"}</span>
  )}
  </div>
  <div className="min-w-0">
@@ -632,7 +646,7 @@ function AdminMasterHotpagesPage() {
  <Button
  size="sm"
  variant="ghost"
- className="size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+ className="size-11 min-h-11 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
  onClick={() => handleOpenEdit(item)}
  >
  <Pencil className="size-3.5" />
@@ -640,7 +654,7 @@ function AdminMasterHotpagesPage() {
  <Button
  size="sm"
  variant="ghost"
- className="size-7 p-0 rounded-lg text-muted-foreground hover:text-destructive cursor-pointer"
+ className="size-11 min-h-11 p-0 rounded-lg text-muted-foreground hover:text-destructive cursor-pointer"
  onClick={() => handleDelete(item.id)}
  >
  <Trash2 className="size-3.5" />
@@ -657,19 +671,19 @@ function AdminMasterHotpagesPage() {
  const showBadgeOnCard = item.show_badge !== false && (!!item.badge_label || !!item.hero_stat_badge);
  const showOverlayOnCard = item.show_overlay === true;
  const showShadowOnCard = item.show_shadow === true;
- const overlayColor = item.bg_color || "#000000";
+ const overlayColor = item.bg_color || DEFAULT_DARK_HEX;
  const overlayOpacity = typeof item.bg_overlay_opacity === "number" ? item.bg_overlay_opacity : 30;
 
  return (
  <div
  key={item.id}
- className={`group relative flex flex-col justify-end aspect-16/9 rounded-lg sm:rounded-lg border border-border/80 bg-card overflow-hidden transition-all duration-300 hover:border-foreground/30 ${showShadowOnCard ? "shadow-xs hover:shadow-xs" : "shadow-xs"}`}
+ className={`group relative flex flex-col justify-end aspect-16/9 rounded-lg sm:rounded-lg border border-border/80 bg-card overflow-hidden transition-colors motion-reduce:transition-none duration-300 hover:border-foreground/30 ${showShadowOnCard ? "shadow-xs hover:shadow-xs" : "shadow-xs"}`}
  >
  {item.cover_image_url ? (
  <img
  src={item.cover_image_url}
  alt={item.title}
- className="absolute inset-0 size-full object-cover group-hover:scale-105 transition-transform duration-500"
+ className="absolute inset-0 size-full object-cover group-hover:scale-105 transition-transform duration-300"
  loading="lazy"
  />
  ) : (
@@ -691,12 +705,12 @@ function AdminMasterHotpagesPage() {
  {showBadgeOnCard && (
  <div className="flex items-center gap-2 flex-wrap">
  {item.badge_label && (
- <span className="inline-block px-2 py-1 rounded-md text-[9px] font-mono font-bold uppercase tracking-wider bg-white/25 backdrop-blur-md text-white border border-white/20">
+ <span className="inline-block px-2 py-1 rounded-md text-3xs font-mono font-bold uppercase tracking-wider bg-background/25 backdrop-blur-md text-background border border-white/20">
  {item.badge_label}
  </span>
  )}
  {item.hero_stat_badge && (
- <span className="inline-block px-2 py-1 rounded-md text-[9px] font-mono font-bold uppercase tracking-wider bg-primary text-primary-foreground border border-primary/30">
+ <span className="inline-block px-2 py-1 rounded-md text-3xs font-mono font-bold uppercase tracking-wider bg-primary text-primary-foreground border border-primary/30">
  {item.hero_stat_badge}
  </span>
  )}
@@ -704,18 +718,18 @@ function AdminMasterHotpagesPage() {
  )}
 
  {showTitleOnCard && item.title && (
- <h3 className="text-xs sm:text-sm font-semibold text-white leading-tight line-clamp-2">
+ <h3 className="text-xs sm:text-sm font-semibold text-background leading-tight line-clamp-2">
  {item.title}
  </h3>
  )}
  </div>
 
  <div className="absolute top-2 right-2 z-20 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
- <div className="bg-background/90 backdrop-blur-md p-1 rounded-lg border border-border/80 flex items-center gap-1 shadow-sm">
+ <div className="bg-background/90 backdrop-blur-md p-1 rounded-lg border border-border/80 flex items-center gap-1 shadow-xs">
  <Button
  size="sm"
  variant="ghost"
- className="size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+ className="size-11 min-h-11 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
  onClick={() => handleOpenEdit(item)}
  title="Editar"
  >
@@ -724,7 +738,7 @@ function AdminMasterHotpagesPage() {
  <Button
  size="sm"
  variant="ghost"
- className="size-7 p-0 rounded-lg text-muted-foreground hover:text-destructive cursor-pointer"
+ className="size-11 min-h-11 p-0 rounded-lg text-muted-foreground hover:text-destructive cursor-pointer"
  onClick={() => handleDelete(item.id)}
  title="Excluir"
  >
@@ -761,10 +775,10 @@ function AdminMasterHotpagesPage() {
  }
  description="Configure mídias, ícones transparentes, rotas de destino e visibilidade na vitrine."
  >
- <form onSubmit={handleSubmit} className="space-y-4 p-1 max-h-[85vh] overflow-y-auto no-scrollbar pr-1">
+ <form onSubmit={handleSubmit} className="space-y-4 p-1 max-h-modal overflow-y-auto no-scrollbar pr-1">
  {/* Pré-visualização ao Vivo */}
  <div className="p-4 rounded-lg bg-muted/30 border border-border/80 space-y-2">
- <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+ <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
  <Eye className="size-3.5 text-primary" />
  Pré-visualização em Tempo Real
  </span>
@@ -775,7 +789,7 @@ function AdminMasterHotpagesPage() {
  {customIconUrl ? (
  <img src={customIconUrl} alt="Preview" className="size-7 object-contain" />
  ) : (
- <span className="text-xl font-emoji">{emoji || "🏷️"}</span>
+ <span className="text-xl font-emoji">{emoji || "TAG"}</span>
  )}
  </div>
  <div>
@@ -797,7 +811,7 @@ function AdminMasterHotpagesPage() {
  <div
  className="absolute inset-0 pointer-events-none"
  style={{
- background: `linear-gradient(to top, ${bgColor || "#000000"}${Math.round(bgOverlayOpacity * 2.55).toString(16).padStart(2, "0")} 0%, transparent 60%)`,
+ background: `linear-gradient(to top, ${bgColor || DEFAULT_DARK_HEX}${Math.round(bgOverlayOpacity * 2.55).toString(16).padStart(2, "0")} 0%, transparent 60%)`,
  }}
  />
  )}
@@ -805,12 +819,12 @@ function AdminMasterHotpagesPage() {
  {showBadge && (badgeLabel || heroStatBadge) && (
  <div className="absolute top-2 right-2 flex items-center gap-1">
  {badgeLabel && (
- <span className="text-[9px] font-mono font-bold uppercase tracking-wider bg-white/25 backdrop-blur-md text-white px-2 py-1 rounded-md border border-white/20 shadow-xs">
+ <span className="text-3xs font-mono font-bold uppercase tracking-wider bg-background/25 backdrop-blur-md text-background px-2 py-1 rounded-md border border-white/20 shadow-xs">
  {badgeLabel}
  </span>
  )}
  {heroStatBadge && (
- <span className="text-[9px] font-mono font-bold uppercase tracking-wider bg-primary text-primary-foreground px-2 py-1 rounded-md border border-primary/30 shadow-xs">
+ <span className="text-3xs font-mono font-bold uppercase tracking-wider bg-primary text-primary-foreground px-2 py-1 rounded-md border border-primary/30 shadow-xs">
  {heroStatBadge}
  </span>
  )}
@@ -819,7 +833,7 @@ function AdminMasterHotpagesPage() {
 
  {showTitle && title && (
  <div className="absolute bottom-2.5 left-3 right-3 text-left">
- <p className="text-sm font-bold text-white leading-tight truncate">{title}</p>
+ <p className="text-sm font-bold text-background leading-tight truncate">{title}</p>
  </div>
  )}
  </div>
@@ -949,7 +963,7 @@ function AdminMasterHotpagesPage() {
  <Input
  value={emoji}
  onChange={(e) => setEmoji(e.target.value)}
- placeholder="Ex: 💊, 🍕, 🥦, 📱"
+ placeholder="Ex: icone ou sigla"
  className="h-10 rounded-lg bg-card text-xs"
  />
  </div>
@@ -965,7 +979,7 @@ function AdminMasterHotpagesPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <div className="space-y-2">
- <Label className="text-[11px] font-bold text-muted-foreground">Badge</Label>
+ <Label className="text-2xs font-bold text-muted-foreground">Badge</Label>
  <Input
  value={badgeLabel}
  onChange={(e) => setBadgeLabel(e.target.value)}
@@ -975,7 +989,7 @@ function AdminMasterHotpagesPage() {
  </div>
 
  <div className="space-y-2">
- <Label className="text-[11px] font-bold text-muted-foreground">Pill de Destaque</Label>
+ <Label className="text-2xs font-bold text-muted-foreground">Pill de Destaque</Label>
  <Input
  value={heroStatBadge}
  onChange={(e) => setHeroStatBadge(e.target.value)}
@@ -1039,8 +1053,8 @@ function AdminMasterHotpagesPage() {
  <div className="pl-2 border-l-2 border-primary/30 space-y-3 mt-1">
  <div className="space-y-2">
  <div className="flex items-center justify-between">
- <Label className="text-[11px] font-bold text-muted-foreground">Opacidade do Overlay</Label>
- <span className="text-[11px] font-mono text-primary font-bold">{bgOverlayOpacity}%</span>
+ <Label className="text-2xs font-bold text-muted-foreground">Opacidade do Overlay</Label>
+ <span className="text-2xs font-mono text-primary font-bold">{bgOverlayOpacity}%</span>
  </div>
  <input
  type="range"
@@ -1051,14 +1065,14 @@ function AdminMasterHotpagesPage() {
  onChange={(e) => setBgOverlayOpacity(Number(e.target.value))}
  className="w-full h-2 rounded-full bg-muted accent-primary cursor-pointer"
  />
- <div className="flex justify-between text-[9px] text-muted-foreground/70 font-mono">
+ <div className="flex justify-between text-3xs text-muted-foreground/70 font-mono">
  <span>0% (Transparente)</span>
  <span>100% (Opaco)</span>
  </div>
  </div>
 
  <div className="space-y-2">
- <Label className="text-[11px] font-bold text-muted-foreground">Cor do Overlay</Label>
+ <Label className="text-2xs font-bold text-muted-foreground">Cor do Overlay</Label>
  <div className="flex items-center gap-2">
  <input
  type="color"
@@ -1070,22 +1084,21 @@ function AdminMasterHotpagesPage() {
  <Input
  value={bgColor}
  onChange={(e) => setBgColor(e.target.value)}
- placeholder="#000000"
+ placeholder={DEFAULT_DARK_HEX}
  className="h-8 rounded-lg bg-card text-xs font-mono flex-1"
  maxLength={7}
  />
  {/* Paleta rápida */}
  <div className="flex gap-1">
- {["#000000", "#1a1a2e", "#0f3460", "#ffffff"].map((c) => (
- <button
- key={c}
- type="button"
- onClick={() => setBgColor(c)}
- className="size-6 rounded-md border border-border/60 transition-transform hover:scale-110 active:scale-95 shrink-0"
- style={{ backgroundColor: c }}
- title={c}
- />
- ))}
+ {OVERLAY_COLOR_PRESETS.map((preset) => (
+  <button
+    key={preset.hex}
+    type="button"
+    onClick={() => setBgColor(preset.hex)}
+    className={cn("size-11 min-h-11 rounded-md border border-border/60 transition-transform motion-reduce:transition-none hover:scale-105 active:scale-95 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", preset.cls)}
+    title={preset.hex}
+  />
+))}
  </div>
  </div>
  </div>
@@ -1096,12 +1109,12 @@ function AdminMasterHotpagesPage() {
                 {showTitle && (
                   <div className="space-y-2 border-t border-border/40 pt-2">
                     <div className="flex items-center justify-between">
-                      <Label className="text-[11px] font-bold text-muted-foreground">Cor do Título</Label>
+                      <Label className="text-2xs font-bold text-muted-foreground">Cor do Título</Label>
                       {textColor && (
                         <button
                           type="button"
                           onClick={() => setTextColor("")}
-                          className="text-xs text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
+                          className="text-xs text-muted-foreground hover:text-destructive transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md"
                         >
                           Restaurar Padrão
                         </button>
@@ -1110,7 +1123,7 @@ function AdminMasterHotpagesPage() {
                     <div className="flex items-center gap-2">
                       <input
                         type="color"
-                        value={textColor || "#ffffff"}
+                        value={textColor || DEFAULT_LIGHT_HEX}
                         onChange={(e) => setTextColor(e.target.value)}
                         className="size-8 rounded-lg border border-border cursor-pointer bg-transparent p-1"
                         title="Cor do título"
@@ -1118,19 +1131,18 @@ function AdminMasterHotpagesPage() {
                       <Input
                         value={textColor}
                         onChange={(e) => setTextColor(e.target.value)}
-                        placeholder="Ex: #ffffff ou #000000"
+                        placeholder="Ex: cor hex do título"
                         className="h-8 rounded-lg bg-card text-xs font-mono flex-1"
                       />
                       {/* Presets rápidos de cores para o título */}
                       <div className="flex gap-1 shrink-0">
-                        {["#ffffff", "#000000", "#f8fafc", "#0f172a"].map((c) => (
+                        {TITLE_COLOR_PRESETS.map((preset) => (
                           <button
-                            key={c}
+                            key={preset.hex}
                             type="button"
-                            onClick={() => setTextColor(c)}
-                            className="size-6 rounded-md border border-border/60 transition-transform hover:scale-110 active:scale-95 shrink-0 cursor-pointer"
-                            style={{ backgroundColor: c }}
-                            title={`Título em ${c}`}
+                            onClick={() => setTextColor(preset.hex)}
+                            className={cn("size-11 min-h-11 rounded-md border border-border/60 transition-transform motion-reduce:transition-none hover:scale-105 active:scale-95 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", preset.cls)}
+                            title={`Título em ${preset.hex}`}
                           />
                         ))}
                       </div>
@@ -1138,7 +1150,7 @@ function AdminMasterHotpagesPage() {
                   </div>
                 )}
 
-                
+
                 {/* ── PROGRAMAÇÃO DE CAMPANHA & AUTO-ARQUIVAMENTO ── */}
                 <div className="space-y-3 border-t border-border/40 pt-3">
                   <div className="flex items-center gap-2">

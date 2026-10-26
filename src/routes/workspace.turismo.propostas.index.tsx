@@ -1,14 +1,16 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { FileText, Plus, ArrowUpRight, Calendar, Users, Search, CheckCircle2, Clock, Send, Copy, Trash2, ExternalLink, DollarSign, TrendingUp, MoreVertical, Plane } from "lucide-react";
+import { FileText, Plus, ArrowUpRight, Calendar, Users, Search, CheckCircle2, Clock, Send, Copy, Trash2, ExternalLink, DollarSign, TrendingUp, MoreVertical, Plane, Layers, Lock, Archive, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { listAgencyTravelProposals, duplicateTravelProposal, deleteTravelProposal, type TravelProposalDTO } from "@/services/travel-proposal.functions";
+import { listAgencyTravelProposals, duplicateTravelProposal, deleteTravelProposal, updateTravelProposal, bundleTravelProposalsIntoSingleLink, type TravelProposalDTO } from "@/services/travel-proposal.functions";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
+import { Label } from "@/components/ui/label";
 import { convertProposalToTrip } from "@/services/travel-lifecycle.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
@@ -64,6 +66,77 @@ function WorkspaceProposalsIndexPage() {
  const [selectedStatus, setSelectedStatus] = useState<ProposalListStatus>("todos");
  const [isDashboardOpen, setIsDashboardOpen] = useState(false);
  const [isNewModalOpen, setIsNewModalOpen] = useState(Boolean(searchParams?.new || searchParams?.leadId));
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [securityTarget, setSecurityTarget] = useState<TravelProposalDTO | null>(null);
+  const [securityValidUntil, setSecurityValidUntil] = useState("");
+  const [securityPassword, setSecurityPassword] = useState("");
+
+  const toggleSelectProposal = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const bundleMutation = useMutation({
+    mutationFn: (proposalIds: string[]) =>
+      bundleTravelProposalsIntoSingleLink({ data: { proposalIds } }),
+    onSuccess: (res) => {
+      toast.success("Propostas agrupadas com sucesso em link comparativo único!");
+      setSelectedIds([]);
+      queryClient.invalidateQueries({ queryKey: ["agency-proposals"] });
+      if (res?.publicToken) {
+        window.open(`/proposta/${res.publicToken}`, "_blank");
+      }
+    },
+    onError: (err: any) =>
+      toast.error(err?.message || "Erro ao agrupar propostas."),
+  });
+
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: "rejected" | "draft" | "sent" | "expired" }) =>
+      updateTravelProposal({ data: { id, patch: { status } } }),
+    onSuccess: () => {
+      toast.success("Status da proposta atualizado!");
+      queryClient.invalidateQueries({ queryKey: ["agency-proposals"] });
+    },
+    onError: (err: any) =>
+      toast.error(err?.message || "Erro ao atualizar proposta."),
+  });
+
+  const updateSecurityMutation = useMutation({
+    mutationFn: async ({
+      id,
+      validUntil,
+      password,
+    }: {
+      id: string;
+      validUntil?: string;
+      password?: string;
+    }) => {
+      const existing = (proposals || []).find((p: any) => p.id === id);
+      const cleanNotes = (existing?.special_notes || "").replace(/\[SENHA:.*?\]\s*/g, "");
+      const newNotes = password?.trim()
+        ? `[SENHA:${password.trim()}] ${cleanNotes}`.trim()
+        : cleanNotes;
+      return updateTravelProposal({
+        data: {
+          id,
+          patch: {
+            valid_until: validUntil || undefined,
+            special_notes: newNotes,
+          },
+        },
+      });
+    },
+    onSuccess: () => {
+      toast.success("Segurança e validade da proposta atualizadas!");
+      setSecurityTarget(null);
+      queryClient.invalidateQueries({ queryKey: ["agency-proposals"] });
+    },
+    onError: (err: any) =>
+      toast.error(err?.message || "Erro ao salvar validade e senha."),
+  });
+
 
  const { data: proposals = [], refetch, isLoading } = useQuery({
  queryKey: ["agency-proposals", selectedStatus, search],
@@ -127,6 +200,7 @@ function WorkspaceProposalsIndexPage() {
   const approvedCount = proposalsList.filter((p: any) => p.status === "approved").length;
   const draftCount = proposalsList.filter((p: any) => p.status === "draft").length;
   const sentCount = proposalsList.filter((p: any) => p.status === "sent").length;
+  const expiredCount = proposalsList.filter((p: any) => p.status === "expired").length;
   const totalOfferedCents = proposalsList.reduce(
     (acc: number, p: any) => acc + (p.pricing?.total_price_cents || 0),
     0
@@ -147,6 +221,7 @@ function WorkspaceProposalsIndexPage() {
             { id: "draft", label: "Rascunhos", icon: Clock, count: draftCount },
             { id: "sent", label: "Publicadas", icon: Send, count: sentCount },
             { id: "approved", label: "Aprovadas", icon: CheckCircle2, count: approvedCount },
+            { id: "expired", label: "Arquivadas", icon: Archive, count: expiredCount },
           ]}
           activeTab={selectedStatus}
           onTabChange={(id) => {
@@ -168,6 +243,34 @@ function WorkspaceProposalsIndexPage() {
             onClick: () => setIsNewModalOpen(true),
           }}
         />
+
+        {selectedIds.length >= 2 && (
+          <div className="p-3 rounded-lg border border-primary/40 bg-primary/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
+              <Layers className="size-4 text-primary shrink-0" />
+              <span>{selectedIds.length} propostas selecionadas para agrupar em um único link comparativo (menu de abas no topo).</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setSelectedIds([])}
+                className="h-11 min-h-11 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                Limpar
+              </Button>
+              <Button
+                type="button"
+                disabled={bundleMutation.isPending}
+                onClick={() => bundleMutation.mutate(selectedIds)}
+                className="h-11 min-h-11 text-xs font-bold gap-2 bg-primary text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Layers className="size-3.5" />
+                <span>{bundleMutation.isPending ? "Agrupando..." : `Agrupar ${selectedIds.length} em 1 Link`}</span>
+              </Button>
+            </div>
+          </div>
+        )}
 
  {/* ── 4. GRID DE PROPOSTAS ── */}
  {isLoading ? (
@@ -208,10 +311,17 @@ function WorkspaceProposalsIndexPage() {
  className="p-5 rounded-lg border border-border/60 bg-card space-y-4 hover:border-primary/40 transition-colors flex flex-col justify-between group"
  >
  <div className="space-y-3">
- <div className="flex items-center justify-between">
- <span className="text-xs font-mono font-bold px-2 py-1 rounded-md bg-primary/10 text-primary">
- {p.destination_city}
- </span>
+ <div className="flex items-center justify-between gap-2">
+ <label className="inline-flex items-center gap-2 cursor-pointer text-xs font-mono font-bold px-2 py-1 rounded-md bg-primary/10 text-primary">
+   <input
+     type="checkbox"
+     checked={selectedIds.includes(p.id)}
+     onChange={() => toggleSelectProposal(p.id)}
+     className="size-4 rounded border-border text-primary focus:ring-primary"
+     aria-label={`Selecionar proposta ${p.title} para agrupar`}
+   />
+   <span>{p.destination_city || "Roteiro"}</span>
+ </label>
  <Badge
  variant="outline"
  className={`text-xs font-mono uppercase font-bold ${
@@ -243,6 +353,36 @@ function WorkspaceProposalsIndexPage() {
                           icon: Copy,
                           onClick: () => handleCopyLink(p),
                         },
+                        ...(p.status !== "sent" && p.status !== "approved"
+                          ? [
+                              {
+                                id: "publish-link",
+                                label: "Publicar / Ativar Link",
+                                icon: Send,
+                                onClick: () => updateStatusMutation.mutate({ id: p.id, status: "sent" }),
+                              },
+                            ]
+                          : []),
+                        {
+                          id: "security-validity",
+                          label: "Prazo de Validade e Senha",
+                          icon: Lock,
+                          onClick: () => {
+                            setSecurityTarget(p);
+                            setSecurityValidUntil(p.valid_until ? p.valid_until.slice(0, 10) : "");
+                            setSecurityPassword(p.access_pin || "");
+                          },
+                        },
+                        ...(p.status !== "expired"
+                          ? [
+                              {
+                                id: "archive-prop",
+                                label: "Arquivar / Ocultar Proposta",
+                                icon: EyeOff,
+                                onClick: () => updateStatusMutation.mutate({ id: p.id, status: "expired" }),
+                              },
+                            ]
+                          : []),
                         ...(p.status !== "approved"
                           ? [
                               {
@@ -332,7 +472,68 @@ function WorkspaceProposalsIndexPage() {
  initialDestination={searchParams?.destination}
  />
 
- {/* ── Painel de Métricas de Propostas ── */}
+ {/* Modal de Validade e Senha */}
+        <Sheet open={Boolean(securityTarget)} onOpenChange={(open) => !open && setSecurityTarget(null)}>
+          <SheetContent className="space-y-4">
+            <SheetHeader>
+              <SheetTitle>Validade e Senha da Proposta</SheetTitle>
+              <SheetDescription>
+                Configure prazo limite para auto-arquivamento ou senha de acesso numérico/PIN.
+              </SheetDescription>
+            </SheetHeader>
+            <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <Label htmlFor="validity-input">Data Limite de Validade</Label>
+                <Input
+                  id="validity-input"
+                  type="date"
+                  value={securityValidUntil}
+                  onChange={(e) => setSecurityValidUntil(e.target.value)}
+                  className="h-11"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password-input">Senha / PIN de Acesso (Opcional)</Label>
+                <Input
+                  id="password-input"
+                  type="text"
+                  placeholder="Ex: 1234 ou VIAGEM2026"
+                  value={securityPassword}
+                  onChange={(e) => setSecurityPassword(e.target.value)}
+                  className="h-11"
+                />
+              </div>
+            </div>
+            <SheetFooter className="gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setSecurityTarget(null)}
+                className="h-11 min-h-11"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="button"
+                disabled={updateSecurityMutation.isPending}
+                onClick={() => {
+                  if (securityTarget) {
+                    updateSecurityMutation.mutate({
+                      id: securityTarget.id,
+                      validUntil: securityValidUntil,
+                      password: securityPassword,
+                    });
+                  }
+                }}
+                className="h-11 min-h-11 bg-primary text-primary-foreground font-bold"
+              >
+                {updateSecurityMutation.isPending ? "Salvando..." : "Salvar Alterações"}
+              </Button>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
+
+        {/* ── Painel de Métricas de Propostas ── */}
  <WorkspaceDashboardSheet
    open={isDashboardOpen}
    onOpenChange={setIsDashboardOpen}

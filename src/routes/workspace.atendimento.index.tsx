@@ -1,6 +1,12 @@
 import { cn } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { TransferChatThreadModal } from "@/components/chat/TransferChatThreadModal";
+import { QuickAnswersManagerModal } from "@/components/chat/QuickAnswersManagerModal";
+import { ScheduleWhatsAppMessageModal } from "@/components/chat/ScheduleWhatsAppMessageModal";
+import { listStoreQuickAnswers } from "@/services/chat-operations.functions";
+import { listTeamMembers } from "@/services/admin-team.functions";
 import {
   listChatThreads,
   getChatMessages,
@@ -59,6 +65,9 @@ import {
   CheckCheck,
   Sliders,
   Radio,
+  CalendarClock,
+  ArrowRightLeft,
+  Zap,
 } from "lucide-react";
 import { toast } from "sonner";
 import { formatDate, formatRelativeTime } from "@/lib/datetime";
@@ -78,6 +87,10 @@ import { WhatsAppOperationsMetricsPanel } from "@/components/chat/whatsapp-opera
 
 export const Route = createFileRoute("/workspace/atendimento/")({
   head: () => ({ meta: [{ title: "Atendimento Omnichannel & WhatsApp" }] }),
+  validateSearch: (search: Record<string, unknown>) => ({
+    threadId: typeof search.threadId === "string" ? search.threadId : undefined,
+    search: typeof search.search === "string" ? search.search : undefined,
+  }),
   loader: async () => {
     try {
       const [res, store, sdrData, instances] = await Promise.all([
@@ -134,8 +147,25 @@ function WorkspaceAtendimentoPage() {
     whatsappInstances: initialInstances,
   } = (Route.useLoaderData?.() as any) || {};
 
+  const searchParams = Route.useSearch?.() || {};
   const semantics = useMemo(() => getNicheSemantics(store), [store]);
   const departmentLabels = semantics.departmentLabels || DEPARTMENT_LABELS;
+
+  // Modais de Operações Avançadas (Whaticket Toolkit)
+  const [transferModalOpen, setTransferModalOpen] = useState(false);
+  const [quickAnswersModalOpen, setQuickAnswersModalOpen] = useState(false);
+  const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
+
+  // Queries de Macros Dinâmicas e Membros da Equipe
+  const { data: storeMacros = [] } = useQuery({
+    queryKey: ["workspace-quick-answers"],
+    queryFn: () => listStoreQuickAnswers().catch(() => []),
+  });
+
+  const { data: teamMembers = [] } = useQuery({
+    queryKey: ["workspace-team-members"],
+    queryFn: () => listTeamMembers().catch(() => []),
+  });
 
   // Tabs do Hub: Conversas estilo WhatsApp, SDR, Telemetria & Filas, Conexão WhatsApp e Horários
   const [activeHubTab, setActiveHubTab] = useState<"live" | "sdr" | "metrics" | "whatsapp" | "hours">("live");
@@ -146,7 +176,7 @@ function WorkspaceAtendimentoPage() {
   // Filtro de status da lista (all: ativas | open: novas | archived: arquivadas)
   const [statusFilter, setStatusFilter] = useState<"all" | "open" | "archived">("all");
   const [deptFilter, setDeptFilter] = useState("all");
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState((searchParams as any).search || "");
 
   // Instâncias de WhatsApp
   const [whatsappInstances, setWhatsappInstances] = useState<WhatsAppChannelInstanceDTO[]>(initialInstances || []);
@@ -162,8 +192,17 @@ function WorkspaceAtendimentoPage() {
   // Estados de Conversas
   const [threads, setThreads] = useState<any[]>(initialThreads || []);
   const [activeThreadId, setActiveThreadId] = useState<string | null>(
-    initialThreads && initialThreads.length > 0 ? initialThreads[0].id : null,
+    (searchParams as any).threadId || (initialThreads && initialThreads.length > 0 ? initialThreads[0].id : null),
   );
+
+  useEffect(() => {
+    if ((searchParams as any)?.search) {
+      setSearchTerm((searchParams as any).search);
+    }
+    if ((searchParams as any)?.threadId) {
+      setActiveThreadId((searchParams as any).threadId);
+    }
+  }, [(searchParams as any)?.search, (searchParams as any)?.threadId]);
   const [messages, setMessages] = useState<any[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [text, setText] = useState("");
@@ -475,10 +514,10 @@ function WorkspaceAtendimentoPage() {
   }, [messages]);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-theme(spacing.16))] overflow-hidden bg-background">
+    <div className="flex flex-col h-full flex-1 overflow-hidden bg-background">
       {/* CABEÇALHO DO HUB DE ATENDIMENTO */}
       <header className={cn(
-        "shrink-0 border-b border-border/80 bg-card/90 px-4 py-2.5 flex-col md:flex-row md:items-center justify-between gap-3",
+        "shrink-0 border-b border-border/80 bg-card/90 px-4 py-3 flex-col md:flex-row md:items-center justify-between gap-3",
         activeHubTab === "live" && activeThreadId ? "hidden md:flex" : "flex"
       )}>
         <div className="flex items-center justify-between gap-3 min-w-0">
@@ -497,7 +536,7 @@ function WorkspaceAtendimentoPage() {
               type="button"
               onClick={() => setAgentPresence("online")}
               className={cn(
-                "px-2 py-1 rounded text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer",
+                "px-3 py-2 h-11 min-h-11 rounded-md text-xs font-semibold flex items-center gap-1 transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                 agentPresence === "online"
                   ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-bold"
                   : "text-muted-foreground hover:text-foreground",
@@ -510,7 +549,7 @@ function WorkspaceAtendimentoPage() {
               type="button"
               onClick={() => setAgentPresence("busy")}
               className={cn(
-                "px-2 py-1 rounded text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer",
+                "px-3 py-2 h-11 min-h-11 rounded-md text-xs font-semibold flex items-center gap-1 transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                 agentPresence === "busy"
                   ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 font-bold"
                   : "text-muted-foreground hover:text-foreground",
@@ -523,7 +562,7 @@ function WorkspaceAtendimentoPage() {
               type="button"
               onClick={() => setAgentPresence("away")}
               className={cn(
-                "px-2 py-1 rounded text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer",
+                "px-3 py-2 h-11 min-h-11 rounded-md text-xs font-semibold flex items-center gap-1 transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                 agentPresence === "away"
                   ? "bg-muted text-muted-foreground font-bold"
                   : "text-muted-foreground hover:text-foreground",
@@ -542,7 +581,7 @@ function WorkspaceAtendimentoPage() {
             type="button"
             onClick={() => setActiveHubTab("live")}
             className={cn(
-              "px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0",
+              "px-4 h-11 min-h-11 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors duration-150 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
               activeHubTab === "live"
                 ? "bg-primary text-primary-foreground shadow-xs font-bold"
                 : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/50",
@@ -562,7 +601,7 @@ function WorkspaceAtendimentoPage() {
             type="button"
             onClick={() => setActiveHubTab("sdr")}
             className={cn(
-              "px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0",
+              "px-4 h-11 min-h-11 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors duration-150 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
               activeHubTab === "sdr"
                 ? "bg-primary text-primary-foreground shadow-xs font-bold"
                 : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/50",
@@ -582,7 +621,7 @@ function WorkspaceAtendimentoPage() {
             type="button"
             onClick={() => setActiveHubTab("metrics")}
             className={cn(
-              "px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0",
+              "px-4 h-11 min-h-11 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors duration-150 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
               activeHubTab === "metrics"
                 ? "bg-primary text-primary-foreground shadow-xs font-bold"
                 : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/50",
@@ -597,7 +636,7 @@ function WorkspaceAtendimentoPage() {
             type="button"
             onClick={() => setActiveHubTab("whatsapp")}
             className={cn(
-              "px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0",
+              "px-4 h-11 min-h-11 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors duration-150 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
               activeHubTab === "whatsapp"
                 ? "bg-primary text-primary-foreground shadow-xs font-bold"
                 : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/50",
@@ -612,7 +651,7 @@ function WorkspaceAtendimentoPage() {
             type="button"
             onClick={() => setActiveHubTab("hours")}
             className={cn(
-              "px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0",
+              "px-4 h-11 min-h-11 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors duration-150 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
               activeHubTab === "hours"
                 ? "bg-primary text-primary-foreground shadow-xs font-bold"
                 : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/50",
@@ -660,7 +699,7 @@ function WorkspaceAtendimentoPage() {
                     type="button"
                     onClick={() => setStatusFilter(chip.id as any)}
                     className={cn(
-                      "px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer shrink-0",
+                      "px-3 h-11 min-h-11 rounded-md text-xs font-semibold transition-colors duration-150 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                       statusFilter === chip.id
                         ? "bg-primary text-primary-foreground font-bold shadow-2xs"
                         : "bg-muted/60 text-muted-foreground hover:text-foreground border border-border/50",
@@ -709,7 +748,7 @@ function WorkspaceAtendimentoPage() {
                       key={t.id}
                       onClick={() => setActiveThreadId(t.id)}
                       className={cn(
-                        "w-full p-4 text-left flex items-start gap-3 transition-colors cursor-pointer border-l-4",
+                        "w-full p-4 text-left flex items-start gap-3 transition-colors duration-150 cursor-pointer border-l-4 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                         isActive
                           ? "bg-muted/70 border-primary"
                           : "border-transparent hover:bg-muted/30",
@@ -855,22 +894,63 @@ function WorkspaceAtendimentoPage() {
                     </span>
                   </div>
 
-                  {/* Transferir Setor */}
-                  <Select
-                    value={activeThread.department || "geral"}
-                    onValueChange={handleDepartmentChange}
+                  {/* Dossiê no CRM */}
+                  {activeThread.customer?.id && (
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="h-11 rounded-lg text-xs font-semibold gap-2 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                      title="Abrir dossiê no CRM"
+                    >
+                      <Link to="/workspace/clientes/$id" params={{ id: activeThread.customer.id }}>
+                        <Building2 className="size-4 text-primary" />
+                        <span className="hidden xl:inline">CRM</span>
+                      </Link>
+                    </Button>
+                  )}
+
+                  {/* Chamados de Suporte & SAC */}
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="sm"
+                    className="h-11 rounded-lg text-xs font-semibold gap-2 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                    title="Abrir central de chamados e suporte"
                   >
-                    <SelectTrigger className="h-11 rounded-lg text-xs w-32 sm:w-36 focus-visible:ring-2 focus-visible:ring-ring">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-lg">
-                      <SelectItem value="vendas">Vendas</SelectItem>
-                      <SelectItem value="suporte">Suporte / SAC</SelectItem>
-                      <SelectItem value="financeiro">Financeiro</SelectItem>
-                      <SelectItem value="logistica">Logística</SelectItem>
-                      <SelectItem value="geral">Geral</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    <Link to="/workspace/suporte">
+                      <HelpCircle className="size-4 text-sky-500" />
+                      <span className="hidden xl:inline">Chamados</span>
+                    </Link>
+                  </Button>
+
+                  {/* Transferir Atendimento (Whaticket Hand-off) */}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setTransferModalOpen(true)}
+                    className="h-11 rounded-lg text-xs font-semibold gap-2 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                    title="Transferir para outro setor ou atendente com nota de contexto"
+                  >
+                    <ArrowRightLeft className="size-4 text-primary" />
+                    <span className="hidden sm:inline">Transferir</span>
+                  </Button>
+
+                  {/* Agendar Mensagem de Follow-up WhatsApp */}
+                  {activeThread.channel === "whatsapp" && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setScheduleModalOpen(true)}
+                      className="h-11 rounded-lg text-xs font-semibold gap-2 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                      title="Agendar envio de mensagem futura"
+                    >
+                      <CalendarClock className="size-4 text-amber-500" />
+                      <span className="hidden sm:inline">Agendar</span>
+                    </Button>
+                  )}
 
                   {/* Ação de Arquivar / Desarquivar */}
                   <Button
@@ -999,7 +1079,7 @@ function WorkspaceAtendimentoPage() {
                         >
                           <div
                             className={cn(
-                              "max-w-[95%] sm:max-w-lg rounded-lg p-4 text-xs shadow-xs",
+                              "max-w-prose sm:max-w-lg rounded-lg p-4 text-xs shadow-xs",
                               isStaff
                                 ? "bg-card border border-border/80 text-foreground rounded-tr-xs"
                                 : "bg-card border border-border/80 text-foreground rounded-tl-xs",
@@ -1027,7 +1107,7 @@ function WorkspaceAtendimentoPage() {
                       >
                         <div
                           className={cn(
-                            "max-w-[85%] sm:max-w-md rounded-lg p-3 text-xs leading-relaxed shadow-xs",
+                            "max-w-md sm:max-w-md rounded-lg p-3 text-xs leading-relaxed shadow-xs",
                             isStaff
                               ? "bg-primary text-primary-foreground font-medium rounded-tr-xs"
                               : "bg-card border border-border/80 text-foreground rounded-tl-xs",
@@ -1057,36 +1137,34 @@ function WorkspaceAtendimentoPage() {
                   aria-label="Atalhos Rápidos"
                   className="flex items-center gap-2 overflow-x-auto tab-list no-scrollbar"
                 >
-                  <span className="text-xs text-muted-foreground shrink-0 font-mono">Macros:</span>
-                  {[
-                    {
-                      cmd: "/ola",
-                      text: "Olá! Seja muito bem-vindo ao atendimento da nossa empresa. Como podemos te ajudar?",
-                      label: "Saudação",
-                    },
-                    {
-                      cmd: "/pix",
-                      text: "Nossa chave PIX oficial é gerada e confirmada diretamente no seu pedido. O comprovante é validado automaticamente!",
-                      label: "Chave PIX",
-                    },
-                    {
-                      cmd: "/horarios",
-                      text: "Nosso horário de atendimento é de Segunda a Sexta das 08h às 18h e Sábados das 08h às 12h.",
-                      label: "Horários",
-                    },
-                    {
-                      cmd: "/rastreio",
-                      text: "Seu pedido está em processamento logístico e você pode acompanhar pelo link de rastreio acima.",
-                      label: "Rastreio",
-                    },
-                  ].map((macro) => (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setQuickAnswersModalOpen(true)}
+                    className="h-11 min-h-11 px-3 rounded-md text-xs font-semibold gap-2 shrink-0 border-amber-500/30 text-amber-500 hover:bg-amber-500/10 cursor-pointer"
+                    title="Gerenciar respostas rápidas personalizadas"
+                  >
+                    <Zap className="size-3.5" />
+                    <span>Macros</span>
+                  </Button>
+
+                  {(storeMacros.length > 0
+                    ? storeMacros.map((m: any) => ({ cmd: m.shortcut, text: m.message, label: m.title }))
+                    : [
+                        { cmd: "ola", text: "Olá! Seja muito bem-vindo ao atendimento da nossa empresa. Como podemos te ajudar?", label: "Saudação" },
+                        { cmd: "pix", text: "Nossa chave PIX oficial é gerada e confirmada diretamente no seu pedido. O comprovante é validado automaticamente!", label: "Chave PIX" },
+                        { cmd: "horarios", text: "Nosso horário de atendimento é de Segunda a Sexta das 08h às 18h e Sábados das 08h às 12h.", label: "Horários" },
+                        { cmd: "rastreio", text: "Seu pedido está em processamento logístico e você pode acompanhar pelo link de rastreio acima.", label: "Rastreio" },
+                      ]
+                  ).map((macro: any) => (
                     <button
                       key={macro.cmd}
                       type="button"
                       onClick={() => setText(macro.text)}
-                      className="px-2 py-1 rounded-md text-xs font-mono font-medium bg-muted/50 hover:bg-muted border border-border/60 text-muted-foreground hover:text-foreground shrink-0 transition-colors cursor-pointer"
+                      className="h-11 min-h-11 px-3 py-2 rounded-md text-xs font-mono font-medium bg-muted/50 hover:bg-muted border border-border/60 text-muted-foreground hover:text-foreground shrink-0 transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                     >
-                      {macro.cmd} <span className="text-xs opacity-75">({macro.label})</span>
+                      /{macro.cmd} <span className="text-xs opacity-75">({macro.label})</span>
                     </button>
                   ))}
                 </div>
@@ -1126,7 +1204,7 @@ function WorkspaceAtendimentoPage() {
                       onClick={() => setIsWhisperMode(!isWhisperMode)}
                       className={cn(
                         "size-11 rounded-lg shrink-0 cursor-pointer",
-                        isWhisperMode ? "bg-amber-600 hover:bg-amber-700 text-white" : "",
+                        isWhisperMode ? "bg-amber-600 hover:bg-amber-700 text-amber-50" : "",
                       )}
                       title={
                         isWhisperMode
@@ -1180,7 +1258,7 @@ function WorkspaceAtendimentoPage() {
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowCustomer360(false)}
-                  className="h-9 px-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                  className="h-11 min-h-11 px-3 text-xs text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   Fechar
                 </Button>
@@ -1240,7 +1318,7 @@ function WorkspaceAtendimentoPage() {
                   type="button"
                   onClick={() => setSdrIntentFilter(pill.id)}
                   className={cn(
-                    "px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer flex items-center gap-1",
+                    "px-3 h-11 min-h-11 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors duration-150 cursor-pointer flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                     sdrIntentFilter === pill.id
                       ? "bg-primary text-primary-foreground font-bold shadow-2xs"
                       : "bg-muted/60 text-muted-foreground hover:text-foreground border border-border/50",
@@ -1277,7 +1355,7 @@ function WorkspaceAtendimentoPage() {
                     <div
                       key={session.id}
                       className={cn(
-                        "bg-card p-4 rounded-lg border flex flex-col justify-between space-y-4 shadow-xs transition-all hover:border-primary/50",
+                        "bg-card p-4 rounded-lg border flex flex-col justify-between space-y-4 shadow-xs transition-colors duration-150 hover:border-primary/50",
                         isReady
                           ? "border-emerald-500/40 bg-emerald-500/5 dark:bg-emerald-950/10"
                           : isWarm
@@ -1348,7 +1426,7 @@ function WorkspaceAtendimentoPage() {
                             setSelectedSdrSession(session);
                             setSdrDrawerOpen(true);
                           }}
-                          className="h-7 px-3 text-xs font-semibold rounded-lg gap-1 cursor-pointer"
+                          className="h-11 min-h-11 px-3 text-xs font-semibold rounded-lg gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
                         >
                           Ver Diálogo
                           <ArrowLeft className="size-3 rotate-180" />
@@ -1468,7 +1546,7 @@ function WorkspaceAtendimentoPage() {
 
               {/* Área do QR Code */}
               <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-border/80 rounded-lg bg-muted/10 space-y-3">
-                <div className="size-48 bg-white p-3 rounded-lg border border-border shadow-xs flex items-center justify-center">
+                <div className="size-48 bg-card p-3 rounded-lg border border-border shadow-xs flex items-center justify-center">
                   <QrCode className="size-40 text-neutral-900" />
                 </div>
                 <p className="text-xs text-muted-foreground text-center">
@@ -1696,7 +1774,7 @@ function WorkspaceAtendimentoPage() {
                       )}
                   </div>
 
-                  <Button asChild size="sm" variant="ghost" className="h-7 text-xs gap-1 rounded-lg">
+                  <Button asChild size="sm" variant="ghost" className="h-11 min-h-11 px-3 text-xs gap-1 rounded-lg focus-visible:ring-2 focus-visible:ring-primary">
                     <Link to="/classificados/$id" params={{ id: selectedSdrSession.classified_id }}>
                       Ver Anúncio
                       <ExternalLink className="size-3" />
@@ -1725,7 +1803,7 @@ function WorkspaceAtendimentoPage() {
                     <div
                       key={i}
                       className={cn(
-                        "flex flex-col max-w-[85%] rounded-lg p-3 text-xs leading-relaxed",
+                        "flex flex-col max-w-md rounded-lg p-3 text-xs leading-relaxed",
                         isAssistant
                           ? "ml-auto bg-primary text-primary-foreground rounded-tr-xs"
                           : "mr-auto bg-card border border-border/70 text-foreground rounded-tl-xs shadow-2xs",
