@@ -260,7 +260,7 @@ export function OperatorVoucherImportSheet({
                 <button
                   type="button"
                   onClick={() => setActiveInputTab("files")}
-                  className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                  className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-colors duration-200 cursor-pointer ${
                     activeInputTab === "files"
                       ? "bg-card text-foreground shadow-xs font-bold"
                       : "text-muted-foreground hover:text-foreground"
@@ -271,7 +271,7 @@ export function OperatorVoucherImportSheet({
                 <button
                   type="button"
                   onClick={() => setActiveInputTab("text")}
-                  className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                  className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-colors duration-200 cursor-pointer ${
                     activeInputTab === "text"
                       ? "bg-card text-foreground shadow-xs font-bold"
                       : "text-muted-foreground hover:text-foreground"
@@ -288,7 +288,7 @@ export function OperatorVoucherImportSheet({
                     onClick={() => fileInputRef.current?.click()}
                     onPaste={handlePaste}
                     tabIndex={0}
-                    className="border-2 border-dashed border-border hover:border-primary/50 hover:bg-muted/30 transition-all rounded-lg p-8 text-center cursor-pointer flex flex-col items-center justify-center gap-3 outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                    className="border-2 border-dashed border-border hover:border-primary/50 hover:bg-muted/30 transition-colors duration-200 rounded-lg p-8 text-center cursor-pointer flex flex-col items-center justify-center gap-3 outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                   >
                     <input
                       ref={fileInputRef}
@@ -387,7 +387,7 @@ export function OperatorVoucherImportSheet({
                 <button
                   type="button"
                   onClick={() => setActiveReviewTab("resumo")}
-                  className={`px-3 py-2 rounded-lg transition-all cursor-pointer shrink-0 ${
+                  className={`px-3 py-2 rounded-lg transition-colors duration-200 cursor-pointer shrink-0 ${
                     activeReviewTab === "resumo"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted/50 text-muted-foreground hover:text-foreground"
@@ -398,7 +398,7 @@ export function OperatorVoucherImportSheet({
                 <button
                   type="button"
                   onClick={() => setActiveReviewTab("passageiros")}
-                  className={`px-3 py-2 rounded-lg transition-all cursor-pointer shrink-0 flex items-center gap-1 ${
+                  className={`px-3 py-2 rounded-lg transition-colors duration-200 cursor-pointer shrink-0 flex items-center gap-1 ${
                     activeReviewTab === "passageiros"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted/50 text-muted-foreground hover:text-foreground"
@@ -412,7 +412,7 @@ export function OperatorVoucherImportSheet({
                 <button
                   type="button"
                   onClick={() => setActiveReviewTab("voos")}
-                  className={`px-3 py-2 rounded-lg transition-all cursor-pointer shrink-0 flex items-center gap-1 ${
+                  className={`px-3 py-2 rounded-lg transition-colors duration-200 cursor-pointer shrink-0 flex items-center gap-1 ${
                     activeReviewTab === "voos"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted/50 text-muted-foreground hover:text-foreground"
@@ -426,7 +426,7 @@ export function OperatorVoucherImportSheet({
                 <button
                   type="button"
                   onClick={() => setActiveReviewTab("hospedagem")}
-                  className={`px-3 py-2 rounded-lg transition-all cursor-pointer shrink-0 flex items-center gap-1 ${
+                  className={`px-3 py-2 rounded-lg transition-colors duration-200 cursor-pointer shrink-0 flex items-center gap-1 ${
                     activeReviewTab === "hospedagem"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted/50 text-muted-foreground hover:text-foreground"
@@ -440,7 +440,7 @@ export function OperatorVoucherImportSheet({
                 <button
                   type="button"
                   onClick={() => setActiveReviewTab("transfers")}
-                  className={`px-3 py-2 rounded-lg transition-all cursor-pointer shrink-0 ${
+                  className={`px-3 py-2 rounded-lg transition-colors duration-200 cursor-pointer shrink-0 ${
                     activeReviewTab === "transfers"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted/50 text-muted-foreground hover:text-foreground"
@@ -451,7 +451,7 @@ export function OperatorVoucherImportSheet({
                 <button
                   type="button"
                   onClick={() => setActiveReviewTab("financeiro")}
-                  className={`px-3 py-2 rounded-lg transition-all cursor-pointer shrink-0 ${
+                  className={`px-3 py-2 rounded-lg transition-colors duration-200 cursor-pointer shrink-0 ${
                     activeReviewTab === "financeiro"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted/50 text-muted-foreground hover:text-foreground"
@@ -1504,7 +1504,7 @@ export function OperatorVoucherImportSheet({
               >
                 {isAnalyzing ? (
                   <>
-                    <Loader2 className="size-3.5 animate-spin" /> Processando OCR ({documents.length} arq)...
+                    <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> Processando OCR ({documents.length} arq)...
                   </>
                 ) : (
                   <>
@@ -1527,7 +1527,7 @@ export function OperatorVoucherImportSheet({
               >
                 {isApplying ? (
                   <>
-                    <Loader2 className="size-3.5 animate-spin" /> Sincronizando Viagem...
+                    <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> Sincronizando Viagem...
                   </>
                 ) : (
                   <>

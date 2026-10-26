@@ -92,7 +92,7 @@ function AbandonedCartsPage() {
  title="Carrinhos possivelmente abandonados"
  actions={
  <Button onClick={handleScan} disabled={isScanning} size="sm" variant="outline" className="rounded-lg font-semibold text-xs h-9">
- <RefreshCw className={`mr-2 size-3.5 ${isScanning ? "animate-spin" : ""}`} />
+ <RefreshCw className={`mr-2 size-3.5 ${isScanning ? "animate-spin motion-reduce:animate-none" : ""}`} />
  Atualizar
  </Button>
  }

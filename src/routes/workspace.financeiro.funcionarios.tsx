@@ -390,7 +390,7 @@ function HrFinancePage() {
       >
         {loadingStatement ? (
           <div className="py-20 flex flex-col items-center justify-center gap-3 text-muted-foreground">
-            <Loader2 className="size-8 animate-spin text-primary" />
+            <Loader2 className="size-8 animate-spin motion-reduce:animate-none text-primary" />
             <span className="text-xs font-mono">Carregando extrato completo...</span>
           </div>
         ) : statementData ? (

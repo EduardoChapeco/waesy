@@ -88,7 +88,7 @@ export function SplitBanner({ content, design_tokens }: SplitBannerProps) {
           <span className="text-xs font-semibold text-muted-foreground">
             Mídia não configurada
           </span>
-          <span className="text-[10px] text-muted-foreground/80 mt-1 max-w-xs">
+          <span className="text-2xs text-muted-foreground/80 mt-1 max-w-xs">
             Faça upload de imagem, GIF ou vídeo nas configurações da seção
           </span>
         </div>
@@ -125,7 +125,7 @@ export function SplitBanner({ content, design_tokens }: SplitBannerProps) {
 
     if (isVideoFile) {
       return (
-        <div className="relative w-full h-full min-h-[340px] rounded-lg overflow-hidden bg-black/90 shadow-2xs group">
+        <div className="relative w-full h-full min-h-[340px] rounded-lg overflow-hidden bg-foreground/90 shadow-2xs group">
           <video
             src={mediaUrl}
             autoPlay={autoPlay}

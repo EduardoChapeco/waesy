@@ -252,7 +252,7 @@ function WorkspaceSupportPage() {
             <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
               key={t.id}
               onClick={() => handleOpenTicketDetails(t.id)}
-              className="flex items-center justify-between p-4 sm:p-4 rounded-lg border border-border/70 bg-card hover:bg-muted/30 cursor-pointer transition-all shadow-2xs group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex items-center justify-between p-4 sm:p-4 rounded-lg border border-border/70 bg-card hover:bg-muted/30 cursor-pointer transition-colors duration-200 shadow-2xs group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">

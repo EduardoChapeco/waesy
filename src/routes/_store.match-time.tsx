@@ -113,7 +113,7 @@ function MatchTimePage() {
  <div className="w-full max-w-sm mb-6 flex items-center justify-between px-4">
  <Link
  to="/"
- className="size-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 active:scale-95 transition-all"
+ className="size-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 active:scale-95 transition-transform duration-200"
  aria-label="Voltar para Início"
  >
  <ArrowLeft className="size-5" />
@@ -128,7 +128,7 @@ function MatchTimePage() {
  <div className="relative w-full max-w-sm aspect-[3/4] mx-auto px-0 sm:px-4 perspective-1000">
  {currentOffer && (
  <div
- className={`absolute inset-0 px-4 transition-all duration-300 ease-out transform ${direction === "left" ? "-translate-x-full rotate-[-20deg] opacity-0" : direction === "right" ? "translate-x-full rotate-[20deg] opacity-0" : "translate-x-0 opacity-100"}`}
+ className={`absolute inset-0 px-4 transition-colors duration-200 duration-300 ease-out transform ${direction === "left" ? "-translate-x-full rotate-[-20deg] opacity-0" : direction === "right" ? "translate-x-full rotate-[20deg] opacity-0" : "translate-x-0 opacity-100"}`}
  >
  <div className="w-full h-full bg-card border overflow-hidden relative group">
  {/* Image */}
@@ -187,7 +187,7 @@ function MatchTimePage() {
  <Button
  variant="outline"
  size="icon"
- className="w-16 h-16 rounded-full border border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground transition-all"
+ className="w-16 h-16 rounded-full border border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors duration-200"
  onClick={() => handleSwipe("left")}
  disabled={direction !== null || isCartUpdating}
  >
@@ -197,7 +197,7 @@ function MatchTimePage() {
  <Button
  variant="outline"
  size="icon"
- className="w-16 h-16 rounded-full border border-success text-success hover:bg-success hover:text-success-foreground transition-all "
+ className="w-16 h-16 rounded-full border border-success text-success hover:bg-success hover:text-success-foreground transition-colors duration-200 "
  onClick={() => handleSwipe("right")}
  disabled={direction !== null || isCartUpdating}
  >

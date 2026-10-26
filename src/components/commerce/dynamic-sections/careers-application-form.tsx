@@ -161,7 +161,7 @@ export function CareersApplicationForm({ job, isOpen, onClose }: CareersApplicat
  <span className="text-xs font-medium text-primary">
  {resumeFile ? resumeFile.name : "Clique para selecionar seu currículo"}
  </span>
- <span className="text-[10px] text-muted-foreground">PDF até 10MB</span>
+ <span className="text-2xs text-muted-foreground">PDF até 10MB</span>
  </label>
  </div>
  </div>

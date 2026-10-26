@@ -36,6 +36,7 @@ export interface MediaUploaderProps {
  lockAspect?: boolean;
  enableCrop?: boolean;
   showExternalUrlOption?: boolean;
+  targetPlatform?: "mobile" | "desktop" | "universal";
 }
 
 export const MediaUploader: React.FC<MediaUploaderProps> = ({
@@ -48,7 +49,8 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  bucket = "post-media",
  folder = "classifieds",
  showExternalUrlOption = true,
- className,
+  targetPlatform = "universal",
+  className,
  label,
  accept = "all",
  aspect,
@@ -69,8 +71,12 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
 
  // Compute smart aspect based on bucket/folder if not explicitly provided (1:1 com a renderização)
  const computedAspect =
-   aspect !== undefined
-     ? aspect
+    aspect !== undefined
+      ? aspect
+      : targetPlatform === "desktop"
+      ? 28 / 9
+      : targetPlatform === "mobile"
+      ? 16 / 9
       : folder?.includes("desktop")
       ? 28 / 9
       : folder?.includes("mobile")
@@ -135,6 +141,16 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
    toast.error("Insira uma URL válida iniciando com http:// ou https://");
    return;
   }
+
+    // Se o recorte físico estiver habilitado e for imagem, abre o modal de corte imediatamente
+    if (enableCrop && !rawUrl.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i)) {
+      setCurrentImageSrc(rawUrl);
+      setEditingMediaIndex(null);
+      setCropModalOpen(true);
+      setShowUrlInput(false);
+      setExternalUrl("");
+      return;
+    }
 
   if (mediaList.length >= maxFiles && maxFiles > 1) {
    toast.error(`Você pode adicionar no máximo ${maxFiles} itens.`);
@@ -423,7 +439,7 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  <div
  onPaste={handlePaste}
  tabIndex={0}
- className={cn("space-y-3 outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 rounded-lg", className)}
+ className={cn("media-uploader-root space-y-3 outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 rounded-lg", className)}
  >
  {/* Cabeçalho com label e toggle de URL */}
  <div className="flex items-center justify-between">
@@ -674,14 +690,15 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
       )}
 
       <ImageCropperDialog
- open={cropModalOpen}
- onOpenChange={setCropModalOpen}
- imageSrc={currentImageSrc}
- aspect={computedAspect}
- cropShape={cropShape}
- lockAspect={lockAspect}
- onCropCompleteAction={handleCropComplete}
- />
+        open={cropModalOpen}
+        onOpenChange={setCropModalOpen}
+        imageSrc={currentImageSrc}
+        aspect={computedAspect}
+        cropShape={cropShape}
+        lockAspect={lockAspect}
+        targetPlatform={targetPlatform}
+        onCropCompleteAction={handleCropComplete}
+      />
  </div>
  );
 };

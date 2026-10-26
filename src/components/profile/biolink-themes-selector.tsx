@@ -27,8 +27,8 @@ export const BIOLINK_THEMES: BiolinkThemeDefinition[] = [
     description: "Branco papel refinado com contraste suave e foco na legibilidade.",
     previewGradient: "linear-gradient(135deg, #ffffff 0%, #f4f4f5 100%)",
     textColor: "#18181b",
-    cardStyle: "bg-white border-zinc-200 text-zinc-900 shadow-xs",
-    buttonClass: "bg-zinc-900 text-white hover:bg-zinc-800",
+    cardStyle: "bg-card border-zinc-200 text-zinc-900 shadow-xs",
+    buttonClass: "bg-zinc-900 text-foreground hover:bg-zinc-800",
     badgeText: "Recomendado",
   },
   {
@@ -37,8 +37,8 @@ export const BIOLINK_THEMES: BiolinkThemeDefinition[] = [
     description: "Preto profundo com estética moderna, minimalista e sofisticada.",
     previewGradient: "linear-gradient(135deg, #09090b 0%, #18181b 100%)",
     textColor: "#ffffff",
-    cardStyle: "bg-zinc-900 border-zinc-800 text-white shadow-xs",
-    buttonClass: "bg-white text-zinc-900 hover:bg-zinc-100 font-semibold",
+    cardStyle: "bg-zinc-900 border-zinc-800 text-foreground shadow-xs",
+    buttonClass: "bg-card text-zinc-900 hover:bg-zinc-100 font-semibold",
     badgeText: "Popular",
   },
   {
@@ -47,7 +47,7 @@ export const BIOLINK_THEMES: BiolinkThemeDefinition[] = [
     description: "Vidro fosco translúcido com gradiente noturno índigo e púrpura.",
     previewGradient: "linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #0f172a 100%)",
     textColor: "#ffffff",
-    cardStyle: "bg-white/10 backdrop-blur-md border-white/20 text-white",
+    cardStyle: "bg-card/10 backdrop-blur-md border-white/20 text-foreground",
     buttonClass: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md",
   },
   {
@@ -56,8 +56,8 @@ export const BIOLINK_THEMES: BiolinkThemeDefinition[] = [
     description: "Vibração calorosa inspirada no pôr-do-sol, com energia e destaque.",
     previewGradient: "linear-gradient(135deg, #f97316 0%, #e11d48 50%, #581c87 100%)",
     textColor: "#ffffff",
-    cardStyle: "bg-white/15 backdrop-blur-md border-white/25 text-white",
-    buttonClass: "bg-white text-rose-950 hover:bg-white/90 font-bold shadow-md",
+    cardStyle: "bg-card/15 backdrop-blur-md border-white/25 text-foreground",
+    buttonClass: "bg-card text-rose-950 hover:bg-card/90 font-bold shadow-md",
   },
   {
     key: "emerald",
@@ -66,7 +66,7 @@ export const BIOLINK_THEMES: BiolinkThemeDefinition[] = [
     previewGradient: "linear-gradient(135deg, #064e3b 0%, #065f46 50%, #022c22 100%)",
     textColor: "#ffffff",
     cardStyle: "bg-emerald-950/60 border-emerald-800/50 text-emerald-50",
-    buttonClass: "bg-emerald-500 text-white hover:bg-emerald-600 font-semibold",
+    buttonClass: "bg-emerald-500 text-foreground hover:bg-emerald-600 font-semibold",
   },
   {
     key: "cyber",
@@ -75,7 +75,7 @@ export const BIOLINK_THEMES: BiolinkThemeDefinition[] = [
     previewGradient: "linear-gradient(135deg, #4c1d95 0%, #7c3aed 50%, #09090b 100%)",
     textColor: "#ffffff",
     cardStyle: "bg-purple-950/40 border-purple-800/40 text-purple-100",
-    buttonClass: "bg-purple-600 text-white hover:bg-purple-500 font-semibold shadow-lg shadow-purple-600/20",
+    buttonClass: "bg-purple-600 text-foreground hover:bg-purple-500 font-semibold shadow-lg shadow-purple-600/20",
   },
   {
     key: "zine",
@@ -83,8 +83,8 @@ export const BIOLINK_THEMES: BiolinkThemeDefinition[] = [
     description: "Estética brutalista editorial com bordas marcadas e sombra sólida.",
     previewGradient: "linear-gradient(135deg, #f4efe6 0%, #e7decb 100%)",
     textColor: "#000000",
-    cardStyle: "bg-white border-2 border-black text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]",
-    buttonClass: "bg-black text-white hover:bg-zinc-800 border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold",
+    cardStyle: "bg-card border-2 border-black text-foreground shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]",
+    buttonClass: "bg-foreground text-foreground hover:bg-zinc-800 border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold",
   },
   {
     key: "tourism",
@@ -92,8 +92,8 @@ export const BIOLINK_THEMES: BiolinkThemeDefinition[] = [
     description: "Visual leve, arejado e elegante para agências, viagens e serviços.",
     previewGradient: "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f8fafc 100%)",
     textColor: "#0369a1",
-    cardStyle: "bg-white/95 border-sky-200 text-slate-800 shadow-xs",
-    buttonClass: "bg-sky-600 text-white hover:bg-sky-700 font-bold shadow-xs",
+    cardStyle: "bg-card/95 border-sky-200 text-slate-800 shadow-xs",
+    buttonClass: "bg-sky-600 text-foreground hover:bg-sky-700 font-bold shadow-xs",
   },
 ];
 
@@ -101,7 +101,7 @@ const BUTTON_STYLES = [
   { id: "rounded", label: "Arredondado Suave", desc: "Bordas rounded-lg clean", classSample: "rounded-lg" },
   { id: "pill", label: "Cápsula (Pill)", desc: "Totalmente arredondado rounded-full", classSample: "rounded-full" },
   { id: "outline", label: "Minimal Outline", desc: "Borda fina com fundo transparente", classSample: "rounded-lg border border-current bg-transparent" },
-  { id: "glass", label: "Vidro Translúcido", desc: "Efeito glass com desfoque de fundo", classSample: "rounded-lg bg-white/10 backdrop-blur-md border border-white/20" },
+  { id: "glass", label: "Vidro Translúcido", desc: "Efeito glass com desfoque de fundo", classSample: "rounded-lg bg-card/10 backdrop-blur-md border border-white/20" },
 ];
 
 interface BiolinkThemesSelectorProps {
@@ -121,11 +121,11 @@ export function BiolinkThemesSelector({ value, onChange }: BiolinkThemesSelector
             <Palette className="size-4 text-primary" />
             <span>Tema Visual do Link da Bio</span>
           </h3>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Escolha a atmosfera visual aplicada automaticamente na página pública dos seus links.
           </p>
         </div>
-        <Badge variant="outline" className="text-[10px] w-fit font-mono">
+        <Badge variant="outline" className="text-2xs w-fit font-mono">
           Tema Atual: {BIOLINK_THEMES.find((t) => t.key === currentKey)?.label || currentKey}
         </Badge>
       </div>
@@ -141,7 +141,7 @@ export function BiolinkThemesSelector({ value, onChange }: BiolinkThemesSelector
               type="button"
               onClick={() => onChange({ ...value, themeKey: theme.key })}
               className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                "group relative rounded-lg border text-left p-4 transition-all cursor-pointer overflow-hidden flex flex-col justify-between h-44 shadow-2xs",
+                "group relative rounded-lg border text-left p-4 transition-colors duration-200 cursor-pointer overflow-hidden flex flex-col justify-between h-44 shadow-2xs",
                 isSelected
                   ? "border-primary ring-2 ring-primary/20 bg-muted/40 shadow-xs"
                   : "border-border/60 hover:border-border hover:bg-muted/20"
@@ -153,17 +153,17 @@ export function BiolinkThemesSelector({ value, onChange }: BiolinkThemesSelector
                 style={{ background: theme.previewGradient }}
               >
                 <div className="flex items-center justify-between">
-                  <div className="size-4 rounded-full bg-white/40 backdrop-blur-xs border border-white/30" />
+                  <div className="size-4 rounded-full bg-card/40 backdrop-blur-xs border border-white/30" />
                   {theme.badgeText && (
-                    <span className="text-[8px] font-bold px-2 py-1 rounded-full bg-black/40 text-white backdrop-blur-xs">
+                    <span className="text-3xs font-bold px-2 py-1 rounded-full bg-foreground/40 text-foreground backdrop-blur-xs">
                       {theme.badgeText}
                     </span>
                   )}
                 </div>
                 <div className="space-y-1">
-                  <div className="h-2 w-16 rounded bg-black/20" />
-                  <div className="h-3 w-full rounded-sm bg-black/25 flex items-center px-1">
-                    <div className="h-1 w-8 rounded-xs bg-white/80" />
+                  <div className="h-2 w-16 rounded bg-foreground/20" />
+                  <div className="h-3 w-full rounded-sm bg-foreground/25 flex items-center px-1">
+                    <div className="h-1 w-8 rounded-xs bg-card/80" />
                   </div>
                 </div>
               </div>
@@ -178,7 +178,7 @@ export function BiolinkThemesSelector({ value, onChange }: BiolinkThemesSelector
                     </div>
                   )}
                 </div>
-                <p className="text-[10px] text-muted-foreground line-clamp-1 mt-1">
+                <p className="text-2xs text-muted-foreground line-clamp-1 mt-1">
                   {theme.description}
                 </p>
               </div>
@@ -194,7 +194,7 @@ export function BiolinkThemesSelector({ value, onChange }: BiolinkThemesSelector
             <Layers className="size-3.5 text-muted-foreground" />
             <span>Formato dos Botões de Ação</span>
           </h4>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Personalize a geometria e o acabamento dos botões exibidos aos visitantes.
           </p>
         </div>
@@ -214,7 +214,7 @@ export function BiolinkThemesSelector({ value, onChange }: BiolinkThemesSelector
                   })
                 }
                 className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "p-3 rounded-lg border text-left transition-all cursor-pointer flex flex-col justify-between",
+                  "p-3 rounded-lg border text-left transition-colors duration-200 cursor-pointer flex flex-col justify-between",
                   isStyleSelected
                     ? "border-primary bg-primary/5 shadow-2xs font-semibold text-primary"
                     : "border-border/60 hover:bg-muted/30 text-foreground"
@@ -222,7 +222,7 @@ export function BiolinkThemesSelector({ value, onChange }: BiolinkThemesSelector
               >
                 <div className="space-y-1">
                   <span className="text-xs font-bold block">{style.label}</span>
-                  <span className="text-[10px] text-muted-foreground block line-clamp-1">
+                  <span className="text-2xs text-muted-foreground block line-clamp-1">
                     {style.desc}
                   </span>
                 </div>
@@ -230,7 +230,7 @@ export function BiolinkThemesSelector({ value, onChange }: BiolinkThemesSelector
                 <div className="mt-3 pt-2 border-t border-border/30 flex items-center justify-center">
                   <div
                     className={cn(
-                      "w-full h-7 text-[10px] font-bold flex items-center justify-center border transition-all",
+                      "w-full h-7 text-2xs font-bold flex items-center justify-center border transition-colors duration-200",
                       style.classSample,
                       isStyleSelected
                         ? "bg-primary text-primary-foreground border-primary shadow-xs"

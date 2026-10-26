@@ -77,7 +77,7 @@ export function TemplateVoucherStory({
   return (
     <div
       id="voucher-story-canvas"
-      className="relative flex flex-col w-[360px] h-[640px] sm:w-[390px] sm:h-[693px] md:w-[414px] md:h-[736px] overflow-hidden text-white rounded-lg shadow-2xl mx-auto border border-white/10"
+      className="relative flex flex-col w-[360px] h-[640px] sm:w-[390px] sm:h-[693px] md:w-[414px] md:h-[736px] overflow-hidden text-foreground rounded-lg shadow-2xl mx-auto border border-white/10"
       style={{
         background: `linear-gradient(145deg, #090d16 0%, #030712 100%)`,
         fontFamily: "'Outfit', 'Inter', sans-serif",
@@ -106,48 +106,48 @@ export function TemplateVoucherStory({
                 src={agencyLogo}
                 alt={agencyName}
                 crossOrigin="anonymous"
-                className="size-8 object-contain rounded-full bg-white/10 p-1 backdrop-blur-md border border-white/10"
+                className="size-8 object-contain rounded-full bg-card/10 p-1 backdrop-blur-md border border-white/10"
               />
             ) : (
               <div
-                className="size-8 rounded-full flex items-center justify-center font-bold text-xs text-white"
+                className="size-8 rounded-full flex items-center justify-center font-bold text-xs text-foreground"
                 style={{ backgroundColor: primaryColor }}
               >
                 {agencyName.slice(0, 2).toUpperCase()}
               </div>
             )}
             <div>
-              <span className="font-bold text-sm tracking-tight text-white block leading-tight">
+              <span className="font-bold text-sm tracking-tight text-foreground block leading-tight">
                 {agencyName}
               </span>
-              <span className="text-[10px] text-white/50 tracking-wider uppercase font-mono">
+              <span className="text-2xs text-foreground/50 tracking-wider uppercase font-mono">
                 @{agencySlug}
               </span>
             </div>
           </div>
 
-          <div className="px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-[10px] font-bold tracking-wide uppercase">
+          <div className="px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-2xs font-bold tracking-wide uppercase">
             Confirmado
           </div>
         </div>
 
         {/* Destination Hero Block */}
         <div className="my-auto py-4">
-          <div className="flex items-center gap-2 mb-2 text-white/70">
+          <div className="flex items-center gap-2 mb-2 text-foreground/70">
             <MapPin className="size-3.5 text-primary" style={{ color: primaryColor }} />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-white/60">
+            <span className="text-2xs font-bold uppercase tracking-widest text-foreground/60">
               Voucher Oficial de Embarque
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black leading-tight tracking-tight text-white drop-shadow-sm">
+          <h1 className="text-2xl sm:text-3xl font-black leading-tight tracking-tight text-foreground drop-shadow-sm">
             {destination}
           </h1>
           <div className="mt-2 flex items-center gap-2">
-            <span className="px-2 py-1 rounded-md bg-white/10 text-[11px] font-mono font-bold text-white/90 border border-white/10">
+            <span className="px-2 py-1 rounded-md bg-card/10 text-2xs font-mono font-bold text-foreground/90 border border-white/10">
               LOC: {locator}
             </span>
             {v.voucher_type && (
-              <span className="text-[11px] text-white/50 capitalize font-medium">
+              <span className="text-2xs text-foreground/50 capitalize font-medium">
                 · {v.voucher_type}
               </span>
             )}
@@ -156,24 +156,24 @@ export function TemplateVoucherStory({
           {/* Cards de Voo / Hotel no Estilo Glassmorphism */}
           <div className="flex flex-col gap-3 mt-5">
             {flights.length > 0 && (
-              <div className="rounded-lg bg-white/[0.07] border border-white/15 backdrop-blur-md p-4 shadow-lg">
-                <div className="flex justify-between items-center text-[10px] uppercase font-bold tracking-wider text-white/60 mb-2">
+              <div className="rounded-lg bg-card/[0.07] border border-white/15 backdrop-blur-md p-4 shadow-lg">
+                <div className="flex justify-between items-center text-2xs uppercase font-bold tracking-wider text-foreground/60 mb-2">
                   <span className="flex items-center gap-1">
                     <Plane className="size-3 text-sky-400" /> Voo Confirmado
                   </span>
-                  <span className="font-mono text-white/50">{flights[0].airline}</span>
+                  <span className="font-mono text-foreground/50">{flights[0].airline}</span>
                 </div>
                 <div className="flex justify-between items-center text-base sm:text-lg font-extrabold tracking-tight">
                   <span>{flights[0].origin}</span>
-                  <div className="flex items-center gap-1 text-white/40">
-                    <div className="h-px w-6 bg-white/30" />
-                    <Plane className="size-3 text-white/70" />
-                    <div className="h-px w-6 bg-white/30" />
+                  <div className="flex items-center gap-1 text-foreground/40">
+                    <div className="h-px w-6 bg-card/30" />
+                    <Plane className="size-3 text-foreground/70" />
+                    <div className="h-px w-6 bg-card/30" />
                   </div>
                   <span>{flights[0].destination}</span>
                 </div>
                 {(flights[0].flight_number || flights[0].date) && (
-                  <div className="text-[10px] text-white/60 mt-1 text-center font-mono">
+                  <div className="text-2xs text-foreground/60 mt-1 text-center font-mono">
                     {flights[0].flight_number && `Voo ${flights[0].flight_number}`}
                     {flights[0].flight_number && flights[0].date && " · "}
                     {flights[0].date && flights[0].date}
@@ -183,17 +183,17 @@ export function TemplateVoucherStory({
             )}
 
             {accommodation.length > 0 && (
-              <div className="rounded-lg bg-white/[0.07] border border-white/15 backdrop-blur-md p-4 shadow-lg">
-                <div className="flex justify-between items-center text-[10px] uppercase font-bold tracking-wider text-white/60 mb-1">
+              <div className="rounded-lg bg-card/[0.07] border border-white/15 backdrop-blur-md p-4 shadow-lg">
+                <div className="flex justify-between items-center text-2xs uppercase font-bold tracking-wider text-foreground/60 mb-1">
                   <span className="flex items-center gap-1">
                     <Hotel className="size-3 text-amber-400" /> Hospedagem
                   </span>
                 </div>
-                <div className="text-sm font-bold text-white truncate">
+                <div className="text-sm font-bold text-foreground truncate">
                   {accommodation[0].name}
                 </div>
                 {accommodation[0].city && (
-                  <div className="text-[11px] text-white/60 truncate mt-1">
+                  <div className="text-2xs text-foreground/60 truncate mt-1">
                     {accommodation[0].city}
                   </div>
                 )}
@@ -203,11 +203,11 @@ export function TemplateVoucherStory({
 
           {/* Lista de Passageiros */}
           {passengers.length > 0 && (
-            <div className="mt-4 p-3 rounded-lg bg-white/[0.04] border border-white/10 text-center">
-              <span className="text-[10px] uppercase tracking-wider text-white/50 block font-semibold">
+            <div className="mt-4 p-3 rounded-lg bg-card/[0.04] border border-white/10 text-center">
+              <span className="text-2xs uppercase tracking-wider text-foreground/50 block font-semibold">
                 Passageiro{passengers.length > 1 ? "s" : ""}
               </span>
-              <p className="text-xs font-bold text-white/90 mt-1 truncate">
+              <p className="text-xs font-bold text-foreground/90 mt-1 truncate">
                 {passengers.map((p) => p.name).join(" · ")}
               </p>
             </div>
@@ -217,15 +217,15 @@ export function TemplateVoucherStory({
         {/* Footer: QR Code & Assinatura Digital */}
         <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs">
           <div className="space-y-1">
-            <span className="text-[9px] uppercase tracking-widest text-white/40 block">
+            <span className="text-3xs uppercase tracking-widest text-foreground/40 block">
               Emissão Digital Autorizada
             </span>
-            <span className="text-[11px] font-bold text-white/80 block">
+            <span className="text-2xs font-bold text-foreground/80 block">
               Waesy Travel Suite
             </span>
           </div>
 
-          <div className="size-10 rounded-lg bg-white p-1 flex items-center justify-center shrink-0 shadow-md">
+          <div className="size-10 rounded-lg bg-card p-1 flex items-center justify-center shrink-0 shadow-md">
             <QrCode className="size-8 text-slate-900" />
           </div>
         </div>

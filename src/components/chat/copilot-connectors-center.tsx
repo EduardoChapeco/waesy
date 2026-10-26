@@ -201,7 +201,7 @@ export function CopilotConnectorsCenter({ className }: CopilotConnectorsCenterPr
             <div
               key={conn.provider}
               className={cn(
-                "group rounded-2xl border p-5 transition-all flex flex-col justify-between space-y-4 bg-card",
+                "group rounded-2xl border p-5 transition-colors duration-200 flex flex-col justify-between space-y-4 bg-card",
                 isConnected
                   ? "border-border/60 hover:border-primary/40 shadow-xs"
                   : "border-border/30 opacity-80 bg-muted/10"
@@ -217,7 +217,7 @@ export function CopilotConnectorsCenter({ className }: CopilotConnectorsCenterPr
                       <h4 className="text-sm font-bold text-foreground leading-snug">
                         {conn.name}
                       </h4>
-                      <p className="text-2xs font-mono text-muted-foreground mt-0.5">
+                      <p className="text-2xs font-mono text-muted-foreground mt-1">
                         {conn.category}
                       </p>
                     </div>
@@ -226,7 +226,7 @@ export function CopilotConnectorsCenter({ className }: CopilotConnectorsCenterPr
                   <Badge
                     variant="outline"
                     className={cn(
-                      "text-2xs font-semibold px-2.5 py-0.5 rounded-md shrink-0",
+                      "text-2xs font-semibold px-3 py-1 rounded-md shrink-0",
                       isConnected
                         ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30"
                         : "bg-muted/40 text-muted-foreground border-border/40"
@@ -241,7 +241,7 @@ export function CopilotConnectorsCenter({ className }: CopilotConnectorsCenterPr
                 </p>
 
                 {isConnected && current.account && (
-                  <div className="flex items-center gap-1.5 text-2xs text-muted-foreground font-mono bg-muted/40 px-2.5 py-1 rounded-md">
+                  <div className="flex items-center gap-2 text-2xs text-muted-foreground font-mono bg-muted/40 px-3 py-1 rounded-md">
                     <ShieldCheck className="size-3 text-emerald-600" />
                     <span className="truncate">{current.account}</span>
                   </div>
@@ -308,13 +308,13 @@ export function CopilotConnectorsCenter({ className }: CopilotConnectorsCenterPr
                 />
               </div>
 
-              <div className="p-3.5 rounded-xl bg-muted/40 border border-border/40 space-y-2">
+              <div className="p-4 rounded-xl bg-muted/40 border border-border/40 space-y-2">
                 <span className="text-xs font-semibold text-foreground block">
                   Permissões Solicitadas:
                 </span>
                 <div className="space-y-1 text-2xs text-muted-foreground font-mono">
                   {selectedConnector.defaultScopes.map((scope) => (
-                    <div key={scope} className="flex items-center gap-1.5">
+                    <div key={scope} className="flex items-center gap-2">
                       <CheckCircle2 className="size-3 text-emerald-600 shrink-0" />
                       <span>{scope}</span>
                     </div>
@@ -323,7 +323,7 @@ export function CopilotConnectorsCenter({ className }: CopilotConnectorsCenterPr
               </div>
 
               {selectedConnector.provider === "email" && (
-                <div className="flex items-center justify-between p-3.5 rounded-xl bg-primary/5 border border-primary/20">
+                <div className="flex items-center justify-between p-4 rounded-xl bg-primary/5 border border-primary/20">
                   <div className="space-y-0.5 pr-2">
                     <span className="text-xs font-semibold text-foreground block">
                       Barreira de Envio de E-mails

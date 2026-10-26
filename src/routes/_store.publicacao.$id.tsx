@@ -276,7 +276,7 @@ function PostThreadPage() {
 
           if (post.post_type === "moment" || postRatio === "9:16") {
             containerAspectClass = "aspect-post-moment max-w-sm mx-auto max-h-[640px]";
-            objectFitClass = isVideo ? "object-contain bg-black/95" : "object-cover";
+            objectFitClass = isVideo ? "object-contain bg-foreground/95" : "object-cover";
           } else if (postRatio === "1:1") {
             containerAspectClass = "aspect-square max-h-[580px]";
           } else if (postRatio === "4:5") {
@@ -285,7 +285,7 @@ function PostThreadPage() {
             containerAspectClass = "aspect-video max-h-[540px]";
           } else if (isVideo) {
             containerAspectClass = "aspect-post-vertical max-h-[640px]";
-            objectFitClass = "object-contain bg-black/95";
+            objectFitClass = "object-contain bg-foreground/95";
           }
 
           return (
@@ -443,7 +443,7 @@ function PostThreadPage() {
                   <div className="flex items-center gap-2">
                     <Avatar className="size-7 rounded-full border">
                       <AvatarImage src={c.profile?.avatar_url || ""} />
-                      <AvatarFallback className="text-[10px]">
+                      <AvatarFallback className="text-2xs">
                         {c.profile?.full_name?.charAt(0)?.toUpperCase() || "M"}
                       </AvatarFallback>
                     </Avatar>
@@ -451,7 +451,7 @@ function PostThreadPage() {
                       {c.profile?.full_name || "Membro"}
                     </span>
                   </div>
-                  <span className="text-[10px] text-muted-foreground font-mono">
+                  <span className="text-2xs text-muted-foreground font-mono">
                     {formatRelativeTime(c.created_at)}
                   </span>
                 </div>

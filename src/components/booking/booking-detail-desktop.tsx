@@ -75,7 +75,7 @@ export function BookingDetailDesktop({
               )}
             </div>
             <div className="absolute top-4 right-4">
-              <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20  text-[11px] font-bold px-3 py-1 rounded-lg  flex items-center gap-1">
+              <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20  text-2xs font-bold px-3 py-1 rounded-lg  flex items-center gap-1">
                 <Star size={12} weight="fill" />
                 <span>Vagas Hoje</span>
               </Badge>
@@ -84,15 +84,15 @@ export function BookingDetailDesktop({
 
           {/* Badges Rápidos de Garantia */}
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-muted/40 border border-border/40 text-[11px] font-semibold text-muted-foreground">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-muted/40 border border-border/40 text-2xs font-semibold text-muted-foreground">
               <ShieldCheck size={14} weight="bold" className="text-emerald-600 dark:text-emerald-400" />
               Profissional Certificado
             </span>
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-muted/40 border border-border/40 text-[11px] font-semibold text-muted-foreground">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-muted/40 border border-border/40 text-2xs font-semibold text-muted-foreground">
               <Star size={14} weight="bold" className="text-amber-500" />
               Biossegurança 100%
             </span>
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-muted/40 border border-border/40 text-[11px] font-semibold text-muted-foreground">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-muted/40 border border-border/40 text-2xs font-semibold text-muted-foreground">
               <CalendarDots size={14} weight="bold" className="text-primary" />
               Reagendamento Grátis
             </span>
@@ -108,15 +108,15 @@ export function BookingDetailDesktop({
             <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Especificações do Serviço</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
               <div className="p-3 rounded-lg bg-muted/30 border border-border/40">
-                <span className="text-[10px] text-muted-foreground block font-medium">Duração Estimada</span>
+                <span className="text-2xs text-muted-foreground block font-medium">Duração Estimada</span>
                 <span className="font-bold text-foreground text-sm">{service.duration_minutes || 60} minutos</span>
               </div>
               <div className="p-3 rounded-lg bg-muted/30 border border-border/40">
-                <span className="text-[10px] text-muted-foreground block font-medium">Público-Alvo</span>
+                <span className="text-2xs text-muted-foreground block font-medium">Público-Alvo</span>
                 <span className="font-bold text-foreground text-sm">{targetGenderLabel}</span>
               </div>
               <div className="p-3 rounded-lg bg-muted/30 border border-border/40">
-                <span className="text-[10px] text-muted-foreground block font-medium">Categoria</span>
+                <span className="text-2xs text-muted-foreground block font-medium">Categoria</span>
                 <span className="font-bold text-foreground text-sm">{categoryLabel}</span>
               </div>
             </div>
@@ -173,7 +173,7 @@ export function BookingDetailDesktop({
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                  <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
                     Local de Atendimento
                   </span>
                   <h3 className="font-bold text-base text-foreground truncate">{store.name}</h3>
@@ -203,7 +203,7 @@ export function BookingDetailDesktop({
           <div className="p-6 rounded-lg border border-border/80 bg-card space-y-6 shadow-sm">
             {/* Preço */}
             <div className="space-y-1">
-              <span className="text-[11px] font-mono text-muted-foreground uppercase tracking-wider block font-bold">
+              <span className="text-2xs font-mono text-muted-foreground uppercase tracking-wider block font-bold">
                 Valor da Sessão
               </span>
               <span className="text-3xl font-black text-foreground font-mono">
@@ -222,7 +222,7 @@ export function BookingDetailDesktop({
 
             {/* Formas de Pagamento Aceitas */}
             <div className="pt-2 border-t border-border/40 space-y-2">
-              <span className="text-[11px] text-muted-foreground font-semibold block">Formas de Pagamento</span>
+              <span className="text-2xs text-muted-foreground font-semibold block">Formas de Pagamento</span>
               <div className="flex items-center gap-3 text-xs text-foreground font-medium">
                 <span className="flex items-center gap-2"><QrCode size={16} className="text-primary" /> Pix</span>
                 <span className="flex items-center gap-2"><CreditCard size={16} /> Cartão</span>
@@ -231,7 +231,7 @@ export function BookingDetailDesktop({
             </div>
 
             {/* Política de Cancelamento */}
-            <div className="p-4 rounded-lg bg-muted/30 border border-border/50 text-[11px] text-muted-foreground space-y-1">
+            <div className="p-4 rounded-lg bg-muted/30 border border-border/50 text-2xs text-muted-foreground space-y-1">
               <span className="font-semibold text-foreground block">Cancelamento Flexível</span>
               <p>Reagende ou cancele gratuitamente até 2 horas antes do horário marcado.</p>
             </div>

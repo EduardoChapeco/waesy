@@ -99,12 +99,12 @@ export function NewsSponsorBanner({
       className="my-6 p-4 sm:p-5 rounded-lg border border-primary/20 bg-linear-to-br from-card via-muted/30 to-primary/5 overflow-hidden"
     >
       <div className="flex items-center justify-between gap-2 mb-3">
-        <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+        <div className="flex items-center gap-2 text-2xs font-black uppercase tracking-wider text-muted-foreground">
           <Megaphone className="size-3.5 text-primary" />
           <span>Conteúdo Patrocinado</span>
         </div>
         {sponsor.tier === "gold" && (
-          <span className="px-2 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+          <span className="px-2 py-1 rounded-full text-3xs font-black uppercase tracking-wider bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
             ★ Patrocinador Master
           </span>
         )}
@@ -114,7 +114,7 @@ export function NewsSponsorBanner({
         {sponsor.video_url ? (
           <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
             onClick={handleClick}
-            className="w-full sm:w-1/3 aspect-16/9 rounded-lg overflow-hidden bg-black cursor-pointer hover:opacity-95 transition-opacity shrink-0 relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="w-full sm:w-1/3 aspect-16/9 rounded-lg overflow-hidden bg-foreground cursor-pointer hover:opacity-95 transition-opacity shrink-0 relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <video
               src={sponsor.video_url}

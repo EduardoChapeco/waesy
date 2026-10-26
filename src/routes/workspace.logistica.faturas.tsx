@@ -264,7 +264,7 @@ function WorkspaceLogisticsInvoicesPage() {
           <h2 className="text-xs font-bold uppercase tracking-wider text-foreground">
             Demonstrativo de Repasses ({filteredInvoices.length})
           </h2>
-          {isLoading && <Loader2 className="size-4 animate-spin text-muted-foreground" />}
+          {isLoading && <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-muted-foreground" />}
         </div>
 
         {filteredInvoices.length === 0 && !isLoading ? (
@@ -346,7 +346,7 @@ function WorkspaceLogisticsInvoicesPage() {
                         className="h-10 px-4 rounded-lg font-bold text-xs bg-primary hover:bg-primary/90 text-primary-foreground gap-2 cursor-pointer shadow-2xs"
                       >
                         {settleMutation.isPending ? (
-                          <Loader2 className="size-3.5 animate-spin" />
+                          <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
                         ) : (
                           <CheckCircle2 className="size-3.5" />
                         )}
@@ -441,7 +441,7 @@ function WorkspaceLogisticsInvoicesPage() {
                 className="rounded-lg h-10 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground gap-2 shadow-2xs"
               >
                 {settleMutation.isPending ? (
-                  <Loader2 className="size-3.5 animate-spin" />
+                  <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
                 ) : (
                   <CheckCircle2 className="size-3.5" />
                 )}

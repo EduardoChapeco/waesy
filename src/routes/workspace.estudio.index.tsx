@@ -251,7 +251,7 @@ function StudioWorkspacePage() {
  <button
  type="button"
  onClick={() => setStudioMode("graphic")}
- className={`flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+ className={`flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-bold transition-colors duration-200 ${
  studioMode === "graphic"
  ? "bg-foreground text-background"
  : "text-muted-foreground hover:text-foreground"
@@ -263,7 +263,7 @@ function StudioWorkspacePage() {
  <button
  type="button"
  onClick={() => setStudioMode("video")}
- className={`flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+ className={`flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-bold transition-colors duration-200 ${
  studioMode === "video"
  ? "bg-foreground text-background"
  : "text-muted-foreground hover:text-foreground"
@@ -305,7 +305,7 @@ function StudioWorkspacePage() {
  className="h-8 rounded-lg font-bold text-xs gap-2"
  >
  {saveMutation.isPending ? (
- <Loader2 className="size-3.5 animate-spin" />
+ <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
  ) : (
  <Save className="size-3.5" />
  )}
@@ -318,7 +318,7 @@ function StudioWorkspacePage() {
  onClick={handleExport}
  className="h-8 rounded-lg font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-2"
  >
- {isExporting ? <Loader2 className="size-3.5 animate-spin" /> : <Download className="size-3.5" />}
+ {isExporting ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : <Download className="size-3.5" />}
  <span>{isExporting ? "Exportando..." : "Exportar"}</span>
  </Button>
  </div>
@@ -343,7 +343,7 @@ function StudioWorkspacePage() {
  key={ar}
  type="button"
  onClick={() => setAspectRatio(ar)}
- className={`py-2 px-2 rounded-lg text-xs font-mono font-bold border transition-all ${
+ className={`py-2 px-2 rounded-lg text-xs font-mono font-bold border transition-colors duration-200 ${
  aspectRatio === ar
  ? "bg-foreground text-background border-foreground"
  : "bg-muted/40 border-border/60 text-muted-foreground hover:text-foreground"
@@ -476,7 +476,7 @@ function StudioWorkspacePage() {
  key={cat.id}
  type="button"
  onClick={() => setSelectedTemplateCategory(cat.id)}
- className={`px-2 py-1 rounded-md text-xs font-bold transition-all whitespace-nowrap ${
+ className={`px-2 py-1 rounded-md text-xs font-bold transition-colors duration-200 whitespace-nowrap ${
  selectedTemplateCategory === cat.id
  ? "bg-primary text-primary-foreground"
  : "bg-muted/60 text-muted-foreground hover:text-foreground"
@@ -492,7 +492,7 @@ function StudioWorkspacePage() {
  <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  key={tpl.id}
  onClick={() => handleApplyTemplate(tpl)}
- className="p-3 rounded-lg border border-border/70 bg-card hover:bg-muted/50 cursor-pointer transition-all space-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="p-3 rounded-lg border border-border/70 bg-card hover:bg-muted/50 cursor-pointer transition-colors duration-200 space-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-foreground truncate">{tpl.title}</span>
@@ -540,7 +540,7 @@ function StudioWorkspacePage() {
  >
  <Film className="size-12 text-zinc-600 mb-2" />
  <p className="text-xs font-mono text-zinc-400">Vídeo Preview (4K Canvas)</p>
- <div className="absolute bottom-3 left-3 right-3 bg-black/60 backdrop-blur-md p-2 rounded-lg flex items-center justify-between text-xs font-mono text-white">
+ <div className="absolute bottom-3 left-3 right-3 bg-foreground/60 backdrop-blur-md p-2 rounded-lg flex items-center justify-between text-xs font-mono text-foreground">
  <span>{currentTime.toFixed(1)}s</span>
  <span>/ {videoDuration}s</span>
  </div>

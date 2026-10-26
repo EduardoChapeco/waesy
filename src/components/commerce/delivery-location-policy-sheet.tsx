@@ -40,10 +40,10 @@ export function DeliveryLocationPolicySheet({
               <Building className="size-4 text-primary shrink-0" />
               <span>Portaria vs. Porta do Apartamento</span>
             </div>
-            <p className="text-muted-foreground leading-relaxed text-[11px]">
+            <p className="text-muted-foreground leading-relaxed text-2xs">
               Por padrão de segurança urbana, as entregas ocorrem na portaria ou portão principal do condomínio. Caso você selecione a opção "Entregar na porta de casa/apartamento", uma taxa adicional do entregador é aplicada para cobrir o tempo de identificação e deslocamento interno.
             </p>
-            <p className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold">
+            <p className="text-2xs text-amber-600 dark:text-amber-400 font-semibold">
               Importante: Se o regimento interno do condomínio proibir a entrada de entregadores, o valor da taxa não é estornável e a entrega será finalizada na portaria.
             </p>
           </div>
@@ -54,7 +54,7 @@ export function DeliveryLocationPolicySheet({
               <Clock className="size-4 text-primary shrink-0" />
               <span>Tolerância de Espera (15 Minutos)</span>
             </div>
-            <p className="text-muted-foreground leading-relaxed text-[11px]">
+            <p className="text-muted-foreground leading-relaxed text-2xs">
               Ao registrar a chegada via GPS, você recebe uma notificação instantânea. O entregador aguarda no local por até 15 minutos de tolerância. Tempo excedente está sujeito a taxa de espera calculada por minuto ou cancelamento do pedido sem reembolso.
             </p>
           </div>
@@ -65,7 +65,7 @@ export function DeliveryLocationPolicySheet({
               <AlertTriangle className="size-4 shrink-0" />
               <span>Tolerância Zero a Fraudes e Abusos</span>
             </div>
-            <p className="text-muted-foreground leading-relaxed text-[11px]">
+            <p className="text-muted-foreground leading-relaxed text-2xs">
               O Waesy adota política de tolerância zero contra desacato, violência ou fraudes de comprovante/reclamação falsa. Incidentes geram banimento imediato e representação legal junto às autoridades policiais.
             </p>
           </div>

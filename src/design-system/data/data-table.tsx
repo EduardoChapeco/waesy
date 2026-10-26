@@ -135,11 +135,11 @@ export function DataTable<T>({
     return (
       <div className="rounded-lg border border-border/70 bg-card overflow-hidden">
         <div className="h-11 border-b border-border/50 bg-muted/30 flex items-center px-4">
-          <div className="h-3 w-32 rounded bg-muted animate-pulse" />
+          <div className="h-3 w-32 rounded bg-muted animate-pulse motion-reduce:animate-none" />
         </div>
         <div className="p-4 space-y-3">
           {[1, 2, 3, 4, 5].map((idx) => (
-            <div key={idx} className="h-10 w-full rounded-md bg-muted/40 animate-pulse" />
+            <div key={idx} className="h-10 w-full rounded-md bg-muted/40 animate-pulse motion-reduce:animate-none" />
           ))}
         </div>
       </div>

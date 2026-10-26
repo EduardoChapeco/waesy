@@ -306,7 +306,7 @@ export default function WorkspaceNotificationsPage() {
                 if (notif.linkUrl) navigate({ to: notif.linkUrl as any });
               }}
               className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                "group relative bg-card border rounded-lg p-4.5 transition-all cursor-pointer flex items-start gap-4",
+                "group relative bg-card border rounded-lg p-4.5 transition-colors duration-200 cursor-pointer flex items-start gap-4",
                 !notif.isRead
                   ? "border-primary/40 bg-primary/2 hover:border-primary/60 shadow-2xs"
                   : "border-border/60 hover:border-border hover:bg-muted/20"

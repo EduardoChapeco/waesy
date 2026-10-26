@@ -131,19 +131,19 @@ export function FastLeadRsvpModal({
 
             <form onSubmit={handleSubmit} className="space-y-4 pt-2">
               <div className="p-3 bg-muted/40 rounded-2xl space-y-1 text-xs text-muted-foreground">
-                <div className="flex items-center gap-1.5 font-medium text-foreground">
+                <div className="flex items-center gap-2 font-medium text-foreground">
                   <Calendar className="size-3.5 text-primary" />
                   {event.event_date ? formatDate(event.event_date) : "Data a definir"}
                 </div>
                 {event.location && (
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2">
                     <MapPin className="size-3.5" />
                     {event.location}
                   </div>
                 )}
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold text-foreground">Nome Completo do Titular *</Label>
                 <Input
                   type="text"
@@ -155,7 +155,7 @@ export function FastLeadRsvpModal({
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold text-foreground">E-mail *</Label>
                 <Input
                   type="email"
@@ -167,7 +167,7 @@ export function FastLeadRsvpModal({
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold text-foreground">WhatsApp / Celular (Opcional)</Label>
                 <Input
                   type="tel"
@@ -213,7 +213,7 @@ export function FastLeadRsvpModal({
             {/* Ticket Card Preview */}
             <div className="p-4 bg-muted/40 rounded-2xl border border-border/60 text-left space-y-3">
               <div>
-                <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
+                <span className="text-2xs text-muted-foreground uppercase font-bold tracking-wider">
                   Evento
                 </span>
                 <p className="text-sm font-bold text-foreground">{issuedTicket.eventTitle}</p>
@@ -221,13 +221,13 @@ export function FastLeadRsvpModal({
 
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
-                  <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
+                  <span className="text-2xs text-muted-foreground uppercase font-bold tracking-wider">
                     Titular
                   </span>
                   <p className="font-semibold text-foreground truncate">{issuedTicket.recipientName}</p>
                 </div>
                 <div>
-                  <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
+                  <span className="text-2xs text-muted-foreground uppercase font-bold tracking-wider">
                     Lote
                   </span>
                   <p className="font-semibold text-foreground">{issuedTicket.lotName}</p>
@@ -236,7 +236,7 @@ export function FastLeadRsvpModal({
 
               <div className="pt-2 border-t border-border/40 flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
+                  <span className="text-2xs text-muted-foreground uppercase font-bold tracking-wider">
                     Código de Entrada
                   </span>
                   <p className="text-base font-mono font-bold text-primary">{issuedTicket.humanCode}</p>
@@ -248,7 +248,7 @@ export function FastLeadRsvpModal({
                   onClick={handleCopyCode}
                   className="h-9 px-3 rounded-xl text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  <Copy className="size-3.5 mr-1.5" />
+                  <Copy className="size-3.5 mr-2" />
                   Copiar
                 </Button>
               </div>

@@ -277,7 +277,7 @@ export function SectionFlights({ draft, save }: Props) {
         <Button
           type="button"
           onClick={() => setInfotravelOpen(true)}
-          className="flex-1 inline-flex items-center justify-center gap-2 h-[34px] rounded border border-border bg-surface text-xs font-semibold text-muted-foreground hover:bg-surface-alt hover:text-foreground transition-all cursor-pointer"
+          className="flex-1 inline-flex items-center justify-center gap-2 h-[34px] rounded border border-border bg-surface text-xs font-semibold text-muted-foreground hover:bg-surface-alt hover:text-foreground transition-colors duration-200 cursor-pointer"
         >
           <Search className="h-3.5 w-3.5" /> Buscar no Infotravel
         </Button>
@@ -363,7 +363,7 @@ export function SectionFlights({ draft, save }: Props) {
                 {results.map((flight) => (
                   <div
                     key={flight.id}
-                    className="flex gap-3 p-3 rounded border border-border hover:border-brand/40 bg-surface-alt/25 transition-all group text-left"
+                    className="flex gap-3 p-3 rounded border border-border hover:border-brand/40 bg-surface-alt/25 transition-colors duration-200 group text-left"
                   >
                     <div className="flex-1 min-w-0 flex flex-col justify-between">
                       <div>
@@ -379,7 +379,7 @@ export function SectionFlights({ draft, save }: Props) {
                           {flight.origin} {flight.departure_time} → {flight.destination}{" "}
                           {flight.arrival_time}
                         </p>
-                        <p className="text-[9px] text-muted-foreground/85 font-sans mt-1">
+                        <p className="text-3xs text-muted-foreground/85 font-sans mt-1">
                           {flight.baggage_rules}
                         </p>
                       </div>
@@ -393,7 +393,7 @@ export function SectionFlights({ draft, save }: Props) {
                         <Button
                           type="button"
                           onClick={() => importFlight(flight)}
-                          className="px-3 py-1 ds-meta bg-primary text-primary-foreground font-semibold rounded hover:bg-primary/95 transition-all cursor-pointer"
+                          className="px-3 py-1 ds-meta bg-primary text-primary-foreground font-semibold rounded hover:bg-primary/95 transition-colors duration-200 cursor-pointer"
                         >
                           Selecionar
                         </Button>

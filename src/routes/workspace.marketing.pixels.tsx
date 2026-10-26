@@ -172,7 +172,7 @@ export default function WorkspaceMarketingPixelsPage() {
             disabled={isTestingCapi}
             className="rounded-lg text-xs font-semibold gap-2 cursor-pointer"
           >
-            <Radio className={cn("size-3.5", isTestingCapi && "animate-pulse text-primary")} />
+            <Radio className={cn("size-3.5", isTestingCapi && "animate-pulse motion-reduce:animate-none text-primary")} />
             <span>{isTestingCapi ? "Testando CAPI..." : "Testar CAPI"}</span>
           </Button>
         </div>

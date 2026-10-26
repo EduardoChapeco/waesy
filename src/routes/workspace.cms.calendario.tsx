@@ -189,7 +189,7 @@ function CalendarioEditorialPage() {
  type="button"
  onClick={() => setType(key)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "min-h-11 p-3 rounded-lg border text-left flex items-center gap-2 text-xs font-semibold transition-all",
+ "min-h-11 p-3 rounded-lg border text-left flex items-center gap-2 text-xs font-semibold transition-colors duration-200",
  type === key
  ? "border-primary bg-primary/5 ring-1 ring-primary/30"
  : "border-border bg-background hover:bg-muted/40",
@@ -233,7 +233,7 @@ function CalendarioEditorialPage() {
  >
  {isSubmitting ? (
  <>
- <Loader2 className="size-4 animate-spin" />
+ <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
  Agendando...
  </>
  ) : (
@@ -271,7 +271,7 @@ function CalendarioEditorialPage() {
  <div
  key={post.id}
  className={cn(
- "rounded-lg border bg-card p-5 space-y-4 transition-all hover:border-primary/40 shadow-xs",
+ "rounded-lg border bg-card p-5 space-y-4 transition-colors duration-200 hover:border-primary/40 shadow-xs",
  config.borderClass,
  )}
  >

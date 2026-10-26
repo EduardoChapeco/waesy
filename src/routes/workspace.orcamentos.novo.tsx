@@ -72,7 +72,7 @@ function NovoOrcamentoRouterPage() {
  type="button"
  onClick={() => setActiveMode("commercial")}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "px-4 py-2 rounded-lg font-bold text-xs transition-all cursor-pointer",
+ "px-4 py-2 rounded-lg font-bold text-xs transition-colors duration-200 cursor-pointer",
  activeMode === "commercial"
  ? "bg-background text-foreground shadow-xs"
  : "text-muted-foreground hover:text-foreground",
@@ -84,7 +84,7 @@ function NovoOrcamentoRouterPage() {
  type="button"
  onClick={() => setActiveMode("travelos")}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "px-4 py-2 rounded-lg font-bold text-xs transition-all cursor-pointer flex items-center gap-2",
+ "px-4 py-2 rounded-lg font-bold text-xs transition-colors duration-200 cursor-pointer flex items-center gap-2",
  activeMode === "travelos"
  ? "bg-primary text-primary-foreground shadow-xs"
  : "text-muted-foreground hover:text-foreground",
@@ -572,7 +572,7 @@ function NovoOrcamentoTravelosPage() {
  type="button"
  onClick={() => handleSelectCanonicalDestination(dest)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "text-xs font-medium px-3 py-1 rounded-lg border transition-all cursor-pointer flex items-center gap-2",
+ "text-xs font-medium px-3 py-1 rounded-lg border transition-colors duration-200 cursor-pointer flex items-center gap-2",
  destinationIata === dest.iata || proposalData.destinationCity === dest.name
  ? "bg-primary text-primary-foreground border-primary font-bold shadow-2xs"
  : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground border-border/60"
@@ -583,7 +583,7 @@ function NovoOrcamentoTravelosPage() {
  className={cn(
  "text-xs font-mono font-black px-1 rounded",
  destinationIata === dest.iata || proposalData.destinationCity === dest.name
- ? "bg-white/20 text-white"
+ ? "bg-card/20 text-foreground"
  : "bg-muted text-foreground"
  )}
  >
@@ -1619,7 +1619,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  >
  {isSubmitting ? (
  <>
- <Loader2 className="size-3.5 animate-spin" />
+ <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
  <span>Gerando Orçamento...</span>
  </>
  ) : (
@@ -1666,7 +1666,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  className="h-10 rounded-lg text-xs bg-muted/30 pl-3 pr-8 border-border/70"
  />
  {isLoadingCustomers && (
- <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 size-3.5 animate-spin text-muted-foreground" />
+ <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 size-3.5 animate-spin motion-reduce:animate-none text-muted-foreground" />
  )}
  </div>
 
@@ -1839,7 +1839,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  return (
  <div
  key={item.id}
- className="p-4 rounded-lg bg-muted/20 border border-border/70 space-y-3 relative group transition-all hover:border-border"
+ className="p-4 rounded-lg bg-muted/20 border border-border/70 space-y-3 relative group transition-colors duration-200 hover:border-border"
  >
  <div className="flex items-center justify-between gap-2">
  <div className="flex items-center gap-2">
@@ -2052,7 +2052,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  >
  {isSubmitting ? (
  <>
- <Loader2 className="size-4 animate-spin" />
+ <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
  <span>Processando...</span>
  </>
  ) : (
@@ -2067,7 +2067,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  {customerData.phone && totalCents > 0 && (
  <button
  type="button"
- className="w-full h-11 mt-2 rounded-lg font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="w-full h-11 mt-2 rounded-lg font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-foreground flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  onClick={() => {
    let msg = `*Orçamento Comercial*\n\n`;
    items.forEach(item => {
@@ -2148,7 +2148,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  <ScrollArea className="max-h-96 p-4">
  {isLoadingCatalog ? (
  <div className="py-12 flex flex-col items-center justify-center gap-2 text-muted-foreground">
- <Loader2 className="size-6 animate-spin text-primary" />
+ <Loader2 className="size-6 animate-spin motion-reduce:animate-none text-primary" />
  <span className="text-xs">Carregando catálogo da loja...</span>
  </div>
  ) : filteredCatalog.length === 0 ? (
@@ -2174,7 +2174,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
       }
     }}
     onClick={() => handleSelectProduct(product, variant)}
-    className="p-3 rounded-lg border border-border/70 hover:border-primary/50 bg-card hover:bg-muted/30 transition-all flex items-center gap-3 cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    className="p-3 rounded-lg border border-border/70 hover:border-primary/50 bg-card hover:bg-muted/30 transition-colors duration-200 flex items-center gap-3 cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
   >
  {img ? (
  <img

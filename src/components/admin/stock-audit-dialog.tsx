@@ -108,7 +108,7 @@ export function StockAuditDialog({
  >
  {isSubmitting ? (
  <>
- <Loader2 className="mr-2 size-3.5 animate-spin" />
+ <Loader2 className="mr-2 size-3.5 animate-spin motion-reduce:animate-none" />
  Gravando...
  </>
  ) : (

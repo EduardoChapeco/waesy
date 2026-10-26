@@ -145,7 +145,7 @@ export function DeliveryTimeAndRadiusMatrix({
  type="button"
  onClick={() => setActiveTab("operacao")}
  className={cn(
- "text-xs font-bold transition-all relative pb-3 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm",
+ "text-xs font-bold transition-colors duration-200 relative pb-3 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm",
  activeTab === "operacao"
  ? "text-primary border-b-2 border-primary"
  : "text-muted-foreground hover:text-foreground"
@@ -158,7 +158,7 @@ export function DeliveryTimeAndRadiusMatrix({
  type="button"
  onClick={() => setActiveTab("preparo")}
  className={cn(
- "text-xs font-bold transition-all relative pb-3 flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm",
+ "text-xs font-bold transition-colors duration-200 relative pb-3 flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm",
  activeTab === "preparo"
  ? "text-primary border-b-2 border-primary"
  : "text-muted-foreground hover:text-foreground"
@@ -174,7 +174,7 @@ export function DeliveryTimeAndRadiusMatrix({
  type="button"
  onClick={() => setActiveTab("modalidades")}
  className={cn(
- "text-xs font-bold transition-all relative pb-3 flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm",
+ "text-xs font-bold transition-colors duration-200 relative pb-3 flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm",
  activeTab === "modalidades"
  ? "text-primary border-b-2 border-primary"
  : "text-muted-foreground hover:text-foreground"
@@ -208,7 +208,7 @@ export function DeliveryTimeAndRadiusMatrix({
  </div>
 
  {/* Truthful Preview Card — Estilo iFood */}
- <div className="rounded-lg border border-border/70 bg-card overflow-hidden shadow-xs hover:border-primary/40 transition-all">
+ <div className="rounded-lg border border-border/70 bg-card overflow-hidden shadow-xs hover:border-primary/40 transition-colors duration-200">
  {/* Banner */}
  <div className="relative h-28 sm:h-32 w-full bg-muted overflow-hidden">
  {storeBannerUrl ? (
@@ -438,7 +438,7 @@ export function DeliveryTimeAndRadiusMatrix({
  type="button"
  onClick={() => handleApplyPreset(p)}
  className={cn(
- "flex items-center justify-between p-3 rounded-lg border text-xs text-left transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+ "flex items-center justify-between p-3 rounded-lg border text-xs text-left transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
  isSelected
  ? "border-primary bg-primary/10 text-primary font-bold shadow-xs"
  : "border-border/60 bg-card text-muted-foreground hover:border-foreground/40 hover:text-foreground"

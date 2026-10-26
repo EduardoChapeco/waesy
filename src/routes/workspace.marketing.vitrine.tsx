@@ -478,7 +478,7 @@ function WorkspaceSitesHubPage() {
  {/* Card de Criação Rápida */}
  <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  onClick={() => setIsCreateSheetOpen(true)}
- className="flex flex-col items-center justify-center p-8 border border-dashed border-border/80 hover:border-primary/50 rounded-lg bg-background hover:bg-muted/30 transition-all cursor-pointer text-center gap-3 min-h-56 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="flex flex-col items-center justify-center p-8 border border-dashed border-border/80 hover:border-primary/50 rounded-lg bg-background hover:bg-muted/30 transition-colors duration-200 cursor-pointer text-center gap-3 min-h-56 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="size-10 rounded-lg bg-muted/60 group-hover:bg-primary/10 group-hover:text-primary transition-colors flex items-center justify-center text-muted-foreground">
  <Plus className="size-5" />
@@ -501,7 +501,7 @@ function WorkspaceSitesHubPage() {
  return (
  <div
  key={doc.id}
- className="flex flex-col border border-border/70 rounded-lg bg-background overflow-hidden hover:border-border transition-all shadow-2xs group"
+ className="flex flex-col border border-border/70 rounded-lg bg-background overflow-hidden hover:border-border transition-colors duration-200 shadow-2xs group"
  >
  {/* Header do Card */}
  <div className="p-4 pb-3 flex items-start justify-between gap-3 border-b border-border/50 bg-muted/10">
@@ -510,7 +510,7 @@ function WorkspaceSitesHubPage() {
  {getDocTypeBadge(doc.document_type)}
  {isPrimary && (
  <Badge variant="outline" className="text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 gap-1">
- <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+ <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none" />
  Ativa
  </Badge>
  )}
@@ -671,7 +671,7 @@ function WorkspaceSitesHubPage() {
  {filteredTemplates.map((tpl) => (
  <div
  key={tpl.id}
- className="flex flex-col border border-border/70 rounded-lg bg-background overflow-hidden hover:border-border transition-all shadow-2xs group"
+ className="flex flex-col border border-border/70 rounded-lg bg-background overflow-hidden hover:border-border transition-colors duration-200 shadow-2xs group"
  >
  <div className="relative h-44 overflow-hidden bg-muted/40">
  <img

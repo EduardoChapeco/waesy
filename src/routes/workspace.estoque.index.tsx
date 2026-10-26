@@ -444,7 +444,7 @@ function AdminStockPage() {
             type="button"
             onClick={() => handleSelectLocation("all")}
             className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-              "px-3 py-2 rounded-lg border text-xs font-semibold transition-all cursor-pointer shrink-0",
+              "px-3 py-2 rounded-lg border text-xs font-semibold transition-colors duration-200 cursor-pointer shrink-0",
               selectedLocationId === "all"
                 ? "border-primary bg-primary/10 text-primary font-bold shadow-xs"
                 : "border-border/60 bg-card hover:bg-muted/40 text-muted-foreground"
@@ -458,7 +458,7 @@ function AdminStockPage() {
               type="button"
               onClick={() => handleSelectLocation(loc.id)}
               className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                "px-3 py-2 rounded-lg border text-xs font-semibold transition-all cursor-pointer shrink-0 flex items-center gap-2",
+                "px-3 py-2 rounded-lg border text-xs font-semibold transition-colors duration-200 cursor-pointer shrink-0 flex items-center gap-2",
                 selectedLocationId === loc.id
                   ? "border-primary bg-primary/10 text-primary font-bold shadow-xs"
                   : "border-border/60 bg-card hover:bg-muted/40 text-muted-foreground"

@@ -1133,7 +1133,7 @@ export function EventClassifiedShowcaseView({
                         <Play className="size-4 text-primary" />
                         <span>Vídeo / Aftermovie Oficial</span>
                       </h3>
-                      <div className="aspect-video w-full rounded-lg overflow-hidden border border-border/60 bg-black">
+                      <div className="aspect-video w-full rounded-lg overflow-hidden border border-border/60 bg-foreground">
                         {event.video_url.includes("youtube.com") ||
                         event.video_url.includes("youtu.be") ? (
                           <iframe
@@ -1703,7 +1703,7 @@ export function EventClassifiedShowcaseView({
                         className={`size-12 shrink-0 border border-border/60 ${
                           org.entity_type === "PERSON"
                             ? "rounded-full object-cover"
-                            : "rounded-lg object-contain bg-white p-1"
+                            : "rounded-lg object-contain bg-card p-1"
                         }`}
                       />
                     ) : (
@@ -1805,12 +1805,12 @@ export function EventClassifiedShowcaseView({
 
       {/* DIALOG: STORY VERTICAL (9:16) */}
       <Dialog open={storyViewerOpen} onOpenChange={setStoryViewerOpen}>
-        <DialogContent className="sm:max-w-sm p-0 overflow-hidden rounded-lg bg-black border-border/40">
+        <DialogContent className="sm:max-w-sm p-0 overflow-hidden rounded-lg bg-foreground border-border/40">
           <DialogHeader className="sr-only">
             <DialogTitle>Story Oficial — {event.title}</DialogTitle>
             <DialogDescription>Destaque vertical 9:16 do evento.</DialogDescription>
           </DialogHeader>
-          <div className="relative aspect-[9/16] w-full bg-black flex items-center justify-center">
+          <div className="relative aspect-[9/16] w-full bg-foreground flex items-center justify-center">
             {event.story_url &&
             (event.story_url.endsWith(".mp4") || event.story_url.endsWith(".webm")) ? (
               <video
@@ -1987,7 +1987,7 @@ export function EventClassifiedShowcaseView({
                       tkt.qrPayload
                     )}`}
                     alt={`QR Code ${tkt.code}`}
-                    className="size-40 rounded-lg border border-border p-2 bg-white"
+                    className="size-40 rounded-lg border border-border p-2 bg-card"
                   />
                   <p className="font-mono text-base font-black tracking-wider text-primary">
                     {tkt.code}

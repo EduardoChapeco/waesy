@@ -419,7 +419,7 @@ function AgendaPadronizadaPage() {
               <button
                 type="button"
                 className={cn(
-                  "h-11 min-h-11 px-4 rounded-lg border flex items-center gap-2 text-xs font-bold transition-all cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  "h-11 min-h-11 px-4 rounded-lg border flex items-center gap-2 text-xs font-bold transition-colors duration-200 cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   selectedDate !== "all"
                     ? "bg-primary text-primary-foreground border-primary"
                     : "bg-card border-border/80 text-foreground hover:bg-muted/50"
@@ -475,7 +475,7 @@ function AgendaPadronizadaPage() {
               type="button"
               onClick={() => setSelectedDate("all")}
               className={cn(
-                "h-11 min-h-11 px-4 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap snap-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "h-11 min-h-11 px-4 rounded-lg text-xs font-semibold transition-colors duration-200 cursor-pointer whitespace-nowrap snap-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 selectedDate === "all"
                   ? "bg-foreground text-background font-bold shadow-2xs"
                   : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -490,7 +490,7 @@ function AgendaPadronizadaPage() {
                 type="button"
                 onClick={() => setSelectedDate(nextDays[0].dateKey)}
                 className={cn(
-                  "h-11 min-h-11 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  "h-11 min-h-11 px-3 rounded-lg text-xs font-semibold transition-colors duration-200 cursor-pointer whitespace-nowrap flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   selectedDate === nextDays[0].dateKey
                     ? "bg-foreground text-background font-bold shadow-2xs"
                     : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -509,7 +509,7 @@ function AgendaPadronizadaPage() {
                 type="button"
                 onClick={() => setSelectedDate(nextDays[1].dateKey)}
                 className={cn(
-                  "h-11 min-h-11 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  "h-11 min-h-11 px-3 rounded-lg text-xs font-semibold transition-colors duration-200 cursor-pointer whitespace-nowrap flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   selectedDate === nextDays[1].dateKey
                     ? "bg-foreground text-background font-bold shadow-2xs"
                     : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -531,7 +531,7 @@ function AgendaPadronizadaPage() {
                   type="button"
                   onClick={() => setSelectedDate(weekendDay.dateKey)}
                   className={cn(
-                    "h-11 min-h-11 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                    "h-11 min-h-11 px-3 rounded-lg text-xs font-semibold transition-colors duration-200 cursor-pointer whitespace-nowrap flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                     selectedDate === weekendDay.dateKey
                       ? "bg-foreground text-background font-bold shadow-2xs"
                       : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -576,7 +576,7 @@ function AgendaPadronizadaPage() {
       {/* ── 5. Estados de Carregamento e Vazio ── */}
       {isLoading ? (
         <div className="flex justify-center py-20">
-          <CircleNotch size={32} className="animate-spin text-muted-foreground" />
+          <CircleNotch size={32} className="animate-spin motion-reduce:animate-none text-muted-foreground" />
         </div>
       ) : filteredItems.length === 0 ? (
         <div className="p-10 rounded-lg border border-border/60 bg-card text-center space-y-3">
@@ -620,7 +620,7 @@ function AgendaPadronizadaPage() {
                     {group.items.map((item) => (
                       <div
                         key={item.id}
-                        className="min-w-72 sm:min-w-[310px] max-w-80 shrink-0 group flex flex-col justify-between rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 shadow-2xs hover:shadow-xs transition-all select-none"
+                        className="min-w-72 sm:min-w-[310px] max-w-80 shrink-0 group flex flex-col justify-between rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 shadow-2xs hover:shadow-xs transition-colors duration-200 select-none"
                       >
                         <Link to={item.to as any} className="block">
                           <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted/40">
@@ -648,7 +648,7 @@ function AgendaPadronizadaPage() {
                               </Badge>
                             </div>
                             <div className="absolute bottom-2.5 right-2.5">
-                              <span className="bg-black/75 backdrop-blur-md text-white text-xs font-mono font-bold px-2 py-1 rounded-md">
+                              <span className="bg-foreground/75 backdrop-blur-md text-foreground text-xs font-mono font-bold px-2 py-1 rounded-md">
                                 {item.dateDisplay}
                               </span>
                             </div>
@@ -692,7 +692,7 @@ function AgendaPadronizadaPage() {
               {filteredItems.map((item) => (
                 <div
                   key={item.id}
-                  className="group rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover:shadow-xs transition-all flex flex-col justify-between"
+                  className="group rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover:shadow-xs transition-colors duration-200 flex flex-col justify-between"
                 >
                   <Link to={item.to as any} className="flex-1 flex flex-col cursor-pointer">
                     <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted/40 shrink-0">
@@ -714,7 +714,7 @@ function AgendaPadronizadaPage() {
                         </Badge>
                       </div>
                       <div className="absolute bottom-2.5 right-2.5">
-                        <span className="bg-black/75 backdrop-blur-md text-white text-xs font-mono font-bold px-2 py-1 rounded-md">
+                        <span className="bg-foreground/75 backdrop-blur-md text-foreground text-xs font-mono font-bold px-2 py-1 rounded-md">
                           {item.dateDisplay}
                         </span>
                       </div>
@@ -764,7 +764,7 @@ function AgendaPadronizadaPage() {
               {filteredItems.map((item) => (
                 <div
                   key={item.id}
-                  className="group relative overflow-hidden rounded-lg border border-border/60 bg-card hover:border-foreground/30 hover:shadow-xs transition-all min-h-[136px] pl-32 sm:pl-44 w-full"
+                  className="group relative overflow-hidden rounded-lg border border-border/60 bg-card hover:border-foreground/30 hover:shadow-xs transition-colors duration-200 min-h-[136px] pl-32 sm:pl-44 w-full"
                 >
                   <Link
                     to={item.to as any}

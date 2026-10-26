@@ -351,7 +351,7 @@ function GroupTourBoardingPage() {
  <div
  key={passenger.seat_number}
  className={cn(
- "flex items-center justify-between gap-3 p-4 rounded-lg border transition-all",
+ "flex items-center justify-between gap-3 p-4 rounded-lg border transition-colors duration-200",
  isCheckedIn
  ? "bg-emerald-500/5 border-emerald-500/30"
  : isNoShow
@@ -365,9 +365,9 @@ function GroupTourBoardingPage() {
  className={cn(
  "size-11 rounded-lg flex items-center justify-center font-mono font-bold text-sm shrink-0 border",
  isCheckedIn
- ? "bg-emerald-600 text-white border-emerald-600"
+ ? "bg-emerald-600 text-foreground border-emerald-600"
  : isNoShow
- ? "bg-rose-600 text-white border-rose-600"
+ ? "bg-rose-600 text-foreground border-rose-600"
  : "bg-muted text-foreground border-border/80"
  )}
  >
@@ -380,12 +380,12 @@ function GroupTourBoardingPage() {
  {passenger.passenger_name || "Nome não informado"}
  </p>
  {isCheckedIn && (
- <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white text-xs px-2 py-0 h-4">
+ <Badge className="bg-emerald-600 hover:bg-emerald-600 text-foreground text-xs px-2 py-0 h-4">
  A bordo
  </Badge>
  )}
  {isNoShow && (
- <Badge className="bg-rose-600 hover:bg-rose-600 text-white text-xs px-2 py-0 h-4">
+ <Badge className="bg-rose-600 hover:bg-rose-600 text-foreground text-xs px-2 py-0 h-4">
  Ausente
  </Badge>
  )}

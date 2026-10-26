@@ -241,7 +241,7 @@ function AdminMasterModulosPage() {
           return (
             <div
               key={module.module_key}
-              className={`rounded-lg border p-5 transition-all bg-card ${
+              className={`rounded-lg border p-5 transition-colors duration-200 bg-card ${
                 module.enabled
                   ? "border-border/80 shadow-xs"
                   : "border-border/40 opacity-70 bg-muted/20"
@@ -254,11 +254,11 @@ function AdminMasterModulosPage() {
                       {module.name}
                     </h2>
                     {module.badge && (
-                      <Badge variant="outline" className="text-[10px] font-semibold">
+                      <Badge variant="outline" className="text-2xs font-semibold">
                         {module.badge}
                       </Badge>
                     )}
-                    <span className="text-[11px] font-mono text-muted-foreground">
+                    <span className="text-2xs font-mono text-muted-foreground">
                       #{module.order_index}
                     </span>
                   </div>
@@ -267,12 +267,12 @@ function AdminMasterModulosPage() {
                     {module.description || "Sem descrição definida."}
                   </p>
 
-                  <div className="flex items-center gap-2 pt-1 text-[11px] font-mono text-muted-foreground flex-wrap">
+                  <div className="flex items-center gap-2 pt-1 text-2xs font-mono text-muted-foreground flex-wrap">
                     <span className="px-2 py-1 rounded bg-muted">
                       key: {module.module_key}
                     </span>
                     <span>•</span>
-                    <Badge variant="secondary" className="text-[9px] py-0 px-2 font-normal">
+                    <Badge variant="secondary" className="text-3xs py-0 px-2 font-normal">
                       {module.category === "store_operation"
                         ? "Workspace"
                         : module.category === "ai_intelligence"
@@ -288,7 +288,7 @@ function AdminMasterModulosPage() {
 
                 <div className="flex flex-col items-end gap-3 shrink-0 ml-2">
                   <div className="flex items-center gap-2">
-                    {isToggling && <Loader2 className="size-3.5 animate-spin text-primary" />}
+                    {isToggling && <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none text-primary" />}
                     <Switch
                       checked={module.enabled}
                       disabled={isToggling}
@@ -391,7 +391,7 @@ function AdminMasterModulosPage() {
                   size="sm"
                   className="rounded-lg text-xs font-bold gap-2"
                 >
-                  {isSaving && <Loader2 className="size-3.5 animate-spin" />}
+                  {isSaving && <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />}
                   <span>Salvar Alterações</span>
                 </Button>
               </DialogFooter>

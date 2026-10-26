@@ -73,7 +73,7 @@ export function MotoLinkTrackingWidget({
           <div>
             <h3 className="font-semibold text-sm sm:text-base text-foreground flex items-center gap-2">
               MotoLink — Entrega Local Expressa
-              <span className="inline-flex items-center gap-1 text-[10px] px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium">
+              <span className="inline-flex items-center gap-1 text-2xs px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium">
                 <Star className="w-3 h-3" /> Ao Vivo
               </span>
             </h3>
@@ -89,7 +89,7 @@ export function MotoLinkTrackingWidget({
           return (
             <div key={stage.key} className="flex flex-col items-center text-center space-y-2">
               <div
-                className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 ${
+                className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors duration-200 duration-300 ${
                   stage.active
                     ? "bg-foreground text-background shadow-sm"
                     : "bg-muted text-muted-foreground opacity-60"
@@ -97,7 +97,7 @@ export function MotoLinkTrackingWidget({
               >
                 <Icon className="w-4 h-4" />
               </div>
-              <span className={`text-[11px] font-medium leading-tight ${stage.active ? "text-foreground font-semibold" : "text-muted-foreground"}`}>
+              <span className={`text-2xs font-medium leading-tight ${stage.active ? "text-foreground font-semibold" : "text-muted-foreground"}`}>
                 {stage.label}
               </span>
               <div className={`h-1 w-full rounded-full ${stage.active ? "bg-foreground" : "bg-border"}`} />
@@ -114,7 +114,7 @@ export function MotoLinkTrackingWidget({
           </div>
           <div>
             <p className="text-xs font-semibold text-foreground">{courierName}</p>
-            <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+            <p className="text-2xs text-muted-foreground flex items-center gap-1">
               <MapPin className="w-3 h-3 text-muted-foreground" />
               {courierVehicle}
             </p>
@@ -126,7 +126,7 @@ export function MotoLinkTrackingWidget({
             href={waLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 h-9 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium transition-colors cursor-pointer"
+            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 h-9 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-foreground text-xs font-medium transition-colors cursor-pointer"
           >
             <WhatsappLogo className="w-4 h-4" />
             WhatsApp

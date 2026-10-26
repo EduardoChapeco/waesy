@@ -133,7 +133,7 @@ export function LeadCommissionCalculatorSheet({
                 key={m}
                 type="button"
                 onClick={() => setPaymentMethod(m)}
-                className={`p-3 rounded-lg border text-xs font-bold text-left transition-all min-h-11 ${
+                className={`p-3 rounded-lg border text-xs font-bold text-left transition-colors duration-200 min-h-11 ${
                   paymentMethod === m
                     ? "bg-primary/10 border-primary text-primary"
                     : "bg-muted/40 border-border/80 text-muted-foreground hover:text-foreground"

@@ -102,7 +102,7 @@ export function ProtectedContactButton({
           size={size}
           onClick={handleClick}
           className={cn(
-            "rounded-lg gap-2 font-medium transition-all group border-border/80 hover:border-emerald-500/50 hover:bg-emerald-500/5 text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary",
+            "rounded-lg gap-2 font-medium transition-colors duration-200 group border-border/80 hover:border-emerald-500/50 hover:bg-emerald-500/5 text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary",
             className
           )}
           title="Faça login para contatar pelo WhatsApp"
@@ -155,7 +155,7 @@ export function ProtectedContactButton({
               </Button>
               <Button
                 onClick={handleLoginRedirect}
-                className="w-full sm:w-auto rounded-lg text-xs h-11 sm:h-9 px-4 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold focus-visible:ring-2 focus-visible:ring-primary"
+                className="w-full sm:w-auto rounded-lg text-xs h-11 sm:h-9 px-4 gap-2 bg-emerald-600 hover:bg-emerald-700 text-foreground font-bold focus-visible:ring-2 focus-visible:ring-primary"
               >
                 Entrar ou Criar Conta
                 <ArrowRight className="size-3.5" />
@@ -176,13 +176,13 @@ export function ProtectedContactButton({
       disabled={isLoading || !cleanPhone}
       onClick={handleClick}
       className={cn(
-        variant === "default" && "bg-emerald-600 hover:bg-emerald-700 text-white font-semibold",
-        "rounded-lg gap-2 transition-all cursor-pointer",
+        variant === "default" && "bg-emerald-600 hover:bg-emerald-700 text-foreground font-semibold",
+        "rounded-lg gap-2 transition-colors duration-200 cursor-pointer",
         className
       )}
     >
       {isLoading ? (
-        <Loader2 className="size-4 animate-spin" />
+        <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
       ) : (
         <MessageCircle className="size-4" />
       )}

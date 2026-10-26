@@ -128,13 +128,13 @@ export function BookingDrawerSheet({
                           setSelectedSlot(null);
                         }}
                         className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                          "p-2 rounded-lg text-center border transition-all cursor-pointer flex flex-col items-center justify-center",
+                          "p-2 rounded-lg text-center border transition-colors duration-200 cursor-pointer flex flex-col items-center justify-center",
                           isSelected
                             ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                             : "bg-muted/30 border-border/50 text-muted-foreground hover:bg-muted"
                         )}
                       >
-                        <span className="text-[9px] font-mono tracking-wider">{day.weekday}</span>
+                        <span className="text-3xs font-mono tracking-wider">{day.weekday}</span>
                         <span className="text-sm font-bold mt-1">{day.dayNum}</span>
                       </button>
                     );
@@ -148,7 +148,7 @@ export function BookingDrawerSheet({
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label className="text-xs font-bold text-foreground">Profissional / Atendente</Label>
-                    <span className="text-[10px] text-muted-foreground font-mono">Opcional</span>
+                    <span className="text-2xs text-muted-foreground font-mono">Opcional</span>
                   </div>
                   <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
                     <button
@@ -158,7 +158,7 @@ export function BookingDrawerSheet({
                         setSelectedSlot(null);
                       }}
                       className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                        "h-8 px-3 rounded-lg text-xs font-medium border shrink-0 transition-all cursor-pointer",
+                        "h-8 px-3 rounded-lg text-xs font-medium border shrink-0 transition-colors duration-200 cursor-pointer",
                         !selectedResourceId
                           ? "bg-foreground text-background border-foreground font-bold"
                           : "bg-muted/40 border-border/50 text-muted-foreground hover:bg-muted"
@@ -177,7 +177,7 @@ export function BookingDrawerSheet({
                             setSelectedSlot(null);
                           }}
                           className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                            "h-8 px-3 rounded-lg text-xs font-medium border shrink-0 transition-all cursor-pointer",
+                            "h-8 px-3 rounded-lg text-xs font-medium border shrink-0 transition-colors duration-200 cursor-pointer",
                             isSelected
                               ? "bg-primary text-primary-foreground border-primary font-bold shadow-xs"
                               : "bg-muted/40 border-border/50 text-muted-foreground hover:bg-muted"
@@ -195,14 +195,14 @@ export function BookingDrawerSheet({
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label className="text-xs font-bold text-foreground">2. Horário Disponível</Label>
-                  <span className="text-[10px] text-muted-foreground font-mono">
+                  <span className="text-2xs text-muted-foreground font-mono">
                     {slots.length} opções disponíveis
                   </span>
                 </div>
 
                 {isLoadingSlots ? (
                   <div className="flex items-center justify-center py-6">
-                    <CircleNotch size={24} className="animate-spin text-muted-foreground" />
+                    <CircleNotch size={24} className="animate-spin motion-reduce:animate-none text-muted-foreground" />
                   </div>
                 ) : slots.length === 0 ? (
                   <div className="p-4 rounded-lg bg-muted/40 text-center text-xs text-muted-foreground">
@@ -223,7 +223,7 @@ export function BookingDrawerSheet({
                           type="button"
                           onClick={() => setSelectedSlot(slotIso)}
                           className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                            "h-9 rounded-lg text-xs font-mono font-bold border transition-all cursor-pointer flex items-center justify-center",
+                            "h-9 rounded-lg text-xs font-mono font-bold border transition-colors duration-200 cursor-pointer flex items-center justify-center",
                             isSelected
                               ? "bg-primary text-primary-foreground border-primary shadow-xs"
                               : "bg-card border-border/60 hover:bg-muted text-foreground"
@@ -271,7 +271,7 @@ export function BookingDrawerSheet({
                 <Label className="text-xs font-bold text-foreground">3. Seus Dados de Contato</Label>
                 <div className="space-y-2">
                   <div>
-                    <Label className="text-[11px] text-muted-foreground flex items-center gap-1 mb-1">
+                    <Label className="text-2xs text-muted-foreground flex items-center gap-1 mb-1">
                       <User size={13} />
                       Nome Completo *
                     </Label>
@@ -284,7 +284,7 @@ export function BookingDrawerSheet({
                     />
                   </div>
                   <div>
-                    <Label className="text-[11px] text-muted-foreground flex items-center gap-1 mb-1">
+                    <Label className="text-2xs text-muted-foreground flex items-center gap-1 mb-1">
                       <Phone size={13} />
                       WhatsApp / Telefone para Confirmação *
                     </Label>
@@ -298,7 +298,7 @@ export function BookingDrawerSheet({
                     />
                   </div>
                   <div>
-                    <Label className="text-[11px] text-muted-foreground flex items-center gap-1 mb-1">
+                    <Label className="text-2xs text-muted-foreground flex items-center gap-1 mb-1">
                       <ChatCircleDots size={13} />
                       Observações / Pedido Especial (Opcional)
                     </Label>
@@ -319,7 +319,7 @@ export function BookingDrawerSheet({
         {!isSuccess && (
           <div className="p-4 border-t border-border/60 bg-background flex items-center justify-between gap-3 shrink-0">
             <div>
-              <span className="text-[10px] text-muted-foreground font-semibold block">Total</span>
+              <span className="text-2xs text-muted-foreground font-semibold block">Total</span>
               <span className="text-base font-black font-mono text-foreground">
                 {selectedPassId ? "1 Crédito (Pacote)" : formatMoney(service.price_cents)}
               </span>
@@ -331,7 +331,7 @@ export function BookingDrawerSheet({
               className="h-11 px-6 rounded-lg font-bold text-xs bg-primary text-primary-foreground cursor-pointer shadow-sm"
             >
               {isPending ? (
-                <CircleNotch size={16} className="animate-spin" />
+                <CircleNotch size={16} className="animate-spin motion-reduce:animate-none" />
               ) : (
                 "Confirmar Agendamento"
               )}

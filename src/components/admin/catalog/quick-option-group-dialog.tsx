@@ -306,7 +306,7 @@ export function QuickOptionGroupDialog({
  {/* PRESETS RÁPIDOS (Se for criação) */}
  {!groupToEdit && (
  <div className="space-y-2">
- <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+ <div className="flex items-center gap-2 text-2xs font-bold uppercase tracking-wider text-muted-foreground">
  <Sliders className="size-3.5 text-primary" />
  <span>Modelos Prontos (Presets de 1 Clique)</span>
  </div>
@@ -318,13 +318,13 @@ export function QuickOptionGroupDialog({
  key={preset.name}
  type="button"
  onClick={() => applyPreset(preset)}
- className="flex flex-col items-start p-3 rounded-lg border border-border/80 bg-background hover:bg-muted/40 hover:border-primary/40 transition-all text-left cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="flex flex-col items-start p-3 rounded-lg border border-border/80 bg-background hover:bg-muted/40 hover:border-primary/40 transition-colors duration-200 text-left cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="flex items-center gap-2 w-full mb-1">
  <Icon className="size-3.5 text-primary shrink-0" />
  <span className="text-xs font-semibold text-foreground truncate">{preset.name}</span>
  </div>
- <span className="text-[10px] text-muted-foreground line-clamp-1">{preset.desc}</span>
+ <span className="text-2xs text-muted-foreground line-clamp-1">{preset.desc}</span>
  </button>
  );
  })}
@@ -367,7 +367,7 @@ export function QuickOptionGroupDialog({
  })}
  />
  {form.formState.errors.display_name && (
- <p className="text-[10px] text-destructive font-medium">
+ <p className="text-2xs text-destructive font-medium">
  {form.formState.errors.display_name.message}
  </p>
  )}
@@ -427,7 +427,7 @@ export function QuickOptionGroupDialog({
  form.setValue("max_selections", 1);
  }}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "flex items-center justify-center gap-2 py-2 px-3 rounded-lg border text-xs font-medium transition-all cursor-pointer",
+ "flex items-center justify-center gap-2 py-2 px-3 rounded-lg border text-xs font-medium transition-colors duration-200 cursor-pointer",
  selectionType === "single"
  ? "border-primary bg-primary/10 text-primary font-bold shadow-xs"
  : "border-border/80 bg-background text-muted-foreground hover:bg-muted/40",
@@ -439,7 +439,7 @@ export function QuickOptionGroupDialog({
  type="button"
  onClick={() => form.setValue("selection_type", "multiple")}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "flex items-center justify-center gap-2 py-2 px-3 rounded-lg border text-xs font-medium transition-all cursor-pointer",
+ "flex items-center justify-center gap-2 py-2 px-3 rounded-lg border text-xs font-medium transition-colors duration-200 cursor-pointer",
  selectionType === "multiple"
  ? "border-primary bg-primary/10 text-primary font-bold shadow-xs"
  : "border-border/80 bg-background text-muted-foreground hover:bg-muted/40",
@@ -455,7 +455,7 @@ export function QuickOptionGroupDialog({
  <div className="flex items-center justify-between">
  <div className="space-y-1">
  <Label className="text-xs font-semibold">Escolha Obrigatória</Label>
- <p className="text-[10px] text-muted-foreground">O cliente não pode avançar sem escolher</p>
+ <p className="text-2xs text-muted-foreground">O cliente não pode avançar sem escolher</p>
  </div>
  <Switch
  checked={isRequired}
@@ -476,7 +476,7 @@ export function QuickOptionGroupDialog({
  {selectionType === "multiple" && (
  <div className="grid grid-cols-2 gap-3 pt-1 border-t border-border/50">
  <div className="space-y-1">
- <Label className="text-[11px] font-medium text-muted-foreground">Mínimo de Escolhas</Label>
+ <Label className="text-2xs font-medium text-muted-foreground">Mínimo de Escolhas</Label>
  <Input
  type="number"
  min={0}
@@ -485,7 +485,7 @@ export function QuickOptionGroupDialog({
  />
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-medium text-muted-foreground">Máximo de Escolhas</Label>
+ <Label className="text-2xs font-medium text-muted-foreground">Máximo de Escolhas</Label>
  <Input
  type="number"
  min={1}
@@ -532,7 +532,7 @@ export function QuickOptionGroupDialog({
  return (
  <div
  key={field.id}
- className="p-3 rounded-lg border border-border/80 bg-background hover:border-foreground/20 transition-all space-y-2"
+ className="p-3 rounded-lg border border-border/80 bg-background hover:border-foreground/20 transition-colors duration-200 space-y-2"
  >
  <div className="flex items-center gap-3">
  {/* Mini Uploader de Foto 1:1 */}
@@ -543,7 +543,7 @@ export function QuickOptionGroupDialog({
  <button
  type="button"
  onClick={() => form.setValue(`values.${index}.image_url`, "")}
- className="absolute inset-0 bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="absolute inset-0 bg-foreground/60 text-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  title="Remover foto"
  >
  <X className="size-3.5" />
@@ -554,11 +554,11 @@ export function QuickOptionGroupDialog({
  type="button"
  onClick={() => handleSelectFileForValue(index)}
  disabled={isUploadingThis}
- className="size-11 rounded-lg border border-dashed border-border hover:border-primary/60 bg-muted/30 hover:bg-primary/5 flex flex-col items-center justify-center text-muted-foreground hover:text-primary transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="size-11 rounded-lg border border-dashed border-border hover:border-primary/60 bg-muted/30 hover:bg-primary/5 flex flex-col items-center justify-center text-muted-foreground hover:text-primary transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  title="Adicionar foto 1:1 ao adicional"
  >
  {isUploadingThis ? (
- <Loader2 className="size-4 animate-spin text-primary" />
+ <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-primary" />
  ) : (
  <ImagePlus className="size-4" />
  )}
@@ -604,7 +604,7 @@ export function QuickOptionGroupDialog({
  <div className="pl-14">
  <Input
  placeholder="Descrição curta (ex: 2 fatias de bacon defumado crocante)"
- className="h-7 text-[11px] rounded-lg bg-muted/20 border-border/50 text-muted-foreground"
+ className="h-7 text-2xs rounded-lg bg-muted/20 border-border/50 text-muted-foreground"
  {...form.register(`values.${index}.description` as const)}
  />
  </div>
@@ -640,7 +640,7 @@ export function QuickOptionGroupDialog({
  >
  {isSubmitting ? (
  <>
- <Loader2 className="size-3.5 animate-spin" />
+ <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
  <span>Salvando...</span>
  </>
  ) : groupToEdit ? (

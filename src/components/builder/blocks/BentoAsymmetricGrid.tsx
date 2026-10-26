@@ -60,7 +60,7 @@ export const BentoAsymmetricGrid: React.FC<BentoAsymmetricGridProps> = ({ id, da
               <div className="flex items-center justify-between text-xs text-muted-foreground pb-2 border-b border-border/40 font-mono">
                 <span>FEED DE OPERAÇÃO EM TEMPO REAL</span>
                 <span className="text-emerald-600 font-semibold flex items-center gap-2">
-                  <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="size-2 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none" />
                   ONLINE
                 </span>
               </div>
@@ -135,7 +135,7 @@ export const BentoAsymmetricGrid: React.FC<BentoAsymmetricGridProps> = ({ id, da
             <div className="shrink-0 bg-muted/50 border border-border/80 rounded-lg px-6 py-4 flex items-center gap-3">
               <Layers className="size-6 text-primary" />
               <div className="text-left font-mono">
-                <span className="text-[10px] uppercase text-muted-foreground block">AMBIENTE SEGURO</span>
+                <span className="text-2xs uppercase text-muted-foreground block">AMBIENTE SEGURO</span>
                 <span className="text-xs font-bold text-foreground">Criptografia SSL 256-bit</span>
               </div>
             </div>

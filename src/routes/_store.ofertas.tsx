@@ -107,7 +107,7 @@ function OfertasPage() {
         mobileOnly
         badge={
           maxDiscount > 0 ? (
-            <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-primary/10 text-primary">
+            <span className="px-2 py-1 rounded-full text-2xs font-bold bg-primary/10 text-primary">
               Até {maxDiscount}% OFF
             </span>
           ) : undefined
@@ -158,7 +158,7 @@ function OfertasPage() {
               type="button"
               id={`chip-ofertas-${chip.id}`}
               onClick={() => handleNicheChange(chip.id)}
-              className={`snap-start shrink-0 h-11 min-h-11 px-4 rounded-full text-xs font-semibold inline-flex items-center gap-2 whitespace-nowrap transition-all cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+              className={`snap-start shrink-0 h-11 min-h-11 px-4 rounded-full text-xs font-semibold inline-flex items-center gap-2 whitespace-nowrap transition-colors duration-200 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 activeNiche === chip.id
                   ? "bg-foreground text-background shadow-xs"
                   : "bg-card text-muted-foreground border border-border/60 hover:text-foreground hover:border-border"
@@ -192,7 +192,7 @@ function OfertasPage() {
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <div
-                    className={`size-8 rounded-lg bg-linear-to-br ${section.color} flex items-center justify-center text-white shrink-0 `}
+                    className={`size-8 rounded-lg bg-linear-to-br ${section.color} flex items-center justify-center text-foreground shrink-0 `}
                   >
                     <span className="text-base leading-none">{section.emoji}</span>
                   </div>
@@ -200,7 +200,7 @@ function OfertasPage() {
                     <h2 className="text-sm font-bold text-foreground leading-tight">
                       {section.label}
                     </h2>
-                    <p className="text-[10px] text-muted-foreground font-medium">
+                    <p className="text-2xs text-muted-foreground font-medium">
                       {section.items.length} oferta{section.items.length !== 1 ? "s" : ""}{" "}
                       disponível{section.items.length !== 1 ? "is" : ""}
                     </p>
@@ -208,7 +208,7 @@ function OfertasPage() {
                 </div>
                 <Link
                   to={section.to as any}
-                  className="flex items-center gap-1 text-[11px] font-bold text-muted-foreground hover:text-foreground transition-colors"
+                  className="flex items-center gap-1 text-2xs font-bold text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Ver tudo
                   <ArrowRight size={12} weight="bold" />
@@ -246,7 +246,7 @@ function OfertasPage() {
                       key={store.id}
                       to="/mercado"
                       search={{ niche: section.nicho } as any}
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-card hover:border-foreground/30 transition-all shrink-0"
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-card hover:border-foreground/30 transition-colors duration-200 shrink-0"
                     >
                       {store.avatar_url ? (
                         <img
@@ -259,7 +259,7 @@ function OfertasPage() {
                           <Storefront size={10} />
                         </div>
                       )}
-                      <span className="text-[11px] font-semibold text-foreground whitespace-nowrap">
+                      <span className="text-2xs font-semibold text-foreground whitespace-nowrap">
                         {store.name}
                       </span>
                       {store.is_open && (

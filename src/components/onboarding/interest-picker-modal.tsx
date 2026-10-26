@@ -192,7 +192,7 @@ export function InterestPickerModal() {
  key={item.id}
  type="button"
  onClick={() => toggleNiche(item.id)}
- className={`relative flex flex-col items-start justify-between p-4 rounded-lg border text-left transition-all select-none cursor-pointer group ${
+ className={`relative flex flex-col items-start justify-between p-4 rounded-lg border text-left transition-colors duration-200 select-none cursor-pointer group ${
  isSelected
  ? "bg-primary text-primary-foreground border-primary scale-[1.02]"
  : "bg-card text-foreground border-border/80 hover:border-primary/40 hover:bg-muted/40"
@@ -200,7 +200,7 @@ export function InterestPickerModal() {
  >
  <div
  className={`size-8 rounded-lg flex items-center justify-center mb-2 transition-transform group-hover:scale-110 ${
- isSelected ? "bg-white/20 text-white" : "bg-muted text-foreground"
+ isSelected ? "bg-card/20 text-foreground" : "bg-muted text-foreground"
  }`}
  >
  <Icon className="size-4" />

@@ -63,7 +63,7 @@ function RelatoriosPage() {
             disabled={isRefreshing}
             className="gap-2 text-xs font-bold min-h-11"
           >
-            <RefreshCw className={`size-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
+            <RefreshCw className={`size-3.5 ${isRefreshing ? "animate-spin motion-reduce:animate-none" : ""}`} />
             Atualizar
           </Button>
         }
@@ -198,7 +198,7 @@ function RelatoriosPage() {
                   </div>
                   <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                     <div
-                      className={`h-full ${item.color} rounded-full transition-all duration-500`}
+                      className={`h-full ${item.color} rounded-full transition-colors duration-200 duration-500`}
                       style={{ width: `${pct}%` }}
                     />
                   </div>

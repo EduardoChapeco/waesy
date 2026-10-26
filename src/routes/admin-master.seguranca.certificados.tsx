@@ -118,7 +118,7 @@ function TransactionCertificatesPage() {
  id="refresh-certs"
  className="gap-2 text-xs"
  >
- <RefreshCw className={cn("size-3.5", loading && "animate-spin")} />
+ <RefreshCw className={cn("size-3.5", loading && "animate-spin motion-reduce:animate-none")} />
  Atualizar
  </Button>
  </div>
@@ -187,13 +187,13 @@ function TransactionCertificatesPage() {
  <table className="w-full text-sm">
  <thead>
  <tr className="border-b border-border/50 bg-muted/30">
- <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Tipo</th>
- <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Hash</th>
- <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Usuário</th>
- <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">IP</th>
- <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Risco</th>
- <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Cadeia</th>
- <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Data</th>
+ <th className="px-4 py-3 text-left text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Tipo</th>
+ <th className="px-4 py-3 text-left text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Hash</th>
+ <th className="px-4 py-3 text-left text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Usuário</th>
+ <th className="px-4 py-3 text-left text-2xs font-semibold uppercase tracking-wider text-muted-foreground">IP</th>
+ <th className="px-4 py-3 text-left text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Risco</th>
+ <th className="px-4 py-3 text-left text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Cadeia</th>
+ <th className="px-4 py-3 text-left text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Data</th>
  <th className="px-4 py-3 w-10" />
  </tr>
  </thead>
@@ -229,7 +229,7 @@ function TransactionCertificatesPage() {
  </td>
 
  <td className="px-4 py-3">
- <code className="text-[11px] font-mono text-muted-foreground bg-muted/50 px-2 py-1 rounded">
+ <code className="text-2xs font-mono text-muted-foreground bg-muted/50 px-2 py-1 rounded">
  {truncateHash(cert.certificate_hash)}
  </code>
  </td>
@@ -246,21 +246,21 @@ function TransactionCertificatesPage() {
  <td className="px-4 py-3">
  <div className="flex items-center gap-2">
  <Globe className="size-3 text-muted-foreground shrink-0" />
- <code className="text-[11px] font-mono">{cert.ip_address}</code>
+ <code className="text-2xs font-mono">{cert.ip_address}</code>
  {cert.geo_country && (
- <span className="text-[10px] text-muted-foreground">({cert.geo_country})</span>
+ <span className="text-2xs text-muted-foreground">({cert.geo_country})</span>
  )}
  </div>
  </td>
 
  <td className="px-4 py-3">
- <span className={cn("text-[11px] font-semibold px-2 py-1 rounded-full border", risk.color)}>
+ <span className={cn("text-2xs font-semibold px-2 py-1 rounded-full border", risk.color)}>
  {cert.risk_score}pts · {risk.label}
  </span>
  </td>
 
  <td className="px-4 py-3">
- <div className="flex items-center gap-1 text-[11px]">
+ <div className="flex items-center gap-1 text-2xs">
  <LinkIcon className="size-3 text-muted-foreground" />
  {cert.prev_certificate_hash ? (
  <span className="text-green-500 font-medium">Encadeado</span>
@@ -271,7 +271,7 @@ function TransactionCertificatesPage() {
  </td>
 
  <td className="px-4 py-3">
- <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+ <div className="flex items-center gap-1 text-2xs text-muted-foreground">
  <Clock className="size-3" />
  {new Date(cert.created_at).toLocaleString("pt-BR", {
  day: "2-digit", month: "2-digit",

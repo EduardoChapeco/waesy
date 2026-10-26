@@ -533,7 +533,7 @@ function AdminPaymentsPage() {
             <Button
               onClick={handleConfirmReject}
               disabled={isRejecting}
-              className="h-10 px-5 rounded-lg font-bold text-xs bg-rose-600 hover:bg-rose-700 text-white gap-2"
+              className="h-10 px-5 rounded-lg font-bold text-xs bg-rose-600 hover:bg-rose-700 text-foreground gap-2"
             >
               {isRejecting ? "Recusando..." : "Confirmar Recusa"}
             </Button>

@@ -93,7 +93,7 @@ export function EventoParceiros({ eventId }: EventoParceirosProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12 text-muted-foreground text-sm gap-2">
-        <Layers className="size-4 animate-spin" />
+        <Layers className="size-4 animate-spin motion-reduce:animate-none" />
         <span>Carregando patrocinadores e apoiadores...</span>
       </div>
     );
@@ -217,7 +217,7 @@ export function EventoParceiros({ eventId }: EventoParceirosProps) {
             return (
               <Card
                 key={p.id}
-                className="rounded-lg border border-border/80 bg-card p-4 shadow-xs space-y-3 hover:border-primary/40 transition-all flex flex-col justify-between"
+                className="rounded-lg border border-border/80 bg-card p-4 shadow-xs space-y-3 hover:border-primary/40 transition-colors duration-200 flex flex-col justify-between"
               >
                 <div className="space-y-2">
                   <div className="flex items-start justify-between gap-2">

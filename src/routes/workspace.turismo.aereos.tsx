@@ -614,7 +614,7 @@ export default function FlightsPage() {
 
       {/* Listagem Canônica de Bilhetes & Emissões */}
       {isLoading ? (
-        <div className="p-12 text-center text-sm text-muted-foreground animate-pulse">
+        <div className="p-12 text-center text-sm text-muted-foreground animate-pulse motion-reduce:animate-none">
           Carregando bilhetes e localizadores do GDS...
         </div>
       ) : filteredItineraries.length === 0 ? (
@@ -638,7 +638,7 @@ export default function FlightsPage() {
             return (
               <div
                 key={it.id}
-                className="p-5 rounded-lg border border-border bg-card shadow-xs hover:border-primary/40 transition-all flex flex-col gap-4"
+                className="p-5 rounded-lg border border-border bg-card shadow-xs hover:border-primary/40 transition-colors duration-200 flex flex-col gap-4"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/50 pb-3">
                   <div className="flex items-center gap-3">

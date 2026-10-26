@@ -122,12 +122,12 @@ export function PaxAnamnesisCard({
 
         {/* Badge de Status do Documento */}
         {isLocked ? (
-          <Badge variant="outline" className="border-emerald-500/30 text-emerald-600 bg-emerald-500/10 text-xs flex items-center gap-1.5 py-1 px-2.5">
+          <Badge variant="outline" className="border-emerald-500/30 text-emerald-600 bg-emerald-500/10 text-xs flex items-center gap-2 py-1 px-3">
             <Lock className="size-3.5 shrink-0" />
             <span>Documentos Blindados & Homologados</span>
           </Badge>
         ) : (
-          <Badge variant="secondary" className="text-xs flex items-center gap-1.5 py-1 px-2.5">
+          <Badge variant="secondary" className="text-xs flex items-center gap-2 py-1 px-3">
             <FileCheck className="size-3.5 shrink-0" />
             <span>Em Validação Documental</span>
           </Badge>
@@ -137,12 +137,12 @@ export function PaxAnamnesisCard({
       {/* Grid de Informações */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
         {/* Assistência IATA PCD */}
-        <div className="p-3 rounded-lg bg-muted/40 border border-border/60 space-y-1.5">
-          <span className="text-muted-foreground font-semibold flex items-center gap-1.5">
+        <div className="p-3 rounded-lg bg-muted/40 border border-border/60 space-y-2">
+          <span className="text-muted-foreground font-semibold flex items-center gap-2">
             <HeartHandshake className="size-3.5 text-primary shrink-0" />
             Códigos de Assistência PNAE (IATA)
           </span>
-          <div className="flex flex-wrap gap-1.5 pt-1">
+          <div className="flex flex-wrap gap-2 pt-1">
             {anamnesis.pcdAssistanceCodes.map((code) => (
               <Badge key={code} variant="outline" className="text-xs font-mono font-bold bg-background">
                 {code}
@@ -162,12 +162,12 @@ export function PaxAnamnesisCard({
         </div>
 
         {/* Restrições Alimentares */}
-        <div className="p-3 rounded-lg bg-muted/40 border border-border/60 space-y-1.5">
-          <span className="text-muted-foreground font-semibold flex items-center gap-1.5">
+        <div className="p-3 rounded-lg bg-muted/40 border border-border/60 space-y-2">
+          <span className="text-muted-foreground font-semibold flex items-center gap-2">
             <Utensils className="size-3.5 text-primary shrink-0" />
             Regime Alimentar & Alergias
           </span>
-          <div className="flex flex-wrap gap-1.5 pt-1">
+          <div className="flex flex-wrap gap-2 pt-1">
             {anamnesis.dietaryRestrictions.map((diet) => (
               <Badge key={diet} variant="outline" className="text-xs capitalize bg-background">
                 {diet.replace("_", " ")}
@@ -185,7 +185,7 @@ export function PaxAnamnesisCard({
       {/* Alertas de Voo / Prontidão */}
       {flightReadiness.warnings.length > 0 && (
         <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-xs space-y-1">
-          <div className="font-semibold flex items-center gap-1.5">
+          <div className="font-semibold flex items-center gap-2">
             <AlertCircle className="size-4 shrink-0" />
             <span>Atenção Operacional da Companhia Aérea</span>
           </div>
@@ -197,7 +197,7 @@ export function PaxAnamnesisCard({
 
       {flightReadiness.blockers.length > 0 && (
         <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs space-y-1">
-          <div className="font-semibold flex items-center gap-1.5">
+          <div className="font-semibold flex items-center gap-2">
             <AlertCircle className="size-4 shrink-0" />
             <span>Pendências para Liberação de Embarque</span>
           </div>
@@ -211,7 +211,7 @@ export function PaxAnamnesisCard({
       <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
         <div className="text-xs text-muted-foreground">
           {isLocked ? (
-            <span className="flex items-center gap-1.5">
+            <span className="flex items-center gap-2">
               <ShieldCheck className="size-4 text-emerald-600 shrink-0" />
               Dados imutáveis validados por agente credenciado
             </span>
@@ -229,7 +229,7 @@ export function PaxAnamnesisCard({
               className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold focus-visible:ring-2"
             >
               <a href={anamnesis.appleWalletPassUrl} target="_blank" rel="noopener noreferrer">
-                <Wallet className="size-4 mr-1.5" />
+                <Wallet className="size-4 mr-2" />
                 Apple Wallet
               </a>
             </Button>
@@ -247,7 +247,7 @@ export function PaxAnamnesisCard({
             }}
             className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold focus-visible:ring-2 cursor-pointer"
           >
-            <Edit3 className="size-4 mr-1.5" />
+            <Edit3 className="size-4 mr-2" />
             {permission.allowed ? "Editar Ficha & PCD" : "Solicitar Alteração"}
           </Button>
         </div>
@@ -264,7 +264,7 @@ export function PaxAnamnesisCard({
           </DialogHeader>
 
           <form onSubmit={handleSave} className="space-y-4 pt-2">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs">Nome Completo</Label>
               <Input
                 value={formData.fullName}
@@ -275,7 +275,7 @@ export function PaxAnamnesisCard({
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs">Número do Documento</Label>
                 <Input
                   value={formData.documentNumber}
@@ -284,7 +284,7 @@ export function PaxAnamnesisCard({
                   className="h-11 min-h-11 text-xs rounded-lg"
                 />
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs">Data de Nascimento</Label>
                 <Input
                   type="date"
@@ -296,7 +296,7 @@ export function PaxAnamnesisCard({
               </div>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs">Notas de Alergias ou Dieta Restritiva</Label>
               <Input
                 value={formData.allergiesNotes}

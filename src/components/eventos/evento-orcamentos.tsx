@@ -225,7 +225,7 @@ export function EventoOrcamentos({ eventId }: EventoOrcamentosProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12 text-muted-foreground text-sm gap-2">
-        <Layers className="size-4 animate-spin" />
+        <Layers className="size-4 animate-spin motion-reduce:animate-none" />
         <span>Carregando orçamentos e fornecedores...</span>
       </div>
     );
@@ -318,7 +318,7 @@ export function EventoOrcamentos({ eventId }: EventoOrcamentosProps) {
           <p className="text-2xl font-bold text-foreground mt-2">
             {totalRec.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
           </p>
-          <p className="text-[11px] text-muted-foreground mt-1">
+          <p className="text-2xs text-muted-foreground mt-1">
             {receitas.length} fonte(s) de receita
           </p>
         </Card>
@@ -331,7 +331,7 @@ export function EventoOrcamentos({ eventId }: EventoOrcamentosProps) {
           <p className="text-2xl font-bold text-rose-600 dark:text-rose-400 mt-2">
             {totalDesp.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
           </p>
-          <p className="text-[11px] text-muted-foreground mt-1">
+          <p className="text-2xs text-muted-foreground mt-1">
             {despesas.length} item(ns) de despesa
           </p>
         </Card>
@@ -348,7 +348,7 @@ export function EventoOrcamentos({ eventId }: EventoOrcamentosProps) {
           >
             {saldo.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
           </p>
-          <p className="text-[11px] text-muted-foreground mt-1">
+          <p className="text-2xs text-muted-foreground mt-1">
             Margem de lucro estimada
           </p>
         </Card>
@@ -454,7 +454,7 @@ export function EventoOrcamentos({ eventId }: EventoOrcamentosProps) {
         <Card className="rounded-lg border border-dashed border-border/80 p-8 text-center bg-card/40">
           <Building className="size-8 text-muted-foreground mx-auto mb-2 opacity-50" />
           <p className="text-xs font-bold text-foreground">Nenhum item lançado neste orçamento</p>
-          <p className="text-[11px] text-muted-foreground mt-1">
+          <p className="text-2xs text-muted-foreground mt-1">
             Clique em "Adicionar Lançamento" para discriminar fornecedores e receitas.
           </p>
         </Card>
@@ -463,7 +463,7 @@ export function EventoOrcamentos({ eventId }: EventoOrcamentosProps) {
           {items.map((item: any) => (
             <div
               key={item.id}
-              className="flex items-center justify-between p-4 rounded-lg border border-border/70 bg-card hover:border-border transition-all"
+              className="flex items-center justify-between p-4 rounded-lg border border-border/70 bg-card hover:border-border transition-colors duration-200"
             >
               <div className="flex items-center gap-3">
                 <div
@@ -478,11 +478,11 @@ export function EventoOrcamentos({ eventId }: EventoOrcamentosProps) {
                 <div>
                   <div className="flex items-center gap-2">
                     <p className="text-xs font-bold text-foreground">{item.descricao}</p>
-                    <Badge variant="outline" className="text-[10px] py-0 px-2">
+                    <Badge variant="outline" className="text-2xs py-0 px-2">
                       {item.categoria}
                     </Badge>
                   </div>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-2xs text-muted-foreground">
                     {item.tipo === "receita" ? "Receita Projetada" : "Custo Operacional"}
                   </p>
                 </div>

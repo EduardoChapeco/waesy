@@ -227,7 +227,7 @@ export function ObservedExperimentPanel({
                 <option value="session">Sessão</option>
                 <option value="cluster">Loja/região (cluster)</option>
               </select>
-              <p className="text-[10px] text-muted-foreground">Inferência causal liberada somente para cliente/conta única. Sessão/cluster exige estimador específico.</p>
+              <p className="text-2xs text-muted-foreground">Inferência causal liberada somente para cliente/conta única. Sessão/cluster exige estimador específico.</p>
             </div>
           )}
           <div className="space-y-2">
@@ -244,26 +244,26 @@ export function ObservedExperimentPanel({
           <div className="flex items-center justify-between gap-3">
             <div>
               <h4 className="text-xs font-bold text-foreground">Braços do experimento</h4>
-              <p className="text-[10px] text-muted-foreground">Denominador = unidades únicas atribuídas; conte conversões na mesma janela e com a mesma regra.</p>
+              <p className="text-2xs text-muted-foreground">Denominador = unidades únicas atribuídas; conte conversões na mesma janela e com a mesma regra.</p>
             </div>
-            <Button type="button" variant="outline" size="sm" onClick={addArm} disabled={arms.length >= 12} className="h-8 gap-1 text-[10px]"><Plus className="size-3" /> Variante</Button>
+            <Button type="button" variant="outline" size="sm" onClick={addArm} disabled={arms.length >= 12} className="h-8 gap-1 text-2xs"><Plus className="size-3" /> Variante</Button>
           </div>
           {arms.map((arm, index) => (
             <div key={arm.key} className="grid grid-cols-1 gap-2 rounded-lg border border-border/70 bg-background p-3 sm:grid-cols-12">
               <div className="space-y-1 sm:col-span-3">
-                <Label className="text-[10px]">{index === 0 ? "Controle" : "Variante"}</Label>
+                <Label className="text-2xs">{index === 0 ? "Controle" : "Variante"}</Label>
                 <Input value={arm.label} onChange={(event) => updateArm(arm.key, "label", event.target.value)} maxLength={160} required />
               </div>
               <div className="space-y-1 sm:col-span-3">
-                <Label className="text-[10px]">Unidades atribuídas</Label>
+                <Label className="text-2xs">Unidades atribuídas</Label>
                 <Input type="number" min="1" step="1" value={arm.assigned} onChange={(event) => updateArm(arm.key, "assigned", event.target.value)} placeholder="Únicas" required />
               </div>
               <div className="space-y-1 sm:col-span-3">
-                <Label className="text-[10px]">Conversões</Label>
+                <Label className="text-2xs">Conversões</Label>
                 <Input type="number" min="0" step="1" value={arm.conversions} onChange={(event) => updateArm(arm.key, "conversions", event.target.value)} placeholder="Pedidos/leads" required />
               </div>
               <div className="space-y-1 sm:col-span-2">
-                <Label className="text-[10px]">Preço (R$; opcional)</Label>
+                <Label className="text-2xs">Preço (R$; opcional)</Label>
                 <Input type="number" min="0.01" step="0.01" value={arm.price} onChange={(event) => updateArm(arm.key, "price", event.target.value)} placeholder="Para curva de preço" />
               </div>
               <div className="flex items-end sm:col-span-1">
@@ -291,7 +291,7 @@ export function ObservedExperimentPanel({
             <Badge variant={result.assignmentMethod === "randomized" && result.randomizationUnit === "customer" ? "default" : "secondary"}>
               {result.assignmentMethod === "randomized" && result.randomizationUnit === "customer" ? "Desenho causal declarado · não verificado" : "Diferença descritiva"}
             </Badge>
-            <span className="text-[10px] text-muted-foreground">{result.analysis.intervalMethod === "newcombe_wilson_score"
+            <span className="text-2xs text-muted-foreground">{result.analysis.intervalMethod === "newcombe_wilson_score"
               ? "Intenção de tratar · intervalo score Newcombe-Wilson · Holm quando há p-values estimáveis"
               : "Taxas e diferenças observadas · sem intervalo/p-value para esta unidade de randomização"}</span>
           </div>
@@ -305,14 +305,14 @@ export function ObservedExperimentPanel({
                   </Badge>
                 </div>
                 <p className="text-sm font-bold text-foreground">{(comparison.absoluteDifference * 100).toFixed(2)} p.p.</p>
-                <p className="text-[10px] text-muted-foreground">{comparison.interval
+                <p className="text-2xs text-muted-foreground">{comparison.interval
                   ? `95% IC: ${(comparison.interval[0] * 100).toFixed(2)} a ${(comparison.interval[1] * 100).toFixed(2)} p.p.`
                   : "IC não estimado para esta unidade de randomização."}</p>
-                <p className="text-[10px] text-muted-foreground">Controle {(comparison.controlRate * 100).toFixed(2)}% · variante {(comparison.treatmentRate * 100).toFixed(2)}%</p>
-                <p className="text-[10px] text-muted-foreground">p bruto: {comparison.pValue == null
+                <p className="text-2xs text-muted-foreground">Controle {(comparison.controlRate * 100).toFixed(2)}% · variante {(comparison.treatmentRate * 100).toFixed(2)}%</p>
+                <p className="text-2xs text-muted-foreground">p bruto: {comparison.pValue == null
                   ? comparison.pValueMethod === "not_identifiable_design" ? "não estimável para este desenho" : "não estimável (contagens esparsas)"
                   : comparison.pValue.toFixed(4)} · p Holm: {comparison.adjustedPValue == null ? "—" : comparison.adjustedPValue.toFixed(4)}</p>
-                <p className="text-[10px] font-medium text-muted-foreground">{comparison.statisticallySignificant == null ? "Sem inferência de significância" : comparison.statisticallySignificant ? "Diferença compatível com efeito estatístico no nível definido" : "Evidência insuficiente para rejeitar igualdade"}</p>
+                <p className="text-2xs font-medium text-muted-foreground">{comparison.statisticallySignificant == null ? "Sem inferência de significância" : comparison.statisticallySignificant ? "Diferença compatível com efeito estatístico no nível definido" : "Evidência insuficiente para rejeitar igualdade"}</p>
               </div>
             ))}
           </div>
@@ -320,18 +320,18 @@ export function ObservedExperimentPanel({
             <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
               <div>
                 <h4 className="text-xs font-bold text-foreground">Curva logística de preço — ajuste em dados randomizados</h4>
-                <p className="text-[10px] text-muted-foreground">Elasticidade local no preço de referência R$ {result.priceResponse.referencePriceBrl.toFixed(2)}: {result.priceResponse.elasticityAtReference.toFixed(2)} (95% IC {result.priceResponse.elasticityInterval95[0].toFixed(2)} a {result.priceResponse.elasticityInterval95[1].toFixed(2)}). Ajuste exige validação holdout prospectiva.</p>
+                <p className="text-2xs text-muted-foreground">Elasticidade local no preço de referência R$ {result.priceResponse.referencePriceBrl.toFixed(2)}: {result.priceResponse.elasticityAtReference.toFixed(2)} (95% IC {result.priceResponse.elasticityInterval95[0].toFixed(2)} a {result.priceResponse.elasticityInterval95[1].toFixed(2)}). Ajuste exige validação holdout prospectiva.</p>
               </div>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                <div className="space-y-1"><Label htmlFor="forecast-price" className="text-[10px]">Preço a avaliar (R$)</Label><Input id="forecast-price" type="number" min="0.01" step="0.01" value={forecastPrice} onChange={(event) => setForecastPrice(event.target.value)} placeholder="Ex.: 89,90" /></div>
-                <div className="space-y-1"><Label htmlFor="forecast-audience" className="text-[10px]">Audiência elegível planejada</Label><Input id="forecast-audience" type="number" min="1" step="1" value={forecastAudience} onChange={(event) => setForecastAudience(event.target.value)} placeholder="Pessoas/contas únicas" /></div>
+                <div className="space-y-1"><Label htmlFor="forecast-price" className="text-2xs">Preço a avaliar (R$)</Label><Input id="forecast-price" type="number" min="0.01" step="0.01" value={forecastPrice} onChange={(event) => setForecastPrice(event.target.value)} placeholder="Ex.: 89,90" /></div>
+                <div className="space-y-1"><Label htmlFor="forecast-audience" className="text-2xs">Audiência elegível planejada</Label><Input id="forecast-audience" type="number" min="1" step="1" value={forecastAudience} onChange={(event) => setForecastAudience(event.target.value)} placeholder="Pessoas/contas únicas" /></div>
               </div>
               {priceProjection && <p className="text-xs text-foreground">Projeção condicional: {(priceProjection.conversionProbability * 100).toFixed(2)}% de conversão; cerca de {priceProjection.expectedUnits.toFixed(0)} conversões em {priceProjection.audience.toLocaleString("pt-BR")} unidades (95% IC aproximado: {priceProjection.expectedUnitsInterval[0].toFixed(0)}–{priceProjection.expectedUnitsInterval[1].toFixed(0)}). Não validada em holdout.</p>}
             </div>
           ) : (
-            <p className="text-[10px] text-muted-foreground">Curva de preço não estimada: {result.priceResponseStatus === "need_three_randomized_price_arms" ? "exige ao menos três níveis de preço distintos, randomizados por cliente." : result.priceResponseStatus === "not_randomized" ? "preços observacionais não identificam elasticidade causal." : result.priceResponseStatus === "unsupported_randomization_unit" ? "randomização por sessão/cluster exige outro estimador." : "faltam preços observados ou suporte estatístico."}</p>
+            <p className="text-2xs text-muted-foreground">Curva de preço não estimada: {result.priceResponseStatus === "need_three_randomized_price_arms" ? "exige ao menos três níveis de preço distintos, randomizados por cliente." : result.priceResponseStatus === "not_randomized" ? "preços observacionais não identificam elasticidade causal." : result.priceResponseStatus === "unsupported_randomization_unit" ? "randomização por sessão/cluster exige outro estimador." : "faltam preços observados ou suporte estatístico."}</p>
           )}
-          <ul className="list-disc space-y-1 pl-4 text-[10px] text-muted-foreground">
+          <ul className="list-disc space-y-1 pl-4 text-2xs text-muted-foreground">
             {result.limitations.slice(0, 4).map((item, index) => <li key={index}>{item}</li>)}
           </ul>
         </div>
@@ -343,14 +343,14 @@ export function ObservedExperimentPanel({
           <div className="mt-3 space-y-3">
             {history.map((entry) => (
               <div key={`${entry.measurementStart}|${entry.measurementEnd}`} className="rounded-md border border-border/60 p-3">
-                <p className="text-[10px] font-semibold text-foreground">
+                <p className="text-2xs font-semibold text-foreground">
                   {new Date(entry.measurementStart).toLocaleDateString("pt-BR")}–{new Date(entry.measurementEnd).toLocaleDateString("pt-BR")}
                   {entry.sourceReference ? ` · ${entry.sourceReference}` : ""}
                 </p>
-                <p className="mt-1 text-[10px] text-muted-foreground">{entry.assignmentMethod === "randomized" ? `Randomizado por ${entry.randomizationUnit}` : "Observacional"} · informado pelo usuário, não verificado</p>
+                <p className="mt-1 text-2xs text-muted-foreground">{entry.assignmentMethod === "randomized" ? `Randomizado por ${entry.randomizationUnit}` : "Observacional"} · informado pelo usuário, não verificado</p>
                 <ul className="mt-2 grid gap-1 sm:grid-cols-2">
                   {entry.analysis.armRates.map((arm) => (
-                    <li key={arm.key} className="text-[10px] text-muted-foreground">{arm.label}: {arm.conversions}/{arm.assigned} ({(arm.conversionRate * 100).toFixed(2)}%)</li>
+                    <li key={arm.key} className="text-2xs text-muted-foreground">{arm.label}: {arm.conversions}/{arm.assigned} ({(arm.conversionRate * 100).toFixed(2)}%)</li>
                   ))}
                 </ul>
               </div>
@@ -362,14 +362,14 @@ export function ObservedExperimentPanel({
       <details className="rounded-lg border border-border/70 p-3">
         <summary className="cursor-pointer text-xs font-semibold text-foreground">Planejar tamanho amostral antes do próximo A/B</summary>
         <div className="mt-3 grid grid-cols-1 items-end gap-3 sm:grid-cols-3">
-          <div className="space-y-1"><Label htmlFor="baseline-conv" className="text-[10px]">Baseline observado (%)</Label><Input id="baseline-conv" type="number" min="0.01" max="99.99" step="0.01" value={baselinePercent} onChange={(event) => setBaselinePercent(event.target.value)} placeholder="Ex.: 5" /></div>
-          <div className="space-y-1"><Label htmlFor="target-conv" className="text-[10px]">Taxa-alvo/MDE (%)</Label><Input id="target-conv" type="number" min="0.01" max="99.99" step="0.01" value={targetPercent} onChange={(event) => setTargetPercent(event.target.value)} placeholder="Ex.: 6" /></div>
+          <div className="space-y-1"><Label htmlFor="baseline-conv" className="text-2xs">Baseline observado (%)</Label><Input id="baseline-conv" type="number" min="0.01" max="99.99" step="0.01" value={baselinePercent} onChange={(event) => setBaselinePercent(event.target.value)} placeholder="Ex.: 5" /></div>
+          <div className="space-y-1"><Label htmlFor="target-conv" className="text-2xs">Taxa-alvo/MDE (%)</Label><Input id="target-conv" type="number" min="0.01" max="99.99" step="0.01" value={targetPercent} onChange={(event) => setTargetPercent(event.target.value)} placeholder="Ex.: 6" /></div>
           <Button type="button" variant="outline" onClick={handlePlan}>Calcular amostra</Button>
         </div>
         {samplePlan && <p className="mt-3 text-xs text-foreground">Com α=5%, poder=80% e alocação 1:1: aproximadamente {samplePlan.requiredPerArm.toLocaleString("pt-BR")} unidades por braço ({samplePlan.totalRequired.toLocaleString("pt-BR")} no total). Use baseline de dados observados; o método não considera clusters nem perdas.</p>}
-        {errorMessage && !isSaving && <p className="mt-2 text-[10px] text-destructive">{errorMessage}</p>}
+        {errorMessage && !isSaving && <p className="mt-2 text-2xs text-destructive">{errorMessage}</p>}
       </details>
-      <p className="flex gap-2 text-[10px] text-muted-foreground"><AlertTriangle className="size-3 shrink-0" /> A resposta qualitativa de personas sintéticas não alimenta as taxas nem a curva de preço acima.</p>
+      <p className="flex gap-2 text-2xs text-muted-foreground"><AlertTriangle className="size-3 shrink-0" /> A resposta qualitativa de personas sintéticas não alimenta as taxas nem a curva de preço acima.</p>
     </section>
   );
 }

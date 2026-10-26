@@ -164,7 +164,7 @@ export function ProductQuickOrderDialog({
           <div className="flex-1 min-w-0 space-y-1">
             <h4 className="text-xs font-bold text-foreground truncate">{product.title}</h4>
             {variantSummary && (
-              <p className="text-[11px] text-muted-foreground truncate">{variantSummary}</p>
+              <p className="text-2xs text-muted-foreground truncate">{variantSummary}</p>
             )}
             <div className="flex items-center justify-between text-xs pt-1">
               <span className="font-mono text-muted-foreground">Qtd: {quantity}x</span>
@@ -179,7 +179,7 @@ export function ProductQuickOrderDialog({
           {/* Dados Pessoais */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-[11px] font-semibold text-foreground">Seu Nome</label>
+              <label className="text-2xs font-semibold text-foreground">Seu Nome</label>
               <Input
                 placeholder="Ex: Ana Silva"
                 value={customerName}
@@ -189,7 +189,7 @@ export function ProductQuickOrderDialog({
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[11px] font-semibold text-foreground">Seu WhatsApp</label>
+              <label className="text-2xs font-semibold text-foreground">Seu WhatsApp</label>
               <Input
                 placeholder="(00) 00000-0000"
                 value={customerPhone}
@@ -202,13 +202,13 @@ export function ProductQuickOrderDialog({
 
           {/* Modo de Recebimento */}
           <div className="space-y-2">
-            <label className="text-[11px] font-semibold text-foreground">Como deseja receber?</label>
+            <label className="text-2xs font-semibold text-foreground">Como deseja receber?</label>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => setDeliveryMode("pickup")}
                 className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "p-3 rounded-lg border text-left flex flex-col gap-1 transition-all cursor-pointer",
+                  "p-3 rounded-lg border text-left flex flex-col gap-1 transition-colors duration-200 cursor-pointer",
                   deliveryMode === "pickup"
                     ? "border-primary bg-primary/5 text-foreground ring-1 ring-primary/30"
                     : "border-border/60 bg-muted/20 text-muted-foreground hover:bg-muted/40"
@@ -218,14 +218,14 @@ export function ProductQuickOrderDialog({
                   <span className="text-xs font-bold">Retirada</span>
                   <Store className="size-3.5" />
                 </div>
-                <span className="text-[10px] text-muted-foreground">No balcão (Grátis)</span>
+                <span className="text-2xs text-muted-foreground">No balcão (Grátis)</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setDeliveryMode("immediate")}
                 className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "p-3 rounded-lg border text-left flex flex-col gap-1 transition-all cursor-pointer",
+                  "p-3 rounded-lg border text-left flex flex-col gap-1 transition-colors duration-200 cursor-pointer",
                   deliveryMode === "immediate"
                     ? "border-primary bg-primary/5 text-foreground ring-1 ring-primary/30"
                     : "border-border/60 bg-muted/20 text-muted-foreground hover:bg-muted/40"
@@ -235,7 +235,7 @@ export function ProductQuickOrderDialog({
                   <span className="text-xs font-bold">Entrega</span>
                   <Truck className="size-3.5" />
                 </div>
-                <span className="text-[10px] text-muted-foreground">No seu endereço</span>
+                <span className="text-2xs text-muted-foreground">No seu endereço</span>
               </button>
             </div>
           </div>
@@ -243,7 +243,7 @@ export function ProductQuickOrderDialog({
           {/* Endereço de Entrega se não for retirada */}
           {deliveryMode === "immediate" && (
             <div className="space-y-1 animate-in fade-in-50 duration-150">
-              <label className="text-[11px] font-semibold text-foreground">Endereço de Entrega</label>
+              <label className="text-2xs font-semibold text-foreground">Endereço de Entrega</label>
               <Input
                 placeholder="Rua, Número, Bairro e Ponto de Referência"
                 value={deliveryAddress}
@@ -256,48 +256,48 @@ export function ProductQuickOrderDialog({
 
           {/* Forma de Pagamento */}
           <div className="space-y-2">
-            <label className="text-[11px] font-semibold text-foreground">Forma de Pagamento</label>
+            <label className="text-2xs font-semibold text-foreground">Forma de Pagamento</label>
             <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={() => setPaymentMethod("pix")}
                 className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "p-2 rounded-lg border text-center flex flex-col items-center gap-1 transition-all cursor-pointer",
+                  "p-2 rounded-lg border text-center flex flex-col items-center gap-1 transition-colors duration-200 cursor-pointer",
                   paymentMethod === "pix"
                     ? "border-emerald-500 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-bold"
                     : "border-border/60 bg-muted/20 text-muted-foreground hover:bg-muted/40"
                 )}
               >
                 <QrCode className="size-3.5" />
-                <span className="text-[10px]">PIX</span>
+                <span className="text-2xs">PIX</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setPaymentMethod("card")}
                 className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "p-2 rounded-lg border text-center flex flex-col items-center gap-1 transition-all cursor-pointer",
+                  "p-2 rounded-lg border text-center flex flex-col items-center gap-1 transition-colors duration-200 cursor-pointer",
                   paymentMethod === "card"
                     ? "border-primary bg-primary/10 text-foreground font-bold"
                     : "border-border/60 bg-muted/20 text-muted-foreground hover:bg-muted/40"
                 )}
               >
                 <CreditCard className="size-3.5" />
-                <span className="text-[10px]">Cartão</span>
+                <span className="text-2xs">Cartão</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setPaymentMethod("cash")}
                 className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "p-2 rounded-lg border text-center flex flex-col items-center gap-1 transition-all cursor-pointer",
+                  "p-2 rounded-lg border text-center flex flex-col items-center gap-1 transition-colors duration-200 cursor-pointer",
                   paymentMethod === "cash"
                     ? "border-primary bg-primary/10 text-foreground font-bold"
                     : "border-border/60 bg-muted/20 text-muted-foreground hover:bg-muted/40"
                 )}
               >
                 <Banknote className="size-3.5" />
-                <span className="text-[10px]">Dinheiro</span>
+                <span className="text-2xs">Dinheiro</span>
               </button>
             </div>
           </div>
@@ -305,7 +305,7 @@ export function ProductQuickOrderDialog({
           {/* Campo de Troco se Dinheiro */}
           {paymentMethod === "cash" && (
             <div className="space-y-1 animate-in fade-in-50 duration-150">
-              <label className="text-[11px] font-semibold text-foreground">Troco para quanto?</label>
+              <label className="text-2xs font-semibold text-foreground">Troco para quanto?</label>
               <Input
                 placeholder="Ex: 50,00 ou Não preciso"
                 value={cashChangeFor}
@@ -327,12 +327,12 @@ export function ProductQuickOrderDialog({
           <Button
             type="submit"
             size="lg"
-            className="w-full h-11 rounded-lg text-xs font-bold gap-2 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer active:scale-95 transition-all shadow-md"
+            className="w-full h-11 rounded-lg text-xs font-bold gap-2 bg-emerald-600 hover:bg-emerald-700 text-foreground cursor-pointer active:scale-95 transition-transform duration-200 shadow-md"
             disabled={isSubmitting}
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="size-4 animate-spin" />
+                <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                 <span>Registrando Pedido...</span>
               </>
             ) : (

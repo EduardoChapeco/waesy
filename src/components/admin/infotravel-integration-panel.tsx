@@ -224,11 +224,11 @@ export function InfotravelIntegrationPanel() {
           <div className="flex flex-wrap items-center gap-2">
             <Badge
               variant={isCollectorActive ? "default" : "outline"}
-              className="gap-1.5 px-3 py-1 text-xs"
+              className="gap-2 px-3 py-1 text-xs"
             >
               <span
                 className={`size-2 rounded-full ${
-                  isCollectorActive ? "bg-emerald-400 animate-pulse" : "bg-muted-foreground"
+                  isCollectorActive ? "bg-emerald-400 animate-pulse motion-reduce:animate-none" : "bg-muted-foreground"
                 }`}
               />
               <span>{isCollectorActive ? "Coletor Local Conectado" : "Aguardando Coletor Local"}</span>
@@ -241,7 +241,7 @@ export function InfotravelIntegrationPanel() {
               disabled={isCheckingCollector}
               className="h-11 min-h-11 px-4 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <RefreshCw className={`mr-2 size-3.5 ${isCheckingCollector ? "animate-spin" : ""}`} />
+              <RefreshCw className={`mr-2 size-3.5 ${isCheckingCollector ? "animate-spin motion-reduce:animate-none" : ""}`} />
               Verificar Conexao
             </Button>
           </div>
@@ -250,24 +250,24 @@ export function InfotravelIntegrationPanel() {
         {/* Metricas Consolidadas */}
         <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
           <div className="rounded-lg border border-border/50 bg-background/50 p-4">
-            <span className="text-[11px] font-medium text-muted-foreground">Reservas Processadas</span>
+            <span className="text-2xs font-medium text-muted-foreground">Reservas Processadas</span>
             <div className="mt-1 text-2xl font-black text-foreground">{totalMinedTrips}</div>
-            <span className="text-[10px] text-emerald-500 font-medium">Historico consolidado</span>
+            <span className="text-2xs text-emerald-500 font-medium">Historico consolidado</span>
           </div>
           <div className="rounded-lg border border-border/50 bg-background/50 p-4">
-            <span className="text-[11px] font-medium text-muted-foreground">Passageiros (Pax) Individuais</span>
+            <span className="text-2xs font-medium text-muted-foreground">Passageiros (Pax) Individuais</span>
             <div className="mt-1 text-2xl font-black text-foreground">{totalMinedPax}</div>
-            <span className="text-[10px] text-muted-foreground font-medium">Cadastros unicos</span>
+            <span className="text-2xs text-muted-foreground font-medium">Cadastros unicos</span>
           </div>
           <div className="rounded-lg border border-border/50 bg-background/50 p-4">
-            <span className="text-[11px] font-medium text-muted-foreground">Operadoras Mapeadas</span>
+            <span className="text-2xs font-medium text-muted-foreground">Operadoras Mapeadas</span>
             <div className="mt-1 text-2xl font-black text-foreground">{operators.length}</div>
-            <span className="text-[10px] text-muted-foreground font-medium">Infotravel PrimeFaces</span>
+            <span className="text-2xs text-muted-foreground font-medium">Infotravel PrimeFaces</span>
           </div>
           <div className="rounded-lg border border-border/50 bg-background/50 p-4">
-            <span className="text-[11px] font-medium text-muted-foreground">Ledger Imutavel</span>
+            <span className="text-2xs font-medium text-muted-foreground">Ledger Imutavel</span>
             <div className="mt-1 text-2xl font-black text-foreground">Perpetuo</div>
-            <span className="text-[10px] text-emerald-500 font-medium">travel_price_observations</span>
+            <span className="text-2xs text-emerald-500 font-medium">travel_price_observations</span>
           </div>
         </div>
       </div>
@@ -284,7 +284,7 @@ export function InfotravelIntegrationPanel() {
                 </div>
                 <h3 className="text-base font-bold text-foreground">Extensao Chrome Oficial</h3>
               </div>
-              <Badge variant="outline" className="font-mono text-[10px]">
+              <Badge variant="outline" className="font-mono text-2xs">
                 Manifest V3
               </Badge>
             </div>
@@ -294,20 +294,20 @@ export function InfotravelIntegrationPanel() {
               passageiros e status de boletos diretamente do DOM com intervalo randômico anti-bloqueio.
             </p>
 
-            <div className="rounded-lg bg-muted/40 p-3.5 space-y-2 border border-border/40">
-              <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+            <div className="rounded-lg bg-muted/40 p-4 space-y-2 border border-border/40">
+              <span className="text-xs font-semibold text-foreground flex items-center gap-2">
                 <ShieldCheck className="size-3.5 text-emerald-500" />
                 Como instalar no Google Chrome:
               </span>
-              <ol className="text-xs text-muted-foreground space-y-1.5 list-decimal pl-4">
+              <ol className="text-xs text-muted-foreground space-y-2 list-decimal pl-4">
                 <li>
-                  Acesse <code className="bg-background px-1.5 py-0.5 rounded text-[11px]">chrome://extensions</code> no navegador.
+                  Acesse <code className="bg-background px-2 py-1 rounded text-2xs">chrome://extensions</code> no navegador.
                 </li>
                 <li>Ative o interruptor <strong>Modo do desenvolvedor</strong> no canto superior direito.</li>
                 <li>Clique em <strong>Carregar sem compactacao</strong>.</li>
                 <li>
                   Selecione a pasta:{" "}
-                  <code className="bg-background px-1.5 py-0.5 rounded text-[10px] font-mono break-all">
+                  <code className="bg-background px-2 py-1 rounded text-2xs font-mono break-all">
                     tools/infotravel-extension
                   </code>
                 </li>
@@ -339,7 +339,7 @@ export function InfotravelIntegrationPanel() {
                 </div>
                 <h3 className="text-base font-bold text-foreground">Extrator Autonomo Local</h3>
               </div>
-              <Badge variant="outline" className="font-mono text-[10px]">
+              <Badge variant="outline" className="font-mono text-2xs">
                 Playwright + CSV
               </Badge>
             </div>
@@ -349,8 +349,8 @@ export function InfotravelIntegrationPanel() {
               arquivos CSV formatados com BOM UTF-8 e ponto-e-virgula para abertura direta no Microsoft Excel.
             </p>
 
-            <div className="rounded-lg bg-muted/40 p-3.5 space-y-2 border border-border/40">
-              <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+            <div className="rounded-lg bg-muted/40 p-4 space-y-2 border border-border/40">
+              <span className="text-xs font-semibold text-foreground flex items-center gap-2">
                 <Clock className="size-3.5 text-primary" />
                 Arquivos e Launchers em 1 Clique (tools/infotravel-miner/):
               </span>
@@ -398,7 +398,7 @@ export function InfotravelIntegrationPanel() {
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-base font-bold text-foreground">Operadoras e Portais Compatíveis</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted-foreground mt-1">
               Motores Infotravel mapeados com seletores PrimeFaces e extratores de passageiros.
             </p>
           </div>
@@ -409,7 +409,7 @@ export function InfotravelIntegrationPanel() {
 
         <div className="divide-y divide-border/40">
           {operators.map((op) => (
-            <div key={op.id} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div key={op.id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="size-9 shrink-0 rounded-lg bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground">
                   {op.name.charAt(0)}
@@ -417,11 +417,11 @@ export function InfotravelIntegrationPanel() {
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-xs font-semibold text-foreground">{op.name}</span>
-                    <Badge variant={op.active ? "default" : "secondary"} className="text-[10px] py-0 px-1.5">
+                    <Badge variant={op.active ? "default" : "secondary"} className="text-2xs py-0 px-2">
                       {op.active ? "Habilitada" : "Desabilitada"}
                     </Badge>
                   </div>
-                  <p className="text-[11px] text-muted-foreground break-words mt-0.5">
+                  <p className="text-2xs text-muted-foreground break-words mt-1">
                     Motor: {op.engine} &middot; URL: {op.loginUrl}
                   </p>
                 </div>
@@ -435,7 +435,7 @@ export function InfotravelIntegrationPanel() {
                   className="h-11 min-h-11 px-3 text-xs text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <a href={op.loginUrl} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="size-3.5 mr-1.5" />
+                    <ExternalLink className="size-3.5 mr-2" />
                     Abrir Portal
                   </a>
                 </Button>
@@ -476,21 +476,21 @@ export function InfotravelIntegrationPanel() {
             <p className="text-xs font-semibold text-foreground">
               Selecione o arquivo exportado da pasta do minerador
             </p>
-            <p className="text-[11px] text-muted-foreground max-w-md">
-              Suporta tanto o arquivo <code className="font-mono bg-background px-1 py-0.5 rounded text-[10px]">clientes_excelencia_tour_oficial.csv</code> quanto <code className="font-mono bg-background px-1 py-0.5 rounded text-[10px]">.json</code>.
+            <p className="text-2xs text-muted-foreground max-w-md">
+              Suporta tanto o arquivo <code className="font-mono bg-background px-1 py-1 rounded text-2xs">clientes_excelencia_tour_oficial.csv</code> quanto <code className="font-mono bg-background px-1 py-1 rounded text-2xs">.json</code>.
             </p>
           </div>
 
           <div className="pt-1">
             <label
               htmlFor="operator-file-upload"
-              className={`inline-flex items-center justify-center h-11 min-h-11 px-5 rounded-lg text-xs font-semibold cursor-pointer transition-all ${
+              className={`inline-flex items-center justify-center h-11 min-h-11 px-5 rounded-lg text-xs font-semibold cursor-pointer transition-colors duration-200 ${
                 isUploading
                   ? "bg-muted text-muted-foreground cursor-wait"
                   : "bg-primary text-primary-foreground hover:bg-primary/90"
               } focus-within:ring-2 focus-within:ring-ring`}
             >
-              <UploadCloud className={`mr-2 size-4 ${isUploading ? "animate-bounce" : ""}`} />
+              <UploadCloud className={`mr-2 size-4 ${isUploading ? "animate-bounce motion-reduce:animate-none" : ""}`} />
               <span>{isUploading ? "Processando e persistindo no banco..." : "Selecionar Arquivo CSV ou JSON"}</span>
               <input
                 id="operator-file-upload"
@@ -522,8 +522,8 @@ export function InfotravelIntegrationPanel() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-          <div className="rounded-lg border border-border/40 bg-muted/20 p-4 space-y-1.5">
-            <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+          <div className="rounded-lg border border-border/40 bg-muted/20 p-4 space-y-2">
+            <span className="text-xs font-semibold text-foreground flex items-center gap-2">
               <CheckCircle2 className="size-3.5 text-emerald-500" />
               Desacoplamento Pagador vs Passageiro
             </span>
@@ -533,8 +533,8 @@ export function InfotravelIntegrationPanel() {
             </p>
           </div>
 
-          <div className="rounded-lg border border-border/40 bg-muted/20 p-4 space-y-1.5">
-            <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+          <div className="rounded-lg border border-border/40 bg-muted/20 p-4 space-y-2">
+            <span className="text-xs font-semibold text-foreground flex items-center gap-2">
               <CheckCircle2 className="size-3.5 text-emerald-500" />
               Auditoria de CNPJ &amp; Ledger Imutavel
             </span>

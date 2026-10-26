@@ -116,11 +116,11 @@ export function ProductWaitlistSheet({
  <div className="min-w-0 space-y-1">
  <h4 className="text-xs font-bold text-foreground truncate">{product.title}</h4>
  {variantAttributes && (
- <Badge variant="outline" className="text-[10px] font-mono border-border">
+ <Badge variant="outline" className="text-2xs font-mono border-border">
  {variantAttributes}
  </Badge>
  )}
- <p className="text-[10px] text-destructive font-semibold">
+ <p className="text-2xs text-destructive font-semibold">
  Atualmente esgotado no estoque
  </p>
  </div>
@@ -136,7 +136,7 @@ export function ProductWaitlistSheet({
  <Button
  type="button"
  onClick={handleClose}
- className="mt-2 h-10 px-5 rounded-lg text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700"
+ className="mt-2 h-10 px-5 rounded-lg text-xs font-bold bg-emerald-600 text-foreground hover:bg-emerald-700"
  >
  Concluir
  </Button>
@@ -163,7 +163,7 @@ export function ProductWaitlistSheet({
  className="h-11 rounded-lg bg-card text-xs font-medium font-mono"
  required
  />
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Enviaremos uma mensagem direta com o link de compra assim que reposto.
  </p>
  </div>

@@ -225,7 +225,7 @@ function ContractsDashboard() {
             return (
               <div
                 key={contract.id}
-                className="bg-card border border-border hover:border-primary/40 rounded-lg p-5 transition-all shadow-xs space-y-4 flex flex-col justify-between"
+                className="bg-card border border-border hover:border-primary/40 rounded-lg p-5 transition-colors duration-200 shadow-xs space-y-4 flex flex-col justify-between"
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-2">
@@ -241,7 +241,7 @@ function ContractsDashboard() {
                     </div>
 
                     {isSigned ? (
-                      <Badge className="bg-emerald-600 text-white hover:bg-emerald-700 text-xs font-semibold gap-1">
+                      <Badge className="bg-emerald-600 text-foreground hover:bg-emerald-700 text-xs font-semibold gap-1">
                         <CheckCircle2 size={11} /> Assinado
                       </Badge>
                     ) : isSigning ? (

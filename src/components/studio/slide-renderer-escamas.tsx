@@ -58,7 +58,7 @@ export const SlideRendererEscamas: React.FC<SlideRendererEscamasProps> = ({
       data-slide-id={slide.id}
     >
       {/* CAMADA 0: FUNDO BASE COM AMBIÊNCIA */}
-      <div className="absolute inset-0 z-0 bg-black overflow-hidden">
+      <div className="absolute inset-0 z-0 bg-foreground overflow-hidden">
         {slide.background_url ? (
           <img
             src={slide.background_url}
@@ -91,20 +91,20 @@ export const SlideRendererEscamas: React.FC<SlideRendererEscamasProps> = ({
           {brand.logoUrl ? (
             <img
               src={brand.logoUrl}
-              className="h-12 w-12 rounded-lg object-contain bg-white/10 p-1 border border-white/20"
+              className="h-12 w-12 rounded-lg object-contain bg-card/10 p-1 border border-white/20"
               alt="Logo"
               crossOrigin="anonymous"
             />
           ) : (
             <div
-              className="h-12 w-12 rounded-lg flex items-center justify-center font-black text-2xl text-black border border-white/20 shadow-lg"
+              className="h-12 w-12 rounded-lg flex items-center justify-center font-black text-2xl text-foreground border border-white/20 shadow-lg"
               style={{ backgroundColor: brand.secondaryColor || "#38bdf8" }}
             >
               {brand.logoLetter || "W"}
             </div>
           )}
           <div className="flex flex-col">
-            <span className="text-white font-extrabold text-xl tracking-wider uppercase">
+            <span className="text-foreground font-extrabold text-xl tracking-wider uppercase">
               {brand.name}
             </span>
             <span
@@ -130,7 +130,7 @@ export const SlideRendererEscamas: React.FC<SlideRendererEscamasProps> = ({
             <span>{slide.text_content.badge}</span>
           </div>
         ) : (
-          <div className="px-4 py-2 rounded-full bg-white/10 border border-white/15 text-xs font-mono font-bold tracking-widest text-slate-300">
+          <div className="px-4 py-2 rounded-full bg-card/10 border border-white/15 text-xs font-mono font-bold tracking-widest text-slate-300">
             {slide.slide_number} / 5
           </div>
         )}
@@ -148,7 +148,7 @@ export const SlideRendererEscamas: React.FC<SlideRendererEscamasProps> = ({
                 e.stopPropagation();
                 onLayerSelect?.(layer.id);
               }}
-              className={`absolute cursor-pointer transition-all ${
+              className={`absolute cursor-pointer transition-colors duration-200 ${
                 isSelected ? "ring-4 ring-sky-400 shadow-2xl z-50 scale-105" : ""
               } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               style={{
@@ -168,7 +168,7 @@ export const SlideRendererEscamas: React.FC<SlideRendererEscamasProps> = ({
                   crossOrigin="anonymous"
                 />
               ) : (
-                <div className="w-full h-32 rounded-lg bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center text-white/50 text-xs font-mono uppercase">
+                <div className="w-full h-32 rounded-lg bg-card/10 border border-white/20 backdrop-blur-md flex items-center justify-center text-foreground/50 text-xs font-mono uppercase">
                   {layer.type}
                 </div>
               )}
@@ -190,7 +190,7 @@ export const SlideRendererEscamas: React.FC<SlideRendererEscamasProps> = ({
 
         {slide.text_content.headline && (
           <h2
-            className="text-white font-black tracking-tight leading-[0.98] uppercase text-balance"
+            className="text-foreground font-black tracking-tight leading-[0.98] uppercase text-balance"
             style={{
               fontFamily: brand.fontHeading || "Inter, sans-serif",
               fontSize:
@@ -228,7 +228,7 @@ export const SlideRendererEscamas: React.FC<SlideRendererEscamasProps> = ({
               <span>{slide.text_content.cta_text}</span>
               <ArrowRight className="w-6 h-6" />
             </div>
-            <span className="text-white/60 text-lg font-medium">
+            <span className="text-foreground/60 text-lg font-medium">
               Acesse pelo portal ou link na bio
             </span>
           </div>
@@ -236,7 +236,7 @@ export const SlideRendererEscamas: React.FC<SlideRendererEscamasProps> = ({
       </div>
 
       {/* RODAPÉ EDITORIAL / INDICADOR DE ROLAGEM */}
-      <div className="absolute bottom-12 left-16 right-16 z-40 flex items-center justify-between border-t border-white/15 pt-6 text-white/60 text-sm font-semibold tracking-wider uppercase">
+      <div className="absolute bottom-12 left-16 right-16 z-40 flex items-center justify-between border-t border-white/15 pt-6 text-foreground/60 text-sm font-semibold tracking-wider uppercase">
         <span>Publicação Oficial • Transparência Waesy</span>
         <div className="flex items-center gap-2">
           <span>Arraste para o lado</span>
@@ -246,9 +246,9 @@ export const SlideRendererEscamas: React.FC<SlideRendererEscamasProps> = ({
 
       {/* OVERLAY DE PROCESSAMENTO / ESCULPINDO CAMADAS */}
       {slide.isLoading && (
-        <div className="absolute inset-0 z-[100] bg-black/75 backdrop-blur-md flex flex-col items-center justify-center text-white">
+        <div className="absolute inset-0 z-[100] bg-foreground/75 backdrop-blur-md flex flex-col items-center justify-center text-foreground">
           <div
-            className="w-20 h-20 border-4 border-t-transparent rounded-full animate-spin mb-6"
+            className="w-20 h-20 border-4 border-t-transparent rounded-full animate-spin motion-reduce:animate-none mb-6"
             style={{ borderColor: brand.secondaryColor || "#38bdf8", borderTopColor: "transparent" }}
           />
           <p className="font-black uppercase tracking-[0.3em] text-lg">

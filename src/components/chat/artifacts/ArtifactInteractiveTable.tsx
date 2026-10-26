@@ -201,7 +201,7 @@ export function ArtifactInteractiveTable({
             size="sm"
             disabled={validPage <= 1}
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            className="h-11 min-h-11 px-3 text-xs gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer disabled:opacity-40"
+            className="h-11 min-h-11 px-3 text-xs gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer disabled:opacity-40"
             aria-label="Página anterior"
           >
             <ChevronLeft className="size-4" />
@@ -218,7 +218,7 @@ export function ArtifactInteractiveTable({
             size="sm"
             disabled={validPage >= totalPages}
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            className="h-11 min-h-11 px-3 text-xs gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer disabled:opacity-40"
+            className="h-11 min-h-11 px-3 text-xs gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer disabled:opacity-40"
             aria-label="Próxima página"
           >
             <span>Próxima</span>

@@ -101,7 +101,7 @@ export function MomentsStatusPicker({
  type="button"
  onClick={() => handleSelectPreset(preset)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "h-12 rounded-lg flex flex-col items-center justify-center gap-1 transition-all text-lg cursor-pointer border",
+ "h-12 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors duration-200 text-lg cursor-pointer border",
  selectedEmoji === preset.emoji
  ? "border-primary bg-primary/10 scale-105 shadow-xs"
  : "border-border/40 bg-card hover:bg-muted/40"
@@ -157,36 +157,36 @@ export function MomentsStatusPicker({
  type="button"
  onClick={() => setAudience("public")}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "p-3 rounded-lg border text-center transition-all cursor-pointer",
+ "p-3 rounded-lg border text-center transition-colors duration-200 cursor-pointer",
  audience === "public" ? "border-primary bg-primary/10 text-primary font-bold" : "border-border/40 text-muted-foreground"
  )}
  >
  <Globe className="size-4 mx-auto mb-1" />
- <span className="text-[11px]">Público</span>
+ <span className="text-2xs">Público</span>
  </button>
 
  <button
  type="button"
  onClick={() => setAudience("close_friends")}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "p-3 rounded-lg border text-center transition-all cursor-pointer",
+ "p-3 rounded-lg border text-center transition-colors duration-200 cursor-pointer",
  audience === "close_friends" ? "border-primary bg-primary/10 text-primary font-bold" : "border-border/40 text-muted-foreground"
  )}
  >
  <Users className="size-4 mx-auto mb-1" />
- <span className="text-[11px]">Amigos</span>
+ <span className="text-2xs">Amigos</span>
  </button>
 
  <button
  type="button"
  onClick={() => setAudience("private")}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "p-3 rounded-lg border text-center transition-all cursor-pointer",
+ "p-3 rounded-lg border text-center transition-colors duration-200 cursor-pointer",
  audience === "private" ? "border-primary bg-primary/10 text-primary font-bold" : "border-border/40 text-muted-foreground"
  )}
  >
  <Lock className="size-4 mx-auto mb-1" />
- <span className="text-[11px]">Invisível</span>
+ <span className="text-2xs">Invisível</span>
  </button>
  </div>
  </div>

@@ -128,7 +128,7 @@ export function CompanyDeliveryManagerModal({
 
         {loading ? (
           <div className="py-12 flex flex-col items-center justify-center space-y-2">
-            <Loader2 className="size-6 animate-spin text-primary" />
+            <Loader2 className="size-6 animate-spin motion-reduce:animate-none text-primary" />
             <p className="text-xs text-muted-foreground">Carregando taxas...</p>
           </div>
         ) : (
@@ -160,7 +160,7 @@ export function CompanyDeliveryManagerModal({
             <div className="flex items-center justify-between p-3 rounded-lg bg-muted/40 border border-border/60">
               <div className="space-y-1">
                 <Label className="text-xs font-bold text-foreground">Equipe Própria de Entregadores</Label>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-2xs text-muted-foreground">
                   Sua loja possui entregadores fixos ou utiliza motoboys avulsos parceiros.
                 </p>
               </div>
@@ -171,7 +171,7 @@ export function CompanyDeliveryManagerModal({
             <div className="space-y-2 pt-1">
               <Label className="text-xs font-bold text-foreground flex items-center justify-between">
                 <span>Taxas Personalizadas por Bairro ({neighborhoods.length})</span>
-                <span className="text-[10px] text-muted-foreground font-normal">Opcional</span>
+                <span className="text-2xs text-muted-foreground font-normal">Opcional</span>
               </Label>
 
               <div className="flex items-center gap-2">
@@ -207,7 +207,7 @@ export function CompanyDeliveryManagerModal({
                     >
                       <span className="font-medium text-foreground">{n.neighborhood}</span>
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="font-mono text-[11px] font-bold">
+                        <Badge variant="outline" className="font-mono text-2xs font-bold">
                           R$ {(n.fee_cents / 100).toFixed(2).replace(".", ",")}
                         </Badge>
                         <Button
@@ -248,7 +248,7 @@ export function CompanyDeliveryManagerModal({
             disabled={saving || loading}
             className="rounded-lg text-xs font-bold gap-2"
           >
-            {saving ? <Loader2 className="size-3.5 animate-spin" /> : <Save className="size-3.5" />}
+            {saving ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : <Save className="size-3.5" />}
             <span>Salvar Taxas</span>
           </Button>
         </DialogFooter>

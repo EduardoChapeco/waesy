@@ -154,7 +154,7 @@ function WorkspaceSessionsAndAuditPage() {
           disabled={isRefreshing}
           className="self-start sm:self-auto gap-2 rounded-lg text-xs cursor-pointer"
         >
-          <RefreshCw className={`size-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
+          <RefreshCw className={`size-3.5 ${isRefreshing ? "animate-spin motion-reduce:animate-none" : ""}`} />
           Sincronizar
         </Button>
       </div>
@@ -286,9 +286,9 @@ function WorkspaceSessionsAndAuditPage() {
                             className={cn(
                               "text-xs px-2 py-0 font-medium",
                               log.action.includes("delete") || log.action.includes("block")
-                                ? "bg-destructive/90 text-white"
+                                ? "bg-destructive/90 text-foreground"
                                 : log.action.includes("create")
-                                ? "bg-emerald-600/90 text-white"
+                                ? "bg-emerald-600/90 text-foreground"
                                 : "bg-muted text-foreground"
                             )}
                           >

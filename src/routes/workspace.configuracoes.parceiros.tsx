@@ -117,7 +117,7 @@ function ConfigParceirosPage() {
   if (isLoadingProfile && isLoadingAccountants) {
     return (
       <div className="flex justify-center py-16">
-        <Loader2 className="size-6 animate-spin text-muted-foreground" />
+        <Loader2 className="size-6 animate-spin motion-reduce:animate-none text-muted-foreground" />
       </div>
     );
   }
@@ -151,7 +151,7 @@ function ConfigParceirosPage() {
                   className="rounded-lg text-xs font-bold gap-2"
                 >
                   {generateLink.isPending ? (
-                    <Loader2 className="size-4 animate-spin" />
+                    <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                   ) : (
                     <Share2 className="size-4" />
                   )}

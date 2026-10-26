@@ -4,3 +4,4 @@ export { TravelAiImporterBanner } from './promotional-flyer/travel-ai-importer-b
 export { RadarMapWidget, type ActiveTravelerLocation, type RadarMapWidgetProps } from './radar/radar-map-widget';
 export { SupplierAutocomplete } from './suppliers/supplier-autocomplete';
 export { VoucherStudio } from './vouchers/VoucherStudio';
+export { BusTicketResultsRail, type BusTicketResultsRailProps } from './BusTicketResultsRail';

@@ -21,7 +21,7 @@ export const BudgetCorporateClean: React.FC<CommercialDocumentTemplateProps> = (
         transform: `scale(${scale})`,
         transformOrigin: "top center",
       }}
-      className={`w-full max-w-4xl mx-auto bg-white text-slate-900 font-sans p-8 sm:p-12 border border-slate-200/80 shadow-lg rounded-lg print:shadow-none print:border-none print:p-0 ${className}`}
+      className={`w-full max-w-4xl mx-auto bg-card text-slate-900 font-sans p-8 sm:p-12 border border-slate-200/80 shadow-lg rounded-lg print:shadow-none print:border-none print:p-0 ${className}`}
     >
       {/* ── 1. Topo / Header Institucional ── */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 pb-8 border-b border-slate-200">
@@ -34,7 +34,7 @@ export const BudgetCorporateClean: React.FC<CommercialDocumentTemplateProps> = (
             />
           ) : (
             <div className="flex items-center gap-2 mb-3">
-              <div className="size-9 rounded-lg bg-slate-900 text-white flex items-center justify-center font-black text-lg">
+              <div className="size-9 rounded-lg bg-slate-900 text-foreground flex items-center justify-center font-black text-lg">
                 W
               </div>
               <span className="font-bold text-xl tracking-tight text-slate-950">
@@ -70,7 +70,7 @@ export const BudgetCorporateClean: React.FC<CommercialDocumentTemplateProps> = (
             <p>
               <strong className="text-slate-700">Validade:</strong> {data.validUntilDate}
             </p>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200/80 mt-1">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-2xs font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200/80 mt-1">
               <ShieldCheck className="size-3.5" />
               <span>Proposta Ativa</span>
             </div>
@@ -80,7 +80,7 @@ export const BudgetCorporateClean: React.FC<CommercialDocumentTemplateProps> = (
 
       {/* ── 2. Bloco do Cliente / Destinatário ── */}
       <div className="my-8 bg-slate-50/80 border border-slate-200/80 rounded-lg p-5">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-2">
+        <span className="text-2xs font-bold uppercase tracking-wider text-slate-400 block mb-2">
           DADOS DO CLIENTE / CONTRATANTE
         </span>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
@@ -105,7 +105,7 @@ export const BudgetCorporateClean: React.FC<CommercialDocumentTemplateProps> = (
       <div className="my-8 overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b-2 border-slate-900 text-[11px] uppercase tracking-wider font-bold text-slate-500">
+            <tr className="border-b-2 border-slate-900 text-2xs uppercase tracking-wider font-bold text-slate-500">
               <th className="py-3 pr-4">Item / Serviço</th>
               <th className="py-3 px-3 text-center">Qtd</th>
               <th className="py-3 px-3 text-right">Valor Unit.</th>
@@ -125,7 +125,7 @@ export const BudgetCorporateClean: React.FC<CommercialDocumentTemplateProps> = (
                     </p>
                   )}
                   {item.sku && (
-                    <span className="font-mono text-[10px] text-slate-400 mt-1 block">
+                    <span className="font-mono text-2xs text-slate-400 mt-1 block">
                       SKU: {item.sku}
                     </span>
                   )}
@@ -158,7 +158,7 @@ export const BudgetCorporateClean: React.FC<CommercialDocumentTemplateProps> = (
               <span className="font-mono">- {formatMoney(data.discountCents)}</span>
             </div>
           )}
-          <div className="flex items-center justify-between p-4 rounded-lg bg-slate-950 text-white mt-3">
+          <div className="flex items-center justify-between p-4 rounded-lg bg-slate-950 text-foreground mt-3">
             <span className="font-bold text-xs uppercase tracking-wider">TOTAL LÍQUIDO</span>
             <span className="font-mono font-black text-xl">
               {formatMoney(data.totalCents)}
@@ -179,8 +179,8 @@ export const BudgetCorporateClean: React.FC<CommercialDocumentTemplateProps> = (
           </p>
           {data.issuer.pixKey && (
             <div className="pt-2">
-              <span className="text-[11px] text-slate-500 block">Chave PIX Oficial:</span>
-              <span className="font-mono font-bold text-slate-800 bg-white border border-slate-200 px-2 py-1 rounded select-all inline-block mt-1">
+              <span className="text-2xs text-slate-500 block">Chave PIX Oficial:</span>
+              <span className="font-mono font-bold text-slate-800 bg-card border border-slate-200 px-2 py-1 rounded select-all inline-block mt-1">
                 {data.issuer.pixKey}
               </span>
             </div>
@@ -193,9 +193,9 @@ export const BudgetCorporateClean: React.FC<CommercialDocumentTemplateProps> = (
         </div>
 
         {/* QR Code de Pagamento */}
-        <div className="shrink-0 flex flex-col items-center bg-white p-3 rounded-lg border border-slate-200 shadow-xs">
+        <div className="shrink-0 flex flex-col items-center bg-card p-3 rounded-lg border border-slate-200 shadow-xs">
           <QrCode className="size-20 text-slate-900" />
-          <span className="text-[10px] font-mono text-slate-500 uppercase mt-1">
+          <span className="text-2xs font-mono text-slate-500 uppercase mt-1">
             Pague via PIX
           </span>
         </div>
@@ -221,7 +221,7 @@ export const BudgetCorporateClean: React.FC<CommercialDocumentTemplateProps> = (
               <button
                 type="button"
                 onClick={onAcceptProposal}
-                className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="px-4 py-2 rounded-lg bg-emerald-600 text-foreground text-xs font-bold hover:bg-emerald-700 transition-colors shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 Aprovar e Assinar Proposta
               </button>
@@ -236,7 +236,7 @@ export const BudgetCorporateClean: React.FC<CommercialDocumentTemplateProps> = (
 
       {/* Nota Legal Rodapé */}
       {data.legalNotes && (
-        <p className="mt-8 text-[10px] text-slate-400 text-center leading-relaxed">
+        <p className="mt-8 text-2xs text-slate-400 text-center leading-relaxed">
           {data.legalNotes}
         </p>
       )}

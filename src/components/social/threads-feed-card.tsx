@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { PostEmbedRenderer, type PostEmbedData } from "./post-embed-renderer";
+import { MediaCarousel } from "@/components/community/MediaCarousel";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -258,7 +259,7 @@ export function CommunityFeedCard({
  onClick={() => handleVotePoll(option.id)}
  disabled={!!pollData.user_voted_option}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "w-full relative h-10 rounded-lg overflow-hidden text-left flex items-center justify-between px-3 text-xs font-bold transition-all border",
+ "w-full relative h-10 rounded-lg overflow-hidden text-left flex items-center justify-between px-3 text-xs font-bold transition-colors duration-200 border",
  isSelected
  ? "border-primary bg-primary/10 text-primary"
  : "border-border/60 bg-card hover:bg-muted/40 text-foreground"
@@ -268,7 +269,7 @@ export function CommunityFeedCard({
  {pollData.user_voted_option && (
  <div
  className={cn(
- "absolute top-0 bottom-0 left-0 transition-all duration-500 rounded-lg opacity-20",
+ "absolute top-0 bottom-0 left-0 transition-colors duration-200 duration-500 rounded-lg opacity-20",
  isSelected ? "bg-primary" : "bg-foreground"
  )}
  style={{ width: `${percent}%` }}
@@ -279,7 +280,7 @@ export function CommunityFeedCard({
  {isSelected && <Check className="size-3 text-primary" />}
  </span>
  {pollData.user_voted_option && (
- <span className="relative z-10 font-mono text-[11px] text-muted-foreground">
+ <span className="relative z-10 font-mono text-2xs text-muted-foreground">
  {percent}%
  </span>
  )}
@@ -287,38 +288,22 @@ export function CommunityFeedCard({
  );
  })}
  </div>
- <div className="text-[10px] text-muted-foreground font-medium pt-1">
+ <div className="text-2xs text-muted-foreground font-medium pt-1">
  {pollData.total_votes} votos {pollData.expires_at ? `• ${pollData.expires_at}` : ""}
  </div>
  </div>
  )}
 
- {/* ── Galeria de Mídias (Aspecto Vertical 4:5 / Grade 1:1) ── */}
- {post.media_urls && post.media_urls.length > 0 && (
- <div
- className={cn(
- "mt-3 rounded-lg overflow-hidden border border-border/40",
- post.media_urls.length === 1 ? "max-h-140 bg-muted/20 flex items-center justify-center" : "grid grid-cols-2 gap-2"
- )}
- >
- {post.media_urls.map((url, idx) => (
- <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
- key={idx}
- className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "relative cursor-pointer overflow-hidden group/media bg-muted/40",
- post.media_urls!.length === 1 ? "w-full max-h-140 flex items-center justify-center" : "aspect-square"
- )}
- onClick={() => onPreviewMedia && onPreviewMedia(url)}
- >
- <img
- src={url}
- alt="Mídia da publicação"
- className={cn("transition-transform duration-300 motion-reduce:transition-none group-hover/media:scale-102", post.media_urls!.length === 1 ? "w-full h-auto max-h-140 object-contain mx-auto block" : "size-full object-cover")}
- />
- </div>
- ))}
- </div>
- )}
+  {/* ── Galeria de Mídias Canônica (Aspecto 4:5 / Snap Scroll Anti-Jank) ── */}
+  {post.media_urls && post.media_urls.length > 0 && (
+    <div className="mt-3">
+      <MediaCarousel
+        mediaUrls={post.media_urls}
+        aspectRatio={post.media_urls.length === 1 ? "4/5" : "square"}
+        onMediaClick={(idx) => onPreviewMedia && onPreviewMedia(post.media_urls![idx])}
+      />
+    </div>
+  )}
 
  {/* ── Renderizador Polimórfico de Embed (Evento, Produto, Classificado, Notícia) ── */}
  <PostEmbedRenderer embed={post.embed} />
@@ -330,7 +315,7 @@ export function CommunityFeedCard({
  type="button"
  onClick={handleLikeClick}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "h-9 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-all cursor-pointer active:scale-90",
+ "h-9 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-colors duration-200 cursor-pointer active:scale-90",
  liked ? "text-rose-500" : "hover:text-foreground hover:bg-muted/40"
  )}
  aria-label="Curtir"
@@ -343,7 +328,7 @@ export function CommunityFeedCard({
  <button
  type="button"
  onClick={() => onReply && onReply(post)}
- className="h-9 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold hover:text-foreground hover:bg-muted/40 transition-all cursor-pointer active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="h-9 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold hover:text-foreground hover:bg-muted/40 transition-colors duration-200 cursor-pointer active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  aria-label="Comentar"
  >
  <MessageCircle className="size-4" />
@@ -355,7 +340,7 @@ export function CommunityFeedCard({
  type="button"
  onClick={handleRepostClick}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "h-9 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-all cursor-pointer active:scale-90",
+ "h-9 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-colors duration-200 cursor-pointer active:scale-90",
  reposted ? "text-emerald-500" : "hover:text-foreground hover:bg-muted/40"
  )}
  aria-label="Republicar"
@@ -368,7 +353,7 @@ export function CommunityFeedCard({
  <button
  type="button"
  onClick={handleShare}
- className="h-9 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold hover:text-foreground hover:bg-muted/40 transition-all cursor-pointer active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="h-9 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold hover:text-foreground hover:bg-muted/40 transition-colors duration-200 cursor-pointer active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  aria-label="Compartilhar"
  >
  <Send className="size-4" />
@@ -381,7 +366,7 @@ export function CommunityFeedCard({
  <div className="flex -space-x-2 overflow-hidden">
  <Avatar className="size-4.5 rounded-full ring-1 ring-background">
  <AvatarImage src={post.author.avatar_url || ""} />
- <AvatarFallback className="text-[8px]">WD</AvatarFallback>
+ <AvatarFallback className="text-3xs">WD</AvatarFallback>
  </Avatar>
  </div>
  <span>

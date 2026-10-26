@@ -212,7 +212,7 @@ export function FounderSignupSheet({
                   key={c}
                   type="button"
                   onClick={() => setCity(c === "Outra cidade" ? "" : c)}
-                  className={`text-xs text-muted-foreground/75 font-semibold px-3 py-2 rounded-lg border transition-all cursor-pointer ${
+                  className={`text-xs text-muted-foreground/75 font-semibold px-3 py-2 rounded-lg border transition-colors duration-200 cursor-pointer ${
                     city === c
                       ? "bg-primary text-primary-foreground border-primary"
                       : "bg-muted/30 text-muted-foreground border-border/60 hover:border-primary/40"
@@ -260,11 +260,11 @@ export function FounderSignupSheet({
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="w-full h-12 rounded-lg text-sm font-bold gap-2 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 transition-all"
+            className="w-full h-12 rounded-lg text-sm font-bold gap-2 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-200"
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="size-4 animate-spin" />
+                <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                 <span>Consultando dados e gerando mockup...</span>
               </>
             ) : (

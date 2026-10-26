@@ -141,7 +141,7 @@ export default function AdminAlgorithmSettingsPage() {
  size="sm"
  className="rounded-lg text-xs font-semibold gap-2 h-9"
  >
- {isSaving ? <Loader2 className="size-3.5 animate-spin" /> : <Save className="size-3.5" />}
+ {isSaving ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : <Save className="size-3.5" />}
  <span>Salvar Pesos em Produção</span>
  </Button>
  </div>
@@ -151,7 +151,7 @@ export default function AdminAlgorithmSettingsPage() {
  <div className="p-4 rounded-lg border border-border/60 bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
  <div className="space-y-1">
  <span className="font-semibold text-foreground">Presets Estratégicos de Calibragem</span>
- <p className="text-muted-foreground text-[11px]">
+ <p className="text-muted-foreground text-2xs">
  Carregue configurações prontas para diferentes cenários operacionais da cidade.
  </p>
  </div>
@@ -198,12 +198,12 @@ export default function AdminAlgorithmSettingsPage() {
 
  {/* Barra Segmentada */}
  <div className="h-3.5 w-full rounded-full overflow-hidden flex bg-muted/40 p-1 gap-1">
- <div style={{ width: `${params.weight_geo * 100}%` }} className="bg-info rounded-full transition-all" title="Geo" />
- <div style={{ width: `${params.weight_open_status * 100}%` }} className="bg-emerald-500 rounded-full transition-all" title="Aberto Agora" />
- <div style={{ width: `${params.weight_user_affinity * 100}%` }} className="bg-primary rounded-full transition-all" title="Afinidade" />
- <div style={{ width: `${params.weight_freshness * 100}%` }} className="bg-amber-500 rounded-full transition-all" title="Recência" />
- <div style={{ width: `${params.weight_store_quality * 100}%` }} className="bg-primary rounded-full transition-all" title="Qualidade" />
- <div style={{ width: `${params.weight_token_boost * 100}%` }} className="bg-rose-500 rounded-full transition-all" title="Tokens" />
+ <div style={{ width: `${params.weight_geo * 100}%` }} className="bg-info rounded-full transition-colors duration-200" title="Geo" />
+ <div style={{ width: `${params.weight_open_status * 100}%` }} className="bg-emerald-500 rounded-full transition-colors duration-200" title="Aberto Agora" />
+ <div style={{ width: `${params.weight_user_affinity * 100}%` }} className="bg-primary rounded-full transition-colors duration-200" title="Afinidade" />
+ <div style={{ width: `${params.weight_freshness * 100}%` }} className="bg-amber-500 rounded-full transition-colors duration-200" title="Recência" />
+ <div style={{ width: `${params.weight_store_quality * 100}%` }} className="bg-primary rounded-full transition-colors duration-200" title="Qualidade" />
+ <div style={{ width: `${params.weight_token_boost * 100}%` }} className="bg-rose-500 rounded-full transition-colors duration-200" title="Tokens" />
  </div>
  </div>
 
@@ -218,7 +218,7 @@ export default function AdminAlgorithmSettingsPage() {
  </div>
  <div>
  <h2 className="text-xs font-bold text-foreground">Proximidade Física / Geolocalização</h2>
- <span className="text-[11px] text-muted-foreground">Prioriza lojas no mesmo bairro e raio próximo</span>
+ <span className="text-2xs text-muted-foreground">Prioriza lojas no mesmo bairro e raio próximo</span>
  </div>
  </div>
  <span className="font-mono text-xs font-bold text-foreground">
@@ -243,7 +243,7 @@ export default function AdminAlgorithmSettingsPage() {
  </div>
  <div>
  <h2 className="text-xs font-bold text-foreground">Status Aberto Agora</h2>
- <span className="text-[11px] text-muted-foreground">Multiplicador de relevância para atendimento ativo</span>
+ <span className="text-2xs text-muted-foreground">Multiplicador de relevância para atendimento ativo</span>
  </div>
  </div>
  <span className="font-mono text-xs font-bold text-foreground">
@@ -268,7 +268,7 @@ export default function AdminAlgorithmSettingsPage() {
  </div>
  <div>
  <h2 className="text-xs font-bold text-foreground">Afinidade por Nicho / Categoria</h2>
- <span className="text-[11px] text-muted-foreground">Histórico individual de cliques e buscas do usuário</span>
+ <span className="text-2xs text-muted-foreground">Histórico individual de cliques e buscas do usuário</span>
  </div>
  </div>
  <span className="font-mono text-xs font-bold text-foreground">
@@ -293,7 +293,7 @@ export default function AdminAlgorithmSettingsPage() {
  </div>
  <div>
  <h2 className="text-xs font-bold text-foreground">Recência / Novidades no Radar</h2>
- <span className="text-[11px] text-muted-foreground">Impulso orgânico para anúncios criados recentemente</span>
+ <span className="text-2xs text-muted-foreground">Impulso orgânico para anúncios criados recentemente</span>
  </div>
  </div>
  <span className="font-mono text-xs font-bold text-foreground">
@@ -318,7 +318,7 @@ export default function AdminAlgorithmSettingsPage() {
  </div>
  <div>
  <h2 className="text-xs font-bold text-foreground">Qualidade da Loja e Selo Curado</h2>
- <span className="text-[11px] text-muted-foreground">Pontuação baseada em avaliações e verificação KYC</span>
+ <span className="text-2xs text-muted-foreground">Pontuação baseada em avaliações e verificação KYC</span>
  </div>
  </div>
  <span className="font-mono text-xs font-bold text-foreground">
@@ -343,7 +343,7 @@ export default function AdminAlgorithmSettingsPage() {
  </div>
  <div>
  <h2 className="text-xs font-bold text-foreground">Impulso de Micro-Tokens no Radar</h2>
- <span className="text-[11px] text-muted-foreground">Lance em leilão atômico por visualizações de alta intenção</span>
+ <span className="text-2xs text-muted-foreground">Lance em leilão atômico por visualizações de alta intenção</span>
  </div>
  </div>
  <span className="font-mono text-xs font-bold text-foreground">

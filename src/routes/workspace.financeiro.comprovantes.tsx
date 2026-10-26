@@ -324,7 +324,7 @@ function ReceiptsPage() {
               </div>
 
               {/* Imagem do Comprovante */}
-              <div className="relative rounded-lg border border-border/70 bg-black/5 dark:bg-black/40 overflow-hidden max-h-[380px] flex items-center justify-center p-2">
+              <div className="relative rounded-lg border border-border/70 bg-foreground/5 dark:bg-foreground/40 overflow-hidden max-h-[380px] flex items-center justify-center p-2">
                 {previewTarget.receipt_url?.toLowerCase().endsWith(".pdf") ? (
                   <iframe
                     src={previewTarget.receipt_url}

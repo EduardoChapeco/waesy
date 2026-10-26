@@ -279,7 +279,7 @@ function AdminConvitePage() {
         <button
           type="button"
           onClick={() => setActiveTab("sorteios")}
-          className={`px-4 py-2 rounded-lg text-xs font-mono font-bold transition-all ${
+          className={`px-4 py-2 rounded-lg text-xs font-mono font-bold transition-colors duration-200 ${
             activeTab === "sorteios"
               ? "bg-foreground text-background shadow-sm"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
@@ -290,7 +290,7 @@ function AdminConvitePage() {
         <button
           type="button"
           onClick={() => setActiveTab("premios")}
-          className={`px-4 py-2 rounded-lg text-xs font-mono font-bold transition-all ${
+          className={`px-4 py-2 rounded-lg text-xs font-mono font-bold transition-colors duration-200 ${
             activeTab === "premios"
               ? "bg-foreground text-background shadow-sm"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
@@ -301,7 +301,7 @@ function AdminConvitePage() {
         <button
           type="button"
           onClick={() => setActiveTab("conversoes")}
-          className={`px-4 py-2 rounded-lg text-xs font-mono font-bold transition-all ${
+          className={`px-4 py-2 rounded-lg text-xs font-mono font-bold transition-colors duration-200 ${
             activeTab === "conversoes"
               ? "bg-foreground text-background shadow-sm"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
@@ -330,7 +330,7 @@ function AdminConvitePage() {
                 <button
                   type="button"
                   onClick={() => setOriginFilter("all")}
-                  className={`px-3 py-1 rounded-lg font-mono text-[11px] font-bold transition-all ${
+                  className={`px-3 py-1 rounded-lg font-mono text-2xs font-bold transition-colors duration-200 ${
                     originFilter === "all" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground"
                   } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
@@ -339,7 +339,7 @@ function AdminConvitePage() {
                 <button
                   type="button"
                   onClick={() => setOriginFilter("platform")}
-                  className={`px-3 py-1 rounded-lg font-mono text-[11px] font-bold transition-all ${
+                  className={`px-3 py-1 rounded-lg font-mono text-2xs font-bold transition-colors duration-200 ${
                     originFilter === "platform" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground"
                   } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
@@ -348,7 +348,7 @@ function AdminConvitePage() {
                 <button
                   type="button"
                   onClick={() => setOriginFilter("store")}
-                  className={`px-3 py-1 rounded-lg font-mono text-[11px] font-bold transition-all ${
+                  className={`px-3 py-1 rounded-lg font-mono text-2xs font-bold transition-colors duration-200 ${
                     originFilter === "store" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground"
                   } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
@@ -402,12 +402,12 @@ function AdminConvitePage() {
                         <div className="flex flex-wrap items-center gap-2">
                           <Badge
                             variant={isCompleted ? "secondary" : isCancelled ? "destructive" : "default"}
-                            className="font-mono text-[10px] uppercase"
+                            className="font-mono text-2xs uppercase"
                           >
                             {isCompleted ? "Concluído" : isCancelled ? "Cancelado" : "Ativo"}
                           </Badge>
 
-                          <Badge variant="outline" className="font-mono text-[10px] gap-1">
+                          <Badge variant="outline" className="font-mono text-2xs gap-1">
                             {isOfficial ? (
                               <>
                                 <ShieldCheck className="size-3 text-primary" />
@@ -476,7 +476,7 @@ function AdminConvitePage() {
                             className="h-9 rounded-lg text-xs font-mono font-bold gap-2 bg-primary hover:bg-primary/90 text-primary-foreground"
                           >
                             {drawingRaffleId === raffle.id ? (
-                              <Loader2 className="size-3.5 animate-spin" />
+                              <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
                             ) : (
                               <Play className="size-3.5" />
                             )}
@@ -528,7 +528,7 @@ function AdminConvitePage() {
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Badge variant="outline" className="font-mono text-[10px]">
+                    <Badge variant="outline" className="font-mono text-2xs">
                       {reward.reward_type}
                     </Badge>
                     <span className="text-sm font-black font-mono text-foreground">
@@ -544,7 +544,7 @@ function AdminConvitePage() {
                 <div className="pt-2 border-t border-border/50 space-y-2">
                   <div className="flex items-center justify-between text-xs font-mono text-muted-foreground">
                     <span>Estoque: {reward.stock ?? "Ilimitado"}</span>
-                    <Badge variant={reward.active ? "default" : "secondary"} className="text-[9px]">
+                    <Badge variant={reward.active ? "default" : "secondary"} className="text-3xs">
                       {reward.active ? "Ativo" : "Pausado"}
                     </Badge>
                   </div>
@@ -593,13 +593,13 @@ function AdminConvitePage() {
                       <span className="font-bold text-foreground">
                         {conv.invited_profile?.full_name || "Membro Registrado"}
                       </span>
-                      <span className="text-muted-foreground font-mono block text-[11px]">
+                      <span className="text-muted-foreground font-mono block text-2xs">
                         Data: {new Date(conv.created_at).toLocaleString("pt-BR")}
                       </span>
                     </div>
                     <div className="text-right space-y-1 font-mono">
                       <span className="text-emerald-600 font-bold">+{conv.points_awarded} pts</span>
-                      <Badge variant="outline" className="text-[9px] block">
+                      <Badge variant="outline" className="text-3xs block">
                         {conv.status}
                       </Badge>
                     </div>
@@ -621,7 +621,7 @@ function AdminConvitePage() {
 
           {isLoadingTickets ? (
             <div className="py-12 flex flex-col items-center justify-center gap-2 text-xs text-muted-foreground">
-              <Loader2 className="size-5 animate-spin text-primary" />
+              <Loader2 className="size-5 animate-spin motion-reduce:animate-none text-primary" />
               <span>Carregando cupons auditados...</span>
             </div>
           ) : ticketsList.length === 0 ? (
@@ -638,12 +638,12 @@ function AdminConvitePage() {
                         Cupom #{String(t.ticketNumber).padStart(4, "0")}
                       </span>
                       {selectedRaffleForTickets?.winner_ticket_number === t.ticketNumber && (
-                        <Badge className="bg-emerald-600 text-white text-[9px] font-mono">
+                        <Badge className="bg-emerald-600 text-foreground text-3xs font-mono">
                           CONTEMPLADO
                         </Badge>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                    <div className="flex items-center gap-2 text-2xs text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <User className="size-3" />
                         {t.userName}
@@ -656,7 +656,7 @@ function AdminConvitePage() {
                       )}
                     </div>
                   </div>
-                  <span className="text-[10px] font-mono text-muted-foreground">
+                  <span className="text-2xs font-mono text-muted-foreground">
                     {new Date(t.createdAt).toLocaleString("pt-BR")}
                   </span>
                 </div>
@@ -758,7 +758,7 @@ function AdminConvitePage() {
               disabled={isSavingRaffle}
               className="h-10 rounded-lg text-xs font-mono font-bold px-5"
             >
-              {isSavingRaffle ? <Loader2 className="size-3.5 animate-spin mr-2" /> : null}
+              {isSavingRaffle ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none mr-2" /> : null}
               Cadastrar Sorteio
             </Button>
           </div>
@@ -843,7 +843,7 @@ function AdminConvitePage() {
                 disabled={isSavingReward}
                 className="h-9 rounded-lg text-xs font-mono font-bold"
               >
-                {isSavingReward ? <Loader2 className="size-3.5 animate-spin mr-2" /> : null}
+                {isSavingReward ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none mr-2" /> : null}
                 {editingRewardId ? "Salvar Alterações" : "Cadastrar Prêmio"}
               </Button>
             </DialogFooter>

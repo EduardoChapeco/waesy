@@ -406,7 +406,7 @@ function WorkspacePudoLogisticsPage() {
               variant={statusTab === tab.id ? "default" : "outline"}
               size="sm"
               onClick={() => setStatusTab(tab.id)}
-              className="h-11 sm:h-9 px-3.5 rounded-lg text-xs font-bold cursor-pointer whitespace-nowrap"
+              className="h-11 sm:h-9 px-4 rounded-lg text-xs font-bold cursor-pointer whitespace-nowrap"
             >
               {tab.label} ({tab.count})
             </Button>

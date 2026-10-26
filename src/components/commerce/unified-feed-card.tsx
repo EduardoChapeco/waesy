@@ -65,7 +65,7 @@ export function UnifiedFeedCard({
             if (onSelectPost) onSelectPost(post);
             else if (onPreviewMedia) onPreviewMedia(primaryMedia);
           }}
-          className="group aspect-square rounded-lg overflow-hidden bg-muted/30 relative cursor-pointer border border-border/40 hover:border-foreground/40 transition-all select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="group aspect-square rounded-lg overflow-hidden bg-muted/30 relative cursor-pointer border border-border/40 hover:border-foreground/40 transition-colors duration-200 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <img
             src={primaryMedia}
@@ -73,7 +73,7 @@ export function UnifiedFeedCard({
             className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
             loading="lazy"
           />
-          <div className="absolute inset-0 bg-black/45 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 p-3 text-white text-xs font-bold">
+          <div className="absolute inset-0 bg-foreground/45 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 p-3 text-foreground text-xs font-bold">
             <span className="inline-flex items-center gap-1">
               <Heart className="size-3.5 fill-white" />
               {likesCount}
@@ -91,7 +91,7 @@ export function UnifiedFeedCard({
     return (
       <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
         onClick={() => onSelectPost?.(post)}
-        className="group aspect-square rounded-lg bg-gray-50 dark:bg-zinc-900/60 border border-border/50 hover:border-foreground/30 p-4 sm:p-4 flex flex-col justify-between cursor-pointer transition-all select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="group aspect-square rounded-lg bg-gray-50 dark:bg-zinc-900/60 border border-border/50 hover:border-foreground/30 p-4 sm:p-4 flex flex-col justify-between cursor-pointer transition-colors duration-200 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <div className="flex items-center gap-2 min-w-0">
           {authorAvatar ? (
@@ -101,11 +101,11 @@ export function UnifiedFeedCard({
               className="size-5 rounded-full object-cover shrink-0"
             />
           ) : (
-            <div className="size-5 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center shrink-0">
+            <div className="size-5 rounded-full bg-primary/10 text-primary text-2xs font-bold flex items-center justify-center shrink-0">
               {authorName.slice(0, 1).toUpperCase()}
             </div>
           )}
-          <span className="text-[11px] font-bold text-foreground truncate">
+          <span className="text-2xs font-bold text-foreground truncate">
             {authorName}
           </span>
           {post.author?.is_verified && (
@@ -117,7 +117,7 @@ export function UnifiedFeedCard({
           {textContent || "Nota publicada"}
         </p>
 
-        <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-2 border-t border-border/30 font-mono">
+        <div className="flex items-center justify-between text-2xs text-muted-foreground pt-2 border-t border-border/30 font-mono">
           <span>{post.created_at ? formatDate(post.created_at) : "Recente"}</span>
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1">
@@ -136,7 +136,7 @@ export function UnifiedFeedCard({
   return (
     <article
       className={cn(
-        "rounded-lg border transition-all overflow-hidden",
+        "rounded-lg border transition-colors duration-200 overflow-hidden",
         hasMedia
           ? "bg-card border-border/60"
           : "bg-gray-50 dark:bg-zinc-900/60 border-border/50 p-4 sm:p-5"
@@ -170,13 +170,13 @@ export function UnifiedFeedCard({
                 <ShieldCheck className="size-3.5 text-primary fill-primary/15 shrink-0" />
               )}
               {authorUsername && (
-                <span className="text-[11px] text-muted-foreground font-mono">
+                <span className="text-2xs text-muted-foreground font-mono">
                   @{authorUsername.replace(/^@/, "")}
                 </span>
               )}
             </div>
             {post.created_at && (
-              <span className="block text-[10px] text-muted-foreground font-mono">
+              <span className="block text-2xs text-muted-foreground font-mono">
                 {formatDate(post.created_at)}
               </span>
             )}

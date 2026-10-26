@@ -267,7 +267,7 @@ function AdminMasterVitrinesPage() {
             <button
               key={s.slug}
               onClick={() => handleSelectSurface(s.slug)}
-              className={`h-11 sm:h-8 px-3 rounded-lg text-xs font-semibold shrink-0 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+              className={`h-11 sm:h-8 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 isSelected
                   ? "bg-primary text-primary-foreground shadow-2xs font-bold"
                   : "bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/50"
@@ -318,7 +318,7 @@ function AdminMasterVitrinesPage() {
               return (
                 <div
                   key={sec.id}
-                  className={`p-4 rounded-lg border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card ${
+                  className={`p-4 rounded-lg border transition-colors duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card ${
                     sec.is_active ? "border-border/80 shadow-2xs" : "border-border/40 opacity-60 bg-muted/20"
                   }`}
                 >
@@ -333,12 +333,12 @@ function AdminMasterVitrinesPage() {
                           {sec.title}
                         </h3>
                         {sec.badge_tag && (
-                          <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-primary/10 text-primary border border-primary/20">
+                          <span className="px-2 py-1 rounded-full text-xs font-mono font-bold bg-primary/10 text-primary border border-primary/20">
                             {sec.badge_tag}
                           </span>
                         )}
                         {!sec.is_active && (
-                          <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-muted text-muted-foreground">
+                          <span className="px-2 py-1 rounded-full text-xs font-mono font-bold bg-muted text-muted-foreground">
                             Inativa
                           </span>
                         )}
@@ -430,15 +430,15 @@ function AdminMasterVitrinesPage() {
                 <div className="aspect-21/9 w-full rounded-lg bg-card border border-border/80 flex flex-col justify-end p-3 relative overflow-hidden shadow-xs">
                   <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
                   <span className="relative z-10 text-xs font-mono font-bold text-primary uppercase">BANNER 21:9</span>
-                  <p className="relative z-10 text-xs font-bold text-white truncate">{title || "Banner Panorâmico"}</p>
+                  <p className="relative z-10 text-xs font-bold text-foreground truncate">{title || "Banner Panorâmico"}</p>
                 </div>
               ) : type === "banner_duo_16_9" ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div className="aspect-16/9 rounded-lg bg-card border border-border/80 flex items-end p-2 relative overflow-hidden">
-                    <span className="text-xs font-bold text-white z-10">Banner 1 (16:9)</span>
+                    <span className="text-xs font-bold text-foreground z-10">Banner 1 (16:9)</span>
                   </div>
                   <div className="aspect-16/9 rounded-lg bg-card border border-border/80 flex items-end p-2 relative overflow-hidden">
-                    <span className="text-xs font-bold text-white z-10">Banner 2 (16:9)</span>
+                    <span className="text-xs font-bold text-foreground z-10">Banner 2 (16:9)</span>
                   </div>
                 </div>
               ) : type === "custom_buttons_rail" ? (
@@ -466,8 +466,8 @@ function AdminMasterVitrinesPage() {
               ) : layoutVariant === "rail_feature_card" || layoutVariant === "rail_lead_banner" ? (
                 <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
                   {/* Feature Lead Card Preview */}
-                  <div className="w-28 p-2.5 rounded-lg bg-linear-to-br from-primary via-primary/90 to-primary/70 text-primary-foreground space-y-1.5 shadow-xs shrink-0">
-                    <span className="text-xs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-white/20">#1 Top</span>
+                  <div className="w-28 p-3 rounded-lg bg-linear-to-br from-primary via-primary/90 to-primary/70 text-primary-foreground space-y-2 shadow-xs shrink-0">
+                    <span className="text-xs font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-card/20">#1 Top</span>
                     <p className="text-xs font-black truncate">{title || "Destaques"}</p>
                     <p className="text-xs text-primary-foreground/80 line-clamp-1">Ver todos &gt;</p>
                   </div>

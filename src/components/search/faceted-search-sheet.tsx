@@ -156,7 +156,7 @@ export function FacetedSearchSheet({
                     key={opt.id}
                     type="button"
                     onClick={() => setSort(opt.id)}
-                    className={`flex items-center justify-between p-3 rounded-lg border text-xs font-medium transition-all ${
+                    className={`flex items-center justify-between p-3 rounded-lg border text-xs font-medium transition-colors duration-200 ${
                       isSelected
                         ? "bg-primary/10 border-primary text-primary font-bold shadow-2xs"
                         : "bg-card border-border/60 text-muted-foreground hover:text-foreground hover:border-border"
@@ -177,14 +177,14 @@ export function FacetedSearchSheet({
                 Faixa de Preço (R$)
               </Label>
               {facets?.price_range && (
-                <span className="text-[11px] text-muted-foreground font-mono">
+                <span className="text-2xs text-muted-foreground font-mono">
                   {formatMoney(facets.price_range.min_cents)} - {formatMoney(facets.price_range.max_cents)}
                 </span>
               )}
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
-                <span className="text-[10px] text-muted-foreground">Mínimo</span>
+                <span className="text-2xs text-muted-foreground">Mínimo</span>
                 <Input
                   type="number"
                   placeholder="0,00"
@@ -194,7 +194,7 @@ export function FacetedSearchSheet({
                 />
               </div>
               <div className="space-y-1">
-                <span className="text-[10px] text-muted-foreground">Máximo</span>
+                <span className="text-2xs text-muted-foreground">Máximo</span>
                 <Input
                   type="number"
                   placeholder="Sem limite"
@@ -220,7 +220,7 @@ export function FacetedSearchSheet({
                       key={niche.id}
                       type="button"
                       onClick={() => toggleNiche(niche.id)}
-                      className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-all ${
+                      className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-colors duration-200 ${
                         isSelected
                           ? "bg-primary text-primary-foreground font-semibold shadow-2xs"
                           : "bg-muted/50 border border-border/50 text-foreground hover:bg-muted"
@@ -229,7 +229,7 @@ export function FacetedSearchSheet({
                       <span>{niche.label}</span>
                       <Badge
                         variant={isSelected ? "secondary" : "outline"}
-                        className="text-[10px] px-1 py-0 h-4 rounded-md"
+                        className="text-2xs px-1 py-0 h-4 rounded-md"
                       >
                         {niche.count}
                       </Badge>
@@ -254,14 +254,14 @@ export function FacetedSearchSheet({
                       key={cat.id}
                       type="button"
                       onClick={() => toggleCategory(cat.id)}
-                      className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-all ${
+                      className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-colors duration-200 ${
                         isSelected
                           ? "bg-primary text-primary-foreground font-semibold shadow-2xs"
                           : "bg-card border border-border/60 text-muted-foreground hover:text-foreground"
                       } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                     >
                       <span>{cat.label}</span>
-                      <span className="text-[10px] opacity-70">({cat.count})</span>
+                      <span className="text-2xs opacity-70">({cat.count})</span>
                     </button>
                   );
                 })}
@@ -318,7 +318,7 @@ export function FacetedSearchSheet({
                     key={opt.id}
                     type="button"
                     onClick={() => setSort(opt.id)}
-                    className={`w-full flex items-center justify-between p-3 rounded-lg border text-xs font-medium transition-all ${
+                    className={`w-full flex items-center justify-between p-3 rounded-lg border text-xs font-medium transition-colors duration-200 ${
                       isSelected
                         ? "bg-primary/10 border-primary text-primary font-bold shadow-2xs"
                         : "bg-card border-border/60 text-muted-foreground hover:text-foreground hover:border-border"
@@ -339,14 +339,14 @@ export function FacetedSearchSheet({
                 Faixa de Preço (R$)
               </Label>
               {facets?.price_range && (
-                <span className="text-[11px] text-muted-foreground font-mono">
+                <span className="text-2xs text-muted-foreground font-mono">
                   {formatMoney(facets.price_range.min_cents)} - {formatMoney(facets.price_range.max_cents)}
                 </span>
               )}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <span className="text-[10px] text-muted-foreground">Mínimo</span>
+                <span className="text-2xs text-muted-foreground">Mínimo</span>
                 <Input
                   type="number"
                   placeholder="0,00"
@@ -356,7 +356,7 @@ export function FacetedSearchSheet({
                 />
               </div>
               <div className="space-y-1">
-                <span className="text-[10px] text-muted-foreground">Máximo</span>
+                <span className="text-2xs text-muted-foreground">Máximo</span>
                 <Input
                   type="number"
                   placeholder="Sem limite"
@@ -382,7 +382,7 @@ export function FacetedSearchSheet({
                       key={niche.id}
                       type="button"
                       onClick={() => toggleNiche(niche.id)}
-                      className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-all ${
+                      className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-colors duration-200 ${
                         isSelected
                           ? "bg-primary text-primary-foreground font-semibold shadow-2xs"
                           : "bg-muted/50 border border-border/50 text-foreground hover:bg-muted"
@@ -391,7 +391,7 @@ export function FacetedSearchSheet({
                       <span>{niche.label}</span>
                       <Badge
                         variant={isSelected ? "secondary" : "outline"}
-                        className="text-[10px] px-1 py-0 h-4 rounded-md"
+                        className="text-2xs px-1 py-0 h-4 rounded-md"
                       >
                         {niche.count}
                       </Badge>
@@ -416,14 +416,14 @@ export function FacetedSearchSheet({
                       key={cat.id}
                       type="button"
                       onClick={() => toggleCategory(cat.id)}
-                      className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-all ${
+                      className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-colors duration-200 ${
                         isSelected
                           ? "bg-primary text-primary-foreground font-semibold shadow-2xs"
                           : "bg-card border border-border/60 text-muted-foreground hover:text-foreground"
                       } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                     >
                       <span>{cat.label}</span>
-                      <span className="text-[10px] opacity-70">({cat.count})</span>
+                      <span className="text-2xs opacity-70">({cat.count})</span>
                     </button>
                   );
                 })}

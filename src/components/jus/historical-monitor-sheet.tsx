@@ -263,7 +263,7 @@ export function HistoricalMonitorSheet({
  <span>Filtros do Processo</span>
  </div>
  {appliedFiltersCount > 0 && (
- <Badge variant="secondary" className="text-[10px] font-mono px-2 py-1">
+ <Badge variant="secondary" className="text-2xs font-mono px-2 py-1">
  {appliedFiltersCount} ativo(s)
  </Badge>
  )}
@@ -271,7 +271,7 @@ export function HistoricalMonitorSheet({
 
  {/* Tags */}
  <div className="space-y-2">
- <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+ <Label className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
  Por Tags / Áreas
  </Label>
  <div className="flex flex-wrap gap-2">
@@ -283,14 +283,14 @@ export function HistoricalMonitorSheet({
  type="button"
  onClick={() => toggleTag(tag)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "px-3 py-1 rounded-lg text-[11px] font-semibold transition-colors border",
+ "px-3 py-1 rounded-lg text-2xs font-semibold transition-colors border",
  isSelected
  ? "bg-primary text-primary-foreground border-primary"
  : "bg-background text-muted-foreground border-border hover:text-foreground"
  )}
  >
  {tag}
- {isSelected && <span className="ml-1 text-[10px]">×</span>}
+ {isSelected && <span className="ml-1 text-2xs">×</span>}
  </button>
  );
  })}
@@ -299,7 +299,7 @@ export function HistoricalMonitorSheet({
 
  {/* Tribunais */}
  <div className="space-y-2">
- <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+ <Label className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
  Por Tribunal
  </Label>
  <div className="flex flex-wrap gap-2">
@@ -311,14 +311,14 @@ export function HistoricalMonitorSheet({
  type="button"
  onClick={() => toggleCourt(court)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "px-3 py-1 rounded-lg text-[11px] font-mono font-bold transition-colors border",
+ "px-3 py-1 rounded-lg text-2xs font-mono font-bold transition-colors border",
  isSelected
  ? "bg-primary text-primary-foreground border-primary"
  : "bg-background text-muted-foreground border-border hover:text-foreground"
  )}
  >
  {court}
- {isSelected && <span className="ml-1 text-[10px]">×</span>}
+ {isSelected && <span className="ml-1 text-2xs">×</span>}
  </button>
  );
  })}
@@ -327,12 +327,12 @@ export function HistoricalMonitorSheet({
 
  {/* Intervalo de Datas de Distribuição */}
  <div className="space-y-2">
- <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+ <Label className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
  Data de Distribuição
  </Label>
  <div className="grid grid-cols-2 gap-2">
  <div>
- <span className="text-[10px] text-muted-foreground">De:</span>
+ <span className="text-2xs text-muted-foreground">De:</span>
  <Input
  type="date"
  value={dateFrom}
@@ -341,7 +341,7 @@ export function HistoricalMonitorSheet({
  />
  </div>
  <div>
- <span className="text-[10px] text-muted-foreground">Até:</span>
+ <span className="text-2xs text-muted-foreground">Até:</span>
  <Input
  type="date"
  value={dateTo}

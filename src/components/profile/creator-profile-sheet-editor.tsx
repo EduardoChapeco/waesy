@@ -285,7 +285,7 @@ export function CreatorProfileSheetEditor({
             >
               {isSaving ? (
                 <>
-                  <Loader2 className="size-3.5 animate-spin" />
+                  <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
                   <span>Salvando...</span>
                 </>
               ) : (
@@ -337,7 +337,7 @@ export function CreatorProfileSheetEditor({
                     <Camera className="size-4 text-primary shrink-0" />
                     <span>{isAffiliate ? "Identidade do Parceiro" : "Identidade Visual da Marca"}</span>
                   </div>
-                  <span className="text-[11px] text-muted-foreground font-mono">
+                  <span className="text-2xs text-muted-foreground font-mono">
                     1:1 Squircle + 21:9 Panorâmica
                   </span>
                 </div>
@@ -361,11 +361,11 @@ export function CreatorProfileSheetEditor({
                       type="button"
                       onClick={() => avatarInputRef.current?.click()}
                       disabled={isUploadingMedia}
-                      className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="absolute inset-0 bg-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-foreground gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       title={isAffiliate ? "Alterar Foto do Parceiro" : "Alterar Foto do Perfil"}
                     >
                       <Camera className="size-4" />
-                      <span className="text-[10px]">Alterar</span>
+                      <span className="text-2xs">Alterar</span>
                     </button>
                     <input
                       ref={avatarInputRef}
@@ -417,7 +417,7 @@ export function CreatorProfileSheetEditor({
                     <button
                       type="button"
                       onClick={() => setCoverUrl("")}
-                      className="text-[11px] text-destructive hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="text-2xs text-destructive hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       Remover Capa
                     </button>
@@ -474,7 +474,7 @@ export function CreatorProfileSheetEditor({
                     value={category}
                     onValueChange={(val: string) => setCategory(val)}
                   />
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-2xs text-muted-foreground">
                     {isAffiliate
                       ? "Define sua principal categoria de recomendação e afiliação comercial."
                       : "Define o nicho de curadoria para vitrines de produtos e lojas parceiras."}
@@ -497,7 +497,7 @@ export function CreatorProfileSheetEditor({
                     maxLength={500}
                     className="rounded-lg text-xs resize-none"
                   />
-                  <div className="flex justify-between text-[11px] text-muted-foreground">
+                  <div className="flex justify-between text-2xs text-muted-foreground">
                     <span>
                       {isAffiliate
                         ? "Aparece para as lojas parceiras e em seus canais de indicação."
@@ -600,7 +600,7 @@ export function CreatorProfileSheetEditor({
                       <h4 className="text-xs font-bold text-foreground">
                         {isAffiliate ? "Visibilidade nas Buscas e Parcerias" : "Visibilidade da Vitrine"}
                       </h4>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-2xs text-muted-foreground">
                         {isAffiliate
                           ? "Define se sua identificação de parceiro aparece no diretório de parceiros e nas buscas da rede."
                           : "Define se sua vitrine aparece no diretório público de criadores e nas buscas da rede."}
@@ -634,7 +634,7 @@ export function CreatorProfileSheetEditor({
                   <h4 className="text-xs font-bold text-foreground">
                     Monetização e Comissões
                   </h4>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  <p className="text-2xs text-muted-foreground leading-relaxed">
                     Seus links de afiliação e cupons vinculados ao seu @handle continuam ativos e gerando comissões e tokens registrados na sua conta.
                   </p>
                 </div>

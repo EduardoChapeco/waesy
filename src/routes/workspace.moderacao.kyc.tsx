@@ -80,7 +80,7 @@ function KycAuditPage() {
  </div>
 
  {isLoading ? (
- <div className="py-20 flex justify-center"><Loader2 className="animate-spin text-muted-foreground" size={40} /></div>
+ <div className="py-20 flex justify-center"><Loader2 className="animate-spin motion-reduce:animate-none text-muted-foreground" size={40} /></div>
  ) : verifications?.length === 0 ? (
  <div className="py-20 text-center space-y-4 bg-muted/10 rounded-lg p-8 border border-dashed">
  <BadgeAlert size={48} className="text-muted-foreground/30 mx-auto" />

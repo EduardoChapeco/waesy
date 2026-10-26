@@ -199,7 +199,7 @@ function RunHistoryItem({
       type="button"
       onClick={onClick}
       className={cn(
-        "w-full min-h-11 text-left p-3 rounded-lg border transition-all group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "w-full min-h-11 text-left p-3 rounded-lg border transition-colors duration-200 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         isSelected
           ? "bg-primary/10 border-primary/40"
           : "bg-card border-border/70 hover:bg-muted/50 hover:border-primary/30",
@@ -209,7 +209,7 @@ function RunHistoryItem({
         <span className="text-xs font-semibold text-foreground break-words flex-1">
           {run.title || run.objective}
         </span>
-        <StatusIcon size={14} className={cn(status.color, isActive && "animate-spin")} />
+        <StatusIcon size={14} className={cn(status.color, isActive && "animate-spin motion-reduce:animate-none")} />
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2 mt-2 text-xs text-muted-foreground">
         <span className="inline-flex items-center gap-1">
@@ -431,7 +431,7 @@ export function SimLabResearchPanel({ storeId }: { storeId: string }) {
             className="size-11 min-h-11 min-w-11 rounded-lg"
             aria-label="Atualizar sessões do SimLabs"
           >
-            <RefreshCw size={16} className={cn(isRefreshing && "animate-spin text-primary")} />
+            <RefreshCw size={16} className={cn(isRefreshing && "animate-spin motion-reduce:animate-none text-primary")} />
           </Button>
         </div>
       </div>
@@ -447,7 +447,7 @@ export function SimLabResearchPanel({ storeId }: { storeId: string }) {
               type="button"
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "flex items-center gap-2 px-4 h-11 min-h-11 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                "flex items-center gap-2 px-4 h-11 min-h-11 rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors duration-200 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 isActive
                   ? "bg-background text-foreground border border-border/80"
                   : "text-muted-foreground hover:text-foreground",
@@ -562,7 +562,7 @@ export function SimLabResearchPanel({ storeId }: { storeId: string }) {
             >
               {isDispatching ? (
                 <>
-                  <Loader2 size={16} className="animate-spin" /> Simulando Enxame & Econometria...
+                  <Loader2 size={16} className="animate-spin motion-reduce:animate-none" /> Simulando Enxame & Econometria...
                 </>
               ) : (
                 <>
@@ -581,7 +581,7 @@ export function SimLabResearchPanel({ storeId }: { storeId: string }) {
             </div>
             {isLoading ? (
               <div className="flex items-center gap-2 text-xs text-muted-foreground p-3 bg-background rounded-lg border border-border/60">
-                <Loader2 size={14} className="animate-spin text-primary" /> Carregando...
+                <Loader2 size={14} className="animate-spin motion-reduce:animate-none text-primary" /> Carregando...
               </div>
             ) : loadError ? (
               <div role="alert" className="p-3 rounded-lg border border-destructive/30 bg-destructive/5 text-xs text-foreground">
@@ -616,7 +616,7 @@ export function SimLabResearchPanel({ storeId }: { storeId: string }) {
             </div>
           ) : selectedRun.status === "running" || selectedRun.status === "queued" ? (
             <div className="rounded-lg border border-border/80 bg-card p-12 text-center flex flex-col items-center justify-center space-y-4">
-              <Loader2 size={44} className="text-primary animate-spin" />
+              <Loader2 size={44} className="text-primary animate-spin motion-reduce:animate-none" />
               <div className="space-y-1">
                 <p className="font-bold text-sm text-foreground">
                   Processando Enxame Multiagente & Equações de McFadden...
@@ -850,20 +850,20 @@ export function SimLabResearchPanel({ storeId }: { storeId: string }) {
                                 pt.is_optimal && "bg-primary/10 font-bold",
                               )}
                             >
-                              <td className="py-2.5 pr-3 font-mono">
+                              <td className="py-3 pr-3 font-mono">
                                 {Math.round(pt.price_multiplier * 100)}%
                                 {pt.is_optimal ? " (Ótimo P*)" : ""}
                               </td>
-                              <td className="py-2.5 px-3 font-mono">
+                              <td className="py-3 px-3 font-mono">
                                 R$ {Number(pt.tested_price_brl).toFixed(2)}
                               </td>
-                              <td className="py-2.5 px-3 font-mono">
+                              <td className="py-3 px-3 font-mono">
                                 {pt.conversion_probability_percent}%
                               </td>
-                              <td className="py-2.5 px-3 font-mono">
+                              <td className="py-3 px-3 font-mono">
                                 {pt.expected_buyers_per_100}
                               </td>
-                              <td className="py-2.5 pl-3 font-mono text-primary">
+                              <td className="py-3 pl-3 font-mono text-primary">
                                 R$ {Number(pt.expected_revenue_per_100_brl).toLocaleString("pt-BR")}
                               </td>
                             </tr>
@@ -918,7 +918,7 @@ export function SimLabResearchPanel({ storeId }: { storeId: string }) {
                     {(selectedRun.execution_results || []).map((res, idx) => (
                       <div
                         key={idx}
-                        className="p-3.5 rounded-lg border border-border/60 bg-background flex flex-col gap-2"
+                        className="p-4 rounded-lg border border-border/60 bg-background flex flex-col gap-2"
                       >
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-xs font-bold text-foreground">
@@ -951,7 +951,7 @@ export function SimLabResearchPanel({ storeId }: { storeId: string }) {
                         {econ.chronos_temporal_cascade.map((step) => (
                           <div
                             key={step.day_milestone}
-                            className="p-3.5 rounded-lg border border-border/70 bg-background space-y-2"
+                            className="p-4 rounded-lg border border-border/70 bg-background space-y-2"
                           >
                             <div className="flex items-center justify-between">
                               <Badge variant="secondary" className="text-xs font-mono">
@@ -1094,7 +1094,7 @@ export function SimLabResearchPanel({ storeId }: { storeId: string }) {
                     >
                       {isCalibrating ? (
                         <>
-                          <Loader2 size={15} className="animate-spin" /> Calibrando Pesos
+                          <Loader2 size={15} className="animate-spin motion-reduce:animate-none" /> Calibrando Pesos
                           Bayesianos...
                         </>
                       ) : (

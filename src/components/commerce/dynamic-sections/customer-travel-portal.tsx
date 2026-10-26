@@ -122,12 +122,12 @@ export const CustomerTravelPortal: React.FC<CustomerTravelPortalProps> = ({
           </div>
 
           {/* Filtros por Status */}
-          <div className="flex items-center gap-1.5 bg-muted/40 p-1 rounded-xl border border-border/60 self-start sm:self-auto">
+          <div className="flex items-center gap-2 bg-muted/40 p-1 rounded-xl border border-border/60 self-start sm:self-auto">
             <button
               type="button"
               onClick={() => setActiveFilter("all")}
               className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                "h-8 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                "h-8 px-3 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer",
                 activeFilter === "all"
                   ? "bg-background text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -139,7 +139,7 @@ export const CustomerTravelPortal: React.FC<CustomerTravelPortalProps> = ({
               type="button"
               onClick={() => setActiveFilter("confirmed")}
               className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                "h-8 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                "h-8 px-3 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer",
                 activeFilter === "confirmed"
                   ? "bg-background text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -151,7 +151,7 @@ export const CustomerTravelPortal: React.FC<CustomerTravelPortalProps> = ({
               type="button"
               onClick={() => setActiveFilter("completed")}
               className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                "h-8 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                "h-8 px-3 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer",
                 activeFilter === "completed"
                   ? "bg-background text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -171,7 +171,7 @@ export const CustomerTravelPortal: React.FC<CustomerTravelPortalProps> = ({
               return (
                 <div
                   key={voucher.id}
-                  className="rounded-2xl border border-border/80 bg-card overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col md:flex-row"
+                  className="rounded-2xl border border-border/80 bg-card overflow-hidden shadow-xs hover:shadow-md transition-colors duration-200 flex flex-col md:flex-row"
                 >
                   {/* Bloco Esquerdo: Detalhes do Bilhete / Voucher */}
                   <div className="p-5 flex-1 space-y-4">
@@ -180,7 +180,7 @@ export const CustomerTravelPortal: React.FC<CustomerTravelPortalProps> = ({
                         <Badge
                           variant="outline"
                           className={cn(
-                            "text-xs font-bold px-2.5 py-0.5 rounded-full border",
+                            "text-xs font-bold px-3 py-1 rounded-full border",
                             isConfirmed
                               ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
                               : "bg-muted text-muted-foreground border-border"
@@ -229,7 +229,7 @@ export const CustomerTravelPortal: React.FC<CustomerTravelPortalProps> = ({
                   {/* Bloco Direito: Ações & Voucher Download (Card Lateral com Linha Pontilhada) */}
                   <div className="md:w-64 bg-muted/20 border-t md:border-t-0 md:border-l border-dashed border-border/80 p-5 flex flex-col justify-between gap-3">
                     <div className="space-y-1 text-center md:text-left">
-                      <span className="text-[10px] font-mono uppercase text-muted-foreground block">
+                      <span className="text-2xs font-mono uppercase text-muted-foreground block">
                         Acesso ao Bilhete
                       </span>
                       <span className="text-xs font-bold text-foreground block">
@@ -241,7 +241,7 @@ export const CustomerTravelPortal: React.FC<CustomerTravelPortalProps> = ({
                       <Button
                         type="button"
                         onClick={() => handleDownload(voucher)}
-                        className="w-full h-11 min-h-11 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary gap-1.5 shadow-xs"
+                        className="w-full h-11 min-h-11 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary gap-2 shadow-xs"
                       >
                         <Download className="size-4" />
                         <span>Baixar Voucher</span>
@@ -251,7 +251,7 @@ export const CustomerTravelPortal: React.FC<CustomerTravelPortalProps> = ({
                         type="button"
                         variant="outline"
                         onClick={() => handleSupport(voucher)}
-                        className="w-full h-11 min-h-11 rounded-xl text-xs font-bold border-border/80 hover:bg-muted/60 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary gap-1.5"
+                        className="w-full h-11 min-h-11 rounded-xl text-xs font-bold border-border/80 hover:bg-muted/60 transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary gap-2"
                       >
                         <MessageCircle className="size-4 text-emerald-500" />
                         <span>Falar com Agente</span>

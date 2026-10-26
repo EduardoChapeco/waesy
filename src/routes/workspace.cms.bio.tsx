@@ -29,7 +29,7 @@ export const Route = createFileRoute("/workspace/cms/bio")({
 function BiolinkRedirectPage() {
  return (
    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-2 text-center">
-     <Loader2 className="size-6 text-foreground/40 animate-spin" />
+     <Loader2 className="size-6 text-foreground/40 animate-spin motion-reduce:animate-none" />
      <p className="text-xs text-muted-foreground font-medium">Carregando...</p>
    </div>
  );

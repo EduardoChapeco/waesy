@@ -307,7 +307,7 @@ export function ClassifiedBookingDialog({
                         });
                         onOpenChange(false);
                       }}
-                      className="w-full h-11 rounded-lg text-xs font-bold gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="w-full h-11 rounded-lg text-xs font-bold gap-2 bg-emerald-600 hover:bg-emerald-700 text-foreground shadow-2xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       <MessageCircle className="size-4" />
                       <span>Solicitar Reserva via WhatsApp — {formatMoney(travelTotalCents)}</span>
@@ -378,7 +378,7 @@ export function ClassifiedBookingDialog({
 
             <div className="space-y-4 py-2">
               {/* Resumo do Serviço */}
-              <div className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-1.5">
+              <div className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-2">
                 <span className="text-xs font-bold text-foreground block truncate">
                   {classified?.title}
                 </span>
@@ -411,7 +411,7 @@ export function ClassifiedBookingDialog({
                   className="h-11 rounded-lg text-xs bg-background font-mono"
                 />
                 {Array.isArray(classified?.attributes?.available_weekdays) && classified.attributes.available_weekdays.length > 0 && (
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-2xs text-muted-foreground">
                     Dias de atendimento: {classified.attributes.available_weekdays.join(", ")}
                   </p>
                 )}
@@ -422,7 +422,7 @@ export function ClassifiedBookingDialog({
                 <label className="text-xs font-semibold text-foreground">
                   Horário Preferencial *
                 </label>
-                <div className="grid grid-cols-4 sm:grid-cols-5 gap-1.5">
+                <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
                   {["08:00", "09:00", "10:00", "11:00", "13:30", "14:30", "15:30", "16:30", "17:30"].map((slot) => (
                     <button
                       key={slot}
@@ -460,7 +460,7 @@ export function ClassifiedBookingDialog({
                 type="button"
                 onClick={handleDirectBooking}
                 disabled={isBooking || !serviceAppointmentDate}
-                className="w-full h-12 rounded-lg font-bold text-sm bg-primary text-primary-foreground shadow-sm hover:opacity-95 active:scale-98 transition-all gap-2 cursor-pointer"
+                className="w-full h-12 rounded-lg font-bold text-sm bg-primary text-primary-foreground shadow-sm hover:opacity-95 active:scale-98 transition-transform duration-200 gap-2 cursor-pointer"
               >
                 {isBooking ? (
                   <>

@@ -227,7 +227,7 @@ export function AgencyClausesEditorModal({
  </div>
  <Badge
  variant={isCustom ? "default" : "outline"}
- className="text-[10px] font-mono uppercase font-bold"
+ className="text-2xs font-mono uppercase font-bold"
  >
  {isCustom ? "Minuta Personalizada Ativa" : "Padrão Embratur / CDC"}
  </Badge>
@@ -269,7 +269,7 @@ export function AgencyClausesEditorModal({
  <TabsContent value="editor" className="flex-1 overflow-y-auto no-scrollbar p-6 space-y-4 m-0">
  {isLoading ? (
  <div className="py-16 text-center text-xs text-muted-foreground space-y-2">
- <Loader2 className="size-6 animate-spin mx-auto text-primary" />
+ <Loader2 className="size-6 animate-spin motion-reduce:animate-none mx-auto text-primary" />
  <p>Carregando minuta contratual...</p>
  </div>
  ) : (
@@ -277,7 +277,7 @@ export function AgencyClausesEditorModal({
  {clauses.map((clause, idx) => (
  <div
  key={idx}
- className="p-4 rounded-lg bg-card border border-border/80 shadow-xs space-y-3 transition-all hover:border-border"
+ className="p-4 rounded-lg bg-card border border-border/80 shadow-xs space-y-3 transition-colors duration-200 hover:border-border"
  >
  <div className="flex items-center justify-between gap-2">
  <div className="flex items-center gap-2 flex-1">
@@ -387,7 +387,7 @@ export function AgencyClausesEditorModal({
  </Tabs>
 
  <SheetFooter className="p-4 border-t border-border/60 bg-card flex flex-row items-center justify-between sm:justify-between">
- <div className="text-[11px] text-muted-foreground hidden sm:block">
+ <div className="text-2xs text-muted-foreground hidden sm:block">
  {clauses.length} {clauses.length === 1 ? "cláusula configurada" : "cláusulas configuradas"}
  </div>
 
@@ -406,7 +406,7 @@ export function AgencyClausesEditorModal({
  onClick={handleSaveTemplate}
  className="rounded-lg text-xs font-bold h-10 bg-primary text-primary-foreground gap-2 cursor-pointer"
  >
- {isSaving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+ {isSaving ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> : <Save className="size-4" />}
  <span>{isSaving ? "Salvando..." : "Salvar como Minuta Padrão da Agência"}</span>
  </Button>
  </div>

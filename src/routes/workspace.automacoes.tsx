@@ -273,7 +273,7 @@ function AutomacoesWorkflowsPage() {
             return (
               <div key={node.id} className="flex flex-col sm:flex-row items-center gap-4">
                 <div
-                  className={`p-4 rounded-lg border w-52 text-center space-y-2 ${colors[idx]} transition-all hover:scale-105 cursor-default`}
+                  className={`p-4 rounded-lg border w-52 text-center space-y-2 ${colors[idx]} transition-transform duration-200 hover:scale-105 cursor-default`}
                 >
                   <div className="flex items-center justify-center">
                     <Icon className="h-6 w-6" />
@@ -312,7 +312,7 @@ function AutomacoesWorkflowsPage() {
               return (
                 <div
                   key={wf.id}
-                  className="bg-card rounded-lg border border-border/60 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 group hover:border-primary/30 transition-all"
+                  className="bg-card rounded-lg border border-border/60 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 group hover:border-primary/30 transition-colors duration-200"
                 >
                   <div className="flex items-center gap-4 sm:gap-4 min-w-0">
                     <div
@@ -328,7 +328,7 @@ function AutomacoesWorkflowsPage() {
                         </Badge>
                         <Badge
                           variant={isActive ? "default" : "secondary"}
-                          className={`text-xs font-bold px-2 py-0 ${isActive ? "bg-emerald-600 text-white" : ""}`}
+                          className={`text-xs font-bold px-2 py-0 ${isActive ? "bg-emerald-600 text-foreground" : ""}`}
                         >
                           {isActive ? "Ativo" : wf.status === "draft" ? "Rascunho" : "Inativo"}
                         </Badge>
@@ -359,7 +359,7 @@ function AutomacoesWorkflowsPage() {
                       title="Disparar Teste Manual do Workflow"
                     >
                       {executingId === wf.id ? (
-                        <Clock className="size-4 animate-spin text-primary" />
+                        <Clock className="size-4 animate-spin motion-reduce:animate-none text-primary" />
                       ) : (
                         <Play className="size-4 fill-primary/20 text-primary" />
                       )}

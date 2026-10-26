@@ -193,7 +193,7 @@ function AdminAdsNetworkPage() {
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
               Ad-Network Command Center
             </h1>
-            <Badge variant="outline" className="text-[10px] font-mono gap-1 text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10">
+            <Badge variant="outline" className="text-2xs font-mono gap-1 text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10">
               <Zap className="size-3" /> Arbitragem {Math.round((globalConfig?.take_rate ?? 0.20) * 100)}/{(100 - Math.round((globalConfig?.take_rate ?? 0.20) * 100))}
             </Badge>
           </div>
@@ -234,7 +234,7 @@ function AdminAdsNetworkPage() {
           <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground">
             {formatMoney(metrics?.total_processed_cents || 0)}
           </div>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Total bruto transacionado em impulsionamento de anúncios.
           </p>
         </div>
@@ -248,7 +248,7 @@ function AdminAdsNetworkPage() {
           <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-emerald-700 dark:text-emerald-400">
             {formatMoney(metrics?.waesy_revenue_cents || 0)}
           </div>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Retenção de arbitragem ({Math.round((globalConfig?.take_rate ?? 0.20) * 100)}%) da rede Waesy Ads.
           </p>
         </div>
@@ -262,7 +262,7 @@ function AdminAdsNetworkPage() {
           <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground">
             {formatMoney(metrics?.external_ad_spend_cents || 0)}
           </div>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Budget injetado em leilão ({100 - Math.round((globalConfig?.take_rate ?? 0.20) * 100)}%) nas plataformas de tráfego.
           </p>
         </div>
@@ -271,7 +271,7 @@ function AdminAdsNetworkPage() {
         <div className="p-4 sm:p-5 rounded-lg border border-border/60 bg-card space-y-2">
           <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
             <span>Campanhas Ativas</span>
-            <Radio className="size-4 text-amber-500 animate-pulse" />
+            <Radio className="size-4 text-amber-500 animate-pulse motion-reduce:animate-none" />
           </div>
           <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground">
             {metrics?.active_campaigns_count || 0}
@@ -279,7 +279,7 @@ function AdminAdsNetworkPage() {
               / {metrics?.total_campaigns_count || 0}
             </span>
           </div>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Campanhas rodando simultaneamente na malha comunitária.
           </p>
         </div>
@@ -311,43 +311,43 @@ function AdminAdsNetworkPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
             {/* Take Rate */}
             <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-1">
-              <span className="text-[11px] text-muted-foreground font-medium">Taxa de Arbitragem</span>
+              <span className="text-2xs text-muted-foreground font-medium">Taxa de Arbitragem</span>
               <p className="text-base font-bold font-mono text-foreground">
                 {Math.round((globalConfig?.take_rate ?? 0.20) * 100)}% Waesy
               </p>
-              <span className="text-[10px] text-muted-foreground block">
+              <span className="text-2xs text-muted-foreground block">
                 {100 - Math.round((globalConfig?.take_rate ?? 0.20) * 100)}% injetado em leilão
               </span>
             </div>
 
             {/* Meta Marketing API */}
             <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-1">
-              <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
+              <span className="text-2xs text-muted-foreground font-medium flex items-center gap-1">
                 <Instagram className="size-3 text-pink-500" /> Meta Marketing API
               </span>
               <div className="flex items-center gap-2 pt-1">
-                <span className={`size-2 rounded-full ${globalConfig?.meta_configured ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground/40"}`} />
+                <span className={`size-2 rounded-full ${globalConfig?.meta_configured ? "bg-emerald-500 animate-pulse motion-reduce:animate-none" : "bg-muted-foreground/40"}`} />
                 <span className="text-xs font-semibold text-foreground">
                   {globalConfig?.meta_configured ? "Conectado" : "Não configurado"}
                 </span>
               </div>
-              <span className="text-[10px] font-mono text-muted-foreground truncate block">
+              <span className="text-2xs font-mono text-muted-foreground truncate block">
                 {globalConfig?.meta_access_token_masked || "Token ausente"}
               </span>
             </div>
 
             {/* Google Ads API */}
             <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-1">
-              <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
+              <span className="text-2xs text-muted-foreground font-medium flex items-center gap-1">
                 <Globe className="size-3 text-blue-500" /> Google Ads API
               </span>
               <div className="flex items-center gap-2 pt-1">
-                <span className={`size-2 rounded-full ${globalConfig?.google_configured ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground/40"}`} />
+                <span className={`size-2 rounded-full ${globalConfig?.google_configured ? "bg-emerald-500 animate-pulse motion-reduce:animate-none" : "bg-muted-foreground/40"}`} />
                 <span className="text-xs font-semibold text-foreground">
                   {globalConfig?.google_configured ? "Conectado" : "Não configurado"}
                 </span>
               </div>
-              <span className="text-[10px] font-mono text-muted-foreground truncate block">
+              <span className="text-2xs font-mono text-muted-foreground truncate block">
                 {globalConfig?.google_developer_token_masked || "Dev Token ausente"}
               </span>
             </div>
@@ -365,9 +365,9 @@ function AdminAdsNetworkPage() {
               <strong>Regra B:</strong> No Express Boost, o Waesy retém {Math.round((globalConfig?.take_rate ?? 0.20) * 100)}% de taxa e injeta o saldo via API global.
             </p>
           </div>
-          <div className="pt-2 border-t border-amber-500/20 flex items-center justify-between text-[11px] text-muted-foreground">
+          <div className="pt-2 border-t border-amber-500/20 flex items-center justify-between text-2xs text-muted-foreground">
             <span>Webhook de Telemetria:</span>
-            <span className="font-mono text-[10px] text-foreground">/api/webhooks/meta-ads</span>
+            <span className="font-mono text-2xs text-foreground">/api/webhooks/meta-ads</span>
           </div>
         </div>
       </div>
@@ -382,7 +382,7 @@ function AdminAdsNetworkPage() {
                 setActiveViewTab("campaigns");
                 setSelectedCampaignForLedger(null);
               }}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer ${
                 activeViewTab === "campaigns"
                   ? "bg-primary text-primary-foreground shadow-xs"
                   : "bg-muted/60 text-muted-foreground hover:text-foreground"
@@ -395,7 +395,7 @@ function AdminAdsNetworkPage() {
             <button
               type="button"
               onClick={() => setActiveViewTab("ledger")}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer ${
                 activeViewTab === "ledger"
                   ? "bg-primary text-primary-foreground shadow-xs"
                   : "bg-muted/60 text-muted-foreground hover:text-foreground"
@@ -408,7 +408,7 @@ function AdminAdsNetworkPage() {
 
           <div className="flex items-center gap-2">
             {selectedCampaignForLedger && (
-              <Badge variant="outline" className="text-[10px] font-mono gap-1 text-primary border-primary/30">
+              <Badge variant="outline" className="text-2xs font-mono gap-1 text-primary border-primary/30">
                 Filtrado por campanha
                 <button
                   type="button"
@@ -454,7 +454,7 @@ function AdminAdsNetworkPage() {
                       <div className="flex items-center gap-2 shrink-0">
                         <Badge
                           variant={c.status === "active" ? "default" : "outline"}
-                          className="text-[10px] px-2 py-1 capitalize"
+                          className="text-2xs px-2 py-1 capitalize"
                         >
                           {c.status === "active" ? "Rodando" : c.status}
                         </Badge>
@@ -477,7 +477,7 @@ function AdminAdsNetworkPage() {
                       <span className="text-muted-foreground font-mono">
                         Total: <strong className="text-foreground">{formatMoney(c.total_budget_cents)}</strong>
                       </span>
-                      <div className="flex items-center gap-2 font-mono text-[11px]">
+                      <div className="flex items-center gap-2 font-mono text-2xs">
                         <span className="text-emerald-600 dark:text-emerald-400">
                           Fee: {formatMoney(c.waesy_revenue_cents)}
                         </span>
@@ -491,7 +491,7 @@ function AdminAdsNetworkPage() {
                             setSelectedCampaignForLedger(c.id);
                             setActiveViewTab("ledger");
                           }}
-                          className="h-6 px-2 text-[10px] text-primary cursor-pointer"
+                          className="h-6 px-2 text-2xs text-primary cursor-pointer"
                         >
                           Razão
                         </Button>
@@ -525,13 +525,13 @@ function AdminAdsNetworkPage() {
                     >
                       <div className="col-span-4 min-w-0 pr-3">
                         <p className="font-bold text-foreground truncate">{c.title}</p>
-                        <p className="text-[11px] text-muted-foreground font-mono truncate">
+                        <p className="text-2xs text-muted-foreground font-mono truncate">
                           {c.store_name} • Criado em {formatDate(c.created_at)}
                         </p>
                       </div>
 
                       <div className="col-span-2">
-                        <Badge variant="outline" className="text-[10px] font-mono">
+                        <Badge variant="outline" className="text-2xs font-mono">
                           {c.routing_mode === "client_own_account" ? "Conta Própria" : "Waesy Arbitrage"}
                         </Badge>
                       </div>
@@ -547,7 +547,7 @@ function AdminAdsNetworkPage() {
                       <div className="col-span-2 flex items-center justify-center gap-2">
                         <Badge
                           variant={c.status === "active" ? "default" : "outline"}
-                          className="text-[10px] px-2 py-1"
+                          className="text-2xs px-2 py-1"
                         >
                           {c.status === "active" ? "Em Leilão" : c.status}
                         </Badge>
@@ -600,7 +600,7 @@ function AdminAdsNetworkPage() {
               <button
                 type="button"
                 onClick={() => setLedgerTypeFilter("all")}
-                className={`px-3 py-1 rounded-lg text-[11px] font-semibold cursor-pointer ${
+                className={`px-3 py-1 rounded-lg text-2xs font-semibold cursor-pointer ${
                   ledgerTypeFilter === "all" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
                 } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
@@ -609,8 +609,8 @@ function AdminAdsNetworkPage() {
               <button
                 type="button"
                 onClick={() => setLedgerTypeFilter("boost_payment")}
-                className={`px-3 py-1 rounded-lg text-[11px] font-semibold cursor-pointer ${
-                  ledgerTypeFilter === "boost_payment" ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground"
+                className={`px-3 py-1 rounded-lg text-2xs font-semibold cursor-pointer ${
+                  ledgerTypeFilter === "boost_payment" ? "bg-emerald-600 text-foreground" : "bg-muted text-muted-foreground"
                 } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 Crédito Bruto (Cliente)
@@ -618,8 +618,8 @@ function AdminAdsNetworkPage() {
               <button
                 type="button"
                 onClick={() => setLedgerTypeFilter("waesy_fee_retention")}
-                className={`px-3 py-1 rounded-lg text-[11px] font-semibold cursor-pointer ${
-                  ledgerTypeFilter === "waesy_fee_retention" ? "bg-amber-600 text-white" : "bg-muted text-muted-foreground"
+                className={`px-3 py-1 rounded-lg text-2xs font-semibold cursor-pointer ${
+                  ledgerTypeFilter === "waesy_fee_retention" ? "bg-amber-600 text-foreground" : "bg-muted text-muted-foreground"
                 } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 Retenção Software Fee
@@ -627,8 +627,8 @@ function AdminAdsNetworkPage() {
               <button
                 type="button"
                 onClick={() => setLedgerTypeFilter("external_ad_spend")}
-                className={`px-3 py-1 rounded-lg text-[11px] font-semibold cursor-pointer ${
-                  ledgerTypeFilter === "external_ad_spend" ? "bg-sky-600 text-white" : "bg-muted text-muted-foreground"
+                className={`px-3 py-1 rounded-lg text-2xs font-semibold cursor-pointer ${
+                  ledgerTypeFilter === "external_ad_spend" ? "bg-sky-600 text-foreground" : "bg-muted text-muted-foreground"
                 } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 Injeção em Leilão (Meta/Google)
@@ -656,23 +656,23 @@ function AdminAdsNetworkPage() {
                         key={entry.id}
                         className="grid grid-cols-12 px-4 py-3 items-center text-xs hover:bg-muted/20 transition-colors"
                       >
-                        <div className="col-span-3 font-mono text-[11px] text-muted-foreground">
+                        <div className="col-span-3 font-mono text-2xs text-muted-foreground">
                           {formatDate(entry.created_at)}
                         </div>
 
                         <div className="col-span-3">
                           {isCredit && (
-                            <Badge variant="outline" className="text-[10px] font-mono text-emerald-600 border-emerald-500/30 bg-emerald-500/10">
+                            <Badge variant="outline" className="text-2xs font-mono text-emerald-600 border-emerald-500/30 bg-emerald-500/10">
                               <ArrowDownLeft className="size-3 mr-1 inline" /> Recebimento Bruto
                             </Badge>
                           )}
                           {isFee && (
-                            <Badge variant="outline" className="text-[10px] font-mono text-amber-600 border-amber-500/30 bg-amber-500/10">
+                            <Badge variant="outline" className="text-2xs font-mono text-amber-600 border-amber-500/30 bg-amber-500/10">
                               <Zap className="size-3 mr-1 inline" /> Retenção Waesy ({Math.round((globalConfig?.take_rate ?? 0.20) * 100)}%)
                             </Badge>
                           )}
                           {isSpend && (
-                            <Badge variant="outline" className="text-[10px] font-mono text-sky-600 border-sky-500/30 bg-sky-500/10">
+                            <Badge variant="outline" className="text-2xs font-mono text-sky-600 border-sky-500/30 bg-sky-500/10">
                               <ArrowUpRight className="size-3 mr-1 inline" /> Injeção de Tráfego
                             </Badge>
                           )}
@@ -680,7 +680,7 @@ function AdminAdsNetworkPage() {
 
                         <div className="col-span-4 min-w-0 pr-2">
                           <p className="font-semibold text-foreground truncate">{entry.description}</p>
-                          <span className="text-[10px] font-mono text-muted-foreground">
+                          <span className="text-2xs font-mono text-muted-foreground">
                             Modo: {entry.routing_mode}
                           </span>
                         </div>
@@ -745,7 +745,7 @@ function AdminAdsNetworkPage() {
               </span>
 
               <div className="space-y-2">
-                <span className="text-[11px] text-muted-foreground font-medium">Meta Access Token (System User):</span>
+                <span className="text-2xs text-muted-foreground font-medium">Meta Access Token (System User):</span>
                 <Input
                   type="password"
                   placeholder={globalConfig?.meta_access_token_masked || "EAAB..."}
@@ -757,7 +757,7 @@ function AdminAdsNetworkPage() {
 
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1">
-                  <span className="text-[11px] text-muted-foreground font-medium">Ad Account ID:</span>
+                  <span className="text-2xs text-muted-foreground font-medium">Ad Account ID:</span>
                   <Input
                     placeholder="act_123456789"
                     value={metaAdAccountInput}
@@ -766,7 +766,7 @@ function AdminAdsNetworkPage() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <span className="text-[11px] text-muted-foreground font-medium">Pixel ID:</span>
+                  <span className="text-2xs text-muted-foreground font-medium">Pixel ID:</span>
                   <Input
                     placeholder="1234567890"
                     value={metaPixelInput}
@@ -784,7 +784,7 @@ function AdminAdsNetworkPage() {
               </span>
 
               <div className="space-y-2">
-                <span className="text-[11px] text-muted-foreground font-medium">Developer Token:</span>
+                <span className="text-2xs text-muted-foreground font-medium">Developer Token:</span>
                 <Input
                   type="password"
                   placeholder={globalConfig?.google_developer_token_masked || "Dev Token"}
@@ -795,7 +795,7 @@ function AdminAdsNetworkPage() {
               </div>
 
               <div className="space-y-1">
-                <span className="text-[11px] text-muted-foreground font-medium">Customer ID:</span>
+                <span className="text-2xs text-muted-foreground font-medium">Customer ID:</span>
                 <Input
                   placeholder="123-456-7890"
                   value={googleCustomerInput}

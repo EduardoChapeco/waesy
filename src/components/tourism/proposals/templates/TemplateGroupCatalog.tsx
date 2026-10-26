@@ -42,13 +42,13 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
               height={40}
             />
           ) : (
-            <div className="text-xl font-black tracking-tighter text-white uppercase">
+            <div className="text-xl font-black tracking-tighter text-foreground uppercase">
               {vm.agency.name}
             </div>
           )}
         </div>
 
-        <div className="absolute bottom-12 left-12 max-w-xl text-white">
+        <div className="absolute bottom-12 left-12 max-w-xl text-foreground">
           <div className="inline-flex items-center gap-2 bg-red-600 px-3 py-1 rounded-full ds-meta font-black uppercase tracking-widest mb-4">
             <Users className="w-3 h-3" /> Excursão em Grupo
           </div>
@@ -74,7 +74,7 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
       <div className="px-12 py-12 grid grid-cols-3 gap-8">
         {/* COLUNA ESQUERDA - DESCRIÇÃO E ROTEIRO (Ocupa 2 colunas) */}
         <div className="col-span-2 space-y-8">
-          <div className="bg-white rounded-lg p-8 border border-slate-200 break-inside-avoid">
+          <div className="bg-card rounded-lg p-8 border border-slate-200 break-inside-avoid">
             <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tighter mb-4">
               Sobre a Viagem
             </h2>
@@ -86,7 +86,7 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
           </div>
 
           {vm.hasItinerary && (
-            <div className="bg-white rounded-lg p-8 border border-slate-200 break-inside-avoid">
+            <div className="bg-card rounded-lg p-8 border border-slate-200 break-inside-avoid">
               <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tighter mb-6">
                 Programação
               </h2>
@@ -95,7 +95,7 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
                   <div key={i} className="flex gap-4 break-inside-avoid">
                     <div className="w-16 shrink-0 flex flex-col items-center">
                       <div
-                        className="w-10 h-10 rounded-full flex items-center justify-center font-black text-white"
+                        className="w-10 h-10 rounded-full flex items-center justify-center font-black text-foreground"
                         style={{ backgroundColor: brand }}
                       >
                         {i + 1}
@@ -118,7 +118,7 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
         {/* COLUNA DIREITA - PAINEL DE VENDAS */}
         <div className="space-y-6">
           <div
-            className="bg-white border-2 rounded-lg p-6 sticky top-8 break-inside-avoid"
+            className="bg-card border-2 rounded-lg p-6 sticky top-8 break-inside-avoid"
             style={{ borderColor: brand }}
           >
             <div className="text-center mb-6 border-b border-slate-100 pb-6">
@@ -152,7 +152,7 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
 
             {/* BOTÃO FALSO PARA MOSTRAR QUE É UM CATALOGO */}
             <div
-              className="w-full py-4 rounded-card text-center text-white font-black uppercase tracking-widest text-lg border-b-4 opacity-90"
+              className="w-full py-4 rounded-card text-center text-foreground font-black uppercase tracking-widest text-lg border-b-4 opacity-90"
               style={{ backgroundColor: brand, borderBottomColor: "rgba(0,0,0,0.2)" }}
             >
               Garantir Vaga
@@ -162,7 +162,7 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
             </div>
           </div>
 
-          <div className="bg-white rounded-lg p-6 border border-slate-200 break-inside-avoid">
+          <div className="bg-card rounded-lg p-6 border border-slate-200 break-inside-avoid">
             <h3 className="font-black text-slate-900 uppercase tracking-tighter mb-4 text-lg">
               O Pacote Inclui
             </h3>

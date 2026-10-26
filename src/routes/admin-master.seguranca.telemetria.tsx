@@ -42,14 +42,14 @@ const SEVERITY_META: Record<string, { label: string; color: string; dot: string 
   medium: { label: "Médio", color: "bg-amber-500/10 text-amber-500 border-amber-500/20", dot: "bg-amber-500" },
   warning: { label: "Aviso", color: "bg-amber-500/10 text-amber-500 border-amber-500/20", dot: "bg-amber-500" },
   high: { label: "Alto", color: "bg-orange-500/10 text-orange-500 border-orange-500/20", dot: "bg-orange-500" },
-  critical: { label: "Crítico", color: "bg-red-500/10 text-red-500 border-red-500/20", dot: "bg-red-500 animate-pulse" },
-  emergency: { label: "Emergência", color: "bg-red-600/20 text-red-600 border-red-600/30", dot: "bg-red-600 animate-ping" },
+  critical: { label: "Crítico", color: "bg-red-500/10 text-red-500 border-red-500/20", dot: "bg-red-500 animate-pulse motion-reduce:animate-none" },
+  emergency: { label: "Emergência", color: "bg-red-600/20 text-red-600 border-red-600/30", dot: "bg-red-600 animate-ping motion-reduce:animate-none" },
 };
 
 function SeverityBadge({ severity }: { severity: string }) {
   const meta = SEVERITY_META[severity] || SEVERITY_META.info;
   return (
-    <span className={cn("text-[10px] font-semibold px-2 py-1 rounded-full border flex items-center gap-2 shrink-0", meta.color)}>
+    <span className={cn("text-2xs font-semibold px-2 py-1 rounded-full border flex items-center gap-2 shrink-0", meta.color)}>
       <span className={cn("size-1.5 rounded-full", meta.dot)} />
       {meta.label}
     </span>
@@ -252,9 +252,9 @@ function SecurityTelemetryPage() {
             variant={liveMode ? "default" : "outline"}
             size="sm"
             onClick={() => setLiveMode((v) => !v)}
-            className={cn("rounded-lg text-xs gap-2", liveMode && "bg-emerald-600 hover:bg-emerald-700 text-white font-bold")}
+            className={cn("rounded-lg text-xs gap-2", liveMode && "bg-emerald-600 hover:bg-emerald-700 text-foreground font-bold")}
           >
-            <Radio className={cn("size-3.5", liveMode && "animate-pulse")} />
+            <Radio className={cn("size-3.5", liveMode && "animate-pulse motion-reduce:animate-none")} />
             {liveMode ? "LIVE ATIVO (5s)" : "Modo Live"}
           </Button>
 
@@ -265,7 +265,7 @@ function SecurityTelemetryPage() {
             disabled={loading}
             className="rounded-lg text-xs gap-2"
           >
-            <RefreshCw className={cn("size-3.5", loading && "animate-spin")} />
+            <RefreshCw className={cn("size-3.5", loading && "animate-spin motion-reduce:animate-none")} />
             Atualizar
           </Button>
         </div>
@@ -310,7 +310,7 @@ function SecurityTelemetryPage() {
         <button
           onClick={() => setActiveTab("attacks")}
           className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-            "text-xs font-bold px-4 py-2 rounded-lg transition-all flex items-center gap-2 cursor-pointer",
+            "text-xs font-bold px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2 cursor-pointer",
             activeTab === "attacks"
               ? "bg-foreground text-background shadow-sm"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -323,7 +323,7 @@ function SecurityTelemetryPage() {
         <button
           onClick={() => setActiveTab("sentinel")}
           className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-            "text-xs font-bold px-4 py-2 rounded-lg transition-all flex items-center gap-2 cursor-pointer",
+            "text-xs font-bold px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2 cursor-pointer",
             activeTab === "sentinel"
               ? "bg-foreground text-background shadow-sm"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -352,7 +352,7 @@ function SecurityTelemetryPage() {
               key={sev}
               onClick={() => setSeverityFilter(sev)}
               className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                "text-[11px] px-3 py-1 rounded-lg border transition-all cursor-pointer whitespace-nowrap",
+                "text-2xs px-3 py-1 rounded-lg border transition-colors duration-200 cursor-pointer whitespace-nowrap",
                 severityFilter === sev
                   ? "bg-foreground text-background border-foreground font-bold"
                   : "bg-card border-border/60 text-muted-foreground hover:text-foreground hover:border-border"
@@ -387,7 +387,7 @@ function SecurityTelemetryPage() {
           ) : (
             <div className="overflow-x-auto no-scrollbar">
               <table className="w-full text-left text-xs">
-                <thead className="bg-muted/40 border-b border-border/60 text-muted-foreground uppercase text-[10px] tracking-wider font-bold">
+                <thead className="bg-muted/40 border-b border-border/60 text-muted-foreground uppercase text-2xs tracking-wider font-bold">
                   <tr>
                     <th className="p-4">Severidade</th>
                     <th className="p-4">Tipo de Ataque</th>
@@ -409,7 +409,7 @@ function SecurityTelemetryPage() {
                         <div>
                           <p className="font-bold text-foreground font-mono">{atk.attack_type}</p>
                           {atk.blocked && (
-                            <span className="text-[9px] bg-red-500/10 text-red-600 border border-red-500/20 px-2 py-0.2 rounded font-bold inline-flex items-center gap-1 mt-1">
+                            <span className="text-3xs bg-red-500/10 text-red-600 border border-red-500/20 px-2 py-0.2 rounded font-bold inline-flex items-center gap-1 mt-1">
                               <Ban className="size-2.5" /> Auto-Bloqueado
                             </span>
                           )}
@@ -418,7 +418,7 @@ function SecurityTelemetryPage() {
 
                       <td className="p-4 font-mono text-muted-foreground">
                         <p className="text-foreground font-bold">{atk.attacker_ip || "—"}</p>
-                        <p className="text-[10px] truncate max-w-[150px]">{atk.user_agent || "Desconhecido"}</p>
+                        <p className="text-2xs truncate max-w-[150px]">{atk.user_agent || "Desconhecido"}</p>
                       </td>
 
                       <td className="p-4 font-mono text-xs">
@@ -431,7 +431,7 @@ function SecurityTelemetryPage() {
                         <Badge
                           variant="outline"
                           className={cn(
-                            "text-[10px] capitalize",
+                            "text-2xs capitalize",
                             atk.resolution_status === "mitigated" && "bg-emerald-500/10 text-emerald-600 border-emerald-500/30",
                             atk.resolution_status === "blocked_ip" && "bg-purple-500/10 text-purple-600 border-purple-500/30",
                             atk.resolution_status === "pending" && "bg-amber-500/10 text-amber-600 border-amber-500/30",
@@ -442,9 +442,9 @@ function SecurityTelemetryPage() {
                         </Badge>
                       </td>
 
-                      <td className="p-4 font-mono text-[11px] text-muted-foreground whitespace-nowrap">
+                      <td className="p-4 font-mono text-2xs text-muted-foreground whitespace-nowrap">
                         <p>{new Date(atk.created_at).toLocaleDateString("pt-BR")}</p>
-                        <p className="text-[10px] opacity-70">{new Date(atk.created_at).toLocaleTimeString("pt-BR")}</p>
+                        <p className="text-2xs opacity-70">{new Date(atk.created_at).toLocaleTimeString("pt-BR")}</p>
                       </td>
 
                       <td className="p-4 text-right">
@@ -478,7 +478,7 @@ function SecurityTelemetryPage() {
           ) : (
             <div className="overflow-x-auto no-scrollbar">
               <table className="w-full text-left text-xs">
-                <thead className="bg-muted/40 border-b border-border/60 text-muted-foreground uppercase text-[10px] tracking-wider font-bold">
+                <thead className="bg-muted/40 border-b border-border/60 text-muted-foreground uppercase text-2xs tracking-wider font-bold">
                   <tr>
                     <th className="p-4">Severidade</th>
                     <th className="p-4">Evento Detectado</th>
@@ -500,11 +500,11 @@ function SecurityTelemetryPage() {
                         {ev.ip_address || "—"}
                       </td>
                       <td className="p-4">
-                        <span className="font-mono font-bold text-amber-600 bg-amber-500/10 px-2 py-1 rounded text-[11px]">
+                        <span className="font-mono font-bold text-amber-600 bg-amber-500/10 px-2 py-1 rounded text-2xs">
                           {ev.risk_score || 0} pts
                         </span>
                       </td>
-                      <td className="p-4 text-right font-mono text-[11px] text-muted-foreground">
+                      <td className="p-4 text-right font-mono text-2xs text-muted-foreground">
                         {new Date(ev.created_at).toLocaleString("pt-BR")}
                       </td>
                     </tr>
@@ -523,7 +523,7 @@ function SecurityTelemetryPage() {
             <DialogHeader className="space-y-2 text-left border-b border-border/60 pb-3">
               <div className="flex items-center justify-between gap-2">
                 <SeverityBadge severity={selectedIncident.severity} />
-                <span className="text-[11px] font-mono text-muted-foreground">
+                <span className="text-2xs font-mono text-muted-foreground">
                   {new Date(selectedIncident.created_at).toLocaleString("pt-BR")}
                 </span>
               </div>
@@ -538,11 +538,11 @@ function SecurityTelemetryPage() {
             <div className="space-y-3 text-xs">
               <div className="grid grid-cols-2 gap-2 p-3 bg-muted/40 rounded-lg border border-border/60">
                 <div>
-                  <span className="text-muted-foreground block text-[10px]">IP do Atacante:</span>
+                  <span className="text-muted-foreground block text-2xs">IP do Atacante:</span>
                   <span className="font-mono font-bold text-foreground">{selectedIncident.attacker_ip || "Não registrado"}</span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground block text-[10px]">Status da Resolução:</span>
+                  <span className="text-muted-foreground block text-2xs">Status da Resolução:</span>
                   <span className="font-bold text-foreground capitalize">{selectedIncident.resolution_status || "Pendente"}</span>
                 </div>
               </div>
@@ -553,7 +553,7 @@ function SecurityTelemetryPage() {
                   <FileCode className="size-3.5 text-primary" />
                   Snapshot do Payload Interceptado:
                 </span>
-                <pre className="p-3 bg-card border border-border/70 rounded-lg font-mono text-[11px] text-foreground overflow-x-auto max-h-48 text-left leading-relaxed">
+                <pre className="p-3 bg-card border border-border/70 rounded-lg font-mono text-2xs text-foreground overflow-x-auto max-h-48 text-left leading-relaxed">
                   {JSON.stringify(selectedIncident.payload_snapshot || {}, null, 2)}
                 </pre>
               </div>
@@ -561,10 +561,10 @@ function SecurityTelemetryPage() {
               {/* Headers Snapshot JSON */}
               {selectedIncident.headers_snapshot && Object.keys(selectedIncident.headers_snapshot).length > 0 && (
                 <div className="space-y-2">
-                  <span className="font-bold text-muted-foreground text-[11px]">
+                  <span className="font-bold text-muted-foreground text-2xs">
                     Cabeçalhos HTTP Capturados:
                   </span>
-                  <pre className="p-2 bg-muted/20 border border-border/40 rounded-lg font-mono text-[10px] text-muted-foreground overflow-x-auto max-h-28">
+                  <pre className="p-2 bg-muted/20 border border-border/40 rounded-lg font-mono text-2xs text-muted-foreground overflow-x-auto max-h-28">
                     {JSON.stringify(selectedIncident.headers_snapshot, null, 2)}
                   </pre>
                 </div>
@@ -594,7 +594,7 @@ function SecurityTelemetryPage() {
               <Button
                 size="sm"
                 onClick={() => handleResolveIncident(selectedIncident.id, "mitigated")}
-                className="w-full sm:w-auto rounded-lg text-xs gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                className="w-full sm:w-auto rounded-lg text-xs gap-2 bg-emerald-600 hover:bg-emerald-700 text-foreground font-bold"
               >
                 <CheckCircle2 className="size-3.5" />
                 Marcar como Mitigado

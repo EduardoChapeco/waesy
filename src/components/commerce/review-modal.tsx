@@ -65,7 +65,7 @@ export function ReviewModal({
  <Button
  variant="outline"
  size="sm"
- className="mt-2 text-xs h-7 font-bold tracking-wide hover:bg-primary hover:text-primary-foreground transition-all cursor-pointer"
+ className="mt-2 text-xs h-7 font-bold tracking-wide hover:bg-primary hover:text-primary-foreground transition-colors duration-200 cursor-pointer"
  >
  <Star className="size-3.5 mr-1 fill-amber-400 text-amber-500" />
  Avaliar Produto

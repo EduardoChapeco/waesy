@@ -128,7 +128,7 @@ export function TravelTemplateEditorial({ data, className = "" }: SocialTemplate
         backgroundColor: "rgb(10, 25, 47)",
         ...fittedTitle.cssVariables,
       }}
-      className={`relative w-full h-full overflow-hidden text-white select-none ${className}`}
+      className={`relative w-full h-full overflow-hidden text-foreground select-none ${className}`}
     >
       {/* 1. Imagem de Fundo Realista c/ Controle de Posição Vertical */}
       <div
@@ -218,7 +218,7 @@ export function TravelTemplateEditorial({ data, className = "" }: SocialTemplate
               }}
               className={`${
                 fittedTitle.shadow.enabled ? "absolute inset-0" : "relative"
-              } font-black uppercase text-white`}
+              } font-black uppercase text-foreground`}
             >
               {fittedTitle.lines.map((line, idx) => (
                 <div key={idx}>{line}</div>
@@ -227,7 +227,7 @@ export function TravelTemplateEditorial({ data, className = "" }: SocialTemplate
           </div>
 
           <p
-            className={`font-semibold tracking-wide text-white/95 ${
+            className={`font-semibold tracking-wide text-foreground/95 ${
               aspectRatio === "1:1" ? "text-2xl" : "text-3xl"
             }`}
           >
@@ -245,7 +245,7 @@ export function TravelTemplateEditorial({ data, className = "" }: SocialTemplate
               return (
                 <div
                   key={i}
-                  className={`flex items-center rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white ${
+                  className={`flex items-center rounded-full bg-card/15 backdrop-blur-md border border-white/25 text-foreground ${
                     aspectRatio === "1:1" ? "gap-2 px-4 py-2" : "gap-3 px-6 py-3"
                   }`}
                 >
@@ -286,13 +286,13 @@ export function TravelTemplateEditorial({ data, className = "" }: SocialTemplate
             <LiquidGlassSurface
               id="story-price-glass-card"
               material={glassMaterial}
-              className={`text-white ${
+              className={`text-foreground ${
                 aspectRatio === "1:1" ? "max-w-xs p-5" : "max-w-lg p-8"
               }`}
             >
               <div className="space-y-2">
                 <span
-                  className={`font-semibold text-white/90 block uppercase tracking-wider ${
+                  className={`font-semibold text-foreground/90 block uppercase tracking-wider ${
                     aspectRatio === "1:1" ? "text-sm" : "text-xl"
                   }`}
                 >
@@ -309,7 +309,7 @@ export function TravelTemplateEditorial({ data, className = "" }: SocialTemplate
                   </span>
                   {effectiveInstallmentCents !== null && (
                     <span
-                      className={`text-white/85 font-semibold ${
+                      className={`text-foreground/85 font-semibold ${
                         aspectRatio === "1:1" ? "text-sm" : "text-xl"
                       }`}
                     >
@@ -317,7 +317,7 @@ export function TravelTemplateEditorial({ data, className = "" }: SocialTemplate
                     </span>
                   )}
                   <span
-                    className={`font-black text-white tracking-tight font-mono ${
+                    className={`font-black text-foreground tracking-tight font-mono ${
                       aspectRatio === "1:1" ? "text-3xl" : "text-6xl"
                     }`}
                   >
@@ -337,7 +337,7 @@ export function TravelTemplateEditorial({ data, className = "" }: SocialTemplate
                     {occupancySummaryLabel ? ` • ${occupancySummaryLabel}` : ""}
                   </span>
                   <span
-                    className={`text-white/85 ${
+                    className={`text-foreground/85 ${
                       aspectRatio === "1:1" ? "text-xs" : "text-base"
                     }`}
                   >
@@ -350,7 +350,7 @@ export function TravelTemplateEditorial({ data, className = "" }: SocialTemplate
 
           {/* Lado Direito Inferior: Selo da Agência & CTA */}
           <div className="flex flex-col items-end gap-4 shrink-0">
-            <div className="flex items-center gap-2 px-5 py-3 rounded-lg bg-black/45 backdrop-blur-md border border-white/15 text-white/90">
+            <div className="flex items-center gap-2 px-5 py-3 rounded-lg bg-foreground/45 backdrop-blur-md border border-white/15 text-foreground/90">
               <ShieldCheck className="size-5 sm:size-6 text-emerald-400 shrink-0" />
               <span className="text-sm sm:text-base font-bold tracking-tight">
                 {storeName || "Excelência Tour"}

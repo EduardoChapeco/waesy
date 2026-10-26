@@ -16,7 +16,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { Home, Search, Plus, MessageCircle, Menu, ShoppingCart, ArrowRight } from "lucide-react";
 import { QuickCreateModal } from "@/components/commerce/quick-create-modal";
-import { GlobalMenuHub } from "@/components/shell/global-menu-hub";
+import { SuperAppModuleDrawer } from "@/components/shell/SuperAppModuleDrawer";
 import { useCartContext } from "@/lib/cart-context";
 import { listCustomerOrders } from "@/services/order.functions";
 import { formatCents } from "@/lib/utils";
@@ -277,14 +277,12 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
         </div>
       </div>
 
-      {/* ── 3. MODAL / BOTTOM SHEET DO MENU HUB GLOBAL ── */}
-      <GlobalMenuHub
+      {/* ── 3. MODAL / BOTTOM SHEET DO SUPERAPP DRAWER BILATERAL ── */}
+      <SuperAppModuleDrawer
         open={isMenuHubOpen}
         onOpenChange={setIsMenuHubOpen}
         session={session}
         userRole={userRole}
-        activeOrdersCount={activeOrdersCount}
-        totalCartItems={totalCartItems}
       />
     </>
   );

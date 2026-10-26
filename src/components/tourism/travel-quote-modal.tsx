@@ -138,9 +138,9 @@ export function TravelQuoteModal({
  <Dialog open={open} onOpenChange={handleOpenChange}>
  <DialogContent className="sm:max-w-md sm:w-full sm:rounded-lg p-0 overflow-hidden bg-card border-border">
  {/* Header de Cotação de Viagem */}
- <div className="bg-linear-to-r from-blue-700 via-indigo-600 to-violet-700 text-white p-5 space-y-1 relative">
+ <div className="bg-linear-to-r from-blue-700 via-indigo-600 to-violet-700 text-foreground p-5 space-y-1 relative">
  <div className="flex items-center justify-between">
- <span className="text-[10px] font-mono font-black uppercase tracking-wider bg-white/20 px-3 py-1 rounded-full backdrop-blur-md">
+ <span className="text-2xs font-mono font-black uppercase tracking-wider bg-card/20 px-3 py-1 rounded-full backdrop-blur-md">
  Cotação Especial de Viagem
  </span>
  <span className="text-xs font-mono font-bold opacity-80">
@@ -148,13 +148,13 @@ export function TravelQuoteModal({
  </span>
  </div>
 
- <DialogTitle className="text-xl font-bold tracking-tight text-white pt-1">
+ <DialogTitle className="text-xl font-bold tracking-tight text-foreground pt-1">
  {step === 1 && "Para onde você quer viajar?"}
  {step === 2 && "Escolha as datas da viagem"}
  {step === 3 && "Defina os detalhes e passageiros"}
  {step === 4 && "Finalize sua solicitação"}
  </DialogTitle>
- <p className="text-xs text-white/80 font-medium">
+ <p className="text-xs text-foreground/80 font-medium">
  {step === 1 && "Defina o aeroporto/cidade de embarque e seu destino dos sonhos."}
  {step === 2 && "Selecione a data de ida e volta para encontrarmos as melhores tarifas."}
  {step === 3 && "Informe quantidade de quartos, adultos e idades das crianças."}
@@ -234,7 +234,7 @@ export function TravelQuoteModal({
 
               {/* Buscas Recentes Rápidas */}
  <div className="pt-2 space-y-2">
- <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
+ <span className="text-2xs font-bold text-muted-foreground uppercase tracking-wider block">
  Destinos Populares
  </span>
  <div className="flex flex-wrap gap-2">
@@ -243,7 +243,7 @@ export function TravelQuoteModal({
  key={d}
  type="button"
  onClick={() => setDestination(d)}
- className="px-3 py-1 rounded-lg bg-muted/60 hover:bg-muted text-[11px] font-semibold text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="px-3 py-1 rounded-lg bg-muted/60 hover:bg-muted text-2xs font-semibold text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {d}
  </button>
@@ -288,7 +288,7 @@ export function TravelQuoteModal({
  />
  <div className="text-xs">
  <p className="font-bold text-foreground">Tenho flexibilidade de datas (+/- 3 dias)</p>
- <p className="text-muted-foreground text-[11px]">Ajuda a encontrar tarifas aéreas e pacotes mais baratos.</p>
+ <p className="text-muted-foreground text-2xs">Ajuda a encontrar tarifas aéreas e pacotes mais baratos.</p>
  </div>
  </label>
  </div>
@@ -301,7 +301,7 @@ export function TravelQuoteModal({
  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
  <div>
  <p className="text-xs font-bold text-foreground">Quartos de Hotel</p>
- <p className="text-[11px] text-muted-foreground">Número de acomodações</p>
+ <p className="text-2xs text-muted-foreground">Número de acomodações</p>
  </div>
  <div className="flex items-center gap-3">
  <Button
@@ -330,7 +330,7 @@ export function TravelQuoteModal({
  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
  <div>
  <p className="text-xs font-bold text-foreground">Adultos</p>
- <p className="text-[11px] text-muted-foreground">18 anos ou mais</p>
+ <p className="text-2xs text-muted-foreground">18 anos ou mais</p>
  </div>
  <div className="flex items-center gap-3">
  <Button
@@ -359,7 +359,7 @@ export function TravelQuoteModal({
  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
  <div>
  <p className="text-xs font-bold text-foreground">Crianças e Bebês</p>
- <p className="text-[11px] text-muted-foreground">De 0 a 17 anos</p>
+ <p className="text-2xs text-muted-foreground">De 0 a 17 anos</p>
  </div>
  <div className="flex items-center gap-3">
  <Button
@@ -387,13 +387,13 @@ export function TravelQuoteModal({
  {/* Seleção individual da idade de cada criança */}
  {childrenCount > 0 && (
  <div className="p-3 rounded-lg border border-primary/30 bg-primary/5 space-y-3">
- <span className="text-[11px] font-bold text-primary uppercase tracking-wider block">
+ <span className="text-2xs font-bold text-primary uppercase tracking-wider block">
  Idade de cada criança no momento da viagem:
  </span>
  <div className="grid grid-cols-2 gap-2">
  {childrenAges.map((age, idx) => (
  <div key={idx} className="space-y-1">
- <label className="text-[10px] font-bold text-muted-foreground">
+ <label className="text-2xs font-bold text-muted-foreground">
  {idx + 1}ª Criança
  </label>
  <select
@@ -433,14 +433,14 @@ export function TravelQuoteModal({
  key={t.id}
  type="button"
  onClick={() => setTripType(t.id as any)}
- className={`p-3 rounded-lg border text-left transition-all cursor-pointer ${
+ className={`p-3 rounded-lg border text-left transition-colors duration-200 cursor-pointer ${
  tripType === t.id
  ? "bg-primary/10 border-primary text-primary font-bold "
  : "bg-muted/30 border-border text-muted-foreground hover:text-foreground"
  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <p className="text-xs font-bold">{t.label}</p>
- <p className="text-[10px] opacity-80">{t.desc}</p>
+ <p className="text-2xs opacity-80">{t.desc}</p>
  </button>
  ))}
  </div>
@@ -472,7 +472,7 @@ export function TravelQuoteModal({
  </div>
 
  {/* Disclaimer Transparente de Turismo & Agências */}
- <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-1 text-[11px] text-muted-foreground leading-relaxed">
+ <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-1 text-2xs text-muted-foreground leading-relaxed">
  <span className="font-bold text-foreground block">
  ℹ️ Transparência de Valores & Disponibilidade:
  </span>

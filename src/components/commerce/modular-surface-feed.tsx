@@ -78,7 +78,7 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
             <section key={section.id} aria-label={section.title} className="w-full">
               <SurfaceLink
                 href={banner.link_url || "/"}
-                className="group relative block w-full aspect-21/9 rounded-lg overflow-hidden bg-muted/40 border border-border/60 shadow-xs active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="group relative block w-full aspect-21/9 rounded-lg overflow-hidden bg-muted/40 border border-border/60 shadow-xs active:scale-95 transition-transform duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 {banner.image_url ? (
                   <img
@@ -96,15 +96,15 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
                 <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
                 <div className="absolute bottom-3 left-4 right-4 text-left">
                   {section.badge_tag && (
-                    <span className="inline-block px-2 py-1 rounded-md text-xs font-mono font-bold uppercase tracking-wider bg-white/20 backdrop-blur-md text-white border border-white/20 mb-1">
+                    <span className="inline-block px-2 py-1 rounded-md text-xs font-mono font-bold uppercase tracking-wider bg-card/20 backdrop-blur-md text-foreground border border-white/20 mb-1">
                       {section.badge_tag}
                     </span>
                   )}
-                  <h3 className="text-sm sm:text-base font-bold text-white leading-tight drop-shadow-sm">
+                  <h3 className="text-sm sm:text-base font-bold text-foreground leading-tight drop-shadow-sm">
                     {section.title}
                   </h3>
                   {section.subtitle && (
-                    <p className="text-xs text-white/80 line-clamp-1">{section.subtitle}</p>
+                    <p className="text-xs text-foreground/80 line-clamp-1">{section.subtitle}</p>
                   )}
                 </div>
               </SurfaceLink>
@@ -134,7 +134,7 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
                   <SurfaceLink
                     key={b.id || idx}
                     href={b.link_url || "/"}
-                    className="group relative block w-full aspect-16/9 rounded-lg overflow-hidden bg-muted/40 border border-border/60 shadow-xs active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    className="group relative block w-full aspect-16/9 rounded-lg overflow-hidden bg-muted/40 border border-border/60 shadow-xs active:scale-95 transition-transform duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     {b.image_url ? (
                       <img
@@ -151,7 +151,7 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
                     )}
                     <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
                     <div className="absolute bottom-2.5 left-3 right-3 text-left">
-                      <p className="text-xs sm:text-sm font-bold text-white leading-tight drop-shadow-sm truncate">
+                      <p className="text-xs sm:text-sm font-bold text-foreground leading-tight drop-shadow-sm truncate">
                         {b.title || section.title}
                       </p>
                     </div>
@@ -187,7 +187,7 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
                   <SurfaceLink
                     key={btn.id}
                     href={btn.route || btn.link_url || "/"}
-                    className="inline-flex items-center gap-3 px-4 h-11 rounded-lg bg-card border border-border/80 text-foreground hover:bg-muted/60 hover:border-primary/40 transition-all shrink-0 active:scale-95 shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    className="inline-flex items-center gap-3 px-4 h-11 rounded-lg bg-card border border-border/80 text-foreground hover:bg-muted/60 hover:border-primary/40 transition-transform duration-200 shrink-0 active:scale-95 shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     {btn.icon_url ? (
                       <img src={btn.icon_url} alt={btn.label} className="size-5 object-contain" />
@@ -196,7 +196,7 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
                     )}
                     <span className="text-xs font-bold whitespace-nowrap">{btn.label}</span>
                     {btn.badge && (
-                      <span className="text-xs font-mono font-bold uppercase px-2 py-0.5 rounded-full bg-primary text-primary-foreground">
+                      <span className="text-xs font-mono font-bold uppercase px-2 py-1 rounded-full bg-primary text-primary-foreground">
                         {btn.badge}
                       </span>
                     )}

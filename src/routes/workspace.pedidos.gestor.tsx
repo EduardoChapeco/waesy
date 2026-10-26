@@ -443,7 +443,7 @@ function KDSPage() {
  type="button"
  onClick={() => setTimingTab("now")}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer",
+ "px-3 py-2 rounded-lg text-xs font-bold transition-colors duration-200 flex items-center gap-2 cursor-pointer",
  timingTab === "now"
  ? "bg-background text-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground",
@@ -459,7 +459,7 @@ function KDSPage() {
  type="button"
  onClick={() => setTimingTab("scheduled")}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer",
+ "px-3 py-2 rounded-lg text-xs font-bold transition-colors duration-200 flex items-center gap-2 cursor-pointer",
  timingTab === "scheduled"
  ? "bg-background text-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground",
@@ -522,7 +522,7 @@ function KDSPage() {
  {delayedOrders.length > 0 && (
  <div className="bg-rose-500/10 border-b border-rose-500/30 px-4 py-3 flex items-center justify-between text-xs text-rose-700 dark:text-rose-400 no-print">
  <div className="flex items-center gap-2 font-bold">
- <AlertTriangle className="size-4 text-rose-500 animate-bounce" />
+ <AlertTriangle className="size-4 text-rose-500 animate-bounce motion-reduce:animate-none" />
  <span>
  Atenção Operacional: {delayedOrders.length} pedido(s) ultrapassou(aram) o tempo ideal de preparo (&gt;30min)!
  </span>
@@ -643,7 +643,7 @@ function KDSPage() {
  <div className="w-full bg-muted h-2 rounded-full overflow-hidden">
  <div
  className={cn(
- "h-full transition-all",
+ "h-full transition-colors duration-200",
  isLate ? "bg-rose-500" : elapsed > 20 ? "bg-amber-500" : "bg-emerald-500",
  )}
  style={{ width: `${Math.min(100, Math.round((elapsed / 30) * 100))}%` }}
@@ -742,7 +742,7 @@ function KDSPage() {
  <div className="w-full bg-muted h-1.5 rounded-full overflow-hidden">
  <div
  className={cn(
- "h-full transition-all",
+ "h-full transition-colors duration-200",
  isLate ? "bg-rose-500" : elapsed > 20 ? "bg-amber-500" : "bg-emerald-500",
  )}
  style={{ width: `${Math.min(100, Math.round((elapsed / 30) * 100))}%` }}
@@ -928,7 +928,7 @@ function KDSPage() {
         setSelectedOrder(order);
       }
     }}
-    className="bg-card border border-border/80 rounded-lg p-4 flex flex-col gap-3 cursor-pointer hover:border-primary/50 transition-all shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    className="bg-card border border-border/80 rounded-lg p-4 flex flex-col gap-3 cursor-pointer hover:border-primary/50 transition-colors duration-200 shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
     onClick={() => setSelectedOrder(order)}
   >
  <div className="flex justify-between items-start gap-2">
@@ -980,7 +980,7 @@ function KDSPage() {
  <div className="w-full bg-muted/60 h-1.5 rounded-full overflow-hidden mt-1">
  <div
  className={cn(
- "h-full transition-all duration-500",
+ "h-full transition-colors duration-200 duration-500",
  elapsedMinutes > 30
  ? "bg-rose-500"
  : elapsedMinutes > 20
@@ -1158,7 +1158,7 @@ function KDSPage() {
  type="button"
  onClick={() => setSheetTab("details")}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer",
+ "flex-1 py-2 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer",
  sheetTab === "details"
  ? "bg-background text-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground",
@@ -1170,7 +1170,7 @@ function KDSPage() {
  type="button"
  onClick={() => setSheetTab("customer")}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer",
+ "flex-1 py-2 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer",
  sheetTab === "customer"
  ? "bg-background text-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground",
@@ -1182,7 +1182,7 @@ function KDSPage() {
  type="button"
  onClick={() => setSheetTab("history")}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer",
+ "flex-1 py-2 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer",
  sheetTab === "history"
  ? "bg-background text-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground",

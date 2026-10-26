@@ -99,7 +99,7 @@ export function CitySelect({
  <button
  type="button"
  onClick={() => setIsCustomMode(!isCustomMode)}
- className="text-[10px] font-semibold text-primary hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="text-2xs font-semibold text-primary hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {isCustomMode ? "Voltar para lista de cidades" : "Outra cidade"}
  </button>

@@ -26,7 +26,7 @@ export function RadarMapWidget({ travelers = [] }: RadarMapWidgetProps) {
           </div>
           <div>
             <h3 className="text-sm font-bold text-foreground">Radar Global de Operações</h3>
-            <p className="text-[11px] text-muted-foreground">Monitoramento de viajantes e excursões ativas</p>
+            <p className="text-2xs text-muted-foreground">Monitoramento de viajantes e excursões ativas</p>
           </div>
         </div>
 
@@ -47,13 +47,13 @@ export function RadarMapWidget({ travelers = [] }: RadarMapWidgetProps) {
             <div key={t.id} className="p-4 rounded-lg bg-muted/30 border border-border space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xl">{t.flag}</span>
-                <Badge variant="outline" className="text-[9px] font-mono uppercase py-0">
+                <Badge variant="outline" className="text-3xs font-mono uppercase py-0">
                   {t.status === 'in_flight' ? 'Em Voo' : 'No Hotel'}
                 </Badge>
               </div>
               <div>
                 <h4 className="text-xs font-bold text-foreground truncate">{t.clientName}</h4>
-                <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-1">
+                <p className="text-2xs text-muted-foreground flex items-center gap-1 mt-1">
                   <MapPin className="size-3 text-primary shrink-0" /> {t.destination}
                 </p>
               </div>

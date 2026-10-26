@@ -272,7 +272,7 @@ export default function WorkspaceReviewsPage() {
             className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap",
               filterRating === "critical"
-                ? "bg-rose-500 text-white font-semibold"
+                ? "bg-rose-500 text-foreground font-semibold"
                 : "bg-muted/60 text-muted-foreground hover:text-foreground"
             )}
           >

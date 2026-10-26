@@ -374,7 +374,7 @@ function CivilianEventsPage() {
 
         {/* ── Search & Filter Tabs ── */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-1.5 p-1 bg-muted/60 rounded-xl overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-2 p-1 bg-muted/60 rounded-xl overflow-x-auto no-scrollbar">
             <button
               onClick={() => setActiveTab("all")}
               className={`h-9 px-3 rounded-lg text-xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
@@ -468,7 +468,7 @@ function CivilianEventsPage() {
                   <div className="space-y-3">
                     {/* Top Badges */}
                     <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-1.5 flex-wrap">
+                      <div className="flex items-center gap-2 flex-wrap">
                         {isArchived ? (
                           <Badge variant="outline" className="text-xs border-amber-500/30 text-amber-500">
                             Arquivado
@@ -512,12 +512,12 @@ function CivilianEventsPage() {
                     <div className="space-y-1">
                       <h4 className="text-base font-bold text-foreground line-clamp-2">{ev.title}</h4>
                       <div className="flex flex-col gap-1 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1.5">
+                        <span className="flex items-center gap-2">
                           <Clock className="size-3.5" />
                           {ev.event_date ? formatDate(ev.event_date) : "Data a definir"}
                         </span>
                         {(ev.location || ev.city) && (
-                          <span className="flex items-center gap-1.5">
+                          <span className="flex items-center gap-2">
                             <MapPin className="size-3.5" />
                             {ev.location ? `${ev.location} - ` : ""}
                             {ev.city || "Chapecó"}
@@ -546,7 +546,7 @@ function CivilianEventsPage() {
                         onClick={() => openEditorForEdit(ev)}
                         className="h-11 min-h-11 px-3 rounded-xl text-xs font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
-                        <Edit className="size-3.5 mr-1.5" />
+                        <Edit className="size-3.5 mr-2" />
                         Editar
                       </Button>
                       <Button
@@ -555,7 +555,7 @@ function CivilianEventsPage() {
                         onClick={() => handleCopyPublicLink(ev.id, isLinkOnly)}
                         className="h-11 min-h-11 px-3 rounded-xl text-xs font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
-                        <Copy className="size-3.5 mr-1.5" />
+                        <Copy className="size-3.5 mr-2" />
                         Copiar Link
                       </Button>
                     </div>
@@ -568,7 +568,7 @@ function CivilianEventsPage() {
                         className="h-11 min-h-11 px-3 rounded-xl text-xs font-medium text-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <Link to="/evento/$id" params={{ id: ev.id }}>
-                          <ExternalLink className="size-3.5 mr-1.5" />
+                          <ExternalLink className="size-3.5 mr-2" />
                           Visualizar
                         </Link>
                       </Button>
@@ -622,7 +622,7 @@ function CivilianEventsPage() {
 
           <form onSubmit={handleSaveEvent} className="space-y-4 py-2">
             {/* Title */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold text-foreground">Título do Evento *</Label>
               <Input
                 type="text"
@@ -635,7 +635,7 @@ function CivilianEventsPage() {
             </div>
 
             {/* Description */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold text-foreground">Descrição</Label>
               <Textarea
                 placeholder="Explique os detalhes do evento, atrações, requisitos e orientações gerais..."
@@ -648,7 +648,7 @@ function CivilianEventsPage() {
 
             {/* Date & Time Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold text-foreground">Início (Data e Horário) *</Label>
                 <Input
                   type="datetime-local"
@@ -658,7 +658,7 @@ function CivilianEventsPage() {
                   className="h-11 min-h-11 rounded-xl text-xs bg-background border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold text-foreground">Término (Opcional)</Label>
                 <Input
                   type="datetime-local"
@@ -670,7 +670,7 @@ function CivilianEventsPage() {
             </div>
 
             {/* Category */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold text-foreground">Categoria</Label>
               <select
                 value={formCategory}
@@ -687,7 +687,7 @@ function CivilianEventsPage() {
 
             {/* Location & Address */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold text-foreground">Nome do Local</Label>
                 <Input
                   type="text"
@@ -697,7 +697,7 @@ function CivilianEventsPage() {
                   className="h-11 min-h-11 rounded-xl text-xs bg-background border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold text-foreground">Cidade / UF</Label>
                 <div className="flex gap-2">
                   <Input
@@ -727,7 +727,7 @@ function CivilianEventsPage() {
                 </div>
                 {!formIsFree && (
                   <div className="space-y-1">
-                    <Label className="text-[11px] text-muted-foreground">Valor do Ingresso (R$)</Label>
+                    <Label className="text-2xs text-muted-foreground">Valor do Ingresso (R$)</Label>
                     <Input
                       type="number"
                       step="0.01"
@@ -739,7 +739,7 @@ function CivilianEventsPage() {
                   </div>
                 )}
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label className="text-xs font-semibold text-foreground">Capacidade Total</Label>
                 <Input
                   type="number"
@@ -752,13 +752,13 @@ function CivilianEventsPage() {
             </div>
 
             {/* Visibility Mode (GAP-03) */}
-            <div className="space-y-1.5 p-3 bg-muted/40 rounded-2xl">
+            <div className="space-y-2 p-3 bg-muted/40 rounded-2xl">
               <Label className="text-xs font-semibold text-foreground">Visibilidade do Evento</Label>
               <div className="grid grid-cols-2 gap-2 pt-1">
                 <button
                   type="button"
                   onClick={() => setFormVisibility("public")}
-                  className={`h-11 min-h-11 rounded-xl px-3 text-xs font-medium border flex items-center justify-center gap-1.5 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                  className={`h-11 min-h-11 rounded-xl px-3 text-xs font-medium border flex items-center justify-center gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                     formVisibility === "public"
                       ? "bg-primary text-primary-foreground border-primary"
                       : "bg-background text-foreground border-border hover:bg-muted"
@@ -770,7 +770,7 @@ function CivilianEventsPage() {
                 <button
                   type="button"
                   onClick={() => setFormVisibility("link_only")}
-                  className={`h-11 min-h-11 rounded-xl px-3 text-xs font-medium border flex items-center justify-center gap-1.5 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                  className={`h-11 min-h-11 rounded-xl px-3 text-xs font-medium border flex items-center justify-center gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                     formVisibility === "link_only"
                       ? "bg-primary text-primary-foreground border-primary"
                       : "bg-background text-foreground border-border hover:bg-muted"
@@ -780,7 +780,7 @@ function CivilianEventsPage() {
                   Somente Via Link
                 </button>
               </div>
-              <p className="text-[11px] text-muted-foreground mt-1">
+              <p className="text-2xs text-muted-foreground mt-1">
                 {formVisibility === "public"
                   ? "Aparece na agenda e na busca do Waesy para qualquer visitante."
                   : "Não listado na vitrine pública. Apenas convidados com o link direto podem acessar."}
@@ -789,7 +789,7 @@ function CivilianEventsPage() {
 
             {/* Story 9:16 (GAP-04) */}
             <div className="space-y-2 p-3 bg-muted/40 rounded-2xl">
-              <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+              <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
                 <Sparkles className="size-3.5 text-purple-600" />
                 Story Imersivo 9:16 (Auto-Abertura)
               </Label>
@@ -806,7 +806,7 @@ function CivilianEventsPage() {
                     <button
                       type="button"
                       onClick={() => setFormStoryType("image")}
-                      className={`h-8 px-2.5 rounded-lg text-xs font-semibold border flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                      className={`h-8 px-3 rounded-lg text-xs font-semibold border flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                         formStoryType === "image"
                           ? "bg-background text-foreground border-primary"
                           : "text-muted-foreground border-transparent hover:bg-muted"
@@ -818,7 +818,7 @@ function CivilianEventsPage() {
                     <button
                       type="button"
                       onClick={() => setFormStoryType("video")}
-                      className={`h-8 px-2.5 rounded-lg text-xs font-semibold border flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                      className={`h-8 px-3 rounded-lg text-xs font-semibold border flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                         formStoryType === "video"
                           ? "bg-background text-foreground border-primary"
                           : "text-muted-foreground border-transparent hover:bg-muted"
@@ -829,7 +829,7 @@ function CivilianEventsPage() {
                     </button>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Label className="text-[11px] text-muted-foreground">Auto-abrir no primeiro acesso</Label>
+                    <Label className="text-2xs text-muted-foreground">Auto-abrir no primeiro acesso</Label>
                     <Switch checked={formStoryAutoOpen} onCheckedChange={setFormStoryAutoOpen} />
                   </div>
                 </div>

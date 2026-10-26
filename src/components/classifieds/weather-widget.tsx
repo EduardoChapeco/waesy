@@ -75,7 +75,7 @@ export function WeatherWidget({ city, className, compact = false }: WeatherWidge
       {loading && (
         <div className="grid grid-cols-3 gap-2 text-center" aria-label="Carregando previsão do tempo">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="p-2 rounded-lg bg-background border border-border/30 animate-pulse space-y-2">
+            <div key={i} className="p-2 rounded-lg bg-background border border-border/30 animate-pulse motion-reduce:animate-none space-y-2">
               <div className="h-2.5 bg-muted rounded w-8 mx-auto" />
               <div className="h-4 bg-muted rounded w-10 mx-auto" />
               <div className="size-4 bg-muted rounded-full mx-auto mt-1" />

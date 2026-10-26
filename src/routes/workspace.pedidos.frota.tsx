@@ -436,7 +436,7 @@ function FrotaEntregasPage() {
  >
  {isSubmitting ? (
  <div className="flex items-center gap-2">
- <Loader2 className="size-4 animate-spin" />
+ <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
  <span>Gerando Despacho...</span>
  </div>
  ) : (
@@ -631,7 +631,7 @@ function FrotaEntregasPage() {
  >
  {isSavingPrice ? (
  <div className="flex items-center gap-2">
- <Loader2 className="size-4 animate-spin" />
+ <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
  <span>Salvando no Banco...</span>
  </div>
  ) : (

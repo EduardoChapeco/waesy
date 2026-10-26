@@ -356,7 +356,7 @@ function EntregadorDetailPage() {
  >
  {isSubmitting ? (
  <>
- <Loader2 className="size-4 animate-spin mr-2" />
+ <Loader2 className="size-4 animate-spin motion-reduce:animate-none mr-2" />
  Salvando...
  </>
  ) : (

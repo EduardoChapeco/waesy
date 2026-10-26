@@ -47,7 +47,7 @@ export function RetailPromoTemplate({ data, className = "" }: SocialTemplateProp
   ];
 
   return (
-    <div className={`relative w-full h-full overflow-hidden bg-slate-950 text-white select-none ${className}`}>
+    <div className={`relative w-full h-full overflow-hidden bg-slate-950 text-foreground select-none ${className}`}>
       {/* 1. Imagem do Produto em Destaque */}
       <div className="absolute inset-0 overflow-hidden">
         <img
@@ -68,12 +68,12 @@ export function RetailPromoTemplate({ data, className = "" }: SocialTemplateProp
       >
         {/* Topo: Badges de Oferta + Loja */}
         <div className="flex items-center justify-between">
-          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-red-600 text-white font-black uppercase tracking-wider text-xs sm:text-sm shadow-lg">
+          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-red-600 text-foreground font-black uppercase tracking-wider text-xs sm:text-sm shadow-lg">
             <Zap className="size-4 shrink-0 fill-current" />
             <span>{promoBadge || "SUPER OFERTA"}</span>
           </div>
 
-          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-400 text-black font-black text-xs sm:text-sm">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-400 text-foreground font-black text-xs sm:text-sm">
             <span>-{discountPercent}% OFF</span>
           </div>
         </div>
@@ -81,14 +81,14 @@ export function RetailPromoTemplate({ data, className = "" }: SocialTemplateProp
         {/* Centro: Título do Produto & Destaques */}
         <div className="space-y-4">
           <h1
-            className={`font-black uppercase tracking-tight text-white drop-shadow-md leading-[1.05] line-clamp-2 ${
+            className={`font-black uppercase tracking-tight text-foreground drop-shadow-md leading-[1.05] line-clamp-2 ${
               aspectRatio === "1:1" ? "text-4xl md:text-5xl" : "text-6xl md:text-7xl"
             }`}
           >
             {title}
           </h1>
 
-          <p className="text-white/80 font-medium text-lg sm:text-xl line-clamp-1">
+          <p className="text-foreground/80 font-medium text-lg sm:text-xl line-clamp-1">
             {subtitle || datesOrAvailability || "Preço especial por tempo limitado"}
           </p>
 
@@ -96,7 +96,7 @@ export function RetailPromoTemplate({ data, className = "" }: SocialTemplateProp
             {resolvedHighlights.map((item, i) => (
               <span
                 key={i}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-black/60 backdrop-blur-md border border-white/20 text-white/90 text-xs sm:text-sm font-semibold"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-foreground/60 backdrop-blur-md border border-white/20 text-foreground/90 text-xs sm:text-sm font-semibold"
               >
                 <Check className="size-3.5 text-emerald-400 shrink-0" />
                 <span>{item}</span>
@@ -109,7 +109,7 @@ export function RetailPromoTemplate({ data, className = "" }: SocialTemplateProp
         <div className="w-full flex items-end justify-between gap-4 pt-4 border-t border-white/20">
           <div className="space-y-1">
             {originalPriceCents && (
-              <div className="text-sm sm:text-base font-semibold text-white/50 line-through font-mono">
+              <div className="text-sm sm:text-base font-semibold text-foreground/50 line-through font-mono">
                 De {formatMoney(originalPriceCents)}
               </div>
             )}
@@ -117,21 +117,21 @@ export function RetailPromoTemplate({ data, className = "" }: SocialTemplateProp
               <span className="text-xs sm:text-sm font-bold text-amber-400 uppercase tracking-wider">
                 Por
               </span>
-              <span className="text-4xl sm:text-5xl font-black font-mono text-white tracking-tight">
+              <span className="text-4xl sm:text-5xl font-black font-mono text-foreground tracking-tight">
                 {formatMoney(priceCents)}
               </span>
             </div>
             {maxInstallments > 1 && (
-              <p className="text-xs sm:text-sm text-white/80 font-mono">
-                Ou em até <span className="font-bold text-white">{maxInstallments}x</span> de <span className="text-amber-400 font-bold">{formatMoney(effectiveInstallmentCents)}</span>
+              <p className="text-xs sm:text-sm text-foreground/80 font-mono">
+                Ou em até <span className="font-bold text-foreground">{maxInstallments}x</span> de <span className="text-amber-400 font-bold">{formatMoney(effectiveInstallmentCents)}</span>
               </p>
             )}
-            <p className="text-[11px] sm:text-xs text-white/60">
+            <p className="text-2xs sm:text-xs text-foreground/60">
               {paymentMethodsLabel}
             </p>
           </div>
 
-          <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 backdrop-blur-md border border-white/15 text-white/90 text-xs sm:text-sm font-bold shrink-0">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-card/10 backdrop-blur-md border border-white/15 text-foreground/90 text-xs sm:text-sm font-bold shrink-0">
             <ShieldCheck className="size-5 text-emerald-400 shrink-0" />
             <span className="truncate max-w-[180px]">{storeName}</span>
           </div>

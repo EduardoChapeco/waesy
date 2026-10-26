@@ -251,7 +251,7 @@ function WorkspaceConcursosPage() {
             return (
               <div
                 key={c.id}
-                className="rounded-lg border border-border/70 bg-card overflow-hidden shadow-xs flex flex-col justify-between hover:border-foreground/30 transition-all"
+                className="rounded-lg border border-border/70 bg-card overflow-hidden shadow-xs flex flex-col justify-between hover:border-foreground/30 transition-colors duration-200"
               >
                 {/* Imagem no Aspecto Exato (16:9) */}
                 {c.image_url ? (
@@ -265,10 +265,10 @@ function WorkspaceConcursosPage() {
                       <Badge
                         className={
                           isCompleted
-                            ? "bg-black/70 text-white text-xs backdrop-blur-md"
+                            ? "bg-foreground/70 text-foreground text-xs backdrop-blur-md"
                             : isCancelled
-                            ? "bg-rose-600 text-white text-xs"
-                            : "bg-emerald-600 text-white text-xs font-bold"
+                            ? "bg-rose-600 text-foreground text-xs"
+                            : "bg-emerald-600 text-foreground text-xs font-bold"
                         }
                       >
                         {isCompleted ? "Encerrado" : isCancelled ? "Cancelado" : "Em Andamento"}
@@ -382,7 +382,7 @@ function WorkspaceConcursosPage() {
                       className="h-10 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
                     >
                       {drawingId === c.id ? (
-                        <Loader2 className="size-3.5 animate-spin" />
+                        <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
                       ) : (
                         <Star className="size-3.5" />
                       )}
@@ -420,7 +420,7 @@ function WorkspaceConcursosPage() {
               disabled={isSubmitting}
               className="h-11 px-6 rounded-lg text-xs font-semibold gap-2 bg-primary text-primary-foreground cursor-pointer"
             >
-              {isSubmitting && <Loader2 className="size-4 animate-spin" />}
+              {isSubmitting && <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />}
               <span>{editingConcurso ? "Salvar Alterações" : "Publicar Sorteio"}</span>
             </Button>
           </div>
@@ -541,7 +541,7 @@ function WorkspaceConcursosPage() {
       >
         {isLoadingParticipants ? (
           <div className="py-16 text-center text-muted-foreground flex flex-col items-center gap-2">
-            <Loader2 className="size-6 animate-spin text-primary" />
+            <Loader2 className="size-6 animate-spin motion-reduce:animate-none text-primary" />
             <span className="text-xs font-mono">Carregando lista de cupons...</span>
           </div>
         ) : participantsList.length === 0 ? (

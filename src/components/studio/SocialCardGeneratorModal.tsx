@@ -245,7 +245,7 @@ export function SocialCardGeneratorModal({
                 type="button"
                 onClick={() => setFormat(f)}
                 className={cn(
-                  "p-3 rounded-lg border text-center transition-all flex flex-col items-center gap-2 cursor-pointer focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-foreground",
+                  "p-3 rounded-lg border text-center transition-colors duration-200 flex flex-col items-center gap-2 cursor-pointer focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-foreground",
                   isSelected
                     ? "border-foreground bg-foreground/5 shadow-xs"
                     : "border-border/60 hover:border-border text-muted-foreground"
@@ -266,7 +266,7 @@ export function SocialCardGeneratorModal({
           <canvas
             ref={canvasRef}
             className={cn(
-              "shadow-xl rounded-lg object-contain max-h-[380px] w-auto transition-all",
+              "shadow-xl rounded-lg object-contain max-h-[380px] w-auto transition-colors duration-200",
               format === "stories" ? "aspect-[9/16]" : format === "feed" ? "aspect-square" : "aspect-[16/9]"
             )}
           />

@@ -45,7 +45,7 @@ export function GuidedSectionPicker({
     <div className="fixed inset-0 z-50 flex items-stretch select-none animate-in fade-in duration-200">
       {/* Backdrop transparente / suave */}
       <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
-        className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="fixed inset-0 bg-foreground/40 backdrop-blur-xs transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         onClick={onClose}
       />
 
@@ -122,14 +122,14 @@ export function GuidedSectionPicker({
                     onSelectTemplate(template);
                     onClose();
                   }}
-                  className="group p-4 sm:p-5 rounded-lg bg-card hover:bg-muted/40 border border-border/70 hover:border-primary/50 transition-all cursor-pointer flex flex-col justify-between space-y-3 shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="group p-4 sm:p-5 rounded-lg bg-card hover:bg-muted/40 border border-border/70 hover:border-primary/50 transition-colors duration-200 cursor-pointer flex flex-col justify-between space-y-3 shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <h4 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">
                         {template.name}
                       </h4>
-                      <Badge variant="outline" className="text-[10px] px-2 py-1 font-medium rounded-md">
+                      <Badge variant="outline" className="text-2xs px-2 py-1 font-medium rounded-md">
                         {template.category}
                       </Badge>
                     </div>

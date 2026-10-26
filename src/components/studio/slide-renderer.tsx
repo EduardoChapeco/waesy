@@ -47,7 +47,7 @@ export function SlideRenderer({
  <div
  style={{ backgroundColor: bgColor }}
  className={`w-full ${aspectClass} rounded-lg p-8 flex flex-col justify-between relative overflow-hidden shadow-2xl border border-white/10 ${
- isDark ? 'text-white' : 'text-slate-900'
+ isDark ? 'text-foreground' : 'text-slate-900'
  } ${className}`}
  >
  {/* Background ambient glow */}
@@ -73,7 +73,7 @@ export function SlideRenderer({
  {slide.badge && (
  <span
  style={{ borderColor: `${accent}40`, backgroundColor: `${accent}15`, color: accent }}
- className="px-3 py-1 rounded-full text-[11px] font-bold tracking-wide uppercase border flex items-center gap-1"
+ className="px-3 py-1 rounded-full text-2xs font-bold tracking-wide uppercase border flex items-center gap-1"
  >
  <Layers className="w-3 h-3" />
  {slide.badge}
@@ -112,7 +112,7 @@ export function SlideRenderer({
 
  {/* Footer: Handle & CTA */}
  <div className="relative z-10 flex items-center justify-between pt-4 border-t border-white/10">
- <span className="text-[11px] font-medium opacity-60">
+ <span className="text-2xs font-medium opacity-60">
  {brandHandle}
  </span>
  {slide.ctaText ? (
@@ -124,7 +124,7 @@ export function SlideRenderer({
  <ArrowRight className="w-3.5 h-3.5" />
  </div>
  ) : (
- <span className="text-[10px] font-mono opacity-50">
+ <span className="text-2xs font-mono opacity-50">
  Página {slide.index}
  </span>
  )}

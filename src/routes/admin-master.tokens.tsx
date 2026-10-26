@@ -158,7 +158,7 @@ function AdminTokensPage() {
  size="sm"
  className="gap-2 text-xs h-8"
  >
- {isReconciling ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCw className="size-3.5" />}
+ {isReconciling ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : <RefreshCw className="size-3.5" />}
  Auditar Solvência
  </Button>
 
@@ -175,7 +175,7 @@ function AdminTokensPage() {
  <div className="text-2xl font-bold tracking-tight text-foreground mt-1">
  {dataStats.total_circulating_tokens.toLocaleString()}
  </div>
- <span className="text-[11px] text-muted-foreground">Valor: {dataStats.total_estimated_value_brl}</span>
+ <span className="text-2xs text-muted-foreground">Valor: {dataStats.total_estimated_value_brl}</span>
  </div>
 
  <div className="p-4 rounded-lg border border-border/60 bg-card">
@@ -183,7 +183,7 @@ function AdminTokensPage() {
  <div className="text-2xl font-bold tracking-tight text-primary mt-1">
  ~{dataStats.total_time_saved_hours.toLocaleString()}h
  </div>
- <span className="text-[11px] text-muted-foreground">em prospecção economizada</span>
+ <span className="text-2xs text-muted-foreground">em prospecção economizada</span>
  </div>
 
  <div className="p-4 rounded-lg border border-border/60 bg-card">
@@ -191,7 +191,7 @@ function AdminTokensPage() {
  <div className="text-2xl font-bold tracking-tight text-foreground mt-1">
  {dataStats.total_lifetime_consumed.toLocaleString()}
  </div>
- <span className="text-[11px] text-muted-foreground">em serviços e impulsos</span>
+ <span className="text-2xs text-muted-foreground">em serviços e impulsos</span>
  </div>
 
  <div className="p-4 rounded-lg border border-border/60 bg-card">
@@ -199,7 +199,7 @@ function AdminTokensPage() {
  <div className="text-2xl font-bold tracking-tight text-foreground mt-1">
  {dataStats.total_lifetime_purchased.toLocaleString()}
  </div>
- <span className="text-[11px] text-muted-foreground">recargas e incentivos</span>
+ <span className="text-2xs text-muted-foreground">recargas e incentivos</span>
  </div>
  </div>
 
@@ -248,7 +248,7 @@ function AdminTokensPage() {
  <TableRow key={s.store_id}>
  <TableCell className="font-medium text-xs py-3">
  <span className="font-semibold block text-foreground">{s.store_name}</span>
- <span className="text-[11px] text-muted-foreground font-mono">{s.store_slug}</span>
+ <span className="text-2xs text-muted-foreground font-mono">{s.store_slug}</span>
  </TableCell>
  <TableCell className="font-mono text-xs font-semibold py-3">
  {s.balance.toLocaleString()}
@@ -260,7 +260,7 @@ function AdminTokensPage() {
  ~{Math.round(s.estimated_time_saved_hours)}h
  </TableCell>
  <TableCell className="py-3">
- <Badge variant="outline" className="text-[10px] text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
+ <Badge variant="outline" className="text-2xs text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
  Auditado
  </Badge>
  </TableCell>
@@ -294,8 +294,8 @@ function AdminTokensPage() {
                       variant="outline"
                       className={
                         reconciliationReport.solvency_status === "100%_SECURE_SOLVENT"
-                          ? "text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border-emerald-500/30"
-                          : "text-[10px] font-bold bg-destructive/10 text-destructive border-destructive/30"
+                          ? "text-2xs font-bold bg-emerald-500/10 text-emerald-600 border-emerald-500/30"
+                          : "text-2xs font-bold bg-destructive/10 text-destructive border-destructive/30"
                       }
                     >
                       {reconciliationReport.solvency_status === "100%_SECURE_SOLVENT"
@@ -315,7 +315,7 @@ function AdminTokensPage() {
                 disabled={isReconciling}
                 className="text-xs h-9 rounded-lg font-semibold gap-2"
               >
-                {isReconciling && <Loader2 className="size-3.5 animate-spin" />}
+                {isReconciling && <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />}
                 <span>{isReconciling ? "Auditando..." : "Reconciliar Agora"}</span>
               </Button>
             </div>
@@ -324,19 +324,19 @@ function AdminTokensPage() {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-lg bg-muted/20 border border-border/40 text-xs">
                   <div>
-                    <span className="text-muted-foreground block text-[11px] uppercase tracking-wider font-medium">Carteiras Auditadas</span>
+                    <span className="text-muted-foreground block text-2xs uppercase tracking-wider font-medium">Carteiras Auditadas</span>
                     <strong className="font-mono text-base text-foreground">{reconciliationReport.total_wallets_audited}</strong>
                   </div>
                   <div>
-                    <span className="text-muted-foreground block text-[11px] uppercase tracking-wider font-medium">Saldo em Carteiras</span>
+                    <span className="text-muted-foreground block text-2xs uppercase tracking-wider font-medium">Saldo em Carteiras</span>
                     <strong className="font-mono text-base text-foreground">{reconciliationReport.total_circulating.toLocaleString("pt-BR")}</strong>
                   </div>
                   <div>
-                    <span className="text-muted-foreground block text-[11px] uppercase tracking-wider font-medium">Somatório no Ledger</span>
+                    <span className="text-muted-foreground block text-2xs uppercase tracking-wider font-medium">Somatório no Ledger</span>
                     <strong className="font-mono text-base text-foreground">{reconciliationReport.total_ledger_sum.toLocaleString("pt-BR")}</strong>
                   </div>
                   <div>
-                    <span className="text-muted-foreground block text-[11px] uppercase tracking-wider font-medium">Divergência Líquida</span>
+                    <span className="text-muted-foreground block text-2xs uppercase tracking-wider font-medium">Divergência Líquida</span>
                     <strong className="font-mono text-base text-emerald-600 dark:text-emerald-400">
                       {reconciliationReport.net_divergence || 0} Tokens
                     </strong>
@@ -375,7 +375,7 @@ function AdminTokensPage() {
                             <TableCell className="text-right py-3">
                               <Badge
                                 variant="outline"
-                                className="text-[10px] text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                                className="text-2xs text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
                               >
                                 {sr.status || "CONCILIATED_CLEAN"}
                               </Badge>
@@ -423,7 +423,7 @@ function AdminTokensPage() {
  {e.entity_type}
  </TableCell>
  <TableCell className="text-right py-3">
- <Badge variant="outline" className="text-[10px]">
+ <Badge variant="outline" className="text-2xs">
  OK
  </Badge>
  </TableCell>
@@ -461,7 +461,7 @@ function AdminTokensPage() {
                     <TableRow key={disc.id}>
                       <TableCell className="font-medium text-xs py-3">
                         <span className="font-semibold block text-foreground">{disc.stores?.name || "Loja"}</span>
-                        <span className="text-[11px] text-muted-foreground font-mono">{disc.stores?.slug}</span>
+                        <span className="text-2xs text-muted-foreground font-mono">{disc.stores?.slug}</span>
                       </TableCell>
                       <TableCell className="font-mono text-xs py-3">
                         {disc.invoice_number || disc.id.substring(0, 8)}
@@ -482,7 +482,7 @@ function AdminTokensPage() {
                           onClick={() => handleConciliateDiscount(disc.id, true)}
                           className="h-8 px-3 rounded-lg text-xs font-semibold"
                         >
-                          {isProcessingDiscount === disc.id ? <Loader2 className="size-3 animate-spin" /> : "Aprovar"}
+                          {isProcessingDiscount === disc.id ? <Loader2 className="size-3 animate-spin motion-reduce:animate-none" /> : "Aprovar"}
                         </Button>
                         <Button
                           size="sm"
@@ -561,7 +561,7 @@ function AdminTokensPage() {
  Cancelar
  </Button>
  <Button type="submit" disabled={isSubmittingBonus} className="w-full sm:w-auto text-xs h-9 font-semibold">
- {isSubmittingBonus && <Loader2 className="size-3.5 animate-spin mr-2" />}
+ {isSubmittingBonus && <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none mr-2" />}
  Confirmar (+{(bonusTokens || 0).toLocaleString()})
  </Button>
  </DialogFooter>

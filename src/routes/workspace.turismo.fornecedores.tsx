@@ -142,7 +142,7 @@ function WorkspaceSuppliersPage() {
  {filtered.map((s) => (
  <div
  key={s.id}
- className="p-5 rounded-lg bg-card border border-border hover:border-primary/40 transition-all shadow-sm flex flex-col justify-between space-y-4"
+ className="p-5 rounded-lg bg-card border border-border hover:border-primary/40 transition-colors duration-200 shadow-sm flex flex-col justify-between space-y-4"
  >
  <div className="space-y-2">
  <div className="flex items-start justify-between gap-2">

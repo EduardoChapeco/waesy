@@ -26,12 +26,12 @@ export interface SlimActionBannerProps {
 }
 
 const GRADIENT_CLASSES: Record<string, string> = {
- blue: "bg-linear-to-r from-blue-700 via-indigo-600 to-violet-700 text-white",
- indigo: "bg-linear-to-r from-indigo-800 via-blue-700 to-sky-600 text-white",
- purple: "bg-linear-to-r from-purple-800 via-violet-700 to-fuchsia-700 text-white",
- emerald: "bg-linear-to-r from-emerald-800 via-teal-700 to-cyan-700 text-white",
- amber: "bg-linear-to-r from-amber-700 via-orange-600 to-rose-700 text-white",
- dark: "bg-linear-to-r from-zinc-900 via-zinc-800 to-black text-white",
+ blue: "bg-linear-to-r from-blue-700 via-indigo-600 to-violet-700 text-foreground",
+ indigo: "bg-linear-to-r from-indigo-800 via-blue-700 to-sky-600 text-foreground",
+ purple: "bg-linear-to-r from-purple-800 via-violet-700 to-fuchsia-700 text-foreground",
+ emerald: "bg-linear-to-r from-emerald-800 via-teal-700 to-cyan-700 text-foreground",
+ amber: "bg-linear-to-r from-amber-700 via-orange-600 to-rose-700 text-foreground",
+ dark: "bg-linear-to-r from-zinc-900 via-zinc-800 to-black text-foreground",
  none: "bg-card text-foreground",
 };
 
@@ -75,7 +75,7 @@ export function SlimActionBanner({
  return (
  <div
  className={cn(
- "relative w-full rounded-lg overflow-hidden min-h-[110px] p-5 sm:p-6 transition-all",
+ "relative w-full rounded-lg overflow-hidden min-h-[110px] p-5 sm:p-6 transition-colors duration-200",
  !hasMedia && bgClass,
  className,
  )}
@@ -108,12 +108,12 @@ export function SlimActionBanner({
  )}
 
  {/* ── Conteúdo do Banner Fino ── */}
- <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5 text-white">
+ <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5 text-foreground">
  <div className="space-y-2 max-w-2xl">
  {/* Badge Opcional */}
  {isBadgeVisible && effectiveBadge && (
  <div className="flex items-center gap-2">
- <span className="text-[10px] font-mono font-black uppercase tracking-wider bg-white/20 px-3 py-1 rounded-full backdrop-blur-md text-white border border-white/20">
+ <span className="text-2xs font-mono font-black uppercase tracking-wider bg-card/20 px-3 py-1 rounded-full backdrop-blur-md text-foreground border border-white/20">
  {effectiveBadge}
  </span>
  </div>
@@ -121,14 +121,14 @@ export function SlimActionBanner({
 
  {/* Título */}
  {isTitleVisible && effectiveTitle && (
- <h2 className="text-lg sm:text-xl md:text-2xl font-black tracking-tight leading-snug text-white drop-shadow-xs">
+ <h2 className="text-lg sm:text-xl md:text-2xl font-black tracking-tight leading-snug text-foreground drop-shadow-xs">
  {effectiveTitle}
  </h2>
  )}
 
  {/* Descrição / Subtítulo */}
  {isDescVisible && effectiveSubtitle && (
- <p className="text-xs sm:text-sm text-white/90 font-medium leading-relaxed">
+ <p className="text-xs sm:text-sm text-foreground/90 font-medium leading-relaxed">
  {effectiveSubtitle}
  </p>
  )}
@@ -140,7 +140,7 @@ export function SlimActionBanner({
  {onCtaClick ? (
  <Button
  onClick={onCtaClick}
- className="h-11 px-6 rounded-lg font-bold text-xs bg-white text-zinc-950 hover:bg-white/90 cursor-pointer transition-all active:scale-95"
+ className="h-11 px-6 rounded-lg font-bold text-xs bg-card text-zinc-950 hover:bg-card/90 cursor-pointer transition-transform duration-200 active:scale-95"
  >
  <span>{effectiveCtaLabel}</span>
  <ArrowRight className="size-3.5 ml-2" />
@@ -148,7 +148,7 @@ export function SlimActionBanner({
  ) : effectiveTargetUrl.startsWith("http") ? (
  <Button
  asChild
- className="h-11 px-6 rounded-lg font-bold text-xs bg-white text-zinc-950 hover:bg-white/90 cursor-pointer transition-all active:scale-95"
+ className="h-11 px-6 rounded-lg font-bold text-xs bg-card text-zinc-950 hover:bg-card/90 cursor-pointer transition-transform duration-200 active:scale-95"
  >
  <a href={effectiveTargetUrl} target="_blank" rel="noopener noreferrer">
  <span>{effectiveCtaLabel}</span>
@@ -158,7 +158,7 @@ export function SlimActionBanner({
  ) : (
  <Button
  asChild
- className="h-11 px-6 rounded-lg font-bold text-xs bg-white text-zinc-950 hover:bg-white/90 cursor-pointer transition-all active:scale-95"
+ className="h-11 px-6 rounded-lg font-bold text-xs bg-card text-zinc-950 hover:bg-card/90 cursor-pointer transition-transform duration-200 active:scale-95"
  >
  <Link to={effectiveTargetUrl as any || "/mercado"}>
  <span>{effectiveCtaLabel}</span>

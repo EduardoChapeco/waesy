@@ -482,6 +482,8 @@ export function CheckoutPage() {
  neighborhood: defaultAddr.neighborhood || defaultAddr.bairro || "",
  city: defaultAddr.city || "",
  state: defaultAddr.state || "",
+            latitude: defaultAddr.latitude,
+            longitude: defaultAddr.longitude,
  },
  };
  });

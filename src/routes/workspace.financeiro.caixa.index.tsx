@@ -801,7 +801,7 @@ function CashRegisterManagerPage() {
             return (
               <div
                 key={turn.id}
-                className="p-4 rounded-lg bg-card border border-border/50 shadow-2xs space-y-3 transition-all"
+                className="p-4 rounded-lg bg-card border border-border/50 shadow-2xs space-y-3 transition-colors duration-200"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>

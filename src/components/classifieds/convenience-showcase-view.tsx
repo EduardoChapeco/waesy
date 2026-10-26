@@ -759,7 +759,7 @@ export function ConvenienceShowcaseView({
                 type="button"
                 onClick={() => setPricingMode("unit")}
                 className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "py-2 px-3 text-center rounded-lg font-semibold text-xs transition-all cursor-pointer flex items-center justify-center gap-2",
+                  "py-2 px-3 text-center rounded-lg font-semibold text-xs transition-colors duration-200 cursor-pointer flex items-center justify-center gap-2",
                   pricingMode === "unit"
                     ? "bg-background text-foreground  font-bold ring-1 ring-border/80"
                     : "text-muted-foreground hover:text-foreground"
@@ -771,7 +771,7 @@ export function ConvenienceShowcaseView({
                 type="button"
                 onClick={() => setPricingMode("weight")}
                 className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "py-2 px-3 text-center rounded-lg font-semibold text-xs transition-all cursor-pointer flex items-center justify-center gap-2",
+                  "py-2 px-3 text-center rounded-lg font-semibold text-xs transition-colors duration-200 cursor-pointer flex items-center justify-center gap-2",
                   pricingMode === "weight"
                     ? "bg-background text-foreground  font-bold ring-1 ring-border/80"
                     : "text-muted-foreground hover:text-foreground"
@@ -791,7 +791,7 @@ export function ConvenienceShowcaseView({
                       type="button"
                       onClick={() => setWeightGrams(g)}
                       className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                        "px-2 py-1 rounded-lg text-xs font-mono font-medium border transition-all cursor-pointer",
+                        "px-2 py-1 rounded-lg text-xs font-mono font-medium border transition-colors duration-200 cursor-pointer",
                         weightGrams === g
                           ? "bg-primary text-primary-foreground border-primary font-bold "
                           : "bg-background text-muted-foreground border-border/60 hover:text-foreground"
@@ -822,7 +822,7 @@ export function ConvenienceShowcaseView({
                     type="button"
                     onClick={() => setSelectedRipeness(stage)}
                     className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                      "p-3 rounded-lg text-center border transition-all cursor-pointer flex flex-col items-center justify-center gap-1",
+                      "p-3 rounded-lg text-center border transition-colors duration-200 cursor-pointer flex flex-col items-center justify-center gap-1",
                       isSelected
                         ? "border-primary bg-primary/10 text-primary font-bold  ring-1 ring-primary/30"
                         : "border-border/60 bg-background text-muted-foreground hover:text-foreground hover:bg-muted/30"
@@ -878,7 +878,7 @@ export function ConvenienceShowcaseView({
               <div
                 key={idx}
                 className={cn(
-                  "flex items-center justify-between p-3 rounded-lg border text-xs transition-all",
+                  "flex items-center justify-between p-3 rounded-lg border text-xs transition-colors duration-200",
                   isUnlocked
                     ? "border-emerald-500/40 text-foreground font-semibold"
                     : "bg-muted/15 border-border/50 text-muted-foreground"
@@ -1040,7 +1040,7 @@ export function ConvenienceShowcaseView({
                       type="button"
                       onClick={() => setActivePhotoIdx(idx)}
                       className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                        "size-14 rounded-lg overflow-hidden border shrink-0 bg-muted/20 transition-all cursor-pointer",
+                        "size-14 rounded-lg overflow-hidden border shrink-0 bg-muted/20 transition-colors duration-200 cursor-pointer",
                         activePhotoIdx === idx
                           ? "border-primary ring-2 ring-primary/20"
                           : "border-border/60 opacity-60 hover:opacity-100"
@@ -1105,7 +1105,7 @@ export function ConvenienceShowcaseView({
                           type="button"
                           onClick={() => setSelectedPrepOption(isSelected ? "" : opt)}
                           className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                            "px-3 py-2 rounded-lg text-xs font-medium border transition-all cursor-pointer",
+                            "px-3 py-2 rounded-lg text-xs font-medium border transition-colors duration-200 cursor-pointer",
                             isSelected
                               ? "bg-primary text-primary-foreground border-primary font-bold "
                               : "bg-background text-muted-foreground border-border/70 hover:text-foreground hover:bg-muted/40"
@@ -1228,7 +1228,7 @@ export function ConvenienceShowcaseView({
                         type="button"
                         onClick={() => setSelectedPrepOption(isSelected ? "" : opt)}
                         className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                          "px-3 py-2 rounded-lg text-xs font-medium border transition-all cursor-pointer",
+                          "px-3 py-2 rounded-lg text-xs font-medium border transition-colors duration-200 cursor-pointer",
                           isSelected
                             ? "bg-primary text-primary-foreground border-primary font-bold "
                             : "bg-background text-muted-foreground border-border/70 hover:text-foreground hover:bg-muted/40"
@@ -1297,7 +1297,7 @@ export function ConvenienceShowcaseView({
               <div className="space-y-2 pt-1">
                 <Button
                   onClick={() => setIsOrderModalOpen(true)}
-                  className="w-full h-12 rounded-lg text-xs sm:text-sm font-bold gap-2 bg-foreground text-background hover:bg-foreground/90 cursor-pointer transition-all active:scale-[0.99]"
+                  className="w-full h-12 rounded-lg text-xs sm:text-sm font-bold gap-2 bg-foreground text-background hover:bg-foreground/90 cursor-pointer transition-transform duration-200 active:scale-[0.99]"
                 >
                   <ShoppingBag className="size-4" />
                   <span>
@@ -1502,7 +1502,7 @@ export function ConvenienceShowcaseView({
                     variant={isOrderBumpAdded ? "default" : "outline"}
                     onClick={() => setIsOrderBumpAdded(!isOrderBumpAdded)}
                     className={cn(
-                      "h-11 min-h-11 px-4 rounded-lg text-xs font-bold cursor-pointer shrink-0 transition-all focus-visible:ring-2 focus-visible:ring-ring",
+                      "h-11 min-h-11 px-4 rounded-lg text-xs font-bold cursor-pointer shrink-0 transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-ring",
                       isOrderBumpAdded
                         ? "bg-foreground text-background hover:bg-foreground/90"
                         : "border-amber-500/40 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10"
@@ -1535,7 +1535,7 @@ export function ConvenienceShowcaseView({
                   type="button"
                   onClick={() => setOrderDeliveryMode("immediate")}
                   className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                    "py-2 px-1 text-center rounded-lg font-semibold text-xs transition-all cursor-pointer",
+                    "py-2 px-1 text-center rounded-lg font-semibold text-xs transition-colors duration-200 cursor-pointer",
                     orderDeliveryMode === "immediate"
                       ? "bg-background text-foreground  font-bold ring-1 ring-border/80"
                       : "text-muted-foreground hover:text-foreground"
@@ -1547,7 +1547,7 @@ export function ConvenienceShowcaseView({
                   type="button"
                   onClick={() => setOrderDeliveryMode("scheduled")}
                   className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                    "py-2 px-1 text-center rounded-lg font-semibold text-xs transition-all cursor-pointer",
+                    "py-2 px-1 text-center rounded-lg font-semibold text-xs transition-colors duration-200 cursor-pointer",
                     orderDeliveryMode === "scheduled"
                       ? "bg-background text-foreground  font-bold ring-1 ring-border/80"
                       : "text-muted-foreground hover:text-foreground"
@@ -1559,7 +1559,7 @@ export function ConvenienceShowcaseView({
                   type="button"
                   onClick={() => setOrderDeliveryMode("pickup")}
                   className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                    "py-2 px-1 text-center rounded-lg font-semibold text-xs transition-all cursor-pointer",
+                    "py-2 px-1 text-center rounded-lg font-semibold text-xs transition-colors duration-200 cursor-pointer",
                     orderDeliveryMode === "pickup"
                       ? "bg-background text-foreground  font-bold ring-1 ring-border/80"
                       : "text-muted-foreground hover:text-foreground"
@@ -1594,7 +1594,7 @@ export function ConvenienceShowcaseView({
                         type="button"
                         onClick={() => setOrderScheduledWindow(win.id)}
                         className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                          "p-2 rounded-lg text-xs font-medium border text-left cursor-pointer transition-all",
+                          "p-2 rounded-lg text-xs font-medium border text-left cursor-pointer transition-colors duration-200",
                           orderScheduledWindow === win.id
                             ? "bg-primary/10 border-primary text-primary font-bold"
                             : "bg-background border-border/60 text-foreground/80 hover:bg-muted/40"
@@ -1645,7 +1645,7 @@ export function ConvenienceShowcaseView({
                     type="button"
                     onClick={() => setOrderPaymentMethod("pix")}
                     className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                      "p-3 rounded-lg border text-center transition-all cursor-pointer flex flex-col items-center gap-1 min-h-[58px]",
+                      "p-3 rounded-lg border text-center transition-colors duration-200 cursor-pointer flex flex-col items-center gap-1 min-h-[58px]",
                       orderPaymentMethod === "pix"
                         ? "border-emerald-600 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold"
                         : "border-border/60 bg-background text-muted-foreground hover:text-foreground"
@@ -1666,7 +1666,7 @@ export function ConvenienceShowcaseView({
                     type="button"
                     onClick={() => setOrderPaymentMethod("card")}
                     className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                      "p-3 rounded-lg border text-center transition-all cursor-pointer flex flex-col items-center gap-1 min-h-[58px]",
+                      "p-3 rounded-lg border text-center transition-colors duration-200 cursor-pointer flex flex-col items-center gap-1 min-h-[58px]",
                       orderPaymentMethod === "card"
                         ? "border-primary bg-primary/10 text-primary font-bold"
                         : "border-border/60 bg-background text-muted-foreground hover:text-foreground"
@@ -1683,7 +1683,7 @@ export function ConvenienceShowcaseView({
                     type="button"
                     onClick={() => setOrderPaymentMethod("cash")}
                     className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                      "p-3 rounded-lg border text-center transition-all cursor-pointer flex flex-col items-center gap-1 min-h-[58px]",
+                      "p-3 rounded-lg border text-center transition-colors duration-200 cursor-pointer flex flex-col items-center gap-1 min-h-[58px]",
                       orderPaymentMethod === "cash"
                         ? "border-amber-600 bg-amber-500/10 text-amber-700 dark:text-amber-300 font-bold"
                         : "border-border/60 bg-background text-muted-foreground hover:text-foreground"
@@ -1760,7 +1760,7 @@ export function ConvenienceShowcaseView({
             >
               {isSubmittingOrder ? (
                 <>
-                  <Loader2 className="size-4 animate-spin" />
+                  <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                   <span>Gravando Pedido...</span>
                 </>
               ) : (
@@ -1790,7 +1790,7 @@ export function ConvenienceShowcaseView({
           <div className="space-y-3 py-2">
             {isLoadingStores ? (
               <div className="flex items-center justify-center py-6 gap-2 text-xs text-muted-foreground">
-                <Loader2 className="size-4 animate-spin text-primary" />
+                <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-primary" />
                 <span>Buscando suas empresas...</span>
               </div>
             ) : userStoresList.length === 0 ? (
@@ -1844,7 +1844,7 @@ export function ConvenienceShowcaseView({
                           onClick={() => handleSelectStoreLink(st.id)}
                           className="h-11 min-h-11 px-4 text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                         >
-                          {isLinkingStore ? <Loader2 className="size-3.5 animate-spin" /> : "Vincular"}
+                          {isLinkingStore ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : "Vincular"}
                         </Button>
                       )}
                     </div>
@@ -1875,7 +1875,7 @@ export function ConvenienceShowcaseView({
             <DialogTitle>Foto do Produto</DialogTitle>
           </DialogHeader>
           {fullscreenImage && (
-            <div className="relative aspect-square sm:aspect-[4/3] w-full max-h-[85vh] rounded-lg overflow-hidden flex items-center justify-center bg-black/5">
+            <div className="relative aspect-square sm:aspect-[4/3] w-full max-h-[85vh] rounded-lg overflow-hidden flex items-center justify-center bg-foreground/5">
               <img
                 src={fullscreenImage}
                 alt={title}

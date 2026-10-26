@@ -396,7 +396,7 @@ function TourismDetailPage() {
             >
               {bookingMutation.isPending ? (
                 <>
-                  <CircleNotch size={16} className="animate-spin mr-2" />
+                  <CircleNotch size={16} className="animate-spin motion-reduce:animate-none mr-2" />
                   Confirmando...
                 </>
               ) : (
@@ -428,7 +428,7 @@ function TourismDetailPage() {
         <div className="max-w-6xl mx-auto px-0 sm:px-4 pt-3 flex items-center justify-between">
           <Link
             to="/turismo"
-            className="size-11 sm:size-auto rounded-full sm:rounded-none flex items-center justify-center text-xs font-semibold text-muted-foreground hover:text-foreground group gap-2 hover:bg-muted/80 sm:hover:bg-transparent transition-all"
+            className="size-11 sm:size-auto rounded-full sm:rounded-none flex items-center justify-center text-xs font-semibold text-muted-foreground hover:text-foreground group gap-2 hover:bg-muted/80 sm:hover:bg-transparent transition-colors duration-200"
             aria-label="Voltar para Turismo"
           >
             <ArrowLeft size={18} weight="bold" className="group-hover:-translate-x-1 transition-transform" />
@@ -439,7 +439,7 @@ function TourismDetailPage() {
             <button
               type="button"
               onClick={() => setViewMode("instagram_editorial")}
-              className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+              className={`px-3 py-1 text-xs font-bold rounded-lg transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 viewMode === "instagram_editorial"
                   ? "bg-background text-foreground"
                   : "text-muted-foreground hover:text-foreground"
@@ -450,7 +450,7 @@ function TourismDetailPage() {
             <button
               type="button"
               onClick={() => setViewMode("standard")}
-              className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+              className={`px-3 py-1 text-xs font-bold rounded-lg transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 (viewMode as string) === "standard"
                   ? "bg-background text-foreground"
                   : "text-muted-foreground hover:text-foreground"
@@ -546,14 +546,14 @@ function TourismDetailPage() {
               <button
                 type="button"
                 onClick={() => setViewMode("instagram_editorial")}
-                className="px-3 py-1 text-xs font-bold rounded-lg transition-all text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="px-3 py-1 text-xs font-bold rounded-lg transition-colors duration-200 text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 Instagram Editorial
               </button>
               <button
                 type="button"
                 onClick={() => setViewMode("standard")}
-                className="px-3 py-1 text-xs font-bold rounded-lg transition-all bg-background text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="px-3 py-1 text-xs font-bold rounded-lg transition-colors duration-200 bg-background text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 Página Padrão
               </button>
@@ -620,12 +620,12 @@ function TourismDetailPage() {
           </div>
 
           {images.length > 1 && (
-            <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+            <div className="tab-list flex gap-3 overflow-x-auto no-scrollbar pb-2">
               {images.map((img: string, idx: number) => (
                 <button
                   key={idx}
                   onClick={() => setActiveImage(idx)}
-                  className={`relative w-20 sm:w-24 aspect-video rounded-lg overflow-hidden border-2 transition-all shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                  className={`relative w-20 sm:w-24 aspect-video rounded-lg overflow-hidden border-2 transition-colors duration-200 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                     activeImage === idx ? "border-foreground" : "border-transparent opacity-70 hover:opacity-100"
                   }`}
                 >
@@ -792,7 +792,7 @@ function TourismDetailPage() {
       </div>
 
       {/* ── Sticky Bottom CTA Bar (Mobile Only) — Regra 12: Thumb Zone / 3 Toques ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden pb-[env(safe-area-inset-bottom)] bg-background/95 backdrop-blur-md border-t border-border/60 px-4 py-3">
+      <div className="fixed bottom-0 left-0 right-0 z-30 md:hidden pb-[env(safe-area-inset-bottom)] bg-background/95 backdrop-blur-md border-t border-border/60 px-4 py-3">
         <div className="flex items-center gap-2">
           <div className="flex-1">
             <span className="text-xs text-muted-foreground font-semibold block leading-none">A partir de</span>

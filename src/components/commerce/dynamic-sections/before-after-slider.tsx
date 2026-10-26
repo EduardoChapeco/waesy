@@ -115,10 +115,10 @@ export function BeforeAfterSlider({
 
  {/* Slider Divider Line */}
  <div
- className="absolute top-0 bottom-0 w-1 bg-white cursor-ew-resize"
+ className="absolute top-0 bottom-0 w-1 bg-card cursor-ew-resize"
  style={{ left: `${sliderPosition}%` }}
  >
- <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-9 h-9 rounded-full bg-white text-foreground flex items-center justify-center border border-primary font-bold text-xs">
+ <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-9 h-9 rounded-full bg-card text-foreground flex items-center justify-center border border-primary font-bold text-xs">
  ↔
  </div>
  </div>

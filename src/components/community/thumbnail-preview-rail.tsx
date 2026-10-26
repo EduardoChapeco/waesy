@@ -20,7 +20,7 @@ export function ThumbnailPreviewRail({ items = [], onSelectPost }: ThumbnailPrev
  <button
  key={post.id}
  onClick={() => onSelectPost?.(post)}
- className="group relative flex flex-col justify-end w-[110px] h-[78px] squircle-media squircle-hover bg-muted shrink-0 hover:border-primary transition-all text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="group relative flex flex-col justify-end w-[110px] h-[78px] squircle-media squircle-hover bg-muted shrink-0 hover:border-primary transition-colors duration-200 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <img
  src={post.media_urls[0]}
@@ -31,11 +31,11 @@ export function ThumbnailPreviewRail({ items = [], onSelectPost }: ThumbnailPrev
  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
  <div className="relative z-10 p-2 w-full">
- <p className="text-[10px] font-bold text-white truncate leading-tight">
+ <p className="text-2xs font-bold text-foreground truncate leading-tight">
  {post.author.name}
  </p>
  {post.location_name && (
- <p className="text-[9px] text-white/80 truncate flex items-center gap-1 mt-1">
+ <p className="text-3xs text-foreground/80 truncate flex items-center gap-1 mt-1">
  <MapPin className="size-2.5 shrink-0" />
  {post.location_name}
  </p>

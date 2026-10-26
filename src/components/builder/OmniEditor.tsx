@@ -2294,7 +2294,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                       <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                         key={block.id}
                         onClick={() => handleAddBlock(block.id)}
-                        className="p-3 rounded-lg border border-border/70 bg-card hover:border-foreground/30 hover:shadow-xs transition-all cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="p-3 rounded-lg border border-border/70 bg-card hover:border-foreground/30 hover:shadow-xs transition-colors duration-200 cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2">
@@ -2320,7 +2320,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                   {STUDIO_TEMPLATE_CATALOG.map((tpl) => (
                     <div
                       key={tpl.id}
-                      className="p-3 rounded-lg border border-border/70 bg-card hover:border-foreground/30 hover:shadow-xs transition-all group"
+                      className="p-3 rounded-lg border border-border/70 bg-card hover:border-foreground/30 hover:shadow-xs transition-colors duration-200 group"
                     >
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
@@ -2369,7 +2369,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
         {/* Canvas Central (Área de Visualização WYSIWYG) */}
         <main className="flex-1 bg-muted/15 overflow-y-auto p-4 sm:p-8 flex justify-center">
           <div
-            className={`transition-all duration-300 ${
+            className={`transition-colors duration-200 duration-300 ${
               viewport === "mobile"
                 ? "w-full max-w-sm min-h-dvh shadow-2xl rounded-lg border border-border/80 overflow-hidden bg-background my-auto"
                 : "w-full max-w-6xl shadow-sm bg-background rounded-lg border border-border/60"
@@ -2601,14 +2601,14 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                       setSelectedBlockId(block.id);
                     }
                   }}
-                  className={`relative rounded-lg overflow-hidden transition-all ${
+                  className={`relative rounded-lg overflow-hidden transition-colors duration-200 ${
                     isSelected ? "ring-2 ring-foreground ring-offset-2 ring-offset-background" : ""
                   } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   {/* Tag do Bloco Ativo no Mobile */}
                   {isSelected && (
                     <div className="absolute top-2 left-2 z-30 bg-background/95 backdrop-blur-md border border-border/80 rounded-lg px-2 py-1 shadow-xs flex items-center gap-2">
-                      <span className="size-1.5 rounded-full bg-primary animate-pulse" />
+                      <span className="size-1.5 rounded-full bg-primary animate-pulse motion-reduce:animate-none" />
                       <span className="text-xs text-muted-foreground/75 font-bold text-foreground">{def.name}</span>
                     </div>
                   )}

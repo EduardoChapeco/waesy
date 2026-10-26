@@ -136,13 +136,13 @@ function ConvitePage() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <Badge variant="secondary" className="font-mono text-xs px-2.5 py-0.5 rounded-md flex items-center gap-1">
+                <Badge variant="secondary" className="font-mono text-xs px-3 py-1 rounded-md flex items-center gap-1">
                   <Star className="size-3 text-amber-500" />
                   <span>Membro Fundador</span>
                 </Badge>
 
                 {overview.isAmbassadorActive && (
-                  <Badge className="font-mono text-xs px-2.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                  <Badge className="font-mono text-xs px-3 py-1 rounded-md bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
                     <Flame className="size-3" />
                     <span>Embaixador Ativo</span>
                   </Badge>
@@ -219,15 +219,15 @@ function ConvitePage() {
           {/* Métricas Reais */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
             <div className="rounded-lg border border-border/60 bg-muted/30 p-4 text-center">
-              <span className="text-[11px] font-mono text-muted-foreground uppercase block">Cliques no Link</span>
+              <span className="text-2xs font-mono text-muted-foreground uppercase block">Cliques no Link</span>
               <span className="text-xl font-bold font-mono text-foreground">{overview.clicks}</span>
             </div>
             <div className="rounded-lg border border-border/60 bg-muted/30 p-4 text-center">
-              <span className="text-[11px] font-mono text-muted-foreground uppercase block">Membros Cadastrados</span>
+              <span className="text-2xs font-mono text-muted-foreground uppercase block">Membros Cadastrados</span>
               <span className="text-xl font-bold font-mono text-foreground">{overview.conversions}</span>
             </div>
             <div className="col-span-2 sm:col-span-1 rounded-lg border border-border/60 bg-muted/30 p-4 text-center">
-              <span className="text-[11px] font-mono text-muted-foreground uppercase block">Tokens por Amigo</span>
+              <span className="text-2xs font-mono text-muted-foreground uppercase block">Tokens por Amigo</span>
               <span className="text-xl font-bold font-mono text-emerald-600">+100 Tokens</span>
             </div>
           </div>
@@ -249,7 +249,7 @@ function ConvitePage() {
           <div className="flex justify-center">
             <Link
               to="/entrar"
-              className="h-11 px-8 rounded-lg bg-foreground text-background font-bold text-sm flex items-center justify-center gap-2 hover:bg-foreground/90 transition-all shadow-sm"
+              className="h-11 px-8 rounded-lg bg-foreground text-background font-bold text-sm flex items-center justify-center gap-2 hover:bg-foreground/90 transition-colors duration-200 shadow-sm"
             >
               <span>Entrar com Meu Perfil</span>
               <ArrowRight className="size-4" />
@@ -287,15 +287,15 @@ function ConvitePage() {
               return (
                 <div
                   key={raffle.id}
-                  className="rounded-lg border border-border/80 bg-card p-5 sm:p-6 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-6 shadow-sm hover:border-foreground/30 transition-all"
+                  className="rounded-lg border border-border/80 bg-card p-5 sm:p-6 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-6 shadow-sm hover:border-foreground/30 transition-colors duration-200"
                 >
                   <div className="space-y-3 max-w-xl">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <Badge className="bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 font-mono text-[10px] font-bold uppercase">
+                      <Badge className="bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 font-mono text-2xs font-bold uppercase">
                         Concurso Aberto
                       </Badge>
 
-                      <Badge variant="outline" className="text-[10px] font-medium gap-1">
+                      <Badge variant="outline" className="text-2xs font-medium gap-1">
                         <Store className="size-3" />
                         <span>{raffle.storeName}</span>
                       </Badge>
@@ -373,7 +373,7 @@ function ConvitePage() {
               return (
                 <div
                   key={reward.id}
-                  className="rounded-lg border border-border/70 bg-card overflow-hidden flex flex-col justify-between p-4 space-y-3 hover:border-foreground/30 transition-all shadow-sm"
+                  className="rounded-lg border border-border/70 bg-card overflow-hidden flex flex-col justify-between p-4 space-y-3 hover:border-foreground/30 transition-colors duration-200 shadow-sm"
                 >
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
@@ -381,7 +381,7 @@ function ConvitePage() {
                         {cost} Tokens
                       </span>
                       {reward.stock !== null && (
-                        <span className="text-[10px] font-mono text-muted-foreground">
+                        <span className="text-2xs font-mono text-muted-foreground">
                           {reward.stock} disponíveis
                         </span>
                       )}
@@ -400,7 +400,7 @@ function ConvitePage() {
                     className="w-full h-11 rounded-lg text-xs font-mono font-bold"
                   >
                     {claimingId === reward.id ? (
-                      <Loader2 className="size-3.5 animate-spin mr-2" />
+                      <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none mr-2" />
                     ) : null}
                     {isOutOfStock
                       ? "Esgotado"
@@ -454,7 +454,7 @@ function ConvitePage() {
                     </div>
                     <div className="space-y-1">
                       <span className="text-xs font-bold text-foreground block">{ambassador.displayName}</span>
-                      <Badge className={`font-mono text-[9px] uppercase px-2 py-0 ${tierBadge.color}`}>
+                      <Badge className={`font-mono text-3xs uppercase px-2 py-0 ${tierBadge.color}`}>
                         {tierBadge.label}
                       </Badge>
                     </div>
@@ -522,7 +522,7 @@ function ConvitePage() {
               className="h-11 rounded-lg text-xs font-bold"
             >
               {isSubmittingTicket ? (
-                <Loader2 className="size-4 animate-spin mr-2" />
+                <Loader2 className="size-4 animate-spin motion-reduce:animate-none mr-2" />
               ) : (
                 <Ticket className="size-4 mr-2" />
               )}

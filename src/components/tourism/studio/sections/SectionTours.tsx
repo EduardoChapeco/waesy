@@ -127,7 +127,7 @@ export function SectionTours({ draft, save }: Props) {
             // Auto search on open
             setTimeout(() => handleSearchPromotions(), 50);
           }}
-          className="flex-1 inline-flex items-center justify-center gap-2 h-[34px] rounded border border-border bg-surface text-xs font-semibold text-muted-foreground hover:bg-surface-alt hover:text-foreground transition-all cursor-pointer"
+          className="flex-1 inline-flex items-center justify-center gap-2 h-[34px] rounded border border-border bg-surface text-xs font-semibold text-muted-foreground hover:bg-surface-alt hover:text-foreground transition-colors duration-200 cursor-pointer"
         >
           <Search className="h-3.5 w-3.5" /> Importar Promoção
         </Button>
@@ -185,7 +185,7 @@ export function SectionTours({ draft, save }: Props) {
                 {promotions.map((promo) => (
                   <div
                     key={promo.id}
-                    className="flex gap-3 p-3 rounded border border-border hover:border-brand/40 bg-surface-alt/25 transition-all group text-left"
+                    className="flex gap-3 p-3 rounded border border-border hover:border-brand/40 bg-surface-alt/25 transition-colors duration-200 group text-left"
                   >
                     {promo.cover_image_url && (
                       <img
@@ -203,7 +203,7 @@ export function SectionTours({ draft, save }: Props) {
                           {promo.destination || "Vários destinos"}
                         </p>
                         {promo.departure_date && (
-                          <p className="text-[9px] text-muted-foreground/80 font-sans mt-1">
+                          <p className="text-3xs text-muted-foreground/80 font-sans mt-1">
                             Partida: {new Date(promo.departure_date).toLocaleDateString("pt-BR")}
                           </p>
                         )}
@@ -218,7 +218,7 @@ export function SectionTours({ draft, save }: Props) {
                         <Button
                           type="button"
                           onClick={() => importPromotion(promo)}
-                          className="px-3 py-1 ds-meta bg-primary text-primary-foreground font-semibold rounded hover:bg-primary/95 transition-all cursor-pointer"
+                          className="px-3 py-1 ds-meta bg-primary text-primary-foreground font-semibold rounded hover:bg-primary/95 transition-colors duration-200 cursor-pointer"
                         >
                           Selecionar
                         </Button>

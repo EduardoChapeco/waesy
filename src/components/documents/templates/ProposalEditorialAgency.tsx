@@ -22,55 +22,55 @@ export const ProposalEditorialAgency: React.FC<CommercialDocumentTemplateProps> 
         transform: `scale(${scale})`,
         transformOrigin: "top center",
       }}
-      className={`w-full max-w-5xl mx-auto bg-white text-slate-900 font-sans border border-slate-200/80 shadow-xl rounded-lg overflow-hidden print:shadow-none print:border-none print:p-0 flex flex-col md:flex-row ${className}`}
+      className={`w-full max-w-5xl mx-auto bg-card text-slate-900 font-sans border border-slate-200/80 shadow-xl rounded-lg overflow-hidden print:shadow-none print:border-none print:p-0 flex flex-col md:flex-row ${className}`}
     >
       {/* ── 1. Barra Lateral Esquerda: 25% da Largura (Dark Slate Luxury) ── */}
-      <div className="w-full md:w-72 bg-slate-950 text-white p-8 flex flex-col justify-between shrink-0">
+      <div className="w-full md:w-72 bg-slate-950 text-foreground p-8 flex flex-col justify-between shrink-0">
         <div>
           {/* Identidade da Agência */}
           <div className="flex items-center gap-3 mb-8">
-            <div className="size-10 rounded-lg bg-white text-slate-950 font-black text-xl flex items-center justify-center">
+            <div className="size-10 rounded-lg bg-card text-slate-950 font-black text-xl flex items-center justify-center">
               W
             </div>
             <div>
               <span className="text-xs uppercase tracking-widest text-slate-400 font-bold block">
                 STUDIO PROPOSAL
               </span>
-              <span className="font-bold text-lg tracking-tight text-white">
+              <span className="font-bold text-lg tracking-tight text-foreground">
                 {data.issuer.tradingName || data.issuer.companyName}
               </span>
             </div>
           </div>
 
           {/* Dados do Cliente */}
-          <div className="mb-8 p-4 rounded-lg bg-white/5 border border-white/10 text-xs space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+          <div className="mb-8 p-4 rounded-lg bg-card/5 border border-white/10 text-xs space-y-1">
+            <span className="text-2xs font-bold uppercase tracking-wider text-slate-400 block mb-1">
               PROPOSTA EXCLUSIVA PARA
             </span>
-            <p className="font-bold text-sm text-white">{data.client.name}</p>
+            <p className="font-bold text-sm text-foreground">{data.client.name}</p>
             {data.client.companyName && (
               <p className="text-slate-300">{data.client.companyName}</p>
             )}
-            <p className="text-slate-400 font-mono text-[11px] pt-1">
+            <p className="text-slate-400 font-mono text-2xs pt-1">
               Código: {data.code}
             </p>
           </div>
 
           {/* Índice Visual / Escopo */}
           <div className="space-y-3 text-xs">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+            <span className="text-2xs font-bold uppercase tracking-wider text-slate-400 block">
               ESTRUTURA DO PROJETO
             </span>
             <div className="flex items-center gap-2 text-slate-300">
-              <span className="size-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-mono">1</span>
+              <span className="size-5 rounded-full bg-card/10 flex items-center justify-center text-2xs font-mono">1</span>
               <span>Diagnóstico e Escopo</span>
             </div>
             <div className="flex items-center gap-2 text-slate-300">
-              <span className="size-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-mono">2</span>
+              <span className="size-5 rounded-full bg-card/10 flex items-center justify-center text-2xs font-mono">2</span>
               <span>Execução e Entregáveis</span>
             </div>
             <div className="flex items-center gap-2 text-slate-300">
-              <span className="size-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-mono">3</span>
+              <span className="size-5 rounded-full bg-card/10 flex items-center justify-center text-2xs font-mono">3</span>
               <span>Investimento e Ativação</span>
             </div>
           </div>
@@ -78,14 +78,14 @@ export const ProposalEditorialAgency: React.FC<CommercialDocumentTemplateProps> 
 
         {/* Rodapé da Barra Lateral */}
         <div className="pt-8 border-t border-white/10 text-xs text-slate-400 space-y-1">
-          <p className="text-white font-medium">Validade da Proposta:</p>
+          <p className="text-foreground font-medium">Validade da Proposta:</p>
           <p>{data.validUntilDate}</p>
-          <p className="text-[11px] pt-2 text-slate-500">Contato: {data.issuer.phoneOrWhatsapp}</p>
+          <p className="text-2xs pt-2 text-slate-500">Contato: {data.issuer.phoneOrWhatsapp}</p>
         </div>
       </div>
 
       {/* ── 2. Área Principal: 75% da Largura (Clean Editorial Paper) ── */}
-      <div className="flex-1 p-8 sm:p-12 flex flex-col justify-between bg-white">
+      <div className="flex-1 p-8 sm:p-12 flex flex-col justify-between bg-card">
         <div>
           {/* Título Editorial Display */}
           <div className="mb-8">
@@ -105,11 +105,11 @@ export const ProposalEditorialAgency: React.FC<CommercialDocumentTemplateProps> 
                 <div key={stage.step} className="p-4 rounded-lg bg-slate-50 border border-slate-200/80 flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      <span className="text-2xs font-bold uppercase tracking-wider text-slate-400">
                         Etapa 0{stage.step}
                       </span>
                       {stage.duration && (
-                        <span className="text-[10px] font-semibold text-slate-600 flex items-center gap-1">
+                        <span className="text-2xs font-semibold text-slate-600 flex items-center gap-1">
                           <Clock className="size-3 text-slate-400" />
                           {stage.duration}
                         </span>
@@ -142,12 +142,12 @@ export const ProposalEditorialAgency: React.FC<CommercialDocumentTemplateProps> 
           )}
 
           {/* Tabela de Investimento Resumido */}
-          <div className="p-6 rounded-lg bg-slate-950 text-white mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-md">
+          <div className="p-6 rounded-lg bg-slate-950 text-foreground mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-md">
             <div>
               <span className="text-xs uppercase font-bold tracking-widest text-slate-400 block mb-1">
                 INVESTIMENTO TOTAL DO PROJETO
               </span>
-              <div className="text-3xl sm:text-4xl font-black font-mono tracking-tight text-white">
+              <div className="text-3xl sm:text-4xl font-black font-mono tracking-tight text-foreground">
                 {formatMoney(data.totalCents)}
               </div>
               {data.paymentTerms.installmentsCount && (
@@ -168,7 +168,7 @@ export const ProposalEditorialAgency: React.FC<CommercialDocumentTemplateProps> 
                 <Button
                   size="lg"
                   onClick={onAcceptProposal}
-                  className="h-12 px-6 rounded-lg font-bold text-sm bg-white text-slate-950 hover:bg-slate-100 transition-transform active:scale-95 shadow-md flex items-center gap-2"
+                  className="h-12 px-6 rounded-lg font-bold text-sm bg-card text-slate-950 hover:bg-slate-100 transition-transform active:scale-95 shadow-md flex items-center gap-2"
                 >
                   <span>Aceitar Proposta e Iniciar</span>
                   <ArrowRight className="size-4" />
@@ -181,7 +181,7 @@ export const ProposalEditorialAgency: React.FC<CommercialDocumentTemplateProps> 
         {/* Rodapé com Assinaturas */}
         <div className="pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
           <p>© {new Date().getFullYear()} {data.issuer.companyName}. Todos os direitos reservados.</p>
-          <div className="flex items-center gap-2 font-mono text-[11px]">
+          <div className="flex items-center gap-2 font-mono text-2xs">
             <ShieldCheck className="size-4 text-emerald-600" />
             <span>Assinatura Digital Auditável Waesy</span>
           </div>

@@ -102,7 +102,7 @@ export const listChatThreads = createServerFn({ method: "GET" })
  `
  id, store_id, customer_id, guest_name, guest_email, status, subject,
  department, assigned_to_profile_id, order_id, priority, satisfaction_rating,
- internal_notes, updated_at, created_at, thread_type, context_type, entity_id, metadata,
+ internal_notes, updated_at, created_at, thread_type, context_type, entity_id, metadata, tags,
  chat_messages(id, message, message_type, created_at, is_staff_reply, attachments, payload)
  `,
  )
@@ -195,6 +195,7 @@ export const listChatThreads = createServerFn({ method: "GET" })
 			},
  order_id: thread.order_id,
  internal_notes: thread.internal_notes,
+        tags: thread.tags || [],
  updated_at: thread.updated_at,
  created_at: thread.created_at,
  last_message: lastMsg ? lastMsg.message : "",
@@ -866,7 +867,7 @@ export const createSupportRmaTicket = createServerFn({ method: "POST" })
  // Publica card interativo do ticket na thread de chat
  await db.from("chat_messages").insert({
  thread_id: data.threadId,
- message: `🚨 Solicitação de ${data.ticket_type === "return_exchange" ? "Troca/Devolução" : "Suporte"}: "${data.title}"`,
+ message: `[CHAMADO] Solicitação de ${data.ticket_type === "return_exchange" ? "Troca/Devolução" : "Suporte"}: "${data.title}"`,
  message_type: "rma_ticket",
  payload: {
  ticket_id: ticket.id,
@@ -913,7 +914,7 @@ export const updateTicketStatus = createServerFn({ method: "POST" })
  if (ticket.thread_id) {
  await db.from("chat_messages").insert({
  thread_id: ticket.thread_id,
- message: `📢 Status do Chamado atualizado para: ${data.status.toUpperCase()}. ${data.resolution_notes || ""}`,
+ message: `[STATUS] Status do Chamado atualizado para: ${data.status.toUpperCase()}. ${data.resolution_notes || ""}`,
  message_type: "system_event",
  payload: {
  ticket_id: ticket.id,
@@ -1072,3 +1073,205 @@ export const saveStoreSupportSettings = createServerFn({ method: "POST" })
 
 		return { success: true, support_settings: updatedSupportSettings };
 	});
+
+
+// ============================================================
+// 1.5. Whaticket / Chatwoot Parity: Quick Replies, Transfers & Tags
+// ============================================================
+
+export const transferChatThread = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      threadId: z.string().uuid(),
+      toDepartment: z.string().min(1),
+      toProfileId: z.string().uuid().nullable().optional(),
+      contextNotes: z.string().min(3, "Nota de contexto obrigatória"),
+    })
+  )
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity);
+    const db = getServerClient();
+
+    // 1. Consultar thread atual
+    const { data: thread } = await db
+      .from("chat_threads")
+      .select("id, store_id, department, assigned_to_profile_id")
+      .eq("id", data.threadId)
+      .eq("store_id", identity.store_id)
+      .single();
+
+    if (!thread) throw new Error("Conversa não encontrada.");
+
+    // 2. Atualizar thread com novo departamento e notas
+    await db
+      .from("chat_threads")
+      .update({
+        department: data.toDepartment,
+        assigned_to_profile_id: data.toProfileId || null,
+        internal_notes: data.contextNotes,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", data.threadId)
+      .eq("store_id", identity.store_id);
+
+    // 3. Registrar log de transferência
+    try {
+      await db.from("chat_thread_transfers").insert({
+        thread_id: data.threadId,
+        store_id: identity.store_id,
+        transferred_by_profile_id: identity.id,
+        from_department: thread.department,
+        to_department: data.toDepartment,
+        from_profile_id: thread.assigned_to_profile_id,
+        to_profile_id: data.toProfileId || null,
+        context_notes: data.contextNotes,
+      });
+    } catch {
+      // Best-effort audit log
+    }
+
+    // 4. Inserir nota interna (whisper) com contexto para a nova equipe
+    const { data: whisperMsg } = await db.from("chat_messages").insert({
+      thread_id: data.threadId,
+      message: `[TRANSFERÊNCIA] Transferência para [${data.toDepartment.toUpperCase()}]: ${data.contextNotes}`,
+      message_type: "system_event",
+      is_staff_reply: true,
+      sender_profile_id: identity.id,
+      payload: {
+        is_whisper: true,
+        transfer: {
+          fromDepartment: thread.department,
+          toDepartment: data.toDepartment,
+          fromProfileId: thread.assigned_to_profile_id,
+          toProfileId: data.toProfileId,
+          notes: data.contextNotes,
+          transferredByName: (identity as any).full_name || (identity as any).fullName || "Operador",
+        },
+      },
+    }).select().single();
+
+    return { success: true, whisperMsg };
+  });
+
+export const updateThreadTags = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      threadId: z.string().uuid(),
+      tags: z.array(z.string()),
+    })
+  )
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity);
+    const db = getServerClient();
+
+    const { data: updated, error } = await db
+      .from("chat_threads")
+      .update({
+        tags: data.tags,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", data.threadId)
+      .eq("store_id", identity.store_id)
+      .select("id, tags")
+      .single();
+
+    if (error) throw new Error(`Falha ao atualizar tags: ${error.message}`);
+    return updated;
+  });
+
+export const listChatQuickReplies = createServerFn({ method: "GET" })
+  .handler(async () => {
+    try {
+      const identity = await getServerIdentity();
+      assertStoreAccess(identity);
+      const db = getServerClient();
+
+      const { data, error } = await db
+        .from("chat_quick_replies")
+        .select("id, shortcut, title, content, media_url, category")
+        .eq("store_id", identity.store_id)
+        .order("shortcut", { ascending: true });
+
+      if (error || !data || data.length === 0) {
+        // Fallback canônico de respostas rápidas universais
+        return [
+          {
+            id: "qr_ola",
+            shortcut: "ola",
+            title: "Saudação de Boas-Vindas",
+            content: "Olá! Seja muito bem-vindo ao nosso atendimento oficial. Como podemos te ajudar hoje?",
+            category: "geral",
+          },
+          {
+            id: "qr_pix",
+            shortcut: "pix",
+            title: "Chave PIX e Pagamento",
+            content: "Nossa chave PIX oficial é validada instantaneamente direto no pedido. Assim que pagar, a confirmação ocorre em segundos!",
+            category: "financeiro",
+          },
+          {
+            id: "qr_horario",
+            shortcut: "horario",
+            title: "Horário de Expediente",
+            content: "Nosso atendimento funciona de Segunda a Sexta das 08h às 18h e Sábados das 08h às 12h.",
+            category: "suporte",
+          },
+          {
+            id: "qr_rastreio",
+            shortcut: "rastreio",
+            title: "Rastreio e Entrega",
+            content: "Seu pedido já está em processamento logístico e você pode acompanhar em tempo real no nosso link de rastreio.",
+            category: "logistica",
+          },
+          {
+            id: "qr_cardapio",
+            shortcut: "cardapio",
+            title: "Cardápio e Catálogo",
+            content: "Confira todos os nossos produtos, pratos e promoções do dia em nosso catálogo digital oficial!",
+            category: "vendas",
+          },
+        ];
+      }
+
+      return data;
+    } catch {
+      return [];
+    }
+  });
+
+export const createChatQuickReply = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      shortcut: z.string().min(1).max(30),
+      title: z.string().min(1).max(60),
+      content: z.string().min(1).max(1000),
+      media_url: z.string().url().optional(),
+      category: z.string().default("geral"),
+    })
+  )
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity);
+    const db = getServerClient();
+
+    const cleanShortcut = data.shortcut.replace(/^\//, "").toLowerCase().trim();
+
+    const { data: created, error } = await db
+      .from("chat_quick_replies")
+      .insert({
+        store_id: identity.store_id,
+        shortcut: cleanShortcut,
+        title: data.title.trim(),
+        content: data.content.trim(),
+        media_url: data.media_url || null,
+        category: data.category,
+        created_by: identity.id,
+      })
+      .select()
+      .single();
+
+    if (error) throw new Error(`Falha ao criar resposta rápida: ${error.message}`);
+    return created;
+  });

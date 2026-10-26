@@ -366,7 +366,7 @@ function AdminOrdersPage() {
  <button
  key={mode.id}
  onClick={() => setViewMode(mode.id)}
- className={`px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+ className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors duration-200 flex items-center gap-2 cursor-pointer ${
  isActive
  ? "bg-card text-foreground shadow-xs"
  : "text-muted-foreground hover:text-foreground"
@@ -421,7 +421,7 @@ function AdminOrdersPage() {
  <div className="space-y-3">
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <div className="flex items-center gap-2">
- <span className="size-2.5 rounded-full bg-amber-500 animate-pulse" />
+ <span className="size-2.5 rounded-full bg-amber-500 animate-pulse motion-reduce:animate-none" />
  <h3 className="text-sm font-bold text-foreground">Novas Reservas</h3>
  </div>
  <Badge variant="secondary" className="font-bold text-xs">
@@ -738,7 +738,7 @@ function AdminOrdersPage() {
  <div className="space-y-3 p-4 rounded-lg border border-border/70 bg-card/60">
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <div className="flex items-center gap-2">
- <span className="size-2.5 rounded-full bg-destructive animate-pulse" />
+ <span className="size-2.5 rounded-full bg-destructive animate-pulse motion-reduce:animate-none" />
  <h3 className="text-sm font-bold text-foreground">Novos Pedidos</h3>
  </div>
  <Badge variant="secondary" className="font-bold text-xs">
@@ -1142,7 +1142,7 @@ function AdminOrdersPage() {
         [itemKey]: !prev[itemKey],
       }))
     }
-    className={`flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+    className={`flex items-center justify-between p-3 rounded-lg border transition-colors duration-200 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
  isChecked
  ? "bg-emerald-500/10 border-emerald-500/30 text-foreground"
  : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/60"
@@ -1152,7 +1152,7 @@ function AdminOrdersPage() {
  <div
  className={`size-5 rounded-md border flex items-center justify-center transition-colors shrink-0 ${
  isChecked
- ? "bg-emerald-600 border-emerald-600 text-white"
+ ? "bg-emerald-600 border-emerald-600 text-foreground"
  : "border-border bg-card"
  }`}
  >
@@ -1207,9 +1207,9 @@ function AdminOrdersPage() {
  size="sm"
  onClick={() => handleStatusChange(order.id, "ready_for_pickup")}
  disabled={isProcessing}
- className={`flex-1 rounded-lg font-bold text-xs h-10 transition-all ${
+ className={`flex-1 rounded-lg font-bold text-xs h-10 transition-colors duration-200 ${
  isAllChecked
- ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+ ? "bg-emerald-600 hover:bg-emerald-700 text-foreground"
  : "bg-foreground text-background"
  }`}
  >

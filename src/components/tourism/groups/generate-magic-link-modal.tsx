@@ -131,7 +131,7 @@ export function GenerateMagicLinkModal({
  ) : (
  <div className="space-y-4">
  <div className="p-4 rounded-lg bg-muted/20 border border-border/60 space-y-2">
- <span className="text-[11px] font-mono text-muted-foreground">
+ <span className="text-2xs font-mono text-muted-foreground">
  Link de Acesso Único
  </span>
  <Input
@@ -155,7 +155,7 @@ export function GenerateMagicLinkModal({
  <Button
  type="button"
  onClick={handleWhatsApp}
- className="w-full sm:w-1/2 h-10 rounded-lg text-xs font-semibold gap-2 cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white"
+ className="w-full sm:w-1/2 h-10 rounded-lg text-xs font-semibold gap-2 cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-foreground"
  >
  <Share2 className="size-3.5" /> Enviar no WhatsApp
  </Button>

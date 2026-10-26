@@ -76,7 +76,7 @@ export function ProductModifiersCard({
  <SlidersHorizontal className="size-4 text-primary" />
  <span>Adicionais e Modificadores</span>
  {groups.length > 0 && (
- <Badge variant="secondary" className="text-[10px] font-mono px-2 py-0 h-4.5">
+ <Badge variant="secondary" className="text-2xs font-mono px-2 py-0 h-4.5">
  {selectedGroupIds.length}/{groups.length} ativos
  </Badge>
  )}
@@ -96,7 +96,7 @@ export function ProductModifiersCard({
 
  <Link
  to="/workspace/catalogo/atributos"
- className="text-[11px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1 transition-colors"
+ className="text-2xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 transition-colors"
  title="Abrir gerenciador de atributos"
  >
  <span>Gerenciar</span>
@@ -105,7 +105,7 @@ export function ProductModifiersCard({
  </div>
  </div>
 
- <p className="text-[11px] text-muted-foreground leading-relaxed">
+ <p className="text-2xs text-muted-foreground leading-relaxed">
  Selecione quais grupos de adicionais e opções estarão disponíveis para o cliente escolher neste produto:
  </p>
 
@@ -150,11 +150,11 @@ export function ProductModifiersCard({
  </div>
 
  {/* REGRAS & BADGES */}
- <div className="flex flex-wrap items-center gap-2 text-[10px]">
+ <div className="flex flex-wrap items-center gap-2 text-2xs">
  <Badge
  variant={grp.is_required ? "default" : "secondary"}
  className={cn(
- "text-[9px] px-2 py-0 h-4 font-semibold uppercase tracking-wider",
+ "text-3xs px-2 py-0 h-4 font-semibold uppercase tracking-wider",
  grp.is_required ? "bg-warning text-warning-foreground hover:bg-warning/90" : "text-muted-foreground",
  )}
  >
@@ -180,7 +180,7 @@ export function ProductModifiersCard({
  {values.slice(0, 4).map((val: any) => (
  <span
  key={val.id || val.label}
- className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted/60 text-[10px] text-muted-foreground font-medium"
+ className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted/60 text-2xs text-muted-foreground font-medium"
  >
  <span>{val.label}</span>
  {val.price_modifier_cents > 0 && (
@@ -191,7 +191,7 @@ export function ProductModifiersCard({
  </span>
  ))}
  {values.length > 4 && (
- <span className="text-[10px] text-muted-foreground self-center px-1">
+ <span className="text-2xs text-muted-foreground self-center px-1">
  +{values.length - 4} mais
  </span>
  )}
@@ -221,7 +221,7 @@ export function ProductModifiersCard({
             onClick={handleCreateNew}
             className="group relative flex flex-col items-center justify-center p-8 text-center rounded-lg border-2 border-dashed border-border/80 hover:border-primary/50 bg-muted/10 hover:bg-primary/[0.02] cursor-pointer transition-colors space-y-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
- <div className="size-12 rounded-lg bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center text-primary transition-all group-hover:scale-110 shadow-xs ring-4 ring-primary/5">
+ <div className="size-12 rounded-lg bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center text-primary transition-transform duration-200 group-hover:scale-110 shadow-xs ring-4 ring-primary/5">
  <Plus className="size-6 stroke-[2.5]" />
  </div>
 
@@ -229,7 +229,7 @@ export function ProductModifiersCard({
  <h4 className="text-xs font-bold text-foreground">
  Criar Primeiro Grupo de Adicionais
  </h4>
- <p className="text-[11px] text-muted-foreground leading-relaxed">
+ <p className="text-2xs text-muted-foreground leading-relaxed">
  Turbine seu catálogo adicionando opções como ponto da carne, bebidas, tamanhos e adicionais extras pagos.
  </p>
  </div>

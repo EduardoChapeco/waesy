@@ -282,26 +282,26 @@ export function TravelPackageDetailView({
  <div className="relative w-full h-[50vh] min-h-[350px] max-h-[500px] overflow-hidden sm:rounded-b-lg">
  <img src={heroImage} alt={productTitle} className="absolute inset-0 size-full object-cover" />
  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent" />
- <div className="absolute bottom-0 left-0 w-full p-5 sm:p-7 flex flex-col justify-end text-white">
+ <div className="absolute bottom-0 left-0 w-full p-5 sm:p-7 flex flex-col justify-end text-foreground">
  {(destination.country || destination.region || destination.state) && (
  <div className="flex items-center gap-2 mb-2">
  {destination.country && (
- <span className="px-3 py-1 rounded-full text-xs font-bold bg-white/20 backdrop-blur-md uppercase tracking-wider">
+ <span className="px-3 py-1 rounded-full text-xs font-bold bg-card/20 backdrop-blur-md uppercase tracking-wider">
  {destination.country}
  </span>
  )}
  {destination.country && (destination.region || destination.state) && (
- <span className="text-xs text-white/80">•</span>
+ <span className="text-xs text-foreground/80">•</span>
  )}
  {(destination.region || destination.state) && (
- <span className="text-xs text-white/90 font-medium">{destination.region || destination.state}</span>
+ <span className="text-xs text-foreground/90 font-medium">{destination.region || destination.state}</span>
  )}
  </div>
  )}
- <h1 className="text-2xl sm:text-3xl font-serif font-bold text-white tracking-tight drop-shadow-sm">
+ <h1 className="text-2xl sm:text-3xl font-serif font-bold text-foreground tracking-tight drop-shadow-sm">
  {destination.name || productTitle}
  </h1>
- <p className="text-xs sm:text-sm text-white/85 mt-1 max-w-md line-clamp-2 leading-relaxed">
+ <p className="text-xs sm:text-sm text-foreground/85 mt-1 max-w-md line-clamp-2 leading-relaxed">
  {resort.name || "Experiência completa com hospedagem, lazer e atrações locais."}
  </p>
  </div>
@@ -538,7 +538,7 @@ export function TravelPackageDetailView({
  />
  </div>
  </div>
- <span className="absolute bottom-0 right-0 size-5 bg-sky-500 text-white rounded-full flex items-center justify-center ring-2 ring-background">
+ <span className="absolute bottom-0 right-0 size-5 bg-sky-500 text-foreground rounded-full flex items-center justify-center ring-2 ring-background">
  <Check className="size-3 stroke-[3]" />
  </span>
  </div>

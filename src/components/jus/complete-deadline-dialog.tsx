@@ -70,7 +70,7 @@ export function CompleteDeadlineDialog({
  <form onSubmit={handleComplete} className="space-y-4 py-2">
  {deadline.process_number && (
  <div className="p-3 rounded-lg bg-muted/30 border border-border/80 space-y-1">
- <span className="text-[10px] font-bold text-muted-foreground uppercase font-mono">
+ <span className="text-2xs font-bold text-muted-foreground uppercase font-mono">
  Processo Vinculado
  </span>
  <p className="font-mono text-xs font-bold text-foreground">
@@ -89,7 +89,7 @@ export function CompleteDeadlineDialog({
  placeholder="Ex: 2026.0019283-1 ou recibo PJe/Eproc..."
  className="h-11 rounded-lg bg-background font-mono text-xs font-medium"
  />
- <p className="text-[10px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Guarda probatória do cumprimento tempestivo da obrigação processual.
  </p>
  </div>
@@ -106,7 +106,7 @@ export function CompleteDeadlineDialog({
  <Button
  type="submit"
  disabled={isSubmitting}
- className="h-11 px-6 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs gap-2"
+ className="h-11 px-6 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-foreground font-bold text-xs gap-2"
  >
  <CheckCircle2 className="size-4" />
  <span>{isSubmitting ? "Registrando..." : "Confirmar Protocolo"}</span>

@@ -15,6 +15,9 @@ import { StoreCard } from "@/components/commerce/store-card";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
 import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
 import { GroceryProductCard } from "@/components/commerce/grocery-product-card";
+import { ProductOptionDrawer, type CustomizableProduct } from "@/components/commerce/ProductOptionDrawer";
+import { addToCart } from "@/services/cart.functions";
+import { toast } from "sonner";
 import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
 import { ModularSurfaceFeed } from "@/components/commerce/modular-surface-feed";
 import { listActiveBanners } from "@/services/banner.functions";
@@ -26,6 +29,7 @@ import type { ProductCardDTO } from "@/types/catalog";
 import { resolveNicheDepartments } from "@/lib/niche-helpers";
 import { useCart } from "@/lib/cart-context";
 import { formatMoney } from "@/lib/money";
+import { cn } from "@/lib/utils";
 
 const SearchSchema = z.object({
  q: z.string().optional(),
@@ -117,6 +121,8 @@ function GastronomiaVerticalPage() {
 
  const [activeDepartment, setActiveDepartment] = useState(search.categoria || "todos");
  const [viewMode, setViewMode] = useState<ViewModeType>(search.view || "feed");
+  const [selectedProductForOptions, setSelectedProductForOptions] = useState<CustomizableProduct | null>(null);
+  const { refreshCart } = useCart();
 
  const handleDepartmentChange = (depId: string) => {
  setActiveDepartment(depId);
@@ -187,6 +193,37 @@ function GastronomiaVerticalPage() {
           <HotpagesRail hotpages={hotpages} />
         </section>
       )}
+
+      
+      {/* ── Subniche Squircle Carousel (iFood / Noor Ergonomics - Apple HIG) ── */}
+      <section aria-label="Categorias de Gastronomia" className="w-full">
+        <div className="tab-list flex items-center gap-3 overflow-x-auto no-scrollbar py-1 snap-x snap-mandatory [mask-image:linear-gradient(to_right,black_90%,transparent_100%)]">
+          {GASTRONOMIA_DEPARTMENTS.map((dept) => {
+            const isActive = activeDepartment === dept.id;
+            const Icon = dept.icon;
+            return (
+              <button
+                key={dept.id}
+                type="button"
+                onClick={() => handleDepartmentChange(dept.id)}
+                className={cn(
+                  "h-16 min-h-11 min-w-24 sm:min-w-28 px-3 py-2 rounded-lg border flex flex-col items-center justify-center gap-1 shrink-0 snap-start transition-colors cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  isActive
+                    ? "bg-foreground text-background border-foreground shadow-xs font-bold"
+                    : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
+                )}
+              >
+                <div className={cn("size-7 rounded-lg flex items-center justify-center shrink-0", isActive ? "bg-background/20 text-background" : "bg-primary/10 text-primary")}>
+                  {Icon ? <Icon size={18} weight="bold" /> : <ForkKnife size={18} weight="bold" />}
+                </div>
+                <span className="text-2xs font-semibold tracking-tight text-center truncate max-w-20 block">
+                  {dept.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </section>
 
       {/* ── 3. Discovery Control Bar ── */}
       <DiscoveryControlBar
@@ -265,13 +302,13 @@ function GastronomiaVerticalPage() {
 
       {/* ── BARRA FLUTUANTE DA SACOLA (3 TOQUES - APPLE HIG THUMB ZONE) ── */}
       {cartItemsCount > 0 && (
-        <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 z-40 p-3 rounded-lg bg-foreground text-background shadow-xs flex items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-4 border border-background/20">
+        <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 z-30 p-3 rounded-lg bg-foreground text-background shadow-xs flex items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-4 border border-background/20">
           <div className="flex items-center gap-3">
             <div className="size-10 rounded-lg bg-primary/20 text-primary flex items-center justify-center shrink-0">
               <ShoppingBag className="size-5" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] text-background/70 font-mono uppercase tracking-wider">
+              <span className="text-2xs text-background/70 font-mono uppercase tracking-wider">
                 {cartItemsCount} {cartItemsCount === 1 ? "item adicionado" : "itens adicionados"}
               </span>
               <span className="text-sm font-black font-mono">
@@ -283,13 +320,36 @@ function GastronomiaVerticalPage() {
           <Button
             size="sm"
             onClick={() => setIsCartOpen(true)}
-            className="h-10 px-4 rounded-lg bg-primary text-primary-foreground font-bold text-xs gap-2 shadow-xs cursor-pointer shrink-0"
+            className="h-11 min-h-11 px-4 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-xs gap-2 shadow-xs cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <span>Ver Sacola</span>
             <ArrowRight className="size-3.5" />
           </Button>
         </div>
       )}
+      {/* ── Drawer 100dvh para Customização de Lanches/Pratos ── */}
+      <ProductOptionDrawer
+        isOpen={!!selectedProductForOptions}
+        onClose={() => setSelectedProductForOptions(null)}
+        product={selectedProductForOptions}
+        onConfirmAdd={async ({ product, quantity, selectedOptions, specialInstructions, totalCents }) => {
+          try {
+            await addToCart({
+              data: {
+                productId: product.id,
+                quantity,
+                options: selectedOptions,
+              },
+            });
+            await refreshCart();
+            toast.success(`${product.title} adicionado à sacola!`);
+            setSelectedProductForOptions(null);
+            setIsCartOpen(true);
+          } catch (err: any) {
+            toast.error(err?.message || "Erro ao adicionar item customizado à sacola.");
+          }
+        }}
+      />
     </div>
   );
 }

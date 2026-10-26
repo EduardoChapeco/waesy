@@ -90,7 +90,7 @@ export function PortalCarnesBillsWidget({ content, design_tokens }: PortalCarnes
  <div
  key={bill.id}
  className={cn(
- "p-5 rounded-lg border transition-all duration-200 shadow-sm flex flex-col justify-between gap-4",
+ "p-5 rounded-lg border transition-colors duration-200 duration-200 shadow-sm flex flex-col justify-between gap-4",
  bill.status === "paid"
  ? "bg-card/60 border-border/50 opacity-85"
  : bill.status === "overdue"
@@ -137,7 +137,7 @@ export function PortalCarnesBillsWidget({ content, design_tokens }: PortalCarnes
  </div>
  ) : (
  <Button
- className="w-full min-h-11 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
+ className="w-full min-h-11 gap-2 bg-emerald-600 hover:bg-emerald-700 text-foreground font-medium"
  onClick={() => {
  setSelectedBill(bill);
  setIsPixModalOpen(true);
@@ -166,18 +166,18 @@ export function PortalCarnesBillsWidget({ content, design_tokens }: PortalCarnes
  </DialogHeader>
 
  <div className="flex flex-col items-center py-4 space-y-4">
- <div className="w-48 h-48 bg-white p-3 rounded-lg border border-border shadow-inner flex items-center justify-center">
+ <div className="w-48 h-48 bg-card p-3 rounded-lg border border-border shadow-inner flex items-center justify-center">
  {/* Simulação visual do QR Code com SVG nativo */}
  <div className="w-full h-full border-4 border-black/80 rounded-lg p-2 flex flex-col justify-between">
  <div className="flex justify-between">
- <div className="w-8 h-8 bg-black"></div>
- <div className="w-8 h-8 bg-black"></div>
+ <div className="w-8 h-8 bg-foreground"></div>
+ <div className="w-8 h-8 bg-foreground"></div>
  </div>
- <div className="text-center font-mono text-[10px] text-black font-bold tracking-widest">
+ <div className="text-center font-mono text-2xs text-foreground font-bold tracking-widest">
  PIX BANCO CENTRAL
  </div>
  <div className="flex justify-between">
- <div className="w-8 h-8 bg-black"></div>
+ <div className="w-8 h-8 bg-foreground"></div>
  <div className="w-4 h-4 bg-emerald-600 rounded-full"></div>
  </div>
  </div>

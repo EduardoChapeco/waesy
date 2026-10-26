@@ -259,7 +259,7 @@ export default function WorkspaceSocialStudioPage() {
               className="h-11 rounded-lg text-xs font-bold gap-2 cursor-pointer"
             >
               {isExportingPdf ? (
-                <RefreshCw className="size-4 animate-spin text-primary" />
+                <RefreshCw className="size-4 animate-spin motion-reduce:animate-none text-primary" />
               ) : (
                 <FileText className="size-4 text-primary" />
               )}
@@ -273,7 +273,7 @@ export default function WorkspaceSocialStudioPage() {
             className="h-11 rounded-lg text-xs font-bold bg-primary text-primary-foreground cursor-pointer shadow-sm"
           >
             {isExporting ? (
-              <RefreshCw className="size-4 mr-2 animate-spin" />
+              <RefreshCw className="size-4 mr-2 animate-spin motion-reduce:animate-none" />
             ) : (
               <Download className="size-4 mr-2" />
             )}
@@ -316,7 +316,7 @@ export default function WorkspaceSocialStudioPage() {
                 type="button"
                 onClick={() => setTemplate("product")}
                 className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "p-3 rounded-lg border text-left transition-all cursor-pointer flex flex-col gap-2",
+                  "p-3 rounded-lg border text-left transition-colors duration-200 cursor-pointer flex flex-col gap-2",
                   template === "product"
                     ? "border-primary bg-primary/5 text-primary font-bold shadow-xs"
                     : "border-border hover:bg-muted/30 text-foreground"
@@ -333,7 +333,7 @@ export default function WorkspaceSocialStudioPage() {
                   setRatio("1:1");
                 }}
                 className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "p-3 rounded-lg border text-left transition-all cursor-pointer flex flex-col gap-2",
+                  "p-3 rounded-lg border text-left transition-colors duration-200 cursor-pointer flex flex-col gap-2",
                   template === "carousel"
                     ? "border-primary bg-primary/5 text-primary font-bold shadow-xs"
                     : "border-border hover:bg-muted/30 text-foreground"
@@ -350,7 +350,7 @@ export default function WorkspaceSocialStudioPage() {
                   setRatio("16:9");
                 }}
                 className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "p-3 rounded-lg border text-left transition-all cursor-pointer flex flex-col gap-2",
+                  "p-3 rounded-lg border text-left transition-colors duration-200 cursor-pointer flex flex-col gap-2",
                   template === "presentation"
                     ? "border-primary bg-primary/5 text-primary font-bold shadow-xs"
                     : "border-border hover:bg-muted/30 text-foreground"
@@ -364,7 +364,7 @@ export default function WorkspaceSocialStudioPage() {
                 type="button"
                 onClick={() => setTemplate("travel")}
                 className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "p-3 rounded-lg border text-left transition-all cursor-pointer flex flex-col gap-2",
+                  "p-3 rounded-lg border text-left transition-colors duration-200 cursor-pointer flex flex-col gap-2",
                   template === "travel"
                     ? "border-primary bg-primary/5 text-primary font-bold shadow-xs"
                     : "border-border hover:bg-muted/30 text-foreground"
@@ -378,7 +378,7 @@ export default function WorkspaceSocialStudioPage() {
                 type="button"
                 onClick={() => setTemplate("quote")}
                 className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "p-3 rounded-lg border text-left transition-all cursor-pointer flex flex-col gap-2",
+                  "p-3 rounded-lg border text-left transition-colors duration-200 cursor-pointer flex flex-col gap-2",
                   template === "quote"
                     ? "border-primary bg-primary/5 text-primary font-bold shadow-xs"
                     : "border-border hover:bg-muted/30 text-foreground"
@@ -463,7 +463,7 @@ export default function WorkspaceSocialStudioPage() {
                     type="button"
                     onClick={() => setActiveSlideIndex(idx)}
                     className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                      "py-2 px-1 rounded-lg text-center border text-xs font-semibold transition-all cursor-pointer",
+                      "py-2 px-1 rounded-lg text-center border text-xs font-semibold transition-colors duration-200 cursor-pointer",
                       activeSlideIndex === idx
                         ? "border-primary bg-primary text-primary-foreground shadow-xs"
                         : "border-border/80 bg-muted/40 text-muted-foreground hover:text-foreground"
@@ -617,7 +617,7 @@ export default function WorkspaceSocialStudioPage() {
             ref={previewRef}
             id="social-card-render-target"
             className={cn(
-              "relative overflow-hidden rounded-lg shadow-xl transition-all select-none flex flex-col justify-between p-6 bg-neutral-950 text-white",
+              "relative overflow-hidden rounded-lg shadow-xl transition-colors duration-200 select-none flex flex-col justify-between p-6 bg-neutral-950 text-foreground",
               ratio === "9:16"
                 ? "w-[300px] sm:w-[340px] h-[533px] sm:h-[604px]"
                 : ratio === "1:1"
@@ -636,7 +636,7 @@ export default function WorkspaceSocialStudioPage() {
             {/* Topo */}
             <div className="flex items-center justify-between z-10">
               <div className="flex items-center gap-2">
-                <div className="size-8 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center font-bold text-xs">
+                <div className="size-8 rounded-full bg-card/10 backdrop-blur-md border border-white/20 flex items-center justify-center font-bold text-xs">
                   {authorName.slice(0, 2).toUpperCase()}
                 </div>
                 <div>
@@ -646,7 +646,7 @@ export default function WorkspaceSocialStudioPage() {
               </div>
 
               {(template === "carousel" ? activeSlide.tag : badgeText) && (
-                <span className="px-3 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-xs font-semibold uppercase tracking-wider text-emerald-300">
+                <span className="px-3 py-1 rounded-full bg-card/15 backdrop-blur-md border border-white/20 text-xs font-semibold uppercase tracking-wider text-emerald-300">
                   {template === "carousel" ? activeSlide.tag : badgeText}
                 </span>
               )}
@@ -655,7 +655,7 @@ export default function WorkspaceSocialStudioPage() {
             {/* Conteúdo Central */}
             {template === "carousel" ? (
               <div className="my-auto py-4 space-y-3 z-10">
-                <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-white leading-snug drop-shadow-sm">
+                <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground leading-snug drop-shadow-sm">
                   {activeSlide.headline}
                 </h3>
                 <p className="text-xs sm:text-sm text-neutral-200 leading-relaxed drop-shadow-sm">
@@ -674,7 +674,7 @@ export default function WorkspaceSocialStudioPage() {
                 <span className="text-xs font-mono uppercase tracking-wider text-neutral-400">
                   Apresentação Comercial • {store?.name || "Catálogo"}
                 </span>
-                <h3 className="text-xl sm:text-2xl font-black tracking-tight text-white leading-tight">
+                <h3 className="text-xl sm:text-2xl font-black tracking-tight text-foreground leading-tight">
                   {title}
                 </h3>
                 <p className="text-xs text-neutral-300 leading-relaxed max-w-md">
@@ -699,7 +699,7 @@ export default function WorkspaceSocialStudioPage() {
             ) : (
               <div className="space-y-3 z-10 mt-auto">
                 <div className="space-y-1">
-                  <h3 className="text-lg sm:text-xl font-bold tracking-tight text-white drop-shadow-xs leading-snug">
+                  <h3 className="text-lg sm:text-xl font-bold tracking-tight text-foreground drop-shadow-xs leading-snug">
                     {title}
                   </h3>
                   <p className="text-xs text-neutral-300 drop-shadow line-clamp-2">
@@ -734,14 +734,14 @@ export default function WorkspaceSocialStudioPage() {
                     <div
                       key={i}
                       className={cn(
-                        "size-1.5 rounded-full transition-all",
-                        activeSlideIndex === i ? "bg-white w-3" : "bg-white/30"
+                        "size-1.5 rounded-full transition-colors duration-200",
+                        activeSlideIndex === i ? "bg-card w-3" : "bg-card/30"
                       )}
                     />
                   ))}
                 </div>
               ) : (
-                <span className="font-semibold text-white">Consulte no Catálogo</span>
+                <span className="font-semibold text-foreground">Consulte no Catálogo</span>
               )}
             </div>
           </div>

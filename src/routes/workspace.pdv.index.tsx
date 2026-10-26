@@ -121,7 +121,7 @@ function QuickOpenRegisterInlineCard() {
  key={val}
  type="button"
  onClick={() => setInitialAmountStr(val)}
- className={`px-3 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer border ${
+ className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer border ${
  initialAmountStr === val
  ? "bg-primary text-primary-foreground border-primary"
  : "bg-muted/40 text-muted-foreground hover:text-foreground border-border/40"
@@ -148,7 +148,7 @@ function QuickOpenRegisterInlineCard() {
  disabled={isOpening}
  className="w-full text-xs font-bold rounded-lg h-11 bg-primary text-primary-foreground gap-2 cursor-pointer"
  >
- {isOpening ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />}
+ {isOpening ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> : <CheckCircle2 className="size-4" />}
  <span>{isOpening ? "Abrindo Turno..." : "Abrir Caixa & Iniciar Vendas"}</span>
  </Button>
  </form>
@@ -1082,7 +1082,7 @@ function PdvTerminal() {
  key={mode.id}
  type="button"
  onClick={() => setServiceMode(mode.id)}
- className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+ className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-colors duration-200 cursor-pointer ${
  isSelected
  ? "bg-primary text-primary-foreground shadow-xs"
  : "text-muted-foreground hover:text-foreground"
@@ -1235,7 +1235,7 @@ function PdvTerminal() {
  <button
  type="button"
  onClick={() => setSelectedCategory("all")}
- className={`px-4 py-2 min-h-11 rounded-lg text-xs font-bold shrink-0 snap-start transition-all cursor-pointer ${
+ className={`px-4 py-2 min-h-11 rounded-lg text-xs font-bold shrink-0 snap-start transition-colors duration-200 cursor-pointer ${
  selectedCategory === "all"
  ? "bg-foreground text-background shadow-xs"
  : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/70 border border-border/40"
@@ -1250,7 +1250,7 @@ function PdvTerminal() {
  key={cat}
  type="button"
  onClick={() => setSelectedCategory(cat)}
- className={`px-4 py-2 min-h-11 rounded-lg text-xs font-bold shrink-0 snap-start transition-all cursor-pointer ${
+ className={`px-4 py-2 min-h-11 rounded-lg text-xs font-bold shrink-0 snap-start transition-colors duration-200 cursor-pointer ${
  selectedCategory === cat
  ? "bg-primary text-primary-foreground shadow-xs"
  : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/70 border border-border/40"
@@ -1286,7 +1286,7 @@ function PdvTerminal() {
  <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  key={`${product.id}-${variant.id || "def"}`}
  onClick={() => handleProductClick(product, variant)}
- className={`relative rounded-lg bg-card border transition-all cursor-pointer flex flex-col justify-between overflow-hidden group select-none hover:shadow-xs hover:border-primary/50 active:scale-[0.98] ${
+ className={`relative rounded-lg bg-card border transition-colors duration-200 cursor-pointer flex flex-col justify-between overflow-hidden group select-none hover:shadow-xs hover:border-primary/50 active:scale-[0.98] ${
  inCartQty > 0 ? "border-primary ring-1 ring-primary/40" : "border-border/80"
  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
@@ -1421,7 +1421,7 @@ function PdvTerminal() {
                       setIsFloorPlanModalOpen(false);
                       toast.success(`${table.label} selecionada para atendimento`);
                     }}
-                    className={`flex flex-col items-center justify-center p-4 rounded-lg border text-center transition-all cursor-pointer min-h-[96px] ${
+                    className={`flex flex-col items-center justify-center p-4 rounded-lg border text-center transition-colors duration-200 cursor-pointer min-h-[96px] ${
                       isSelected
                         ? "bg-primary/10 border-primary text-primary shadow-xs ring-2 ring-primary/20"
                         : "bg-card border-border/70 hover:border-primary/50 hover:bg-muted/30 text-foreground"
@@ -1489,7 +1489,7 @@ function PdvTerminal() {
  key={count}
  type="button"
  onClick={() => handleSplitBillByPeople(count)}
- className={`flex-1 py-2 px-2 rounded-lg text-xs font-bold font-mono transition-all cursor-pointer border ${
+ className={`flex-1 py-2 px-2 rounded-lg text-xs font-bold font-mono transition-colors duration-200 cursor-pointer border ${
  splitCount === count
  ? "bg-primary text-primary-foreground border-primary shadow-xs"
  : "bg-card border-border/70 hover:bg-muted text-muted-foreground hover:text-foreground"
@@ -1516,7 +1516,7 @@ function PdvTerminal() {
  key={m.id}
  type="button"
  onClick={() => setSelectedPaymentMethod(m.id as any)}
- className={`p-3 rounded-lg border flex flex-col items-center justify-center gap-2 text-xs font-bold transition-all cursor-pointer ${
+ className={`p-3 rounded-lg border flex flex-col items-center justify-center gap-2 text-xs font-bold transition-colors duration-200 cursor-pointer ${
  active
  ? "border-primary bg-primary/10 text-primary shadow-xs"
  : "border-border/70 hover:bg-muted/40 text-foreground"
@@ -1559,7 +1559,7 @@ function PdvTerminal() {
                     key={val}
                     type="button"
                     onClick={() => setPaymentAmountInput(`${val},00`)}
-                    className="flex-1 h-10 sm:h-9 rounded-lg border border-border/80 text-xs font-bold font-mono hover:bg-muted active:scale-95 transition-all flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="flex-1 h-10 sm:h-9 rounded-lg border border-border/80 text-xs font-bold font-mono hover:bg-muted active:scale-95 transition-transform duration-200 flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     R$ {val}
                   </button>
@@ -1723,7 +1723,7 @@ function PdvTerminal() {
               className="w-full h-11 rounded-lg text-xs font-bold gap-2 border-primary/40 text-foreground hover:bg-primary/5 cursor-pointer shadow-2xs"
             >
               {isPrintingDirectEscPos ? (
-                <Loader2 className="size-4 animate-spin text-primary" />
+                <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-primary" />
               ) : (
                 <Printer className="size-4 text-primary" />
               )}

@@ -65,7 +65,7 @@ export function MotionStudioPropsPanel({
             <Wand2 className="size-3.5 text-primary" />
             <span>Comando Rápido</span>
           </div>
-          <span className="text-[10px] text-muted-foreground font-mono">IA Assist</span>
+          <span className="text-2xs text-muted-foreground font-mono">IA Assist</span>
         </div>
 
         <form onSubmit={handleRunCommand} className="flex gap-2">
@@ -96,7 +96,7 @@ export function MotionStudioPropsPanel({
               key={tab.id}
               type="button"
               onClick={() => setActiveGroup(tab.id as any)}
-              className={`flex-1 py-1 px-2 rounded-lg text-[11px] font-bold flex items-center justify-center gap-1 transition-all ${
+              className={`flex-1 py-1 px-2 rounded-lg text-2xs font-bold flex items-center justify-center gap-1 transition-colors duration-200 ${
                 isActive
                   ? "bg-card text-foreground shadow-xs border border-border/80"
                   : "text-muted-foreground hover:text-foreground"
@@ -120,7 +120,7 @@ export function MotionStudioPropsPanel({
                 <div className="flex justify-between items-center text-xs">
                   <Label className="font-bold text-foreground">{field.label}</Label>
                   {field.required && (
-                    <span className="text-[10px] text-muted-foreground uppercase font-semibold">Obrigatório</span>
+                    <span className="text-2xs text-muted-foreground uppercase font-semibold">Obrigatório</span>
                   )}
                 </div>
                 <Textarea
@@ -157,7 +157,7 @@ export function MotionStudioPropsPanel({
               <div key={field.id} className="space-y-2">
                 <div className="flex justify-between items-center text-xs">
                   <Label className="font-bold text-foreground">{field.label}</Label>
-                  <span className="font-mono text-muted-foreground text-[11px]">
+                  <span className="font-mono text-muted-foreground text-2xs">
                     {currentNum}f ({(currentNum / 30).toFixed(1)}s)
                   </span>
                 </div>
@@ -199,7 +199,7 @@ export function MotionStudioPropsPanel({
                 <div>
                   <p className="text-xs font-bold text-foreground">{field.label}</p>
                   {field.description && (
-                    <p className="text-[10px] text-muted-foreground">{field.description}</p>
+                    <p className="text-2xs text-muted-foreground">{field.description}</p>
                   )}
                 </div>
                 <Switch
@@ -250,7 +250,7 @@ export function MotionStudioPropsPanel({
           </span>
           <Badge
             variant={errorCount > 0 ? "destructive" : warningCount > 0 ? "secondary" : "outline"}
-            className="text-[9px] font-mono"
+            className="text-3xs font-mono"
           >
             {errorCount > 0 ? `${errorCount} bloqueios` : warningCount > 0 ? `${warningCount} alertas` : "100% Validado"}
           </Badge>
@@ -261,7 +261,7 @@ export function MotionStudioPropsPanel({
             {issues.map((issue, idx) => (
               <div
                 key={idx}
-                className={`text-[10px] p-2 rounded-lg border flex items-start gap-2 ${
+                className={`text-2xs p-2 rounded-lg border flex items-start gap-2 ${
                   issue.level === "error"
                     ? "bg-rose-500/10 border-rose-500/20 text-rose-600"
                     : "bg-amber-500/10 border-amber-500/20 text-amber-600"
@@ -273,7 +273,7 @@ export function MotionStudioPropsPanel({
             ))}
           </div>
         ) : (
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Todas as métricas de tempo, tamanho de cópia e renderização estão nos conformes.
           </p>
         )}

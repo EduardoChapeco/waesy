@@ -34,7 +34,7 @@ export function VideoStudioEditor({
  <h2 className="text-sm font-bold text-foreground">
  Waesy Video Studio · Editor
  </h2>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Composição em timeline multi-faixas nativa do Waesy
  </p>
  </div>
@@ -76,18 +76,18 @@ export function VideoStudioEditor({
  </div>
 
  {/* Video Canvas Preview */}
- <div className="flex-1 bg-black/40 flex items-center justify-center p-6 overflow-hidden">
+ <div className="flex-1 bg-foreground/40 flex items-center justify-center p-6 overflow-hidden">
  <div
- className={'relative rounded-lg overflow-hidden shadow-2xl bg-black border border-white/10 flex items-center justify-center ' + (
+ className={'relative rounded-lg overflow-hidden shadow-2xl bg-foreground border border-white/10 flex items-center justify-center ' + (
  aspect === '9:16' ? 'h-full aspect-[9/16]' : 'w-full max-w-2xl aspect-video'
  )}
  >
  <div className="text-center p-6 space-y-3">
- <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center mx-auto text-white backdrop-blur-sm">
+ <div className="w-16 h-16 rounded-full bg-card/10 flex items-center justify-center mx-auto text-foreground backdrop-blur-sm">
  {isPlaying ? <Pause className="w-8 h-8" /> : <Play className="w-8 h-8 ml-1" />}
  </div>
- <p className="text-xs text-white/80 font-medium">Prévia do Vídeo Promocional Waesy</p>
- <div className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold inline-block">
+ <p className="text-xs text-foreground/80 font-medium">Prévia do Vídeo Promocional Waesy</p>
+ <div className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-2xs font-bold inline-block">
  Legenda Ativa: "Venha conhecer nossa nova coleção!"
  </div>
  </div>

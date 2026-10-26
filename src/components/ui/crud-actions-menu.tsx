@@ -126,7 +126,7 @@ export function CrudActionsMenu({
           className={cn("w-52 p-2 rounded-lg bg-card border border-border/60 shadow-2xs", className)}
         >
           {entityName && (
-            <DropdownMenuLabel className="text-[11px] font-mono uppercase text-muted-foreground px-2 py-1 tracking-wider">
+            <DropdownMenuLabel className="text-2xs font-mono uppercase text-muted-foreground px-2 py-1 tracking-wider">
               {entityName}
             </DropdownMenuLabel>
           )}
@@ -288,7 +288,7 @@ export function CrudActionsMenu({
                 className="rounded-lg text-xs h-9 font-semibold gap-2 cursor-pointer shadow-2xs"
               >
                 {isDeleting ? (
-                  <Loader2 className="size-3.5 animate-spin" />
+                  <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
                 ) : (
                   <Trash2 className="size-3.5" />
                 )}

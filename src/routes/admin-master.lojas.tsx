@@ -141,7 +141,7 @@ function MasterLojasPage() {
 
  <div className="overflow-x-auto no-scrollbar">
  <table className="w-full text-xs text-left">
- <thead className="bg-muted/30 text-muted-foreground border-b border-border/40 font-semibold uppercase text-[10px] tracking-wider">
+ <thead className="bg-muted/30 text-muted-foreground border-b border-border/40 font-semibold uppercase text-2xs tracking-wider">
  <tr>
  <th className="px-5 py-3">Loja</th>
  <th className="px-5 py-3">Slug</th>
@@ -162,29 +162,29 @@ function MasterLojasPage() {
  <div className="flex items-center gap-2">
  <p className="font-semibold text-foreground">{store.name}</p>
  {store.settings?.segment && (
- <Badge variant="outline" className="text-[9px] px-2 py-0 h-4 border-border/60 uppercase">
+ <Badge variant="outline" className="text-3xs px-2 py-0 h-4 border-border/60 uppercase">
  {store.settings.segment}
  </Badge>
  )}
  </div>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  {store.city ? `${store.city} - ${store.state || "SC"}` : "Santa Catarina"}
  </p>
  </div>
  </div>
  </td>
- <td className="px-5 py-4 font-mono text-[11px] text-muted-foreground">
+ <td className="px-5 py-4 font-mono text-2xs text-muted-foreground">
  /{store.slug}
  </td>
- <td className="px-5 py-4 text-muted-foreground text-[11px]">
+ <td className="px-5 py-4 text-muted-foreground text-2xs">
  {format(new Date(store.created_at || Date.now()), "dd/MM/yyyy", { locale: ptBR })}
  </td>
  <td className="px-5 py-4">
  <Badge
  variant={store.is_active ? "default" : "destructive"}
  className={cn(
- "text-[10px] font-medium px-2 py-1",
- store.is_active ? "bg-emerald-600/90 text-white" : ""
+ "text-2xs font-medium px-2 py-1",
+ store.is_active ? "bg-emerald-600/90 text-foreground" : ""
  )}
  >
  {store.is_active ? "Ativa" : "Bloqueada"}

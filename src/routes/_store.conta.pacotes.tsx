@@ -306,7 +306,7 @@ function CustomerPassesPage() {
             return (
               <div
                 key={pass.id}
-                className="p-4 sm:p-5 rounded-xl bg-card border border-border/60 space-y-4 flex flex-col justify-between hover:border-foreground/20 transition-all shadow-xs"
+                className="p-4 sm:p-5 rounded-xl bg-card border border-border/60 space-y-4 flex flex-col justify-between hover:border-foreground/20 transition-colors duration-200 shadow-xs"
               >
                 <div className="space-y-3">
                   {/* Store & Status Header */}
@@ -622,7 +622,7 @@ function CustomerPassesPage() {
                           key={slot}
                           type="button"
                           onClick={() => setSelectedSlot(slot)}
-                          className={`h-11 min-h-11 px-3 rounded-lg text-xs font-mono font-bold border transition-all cursor-pointer flex items-center justify-center focus-visible:ring-2 focus-visible:ring-primary ${
+                          className={`h-11 min-h-11 px-3 rounded-lg text-xs font-mono font-bold border transition-colors duration-200 cursor-pointer flex items-center justify-center focus-visible:ring-2 focus-visible:ring-primary ${
                             isSelected
                               ? "bg-foreground text-background border-foreground"
                               : "bg-muted/40 border-border hover:bg-muted text-foreground"

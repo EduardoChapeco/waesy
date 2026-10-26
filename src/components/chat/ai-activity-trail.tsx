@@ -115,16 +115,16 @@ export function AIActivityTrail({
     <div
       role="region"
       aria-label="Trilha de execução e fontes"
-      className={cn("my-1.5 transition-all text-2xs", className)}
+      className={cn("my-2 transition-colors duration-200 text-2xs", className)}
     >
       {/* ── CARD EM EXECUÇÃO ATIVA: Minimalista, moderno com pulse sutil ── */}
       {isCurrentlyWorking ? (
-        <div className="flex items-center justify-between gap-2.5 px-3 py-2 rounded-lg bg-primary/5 border border-primary/20 text-foreground animate-in fade-in duration-200">
+        <div className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg bg-primary/5 border border-primary/20 text-foreground animate-in fade-in duration-200">
           <div className="flex items-center gap-2 min-w-0 flex-1">
             <div className="size-4 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
               <Loader2 className="size-3 text-primary animate-spin motion-reduce:animate-none" />
             </div>
-            <div className="min-w-0 flex-1 flex items-center gap-1.5 flex-wrap">
+            <div className="min-w-0 flex-1 flex items-center gap-2 flex-wrap">
               <span className="font-semibold text-foreground truncate">
                 {runningStep ? runningStep.label : "Organizando suas informações..."}
               </span>
@@ -152,7 +152,7 @@ export function AIActivityTrail({
         </div>
       ) : (
         /* ── RESUMO CONCLUÍDO: Linha minimalista e silenciosa (Linear / Perplexity Style) ── */
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <button
             type="button"
             onClick={() => setIsExpanded((prev) => !prev)}
@@ -174,7 +174,7 @@ export function AIActivityTrail({
                 ? `${completedCount} etapas e registros conferidos`
                 : "1 etapa concluída"}
               {totalDuration > 0 && (
-                <span className="text-muted-foreground/60 font-mono text-3xs ml-1.5">
+                <span className="text-muted-foreground/60 font-mono text-3xs ml-2">
                   ({totalDuration}ms)
                 </span>
               )}
@@ -189,7 +189,7 @@ export function AIActivityTrail({
 
           {/* ── TIMELINE VERTICAL MINIMALISTA EXPANDIDA ── */}
           {isExpanded && (
-            <div className="relative pl-4 ml-1.5 border-l border-border/40 space-y-2 py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+            <div className="relative pl-4 ml-2 border-l border-border/40 space-y-2 py-1 animate-in fade-in slide-in-from-top-1 duration-150">
               {visibleSteps.map((step, idx) => {
                 const Icon = STEP_ICONS[step.type] || Zap;
 
@@ -202,7 +202,7 @@ export function AIActivityTrail({
                     <div className="absolute -left-[1.3125rem] top-1 size-2 rounded-full border border-background bg-border group-hover:bg-primary transition-colors" />
 
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5 flex-wrap">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <Icon className="size-3 text-primary shrink-0" />
                         <span className="font-semibold text-foreground truncate">
                           {step.label}
@@ -218,13 +218,13 @@ export function AIActivityTrail({
                       </div>
 
                       {step.detail && (
-                        <p className="text-3xs text-muted-foreground font-mono mt-0.5 truncate">
+                        <p className="text-3xs text-muted-foreground font-mono mt-1 truncate">
                           {step.detail}
                         </p>
                       )}
                     </div>
 
-                    <div className="shrink-0 font-mono text-3xs text-muted-foreground/75 flex items-center gap-1.5">
+                    <div className="shrink-0 font-mono text-3xs text-muted-foreground/75 flex items-center gap-2">
                       {step.durationMs !== undefined && (
                         <span>{step.durationMs}ms</span>
                       )}

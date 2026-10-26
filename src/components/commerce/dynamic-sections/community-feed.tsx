@@ -106,7 +106,7 @@ export function CommunityFeed({ content, resolvedClassifieds, isEditing }: any) 
  </Avatar>
  <div className="flex flex-col">
  <span className="text-xs font-bold">{item.author}</span>
- <span className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest">
+ <span className="text-2xs text-muted-foreground font-mono uppercase tracking-widest">
  {formatDate(item.created_at)}
  </span>
  </div>

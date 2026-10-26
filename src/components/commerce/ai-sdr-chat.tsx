@@ -178,7 +178,7 @@ export function AiSdrChat({ classifiedId, storeId, sellerProfileId, storeName, s
           <button
             onClick={() => setIsOpen(true)}
             className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-              "size-14 rounded-full flex items-center justify-center shadow-lg transition-all",
+              "size-14 rounded-full flex items-center justify-center shadow-lg transition-colors duration-200",
               "bg-primary text-primary-foreground hover:opacity-90 active:scale-95",
               "ring-2 ring-blue-500/20 ring-offset-2 ring-offset-background"
             )}
@@ -209,7 +209,7 @@ export function AiSdrChat({ classifiedId, storeId, sellerProfileId, storeName, s
               </div>
               <div>
                 <p className="text-sm font-semibold text-foreground leading-tight">Vendedor IA</p>
-                <p className="text-[11px] text-muted-foreground leading-tight truncate max-w-[180px]">
+                <p className="text-2xs text-muted-foreground leading-tight truncate max-w-[180px]">
                   {displayName}
                 </p>
               </div>
@@ -221,7 +221,7 @@ export function AiSdrChat({ classifiedId, storeId, sellerProfileId, storeName, s
                 size="sm"
                 onClick={handleEscalateToHuman}
                 disabled={isEscalating}
-                className="h-8 px-2 text-[11px] font-semibold text-primary hover:bg-primary/10 gap-1 rounded-md"
+                className="h-8 px-2 text-2xs font-semibold text-primary hover:bg-primary/10 gap-1 rounded-md"
                 title="Conversar com o vendedor humano no chat do app"
               >
                 <MessageSquare className="size-3.5" />
@@ -286,9 +286,9 @@ export function AiSdrChat({ classifiedId, storeId, sellerProfileId, storeName, s
                   <Bot className="size-3.5 text-primary" />
                 </div>
                 <div className="bg-muted text-foreground text-[13px] rounded-lg rounded-tl-sm px-4 py-3 flex items-center gap-1 h-9">
-                  <span className="size-1.5 bg-muted-foreground/60 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                  <span className="size-1.5 bg-muted-foreground/60 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                  <span className="size-1.5 bg-muted-foreground/60 rounded-full animate-bounce" />
+                  <span className="size-1.5 bg-muted-foreground/60 rounded-full animate-bounce motion-reduce:animate-none [animation-delay:-0.3s]" />
+                  <span className="size-1.5 bg-muted-foreground/60 rounded-full animate-bounce motion-reduce:animate-none [animation-delay:-0.15s]" />
+                  <span className="size-1.5 bg-muted-foreground/60 rounded-full animate-bounce motion-reduce:animate-none" />
                 </div>
               </div>
             )}
@@ -313,7 +313,7 @@ export function AiSdrChat({ classifiedId, storeId, sellerProfileId, storeName, s
                 disabled={!input.trim() || isLoading}
                 className="rounded-full size-10 bg-primary text-primary-foreground shrink-0"
               >
-                {isLoading ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
+                {isLoading ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> : <Send className="size-4" />}
               </Button>
             </form>
           </div>

@@ -100,7 +100,7 @@ function StoreCartPage() {
           </p>
           <Button
             onClick={() => router.navigate({ to: "/mercado" })}
-            className="rounded-lg h-11 px-6 font-bold text-sm cursor-pointer active:scale-95 transition-all"
+            className="rounded-lg h-11 px-6 font-bold text-sm cursor-pointer active:scale-95 transition-transform duration-200"
           >
             Continuar Comprando
           </Button>

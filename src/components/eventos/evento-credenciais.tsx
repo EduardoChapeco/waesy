@@ -188,7 +188,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
             <Users className="size-3.5 text-primary" /> Total de Credenciados
           </span>
           <div className="text-2xl font-bold text-foreground">{total}</div>
-          <p className="text-[11px] text-muted-foreground">Staff, convidados, parceiros e imprensa</p>
+          <p className="text-2xs text-muted-foreground">Staff, convidados, parceiros e imprensa</p>
         </div>
 
         <div className="bg-card rounded-lg p-4 border border-border/60 shadow-2xs space-y-1">
@@ -198,7 +198,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
           <div className="text-2xl font-bold text-foreground">
             {totalCheckedIn} {total > 0 && <span className="text-sm font-normal text-muted-foreground">({Math.round((totalCheckedIn / total) * 100)}%)</span>}
           </div>
-          <p className="text-[11px] text-muted-foreground">Check-ins validados na portaria</p>
+          <p className="text-2xs text-muted-foreground">Check-ins validados na portaria</p>
         </div>
 
         <div className="bg-card rounded-lg p-4 border border-border/60 shadow-2xs space-y-2">
@@ -258,7 +258,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
         <button
           type="button"
           onClick={() => setFilterType("all")}
-          className={`px-3 py-2 rounded-full text-xs font-semibold transition-all shrink-0 cursor-pointer ${
+          className={`px-3 py-2 rounded-full text-xs font-semibold transition-colors duration-200 shrink-0 cursor-pointer ${
             filterType === "all"
               ? "bg-primary text-primary-foreground shadow-2xs"
               : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -274,7 +274,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
               key={t.value}
               type="button"
               onClick={() => setFilterType(t.value)}
-              className={`px-3 py-2 rounded-full text-xs font-semibold transition-all shrink-0 cursor-pointer ${
+              className={`px-3 py-2 rounded-full text-xs font-semibold transition-colors duration-200 shrink-0 cursor-pointer ${
                 isSelected
                   ? "bg-primary text-primary-foreground shadow-2xs"
                   : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -316,15 +316,15 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
                         <span className="inline-flex size-2 rounded-full bg-emerald-500 shrink-0" title="Check-in feito" />
                       )}
                     </div>
-                    <p className="text-[11px] text-muted-foreground truncate">
+                    <p className="text-2xs text-muted-foreground truncate">
                       {c.cargo || typeConfig?.label} {c.empresa_origem && `• ${c.empresa_origem}`}
                     </p>
-                    <span className="text-[10px] font-mono text-muted-foreground/80">{c.qr_code}</span>
+                    <span className="text-2xs font-mono text-muted-foreground/80">{c.qr_code}</span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  <Badge variant="outline" className={`text-[10px] font-mono py-0 px-2 ${typeConfig?.badgeStyle || ""}`}>
+                  <Badge variant="outline" className={`text-2xs font-mono py-0 px-2 ${typeConfig?.badgeStyle || ""}`}>
                     {c.nivel_acesso.toUpperCase()}
                   </Badge>
                   <QrCode className="size-4 text-muted-foreground" />
@@ -351,7 +351,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
             return (
               <div
                 key={c.id}
-                className="rounded-lg border border-border/60 bg-card p-4 space-y-3 shadow-2xs hover:border-border transition-all flex flex-col justify-between group"
+                className="rounded-lg border border-border/60 bg-card p-4 space-y-3 shadow-2xs hover:border-border transition-colors duration-200 flex flex-col justify-between group"
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-2">
@@ -368,23 +368,23 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
                       </div>
                     </div>
 
-                    <Badge variant="outline" className={`text-[10px] font-mono shrink-0 py-1 px-2 ${typeConfig?.badgeStyle || ""}`}>
+                    <Badge variant="outline" className={`text-2xs font-mono shrink-0 py-1 px-2 ${typeConfig?.badgeStyle || ""}`}>
                       {typeConfig?.label}
                     </Badge>
                   </div>
 
                   <div className="p-3 rounded-lg bg-muted/30 border border-border/40 flex items-center justify-between text-xs">
                     <div>
-                      <span className="text-[10px] text-muted-foreground block font-mono">CÓDIGO DE ACESSO</span>
+                      <span className="text-2xs text-muted-foreground block font-mono">CÓDIGO DE ACESSO</span>
                       <span className="font-mono font-bold text-foreground">{c.qr_code}</span>
                     </div>
-                    <Badge variant="secondary" className="text-[10px] font-mono uppercase">
+                    <Badge variant="secondary" className="text-2xs font-mono uppercase">
                       Nível {c.nivel_acesso}
                     </Badge>
                   </div>
 
                   <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
-                    <span className="flex items-center gap-1 text-[11px]">
+                    <span className="flex items-center gap-1 text-2xs">
                       {c.checkin_realizado ? (
                         <>
                           <CheckCircle2 className="size-3.5 text-emerald-500" />
@@ -397,7 +397,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
                         </>
                       )}
                     </span>
-                    {c.documento && <span className="font-mono text-[11px]">DOC: {c.documento}</span>}
+                    {c.documento && <span className="font-mono text-2xs">DOC: {c.documento}</span>}
                   </div>
                 </div>
 
@@ -599,7 +599,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
           <DialogContent className="sm:max-w-sm p-0 rounded-lg overflow-hidden border border-border bg-card">
             <div className="p-6 space-y-6 text-center">
               <div className="space-y-1">
-                <Badge variant="outline" className="text-[10px] font-mono uppercase px-3 py-1">
+                <Badge variant="outline" className="text-2xs font-mono uppercase px-3 py-1">
                   {eventTitle || "Credencial Oficial"}
                 </Badge>
                 <h3 className="text-lg font-black text-foreground pt-1">{selectedBadge.nome}</h3>
@@ -610,7 +610,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
               </div>
 
               {/* QR Code Container */}
-              <div className="size-48 mx-auto bg-white p-4 rounded-lg shadow-inner border border-border/40 flex flex-col items-center justify-center">
+              <div className="size-48 mx-auto bg-card p-4 rounded-lg shadow-inner border border-border/40 flex flex-col items-center justify-center">
                 <img
                   src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
                     selectedBadge.qr_code
@@ -621,17 +621,17 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
               </div>
 
               <div className="space-y-1 font-mono text-xs">
-                <div className="text-muted-foreground text-[10px]">CÓDIGO DE VALIDAÇÃO</div>
+                <div className="text-muted-foreground text-2xs">CÓDIGO DE VALIDAÇÃO</div>
                 <div className="font-bold text-sm tracking-wider text-foreground">{selectedBadge.qr_code}</div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 text-[11px] pt-2 border-t border-border/40 text-left">
+              <div className="grid grid-cols-2 gap-2 text-2xs pt-2 border-t border-border/40 text-left">
                 <div>
-                  <span className="text-muted-foreground block text-[10px]">ACESSO</span>
+                  <span className="text-muted-foreground block text-2xs">ACESSO</span>
                   <span className="font-semibold text-foreground uppercase">{selectedBadge.nivel_acesso}</span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground block text-[10px]">STATUS</span>
+                  <span className="text-muted-foreground block text-2xs">STATUS</span>
                   <span className={`font-semibold ${selectedBadge.checkin_realizado ? "text-emerald-600" : "text-amber-600"}`}>
                     {selectedBadge.checkin_realizado ? "Check-in Realizado" : "Pendente"}
                   </span>

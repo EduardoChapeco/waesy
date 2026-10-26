@@ -35,7 +35,7 @@ function CollectionsMobileView({ filteredCollections, onUpdateStatus }: Collecti
       {filteredCollections.map((col: any) => (
         <div
           key={col.id}
-          className="p-4 rounded-lg bg-card border border-border/50 shadow-2xs space-y-4 transition-all"
+          className="p-4 rounded-lg bg-card border border-border/50 shadow-2xs space-y-4 transition-colors duration-200"
         >
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0 flex-1">

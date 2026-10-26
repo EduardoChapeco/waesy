@@ -64,11 +64,11 @@ export function ProfileBiolinkAnalytics({
           <div className="flex items-center gap-2 mb-1">
             <Badge
               variant="outline"
-              className="text-[10px] font-bold text-primary border-primary/30"
+              className="text-2xs font-bold text-primary border-primary/30"
             >
               TELEMETRIA EM TEMPO REAL
             </Badge>
-            <span className="text-[10px] font-mono text-muted-foreground uppercase">
+            <span className="text-2xs font-mono text-muted-foreground uppercase">
               Performance do Perfil
             </span>
           </div>
@@ -85,7 +85,7 @@ export function ProfileBiolinkAnalytics({
             size="sm"
             onClick={() => setPeriod("today")}
             className={cn(
-              "h-7 px-3 text-xs rounded-lg font-medium cursor-pointer transition-all",
+              "h-7 px-3 text-xs rounded-lg font-medium cursor-pointer transition-colors duration-200",
               period === "today"
                 ? "bg-background text-foreground font-bold shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -99,7 +99,7 @@ export function ProfileBiolinkAnalytics({
             size="sm"
             onClick={() => setPeriod("7d")}
             className={cn(
-              "h-7 px-3 text-xs rounded-lg font-medium cursor-pointer transition-all",
+              "h-7 px-3 text-xs rounded-lg font-medium cursor-pointer transition-colors duration-200",
               period === "7d"
                 ? "bg-background text-foreground font-bold shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -113,7 +113,7 @@ export function ProfileBiolinkAnalytics({
             size="sm"
             onClick={() => setPeriod("30d")}
             className={cn(
-              "h-7 px-3 text-xs rounded-lg font-medium cursor-pointer transition-all",
+              "h-7 px-3 text-xs rounded-lg font-medium cursor-pointer transition-colors duration-200",
               period === "30d"
                 ? "bg-background text-foreground font-bold shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -131,14 +131,14 @@ export function ProfileBiolinkAnalytics({
             <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500">
               <Users className="size-4" />
             </div>
-            <span className="text-[10px] font-bold text-emerald-500 flex items-center gap-1">
+            <span className="text-2xs font-bold text-emerald-500 flex items-center gap-1">
               <ArrowUpRight className="size-3" /> +14.2%
             </span>
           </div>
           <p className="text-2xl font-bold tracking-tight text-foreground">
             {displayViews >= 1000 ? `${(displayViews / 1000).toFixed(1)}k` : displayViews}
           </p>
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+          <p className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
             Visitas ao Perfil
           </p>
         </div>
@@ -148,14 +148,14 @@ export function ProfileBiolinkAnalytics({
             <div className="p-2 rounded-lg bg-primary/10 text-primary">
               <MousePointer2 className="size-4" />
             </div>
-            <span className="text-[10px] font-bold text-emerald-500 flex items-center gap-1">
+            <span className="text-2xs font-bold text-emerald-500 flex items-center gap-1">
               <ArrowUpRight className="size-3" /> +8.5%
             </span>
           </div>
           <p className="text-2xl font-bold tracking-tight text-foreground">
             {displayClicks >= 1000 ? `${(displayClicks / 1000).toFixed(1)}k` : displayClicks}
           </p>
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+          <p className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
             Cliques em Links
           </p>
         </div>
@@ -165,14 +165,14 @@ export function ProfileBiolinkAnalytics({
             <div className="p-2 rounded-lg bg-purple-500/10 text-purple-500">
               <TrendingUp className="size-4" />
             </div>
-            <span className="text-[10px] font-bold text-emerald-500 flex items-center gap-1">
+            <span className="text-2xs font-bold text-emerald-500 flex items-center gap-1">
               <ArrowUpRight className="size-3" /> +2.1%
             </span>
           </div>
           <p className="text-2xl font-bold tracking-tight text-foreground">
             {ctr}%
           </p>
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+          <p className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
             Taxa de Conversão (CTR)
           </p>
         </div>
@@ -182,14 +182,14 @@ export function ProfileBiolinkAnalytics({
             <div className="p-2 rounded-lg bg-amber-500/10 text-amber-500">
               <Share2 className="size-4" />
             </div>
-            <Badge variant="outline" className="text-[9px] px-2 py-0 font-mono">
+            <Badge variant="outline" className="text-3xs px-2 py-0 font-mono">
               Ativos
             </Badge>
           </div>
           <p className="text-2xl font-bold tracking-tight text-foreground">
             {links.length}
           </p>
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+          <p className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
             Links e Botões na Bio
           </p>
         </div>
@@ -202,11 +202,11 @@ export function ProfileBiolinkAnalytics({
             <h4 className="text-xs font-bold text-foreground">
               Volume de Visitas vs. Cliques Concretos
             </h4>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               Comparativo de visitantes que converteram em ações
             </p>
           </div>
-          <div className="flex items-center gap-4 text-[11px] font-semibold">
+          <div className="flex items-center gap-4 text-2xs font-semibold">
             <div className="flex items-center gap-2">
               <div className="size-2.5 rounded-full bg-blue-500" />
               <span className="text-muted-foreground">Visitas</span>
@@ -229,21 +229,21 @@ export function ProfileBiolinkAnalytics({
                 className="flex-1 flex flex-col items-center gap-1 h-full justify-end group relative"
               >
                 {/* Tooltip Hover */}
-                <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition-opacity bg-popover text-popover-foreground text-[10px] font-bold px-2 py-1 rounded-lg border border-border shadow-md whitespace-nowrap pointer-events-none z-10">
+                <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition-opacity bg-popover text-popover-foreground text-2xs font-bold px-2 py-1 rounded-lg border border-border shadow-md whitespace-nowrap pointer-events-none z-10">
                   {d.visits} visitas / {d.clicks} cliques
                 </div>
 
                 <div className="w-full max-w-[24px] flex items-end justify-center gap-1 h-full">
                   <div
-                    className="w-1/2 bg-blue-500/30 group-hover:bg-blue-500/60 transition-all rounded-t-md"
+                    className="w-1/2 bg-blue-500/30 group-hover:bg-blue-500/60 transition-colors duration-200 rounded-t-md"
                     style={{ height: `${visitHeight}%` }}
                   />
                   <div
-                    className="w-1/2 bg-primary group-hover:bg-primary/90 transition-all rounded-t-md"
+                    className="w-1/2 bg-primary group-hover:bg-primary/90 transition-colors duration-200 rounded-t-md"
                     style={{ height: `${clickHeight}%` }}
                   />
                 </div>
-                <span className="text-[9px] text-muted-foreground font-mono truncate w-full text-center">
+                <span className="text-3xs text-muted-foreground font-mono truncate w-full text-center">
                   {d.label}
                 </span>
               </div>
@@ -258,7 +258,7 @@ export function ProfileBiolinkAnalytics({
           <h4 className="text-xs font-bold text-foreground">
             Ranking de Cliques por Link da Bio
           </h4>
-          <span className="text-[10px] font-mono text-muted-foreground">
+          <span className="text-2xs font-mono text-muted-foreground">
             Ordenado por popularidade
           </span>
         </div>
@@ -281,19 +281,19 @@ export function ProfileBiolinkAnalytics({
                 <div key={link.id || idx} className="space-y-2">
                   <div className="flex items-center justify-between text-xs">
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="font-mono text-[10px] font-bold text-muted-foreground">
+                      <span className="font-mono text-2xs font-bold text-muted-foreground">
                         #{idx + 1}
                       </span>
                       <span className="font-semibold text-foreground truncate">
                         {link.label || "Link sem título"}
                       </span>
-                      <span className="text-[10px] text-muted-foreground font-mono truncate max-w-52">
+                      <span className="text-2xs text-muted-foreground font-mono truncate max-w-52">
                         {link.url}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <span className="font-bold text-foreground">{linkClicks} cliques</span>
-                      <span className="text-[10px] font-mono text-muted-foreground">
+                      <span className="text-2xs font-mono text-muted-foreground">
                         ({linkPercent}%)
                       </span>
                     </div>
@@ -301,7 +301,7 @@ export function ProfileBiolinkAnalytics({
 
                   <div className="h-1.5 w-full bg-muted/60 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-primary rounded-full transition-all duration-500"
+                      className="h-full bg-primary rounded-full transition-colors duration-200 duration-500"
                       style={{ width: `${Math.min(linkPercent, 100)}%` }}
                     />
                   </div>

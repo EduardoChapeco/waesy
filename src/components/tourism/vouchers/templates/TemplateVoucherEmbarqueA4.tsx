@@ -34,7 +34,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       <div className="flex items-center gap-2 mb-2">
         <div className="h-px flex-1 bg-slate-200" />
         <span
-          className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400"
+          className="text-3xs font-black uppercase tracking-[0.2em] text-slate-400"
           style={{ fontFamily: "var(--brand-heading-font, sans-serif)" }}
         >
           {title}
@@ -98,7 +98,7 @@ export default function TemplateVoucherEmbarqueA4({
 
   return (
     <div
-      className="w-full min-h-full bg-white text-slate-900 p-8 flex flex-col"
+      className="w-full min-h-full bg-card text-slate-900 p-8 flex flex-col"
       style={{
         ...styleVars,
         fontSize: "12px",
@@ -278,7 +278,7 @@ export default function TemplateVoucherEmbarqueA4({
               <div className="flex items-start gap-2 ds-meta">
                 <Languages className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-1" />
                 <div>
-                  <span className="block font-bold text-slate-500 uppercase tracking-wide text-[9px]">
+                  <span className="block font-bold text-slate-500 uppercase tracking-wide text-3xs">
                     Idioma
                   </span>
                   <span className="text-slate-800 font-medium">{dest.language || "Português"}</span>
@@ -287,7 +287,7 @@ export default function TemplateVoucherEmbarqueA4({
               <div className="flex items-start gap-2 ds-meta">
                 <DollarSign className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-1" />
                 <div>
-                  <span className="block font-bold text-slate-500 uppercase tracking-wide text-[9px]">
+                  <span className="block font-bold text-slate-500 uppercase tracking-wide text-3xs">
                     Moeda
                   </span>
                   <span className="text-slate-800 font-medium">
@@ -298,7 +298,7 @@ export default function TemplateVoucherEmbarqueA4({
               <div className="flex items-start gap-2 ds-meta">
                 <Plug className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-1" />
                 <div>
-                  <span className="block font-bold text-slate-500 uppercase tracking-wide text-[9px]">
+                  <span className="block font-bold text-slate-500 uppercase tracking-wide text-3xs">
                     Tomada
                   </span>
                   <span className="text-slate-800 font-medium">
@@ -309,7 +309,7 @@ export default function TemplateVoucherEmbarqueA4({
               <div className="flex items-start gap-2 ds-meta">
                 <Clock className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-1" />
                 <div>
-                  <span className="block font-bold text-slate-500 uppercase tracking-wide text-[9px]">
+                  <span className="block font-bold text-slate-500 uppercase tracking-wide text-3xs">
                     Fuso Horário
                   </span>
                   <span className="text-slate-800 font-medium">
@@ -322,7 +322,7 @@ export default function TemplateVoucherEmbarqueA4({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 border-t border-slate-100 pt-2 ds-meta">
               {dest.visa_required != null && (
                 <div>
-                  <span className="block font-bold text-slate-500 uppercase tracking-wide text-[9px]">
+                  <span className="block font-bold text-slate-500 uppercase tracking-wide text-3xs">
                     Visto Necessário?
                   </span>
                   <span className="text-slate-800 font-medium">
@@ -333,7 +333,7 @@ export default function TemplateVoucherEmbarqueA4({
               )}
               {dest.entry_requirements && (
                 <div>
-                  <span className="block font-bold text-slate-500 uppercase tracking-wide text-[9px]">
+                  <span className="block font-bold text-slate-500 uppercase tracking-wide text-3xs">
                     Requisitos de Entrada
                   </span>
                   <span className="text-slate-800">{dest.entry_requirements}</span>
@@ -341,7 +341,7 @@ export default function TemplateVoucherEmbarqueA4({
               )}
               {dest.vaccinations_required && dest.vaccinations_required.length > 0 && (
                 <div>
-                  <span className="block font-bold text-slate-500 uppercase tracking-wide text-[9px]">
+                  <span className="block font-bold text-slate-500 uppercase tracking-wide text-3xs">
                     Vacinas Obrigatórias
                   </span>
                   <span className="text-slate-800">{dest.vaccinations_required.join(", ")}</span>
@@ -349,7 +349,7 @@ export default function TemplateVoucherEmbarqueA4({
               )}
               {dest.safety_level && (
                 <div>
-                  <span className="block font-bold text-slate-500 uppercase tracking-wide text-[9px]">
+                  <span className="block font-bold text-slate-500 uppercase tracking-wide text-3xs">
                     Segurança
                   </span>
                   <span className="text-slate-800">
@@ -360,7 +360,7 @@ export default function TemplateVoucherEmbarqueA4({
               )}
               {dest.cultural_tips && (
                 <div className="col-span-1 md:col-span-2">
-                  <span className="block font-bold text-slate-500 uppercase tracking-wide text-[9px]">
+                  <span className="block font-bold text-slate-500 uppercase tracking-wide text-3xs">
                     Dicas Culturais
                   </span>
                   <span className="text-slate-800">{dest.cultural_tips}</span>
@@ -395,7 +395,7 @@ export default function TemplateVoucherEmbarqueA4({
             )}
           </div>
         )}
-        <div className="flex items-center justify-between text-[9px] text-slate-400">
+        <div className="flex items-center justify-between text-3xs text-slate-400">
           <div>
             Documento gerado por{" "}
             <span className="font-semibold text-slate-600">Turis · {agency.name}</span>

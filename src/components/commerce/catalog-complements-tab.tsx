@@ -217,7 +217,7 @@ export function CatalogComplementsTab({ store }: { store?: any } = {}) {
  <h3 className="text-sm font-bold text-foreground leading-snug">
  {grp.title}
  </h3>
- <Badge variant={grp.is_required ? "default" : "outline"} className="text-[10px] shrink-0 font-bold">
+ <Badge variant={grp.is_required ? "default" : "outline"} className="text-2xs shrink-0 font-bold">
  {grp.is_required ? "Obrigatório" : "Opcional"}
  </Badge>
  </div>
@@ -228,13 +228,13 @@ export function CatalogComplementsTab({ store }: { store?: any } = {}) {
  </p>
  )}
 
- <div className="text-[11px] font-mono text-muted-foreground bg-muted/30 px-3 py-1 rounded-lg inline-block">
+ <div className="text-2xs font-mono text-muted-foreground bg-muted/30 px-3 py-1 rounded-lg inline-block">
  Escolha: Min {grp.min_selection} • Max {grp.max_selection}
  </div>
 
  {/* Lista de Opções */}
  <div className="space-y-2 pt-2 border-t border-border/60">
- <span className="text-[10px] font-bold text-muted-foreground uppercase">
+ <span className="text-2xs font-bold text-muted-foreground uppercase">
  Opções ({grp.options?.length || 0})
  </span>
  <div className="space-y-1 max-h-36 overflow-y-auto no-scrollbar pr-1">
@@ -338,7 +338,7 @@ export function CatalogComplementsTab({ store }: { store?: any } = {}) {
  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/70">
  <div className="space-y-1">
  <span className="text-xs font-bold text-foreground">Seleção Obrigatória</span>
- <p className="text-[11px] text-muted-foreground">O cliente não pode avançar sem escolher</p>
+ <p className="text-2xs text-muted-foreground">O cliente não pode avançar sem escolher</p>
  </div>
  <Switch checked={isRequired} onCheckedChange={setIsRequired} className="scale-75" />
  </div>
@@ -352,7 +352,7 @@ export function CatalogComplementsTab({ store }: { store?: any } = {}) {
  variant="outline"
  size="sm"
  onClick={handleAddOption}
- className="h-7 text-[11px] rounded-lg font-bold gap-1"
+ className="h-7 text-2xs rounded-lg font-bold gap-1"
  >
  <Plus className="size-3" />
  Adicionar Opção

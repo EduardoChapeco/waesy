@@ -527,7 +527,7 @@ function AnunciosWorkspacePage() {
                 onClick={handleSyncLiveMetrics}
                 className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 focus-visible:ring-2"
               >
-                <RefreshCw className={`size-4 ${isSyncingLiveMetrics ? "animate-spin" : ""}`} />
+                <RefreshCw className={`size-4 ${isSyncingLiveMetrics ? "animate-spin motion-reduce:animate-none" : ""}`} />
                 <span>{isSyncingLiveMetrics ? "Sincronizando..." : "Sincronizar Métricas"}</span>
               </Button>
               <Button
@@ -837,7 +837,7 @@ function AnunciosWorkspacePage() {
                     onClick={handleSyncLiveMetrics}
                     className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 focus-visible:ring-2"
                   >
-                    <RefreshCw className={`size-4 ${isSyncingLiveMetrics ? "animate-spin" : ""}`} />
+                    <RefreshCw className={`size-4 ${isSyncingLiveMetrics ? "animate-spin motion-reduce:animate-none" : ""}`} />
                     <span>Sincronizar Métricas</span>
                   </Button>
                   <Button
@@ -936,7 +936,7 @@ function AnunciosWorkspacePage() {
                     onClick={handleSyncLiveMetrics}
                     className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 focus-visible:ring-2"
                   >
-                    <RefreshCw className={`size-4 ${isSyncingLiveMetrics ? "animate-spin" : ""}`} />
+                    <RefreshCw className={`size-4 ${isSyncingLiveMetrics ? "animate-spin motion-reduce:animate-none" : ""}`} />
                     <span>Sincronizar Métricas</span>
                   </Button>
                   <Button
@@ -1020,7 +1020,7 @@ function AnunciosWorkspacePage() {
                 onClick={() => activationSheetPlatform && handleDiscoverAccounts(activationSheetPlatform)}
                 className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 focus-visible:ring-2"
               >
-                <RefreshCw className={`size-4 ${isDiscoveringAccounts ? "animate-spin" : ""}`} />
+                <RefreshCw className={`size-4 ${isDiscoveringAccounts ? "animate-spin motion-reduce:animate-none" : ""}`} />
                 <span>{isDiscoveringAccounts ? "Buscando..." : "Buscar Contas"}</span>
               </Button>
             </div>
@@ -1349,7 +1349,7 @@ function AnunciosWorkspacePage() {
             >
               {isGeneratingMcp ? (
                 <>
-                  <Loader2 className="size-4 animate-spin" />
+                  <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                   <span className="hidden sm:inline">Processando...</span>
                 </>
               ) : (
@@ -1424,7 +1424,7 @@ function AnunciosWorkspacePage() {
               {(mcpDiagnosticsReport.findings || []).map((f: any, idx: number) => (
                 <div
                   key={idx}
-                  className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-1.5"
+                  className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-2"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs font-bold text-foreground">{f.title}</span>
@@ -1689,7 +1689,7 @@ function AnunciosWorkspacePage() {
                       key={fmt.id}
                       type="button"
                       onClick={() => setFormFormat(fmt.id)}
-                      className={`p-3 rounded-lg border text-left transition-all ${
+                      className={`p-3 rounded-lg border text-left transition-colors duration-200 ${
                         formFormat === fmt.id
                           ? "border-primary bg-primary/5 text-primary font-bold"
                           : "border-border/60 hover:bg-muted/30 text-muted-foreground"
@@ -1837,7 +1837,7 @@ function AnunciosWorkspacePage() {
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="size-4 animate-spin mr-2" />
+                      <Loader2 className="size-4 animate-spin motion-reduce:animate-none mr-2" />
                       <span>Ativando Campanha...</span>
                     </>
                   ) : (

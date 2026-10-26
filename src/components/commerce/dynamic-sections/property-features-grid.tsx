@@ -105,7 +105,7 @@ export function PropertyFeaturesGridSection({
  <span className="text-xl font-bold text-foreground font-mono block">
  {features.areaM2 || 0} m²
  </span>
- <span className="text-[11px] text-muted-foreground">Área Privativa</span>
+ <span className="text-2xs text-muted-foreground">Área Privativa</span>
  </div>
 
  <div className="p-4 rounded-lg border border-border/80 bg-card text-center space-y-1 shadow-2xs">
@@ -113,7 +113,7 @@ export function PropertyFeaturesGridSection({
  <span className="text-xl font-bold text-foreground font-mono block">
  {features.bedrooms || 0} ({features.suites || 0} Suítes)
  </span>
- <span className="text-[11px] text-muted-foreground">Dormitórios</span>
+ <span className="text-2xs text-muted-foreground">Dormitórios</span>
  </div>
 
  <div className="p-4 rounded-lg border border-border/80 bg-card text-center space-y-1 shadow-2xs">
@@ -121,7 +121,7 @@ export function PropertyFeaturesGridSection({
  <span className="text-xl font-bold text-foreground font-mono block">
  {features.bathrooms || 0}
  </span>
- <span className="text-[11px] text-muted-foreground">Banheiros</span>
+ <span className="text-2xs text-muted-foreground">Banheiros</span>
  </div>
 
  <div className="p-4 rounded-lg border border-border/80 bg-card text-center space-y-1 shadow-2xs">
@@ -129,7 +129,7 @@ export function PropertyFeaturesGridSection({
  <span className="text-xl font-bold text-foreground font-mono block">
  {features.parkingSpots || 0}
  </span>
- <span className="text-[11px] text-muted-foreground">Vagas de Garagem</span>
+ <span className="text-2xs text-muted-foreground">Vagas de Garagem</span>
  </div>
  </div>
 

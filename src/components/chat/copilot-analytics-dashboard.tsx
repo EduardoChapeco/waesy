@@ -102,7 +102,7 @@ export function CopilotAnalyticsDashboard({ className }: CopilotAnalyticsDashboa
         </div>
 
         {/* Seletor de Período com Touch Target de 44px */}
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-muted/40 border border-border/40 shrink-0">
+        <div className="flex items-center gap-2 p-1 rounded-xl bg-muted/40 border border-border/40 shrink-0">
           {[
             { id: "7d", label: "7 dias" },
             { id: "30d", label: "30 dias" },
@@ -115,7 +115,7 @@ export function CopilotAnalyticsDashboard({ className }: CopilotAnalyticsDashboa
               size="sm"
               onClick={() => setPeriod(item.id as any)}
               className={cn(
-                "h-11 min-h-11 px-3.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                "h-11 min-h-11 px-4 rounded-lg text-xs font-semibold cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
                 period === item.id
                   ? "bg-primary text-primary-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -128,13 +128,13 @@ export function CopilotAnalyticsDashboard({ className }: CopilotAnalyticsDashboa
       </div>
 
       {/* ── Métricas Horizontais com Rolagem Suave ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-4">
         {metrics.map((m) => {
           const Icon = m.icon;
           return (
             <div
               key={m.label}
-              className="rounded-2xl border border-border/40 bg-card p-4 sm:p-5 flex flex-col justify-between space-y-3 transition-all hover:border-primary/30"
+              className="rounded-2xl border border-border/40 bg-card p-4 sm:p-5 flex flex-col justify-between space-y-3 transition-colors duration-200 hover:border-primary/30"
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-muted-foreground">{m.label}</span>
@@ -147,7 +147,7 @@ export function CopilotAnalyticsDashboard({ className }: CopilotAnalyticsDashboa
                 <div className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
                   {m.value}
                 </div>
-                <div className="flex items-center gap-1.5 mt-1 text-2xs">
+                <div className="flex items-center gap-2 mt-1 text-2xs">
                   <span className="font-semibold text-emerald-600 dark:text-emerald-400">
                     {m.delta}
                   </span>
@@ -172,11 +172,11 @@ export function CopilotAnalyticsDashboard({ className }: CopilotAnalyticsDashboa
           </div>
 
           <div className="flex items-center gap-3 text-2xs text-muted-foreground">
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <span className="size-2 rounded-full bg-primary" />
               <span>Tarefas</span>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <span className="size-2 rounded-full bg-amber-500" />
               <span>$WZ</span>
             </div>
@@ -205,7 +205,7 @@ export function CopilotAnalyticsDashboard({ className }: CopilotAnalyticsDashboa
                   {/* Tooltip Dinâmico */}
                   <div
                     className={cn(
-                      "text-2xs font-mono font-semibold px-2 py-0.5 rounded-md transition-opacity pointer-events-none whitespace-nowrap",
+                      "text-2xs font-mono font-semibold px-2 py-1 rounded-md transition-opacity pointer-events-none whitespace-nowrap",
                       isHovered
                         ? "opacity-100 bg-foreground text-background shadow-sm"
                         : "opacity-0"
@@ -218,7 +218,7 @@ export function CopilotAnalyticsDashboard({ className }: CopilotAnalyticsDashboa
                   <div className="w-full max-w-12 h-32 flex items-end justify-center rounded-xl bg-muted/30 p-1">
                     <div
                       className={cn(
-                        "w-full rounded-lg transition-all duration-300",
+                        "w-full rounded-lg transition-colors duration-200 duration-300",
                         isHovered ? "bg-primary" : "bg-primary/70 hover:bg-primary"
                       )}
                       style={{ height: `${heightPercent}%` }}
@@ -244,7 +244,7 @@ export function CopilotAnalyticsDashboard({ className }: CopilotAnalyticsDashboa
 
         <div className="space-y-3">
           {topSkills.map((s) => (
-            <div key={s.name} className="space-y-1.5">
+            <div key={s.name} className="space-y-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-semibold text-foreground truncate max-w-xs sm:max-w-md">
                   {s.name}
@@ -255,7 +255,7 @@ export function CopilotAnalyticsDashboard({ className }: CopilotAnalyticsDashboa
               </div>
               <div className="h-2 w-full bg-muted/50 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-primary rounded-full transition-all duration-500"
+                  className="h-full bg-primary rounded-full transition-colors duration-200 duration-500"
                   style={{ width: `${s.percent}%` }}
                 />
               </div>

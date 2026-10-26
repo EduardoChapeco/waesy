@@ -156,7 +156,7 @@ export function ProductModifiersModal({
 
  {isLoading ? (
  <div className="py-12 flex flex-col items-center justify-center gap-2 text-muted-foreground">
- <Loader2 className="size-6 animate-spin text-primary" />
+ <Loader2 className="size-6 animate-spin motion-reduce:animate-none text-primary" />
  <p className="text-xs">Carregando complementos...</p>
  </div>
  ) : (
@@ -176,17 +176,17 @@ export function ProductModifiersModal({
  <span className="text-xs font-bold text-foreground flex items-center gap-2">
  {group.title}
  {group.is_required && (
- <span className="text-[10px] font-bold text-destructive uppercase tracking-wider">
+ <span className="text-2xs font-bold text-destructive uppercase tracking-wider">
  • Obrigatório
  </span>
  )}
  </span>
  {group.description && (
- <p className="text-[11px] text-muted-foreground">{group.description}</p>
+ <p className="text-2xs text-muted-foreground">{group.description}</p>
  )}
  </div>
 
- <span className="text-[10px] text-muted-foreground font-mono">
+ <span className="text-2xs text-muted-foreground font-mono">
  {group.max_selections === 1 ? "Escolha 1" : `Até ${group.max_selections}`}
  </span>
  </div>
@@ -253,7 +253,7 @@ export function ProductModifiersModal({
 
  <div className="p-4 sm:p-5 border-t border-border/80 bg-card flex items-center justify-between gap-3 shrink-0">
  <div className="space-y-1">
- <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">
+ <span className="text-2xs text-muted-foreground uppercase font-bold tracking-wider block">
  Total Unitário
  </span>
  <span className="text-lg font-black text-foreground font-mono">

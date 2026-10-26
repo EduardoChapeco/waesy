@@ -516,7 +516,7 @@ export function BrandKitPage() {
                 className="h-9 px-4 rounded-lg text-xs font-medium gap-2"
               >
                 {isGenerating ? (
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
                 ) : (
                   <Wand2 className="w-3.5 h-3.5" />
                 )}
@@ -529,7 +529,7 @@ export function BrandKitPage() {
                 className="h-9 px-4 rounded-lg text-xs font-medium gap-2"
               >
                 {isSaving ? (
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
                 ) : (
                   <Save className="w-3.5 h-3.5" />
                 )}
@@ -556,7 +556,7 @@ export function BrandKitPage() {
                 className="h-9 px-4 text-xs gap-2"
               >
                 {isExtracting ? (
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
                 ) : (
                   <Globe className="w-3.5 h-3.5" />
                 )}
@@ -995,7 +995,7 @@ export function BrandKitPage() {
                         <img src={form.logo_url} alt="Logo" className="h-8 w-auto object-contain" />
                       ) : (
                         <div
-                          className="h-8 w-8 rounded-lg flex items-center justify-center text-white text-sm font-bold"
+                          className="h-8 w-8 rounded-lg flex items-center justify-center text-foreground text-sm font-bold"
                           style={{ backgroundColor: form.color_primary }}
                         >
                           J

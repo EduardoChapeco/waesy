@@ -258,7 +258,7 @@ export function LeadFormRenderer({
           <div className="w-full max-w-sm flex flex-col gap-3">
             <Button
               asChild
-              className="w-full h-12 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-base gap-2 shadow-sm"
+              className="w-full h-12 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-foreground font-medium text-base gap-2 shadow-sm"
             >
               <a
                 href={submissionResult.whatsappUrl}
@@ -475,7 +475,7 @@ export function LeadFormRenderer({
                 )}
 
                 {field.helper_text && !hasError && (
-                  <p className="text-[11px] text-muted-foreground mt-1">{field.helper_text}</p>
+                  <p className="text-2xs text-muted-foreground mt-1">{field.helper_text}</p>
                 )}
 
                 {hasError && (
@@ -495,11 +495,11 @@ export function LeadFormRenderer({
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full h-12 rounded-lg bg-primary text-primary-foreground font-medium text-base gap-2 shadow-sm transition-all active:scale-[0.99]"
+          className="w-full h-12 rounded-lg bg-primary text-primary-foreground font-medium text-base gap-2 shadow-sm transition-transform duration-200 active:scale-[0.99]"
         >
           {isSubmitting ? (
             <>
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none" />
               <span>Enviando...</span>
             </>
           ) : (
@@ -511,7 +511,7 @@ export function LeadFormRenderer({
         </Button>
       </div>
 
-      <div className="flex items-center justify-center gap-2 text-[11px] text-muted-foreground pt-1">
+      <div className="flex items-center justify-center gap-2 text-2xs text-muted-foreground pt-1">
         <ShieldCheck className="w-3.5 h-3.5 text-muted-foreground/80" />
         <span>Seus dados estão protegidos de acordo com a LGPD.</span>
       </div>

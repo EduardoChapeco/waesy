@@ -104,21 +104,21 @@ export function StorePersonasMatrix() {
               key={intentKey}
               type="button"
               onClick={() => setSelectedIntent(isSelected ? "all" : intentKey)}
-              className={`p-3 rounded-lg border text-left transition-all cursor-pointer ${
+              className={`p-3 rounded-lg border text-left transition-colors duration-200 cursor-pointer ${
                 isSelected
                   ? "border-primary bg-primary/5 shadow-xs"
                   : "border-border/60 bg-card hover:bg-muted/40"
               } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-semibold text-muted-foreground truncate">
+                <span className="text-2xs font-semibold text-muted-foreground truncate">
                   {cfg.label}
                 </span>
                 <span className="text-base sm:text-lg font-black font-mono text-foreground">
                   {count}
                 </span>
               </div>
-              <p className="text-[10px] text-muted-foreground line-clamp-1 mt-1">
+              <p className="text-2xs text-muted-foreground line-clamp-1 mt-1">
                 {cfg.desc}
               </p>
             </button>
@@ -136,7 +136,7 @@ export function StorePersonasMatrix() {
                 Tendências de Busca
               </h2>
             </div>
-            <span className="text-[11px] text-muted-foreground font-mono">
+            <span className="text-2xs text-muted-foreground font-mono">
               {topSearches.length} termos rastreados
             </span>
           </div>
@@ -155,12 +155,12 @@ export function StorePersonasMatrix() {
                 <span>{item.query}</span>
                 <Badge
                   variant="outline"
-                  className="text-[9px] font-mono px-1 py-0 h-4 border-border/40"
+                  className="text-3xs font-mono px-1 py-0 h-4 border-border/40"
                 >
                   {item.count}x
                 </Badge>
                 {item.zeroResults && (
-                  <span className="text-[9px] font-bold text-red-500 uppercase tracking-tighter">
+                  <span className="text-3xs font-bold text-red-500 uppercase tracking-tighter">
                     Sem Estoque
                   </span>
                 )}
@@ -192,7 +192,7 @@ export function StorePersonasMatrix() {
           <div className="p-8 rounded-lg border border-dashed border-border/60 text-center space-y-1">
             <Brain className="size-8 text-muted-foreground/40 mx-auto" />
             <p className="text-xs font-semibold text-foreground">Nenhuma persona catalogada ainda</p>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               Conforme visitantes pesquisam e interagem no catálogo, a IA construirá perfis de compra preditivos.
             </p>
           </div>
@@ -256,7 +256,7 @@ export function StorePersonasMatrix() {
                 return (
                   <Card
                     key={p.id}
-                    className="p-4 rounded-lg border border-border/60 bg-card hover:border-border transition-all flex flex-col justify-between"
+                    className="p-4 rounded-lg border border-border/60 bg-card hover:border-border transition-colors duration-200 flex flex-col justify-between"
                   >
                     <div>
                       <div className="flex items-start justify-between gap-2">
@@ -268,14 +268,14 @@ export function StorePersonasMatrix() {
                             <p className="text-xs font-bold text-foreground">
                               {p.persona_code}
                             </p>
-                            <p className="text-[10px] text-muted-foreground font-mono">
+                            <p className="text-2xs text-muted-foreground font-mono">
                               {p.interaction_count} interações
                             </p>
                           </div>
                         </div>
                         <Badge
                           variant="outline"
-                          className={`text-[10px] font-mono capitalize ${intentInfo.color}`}
+                          className={`text-2xs font-mono capitalize ${intentInfo.color}`}
                         >
                           {intentInfo.label}
                         </Badge>
@@ -284,7 +284,7 @@ export function StorePersonasMatrix() {
                       {/* Afinidades e Buscas */}
                       <div className="mt-3 space-y-2">
                         {topNiches.length > 0 && (
-                          <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                          <div className="flex items-center gap-1 text-2xs text-muted-foreground">
                             <Tag className="size-3 text-primary shrink-0" />
                             <span className="truncate">
                               {topNiches.map((n: string) => n.split(":")[0]).join(", ")}
@@ -292,7 +292,7 @@ export function StorePersonasMatrix() {
                           </div>
                         )}
                         {recentQueries.length > 0 && (
-                          <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                          <div className="flex items-center gap-1 text-2xs text-muted-foreground">
                             <Search className="size-3 text-muted-foreground shrink-0" />
                             <span className="truncate italic">
                               "{recentQueries.slice(0, 2).join('", "')}"
@@ -304,7 +304,7 @@ export function StorePersonasMatrix() {
 
                     <div className="mt-4 pt-3 border-t border-border/40 flex items-center justify-between">
                       <div>
-                        <span className="text-[10px] text-muted-foreground">Ticket Médio</span>
+                        <span className="text-2xs text-muted-foreground">Ticket Médio</span>
                         <p className="text-xs font-mono font-bold text-foreground">
                           {p.avg_ticket_cents > 0 ? formatMoney(p.avg_ticket_cents) : "Sob consulta"}
                         </p>
@@ -414,7 +414,7 @@ export function StorePersonasMatrix() {
                     <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono mb-2">
                       Prompt Injection Context
                     </h3>
-                    <pre className="p-3 rounded-lg bg-zinc-950 text-zinc-100 text-[11px] font-mono overflow-x-auto whitespace-pre-wrap leading-relaxed border border-zinc-800">
+                    <pre className="p-3 rounded-lg bg-zinc-950 text-zinc-100 text-2xs font-mono overflow-x-auto whitespace-pre-wrap leading-relaxed border border-zinc-800">
                       {JSON.stringify(activePersona.token_dense_context, null, 2)}
                     </pre>
                   </div>

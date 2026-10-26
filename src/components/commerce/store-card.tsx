@@ -64,8 +64,8 @@ export function StoreCard({
           <span
             className={`px-3 py-1 rounded-md text-xs font-mono font-bold uppercase tracking-wider ${
               is_open
-                ? "bg-emerald-600/95 text-white"
-                : "bg-black/60 text-white/80 border border-white/20"
+                ? "bg-emerald-600/95 text-foreground"
+                : "bg-foreground/60 text-foreground/80 border border-white/20"
             }`}
           >
             {is_open ? "● Aberto" : "Fechado"}

@@ -108,7 +108,7 @@ Ficamos à disposição para tirar dúvidas e confirmar disponibilidade e próxi
  <DialogTitle className="text-sm font-bold text-foreground">
  Compartilhar Proposta
  </DialogTitle>
-       <p className="text-[11px] text-muted-foreground">
+       <p className="text-2xs text-muted-foreground">
         A mensagem será aberta no WhatsApp para você revisar e enviar
  </p>
  </div>
@@ -140,7 +140,7 @@ Ficamos à disposição para tirar dúvidas e confirmar disponibilidade e próxi
  variant="ghost"
  size="sm"
  onClick={handleCopyText}
- className="h-7 px-2 text-[11px] text-muted-foreground hover:text-foreground"
+ className="h-7 px-2 text-2xs text-muted-foreground hover:text-foreground"
  >
  {copiedText ? <Check className="size-3 text-success mr-1" /> : <Copy className="size-3 mr-1" />}
  {copiedText ? 'Copiado!' : 'Copiar Texto'}
@@ -156,7 +156,7 @@ Ficamos à disposição para tirar dúvidas e confirmar disponibilidade e próxi
 
  {/* Atalhos Rápidos de Exportação Visual de Lâminas */}
  <div className="p-4 rounded-lg bg-muted/30 border border-border/60 space-y-2">
- <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
+ <span className="text-2xs font-bold text-muted-foreground uppercase tracking-wider block">
  Anexos & Lâminas de Alta Resolução:
  </span>
  <div className="grid grid-cols-2 gap-2">

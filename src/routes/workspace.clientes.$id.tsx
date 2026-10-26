@@ -419,7 +419,7 @@ function CustomerDetailPage() {
             <FileText className="size-3.5 text-primary" />
             <span>Docs ({data.documents?.length || 0})</span>
             {data.documents?.some((d: any) => d.expiryStatus === "expired") && (
-              <span className="size-2 rounded-full bg-rose-500 animate-pulse" />
+              <span className="size-2 rounded-full bg-rose-500 animate-pulse motion-reduce:animate-none" />
             )}
           </TabsTrigger>
           <TabsTrigger value="addresses" className="text-xs font-semibold gap-2 shrink-0 px-3 py-2 rounded-lg min-h-9 whitespace-nowrap cursor-pointer">

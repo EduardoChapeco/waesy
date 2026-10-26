@@ -450,7 +450,7 @@ export function PostCreationDrawer({
  <div className="flex items-center gap-3">
  <button
  onClick={() => onOpenChange(false)}
- className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center hover:bg-muted active:scale-95 transition-all text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center hover:bg-muted active:scale-95 transition-transform duration-200 text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  aria-label="Fechar"
  >
  <X size={20} weight="bold" />
@@ -463,11 +463,11 @@ export function PostCreationDrawer({
  <Button
  onClick={handlePublish}
  disabled={isSubmitting || isUploadingMedia}
- className="bg-primary text-primary-foreground font-bold rounded-lg h-11 min-h-11 px-6 text-sm hover:scale-102 active:scale-98 transition-all shadow-xs cursor-pointer"
+ className="bg-primary text-primary-foreground font-bold rounded-lg h-11 min-h-11 px-6 text-sm hover:scale-102 active:scale-98 transition-transform duration-200 shadow-xs cursor-pointer"
  >
  {isSubmitting ? (
  <>
- <CircleNotch size={16} className="animate-spin mr-2" />
+ <CircleNotch size={16} className="animate-spin motion-reduce:animate-none mr-2" />
  Publicando...
  </>
  ) : (
@@ -487,7 +487,7 @@ export function PostCreationDrawer({
  key={fmt.id}
  type="button"
  onClick={() => setActiveFormat(fmt.id)}
- className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer min-h-11 ${
+ className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors duration-200 cursor-pointer min-h-11 ${
  isActive
  ? "bg-foreground text-background shadow-xs scale-102"
  : "bg-card text-muted-foreground hover:text-foreground hover:bg-card/80 border border-border/50"
@@ -569,7 +569,7 @@ export function PostCreationDrawer({
  <button
  type="button"
  onClick={() => handleRemoveMedia(idx)}
- className="absolute top-1.5 right-1.5 size-8 min-h-8 min-w-8 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-destructive transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="absolute top-1.5 right-1.5 size-8 min-h-8 min-w-8 rounded-full bg-foreground/70 text-foreground flex items-center justify-center hover:bg-destructive transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  aria-label="Remover mídia"
  >
  <Trash size={12} weight="bold" />
@@ -672,7 +672,7 @@ export function PostCreationDrawer({
  >
  {isUploadingMedia ? (
  <>
- <CircleNotch size={16} className="animate-spin text-primary" />
+ <CircleNotch size={16} className="animate-spin motion-reduce:animate-none text-primary" />
  <span>Enviando...</span>
  </>
  ) : activeFormat === "moment" ? (

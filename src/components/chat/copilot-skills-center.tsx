@@ -192,7 +192,7 @@ export function CopilotSkillsCenter({ onSelectSkill, className }: CopilotSkillsC
               <div
                 key={skill.id}
                 className={cn(
-                  "group relative rounded-2xl border p-5 transition-all flex flex-col justify-between space-y-4 bg-card",
+                  "group relative rounded-2xl border p-5 transition-colors duration-200 flex flex-col justify-between space-y-4 bg-card",
                   isEnabled
                     ? "border-border/60 hover:border-primary/40 shadow-xs"
                     : "border-border/30 opacity-70 bg-muted/10"
@@ -216,7 +216,7 @@ export function CopilotSkillsCenter({ onSelectSkill, className }: CopilotSkillsC
                           <span className="text-2xs text-muted-foreground/60">•</span>
                           <Badge
                             variant="outline"
-                            className={cn("text-2xs font-medium px-2 py-0.5 rounded-md", riskConfig.badgeClass)}
+                            className={cn("text-2xs font-medium px-2 py-1 rounded-md", riskConfig.badgeClass)}
                           >
                             {riskConfig.label}
                           </Badge>
@@ -241,17 +241,17 @@ export function CopilotSkillsCenter({ onSelectSkill, className }: CopilotSkillsC
                   </p>
 
                   {/* Chips de Capacidades Técnicas */}
-                  <div className="flex flex-wrap gap-1.5 pt-1">
+                  <div className="flex flex-wrap gap-2 pt-1">
                     {skill.capabilities.slice(0, 3).map((cap) => (
                       <span
                         key={cap}
-                        className="text-2xs px-2 py-0.5 rounded-md bg-muted/60 text-muted-foreground font-mono"
+                        className="text-2xs px-2 py-1 rounded-md bg-muted/60 text-muted-foreground font-mono"
                       >
                         {cap.replace(/_/g, " ")}
                       </span>
                     ))}
                     {skill.capabilities.length > 3 && (
-                      <span className="text-2xs px-1.5 py-0.5 rounded-md bg-muted/40 text-muted-foreground">
+                      <span className="text-2xs px-2 py-1 rounded-md bg-muted/40 text-muted-foreground">
                         +{skill.capabilities.length - 3}
                       </span>
                     )}
@@ -307,7 +307,7 @@ export function CopilotSkillsCenter({ onSelectSkill, className }: CopilotSkillsC
                   <p className="text-muted-foreground leading-relaxed">{selectedSkill.description}</p>
                 </div>
 
-                <div className="p-3.5 rounded-xl bg-muted/40 border border-border/40 space-y-1.5">
+                <div className="p-4 rounded-xl bg-muted/40 border border-border/40 space-y-2">
                   <div className="flex items-center gap-2 font-semibold text-foreground">
                     <Shield className="size-4 text-primary" />
                     <span>Nível de Risco: {selectedSkill.riskTier}</span>
@@ -323,7 +323,7 @@ export function CopilotSkillsCenter({ onSelectSkill, className }: CopilotSkillsC
                     {selectedSkill.defaultTools.map((tool) => (
                       <span
                         key={tool}
-                        className="text-xs px-2.5 py-1 rounded-lg bg-primary/5 border border-primary/20 text-foreground font-mono"
+                        className="text-xs px-3 py-1 rounded-lg bg-primary/5 border border-primary/20 text-foreground font-mono"
                       >
                         {tool}
                       </span>
@@ -333,7 +333,7 @@ export function CopilotSkillsCenter({ onSelectSkill, className }: CopilotSkillsC
 
                 <div>
                   <h5 className="font-semibold text-foreground mb-2">Capacidades Declaradas</h5>
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="flex flex-wrap gap-2">
                     {selectedSkill.capabilities.map((cap) => (
                       <Badge key={cap} variant="outline" className="text-xs rounded-md">
                         {cap}

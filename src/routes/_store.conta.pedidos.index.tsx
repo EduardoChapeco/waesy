@@ -201,7 +201,7 @@ function OrderRow({ order }: { order: any }) {
               {statusLabel}
             </Badge>
             {isReadyPickup && (
-              <span className="text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded-md animate-pulse">
+              <span className="text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded-md animate-pulse motion-reduce:animate-none">
                 Retirar já
               </span>
             )}
@@ -211,7 +211,7 @@ function OrderRow({ order }: { order: any }) {
               {formatDate(order.created_at)}
             </span>
             <ChevronRight
-              className="size-3.5 text-muted-foreground/60 group-hover:text-foreground group-hover:translate-x-0.5 transition-all"
+              className="size-3.5 text-muted-foreground/60 group-hover:text-foreground group-hover:translate-x-0.5 transition-transform duration-200"
               strokeWidth={2}
             />
           </div>
@@ -260,7 +260,7 @@ function DesktopOrderCard({ order }: { order: any }) {
 
         <div className="flex items-center gap-2">
           {isReadyPickup && (
-            <span className="text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded-md animate-pulse">
+            <span className="text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded-md animate-pulse motion-reduce:animate-none">
               Pronto para Retirar
             </span>
           )}
@@ -291,7 +291,7 @@ function DesktopOrderCard({ order }: { order: any }) {
                 <p className="font-semibold text-foreground break-words text-wrap leading-tight">
                   {item.product_title}
                 </p>
-                <p className="text-muted-foreground text-xs font-mono mt-0.5">
+                <p className="text-muted-foreground text-xs font-mono mt-1">
                   {item.qty || 1}x {formatMoney(item.unit_price_cents || 0)}
                 </p>
               </div>
@@ -586,7 +586,7 @@ function CustomerOrdersPage() {
                       id={`filter-chip-${chip.id}`}
                       type="button"
                       onClick={() => setActiveFilter(chip.id)}
-                      className={`flex items-center gap-2 h-11 min-h-11 px-4 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${
+                      className={`flex items-center gap-2 h-11 min-h-11 px-4 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors duration-200 border cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${
                         isActive
                           ? "bg-primary text-primary-foreground border-primary font-bold shadow-xs"
                           : "bg-background text-muted-foreground border-border/60 hover:border-border hover:text-foreground"
@@ -595,7 +595,7 @@ function CustomerOrdersPage() {
                       {chip.label}
                       {count > 0 && (
                         <span
-                          className={`text-xs font-mono px-2 py-0.5 rounded-full ${
+                          className={`text-xs font-mono px-2 py-1 rounded-full ${
                             isActive ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground"
                           }`}
                         >

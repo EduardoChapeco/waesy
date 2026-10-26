@@ -61,15 +61,15 @@ function CustomerAgendamentosErrorComponent({ error, reset }: { error: any; rese
 function getStatusBadge(status: string) {
   switch (status) {
     case "confirmed":
-      return <Badge variant="success" className="text-[10px]">Confirmado</Badge>;
+      return <Badge variant="success" className="text-2xs">Confirmado</Badge>;
     case "pending":
-      return <Badge variant="warning" className="text-[10px]">Pendente</Badge>;
+      return <Badge variant="warning" className="text-2xs">Pendente</Badge>;
     case "completed":
-      return <Badge variant="secondary" className="text-[10px]">Concluído</Badge>;
+      return <Badge variant="secondary" className="text-2xs">Concluído</Badge>;
     case "cancelled":
-      return <Badge variant="destructive" className="text-[10px]">Cancelado</Badge>;
+      return <Badge variant="destructive" className="text-2xs">Cancelado</Badge>;
     default:
-      return <Badge variant="outline" className="text-[10px]">{status}</Badge>;
+      return <Badge variant="outline" className="text-2xs">{status}</Badge>;
   }
 }
 
@@ -167,7 +167,7 @@ function CustomerAgendaPage() {
  type="button"
  onClick={() => setActiveTab("upcoming")}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer",
+ "px-4 py-2 rounded-lg text-xs font-semibold transition-colors duration-200 cursor-pointer",
  activeTab === "upcoming"
  ? "bg-card text-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground",
@@ -179,7 +179,7 @@ function CustomerAgendaPage() {
  type="button"
  onClick={() => setActiveTab("past")}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer",
+ "px-4 py-2 rounded-lg text-xs font-semibold transition-colors duration-200 cursor-pointer",
  activeTab === "past"
  ? "bg-card text-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground",
@@ -228,7 +228,7 @@ function CustomerAgendaPage() {
  {/* Data e Horário em Destaque */}
  <div className="flex items-start gap-4">
  <div className="size-14 rounded-lg bg-muted/40 border border-border/50 flex flex-col items-center justify-center shrink-0">
- <span className="text-[10px] font-bold uppercase text-muted-foreground">
+ <span className="text-2xs font-bold uppercase text-muted-foreground">
  {dateObj.toLocaleDateString("pt-BR", { month: "short" })}
  </span>
  <span className="text-lg font-black text-foreground leading-none">
@@ -243,7 +243,7 @@ function CustomerAgendaPage() {
  </h2>
  {getStatusBadge(appt.status)}
  {appt.pass_id && (
- <span className="inline-flex items-center px-2 py-1 rounded text-[10px] font-medium bg-primary/10 text-primary">
+ <span className="inline-flex items-center px-2 py-1 rounded text-2xs font-medium bg-primary/10 text-primary">
  Pacote
  </span>
  )}
@@ -254,7 +254,7 @@ function CustomerAgendaPage() {
  </p>
 
  {appt.notes && (
- <p className="text-[11px] text-muted-foreground/80 line-clamp-1 italic pt-1">
+ <p className="text-2xs text-muted-foreground/80 line-clamp-1 italic pt-1">
  Nota: {appt.notes}
  </p>
  )}

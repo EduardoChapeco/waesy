@@ -214,7 +214,7 @@ export function CancellationPenaltyCalculatorDialog({
 
             <div className="flex items-center justify-between p-2 rounded-lg bg-muted/40">
               <div>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   <span className="font-semibold text-foreground">Cancelamento Aéreo</span>
                   {result.breakdown.anacRuleApplied && (
                     <Badge variant="outline" className="border-emerald-500/30 text-emerald-600 text-xs py-0">

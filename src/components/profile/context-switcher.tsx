@@ -218,7 +218,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
           <button
             type="button"
             className={cn(
-              "inline-flex items-center gap-2 p-1 rounded-full hover:bg-muted/60 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+              "inline-flex items-center gap-2 p-1 rounded-full hover:bg-muted/60 transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
               className
             )}
             title="Alternar Perfil ou Empresa"
@@ -271,10 +271,10 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
         className="w-80 p-2 rounded-lg bg-card border border-border/80 shadow-2xl font-sans animate-in fade-in zoom-in-95 duration-100 z-50"
       >
         <div className="px-3 py-2 flex items-center justify-between border-b border-border/40 mb-1">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+          <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
             Alternar Perfil
           </span>
-          <Badge variant="outline" className="text-[9px] font-mono capitalize">
+          <Badge variant="outline" className="text-3xs font-mono capitalize">
             {currentContextType === "civil"
               ? "Civil / Compras"
               : currentContextType === "creator"
@@ -308,7 +308,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
             1. CONTA CIVIL (ROOT TRANSACIONAL / COMPRAS)
         ══════════════════════════════════════════════════════════════ */}
         <div className="space-y-1">
-          <span className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+          <span className="px-3 py-1 text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
             Conta Pessoal (Root)
           </span>
 
@@ -332,11 +332,11 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
               <div className="min-w-0 space-y-1">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold truncate text-foreground">{civilUser.name}</span>
-                  <Badge variant="outline" className="text-[9px] px-1 py-0 font-medium">
+                  <Badge variant="outline" className="text-3xs px-1 py-0 font-medium">
                     Civil
                   </Badge>
                 </div>
-                <p className="text-[10px] text-muted-foreground truncate">
+                <p className="text-2xs text-muted-foreground truncate">
                   @{civilUser.username || civilUser.email.split("@")[0]} • Compras, CPF & Contratos
                 </p>
               </div>
@@ -352,7 +352,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
         ══════════════════════════════════════════════════════════════ */}
         {resolvedPersonas.length > 0 && (
           <div className="mt-2 space-y-1">
-            <span className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+            <span className="px-3 py-1 text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
               Personas e Marcas Pessoais
             </span>
 
@@ -385,12 +385,12 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
                         <span className="text-xs font-bold truncate text-foreground">{persona.name}</span>
                         <Badge
                           variant="outline"
-                          className="text-[9px] px-1 py-0 font-medium text-amber-600 border-amber-500/30"
+                          className="text-3xs px-1 py-0 font-medium text-amber-600 border-amber-500/30"
                         >
                           Criador
                         </Badge>
                       </div>
-                      <p className="text-[10px] text-muted-foreground truncate">
+                      <p className="text-2xs text-muted-foreground truncate">
                         @{persona.handle} • {persona.category || "Biolink & Parcerias"}
                       </p>
                     </div>
@@ -409,7 +409,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
         ══════════════════════════════════════════════════════════════ */}
         {stores.length > 0 && (
           <div className="mt-2 space-y-1">
-            <span className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+            <span className="px-3 py-1 text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
               Minhas Empresas e Lojas
             </span>
 
@@ -440,11 +440,11 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
                     <div className="min-w-0 space-y-1">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold truncate text-foreground">{store.name}</span>
-                        <Badge variant="outline" className="text-[9px] px-1 py-0 font-medium">
+                        <Badge variant="outline" className="text-3xs px-1 py-0 font-medium">
                           {store.role === "owner" ? "Dono" : store.role}
                         </Badge>
                       </div>
-                      <p className="text-[10px] text-muted-foreground truncate">
+                      <p className="text-2xs text-muted-foreground truncate">
                         Workspace • PDV & Catálogo
                       </p>
                     </div>
@@ -462,7 +462,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
             4. WAESY GO (ENTREGADOR, MOTORISTA & FRETES)
         ══════════════════════════════════════════════════════════════ */}
         <div className="mt-2 space-y-1">
-          <span className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+          <span className="px-3 py-1 text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
             Waesy Go • Logística & Mobilidade
           </span>
 
@@ -486,12 +486,12 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
                   </span>
                   <Badge
                     variant="outline"
-                    className="text-[9px] px-1 py-0 font-medium text-emerald-600 border-emerald-500/30"
+                    className="text-3xs px-1 py-0 font-medium text-emerald-600 border-emerald-500/30"
                   >
                     Waesy Go
                   </Badge>
                 </div>
-                <p className="text-[10px] text-muted-foreground truncate">
+                <p className="text-2xs text-muted-foreground truncate">
                   {hasCourierProfile
                     ? (courierVehicle ? `${courierVehicle} • Taxa Fixa R$ 0,99` : "Entregas, Corridas & Fretes")
                     : "Cadastre sua moto, carro ou caminhão (0% comissão)"}

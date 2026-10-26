@@ -240,11 +240,11 @@ function SignContractPage() {
           <div className="rounded-lg p-4 bg-muted/20 border border-border/70 flex items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2 min-w-0">
               <Hash className="size-4 text-primary shrink-0" />
-              <span className="font-mono text-muted-foreground text-[11px] truncate">
+              <span className="font-mono text-muted-foreground text-2xs truncate">
                 Hash SHA-256: {version.hash_sha256}
               </span>
             </div>
-            <Badge variant="outline" className="text-[10px] font-mono shrink-0">
+            <Badge variant="outline" className="text-2xs font-mono shrink-0">
               Imutável
             </Badge>
           </div>
@@ -325,7 +325,7 @@ function SignContractPage() {
               </p>
 
               {isCameraOpen && (
-                <div className="relative rounded-lg overflow-hidden border border-border/60 bg-black">
+                <div className="relative rounded-lg overflow-hidden border border-border/60 bg-foreground">
                   <video ref={videoRef} autoPlay muted playsInline className="w-full max-h-60 object-cover" />
                   <div className="absolute inset-0 border-4 border-primary/30 rounded-lg pointer-events-none" />
                   <button
@@ -390,7 +390,7 @@ function SignContractPage() {
                           <ShieldCheck className="size-4 text-blue-600 dark:text-blue-400" />
                           Assinatura com Conta GOV.BR
                         </span>
-                        <Badge variant="outline" className="text-[10px] font-semibold border-blue-500/30 text-blue-600 dark:text-blue-400 bg-blue-500/10">
+                        <Badge variant="outline" className="text-2xs font-semibold border-blue-500/30 text-blue-600 dark:text-blue-400 bg-blue-500/10">
                           Nível Prata / Ouro
                         </Badge>
                       </div>
@@ -433,7 +433,7 @@ function SignContractPage() {
                       <FileSignature className="size-3.5 text-primary" />
                       Assinatura Salva no seu Perfil
                     </div>
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-2xs text-muted-foreground">
                       Você possui uma assinatura digital registrada. Utilize-a com 1 toque sem desenhar novamente.
                     </p>
                   </div>
@@ -505,7 +505,7 @@ function SignContractPage() {
                 >
                   {signMutation.isPending ? (
                     <>
-                      <Loader2 className="size-4 animate-spin" />
+                      <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                       <span>Gravando Assinatura...</span>
                     </>
                   ) : (

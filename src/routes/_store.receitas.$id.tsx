@@ -256,7 +256,7 @@ function RecipeDetailPage() {
               asChild
               size="sm"
               variant="outline"
-              className="h-7 text-[11px] rounded-lg border-amber-500/40 text-amber-800 dark:text-amber-200 hover:bg-amber-500/20 shrink-0"
+              className="h-7 text-2xs rounded-lg border-amber-500/40 text-amber-800 dark:text-amber-200 hover:bg-amber-500/20 shrink-0"
             >
               <Link to="/workspace/conteudo/receitas">
                 Abrir Curadoria
@@ -337,7 +337,7 @@ function RecipeDetailPage() {
               </div>
             )}
             {recipe.source_name && (
-              <div className="text-[11px] text-muted-foreground ml-auto hidden sm:block">
+              <div className="text-2xs text-muted-foreground ml-auto hidden sm:block">
                 Fonte: <span className="font-semibold text-foreground">{recipe.source_name}</span>
               </div>
             )}
@@ -352,7 +352,7 @@ function RecipeDetailPage() {
               <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
                 Ingredientes
               </h2>
-              <span className="text-[11px] font-mono text-muted-foreground">
+              <span className="text-2xs font-mono text-muted-foreground">
                 {Object.values(checkedIngredients).filter(Boolean).length} / {recipe.ingredients.length}
               </span>
             </div>
@@ -379,7 +379,7 @@ function RecipeDetailPage() {
                     </div>
                     <span
                       className={cn(
-                        "text-xs leading-relaxed transition-all",
+                        "text-xs leading-relaxed transition-colors duration-200",
                         isChecked ? "line-through text-muted-foreground/60" : "text-foreground"
                       )}
                     >
@@ -396,7 +396,7 @@ function RecipeDetailPage() {
                 <ShoppingBag className="size-4 text-primary" />
                 <span className="text-xs font-bold text-foreground">Comércio Local</span>
               </div>
-              <p className="text-[11px] text-muted-foreground leading-snug">
+              <p className="text-2xs text-muted-foreground leading-snug">
                 Encontre estes ingredientes nos supermercados, hortifrutis e açougues da cidade.
               </p>
               <Button asChild variant="outline" size="sm" className="w-full rounded-lg text-xs h-8 gap-2">
@@ -414,7 +414,7 @@ function RecipeDetailPage() {
               <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
                 Modo de Preparo
               </h2>
-              <span className="text-[11px] font-mono text-muted-foreground">
+              <span className="text-2xs font-mono text-muted-foreground">
                 {Object.values(completedSteps).filter(Boolean).length} / {recipe.instructions.length} passos
               </span>
             </div>
@@ -427,7 +427,7 @@ function RecipeDetailPage() {
                     key={idx}
                     onClick={() => toggleStep(idx)}
                     className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                      "p-4 rounded-lg border transition-all cursor-pointer select-none space-y-2",
+                      "p-4 rounded-lg border transition-colors duration-200 cursor-pointer select-none space-y-2",
                       isStepCompleted
                         ? "border-emerald-500/30 bg-emerald-500/5 text-muted-foreground"
                         : "border-border/50 bg-card hover:border-primary/40 text-foreground"
@@ -436,7 +436,7 @@ function RecipeDetailPage() {
                     <div className="flex items-center justify-between">
                       <span
                         className={cn(
-                          "text-[10px] font-mono font-bold px-2 py-1 rounded-md",
+                          "text-2xs font-mono font-bold px-2 py-1 rounded-md",
                           isStepCompleted
                             ? "bg-emerald-500/20 text-emerald-600"
                             : "bg-muted text-muted-foreground"
@@ -445,7 +445,7 @@ function RecipeDetailPage() {
                         Passo {idx + 1}
                       </span>
                       {isStepCompleted && (
-                        <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-1">
+                        <span className="text-2xs font-bold text-emerald-600 flex items-center gap-1">
                           <CheckCircle2 className="size-3" />
                           Concluído
                         </span>

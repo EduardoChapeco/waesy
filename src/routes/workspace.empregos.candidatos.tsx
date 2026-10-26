@@ -474,7 +474,7 @@ function WorkspaceCandidatesPage() {
                 disabled={isSearchingHunter}
                 className="rounded-lg h-11 sm:h-9 text-xs font-semibold gap-1 shrink-0"
               >
-                {isSearchingHunter ? <Loader2 className="size-3 animate-spin" /> : <Search className="size-3" />}
+                {isSearchingHunter ? <Loader2 className="size-3 animate-spin motion-reduce:animate-none" /> : <Search className="size-3" />}
                 <span>Buscar</span>
               </Button>
             </form>
@@ -496,7 +496,7 @@ function WorkspaceCandidatesPage() {
             <button
               key={tab.id}
               onClick={() => setStatusTab(tab.id)}
-              className={`px-3 py-2 rounded-lg text-xs font-semibold transition-all shrink-0 flex items-center gap-2 min-h-9 cursor-pointer ${
+              className={`px-3 py-2 rounded-lg text-xs font-semibold transition-colors duration-200 shrink-0 flex items-center gap-2 min-h-9 cursor-pointer ${
                 statusTab === tab.id
                   ? "bg-foreground text-background"
                   : "bg-card text-muted-foreground hover:text-foreground border border-border/50"
@@ -524,7 +524,7 @@ function WorkspaceCandidatesPage() {
         <div className="space-y-4">
           {isSearchingHunter ? (
             <div className="py-20 text-center space-y-3">
-              <Loader2 className="size-8 animate-spin text-primary mx-auto" />
+              <Loader2 className="size-8 animate-spin motion-reduce:animate-none text-primary mx-auto" />
               <p className="text-xs text-muted-foreground font-medium">Consultando perfis profissionais...</p>
             </div>
           ) : hunterResults.length === 0 ? (
@@ -1135,9 +1135,9 @@ function WorkspaceCandidatesPage() {
             <Button
               onClick={handleConfirmHire}
               disabled={isProcessing}
-              className="rounded-lg font-semibold text-xs h-10 bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer"
+              className="rounded-lg font-semibold text-xs h-10 bg-emerald-600 text-foreground hover:bg-emerald-700 cursor-pointer"
             >
-              {isProcessing ? <Loader2 className="size-4 animate-spin mr-1" /> : <UserCheck className="size-4 mr-1" />}
+              {isProcessing ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none mr-1" /> : <UserCheck className="size-4 mr-1" />}
               <span>Efetivar Admissão</span>
             </Button>
           </DialogFooter>

@@ -549,7 +549,7 @@ function FiscalNFePage() {
                   type="button"
                   onClick={() => setInvoiceType("nfe")}
                   className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                    "p-2 rounded-lg text-xs font-medium border text-center transition-all",
+                    "p-2 rounded-lg text-xs font-medium border text-center transition-colors duration-200",
                     invoiceType === "nfe"
                       ? "border-blue-500 bg-blue-500/10 text-blue-600 font-semibold"
                       : "border-border/70 hover:bg-muted/40 text-muted-foreground"
@@ -561,7 +561,7 @@ function FiscalNFePage() {
                   type="button"
                   onClick={() => setInvoiceType("nfse")}
                   className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                    "p-2 rounded-lg text-xs font-medium border text-center transition-all",
+                    "p-2 rounded-lg text-xs font-medium border text-center transition-colors duration-200",
                     invoiceType === "nfse"
                       ? "border-purple-500 bg-purple-500/10 text-purple-600 font-semibold"
                       : "border-border/70 hover:bg-muted/40 text-muted-foreground"
@@ -573,7 +573,7 @@ function FiscalNFePage() {
                   type="button"
                   onClick={() => setInvoiceType("nfce")}
                   className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                    "p-2 rounded-lg text-xs font-medium border text-center transition-all",
+                    "p-2 rounded-lg text-xs font-medium border text-center transition-colors duration-200",
                     invoiceType === "nfce"
                       ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 font-semibold"
                       : "border-border/70 hover:bg-muted/40 text-muted-foreground"

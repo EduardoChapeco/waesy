@@ -85,12 +85,12 @@ export function LeadPushNotificationPrompt({ storeId }: LeadPushNotificationProm
           </div>
           <div>
             <p className="font-bold text-foreground">Alertas Instantâneos Ativos</p>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               Você será avisado no celular/desktop a cada novo cliente ou pedido.
             </p>
           </div>
         </div>
-        <Badge variant="outline" className="text-[10px] font-bold border-emerald-500/40 text-emerald-600 bg-emerald-500/5">
+        <Badge variant="outline" className="text-2xs font-bold border-emerald-500/40 text-emerald-600 bg-emerald-500/5">
           Conectado
         </Badge>
       </div>
@@ -108,7 +108,7 @@ export function LeadPushNotificationPrompt({ storeId }: LeadPushNotificationProm
             <h4 className="font-bold text-xs sm:text-sm text-foreground">
               Receber Notificações de Novos Leads
             </h4>
-            <Badge variant="outline" className="text-[9px] font-bold border-primary/30 text-primary bg-primary/5">
+            <Badge variant="outline" className="text-3xs font-bold border-primary/30 text-primary bg-primary/5">
               Recomendado
             </Badge>
           </div>

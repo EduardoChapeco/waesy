@@ -216,7 +216,7 @@ function IntegrationCard({
                     disabled={isTesting}
                     className="h-8 px-3 text-xs rounded-lg font-medium cursor-pointer"
                   >
-                    <RefreshCw className={`size-3.5 mr-2 ${isTesting ? "animate-spin" : ""}`} />
+                    <RefreshCw className={`size-3.5 mr-2 ${isTesting ? "animate-spin motion-reduce:animate-none" : ""}`} />
                     {isTesting ? "Testando..." : "Testar Conexão"}
                   </Button>
                 )}
@@ -419,7 +419,7 @@ function SecretVaultCard({
                     disabled={isTesting || (!secretKey.trim() && !existingSecret)}
                     className="h-8 px-3 text-xs rounded-lg font-medium cursor-pointer"
                   >
-                    <RefreshCw className={`size-3.5 mr-2 ${isTesting ? "animate-spin" : ""}`} />
+                    <RefreshCw className={`size-3.5 mr-2 ${isTesting ? "animate-spin motion-reduce:animate-none" : ""}`} />
                     {isTesting ? "Testando..." : "Testar Conexão"}
                   </Button>
                 )}
@@ -485,7 +485,7 @@ function WhatsAppInstancesPanel({
   return <Card className="lg:col-span-2 border-primary/20">
     <CardHeader><CardTitle className="text-sm flex items-center gap-2"><MessageCircle className="size-4 text-primary" /> Instâncias WhatsApp e canais</CardTitle><CardDescription className="text-xs">Cada número tem credenciais, status e auditoria próprios. Meta oficial e conectores não oficiais permanecem separados.</CardDescription></CardHeader>
     <CardContent className="space-y-5">
-      <div className="grid gap-3">{instances.map((instance) => <div key={instance.id} className="rounded-lg border border-border/70 p-3 flex flex-col md:flex-row md:items-center justify-between gap-3"><div className="min-w-0"><div className="flex items-center gap-2"><span className="font-semibold text-sm truncate">{instance.display_name}</span><Badge variant={instance.is_active ? "default" : "secondary"}>{instance.status}</Badge><Badge variant="outline">{instance.connection_mode === "official" ? "Oficial" : "Não oficial"}</Badge></div><p className="text-[11px] text-muted-foreground mt-1">{instance.provider} · {instance.display_phone_number || instance.phone_number_id || instance.external_instance_id || "identificador pendente"} · {instance.instance_key}</p></div><Button type="button" size="sm" variant={instance.is_active ? "outline" : "default"} disabled={saving} onClick={async () => { try { await toggleWorkspaceWhatsAppInstance({ data: { id: instance.id, active: !instance.is_active } }); await refresh(); } catch (error) { toast.error(error instanceof Error ? error.message : "Erro ao alterar instância."); } }} className="h-8 text-xs shrink-0">{instance.is_active ? "Desativar" : "Ativar"}</Button></div>)}{instances.length === 0 && <p className="text-xs text-muted-foreground border border-dashed rounded-lg p-4">Nenhuma instância cadastrada.</p>}</div>
+      <div className="grid gap-3">{instances.map((instance) => <div key={instance.id} className="rounded-lg border border-border/70 p-3 flex flex-col md:flex-row md:items-center justify-between gap-3"><div className="min-w-0"><div className="flex items-center gap-2"><span className="font-semibold text-sm truncate">{instance.display_name}</span><Badge variant={instance.is_active ? "default" : "secondary"}>{instance.status}</Badge><Badge variant="outline">{instance.connection_mode === "official" ? "Oficial" : "Não oficial"}</Badge></div><p className="text-2xs text-muted-foreground mt-1">{instance.provider} · {instance.display_phone_number || instance.phone_number_id || instance.external_instance_id || "identificador pendente"} · {instance.instance_key}</p></div><Button type="button" size="sm" variant={instance.is_active ? "outline" : "default"} disabled={saving} onClick={async () => { try { await toggleWorkspaceWhatsAppInstance({ data: { id: instance.id, active: !instance.is_active } }); await refresh(); } catch (error) { toast.error(error instanceof Error ? error.message : "Erro ao alterar instância."); } }} className="h-8 text-xs shrink-0">{instance.is_active ? "Desativar" : "Ativar"}</Button></div>)}{instances.length === 0 && <p className="text-xs text-muted-foreground border border-dashed rounded-lg p-4">Nenhuma instância cadastrada.</p>}</div>
       <form onSubmit={save} className="grid md:grid-cols-2 gap-3 border-t border-border/60 pt-4">
         <div className="md:col-span-2"><Label className="text-xs">Nome da instância</Label><Input className="h-9 text-xs" value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.target.value })} /></div>
         <div><Label className="text-xs">Provedor</Label><select className="w-full h-9 rounded-md border bg-background px-2 text-xs" value={form.provider} onChange={(e) => setForm({ ...form, provider: e.target.value as typeof form.provider })}><option value="meta_cloud_api">Meta Cloud API (oficial)</option><option value="evolution_api">Evolution API</option><option value="wasender_api">WaSenderAPI</option><option value="render_bridge">Render bridge</option><option value="custom_webhook">Webhook customizado</option></select></div>
@@ -1593,7 +1593,7 @@ function UnifiedIntegrationsHubPage() {
                       >
                         {isConnectingLinkedIn ? (
                           <>
-                            <Loader2 className="size-4 animate-spin" />
+                            <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                             <span>Conectando...</span>
                           </>
                         ) : (

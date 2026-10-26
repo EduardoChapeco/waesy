@@ -118,7 +118,7 @@ function ConcursosPublicPage() {
       {/* ── Top Header Silencioso & Limpo ── */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
         <div className="space-y-1">
-          <span className="text-[11px] font-mono text-muted-foreground uppercase tracking-wider block">
+          <span className="text-2xs font-mono text-muted-foreground uppercase tracking-wider block">
             Comunidade e Prêmios
           </span>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
@@ -181,7 +181,7 @@ function ConcursosPublicPage() {
       {/* ── Grid de Sorteios ── */}
       {isLoadingFilter ? (
         <div className="py-16 text-center text-muted-foreground flex flex-col items-center gap-2">
-          <Loader2 className="size-6 animate-spin text-primary" />
+          <Loader2 className="size-6 animate-spin motion-reduce:animate-none text-primary" />
           <span className="text-xs font-mono">Carregando sorteios...</span>
         </div>
       ) : concursos.length === 0 ? (
@@ -211,7 +211,7 @@ function ConcursosPublicPage() {
             return (
               <div
                 key={raffle.id}
-                className="rounded-lg border border-border/80 bg-card overflow-hidden flex flex-col justify-between shadow-xs hover:border-foreground/30 transition-all group"
+                className="rounded-lg border border-border/80 bg-card overflow-hidden flex flex-col justify-between shadow-xs hover:border-foreground/30 transition-colors duration-200 group"
               >
                 <div>
                   {/* Frame de Imagem no Aspecto Exato 16:9 */}
@@ -235,13 +235,13 @@ function ConcursosPublicPage() {
                           to="/diretorio/$id"
                           params={{ id: raffle.storeId }}
                           onClick={(e) => e.stopPropagation()}
-                          className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-black/70 hover:bg-black/90 text-white text-[10px] backdrop-blur-md transition-all active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-foreground/70 hover:bg-foreground/90 text-foreground text-2xs backdrop-blur-md transition-transform duration-200 active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           <Store className="size-3" />
                           <span>{raffle.storeName}</span>
                         </Link>
                       ) : (
-                        <Badge className="bg-black/70 text-white text-[10px] backdrop-blur-md border-0 gap-1 px-3 py-1">
+                        <Badge className="bg-foreground/70 text-foreground text-2xs backdrop-blur-md border-0 gap-1 px-3 py-1">
                           <Store className="size-3" />
                           <span>{raffle.storeName}</span>
                         </Badge>
@@ -252,8 +252,8 @@ function ConcursosPublicPage() {
                       <Badge
                         className={
                           isCompleted
-                            ? "bg-black/70 text-white text-[10px] backdrop-blur-md border-0"
-                            : "bg-emerald-600 text-white text-[10px] font-bold border-0"
+                            ? "bg-foreground/70 text-foreground text-2xs backdrop-blur-md border-0"
+                            : "bg-emerald-600 text-foreground text-2xs font-bold border-0"
                         }
                       >
                         {isCompleted ? "Encerrado" : "Sorteio Aberto"}
@@ -364,7 +364,7 @@ function ConcursosPublicPage() {
           <div className="rounded-lg border border-border/60 bg-muted/40 p-4 text-xs text-muted-foreground space-y-2 max-h-52 overflow-y-auto leading-relaxed">
             <p className="font-semibold text-foreground">Regras de Participação:</p>
             <p>{selectedRaffle?.termsText}</p>
-            <p className="font-mono text-[11px]">
+            <p className="font-mono text-2xs">
               Limite: Até {selectedRaffle?.maxTicketsPerUser} cupons por participante.
             </p>
           </div>
@@ -399,7 +399,7 @@ function ConcursosPublicPage() {
               className="h-11 px-5 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer"
             >
               {isSubmittingTicket ? (
-                <Loader2 className="size-4 animate-spin" />
+                <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
               ) : (
                 <Ticket className="size-4" />
               )}

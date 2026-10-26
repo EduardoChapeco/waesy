@@ -173,7 +173,7 @@ export function DeadlineFormSheet({
  <div className="space-y-2">
  <label className="text-xs font-bold text-muted-foreground uppercase font-mono flex items-center justify-between">
  <span>Data e Hora Fatal *</span>
- <span className="text-[10px] text-amber-600 dark:text-amber-400 font-normal">
+ <span className="text-2xs text-amber-600 dark:text-amber-400 font-normal">
  Limite até as 23:59 do dia final
  </span>
  </label>

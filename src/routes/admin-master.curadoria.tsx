@@ -250,13 +250,13 @@ function CuradoriaAdminPage() {
  <div className="p-4 rounded-lg border border-border/60 bg-card">
  <span className="text-xs text-muted-foreground font-medium block">Lojas Monitoradas</span>
  <div className="text-2xl font-bold tracking-tight text-foreground mt-1">{stores.length}</div>
- <span className="text-[11px] text-muted-foreground">cadastradas no radar</span>
+ <span className="text-2xs text-muted-foreground">cadastradas no radar</span>
  </div>
 
  <div className="p-4 rounded-lg border border-border/60 bg-card">
  <span className="text-xs text-muted-foreground font-medium block">Missões Realizadas</span>
  <div className="text-2xl font-bold tracking-tight text-foreground mt-1">{audits.length}</div>
- <span className="text-[11px] text-muted-foreground">auditorias anônimas</span>
+ <span className="text-2xs text-muted-foreground">auditorias anônimas</span>
  </div>
 
  <div className="p-4 rounded-lg border border-border/60 bg-card">
@@ -264,7 +264,7 @@ function CuradoriaAdminPage() {
  <div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-1">
  {stores.filter((s: any) => s.boost_active).length}
  </div>
- <span className="text-[11px] text-muted-foreground">lojas impulsionadas</span>
+ <span className="text-2xs text-muted-foreground">lojas impulsionadas</span>
  </div>
 
  <div className="p-4 rounded-lg border border-border/60 bg-card">
@@ -272,7 +272,7 @@ function CuradoriaAdminPage() {
  <div className="text-2xl font-bold tracking-tight text-foreground mt-1">
  {audits.filter((a: any) => a.dispute_status === "pending_review").length}
  </div>
- <span className="text-[11px] text-muted-foreground">relatos de lojistas</span>
+ <span className="text-2xs text-muted-foreground">relatos de lojistas</span>
  </div>
  </div>
 
@@ -322,7 +322,7 @@ function CuradoriaAdminPage() {
  <TableRow key={s.id}>
  <TableCell className="font-medium text-xs py-3">
  <span className="font-semibold block text-foreground">{s.name}</span>
- <span className="text-[11px] text-muted-foreground font-mono">{s.slug}</span>
+ <span className="text-2xs text-muted-foreground font-mono">{s.slug}</span>
  </TableCell>
  <TableCell className="text-xs text-muted-foreground py-3">
  {s.city ? `${s.city}/${s.state}` : "—"}
@@ -335,11 +335,11 @@ function CuradoriaAdminPage() {
  </TableCell>
  <TableCell className="py-3">
  {s.boost_active ? (
- <Badge variant="outline" className="text-[10px] text-success border-success/30">
+ <Badge variant="outline" className="text-2xs text-success border-success/30">
  +{s.boost_multiplier}x Ativo
  </Badge>
  ) : (
- <span className="text-[11px] text-muted-foreground">Normal</span>
+ <span className="text-2xs text-muted-foreground">Normal</span>
  )}
  </TableCell>
  <TableCell className="text-right py-3">
@@ -386,7 +386,7 @@ function CuradoriaAdminPage() {
  <TableRow key={a.id}>
  <TableCell className="text-xs py-3">
  <span className="font-mono font-semibold block text-foreground">{a.masked_auditor_code || "AUD"}</span>
- <span className="text-[11px] text-muted-foreground">{a.store_name}</span>
+ <span className="text-2xs text-muted-foreground">{a.store_name}</span>
  </TableCell>
  <TableCell className="text-xs font-medium py-3">{a.product_name}</TableCell>
  <TableCell className="text-xs text-muted-foreground py-3">
@@ -399,7 +399,7 @@ function CuradoriaAdminPage() {
  {a.rating_overall ? `${a.rating_overall}/5` : "Pendente"}
  </TableCell>
  <TableCell className="text-right py-3">
- <Badge variant="outline" className="text-[10px] capitalize">
+ <Badge variant="outline" className="text-2xs capitalize">
  {a.status}
  </Badge>
  </TableCell>
@@ -420,7 +420,7 @@ function CuradoriaAdminPage() {
  <div key={a.id} className="p-4 rounded-lg border border-border/60 bg-card space-y-2 text-xs">
  <div className="flex items-center justify-between">
  <span className="font-bold text-foreground">{a.store_name}</span>
- <Badge variant="outline" className="text-[10px]">
+ <Badge variant="outline" className="text-2xs">
  {a.dispute_status === "pending_review" ? "Em Análise" : "Resolvido"}
  </Badge>
  </div>
@@ -591,7 +591,7 @@ function CuradoriaAdminPage() {
  Cancelar
  </Button>
  <Button type="submit" disabled={isSubmittingMission} className="w-full sm:w-auto text-xs h-9 font-semibold">
- {isSubmittingMission && <Loader2 className="size-3.5 animate-spin mr-2" />}
+ {isSubmittingMission && <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none mr-2" />}
  Disparar Missão
  </Button>
  </DialogFooter>
@@ -669,7 +669,7 @@ function CuradoriaAdminPage() {
                 Cancelar
               </Button>
               <Button type="submit" disabled={isSavingAirport} className="w-full sm:w-auto text-xs h-11 min-h-11 px-5 font-semibold">
-                {isSavingAirport && <Loader2 className="size-3.5 animate-spin mr-2" />}
+                {isSavingAirport && <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none mr-2" />}
                 Salvar no CMS Master
               </Button>
             </DialogFooter>

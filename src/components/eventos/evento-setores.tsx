@@ -83,7 +83,7 @@ export function EventoSetores({ eventId }: EventoSetoresProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12 text-muted-foreground text-sm gap-2">
-        <Layers className="size-4 animate-spin" />
+        <Layers className="size-4 animate-spin motion-reduce:animate-none" />
         <span>Carregando setores e áreas do evento...</span>
       </div>
     );
@@ -185,7 +185,7 @@ export function EventoSetores({ eventId }: EventoSetoresProps) {
         <Card className="rounded-lg border border-dashed border-border/80 p-8 text-center bg-card/40">
           <MapPin className="size-8 text-muted-foreground mx-auto mb-2 opacity-50" />
           <p className="text-xs font-bold text-foreground">Nenhum setor cadastrado</p>
-          <p className="text-[11px] text-muted-foreground mt-1">
+          <p className="text-2xs text-muted-foreground mt-1">
             Cadastre os setores para vincular aos ingressos e dimensionar os lotes.
           </p>
         </Card>
@@ -194,7 +194,7 @@ export function EventoSetores({ eventId }: EventoSetoresProps) {
           {sectors.map((s) => (
             <Card
               key={s.id}
-              className="rounded-lg border border-border/80 bg-card p-4 shadow-xs space-y-3 hover:border-primary/40 transition-all flex flex-col justify-between"
+              className="rounded-lg border border-border/80 bg-card p-4 shadow-xs space-y-3 hover:border-primary/40 transition-colors duration-200 flex flex-col justify-between"
             >
               <div className="space-y-2">
                 <div className="flex items-start justify-between gap-2">
@@ -216,7 +216,7 @@ export function EventoSetores({ eventId }: EventoSetoresProps) {
                 </div>
 
                 {s.descricao && (
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  <p className="text-2xs text-muted-foreground leading-relaxed">
                     {s.descricao}
                   </p>
                 )}

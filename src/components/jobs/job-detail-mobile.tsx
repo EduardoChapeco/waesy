@@ -28,7 +28,7 @@ export function JobDetailMobile({
       <div className="flex items-center justify-between p-3 border-b border-border/40 bg-background/95 backdrop-blur-md sticky top-0 z-30">
         <Link
           to="/empregos"
-          className="size-11 rounded-full bg-muted/70 hover:bg-muted flex items-center justify-center border border-border/60 text-foreground active:scale-95 transition-all"
+          className="size-11 rounded-full bg-muted/70 hover:bg-muted flex items-center justify-center border border-border/60 text-foreground active:scale-95 transition-transform duration-200"
           aria-label="Voltar para Vagas"
         >
           <ArrowLeft size={20} weight="bold" />
@@ -69,7 +69,7 @@ export function JobDetailMobile({
                   {job.company_name}
                 </span>
                 {job.is_featured && (
-                  <Badge variant="default" className="rounded-md font-mono text-[9px] uppercase px-2 py-0 shrink-0">
+                  <Badge variant="default" className="rounded-md font-mono text-3xs uppercase px-2 py-0 shrink-0">
                     Destaque
                   </Badge>
                 )}
@@ -82,7 +82,7 @@ export function JobDetailMobile({
 
           {/* Remuneração */}
           <div className="p-4 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-between">
-            <span className="text-[11px] font-mono text-muted-foreground uppercase font-bold tracking-wider">
+            <span className="text-2xs font-mono text-muted-foreground uppercase font-bold tracking-wider">
               Remuneração Prevista
             </span>
             <span className="text-lg font-black text-primary font-mono">
@@ -167,22 +167,22 @@ export function JobDetailMobile({
         {matchedProfession && (
           <div className="p-4 rounded-lg border border-border/70 bg-card space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                 Média Salarial Regional
               </span>
-              <span className="text-[10px] font-mono text-muted-foreground">Guia de Mercado</span>
+              <span className="text-2xs font-mono text-muted-foreground">Guia de Mercado</span>
             </div>
             <div className="grid grid-cols-3 gap-2">
               <div className="p-2 rounded-lg bg-muted/30 border border-border/40 text-center">
-                <span className="text-[9px] text-muted-foreground block font-medium">Júnior</span>
+                <span className="text-3xs text-muted-foreground block font-medium">Júnior</span>
                 <span className="text-xs font-bold font-mono text-foreground">{formatMoney(matchedProfession.junior_salary_cents)}</span>
               </div>
               <div className="p-2 rounded-lg bg-primary/10 border border-primary/20 text-center">
-                <span className="text-[9px] text-primary block font-medium">Pleno</span>
+                <span className="text-3xs text-primary block font-medium">Pleno</span>
                 <span className="text-xs font-bold font-mono text-primary">{formatMoney(matchedProfession.mid_salary_cents)}</span>
               </div>
               <div className="p-2 rounded-lg bg-muted/30 border border-border/40 text-center">
-                <span className="text-[9px] text-muted-foreground block font-medium">Sênior</span>
+                <span className="text-3xs text-muted-foreground block font-medium">Sênior</span>
                 <span className="text-xs font-bold font-mono text-foreground">{formatMoney(matchedProfession.senior_salary_cents)}</span>
               </div>
             </div>
@@ -193,7 +193,7 @@ export function JobDetailMobile({
         {employerInsights && employerInsights.total_reviews > 0 && (
           <div className="p-4 rounded-lg border border-border/70 bg-card space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                 Perfil do Empregador
               </span>
               <span className="text-xs font-bold text-amber-500">
@@ -232,7 +232,7 @@ export function JobDetailMobile({
       {/* ── 9. Sticky Bottom Action Bar (Thumb Zone & Safe-Area) ── */}
       <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/60 p-3 pb-[calc(0.65rem+env(safe-area-inset-bottom))] mobile-nav-hide-on-keyboard flex items-center justify-between gap-3 shadow-lg">
         <div className="min-w-0 flex-1">
-          <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">
+          <span className="text-2xs text-muted-foreground uppercase font-bold tracking-wider block">
             Salário Previsto
           </span>
           <span className="text-sm font-black text-foreground font-mono line-clamp-1">

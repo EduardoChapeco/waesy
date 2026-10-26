@@ -52,16 +52,16 @@ export class BlockErrorBoundary extends Component<Props, State> {
       return (
         <div
           role="alert"
-          className="w-full my-4 p-4 rounded-xl border border-destructive/30 bg-destructive/5 text-foreground flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all"
+          className="w-full my-4 p-4 rounded-xl border border-destructive/30 bg-destructive/5 text-foreground flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-colors duration-200"
         >
           <div className="flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-destructive/10 text-destructive shrink-0 mt-0.5 sm:mt-0">
+            <div className="p-2 rounded-lg bg-destructive/10 text-destructive shrink-0 mt-1 sm:mt-0">
               <AlertTriangle className="size-5" />
             </div>
             <div className="space-y-1">
               <p className="text-sm font-semibold tracking-tight text-foreground">
                 Falha na renderização deste bloco (
-                <code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
+                <code className="text-xs font-mono bg-muted px-2 py-1 rounded text-muted-foreground">
                   {this.props.blockType || "bloco"}
                 </code>
                 )

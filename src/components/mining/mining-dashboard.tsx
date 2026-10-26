@@ -616,7 +616,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
             disabled={isLoadingStats}
             className="h-10 px-3 rounded-lg font-normal"
           >
-            <RefreshCw className={`w-4 h-4 mr-2 ${isLoadingStats ? "animate-spin" : ""}`} />
+            <RefreshCw className={`w-4 h-4 mr-2 ${isLoadingStats ? "animate-spin motion-reduce:animate-none" : ""}`} />
             Atualizar
           </Button>
 
@@ -627,7 +627,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
             className="h-10 px-4 rounded-lg font-medium shadow-none"
           >
             {isRunningScraper === "continuous-crawler" ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
             ) : (
               <Play className="w-4 h-4 mr-2 fill-current" />
             )}
@@ -993,7 +993,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 className="h-10 px-4 rounded-lg text-xs font-medium cursor-pointer shrink-0"
               >
                 {isLoadingBenchmark ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-2" />
                 ) : (
                   <Search className="w-3.5 h-3.5 mr-2" />
                 )}
@@ -1164,7 +1164,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
             <div className="block sm:hidden divide-y divide-border/40 rounded-lg border border-border/40 bg-card overflow-hidden">
               {isLoadingProducts ? (
                 <div className="py-8 text-center text-xs text-muted-foreground">
-                  <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" /> Carregando produtos...
+                  <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mx-auto mb-2" /> Carregando produtos...
                 </div>
               ) : minedProducts.length === 0 ? (
                 <div className="py-8 text-center text-xs text-muted-foreground">
@@ -1273,7 +1273,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                   {isLoadingProducts ? (
                     <TableRow>
                       <TableCell colSpan={6} className="h-28 text-center text-xs text-muted-foreground">
-                        <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" />
+                        <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mx-auto mb-2" />
                         Carregando catálogo de produtos...
                       </TableCell>
                     </TableRow>
@@ -1410,7 +1410,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
               onClick={loadCooldowns}
               className="h-8 px-3 rounded-lg text-xs font-normal gap-1 cursor-pointer"
             >
-              <RefreshCw className={`w-3 h-3 ${isLoadingCooldowns ? "animate-spin" : ""}`} /> Atualizar
+              <RefreshCw className={`w-3 h-3 ${isLoadingCooldowns ? "animate-spin motion-reduce:animate-none" : ""}`} /> Atualizar
             </Button>
           </div>
 
@@ -1418,7 +1418,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
           <div className="block sm:hidden divide-y divide-border/40 rounded-lg border border-border/40 bg-card overflow-hidden">
             {isLoadingCooldowns ? (
               <div className="py-8 text-center text-xs text-muted-foreground">
-                <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" /> Carregando...
+                <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mx-auto mb-2" /> Carregando...
               </div>
             ) : domainCooldowns.length === 0 ? (
               <div className="py-8 text-center text-xs text-muted-foreground">
@@ -1442,7 +1442,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                     className="h-8 px-3 rounded-lg text-xs font-normal shrink-0"
                   >
                     {isResettingCooldown === cd.domain ? (
-                      <Loader2 className="w-3 h-3 animate-spin" />
+                      <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
                     ) : (
                       <RotateCcw className="w-3 h-3 mr-1" />
                     )}
@@ -1470,7 +1470,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 {isLoadingCooldowns ? (
                   <TableRow>
                     <TableCell colSpan={6} className="h-28 text-center text-xs text-muted-foreground">
-                      <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" />
+                      <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mx-auto mb-2" />
                       Carregando telemetria...
                     </TableCell>
                   </TableRow>
@@ -1507,7 +1507,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                           className="h-7 px-2 rounded-lg text-xs font-normal gap-1 cursor-pointer"
                         >
                           {isResettingCooldown === cd.domain ? (
-                            <Loader2 className="w-3 h-3 animate-spin" />
+                            <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
                           ) : (
                             <RotateCcw className="w-3 h-3" />
                           )}
@@ -1553,7 +1553,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
           <div className="block sm:hidden divide-y divide-border/40 rounded-lg border border-border/40 bg-card overflow-hidden">
             {isLoadingQueue ? (
               <div className="py-8 text-center text-xs text-muted-foreground">
-                <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" /> Carregando...
+                <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mx-auto mb-2" /> Carregando...
               </div>
             ) : queueItems.length === 0 ? (
               <div className="py-8 text-center text-xs text-muted-foreground">Nenhum item na fila.</div>
@@ -1589,7 +1589,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 {isLoadingQueue ? (
                   <TableRow>
                     <TableCell colSpan={5} className="h-28 text-center text-xs text-muted-foreground">
-                      <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" />
+                      <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mx-auto mb-2" />
                       Carregando fila...
                     </TableCell>
                   </TableRow>
@@ -1663,7 +1663,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
               className="h-9 px-4 rounded-lg text-xs font-medium gap-2 cursor-pointer shrink-0"
             >
               {isGeneratingGhost ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
               ) : (
                 <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
               )}
@@ -1675,7 +1675,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
           <div className="block sm:hidden divide-y divide-border/40 rounded-lg border border-border/40 bg-card overflow-hidden">
             {isLoadingBusinesses ? (
               <div className="py-8 text-center text-xs text-muted-foreground">
-                <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" /> Carregando...
+                <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mx-auto mb-2" /> Carregando...
               </div>
             ) : businesses.length === 0 ? (
               <div className="py-8 text-center text-xs text-muted-foreground">Nenhuma empresa encontrada.</div>
@@ -1689,9 +1689,9 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                   <div className="text-right shrink-0 flex flex-col items-end">
                     <span className="text-xs font-mono font-medium text-foreground">{biz.data_quality_score}%</span>
                     {biz.data_quality_score >= 80 ? (
-                      <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-medium">Ghost Tenant</span>
+                      <span className="text-3xs text-emerald-600 dark:text-emerald-400 font-medium">Ghost Tenant</span>
                     ) : (
-                      <span className="text-[9px] text-muted-foreground">{biz.city || "—"}</span>
+                      <span className="text-3xs text-muted-foreground">{biz.city || "—"}</span>
                     )}
                   </div>
                 </div>
@@ -1716,7 +1716,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 {isLoadingBusinesses ? (
                   <TableRow>
                     <TableCell colSpan={6} className="h-28 text-center text-xs text-muted-foreground">
-                      <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" />
+                      <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mx-auto mb-2" />
                       Carregando empresas...
                     </TableCell>
                   </TableRow>
@@ -1779,7 +1779,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 className="h-8 px-3 rounded-lg text-xs font-normal cursor-pointer"
               >
                 {isDispatchingCron === "market-data" ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-2" />
                 ) : (
                   <Clock className="w-3.5 h-3.5 mr-2 text-muted-foreground" />
                 )}
@@ -1792,7 +1792,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 disabled={isLoadingIndicators}
                 className="h-8 px-3 rounded-lg text-xs font-normal cursor-pointer"
               >
-                <RefreshCw className={`w-3.5 h-3.5 mr-2 ${isLoadingIndicators ? "animate-spin" : ""}`} />
+                <RefreshCw className={`w-3.5 h-3.5 mr-2 ${isLoadingIndicators ? "animate-spin motion-reduce:animate-none" : ""}`} />
                 Recarregar
               </Button>
             </div>
@@ -1801,7 +1801,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
             {isLoadingIndicators ? (
               <div className="col-span-full py-12 text-center text-xs text-muted-foreground">
-                <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" />
+                <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mx-auto mb-2" />
                 Consultando API SGS do Banco Central...
               </div>
             ) : indicators.length === 0 ? (
@@ -1851,7 +1851,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 className="h-8 px-3 rounded-lg text-xs font-normal cursor-pointer"
               >
                 {isDispatchingCron === "rss-fetcher" ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-2" />
                 ) : (
                   <Clock className="w-3.5 h-3.5 mr-2 text-muted-foreground" />
                 )}
@@ -1882,7 +1882,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 {isLoadingFeeds ? (
                   <TableRow>
                     <TableCell colSpan={4} className="h-28 text-center text-xs text-muted-foreground">
-                      <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" />
+                      <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mx-auto mb-2" />
                       Carregando feeds...
                     </TableCell>
                   </TableRow>
@@ -1942,7 +1942,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 {isLoadingAudit ? (
                   <TableRow>
                     <TableCell colSpan={5} className="h-28 text-center text-xs text-muted-foreground">
-                      <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" />
+                      <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mx-auto mb-2" />
                       Carregando logs...
                     </TableCell>
                   </TableRow>
@@ -2033,7 +2033,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 disabled={isSubmittingSeed}
                 className="rounded-lg text-xs font-medium shadow-none"
               >
-                {isSubmittingSeed ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" /> : null}
+                {isSubmittingSeed ? <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-2" /> : null}
                 Salvar
               </Button>
             </DialogFooter>
@@ -2102,7 +2102,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 disabled={isSubmittingFeed}
                 className="rounded-lg text-xs font-medium shadow-none"
               >
-                {isSubmittingFeed ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" /> : null}
+                {isSubmittingFeed ? <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-2" /> : null}
                 Salvar Feed
               </Button>
             </DialogFooter>
@@ -2196,7 +2196,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
               disabled={isSavingProductEdit}
               className="rounded-lg text-xs font-medium"
             >
-              {isSavingProductEdit ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" /> : null}
+              {isSavingProductEdit ? <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-2" /> : null}
               Salvar Alterações
             </Button>
           </DialogFooter>
@@ -2256,7 +2256,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
               disabled={isImportingProduct || !importTargetStoreId.trim()}
               className="rounded-lg text-xs font-medium"
             >
-              {isImportingProduct ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" /> : null}
+              {isImportingProduct ? <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-2" /> : null}
               Confirmar Importação
             </Button>
           </DialogFooter>

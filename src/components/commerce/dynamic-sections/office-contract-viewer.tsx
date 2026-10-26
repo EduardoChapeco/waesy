@@ -44,7 +44,7 @@ export function OfficeContractViewer({
  <FileText className="w-6 h-6" />
  </div>
  <div>
- <span className="text-[11px] font-mono text-muted-foreground">{documentNumber}</span>
+ <span className="text-2xs font-mono text-muted-foreground">{documentNumber}</span>
  <h2 className="text-lg font-bold text-foreground">{title}</h2>
  <p className="text-xs text-muted-foreground">{storeName}</p>
  </div>
@@ -65,7 +65,7 @@ export function OfficeContractViewer({
  </>
  ) : (
  <>
- <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+ <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse motion-reduce:animate-none" />
  Aguardando Assinatura
  </>
  )}
@@ -94,11 +94,11 @@ export function OfficeContractViewer({
  <CheckCircle2 className="w-4 h-4" />
  Assinado por {signature.signerName} ({signature.signerCpf})
  </div>
- <div className="text-[10px] text-muted-foreground font-mono">
+ <div className="text-2xs text-muted-foreground font-mono">
  Hash SHA-256: {signature.sha256Hash}
  </div>
  </div>
- <span className="text-[10px] text-muted-foreground">
+ <span className="text-2xs text-muted-foreground">
  MP 2.200-2/2001 · {new Date(signature.signedAt).toLocaleDateString('pt-BR')}
  </span>
  </div>

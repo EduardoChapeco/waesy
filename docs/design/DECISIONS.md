@@ -1,5 +1,53 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-330: Paridade Operacional Whaticket/Chatwoot & Typebot no Waesy CRM Omnichannel
+- **Data:** 2026-10-26
+- **Contexto:** Auditoria forense e engenharia reversa de sistemas open-source de atendimento (Whaticket e Chatwoot) e funis de automação (Typebot) aplicados ao ecossistema Waesy CRM (workspace.atendimento.index.tsx e serviços de chat):
+  1. **Filas & Departamentos de Atendimento:** Criação de `chat_departments`, associação dinâmica nas threads (`chat_threads.department`) e segmentação operacional (Comercial/Vendas, SAC/Suporte, Financeiro/Pix, Cozinha/Estoque, Logística e Triagem Geral).
+  2. **Transferência de Conversas com Contexto Obrigatório:** Implementação de `TransferTicketDialog.tsx` e função BFF `transferChatThread` com validação de nota mínima (5 caracteres), registro imutável em `chat_thread_transfers` e injeção automática de whisper (nota interna privada).
+  3. **Notas Internas Privadas (Whisper):** Modo exclusivo com destaque âmbar/dourado na interface do atendente e isolamento estrito no backend (mensagens marcadas com `is_whisper: true` jamais são despachadas para o WhatsApp do cliente via Meta Cloud API ou Evolution API).
+  4. **Tags Semânticas Coloridas & CRM:** Componente `ThreadTagsPicker.tsx` com paleta canônica (VIP, Lead Quente, Aguardando PIX, Reclamação, Pós-Venda) e função `updateThreadTags` com persistência reativa no Postgres.
+  5. **Respostas Rápidas / Macros com Autocomplete:** Componente `QuickRepliesMenu.tsx` disparado nativamente pelo caractere "/", com busca instantânea, categorização e substituição de variáveis dinâmicas (`{{nome}}`, `{{loja}}`).
+  6. **Ferramentas MCP para Agente de IA Nível 1:** Suíte em `whatsapp-ai-agent-tools.server.ts` cobrindo consulta de estoque em tempo real (`toolCheckInventory`), emissão de PIX com copia-e-cola e QR Code (`toolCreatePixCharge`), rastreio de pedidos por telefone (`toolGetOrderStatus`) e transbordo inteligente para filas humanas com nota contextual (`toolHandoffToHuman`).
+  7. **Automação Typebot-Grade & Horário de Atendimento:** Motor em `whatsapp-automation-runtime.server.ts` com gatilhos por palavra-chave, ações de roteamento de fila e verificação de horário de expediente com resposta automática de ausência configurável por loja.
+  8. **Design Bidirecional & Apple HIG:** Piso tátil estrito de 44px (`h-11 min-h-11`), safe areas, anéis de foco `:focus-visible:ring-2`, grade modular de 4px, zero P0 e redução de 2 dívidas técnicas na baseline de design lint.
+- **Decisão:** Integrar as novas tabelas, server functions BFF e componentes modulares de chat sem qualquer impacto destrutivo ou perda de funcionalidades preexistentes do Workspace.
+- **Fundamentação:** `AGENTS.md` B.1 a B.45; B.4 (DL-03, DL-14, DL-15, DL-23, DL-28); B.20; B.22; B.25; B.26; B.34; B.40; Apple HIG; WCAG 2.2 AA.
+- **Consequências:** Paridade técnica completa com ferramentas consagradas de mercado (Whaticket, Chatwoot, Typebot), zero regressões visuais no design lint (5.608 violações, 0 P0), 100% dos contratos BFF validados e compilação limpa.
+
+## DEC-329: Redesign da Home Mobile com Padrão iFood-Grade e Hierarquia Incremental Preservada
+- **Data:** 2026-10-26
+- **Contexto:** Execução da Onda 04 do Master Plan, inspirada nos prints do iFood (`Screenshot_2026-10-22-21-32-11-075` / `13-895` / `34-982` / `21-465`):
+  1. **Top Greeting & Cluster de Busca 44px (`TopGreetingSearchBar.tsx`):** Saudação personalizada ("Olá, {Nome}"), acesso rápido a Notificações e Carrinho com badges, e barra de busca de 44px com anel de foco `:focus-visible`.
+  2. **Banner Promocional de Cupons (`PromoCouponBanner.tsx`):** Alerta estilizável com suporte a descarte tátil e link para campanhas de frete grátis/cupons.
+  3. **Filtros Pills em 2 Linhas (`DualLineFilterPills.tsx`):** Navegação horizontal em 2 níveis para ordenação/campanhas (Relevância, Promoções, Cupons) e condições de entrega (Grátis, Perto, Aberto agora, Verificados).
+  4. **Trilhos Verticais Curados (`CuratedVerticalRails.tsx`):** Cards squircles contínuos para coleções temáticas (Gourmet, Clubes, Mercados, Viagens) sem truncamento de texto.
+  5. **Preservação Incremental Estrita:** 100% das seções de classificados, notícias, vagas, diretório e feeds existentes mantidos operacionais e configuráveis via CMS Master.
+- **Decisão:** Integrar o cluster no topo do `HomeMobileNativeApp.tsx` sem alterar o contrato de dados dos loaders.
+- **Fundamentação:** `AGENTS.md` B.1 a B.45; B.4 (DL-14, DL-15); B.20; B.22; B.26; B.38; Apple HIG; WCAG 2.2 AA.
+- **Consequências:** Zero regressões visuais, zero quebras no DOM, 0 violações P0 no Design Lint e compilação TypeScript limpa.
+## DEC-328: Bilateralidade do SuperApp Drawer no CMS Master e Alternância de Visualização Grade/Lista
+- **Data:** 2026-10-26
+- **Contexto:** Implementação das Ondas 02 e 03 do Master Plan, inspiradas nas telas `Screenshot_2026-08-15-12-37-46-468` / `54-337` / `00-853`:
+  1. **Template Type `drawer_module`:** Extensão do schema Zod e DTO de `hotpages` para suportar botões de módulos do SuperApp, com upload de PNG transparente (`custom_icon_url`), cor de fundo de squircle (`bg_color`), posicionamento de texto e filtro por localidade (`city_filter`).
+  2. **Aba Gestora no Admin Master (`admin-master.botoes.tsx`):** Inclusão da 4ª aba dedicada "SuperApp Drawer & Menus", permitindo ao Master Admin criar, reordenar, estipular cores, associar cidades e fazer upload de mídia sem quebras.
+  3. **SuperAppModuleDrawer Canônico (`SuperAppModuleDrawer.tsx`):** Drawer móvel nativo com alternância dinâmica em tempo de execução entre modo Grade Squircle (4 colunas com aspect equilibrado) e modo Lista (estilo WhatsApp / Apple HIG), além do botão destacado full-width para "Classificados Gerais".
+  4. **Alternador de Perfis Rápido:** Integração dos 3 contextos soberanos (Civil, Empresas/Workspace e Condutor Waesy Go) com navegação fluida sem atritos de autenticação.
+- **Decisão:** Substituir o menu estático por carregamento bilateral conectado a `listDrawerModules()`, mantendo fallback imediato para os 18 módulos canônicos caso a base ainda não tenha sido customizada.
+- **Fundamentação:** `AGENTS.md` B.1 a B.45; B.20 (Bilateralidade do CMS); B.22; B.26; B.38; Apple HIG; WCAG 2.2 AA.
+- **Consequências:** 100% dos botões do SuperApp controláveis pelo Admin Master; flexibilidade total de layout para o usuário final.
+## DEC-327: Refatoração Holística do Design System 4.5 — Squircles Apple HIG, Anti-Truncate e Casca Workstation
+- **Data:** 2026-10-26
+- **Contexto:** Aprovação do Master Plan de Refatoração Holística baseado no inventário de 81 referências visuais da pasta `printstela` (iFood, Threads, BlaBlaCar, Wix Owner, Alloy, 99 Táxis, Apple Reminders e Arc Browser):
+  1. **Squircles Apple HIG & Anti-Truncate:** Criação do componente canônico `SquircleCard` e `AntiTruncateText` com cantos contínuos (`rounded-2xl` e `rounded-3xl`) e acomodação de texto integral (`break-words text-wrap: balance/pretty`), eliminando truncamento preguiçoso com reticências.
+  2. **Casca Workstation Unificada (Desktop >= 840px):** Unificação estrutural das vitrines públicas (`_store.*`) e workspaces corporativos (`workspace.*`), com sidebar ultrafina integrada ao fundo e conteúdo central em card imersivo elevado.
+  3. **Ergonomia Mobile-First (< 600px):** Piso de toque canônico $\ge 44$px (`h-11 min-h-11`), safe area superior defensiva, sheets 100dvh e ações primárias ancoradas na thumb zone.
+  4. **Bilateralidade Estrita com CMS Master:** Sincronização direta de botões, carrosséis, banners e seções via `marketplace_buttons`, `marketplace_sections`, `marketplace_surfaces` e `hotpages`.
+- **Decisão:** Padronizar os tokens, utilitários em `src/styles.css` e primitivas em `src/design-system/primitives/` como padrão soberano de interface.
+- **Fundamentação:** `AGENTS.md` B.1 a B.45; B.4 (DL-02, DL-03, DL-14, DL-15); B.20; B.22; B.26; B.38; Apple HIG; WCAG 2.2 AA.
+- **Consequências:** Zero regressões visuais; base sólida para execução sequencial das 12 Ondas Estruturais.
+
+
 ## DEC-326: Arquitetura de Infraestrutura VPS, Docker e WhatsApp Multi-Tenant (Oracle Fase 1 & Hetzner Fase 2)
 - **Data:** 2026-10-23
 - **Contexto:** Definição da esteira de infraestrutura de microsserviços para orquestração de WhatsApp corporativo e automações com Docker (Evolution API v2 / Baileys):
@@ -5104,3 +5152,19 @@
 - **Fundamentacao Teorica:** AGENTS.md B.5 (Fluxo Obrigatório de Trabalho), B.9 (Definition of Done), B.11 (Registro de Decisões) e B.37/B.38 (Isolamento Semântico e Anti-Truncate).
 - **Consequencias:** Visibilidade total e imutável no repositório das correções necessárias, permitindo execução faseada sem conflitos com outros agentes concorrentes e assegurando integridade transacional real em produção.
 
+
+
+## DEC-333: Onda 06 — Refatoração de Módulos Verticais (Gastronomia, Eventos, CVC/Decolar Turismo e Ônibus Intermunicipais)
+
+- **Data:** 2026-10-26
+- **ID da Decisao:** DEC-333
+- **Contexto:** Execução da Onda 06 do Master Plan com completude máxima, contemplando a modernização ergonômica Apple HIG dos módulos verticais de Gastronomia, Eventos e Turismo (Microfases 51 a 60).
+- **Decisao Adotada:**
+  1. Criação do componente `BusTicketResultsRail.tsx` (`src/components/tourism/BusTicketResultsRail.tsx`), provendo visualização em cards squircle de linhas rodoviárias e modal de emissão direta de passagens via `listIntercityBusSchedules` e `bookIntercityBusTicket`.
+  2. Implementação do hub de canais estilo CVC e Decolar em `src/routes/_store.turismo.index.tsx` (Pacotes, Passagens Aéreas, Hotéis e Ônibus) com botões grandes táteis (44px+) e integração do trilho rodoviário.
+  3. Refatoração de `src/routes/_store.gastronomia.tsx` com carrossel squircle de subnichos (Burgers, Pizzas, Sushi, Marmitas, Churrasco, Doces), integração do `ProductOptionDrawer` para complementos e customizações, correção do z-index da barra flutuante da sacola para `z-30` e elevação do botão para `h-11 min-h-11`.
+  4. Atualização de `src/components/commerce/canonical-store-profile-view.tsx` com thumbnails mobile no padrão squircle 80x80px (`size-20 min-w-20 rounded-xl`) e alvos de toque de 44px (`h-11 min-h-11`).
+  5. Adequação defensiva de barras flutuantes inferiores para `z-30` em `_store.turismo.$id.tsx` e `event-detail-mobile.tsx`, prevenindo sobreposição de overlays de modais (Regra B.34).
+  6. Homologação formal com zero erros: `node --max-old-space-size=6144 ./node_modules/typescript/bin/tsc --noEmit` aprovado com Exit Code 0; catraca de design lint (`scripts/design-lint.mjs --ratchet`) aprovada com 0 violações P0 e baseline reduzido para 5.610 violações.
+- **Fundamentacao Teorica:** AGENTS.md Regras B.8, B.14, B.22, B.26, B.33, B.34, Apple HIG.
+- **Consequencias:** Módulos verticais completamente integrados às rotas públicas, com affordance tátil nativa, isolamento comercial estrito e total conformidade com os portões de compilação e qualidade visual.

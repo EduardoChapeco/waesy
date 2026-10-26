@@ -74,7 +74,7 @@ export function TravelItineraryTimeline({
  </div>
 
  {/* Card da Programação */}
- <div className="p-4 rounded-lg bg-card border border-border/70 hover:border-primary/40 transition-all space-y-2 shadow-2xs">
+ <div className="p-4 rounded-lg bg-card border border-border/70 hover:border-primary/40 transition-colors duration-200 space-y-2 shadow-2xs">
  <div className="flex items-baseline justify-between gap-2">
  <h4 className="text-sm font-bold text-foreground">{day.title}</h4>
  {day.date && (
@@ -84,7 +84,7 @@ export function TravelItineraryTimeline({
 
  <p
  className={cn(
- "text-xs text-muted-foreground leading-relaxed transition-all",
+ "text-xs text-muted-foreground leading-relaxed transition-colors duration-200",
  !isExp && "line-clamp-2"
  )}
  >

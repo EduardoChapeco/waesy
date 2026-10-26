@@ -1245,7 +1245,7 @@ export function ProfessionalResumeEditor({
         <DialogContent className="sm:max-w-xl sm:rounded-lg p-0 overflow-hidden bg-background border border-border">
           <DialogHeader className="p-6 pb-4 border-b border-border/40">
             <div className="flex items-center gap-3">
-              <div className="size-10 rounded-lg bg-primary text-white flex items-center justify-center shrink-0">
+              <div className="size-10 rounded-lg bg-primary text-foreground flex items-center justify-center shrink-0">
                 <Linkedin className="size-5 fill-current" />
               </div>
               <div>
@@ -1298,11 +1298,11 @@ export function ProfessionalResumeEditor({
                   type="button"
                   onClick={handleStartLinkedInOAuth}
                   disabled={isConnectingLinkedIn}
-                  className="w-full h-11 rounded-lg font-bold text-xs gap-2 bg-primary hover:bg-primary/90 text-white shadow-xs cursor-pointer"
+                  className="w-full h-11 rounded-lg font-bold text-xs gap-2 bg-primary hover:bg-primary/90 text-foreground shadow-xs cursor-pointer"
                 >
                   {isConnectingLinkedIn ? (
                     <>
-                      <Loader2 className="size-4 animate-spin" />
+                      <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                       <span>Conectando ao LinkedIn...</span>
                     </>
                   ) : (
@@ -1345,7 +1345,7 @@ export function ProfessionalResumeEditor({
                   >
                     {isParsingLinkedIn ? (
                       <>
-                        <Loader2 className="size-4 animate-spin" />
+                        <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                         <span>Validando e Calculando Datas...</span>
                       </>
                     ) : (
@@ -1378,7 +1378,7 @@ export function ProfessionalResumeEditor({
                     <Button
                       type="button"
                       onClick={handleApplyLinkedInData}
-                      className="w-full h-10 rounded-lg font-bold text-xs gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer"
+                      className="w-full h-10 rounded-lg font-bold text-xs gap-2 bg-emerald-600 hover:bg-emerald-700 text-foreground shadow-xs cursor-pointer"
                     >
                       <ArrowRight className="size-4" />
                       <span>Aplicar ao Meu Currículo Waesy (1s)</span>
@@ -2704,7 +2704,7 @@ function ProjectEditSheet({
  <button
  type="button"
  onClick={() => setMediaUrls((prev) => prev.filter((_, i) => i !== idx))}
- className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="absolute inset-0 bg-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Trash2 className="size-4" />
  </button>
@@ -2916,7 +2916,7 @@ function CausesEditSheet({
  type="button"
  onClick={() => toggleCause(cause)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "w-full text-left p-4 rounded-lg border transition-all flex items-center justify-between text-xs font-semibold cursor-pointer",
+ "w-full text-left p-4 rounded-lg border transition-colors duration-200 flex items-center justify-between text-xs font-semibold cursor-pointer",
  isChecked
  ? "bg-primary/10 border-primary text-primary"
  : "bg-muted/30 border-border/40 text-foreground hover:bg-muted/60"

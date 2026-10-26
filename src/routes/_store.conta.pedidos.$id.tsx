@@ -635,7 +635,7 @@ function CustomerOrderDetailPage() {
               onClick={handleReorder}
               disabled={reordering}
             >
-              <RefreshCw className={`size-4 ${reordering ? "animate-spin" : ""}`} />
+              <RefreshCw className={`size-4 ${reordering ? "animate-spin motion-reduce:animate-none" : ""}`} />
               <span>{reordering ? "Revalidando Itens..." : "Pedir Novamente"}</span>
             </Button>
 

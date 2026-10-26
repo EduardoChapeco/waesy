@@ -281,7 +281,7 @@ function ChannelDREPage() {
                 <div
                   key={row.channel}
                   style={{ width: `${sharePercent}%` }}
-                  className={cn("h-full transition-all", CHANNEL_BAR_COLORS[row.channel] || "bg-primary")}
+                  className={cn("h-full transition-colors duration-200", CHANNEL_BAR_COLORS[row.channel] || "bg-primary")}
                   title={`${row.channel_label}: ${sharePercent.toFixed(1)}% (${formatMoney(row.gross_revenue_cents)})`}
                 />
               );

@@ -68,7 +68,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
               height={48}
             />
           ) : (
-            <div className="text-2xl font-black uppercase tracking-tight text-white">
+            <div className="text-2xl font-black uppercase tracking-tight text-foreground">
               {vm.agency.name}
             </div>
           )}
@@ -85,7 +85,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
               Apresentação Exclusiva · Proposta #{p.number}
             </div>
 
-            <h1 className="text-7xl font-black tracking-tight leading-none text-white shadow-none">
+            <h1 className="text-7xl font-black tracking-tight leading-none text-foreground shadow-none">
               {p.destination || p.title || "Seu Próximo Destino"}
             </h1>
 
@@ -97,11 +97,11 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
               </span>
               <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
               <span>
-                Cliente: <strong className="text-white">{vm.client?.name || "—"}</strong>
+                Cliente: <strong className="text-foreground">{vm.client?.name || "—"}</strong>
               </span>
               <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
               <span>
-                Passageiros: <strong className="text-white">{vm.totalPax} pax</strong>
+                Passageiros: <strong className="text-foreground">{vm.totalPax} pax</strong>
               </span>
             </div>
           </div>
@@ -124,7 +124,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
                     className="w-6 h-6 text-brand"
                     style={{ color: brand !== "#18181b" ? brand : "#38bdf8" }}
                   />
-                  <h2 className="text-2xl font-black tracking-tight text-white">
+                  <h2 className="text-2xl font-black tracking-tight text-foreground">
                     Cronograma da Viagem
                   </h2>
                 </div>
@@ -146,12 +146,12 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
                     >
                       <div className="flex items-center gap-3">
                         <span
-                          className="px-3 py-1 rounded-full text-xs font-black uppercase text-white shrink-0"
+                          className="px-3 py-1 rounded-full text-xs font-black uppercase text-foreground shrink-0"
                           style={{ backgroundColor: brand !== "#18181b" ? brand : "#38bdf8" }}
                         >
                           Dia {d.day || absoluteDayNumber}
                         </span>
-                        <h4 className="font-bold text-lg text-white truncate">{d.title}</h4>
+                        <h4 className="font-bold text-lg text-foreground truncate">{d.title}</h4>
                       </div>
                       <p className="text-slate-400 text-sm leading-relaxed overflow-y-auto max-h-[220px] pr-2 whitespace-pre-wrap">
                         {d.description}
@@ -182,7 +182,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
               <div className="flex justify-between items-center border-b border-slate-800 pb-4 mb-8">
                 <div className="flex items-center gap-3">
                   <Hotel className="w-6 h-6 text-amber-500" />
-                  <h2 className="text-2xl font-black tracking-tight text-white">
+                  <h2 className="text-2xl font-black tracking-tight text-foreground">
                     Onde você vai ficar
                   </h2>
                 </div>
@@ -208,7 +208,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
                     )}
                     <div className="flex-1 flex flex-col justify-between">
                       <div>
-                        <h4 className="text-xl font-bold text-white mb-1">{h.name}</h4>
+                        <h4 className="text-xl font-bold text-foreground mb-1">{h.name}</h4>
                         <div
                           className="text-xs font-bold text-brand uppercase tracking-wider mb-4"
                           style={{ color: brand !== "#18181b" ? brand : "#38bdf8" }}
@@ -256,7 +256,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
               <div className="flex justify-between items-center border-b border-slate-800 pb-4 mb-8">
                 <div className="flex items-center gap-3">
                   <Plane className="w-6 h-6 text-blue-500" />
-                  <h2 className="text-2xl font-black tracking-tight text-white">Logística Aérea</h2>
+                  <h2 className="text-2xl font-black tracking-tight text-foreground">Logística Aérea</h2>
                 </div>
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
                   Voos · Slide {slideIdx + 1} de {flightSlides.length}
@@ -276,7 +276,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
                     </div>
                     <div className="flex items-center justify-between text-center py-2">
                       <div>
-                        <div className="text-4xl font-black text-white tracking-tight">
+                        <div className="text-4xl font-black text-foreground tracking-tight">
                           {(f.origin || "---").slice(0, 3).toUpperCase()}
                         </div>
                         <div className="text-xs font-bold text-slate-400 mt-1">
@@ -286,16 +286,16 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
 
                       <div className="flex-1 px-6 relative flex flex-col items-center">
                         <div className="w-full border-t border-dashed border-slate-700" />
-                        <span className="absolute -top-3.5 bg-slate-900 px-2 py-1 rounded-full border border-slate-800 text-[9px] font-black uppercase text-slate-500">
+                        <span className="absolute -top-3.5 bg-slate-900 px-2 py-1 rounded-full border border-slate-800 text-3xs font-black uppercase text-slate-500">
                           {f.stops === 0 ? "Direto" : `${f.stops} Parada${f.stops > 1 ? "s" : ""}`}
                         </span>
-                        <span className="text-[9px] text-slate-500 font-bold mt-2">
+                        <span className="text-3xs text-slate-500 font-bold mt-2">
                           {f.date ? formatDate(f.date) : ""}
                         </span>
                       </div>
 
                       <div>
-                        <div className="text-4xl font-black text-white tracking-tight">
+                        <div className="text-4xl font-black text-foreground tracking-tight">
                           {(f.destination || "---").slice(0, 3).toUpperCase()}
                         </div>
                         <div className="text-xs font-bold text-slate-400 mt-1">
@@ -325,7 +325,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
                   className="w-6 h-6 text-brand"
                   style={{ color: brand !== "#18181b" ? brand : "#38bdf8" }}
                 />
-                <h2 className="text-2xl font-black tracking-tight text-white">Condições Gerais</h2>
+                <h2 className="text-2xl font-black tracking-tight text-foreground">Condições Gerais</h2>
               </div>
               <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
                 Inclusões e Exclusões
@@ -387,7 +387,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
                 className="w-6 h-6 text-brand"
                 style={{ color: brand !== "#18181b" ? brand : "#38bdf8" }}
               />
-              <h2 className="text-2xl font-black tracking-tight text-white">
+              <h2 className="text-2xl font-black tracking-tight text-foreground">
                 Investimento e Condições
               </h2>
             </div>
@@ -417,7 +417,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
             <div className="col-span-3 grid grid-cols-2 gap-4">
               <div className="bg-slate-800/40 border border-slate-800 rounded-lg p-5">
                 <span className="ds-label-caps text-slate-400 block mb-2">Cartão de Crédito</span>
-                <div className="text-2xl font-black text-white leading-none">
+                <div className="text-2xl font-black text-foreground leading-none">
                   {vm.totals.parcelasCartao}x de
                 </div>
                 <div className="text-xl font-bold text-slate-200 mt-1">
@@ -426,12 +426,12 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
               </div>
 
               <div
-                className="bg-white rounded-lg p-5 text-slate-950 border-2"
+                className="bg-card rounded-lg p-5 text-slate-950 border-2"
                 style={{ borderColor: brand !== "#18181b" ? brand : "#38bdf8" }}
               >
                 <div className="flex justify-between items-start mb-2">
                   <span className="ds-label-caps text-slate-500">Pix (À vista)</span>
-                  <span className="bg-emerald-100 text-emerald-800 text-[9px] font-black px-2 py-1 rounded">
+                  <span className="bg-emerald-100 text-emerald-800 text-3xs font-black px-2 py-1 rounded">
                     -{vm.totals.descontoPixPercentual}%
                   </span>
                 </div>
@@ -461,7 +461,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
               )}
               <div>
                 <div className="ds-label-caps text-slate-500 mb-1">Consultor Comercial</div>
-                <div className="font-extrabold text-white text-base leading-snug">
+                <div className="font-extrabold text-foreground text-base leading-snug">
                   {p.agent_name}
                 </div>
                 {p.agent_whatsapp && (

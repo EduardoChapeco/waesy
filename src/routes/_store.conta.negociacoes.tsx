@@ -98,9 +98,9 @@ function DealTimeline({ status }: { status: string }) {
               <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
                 <div
                   className={cn(
-                    "h-full rounded-full transition-all duration-500",
+                    "h-full rounded-full transition-colors duration-200 duration-500",
                     isReached ? "w-full bg-primary" : "w-0 bg-transparent",
-                    isCurrent && "animate-pulse"
+                    isCurrent && "animate-pulse motion-reduce:animate-none"
                   )}
                 />
               </div>
@@ -248,7 +248,7 @@ function NegociacoesPage() {
           type="button"
           onClick={() => setActiveTab("all")}
           className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-            "snap-start h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
+            "snap-start h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-transform duration-200 select-none active:scale-98",
             activeTab === "all"
               ? "bg-foreground text-background border-foreground font-bold shadow-xs"
               : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
@@ -260,7 +260,7 @@ function NegociacoesPage() {
           type="button"
           onClick={() => setActiveTab("purchases")}
           className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-            "snap-start h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
+            "snap-start h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-transform duration-200 select-none active:scale-98",
             activeTab === "purchases"
               ? "bg-foreground text-background border-foreground font-bold shadow-xs"
               : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
@@ -272,7 +272,7 @@ function NegociacoesPage() {
           type="button"
           onClick={() => setActiveTab("sales")}
           className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-            "snap-start h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
+            "snap-start h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-transform duration-200 select-none active:scale-98",
             activeTab === "sales"
               ? "bg-foreground text-background border-foreground font-bold shadow-xs"
               : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
@@ -284,7 +284,7 @@ function NegociacoesPage() {
           type="button"
           onClick={() => setActiveTab("bookings")}
           className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-            "snap-start h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
+            "snap-start h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-transform duration-200 select-none active:scale-98",
             activeTab === "bookings"
               ? "bg-foreground text-background border-foreground font-bold shadow-xs"
               : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
@@ -297,7 +297,7 @@ function NegociacoesPage() {
       {/* ── 3. Lista de Negociações com <FrostedCard> (Valor Acordado, Condições e Ações) ── */}
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-2">
-          <Loader2 className="size-5 animate-spin" />
+          <Loader2 className="size-5 animate-spin motion-reduce:animate-none" />
           <p className="text-xs">Carregando negociações...</p>
         </div>
       ) : isError ? (
@@ -516,7 +516,7 @@ function NegociacoesPage() {
                         className="rounded-lg text-xs font-bold gap-2"
                       >
                         {respondMutation.isPending ? (
-                          <Loader2 className="size-3.5 animate-spin" />
+                          <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
                         ) : (
                           <ArrowRight className="size-3.5" />
                         )}
@@ -577,7 +577,7 @@ function NegociacoesPage() {
                           className="rounded-lg text-xs font-bold shrink-0 border-indigo-500/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 cursor-pointer shadow-2xs gap-2"
                         >
                           {generatingContractId === deal.id ? (
-                            <Loader2 className="size-3.5 animate-spin" />
+                            <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
                           ) : (
                             <FileSignature className="size-3.5" />
                           )}

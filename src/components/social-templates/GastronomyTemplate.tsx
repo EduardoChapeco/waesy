@@ -29,7 +29,7 @@ export function GastronomyTemplate({ data, className = "" }: SocialTemplateProps
   ];
 
   return (
-    <div className={`relative w-full h-full overflow-hidden bg-neutral-950 text-white select-none ${className}`}>
+    <div className={`relative w-full h-full overflow-hidden bg-neutral-950 text-foreground select-none ${className}`}>
       {/* 1. Fotografia do Prato */}
       <div className="absolute inset-0 overflow-hidden">
         <img
@@ -55,7 +55,7 @@ export function GastronomyTemplate({ data, className = "" }: SocialTemplateProps
             <span>{promoBadge || "ESPECIAL DA CASA"}</span>
           </div>
 
-          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white/90 text-xs sm:text-sm font-semibold">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-foreground/60 backdrop-blur-md border border-white/20 text-foreground/90 text-xs sm:text-sm font-semibold">
             <Clock className="size-3.5 text-amber-400 shrink-0" />
             <span>35-45 min</span>
           </div>
@@ -64,14 +64,14 @@ export function GastronomyTemplate({ data, className = "" }: SocialTemplateProps
         {/* Centro: Título e Descrição Apetitosa */}
         <div className="space-y-3">
           <h1
-            className={`font-black uppercase tracking-tight text-white drop-shadow-md leading-[1.05] line-clamp-2 ${
+            className={`font-black uppercase tracking-tight text-foreground drop-shadow-md leading-[1.05] line-clamp-2 ${
               aspectRatio === "1:1" ? "text-4xl md:text-5xl" : "text-6xl md:text-7xl"
             }`}
           >
             {title}
           </h1>
 
-          <p className="text-white/80 font-medium text-lg sm:text-xl line-clamp-2 max-w-xl">
+          <p className="text-foreground/80 font-medium text-lg sm:text-xl line-clamp-2 max-w-xl">
             {subtitle || datesOrAvailability || "Sabor incomparável preparado com ingredientes selecionados."}
           </p>
 
@@ -79,7 +79,7 @@ export function GastronomyTemplate({ data, className = "" }: SocialTemplateProps
             {resolvedHighlights.map((item, i) => (
               <span
                 key={i}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-black/60 backdrop-blur-md border border-white/20 text-white/90 text-xs sm:text-sm font-semibold"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-foreground/60 backdrop-blur-md border border-white/20 text-foreground/90 text-xs sm:text-sm font-semibold"
               >
                 <Star className="size-3.5 text-amber-400 shrink-0 fill-current" />
                 <span>{item}</span>
@@ -91,18 +91,18 @@ export function GastronomyTemplate({ data, className = "" }: SocialTemplateProps
         {/* Base: Preço + Selo do Restaurante */}
         <div className="w-full flex items-end justify-between gap-4 pt-4 border-t border-white/20">
           <div className="space-y-1">
-            <span className="text-xs sm:text-sm font-semibold text-white/70 uppercase tracking-wider block">
+            <span className="text-xs sm:text-sm font-semibold text-foreground/70 uppercase tracking-wider block">
               Preço Especial
             </span>
             <div className="text-4xl sm:text-5xl font-black font-mono text-amber-400 tracking-tight">
               {formatMoney(priceCents)}
             </div>
-            <p className="text-[11px] sm:text-xs text-white/60">
+            <p className="text-2xs sm:text-xs text-foreground/60">
               {paymentMethodsLabel}
             </p>
           </div>
 
-          <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 backdrop-blur-md border border-white/15 text-white/90 text-xs sm:text-sm font-bold shrink-0">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-card/10 backdrop-blur-md border border-white/15 text-foreground/90 text-xs sm:text-sm font-bold shrink-0">
             <Utensils className="size-4.5 text-amber-400 shrink-0" />
             <span className="truncate max-w-[180px]">{storeName}</span>
           </div>

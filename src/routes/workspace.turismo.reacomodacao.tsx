@@ -252,7 +252,7 @@ export default function ReaccommodationPage() {
 
       {/* Lista de Casos */}
       {isLoading ? (
-        <div className="p-12 text-center text-sm text-muted-foreground animate-pulse">
+        <div className="p-12 text-center text-sm text-muted-foreground animate-pulse motion-reduce:animate-none">
           Carregando casos de reacomodação...
         </div>
       ) : filteredCases.length === 0 ? (
@@ -575,7 +575,7 @@ export default function ReaccommodationPage() {
               className="h-11 px-6 font-medium rounded-lg cursor-pointer"
             >
               {createMutation.isPending ? (
-                <><Loader2 className="size-4 animate-spin mr-2" />Registrando...</>
+                <><Loader2 className="size-4 animate-spin motion-reduce:animate-none mr-2" />Registrando...</>
               ) : (
                 'Registrar Caso ANAC'
               )}

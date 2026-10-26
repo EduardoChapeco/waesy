@@ -219,7 +219,7 @@ function WorkspaceCollectionsPage() {
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3].map((n) => (
-            <div key={n} className="h-40 rounded-lg bg-card/60 animate-pulse border border-border/40" />
+            <div key={n} className="h-40 rounded-lg bg-card/60 animate-pulse motion-reduce:animate-none border border-border/40" />
           ))}
         </div>
       ) : filteredCollections.length === 0 ? (
@@ -250,7 +250,7 @@ function WorkspaceCollectionsPage() {
             return (
               <div
                 key={col.id}
-                className="bg-card rounded-lg border border-border/60 p-4 flex flex-col justify-between space-y-3 hover:border-foreground/30 transition-all group shadow-xs"
+                className="bg-card rounded-lg border border-border/60 p-4 flex flex-col justify-between space-y-3 hover:border-foreground/30 transition-colors duration-200 group shadow-xs"
               >
                 <div className="space-y-3">
                   {col.cover_url ? (

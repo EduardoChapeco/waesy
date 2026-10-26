@@ -84,7 +84,7 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
               />
               <span className="truncate">Buscar lugares, classificados, vagas ou serviços...</span>
             </div>
-            <kbd className="hidden xl:inline-flex items-center gap-1 px-2 py-1 text-[10px] font-mono font-medium text-muted-foreground/80 bg-background rounded-md border border-border/40 shrink-0">
+            <kbd className="hidden xl:inline-flex items-center gap-1 px-2 py-1 text-2xs font-mono font-medium text-muted-foreground/80 bg-background rounded-md border border-border/40 shrink-0">
               ⌘K
             </kbd>
           </Link>

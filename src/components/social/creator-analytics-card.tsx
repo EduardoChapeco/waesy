@@ -41,11 +41,11 @@ export function CreatorAnalyticsCard({
  <div>
  <h3 className="text-sm font-semibold text-foreground tracking-tight flex items-center gap-2 line-clamp-1 truncate">
  <span>Desempenho e Métricas do Criador</span>
- <span className="text-[10px] px-2 py-1 rounded-md bg-muted text-muted-foreground font-semibold">
+ <span className="text-2xs px-2 py-1 rounded-md bg-muted text-muted-foreground font-semibold">
  Privado
  </span>
  </h3>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Visível apenas para você • Dados em tempo real auditados
  </p>
  </div>
@@ -76,49 +76,49 @@ export function CreatorAnalyticsCard({
  {/* Alcance Total */}
  <div className="p-4 rounded-lg bg-muted/30 border border-border/40 space-y-1">
  <div className="flex items-center justify-between text-muted-foreground">
- <span className="text-[11px] font-semibold">Alcance Estimado</span>
+ <span className="text-2xs font-semibold">Alcance Estimado</span>
  <Eye className="size-3.5 text-primary" />
  </div>
  <p className="text-xl font-extrabold text-foreground tracking-tight">
  {estimatedReach.toLocaleString("pt-BR")}
  </p>
- <p className="text-[10px] text-muted-foreground">Visualizações de perfil e posts</p>
+ <p className="text-2xs text-muted-foreground">Visualizações de perfil e posts</p>
  </div>
 
  {/* Total de Curtidas Reais */}
  <div className="p-4 rounded-lg bg-muted/30 border border-border/40 space-y-1">
  <div className="flex items-center justify-between text-muted-foreground">
- <span className="text-[11px] font-semibold">Curtidas Reais</span>
+ <span className="text-2xs font-semibold">Curtidas Reais</span>
  <Heart className="size-3.5 text-rose-500" />
  </div>
  <p className="text-xl font-extrabold text-foreground tracking-tight">
  {totalLikes.toLocaleString("pt-BR")}
  </p>
- <p className="text-[10px] text-muted-foreground">Reações registradas no banco</p>
+ <p className="text-2xs text-muted-foreground">Reações registradas no banco</p>
  </div>
 
  {/* Novos Seguidores */}
  <div className="p-4 rounded-lg bg-muted/30 border border-border/40 space-y-1">
  <div className="flex items-center justify-between text-muted-foreground">
- <span className="text-[11px] font-semibold">Comunidade Ativa</span>
+ <span className="text-2xs font-semibold">Comunidade Ativa</span>
  <Users className="size-3.5 text-info" />
  </div>
  <p className="text-xl font-extrabold text-foreground tracking-tight">
  {followersCount.toLocaleString("pt-BR")}
  </p>
- <p className="text-[10px] text-muted-foreground">Seguidores únicos auditados</p>
+ <p className="text-2xs text-muted-foreground">Seguidores únicos auditados</p>
  </div>
 
  {/* Taxa de Conversão */}
  <div className="p-4 rounded-lg bg-muted/30 border border-border/40 space-y-1">
  <div className="flex items-center justify-between text-muted-foreground">
- <span className="text-[11px] font-semibold">Taxa de Interação</span>
+ <span className="text-2xs font-semibold">Taxa de Interação</span>
  <ArrowUpRight className="size-3.5 text-emerald-500" />
  </div>
  <p className="text-xl font-extrabold text-foreground tracking-tight">
  {engagementRate}%
  </p>
- <p className="text-[10px] text-muted-foreground">Baseado em reações e posts</p>
+ <p className="text-2xs text-muted-foreground">Baseado em reações e posts</p>
  </div>
  </div>
  </div>

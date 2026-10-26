@@ -199,7 +199,7 @@ export function FileAttachmentUpload({
  <button
  type="button"
  onClick={() => setShowManualInput(!showManualInput)}
- className="text-[11px] text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="text-2xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <LinkIcon className="size-3" />
  <span>{showManualInput ? "Cancelar URL" : "Colar Link Externo"}</span>
@@ -220,7 +220,7 @@ export function FileAttachmentUpload({
 
  {/* State 1: File is Uploaded */}
  {hasFile ? (
- <div className="rounded-lg border border-border/80 bg-card p-3 shadow-2xs transition-all">
+ <div className="rounded-lg border border-border/80 bg-card p-3 shadow-2xs transition-colors duration-200">
  <div className="flex items-center gap-3">
  {/* Thumbnail Preview */}
  <div className="size-14 rounded-lg overflow-hidden bg-muted/60 border border-border/60 shrink-0 flex items-center justify-center relative group">
@@ -236,12 +236,12 @@ export function FileAttachmentUpload({
  ) : isPdf ? (
  <div className="flex flex-col items-center justify-center text-rose-500 font-bold">
  <FileText className="size-6" />
- <span className="text-[9px] uppercase tracking-wider font-mono">PDF</span>
+ <span className="text-3xs uppercase tracking-wider font-mono">PDF</span>
  </div>
  ) : (
  <div className="flex flex-col items-center justify-center text-primary font-bold">
  <Paperclip className="size-6" />
- <span className="text-[9px] uppercase tracking-wider font-mono">DOC</span>
+ <span className="text-3xs uppercase tracking-wider font-mono">DOC</span>
  </div>
  )}
  </div>
@@ -252,7 +252,7 @@ export function FileAttachmentUpload({
  <CheckCircle2 className="size-3.5 text-emerald-500 shrink-0" />
  <p className="text-xs font-bold text-foreground truncate">{fileName}</p>
  </div>
- <p className="text-[11px] text-muted-foreground truncate font-mono">
+ <p className="text-2xs text-muted-foreground truncate font-mono">
  {value}
  </p>
  </div>
@@ -341,7 +341,7 @@ export function FileAttachmentUpload({
         onClick={() => !isUploading && inputRef.current?.click()}
         className={cn(
           "outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
- "rounded-lg border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center text-center select-none",
+ "rounded-lg border-2 border-dashed transition-colors duration-200 cursor-pointer flex flex-col items-center justify-center text-center select-none",
  compact ? "p-4 gap-2" : "p-5 gap-3",
  isDragging
  ? "border-primary bg-primary/5 scale-[0.99]"
@@ -351,9 +351,9 @@ export function FileAttachmentUpload({
  >
  {isUploading ? (
  <div className="flex flex-col items-center gap-2 py-2">
- <Loader2 className="size-6 animate-spin text-primary" />
+ <Loader2 className="size-6 animate-spin motion-reduce:animate-none text-primary" />
  <p className="text-xs font-bold text-foreground">Enviando anexo para a nuvem...</p>
- <p className="text-[10px] text-muted-foreground">Processando e salvando com segurança</p>
+ <p className="text-2xs text-muted-foreground">Processando e salvando com segurança</p>
  </div>
  ) : (
  <>
@@ -363,10 +363,10 @@ export function FileAttachmentUpload({
 
  <div className="space-y-1">
  <p className="text-xs font-bold text-foreground">
- Clique, arraste <span className="font-normal text-muted-foreground">ou cole com </span><kbd className="px-2 py-1 text-[10px] font-mono bg-muted border border-border rounded">Ctrl+V</kbd>
+ Clique, arraste <span className="font-normal text-muted-foreground">ou cole com </span><kbd className="px-2 py-1 text-2xs font-mono bg-muted border border-border rounded">Ctrl+V</kbd>
  </p>
  {helperText && (
- <p className="text-[11px] text-muted-foreground">{helperText}</p>
+ <p className="text-2xs text-muted-foreground">{helperText}</p>
  )}
  </div>
  </>

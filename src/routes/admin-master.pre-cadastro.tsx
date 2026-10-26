@@ -340,7 +340,7 @@ export default function AdminPreCadastroPage() {
                               {lead.company_name || "-"}
                             </span>
                             {lead.cnpj && (
-                              <span className="text-[10px] text-muted-foreground font-mono">
+                              <span className="text-2xs text-muted-foreground font-mono">
                                 CNPJ: {lead.cnpj}
                               </span>
                             )}
@@ -364,7 +364,7 @@ export default function AdminPreCadastroPage() {
                                 status: e.target.value as any,
                               })
                             }
-                            className="text-[11px] font-bold rounded-lg border border-border bg-card px-2 py-1 cursor-pointer focus:outline-none"
+                            className="text-2xs font-bold rounded-lg border border-border bg-card px-2 py-1 cursor-pointer focus:outline-none"
                           >
                             <option value="pending">Pendente</option>
                             <option value="contacted">Contatado</option>
@@ -377,7 +377,7 @@ export default function AdminPreCadastroPage() {
                             size="sm"
                             variant="outline"
                             onClick={() => handleOpenWhatsApp(lead)}
-                            className="h-8 rounded-lg text-[11px] font-bold gap-2 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
+                            className="h-8 rounded-lg text-2xs font-bold gap-2 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
                           >
                             <WhatsappLogo className="size-3.5" weight="fill" />
                             <span>WhatsApp</span>
@@ -473,7 +473,7 @@ export default function AdminPreCadastroPage() {
                   className="rounded-lg border border-border/70 bg-muted/10 p-3 space-y-3 relative group"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-muted-foreground font-mono">
+                    <span className="text-2xs font-bold text-muted-foreground font-mono">
                       Slide #{idx + 1}
                     </span>
                     <button
@@ -488,7 +488,7 @@ export default function AdminPreCadastroPage() {
 
                   <div className="space-y-2">
                     <div className="space-y-1">
-                      <Label className="text-[11px] font-bold">Título do Slide</Label>
+                      <Label className="text-2xs font-bold">Título do Slide</Label>
                       <Input
                         value={slide.title}
                         onChange={(e) => {
@@ -505,7 +505,7 @@ export default function AdminPreCadastroPage() {
                     </div>
 
                     <div className="space-y-1">
-                      <Label className="text-[11px] font-bold">Tag / Categoria</Label>
+                      <Label className="text-2xs font-bold">Tag / Categoria</Label>
                       <Input
                         value={slide.tag}
                         onChange={(e) => {
@@ -522,7 +522,7 @@ export default function AdminPreCadastroPage() {
                     </div>
 
                     <div className="space-y-1">
-                      <Label className="text-[11px] font-bold">URL da Imagem</Label>
+                      <Label className="text-2xs font-bold">URL da Imagem</Label>
                       <Input
                         value={slide.image_url}
                         onChange={(e) => {

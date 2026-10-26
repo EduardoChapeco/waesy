@@ -357,7 +357,7 @@ function AdminAppointmentsPage() {
  type="button"
  onClick={() => setSelectedDate(d)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "flex flex-col items-center justify-center min-w-14 sm:min-w-16 min-h-[50px] py-2 px-1 rounded-lg transition-all cursor-pointer",
+ "flex flex-col items-center justify-center min-w-14 sm:min-w-16 min-h-[50px] py-2 px-1 rounded-lg transition-colors duration-200 cursor-pointer",
  isSelected
  ? "bg-primary text-primary-foreground font-bold "
  : "hover:bg-muted/60 text-muted-foreground hover:text-foreground"

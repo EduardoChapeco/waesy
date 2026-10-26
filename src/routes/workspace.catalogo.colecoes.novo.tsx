@@ -202,7 +202,7 @@ function NewCollectionPage() {
  <button
  type="button"
  onClick={() => setCollectionType("manual")}
- className={`p-4 rounded-lg border text-left transition-all cursor-pointer ${
+ className={`p-4 rounded-lg border text-left transition-colors duration-200 cursor-pointer ${
  collectionType === "manual"
  ? "border-primary bg-primary/5 ring-1 ring-primary"
  : "border-border/60 bg-muted/20 hover:bg-muted/40"
@@ -220,7 +220,7 @@ function NewCollectionPage() {
  <button
  type="button"
  onClick={() => setCollectionType("automated")}
- className={`p-4 rounded-lg border text-left transition-all cursor-pointer ${
+ className={`p-4 rounded-lg border text-left transition-colors duration-200 cursor-pointer ${
  collectionType === "automated"
  ? "border-primary bg-primary/5 ring-1 ring-primary"
  : "border-border/60 bg-muted/20 hover:bg-muted/40"

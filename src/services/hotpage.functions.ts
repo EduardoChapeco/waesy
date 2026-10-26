@@ -79,6 +79,7 @@ export type HotpageTemplateType =
  | "hero_module"
  | "category_hub"
  | "editorial_card"
+  | "drawer_module"
  | "turbo"
  | "hits"
  | "bogo"
@@ -465,6 +466,7 @@ export const createHotpage = createServerFn({ method: "POST" })
  "hero_module",
  "category_hub",
  "editorial_card",
+  "drawer_module",
  "turbo",
  "hits",
  "bogo",
@@ -571,6 +573,7 @@ export const updateHotpage = createServerFn({ method: "POST" })
         "hero_module",
         "category_hub",
         "editorial_card",
+  "drawer_module",
         "turbo",
         "hits",
         "bogo",
@@ -657,6 +660,7 @@ export const saveHotpage = createServerFn({ method: "POST" })
  "hero_module",
  "category_hub",
  "editorial_card",
+  "drawer_module",
  "turbo",
  "hits",
  "bogo",
@@ -687,6 +691,274 @@ export const saveHotpage = createServerFn({ method: "POST" })
  return createHotpage({ data: { ...data, sort_order: data.sort_order ?? 0 } });
  }
  });
+
+// ── 4. BOTÕES CANÔNICOS DO SUPERAPP DRAWER (SCREENSHOT REFERENCE / HIG) ──
+export const CANONICAL_DRAWER_MODULES = [
+  {
+    slug: "drawer-mercado",
+    title: "Mercado",
+    target_route: "/mercado",
+    template_type: "drawer_module" as const,
+    module: "mercado" as const,
+    icon_name: "ShoppingCart",
+    bg_color: "#ECFDF5",
+    text_color: "#065F46",
+    sort_order: 1,
+    show_title: true,
+    filter_rules: { text_position: "bottom", is_full_width: false },
+  },
+  {
+    slug: "drawer-farmacia",
+    title: "Farmácia",
+    target_route: "/farmacia",
+    template_type: "drawer_module" as const,
+    module: "farmacia" as const,
+    icon_name: "Cross",
+    bg_color: "#EFF6FF",
+    text_color: "#1E40AF",
+    sort_order: 2,
+    show_title: true,
+    filter_rules: { text_position: "bottom", is_full_width: false },
+  },
+  {
+    slug: "drawer-roupas",
+    title: "Roupas e Moda",
+    target_route: "/moda",
+    template_type: "drawer_module" as const,
+    module: "moda" as const,
+    icon_name: "Shirt",
+    bg_color: "#FDF2F8",
+    text_color: "#9D174D",
+    sort_order: 3,
+    show_title: true,
+    filter_rules: { text_position: "bottom", is_full_width: false },
+  },
+  {
+    slug: "drawer-restaurantes",
+    title: "Restaurantes",
+    target_route: "/gastronomia",
+    template_type: "drawer_module" as const,
+    module: "gastronomia" as const,
+    icon_name: "Utensils",
+    bg_color: "#FFF7ED",
+    text_color: "#9A3412",
+    sort_order: 4,
+    show_title: true,
+    filter_rules: { text_position: "bottom", is_full_width: false },
+  },
+  {
+    slug: "drawer-conveniencia",
+    title: "Conveniência & Bar",
+    target_route: "/gastronomia?sub=conveniencia",
+    template_type: "drawer_module" as const,
+    module: "bebidas" as const,
+    icon_name: "Wine",
+    bg_color: "#FEFCE8",
+    text_color: "#854D0E",
+    sort_order: 5,
+    show_title: true,
+    filter_rules: { text_position: "bottom", is_full_width: false },
+  },
+  {
+    slug: "drawer-viagens",
+    title: "Viagens",
+    target_route: "/turismo",
+    template_type: "drawer_module" as const,
+    module: "turismo" as const,
+    icon_name: "Plane",
+    bg_color: "#F0FDF4",
+    text_color: "#166534",
+    sort_order: 6,
+    show_title: true,
+    filter_rules: { text_position: "bottom", is_full_width: false },
+  },
+  {
+    slug: "drawer-eventos",
+    title: "Eventos",
+    target_route: "/eventos",
+    template_type: "drawer_module" as const,
+    module: "eventos" as const,
+    icon_name: "Ticket",
+    bg_color: "#FAF5FF",
+    text_color: "#6B21A8",
+    sort_order: 7,
+    show_title: true,
+    filter_rules: { text_position: "bottom", is_full_width: false },
+  },
+  {
+    slug: "drawer-noticias",
+    title: "Notícias",
+    target_route: "/noticias",
+    template_type: "drawer_module" as const,
+    module: "noticias" as const,
+    icon_name: "Newspaper",
+    bg_color: "#F8FAFC",
+    text_color: "#334155",
+    sort_order: 8,
+    show_title: true,
+    filter_rules: { text_position: "bottom", is_full_width: false },
+  },
+  {
+    slug: "drawer-corrida",
+    title: "Corrida",
+    target_route: "/mobilidade?mode=ride",
+    template_type: "drawer_module" as const,
+    module: "mobilidade" as const,
+    icon_name: "Car",
+    bg_color: "#FEF2F2",
+    text_color: "#991B1B",
+    sort_order: 9,
+    show_title: true,
+    filter_rules: { text_position: "bottom", is_full_width: false },
+  },
+  {
+    slug: "drawer-entrega",
+    title: "Entrega",
+    target_route: "/mobilidade?mode=delivery",
+    template_type: "drawer_module" as const,
+    module: "mobilidade" as const,
+    icon_name: "Package",
+    bg_color: "#FFFBEB",
+    text_color: "#92400E",
+    sort_order: 10,
+    show_title: true,
+    filter_rules: { text_position: "bottom", is_full_width: false },
+  },
+  {
+    slug: "drawer-carona",
+    title: "Carona",
+    target_route: "/mobilidade?mode=carpool",
+    template_type: "drawer_module" as const,
+    module: "mobilidade" as const,
+    icon_name: "Users",
+    bg_color: "#F0FDFA",
+    text_color: "#115E59",
+    sort_order: 11,
+    show_title: true,
+    filter_rules: { text_position: "bottom", is_full_width: false },
+  },
+  {
+    slug: "drawer-mudanca",
+    title: "Mudança",
+    target_route: "/mobilidade?mode=moving",
+    template_type: "drawer_module" as const,
+    module: "mobilidade" as const,
+    icon_name: "Truck",
+    bg_color: "#F1F5F9",
+    text_color: "#475569",
+    sort_order: 12,
+    show_title: true,
+    filter_rules: { text_position: "bottom", is_full_width: false },
+  },
+  {
+    slug: "drawer-criar",
+    title: "Criar Evento",
+    target_route: "/eventos",
+    template_type: "drawer_module" as const,
+    module: "eventos" as const,
+    icon_name: "PlusCircle",
+    bg_color: "#EDE9FE",
+    text_color: "#5B21B6",
+    sort_order: 13,
+    show_title: true,
+    filter_rules: { text_position: "bottom", is_full_width: false },
+  },
+  {
+    slug: "drawer-anunciar",
+    title: "Anunciar Desapego",
+    target_route: "/classificados",
+    template_type: "drawer_module" as const,
+    module: "classificados" as const,
+    icon_name: "Tag",
+    bg_color: "#FEF3C7",
+    text_color: "#78350F",
+    sort_order: 14,
+    show_title: true,
+    filter_rules: { text_position: "bottom", is_full_width: false },
+  },
+  {
+    slug: "drawer-classificados",
+    title: "Classificados Gerais",
+    target_route: "/classificados",
+    template_type: "drawer_module" as const,
+    module: "classificados" as const,
+    icon_name: "LayoutGrid",
+    bg_color: "#EEF2FF",
+    text_color: "#3730A3",
+    sort_order: 15,
+    show_title: true,
+    filter_rules: { text_position: "side", is_full_width: true },
+  },
+  {
+    slug: "drawer-empregos",
+    title: "Empregos",
+    target_route: "/empregos",
+    template_type: "drawer_module" as const,
+    module: "empregos" as const,
+    icon_name: "Briefcase",
+    bg_color: "#F0FDF4",
+    text_color: "#065F46",
+    sort_order: 16,
+    show_title: true,
+    filter_rules: { text_position: "bottom", is_full_width: false },
+  },
+  {
+    slug: "drawer-freelas",
+    title: "Freelas",
+    target_route: "/empregos",
+    template_type: "drawer_module" as const,
+    module: "empregos" as const,
+    icon_name: "Zap",
+    bg_color: "#FFFBEB",
+    text_color: "#854D0E",
+    sort_order: 17,
+    show_title: true,
+    filter_rules: { text_position: "bottom", is_full_width: false },
+  },
+  {
+    slug: "drawer-processos",
+    title: "Meus Processos",
+    target_route: "/conta/processos",
+    template_type: "drawer_module" as const,
+    module: "servicos" as const,
+    icon_name: "FileText",
+    bg_color: "#F8FAFC",
+    text_color: "#1E293B",
+    sort_order: 18,
+    show_title: true,
+    filter_rules: { text_position: "bottom", is_full_width: false },
+  },
+];
+
+export const listDrawerModules = createServerFn({ method: "GET" })
+  .validator((d: { city?: string } = {}) => d)
+  .handler(async ({ data }) => {
+    try {
+      const supabase = getAnonServerClient();
+      const { data: rows, error } = await supabase
+        .from("hotpages")
+        .select("*")
+        .eq("template_type", "drawer_module")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true });
+
+      if (error || !rows || rows.length === 0) {
+        return CANONICAL_DRAWER_MODULES.map(mapHotpageDTO);
+      }
+
+      const filtered = rows.filter((r) => {
+        if (!isCampaignActive(r)) return false;
+        if (data?.city && r.city_filter && r.city_filter !== "all" && r.city_filter !== data.city) {
+          return false;
+        }
+        return true;
+      });
+
+      return filtered.length > 0 ? filtered.map(mapHotpageDTO) : CANONICAL_DRAWER_MODULES.map(mapHotpageDTO);
+    } catch {
+      return CANONICAL_DRAWER_MODULES.map(mapHotpageDTO);
+    }
+  });
 
 export const syncDefaultHotpages = createServerFn({ method: "POST" }).handler(
   async () => {
@@ -974,7 +1246,11 @@ export const syncDefaultHotpages = createServerFn({ method: "POST" }).handler(
  },
  ];
 
- const ALL_ITEMS = [
+ 
+
+
+  const ALL_ITEMS = [
+    ...CANONICAL_DRAWER_MODULES,
  ...CANONICAL_HERO_MODULES,
  ...CANONICAL_SUBCATEGORY_CHIPS,
  ...CANONICAL_EDITORIAL_HOTPAGES,

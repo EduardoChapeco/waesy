@@ -510,7 +510,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  {/* ── ABA 1: DADOS GERAIS & CLIENTE ── */}
  <TabsContent value="dados" className="space-y-3">
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Título da Proposta *</Label>
+ <Label className="text-2xs font-bold">Título da Proposta *</Label>
  <Input
  value={proposal.title}
  onChange={(e) => onChange({ title: e.target.value })}
@@ -520,7 +520,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  </div>
 
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Destino Principal *</Label>
+ <Label className="text-2xs font-bold">Destino Principal *</Label>
  <Input
  value={proposal.destination_city}
  onChange={(e) => onChange({ destination_city: e.target.value })}
@@ -534,7 +534,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  key={d.id}
  type="button"
  onClick={() => onChange({ destination_city: `${d.city}, ${d.state}` })}
- className="px-2 py-1 rounded-md bg-muted/60 hover:bg-primary/10 text-[10px] font-mono text-muted-foreground hover:text-primary transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="px-2 py-1 rounded-md bg-muted/60 hover:bg-primary/10 text-2xs font-mono text-muted-foreground hover:text-primary transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {d.city}
  </button>
@@ -544,7 +544,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
 
  <div className="grid grid-cols-2 gap-2">
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Nome do Passageiro *</Label>
+ <Label className="text-2xs font-bold">Nome do Passageiro *</Label>
  <Input
  value={proposal.client_name}
  onChange={(e) => onChange({ client_name: e.target.value })}
@@ -553,7 +553,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  />
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">WhatsApp *</Label>
+ <Label className="text-2xs font-bold">WhatsApp *</Label>
  <Input
  value={proposal.client_whatsapp}
  onChange={(e) => onChange({ client_whatsapp: e.target.value })}
@@ -565,7 +565,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
 
  <div className="grid grid-cols-2 gap-2">
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Data de Ida</Label>
+ <Label className="text-2xs font-bold">Data de Ida</Label>
  <Input
  type="date"
  value={proposal.travel_start_date || ""}
@@ -574,7 +574,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  />
  </div>
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Data de Retorno</Label>
+ <Label className="text-2xs font-bold">Data de Retorno</Label>
  <Input
  type="date"
  value={proposal.travel_end_date || ""}
@@ -591,7 +591,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  <BedDouble className="size-3.5 text-primary" />
  <span>Quartos e Hóspedes</span>
  </div>
- <span className="text-[10px] text-muted-foreground font-medium">
+ <span className="text-2xs text-muted-foreground font-medium">
  {currentRooms.length} {currentRooms.length === 1 ? "quarto" : "quartos"} • {totalAdults} adt{totalChildren > 0 ? `, ${totalChildren} chd` : ""}
  </span>
  </div>
@@ -604,11 +604,11 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  >
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
- <span className="text-[11px] font-bold text-foreground">Quarto {room.roomNumber}</span>
+ <span className="text-2xs font-bold text-foreground">Quarto {room.roomNumber}</span>
  <select
  value={room.roomType || "Casal"}
  onChange={(e) => handleUpdateRoomType(room.id, e.target.value)}
- className="h-6 rounded border border-border/60 bg-background px-2 text-[10px] text-muted-foreground"
+ className="h-6 rounded border border-border/60 bg-background px-2 text-2xs text-muted-foreground"
  >
  <option value="Casal">Casal</option>
  <option value="Duplo Solteiro">2 Solteiro</option>
@@ -622,7 +622,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  <button
  type="button"
  onClick={() => handleRemoveRoom(room.id)}
- className="text-[10px] text-muted-foreground hover:text-destructive flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="text-2xs text-muted-foreground hover:text-destructive flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Trash className="size-2.5" />
  <span>Remover</span>
@@ -632,7 +632,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
 
  <div className="grid grid-cols-2 gap-2">
  <div className="flex items-center justify-between p-2 rounded bg-background border border-border/40">
- <span className="text-[10px] text-muted-foreground font-semibold">Adultos</span>
+ <span className="text-2xs text-muted-foreground font-semibold">Adultos</span>
  <div className="flex items-center gap-2">
  <Button
  type="button"
@@ -659,7 +659,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  </div>
 
  <div className="flex items-center justify-between p-2 rounded bg-background border border-border/40">
- <span className="text-[10px] text-muted-foreground font-semibold">Crianças</span>
+ <span className="text-2xs text-muted-foreground font-semibold">Crianças</span>
  <div className="flex items-center gap-2">
  <Button
  type="button"
@@ -688,17 +688,17 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
 
  {room.children > 0 && (
  <div className="pt-2 border-t border-border/30 space-y-1">
- <span className="text-[9px] font-semibold text-muted-foreground">Idade das crianças:</span>
+ <span className="text-3xs font-semibold text-muted-foreground">Idade das crianças:</span>
  <div className="flex flex-wrap gap-2">
  {Array.from({ length: room.children }).map((_, cIdx) => (
  <div key={cIdx} className="flex items-center gap-1">
- <span className="text-[9px] text-muted-foreground">C{cIdx + 1}:</span>
+ <span className="text-3xs text-muted-foreground">C{cIdx + 1}:</span>
  <select
  value={room.childrenAges?.[cIdx] ?? 5}
  onChange={(e) =>
  handleUpdateChildAge(room.id, cIdx, Number(e.target.value))
  }
- className="h-6 rounded border border-border/60 bg-background px-1 text-[10px]"
+ className="h-6 rounded border border-border/60 bg-background px-1 text-2xs"
  >
  {Array.from({ length: 12 }).map((_, age) => (
  <option key={age} value={age}>
@@ -719,7 +719,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  variant="outline"
  size="sm"
  onClick={handleAddRoom}
- className="w-full h-7 rounded-lg text-[11px] font-medium border-dashed border-border/70 hover:bg-muted/40 gap-1 text-muted-foreground hover:text-foreground cursor-pointer"
+ className="w-full h-7 rounded-lg text-2xs font-medium border-dashed border-border/70 hover:bg-muted/40 gap-1 text-muted-foreground hover:text-foreground cursor-pointer"
  >
  <Plus className="size-3" />
  <span>Adicionar Quarto</span>
@@ -728,7 +728,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  </div>
 
  <div className="space-y-2">
- <Label className="text-[11px] font-bold">Foto de Capa da Proposta (16:9)</Label>
+ <Label className="text-2xs font-bold">Foto de Capa da Proposta (16:9)</Label>
  <ImageUpload
  value={proposal.cover_image_url || ""}
  onChange={(url) => onChange({ cover_image_url: url })}
@@ -842,7 +842,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  {/* ── ABA 2: VOOS & MALHA AÉREA ── */}
  <TabsContent value="voos" className="space-y-3">
  <div className="flex items-center justify-between">
- <span className="text-[11px] font-bold text-foreground">Trechos de Voo</span>
+ <span className="text-2xs font-bold text-foreground">Trechos de Voo</span>
  <Button
  type="button"
  size="sm"
@@ -886,7 +886,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
 
  <div className="grid grid-cols-2 gap-2">
  <div>
- <label className="text-[9px] font-mono uppercase text-muted-foreground">Origem (IATA / Hora)</label>
+ <label className="text-3xs font-mono uppercase text-muted-foreground">Origem (IATA / Hora)</label>
  <div className="flex gap-1 mt-1">
  <Input
  placeholder="XAP"
@@ -904,7 +904,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  </div>
 
  <div>
- <label className="text-[9px] font-mono uppercase text-muted-foreground">Destino (IATA / Hora)</label>
+ <label className="text-3xs font-mono uppercase text-muted-foreground">Destino (IATA / Hora)</label>
  <div className="flex gap-1 mt-1">
  <Input
  placeholder="GRU"
@@ -952,7 +952,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  {/* ── ABA 3: HOTELARIA & HOSPEDAGENS ── */}
  <TabsContent value="hotel" className="space-y-3">
  <div className="flex items-center justify-between">
- <span className="text-[11px] font-bold text-foreground">Hotéis e Pousadas</span>
+ <span className="text-2xs font-bold text-foreground">Hotéis e Pousadas</span>
  <Button
  type="button"
  size="sm"
@@ -967,7 +967,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  {/* Importar do Banco de Hotéis */}
  {hotelsBank && hotelsBank.length > 0 && (
  <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
- <div className="flex items-center gap-2 text-primary text-[11px] font-bold">
+ <div className="flex items-center gap-2 text-primary text-2xs font-bold">
  <Building2 className="size-3.5" />
  <span>Importar do Banco de Hotéis</span>
  </div>
@@ -993,7 +993,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
 
  {/* Presets de Resorts Famosos (1-Toque) */}
  <div className="p-3 rounded-lg bg-muted/40 border border-border/50 space-y-2">
- <span className="text-[11px] font-bold text-foreground flex items-center gap-1">
+ <span className="text-2xs font-bold text-foreground flex items-center gap-1">
  <Zap className="size-3 text-amber-500" />
  <span>Presets de Resorts Famosos:</span>
  </span>
@@ -1003,7 +1003,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  key={p.id}
  type="button"
  onClick={() => handleImportPresetHotel(p)}
- className="px-2 py-1 rounded-md bg-background border border-border/60 hover:border-primary/50 text-[10px] font-semibold text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="px-2 py-1 rounded-md bg-background border border-border/60 hover:border-primary/50 text-2xs font-semibold text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {p.name.split(" ")[0]}
  </button>
@@ -1060,7 +1060,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  </div>
  <div className="grid grid-cols-2 gap-2">
    <div>
-     <label className="text-[9px] font-mono uppercase text-muted-foreground">Check-in</label>
+     <label className="text-3xs font-mono uppercase text-muted-foreground">Check-in</label>
      <Input
        type="date"
        value={h.checkin_date || h.check_in || ""}
@@ -1069,7 +1069,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
      />
    </div>
    <div>
-     <label className="text-[9px] font-mono uppercase text-muted-foreground">Check-out</label>
+     <label className="text-3xs font-mono uppercase text-muted-foreground">Check-out</label>
      <Input
        type="date"
        value={h.checkout_date || h.check_out || ""}
@@ -1082,7 +1082,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  {/* Seleção de Quartos Cadastrados no Banco */}
  {matchedBankHotel && matchedBankHotel.room_categories && matchedBankHotel.room_categories.length > 0 && (
  <div className="p-2 rounded-lg bg-background/80 border border-border/60 space-y-1">
- <span className="text-[10px] font-bold text-foreground flex items-center gap-1">
+ <span className="text-2xs font-bold text-foreground flex items-center gap-1">
  <BedDouble className="size-3 text-primary" />
  <span>Quartos do Resort:</span>
  </span>
@@ -1093,7 +1093,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  type="button"
  onClick={() => handleHotelChange(h.id, "room_type", rc.name)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "px-2 py-1 rounded text-[10px] border transition-colors cursor-pointer",
+ "px-2 py-1 rounded text-2xs border transition-colors cursor-pointer",
  h.room_type === rc.name
  ? "bg-primary/10 text-primary border-primary font-bold"
  : "bg-muted/50 text-muted-foreground border-border/50 hover:text-foreground"
@@ -1113,7 +1113,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  {/* ── ABA 4: ROTEIRO DIA A DIA ── */}
  <TabsContent value="roteiro" className="space-y-3">
  <div className="flex items-center justify-between">
- <span className="text-[11px] font-bold text-foreground">
+ <span className="text-2xs font-bold text-foreground">
  Dias de Viagem ({proposal.itinerary.length})
  </span>
  <div className="flex items-center gap-2">
@@ -1122,7 +1122,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  size="sm"
  variant="outline"
  onClick={handleGenerateItineraryFromDestination}
- className="h-8 text-[11px] rounded-lg gap-1 text-primary hover:text-primary"
+ className="h-8 text-2xs rounded-lg gap-1 text-primary hover:text-primary"
  title="Sugerir Roteiro"
  >
  <Calendar className="size-3.5" /> Sugerir Dias
@@ -1157,7 +1157,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  proposal.itinerary.map((day, idx) => (
  <div key={day.id} className="p-3 rounded-lg bg-muted/40 border border-border/40 space-y-2">
  <div className="flex items-center justify-between text-xs font-bold">
- <span className="text-primary font-mono text-[11px]">
+ <span className="text-primary font-mono text-2xs">
  Dia {day.day_number || idx + 1}
  </span>
  <Button
@@ -1550,7 +1550,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  {/* ── ABA 7: PREÇOS & PARCELAMENTO ── */}
  <TabsContent value="preco" className="space-y-3">
  <div className="space-y-2 p-3 rounded-lg bg-card border border-border/70 shadow-2xs">
- <Label className="text-[11px] font-bold text-foreground flex items-center justify-between">
+ <Label className="text-2xs font-bold text-foreground flex items-center justify-between">
  <span>Valor Total da Proposta (R$) *</span>
  <span className="text-primary font-mono font-bold text-xs">
  {formatMoney(proposal.pricing?.total_price_cents || 0)}
@@ -1568,7 +1568,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  className="h-10 pl-9 text-sm font-bold font-mono rounded-lg bg-background"
  />
  </div>
- <p className="text-[10px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Digite o valor real em Reais (ex: 4500 ou 4500,00). O sistema converte automaticamente para centavos seguros.
  </p>
  <div className="pt-2 border-t border-border/50 space-y-2">
@@ -1655,7 +1655,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  },
  });
  }}
- className="h-8 text-[11px] rounded-lg font-semibold"
+ className="h-8 text-2xs rounded-lg font-semibold"
  >
  10x e 12x Sem Juros
  </Button>
@@ -1678,7 +1678,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  },
  });
  }}
- className="h-8 text-[11px] rounded-lg font-semibold"
+ className="h-8 text-2xs rounded-lg font-semibold"
  >
  Entrada + 10x
  </Button>
@@ -1686,7 +1686,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
 
  {/* Visualização das parcelas configuradas */}
  {proposal.pricing?.installments_options && proposal.pricing.installments_options.length > 0 && (
- <div className="space-y-1 pt-1 border-t border-border/40 text-[11px]">
+ <div className="space-y-1 pt-1 border-t border-border/40 text-2xs">
  {proposal.pricing.installments_options.map((opt, i) => (
  <div key={i} className="flex justify-between items-center text-muted-foreground">
  <span>

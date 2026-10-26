@@ -317,7 +317,7 @@ function WorkspacePromotionsPage() {
               promos.map((promo) => (
                 <div
                   key={promo.id}
-                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-lg bg-card border border-border/70 gap-4 hover:border-border transition-all shadow-2xs"
+                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-lg bg-card border border-border/70 gap-4 hover:border-border transition-colors duration-200 shadow-2xs"
                 >
                   <div className="flex items-center gap-4 min-w-0">
                     <div
@@ -434,7 +434,7 @@ function WorkspacePromotionsPage() {
               couponsList.map((coupon) => (
                 <div
                   key={coupon.id}
-                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-lg bg-card border border-border/70 gap-4 hover:border-border transition-all shadow-2xs"
+                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-lg bg-card border border-border/70 gap-4 hover:border-border transition-colors duration-200 shadow-2xs"
                 >
                   <div className="flex items-center gap-4 min-w-0">
                     <div className="size-10 rounded-lg flex items-center justify-center shrink-0 bg-primary/10 text-primary border border-primary/20">
@@ -520,7 +520,7 @@ function WorkspacePromotionsPage() {
             >
               {isPromoSubmitting ? (
                 <>
-                  <Loader2 className="size-3.5 animate-spin" />
+                  <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
                   <span>Criando...</span>
                 </>
               ) : (
@@ -658,7 +658,7 @@ function WorkspacePromotionsPage() {
             >
               {isCouponSubmitting ? (
                 <>
-                  <Loader2 className="size-3.5 animate-spin" />
+                  <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
                   <span>Salvando...</span>
                 </>
               ) : (

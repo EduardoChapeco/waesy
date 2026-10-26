@@ -38,7 +38,7 @@ const HOTPAGE_THEMES: Record<
  turbo: {
  bgGradient: "bg-linear-to-b from-pink-600 via-rose-600 to-fuchsia-700",
  accentColor: "text-primary",
- badgeBg: "bg-white text-primary",
+ badgeBg: "bg-card text-primary",
  icon: Lightning,
  defaultBadge: "⚡ #turbo",
  heroPills: ["⚡ apenas + R$ 3,99", "⏱️ em até 20 min", "💰 ou R$ 5 de volta"],
@@ -48,7 +48,7 @@ const HOTPAGE_THEMES: Record<
  hits: {
  bgGradient: "bg-linear-to-b from-amber-500 via-orange-500 to-red-600",
  accentColor: "text-amber-600",
- badgeBg: "bg-white text-warning",
+ badgeBg: "bg-card text-warning",
  icon: Flame,
  defaultBadge: "🍔 hits",
  heroPills: ["🔥 os mais amados", "🛵 entrega grátis", "⭐ nota 4.8+"],
@@ -58,7 +58,7 @@ const HOTPAGE_THEMES: Record<
  ofertas: {
  bgGradient: "bg-linear-to-b from-red-600 via-rose-600 to-amber-600",
  accentColor: "text-destructive",
- badgeBg: "bg-amber-400 text-black",
+ badgeBg: "bg-amber-400 text-foreground",
  icon: Flame,
  defaultBadge: "🏷️ Oferta Relâmpago",
  heroPills: ["🏷️ até 50% OFF", "⏳ por tempo limitado", "🚚 entrega expressa"],
@@ -68,7 +68,7 @@ const HOTPAGE_THEMES: Record<
  "frete-gratis": {
  bgGradient: "bg-linear-to-b from-emerald-600 via-teal-600 to-cyan-700",
  accentColor: "text-emerald-600",
- badgeBg: "bg-white text-emerald-700",
+ badgeBg: "bg-card text-emerald-700",
  icon: Truck,
  defaultBadge: "🛵 Frete Grátis",
  heroPills: ["🛵 taxa R$ 0,00", "📍 raio de até 5km", "⚡ sem valor mínimo"],
@@ -78,7 +78,7 @@ const HOTPAGE_THEMES: Record<
  gastronomia: {
  bgGradient: "bg-linear-to-b from-amber-600 via-orange-600 to-red-600",
  accentColor: "text-amber-600",
- badgeBg: "bg-white text-amber-700",
+ badgeBg: "bg-card text-amber-700",
  icon: Flame,
  defaultBadge: "🍕 Sabor Local",
  heroPills: ["🍕 pizzas & burgers", "🥗 opções saudáveis", "🍰 doces & cafés"],
@@ -88,7 +88,7 @@ const HOTPAGE_THEMES: Record<
  mercado: {
  bgGradient: "bg-linear-to-b from-emerald-700 via-green-600 to-teal-700",
  accentColor: "text-emerald-700",
- badgeBg: "bg-white text-emerald-800",
+ badgeBg: "bg-card text-emerald-800",
  icon: Storefront,
  defaultBadge: "🥦 Feira & Hortifruti",
  heroPills: ["🥦 frescos do dia", "🥩 carnes nobres", "🥖 padaria colonial"],
@@ -285,7 +285,7 @@ function DedicatedHotpageView() {
  const theme = HOTPAGE_THEMES[slug] || {
  bgGradient: "bg-linear-to-b from-neutral-900 via-neutral-800 to-neutral-900",
  accentColor: "text-primary",
- badgeBg: "bg-white/20 text-white",
+ badgeBg: "bg-card/20 text-foreground",
  icon: Tag,
  defaultBadge: " Coleção Especial",
  heroPills: ["⭐ Seleção Waesy", "🚚 Entrega Rápida", "💳 Pagamento Online"],
@@ -375,7 +375,7 @@ function DedicatedHotpageView() {
   return (
     <div className="w-full space-y-0 pb-20 -mt-2 sm:-mt-4">
  {/* ── 1. HERO IMERSIVO FULL NO TOPO COM CAPA CONTEXTUAL ── */}
- <section className={`relative w-full ${hotpage?.cover_image_url ? "bg-black" : theme.bgGradient} text-white pt-6 sm:pt-8 pb-16 sm:pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden`}>
+ <section className={`relative w-full ${hotpage?.cover_image_url ? "bg-foreground" : theme.bgGradient} text-foreground pt-6 sm:pt-8 pb-16 sm:pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden`}>
  {/* Cover Background Fotográfico em Alta Resolução */}
  {hotpage?.cover_image_url && (
  <div className="absolute inset-0 size-full overflow-hidden pointer-events-none">
@@ -393,13 +393,13 @@ function DedicatedHotpageView() {
  fallbackHref="/explorar"
  transparent={true}
  bordered={false}
- className="relative z-10 max-w-7xl mx-auto pb-4 text-white"
+ className="relative z-10 max-w-7xl mx-auto pb-4 text-foreground"
  rightActions={
  <Button
  size="icon"
  variant="ghost"
  onClick={handleShare}
- className="size-9 sm:size-10 rounded-lg bg-black/30 hover:bg-black/50 text-white backdrop-blur-md border border-white/15 cursor-pointer"
+ className="size-9 sm:size-10 rounded-lg bg-foreground/30 hover:bg-foreground/50 text-foreground backdrop-blur-md border border-white/15 cursor-pointer"
  title="Compartilhar"
  >
  <ShareNetwork size={18} weight="bold" />
@@ -411,7 +411,7 @@ function DedicatedHotpageView() {
  <div className="relative z-10 max-w-7xl mx-auto space-y-3 sm:space-y-4">
  <div className="flex items-center gap-2">
  {customIcon && (
- <div className="size-8 rounded-lg bg-white/15 backdrop-blur-md border border-white/20 p-1 flex items-center justify-center shrink-0">
+ <div className="size-8 rounded-lg bg-card/15 backdrop-blur-md border border-white/20 p-1 flex items-center justify-center shrink-0">
  <img
  src={customIcon}
  alt="Ícone"
@@ -431,7 +431,7 @@ function DedicatedHotpageView() {
  {title}
  </h1>
 
- <p className="text-xs sm:text-sm text-white/90 font-medium max-w-xl leading-relaxed drop-">
+ <p className="text-xs sm:text-sm text-foreground/90 font-medium max-w-xl leading-relaxed drop-">
  {description}
  </p>
 
@@ -440,7 +440,7 @@ function DedicatedHotpageView() {
  {theme.heroPills.map((pill, idx) => (
  <span
  key={idx}
- className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-black/35 text-white text-[11px] sm:text-xs font-bold border border-white/15 drop-"
+ className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-foreground/35 text-foreground text-2xs sm:text-xs font-bold border border-white/15 drop-"
  >
  {pill}
  </span>
@@ -463,7 +463,7 @@ function DedicatedHotpageView() {
                 type="button"
                 onClick={() => setSelectedSubCategory(chip.id)}
                 className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 ",
+                  "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-colors duration-200 cursor-pointer select-none active:scale-98 ",
                   isSelected
                     ? "bg-foreground text-background border-foreground font-bold "
                     : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
@@ -496,7 +496,7 @@ function DedicatedHotpageView() {
  <button
  type="button"
  onClick={() => setSelectedFastFilter(selectedFastFilter === "desconto" ? null : "desconto")}
- className={`h-9 px-3 rounded-lg text-xs font-semibold border transition-all cursor-pointer shrink-0 flex items-center gap-2 ${
+ className={`h-9 px-3 rounded-lg text-xs font-semibold border transition-colors duration-200 cursor-pointer shrink-0 flex items-center gap-2 ${
  selectedFastFilter === "desconto"
  ? "bg-primary text-primary-foreground border-primary"
  : "bg-card border-border text-muted-foreground hover:text-foreground"
@@ -511,7 +511,7 @@ function DedicatedHotpageView() {
  <button
  type="button"
  onClick={() => setViewMode("list")}
- className={`p-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+ className={`p-2 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer ${
  viewMode === "list"
  ? "bg-foreground text-background"
  : "text-muted-foreground hover:text-foreground"
@@ -523,7 +523,7 @@ function DedicatedHotpageView() {
  <button
  type="button"
  onClick={() => setViewMode("grid")}
- className={`p-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+ className={`p-2 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer ${
  viewMode === "grid"
  ? "bg-foreground text-background"
  : "text-muted-foreground hover:text-foreground"
@@ -594,7 +594,7 @@ function DedicatedHotpageView() {
  return (
  <div
  key={p.id}
- className="flex items-stretch justify-between p-3 sm:p-4 rounded-lg bg-card hover:border-foreground/30 transition-all gap-4 group"
+ className="flex items-stretch justify-between p-3 sm:p-4 rounded-lg bg-card hover:border-foreground/30 transition-colors duration-200 gap-4 group"
  >
  {/* Imagem do Produto com Badge de Desconto */}
  <div className="relative size-20 sm:size-24 rounded-lg overflow-hidden bg-muted shrink-0 flex items-center justify-center">
@@ -610,7 +610,7 @@ function DedicatedHotpageView() {
  )}
  {discountPercent && (
  <div className="absolute top-1 left-1">
- <span className="bg-destructive text-white font-mono font-black text-[9px] px-2 py-1 rounded-md">
+ <span className="bg-destructive text-foreground font-mono font-black text-3xs px-2 py-1 rounded-md">
  -{discountPercent}%
  </span>
  </div>
@@ -621,7 +621,7 @@ function DedicatedHotpageView() {
  <div className="min-w-0 flex-1 flex flex-col justify-between space-y-1">
  <div>
  {p.brand && (
- <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider break-words text-wrap block">
+ <span className="text-2xs font-bold text-muted-foreground uppercase tracking-wider break-words text-wrap block">
  {p.brand}
  </span>
  )}
@@ -648,7 +648,7 @@ function DedicatedHotpageView() {
  size="icon"
  disabled={isAdding}
  onClick={() => handleQuickAdd(p)}
- className="size-9 rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-all cursor-pointer"
+ className="size-9 rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-colors duration-200 cursor-pointer"
  title="Adicionar à Sacola"
  >
  <Plus size={16} weight="bold" />

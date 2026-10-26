@@ -18,7 +18,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
 
   return (
     <div
-      className="flex flex-col w-full bg-white text-slate-900 pb-16"
+      className="flex flex-col w-full bg-card text-slate-900 pb-16"
       style={{ fontFamily: "var(--brand-body-font, sans-serif)" }}
     >
       {/* CAPA DRAMÁTICA (500px) */}
@@ -45,18 +45,18 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
               className="h-10 w-auto max-w-40 aspect-[4/1] object-contain brightness-0 invert" width={160} height={40}
             />
           ) : (
-            <div className="text-2xl font-bold tracking-widest text-white uppercase">
+            <div className="text-2xl font-bold tracking-widest text-foreground uppercase">
               {vm.agency.name}
             </div>
           )}
-          <div className="text-right text-white">
+          <div className="text-right text-foreground">
             <div className="ds-label-caps opacity-80">Proposta Oficial</div>
             <div className="text-xl font-mono">#{p.number}</div>
           </div>
         </div>
 
         {/* Título Centralizado na Capa */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center pt-16 px-12 text-center text-white">
+        <div className="absolute inset-0 flex flex-col items-center justify-center pt-16 px-12 text-center text-foreground">
           <h1
             className="text-6xl font-bold tracking-tight mb-6"
             style={{
@@ -97,7 +97,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
         className="pb-24 pt-4 px-12 relative z-10 break-inside-avoid"
       >
         {/* Resumo Executivo Flutuante */}
-        <div className="bg-white rounded-lg p-8 border border-slate-200 -mt-24 grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-x divide-slate-100">
+        <div className="bg-card rounded-lg p-8 border border-slate-200 -mt-24 grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-x divide-slate-100">
           <div>
             <div className="ds-label-caps text-slate-400 mb-2">Cliente</div>
             <div className="font-semibold text-slate-900 text-sm">
@@ -127,7 +127,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
       </div>
 
       {/* CORPO BRANCO COM HEADERS PASTÉIS */}
-      <div className="-mt-16 bg-white rounded-t-[40px] pt-16 px-12 relative z-20 space-y-12">
+      <div className="-mt-16 bg-card rounded-t-[40px] pt-16 px-12 relative z-20 space-y-12">
         {/* VOOS (Azul Pastel) */}
         {vm.hasFlights && (
           <div className="break-inside-avoid">
@@ -149,7 +149,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
                       {f.flight_number}
                     </span>
                   </div>
-                  <div className="p-6 bg-white flex items-center">
+                  <div className="p-6 bg-card flex items-center">
                     <div className="w-[30%] text-center">
                       <div className="text-4xl font-bold text-slate-900">
                         {(f.origin || "---").slice(0, 3).toUpperCase()}
@@ -160,7 +160,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
                     </div>
                     <div className="flex-1 px-4 relative flex items-center justify-center">
                       <div className="w-full border-t border-dashed border-slate-300 absolute" />
-                      <div className="bg-white border border-slate-200 px-4 py-1 rounded-full z-10 ds-meta font-bold text-slate-400 uppercase tracking-widest">
+                      <div className="bg-card border border-slate-200 px-4 py-1 rounded-full z-10 ds-meta font-bold text-slate-400 uppercase tracking-widest">
                         {f.date ? formatDate(f.date) : "—"}
                       </div>
                     </div>
@@ -198,7 +198,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
                       {h.meal_plan || "Só Hospedagem"}
                     </span>
                   </div>
-                  <div className="p-6 bg-white">
+                  <div className="p-6 bg-card">
                     <h3 className="text-2xl font-bold text-slate-900 mb-1">{h.name}</h3>
                     <div className="text-sm text-slate-500 mb-6">{h.city}</div>
 
@@ -248,7 +248,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
 
         {/* FINANCEIRO */}
         <div className="mt-20 break-inside-avoid">
-          <div className="bg-[#1E293B] rounded-lg p-12 text-white text-center border border-slate-700 relative overflow-hidden">
+          <div className="bg-[#1E293B] rounded-lg p-12 text-foreground text-center border border-slate-700 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
 
             <h2
@@ -263,7 +263,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
                 <div className="ds-meta uppercase font-bold tracking-widest text-zinc-500 mb-2">
                   Total do Pacote
                 </div>
-                <div className="text-5xl font-light text-white mb-6">
+                <div className="text-5xl font-light text-foreground mb-6">
                   {formatCurrency(vm.totals.total, p.currency)}
                 </div>
               </div>
@@ -277,7 +277,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
                 <div className="ds-meta uppercase font-bold tracking-widest text-zinc-500 mb-2">
                   Parcelamento
                 </div>
-                <div className="text-lg font-semibold text-white">
+                <div className="text-lg font-semibold text-foreground">
                   {vm.totals.parcelasCartao}x de{" "}
                   {formatCurrency(vm.totals.valorParcelaCartao, p.currency)}
                 </div>

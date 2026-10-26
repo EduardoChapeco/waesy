@@ -642,7 +642,7 @@ export default function WorkspaceDestinationsPage() {
  {filtered.map((dest: DestinationDTO) => (
  <Card
  key={dest.id}
- className="rounded-lg border border-border/70 bg-card overflow-hidden hover:border-primary/50 transition-all flex flex-col justify-between shadow-2xs group"
+ className="rounded-lg border border-border/70 bg-card overflow-hidden hover:border-primary/50 transition-colors duration-200 flex flex-col justify-between shadow-2xs group"
  >
  {/* Capa do Destino */}
  <div className="h-44 w-full relative bg-muted overflow-hidden">
@@ -1100,7 +1100,7 @@ export default function WorkspaceDestinationsPage() {
  >
  {isUploadingGallery ? (
  <>
- <Loader2 className="size-4 animate-spin text-primary" />
+ <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-primary" />
  <span>Enviando fotos...</span>
  </>
  ) : (
@@ -1146,14 +1146,14 @@ export default function WorkspaceDestinationsPage() {
  >
  <img src={url} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover" />
  <div className="absolute top-1 left-1">
- <Badge className="bg-black/60 text-xs text-white border-none py-0 px-2 font-mono">
+ <Badge className="bg-foreground/60 text-xs text-foreground border-none py-0 px-2 font-mono">
  #{idx + 1}
  </Badge>
  </div>
  <button
  type="button"
  onClick={() => handleRemoveGalleryUrl(idx)}
- className="absolute top-1.5 right-1.5 size-6 rounded-full bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="absolute top-1.5 right-1.5 size-6 rounded-full bg-foreground/70 text-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <X className="size-3.5" />
  </button>
@@ -1163,7 +1163,7 @@ export default function WorkspaceDestinationsPage() {
  ) : (
  <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  onClick={() => galleryInputRef.current?.click()}
- className="p-8 rounded-lg bg-muted/20 border-2 border-dashed border-border/80 text-center text-muted-foreground text-xs hover:border-border hover:bg-muted/30 transition-all cursor-pointer flex flex-col items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="p-8 rounded-lg bg-muted/20 border-2 border-dashed border-border/80 text-center text-muted-foreground text-xs hover:border-border hover:bg-muted/30 transition-colors duration-200 cursor-pointer flex flex-col items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <UploadCloud className="size-8 text-muted-foreground/60" />
  <span className="font-semibold text-foreground">Nenhuma foto adicional na galeria</span>
@@ -1200,7 +1200,7 @@ export default function WorkspaceDestinationsPage() {
  key={item.type}
  type="button"
  onClick={() => handleAddSection(item.type as any)}
- className="p-3 rounded-lg border border-border bg-background hover:border-primary/60 hover:bg-primary/5 transition-all text-left space-y-1 cursor-pointer shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="p-3 rounded-lg border border-border bg-background hover:border-primary/60 hover:bg-primary/5 transition-colors duration-200 text-left space-y-1 cursor-pointer shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <span className="text-xs font-bold text-foreground block">{item.label}</span>
  <span className="text-xs text-muted-foreground block leading-tight">{item.desc}</span>
@@ -1471,7 +1471,7 @@ export default function WorkspaceDestinationsPage() {
  type="button"
  onClick={() => setNewReviewRating(s)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "size-8 rounded-lg font-bold font-mono text-xs border transition-all cursor-pointer",
+ "size-8 rounded-lg font-bold font-mono text-xs border transition-colors duration-200 cursor-pointer",
  s === newReviewRating
  ? "bg-primary text-primary-foreground border-primary shadow-2xs"
  : "bg-background border-border/80 text-muted-foreground hover:bg-muted"
@@ -1598,7 +1598,7 @@ export default function WorkspaceDestinationsPage() {
       }
     }}
     onClick={() => toggleTag(tag)}
-    className={`cursor-pointer text-xs py-2 px-3 rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+    className={`cursor-pointer text-xs py-2 px-3 rounded-lg transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
  isSelected ? "bg-primary text-primary-foreground font-bold shadow-xs" : "hover:bg-muted"
  }`}
  >
@@ -1655,7 +1655,7 @@ export default function WorkspaceDestinationsPage() {
  )}
  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
- <div className="absolute bottom-6 left-6 right-6 space-y-2 text-white">
+ <div className="absolute bottom-6 left-6 right-6 space-y-2 text-foreground">
  <div className="flex flex-wrap items-center gap-2">
  <Badge className="bg-primary text-primary-foreground border-none font-bold text-xs">
  {state} • {country}
@@ -1666,13 +1666,13 @@ export default function WorkspaceDestinationsPage() {
  </Badge>
  )}
  {reviews.length > 0 && (
- <Badge className="bg-primary/90 text-white border-none font-bold text-xs gap-1 font-mono">
+ <Badge className="bg-primary/90 text-foreground border-none font-bold text-xs gap-1 font-mono">
  Nota {(reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)} ({reviews.length} avaliações)
  </Badge>
  )}
  </div>
  <h1 className="text-2xl sm:text-3xl font-black tracking-tight">{name || "Nome do Destino"}</h1>
- <p className="text-xs sm:text-sm text-white/80 line-clamp-2 max-w-2xl">{description}</p>
+ <p className="text-xs sm:text-sm text-foreground/80 line-clamp-2 max-w-2xl">{description}</p>
  </div>
  </div>
 
@@ -1833,7 +1833,7 @@ export default function WorkspaceDestinationsPage() {
  className="w-full h-full object-cover"
  />
  )}
- <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-5 text-white">
+ <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-5 text-foreground">
  <div>
  <Badge className="bg-primary text-primary-foreground text-xs mb-1">
  {previewModalDest.state} • {previewModalDest.country}

@@ -322,7 +322,7 @@ function AdminMiningHubPage() {
  };
  const s = map[status] || { label: status, cls: "bg-muted text-muted-foreground" };
  return (
- <span className={`inline-flex items-center rounded-lg px-2 py-1 text-[10px] font-bold ${s.cls}`}>
+ <span className={`inline-flex items-center rounded-lg px-2 py-1 text-2xs font-bold ${s.cls}`}>
  {s.label}
  </span>
  );
@@ -599,7 +599,7 @@ function AdminMiningHubPage() {
  className="h-11 min-h-11 px-4 text-xs font-semibold gap-2 rounded-lg"
  >
  {isRunningFullPipeline ? (
- <SpinnerGap className="h-4 w-4 animate-spin" />
+ <SpinnerGap className="h-4 w-4 animate-spin motion-reduce:animate-none" />
  ) : (
  <Play className="h-4 w-4" weight="fill" />
  )}
@@ -607,7 +607,7 @@ function AdminMiningHubPage() {
  </Button>
  <Link
  to="/workspace/mining"
- className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring inline-flex items-center gap-2 rounded-lg border border-border/70 bg-card px-4 h-11 min-h-11 text-xs font-semibold text-foreground hover:bg-muted/50 transition-all cursor-pointer"
+ className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring inline-flex items-center gap-2 rounded-lg border border-border/70 bg-card px-4 h-11 min-h-11 text-xs font-semibold text-foreground hover:bg-muted/50 transition-colors duration-200 cursor-pointer"
  >
  <Database className="h-4 w-4 text-primary" />
  <span>Telemetria e Fila Contínua</span>
@@ -618,7 +618,7 @@ function AdminMiningHubPage() {
  {/* ── KPIs ───────────────────────────────────────────────────────── */}
  <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
  <StatCard icon={<Clock className="h-4 w-4 text-warning" />} label="Pendentes na Fila" value={stats.queue.pending} />
- <StatCard icon={<ArrowClockwise className="h-4 w-4 text-primary animate-spin" />} label="Processando" value={stats.queue.processing} />
+ <StatCard icon={<ArrowClockwise className="h-4 w-4 text-primary animate-spin motion-reduce:animate-none" />} label="Processando" value={stats.queue.processing} />
  <StatCard icon={<Warning className="h-4 w-4 text-warning" />} label="Aguardando Curadoria" value={stats.mined.pending_review} accent="amber" />
  <StatCard icon={<CheckCircle className="h-4 w-4 text-success" />} label="Publicados" value={stats.mined.published} accent="green" />
  <StatCard icon={<Rss className="h-4 w-4 text-info" />} label="Feeds Ativos" value={stats.feeds.active} />
@@ -631,7 +631,7 @@ function AdminMiningHubPage() {
  <button
  key={tab.id}
  onClick={() => setActiveTab(tab.id)}
- className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring inline-flex items-center gap-2 rounded-lg px-4 h-11 min-h-11 shrink-0 text-xs font-semibold transition-all ${
+ className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring inline-flex items-center gap-2 rounded-lg px-4 h-11 min-h-11 shrink-0 text-xs font-semibold transition-colors duration-200 ${
  activeTab === tab.id
  ? "bg-primary text-primary-foreground"
  : "bg-card border border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
@@ -640,7 +640,7 @@ function AdminMiningHubPage() {
  {tab.icon}
  {tab.label}
  {tab.badge !== undefined && tab.badge > 0 && (
- <span className={`ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-bold ${
+ <span className={`ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full px-2 text-xs font-bold ${
  activeTab === tab.id ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary/10 text-primary"
  }`}>
  {tab.badge}
@@ -698,7 +698,7 @@ function AdminMiningHubPage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 <div>
-                  <label className="text-[11px] font-bold text-muted-foreground block mb-1">Nome da Fonte</label>
+                  <label className="text-2xs font-bold text-muted-foreground block mb-1">Nome da Fonte</label>
                   <Input
                     placeholder="Ex: G1 Santa Catarina"
                     value={newSourceName}
@@ -708,7 +708,7 @@ function AdminMiningHubPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-bold text-muted-foreground block mb-1">URL Alvo</label>
+                  <label className="text-2xs font-bold text-muted-foreground block mb-1">URL Alvo</label>
                   <Input
                     placeholder="https://..."
                     value={newSourceUrl}
@@ -719,7 +719,7 @@ function AdminMiningHubPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-bold text-muted-foreground block mb-1">Tipo de Conteúdo</label>
+                  <label className="text-2xs font-bold text-muted-foreground block mb-1">Tipo de Conteúdo</label>
                   <select
                     value={newSourceType}
                     onChange={(e) => setNewSourceType(e.target.value as any)}
@@ -734,7 +734,7 @@ function AdminMiningHubPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-[11px] font-bold text-muted-foreground block mb-1">Região de Abrangência</label>
+                  <label className="text-2xs font-bold text-muted-foreground block mb-1">Região de Abrangência</label>
                   <Input
                     placeholder="Ex: Chapecó/SC ou SC"
                     value={newSourceRegion}
@@ -743,7 +743,7 @@ function AdminMiningHubPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-bold text-muted-foreground block mb-1">Categoria de Negócio</label>
+                  <label className="text-2xs font-bold text-muted-foreground block mb-1">Categoria de Negócio</label>
                   <Input
                     placeholder="Ex: news_regional, jobs, technology"
                     value={newSourceCategory}
@@ -752,7 +752,7 @@ function AdminMiningHubPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-bold text-muted-foreground block mb-1">Prioridade (1 a 10)</label>
+                  <label className="text-2xs font-bold text-muted-foreground block mb-1">Prioridade (1 a 10)</label>
                   <Input
                     type="number"
                     min={1}
@@ -809,44 +809,44 @@ function AdminMiningHubPage() {
                             href={source.url}
                             target="_blank"
                             rel="noreferrer"
-                            className="text-[11px] text-muted-foreground hover:text-primary flex items-center gap-1 mt-1 max-w-xs truncate font-mono"
+                            className="text-2xs text-muted-foreground hover:text-primary flex items-center gap-1 mt-1 max-w-xs truncate font-mono"
                           >
                             <span>{source.url}</span>
                             <ArrowSquareOut size={12} className="shrink-0" />
                           </a>
                         </td>
                         <td className="px-4 py-3">
-                          <span className={cn("px-2 py-1 rounded-lg border text-[10px] font-bold uppercase", typeBadgeColors[source.type] || "bg-muted text-muted-foreground")}>
+                          <span className={cn("px-2 py-1 rounded-lg border text-2xs font-bold uppercase", typeBadgeColors[source.type] || "bg-muted text-muted-foreground")}>
                             {source.type}
                           </span>
                         </td>
                         <td className="px-4 py-3">
                           <div className="font-semibold text-foreground/90">{source.region || "SC"}</div>
-                          <div className="text-[10px] text-muted-foreground font-mono">{source.category}</div>
+                          <div className="text-2xs text-muted-foreground font-mono">{source.category}</div>
                         </td>
                         <td className="px-4 py-3 text-center">
-                          <Badge variant={source.priority >= 8 ? "default" : "outline"} className="text-[10px] font-mono">
+                          <Badge variant={source.priority >= 8 ? "default" : "outline"} className="text-2xs font-mono">
                             P{source.priority}
                           </Badge>
                         </td>
                         <td className="px-4 py-3">
                           {source.status === "fetching" ? (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-violet-500">
-                              <SpinnerGap className="size-3.5 animate-spin" />
+                            <span className="inline-flex items-center gap-1 text-2xs font-bold text-violet-500">
+                              <SpinnerGap className="size-3.5 animate-spin motion-reduce:animate-none" />
                               Minerando
                             </span>
                           ) : source.status === "success" ? (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-500">
+                            <span className="inline-flex items-center gap-1 text-2xs font-bold text-emerald-500">
                               <CheckCircle size={14} weight="fill" />
                               Ativo
                             </span>
                           ) : source.status === "error" ? (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-destructive" title={source.last_error || "Erro"}>
+                            <span className="inline-flex items-center gap-1 text-2xs font-bold text-destructive" title={source.last_error || "Erro"}>
                               <Warning size={14} weight="fill" />
                               Erro
                             </span>
                           ) : (
-                            <span className="text-[11px] text-muted-foreground">Ocioso</span>
+                            <span className="text-2xs text-muted-foreground">Ocioso</span>
                           )}
                         </td>
                         <td className="px-4 py-3 font-mono font-bold text-foreground">
@@ -859,10 +859,10 @@ function AdminMiningHubPage() {
                               variant="outline"
                               disabled={isTriggering}
                               onClick={() => handleTriggerSourceFetch(source)}
-                              className="h-8 px-3 rounded-lg text-[11px] font-bold gap-1 cursor-pointer"
+                              className="h-8 px-3 rounded-lg text-2xs font-bold gap-1 cursor-pointer"
                             >
                               {isTriggering ? (
-                                <SpinnerGap className="size-3.5 animate-spin" />
+                                <SpinnerGap className="size-3.5 animate-spin motion-reduce:animate-none" />
                               ) : (
                                 <Play size={12} weight="fill" className="text-primary" />
                               )}
@@ -903,21 +903,21 @@ function AdminMiningHubPage() {
             <div className="flex items-start justify-between gap-4 border-b border-border/40 pb-4">
               <div className="space-y-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-[10px] font-bold uppercase text-primary tracking-wider">
+                  <span className="text-2xs font-bold uppercase text-primary tracking-wider">
                     Inspeção e Curadoria Forense
                   </span>
                   <span className="text-xs text-muted-foreground">·</span>
                   <span className="text-xs font-mono text-muted-foreground">{focusedArticle.source_domain}</span>
                   <span className="text-xs text-muted-foreground">·</span>
-                  <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${
+                  <span className={`text-2xs font-bold px-2 py-1 rounded-full ${
                     (focusedArticle.quality_score ?? 0) >= 80 ? "bg-emerald-500/10 text-emerald-600" : "bg-amber-500/10 text-amber-600"
                   }`}>
                     Qualidade: {focusedArticle.quality_score ?? "--"}/100
                   </span>
-                  <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-primary/10 text-primary">
+                  <span className="text-2xs font-bold px-2 py-1 rounded-full bg-primary/10 text-primary">
                     {focusedArticle.word_count} palavras
                   </span>
-                  <span className="text-[10px] font-medium text-muted-foreground">
+                  <span className="text-2xs font-medium text-muted-foreground">
                     {Math.max(1, Math.ceil(focusedArticle.word_count / 180))} min de leitura
                   </span>
                 </div>
@@ -939,7 +939,7 @@ function AdminMiningHubPage() {
                     className="inline-flex items-center gap-2 rounded-lg bg-sky-500/10 border border-sky-500/30 px-3 py-1 text-xs font-bold text-sky-600 dark:text-sky-400 hover:bg-sky-500/20 disabled:opacity-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     {isGeneratingCarousel ? (
-                      <SpinnerGap className="h-3.5 w-3.5 animate-spin" />
+                      <SpinnerGap className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none" />
                     ) : (
                       <Star className="h-3.5 w-3.5" />
                     )}
@@ -960,10 +960,10 @@ function AdminMiningHubPage() {
               {/* Coluna Esquerda: Preview Visual (7 cols) */}
               <div className="lg:col-span-7 space-y-4 border border-border/60 rounded-lg p-4 sm:p-5 bg-background">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                  <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                     Pré-Visualização Fidedigna
                   </span>
-                  <span className="text-[10px] font-medium text-muted-foreground">
+                  <span className="text-2xs font-medium text-muted-foreground">
                     {isHealthyImageUrl(focusedArticle.ai_suggested_cover_url) ? "✅ Capa Íntegra" : "🎨 Fallback Fotográfico"}
                   </span>
                 </div>
@@ -1078,7 +1078,7 @@ function AdminMiningHubPage() {
                     id="btn-approve-mined-article"
                     className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-xs font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    {curatingId === focusedArticle.id ? <SpinnerGap className="h-4 w-4 animate-spin" /> : <ThumbsUp className="h-4 w-4" />}
+                    {curatingId === focusedArticle.id ? <SpinnerGap className="h-4 w-4 animate-spin motion-reduce:animate-none" /> : <ThumbsUp className="h-4 w-4" />}
                     Aprovar & Publicar
                   </button>
                   <button
@@ -1103,7 +1103,7 @@ function AdminMiningHubPage() {
  <button
  key={f}
  onClick={() => setMinedFilter(f)}
- className={`rounded-lg px-3 py-2 text-xs font-semibold transition-all ${
+ className={`rounded-lg px-3 py-2 text-xs font-semibold transition-colors duration-200 ${
  minedFilter === f ? "bg-primary text-primary-foreground" : "bg-card border border-border text-muted-foreground hover:text-foreground"
  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
@@ -1128,7 +1128,7 @@ function AdminMiningHubPage() {
  {filteredMined.map((article) => (
  <div
  key={article.id}
- className={`rounded-lg border bg-card p-4 transition-all ${
+ className={`rounded-lg border bg-card p-4 transition-colors duration-200 ${
  focusedArticle?.id === article.id ? "border-primary/50 bg-primary/5" : "border-border"
  }`}
  >
@@ -1145,7 +1145,7 @@ function AdminMiningHubPage() {
                       }}
                     />
                     {!isHealthyImageUrl(article.ai_suggested_cover_url) && (
-                      <span className="absolute bottom-0 right-0 rounded-tl-md bg-amber-500 text-[8px] font-bold px-1 text-white" title="Imagem gerada via fallback temático fotográfico">
+                      <span className="absolute bottom-0 right-0 rounded-tl-md bg-amber-500 text-3xs font-bold px-1 text-foreground" title="Imagem gerada via fallback temático fotográfico">
                         HD
                       </span>
                     )}
@@ -1154,13 +1154,13 @@ function AdminMiningHubPage() {
  <div className="min-w-0 space-y-1">
  <div className="flex items-center gap-2 flex-wrap">
  {article.ai_suggested_kicker && (
- <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
+ <span className="text-2xs font-bold uppercase tracking-wider text-primary">
  {article.ai_suggested_kicker}
  </span>
  )}
  {statusBadge(article.status)}
  {article.ai_sentiment && (
- <span className={`text-[10px] font-semibold ${
+ <span className={`text-2xs font-semibold ${
  article.ai_sentiment === "positive" ? "text-emerald-500" :
  article.ai_sentiment === "negative" ? "text-red-400" : "text-muted-foreground"
  }`}>
@@ -1201,7 +1201,7 @@ function AdminMiningHubPage() {
  {article.ai_suggested_tags && article.ai_suggested_tags.length > 0 && (
  <div className="flex items-center gap-1 mt-1 flex-wrap">
  {article.ai_suggested_tags.slice(0, 4).map((tag) => (
- <span key={tag} className="rounded-md bg-muted px-2 py-1 text-[10px] font-medium text-muted-foreground">
+ <span key={tag} className="rounded-md bg-muted px-2 py-1 text-2xs font-medium text-muted-foreground">
  #{tag}
  </span>
  ))}
@@ -1215,14 +1215,14 @@ function AdminMiningHubPage() {
  <button
  id={`btn-curate-${article.id}`}
  onClick={() => handleCurate(article)}
- className="shrink-0 inline-flex items-center gap-2 rounded-lg bg-primary/10 border border-primary/30 px-3 py-2 text-xs font-bold text-primary hover:bg-primary hover:text-primary-foreground transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="shrink-0 inline-flex items-center gap-2 rounded-lg bg-primary/10 border border-primary/30 px-3 py-2 text-xs font-bold text-primary hover:bg-primary hover:text-primary-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Eye className="h-3.5 w-3.5" />
  Curar
  </button>
  )}
  {article.status === "published" && (
- <span className="shrink-0 inline-flex items-center gap-1 rounded-lg bg-primary/10 px-3 py-2 text-[10px] font-bold text-primary">
+ <span className="shrink-0 inline-flex items-center gap-1 rounded-lg bg-primary/10 px-3 py-2 text-2xs font-bold text-primary">
  <CheckCircle className="h-3 w-3" />
  Publicado
  </span>
@@ -1252,10 +1252,10 @@ function AdminMiningHubPage() {
  <button
  onClick={handleReprocessFailedQueue}
  disabled={isReprocessingQueue}
- className="inline-flex items-center gap-2 rounded-lg bg-destructive/10 border border-destructive/30 px-3 py-2 text-xs font-bold text-destructive hover:bg-destructive hover:text-white transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="inline-flex items-center gap-2 rounded-lg bg-destructive/10 border border-destructive/30 px-3 py-2 text-xs font-bold text-destructive hover:bg-destructive hover:text-foreground transition-colors duration-200 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {isReprocessingQueue ? (
- <SpinnerGap className="h-4 w-4 animate-spin" />
+ <SpinnerGap className="h-4 w-4 animate-spin motion-reduce:animate-none" />
  ) : (
  <ArrowsClockwise className="h-4 w-4" />
  )}
@@ -1286,9 +1286,9 @@ function AdminMiningHubPage() {
  <tr key={item.id} className="hover:bg-muted/30 transition-colors">
  <td className="py-3 pr-4">
  <div className="font-semibold text-foreground">{item.domain}</div>
- <div className="max-w-xs truncate text-[11px] text-muted-foreground font-mono">{item.url}</div>
+ <div className="max-w-xs truncate text-2xs text-muted-foreground font-mono">{item.url}</div>
  </td>
- <td className="py-3 pr-4 font-semibold uppercase text-primary text-[11px]">
+ <td className="py-3 pr-4 font-semibold uppercase text-primary text-2xs">
  {item.content_type || item.entity_type}
  </td>
   <td className="py-3 pr-4">
@@ -1300,7 +1300,7 @@ function AdminMiningHubPage() {
   {item.status === "failed" && (
   <button
   onClick={() => handleReprocessSingle(item)}
-  className="inline-flex items-center gap-1 rounded-lg bg-primary/10 border border-primary/20 px-2 py-1 text-[10px] font-bold text-primary hover:bg-primary hover:text-primary-foreground transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+  className="inline-flex items-center gap-1 rounded-lg bg-primary/10 border border-primary/20 px-2 py-1 text-2xs font-bold text-primary hover:bg-primary hover:text-primary-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
   title="Re-extrair mecanicamente com headers stealth"
   >
   <ArrowsClockwise className="h-3 w-3" />
@@ -1347,11 +1347,11 @@ function AdminMiningHubPage() {
   <button
   type="submit"
   disabled={isMiningEvent || !eventInputUrl}
-  className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+  className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors duration-200 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
   >
   {isMiningEvent ? (
   <>
-  <SpinnerGap className="h-4 w-4 animate-spin" />
+  <SpinnerGap className="h-4 w-4 animate-spin motion-reduce:animate-none" />
   Minerando e Redigindo Matéria...
   </>
   ) : (
@@ -1390,11 +1390,11 @@ function AdminMiningHubPage() {
   </div>
   )}
   <div className="flex items-center gap-2">
-  <span className="rounded-md bg-primary/10 px-2 py-1 text-[10px] font-bold text-primary">
+  <span className="rounded-md bg-primary/10 px-2 py-1 text-2xs font-bold text-primary">
   {ev.status === "draft" ? "Rascunho · revisão pendente" : ev.is_external ? "Divulgação Externa" : "Evento Oficial"}
   </span>
   {ev.city && (
-  <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground font-mono">
+  <span className="inline-flex items-center gap-1 text-2xs text-muted-foreground font-mono">
   <MapPin className="h-3 w-3" />
   {ev.city}
   </span>
@@ -1418,17 +1418,17 @@ function AdminMiningHubPage() {
   {/* RSVP Mensuração e Link de Ingresso */}
   <div className="border-t border-border/60 pt-3 space-y-2">
   {ev.status === "published" ? <div className="flex items-center justify-between text-xs">
-  <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+  <span className="text-2xs text-muted-foreground flex items-center gap-1">
   <Users className="h-3.5 w-3.5" /> RSVP:
   </span>
-  <div className="flex items-center gap-2 font-mono text-[11px]">
+  <div className="flex items-center gap-2 font-mono text-2xs">
   <span className="text-emerald-500 font-bold" title="Confirmados">{ev.rsvp_going_count || 0} vou</span>
   <span>·</span>
   <span className="text-blue-400 font-bold" title="Interessados">{ev.rsvp_interested_count || 0} interesse</span>
   <span>·</span>
   <span className="text-muted-foreground" title="Não vão">{ev.rsvp_not_going_count || 0} não vou</span>
   </div>
-  </div> : <p className="text-[11px] text-muted-foreground">RSVP e exposição pública ainda não disponíveis: o item está em revisão.</p>}
+  </div> : <p className="text-2xs text-muted-foreground">RSVP e exposição pública ainda não disponíveis: o item está em revisão.</p>}
 
   <div className="flex items-center gap-2 pt-1">
   {ev.source_url && (
@@ -1441,14 +1441,14 @@ function AdminMiningHubPage() {
   href={ev.external_ticket_url}
   target="_blank"
   rel="noopener noreferrer"
-  className="flex-1 inline-flex items-center justify-center gap-1 rounded-lg bg-primary/10 border border-primary/20 py-2 text-xs font-bold text-primary hover:bg-primary hover:text-primary-foreground transition-all"
+  className="flex-1 inline-flex items-center justify-center gap-1 rounded-lg bg-primary/10 border border-primary/20 py-2 text-xs font-bold text-primary hover:bg-primary hover:text-primary-foreground transition-colors duration-200"
   >
   <ArrowSquareOut className="h-3.5 w-3.5" />
   Link de ingresso informado na fonte
   </a>
   )}
   {ev.event_news_relations?.length > 0 && (
-  <span className="rounded-lg bg-muted px-2 py-2 text-[11px] font-semibold text-muted-foreground flex items-center gap-1" title="Matéria de cobertura vinculada">
+  <span className="rounded-lg bg-muted px-2 py-2 text-2xs font-semibold text-muted-foreground flex items-center gap-1" title="Matéria de cobertura vinculada">
   <FileText className="h-3.5 w-3.5 text-primary" />
   Notícia
   </span>
@@ -1589,9 +1589,9 @@ function AdminMiningHubPage() {
             <button
               type="submit"
               disabled={isMiningJob}
-              className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-xs font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-xs font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              {isMiningJob ? <SpinnerGap className="h-4 w-4 animate-spin" /> : <Briefcase className="h-4 w-4" />}
+              {isMiningJob ? <SpinnerGap className="h-4 w-4 animate-spin motion-reduce:animate-none" /> : <Briefcase className="h-4 w-4" />}
               Minerar & Publicar Vaga
             </button>
           </form>
@@ -1623,17 +1623,17 @@ function AdminMiningHubPage() {
                     <tr key={job.id} className="hover:bg-muted/30 transition-colors">
                       <td className="py-3 pr-4">
                         <div className="font-bold text-foreground">{job.title}</div>
-                        <div className="text-[11px] text-muted-foreground">{job.company_name}</div>
+                        <div className="text-2xs text-muted-foreground">{job.company_name}</div>
                       </td>
                       <td className="py-3 pr-4">
                         <span className="font-mono text-primary font-semibold uppercase">{job.category}</span>
-                        <div className="text-[11px] text-muted-foreground">{job.location}</div>
+                        <div className="text-2xs text-muted-foreground">{job.location}</div>
                       </td>
                       <td className="py-3 pr-4 font-mono font-bold text-foreground">
                         {job.salary_display}
                       </td>
                       <td className="py-3 pr-4">
-                        <span className="rounded-md bg-muted px-2 py-1 text-[10px] font-bold text-muted-foreground">
+                        <span className="rounded-md bg-muted px-2 py-1 text-2xs font-bold text-muted-foreground">
                           {job.external_source || "Oficial"}
                         </span>
                       </td>
@@ -1644,18 +1644,18 @@ function AdminMiningHubPage() {
                               href={job.external_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 rounded-lg bg-primary/10 border border-primary/20 px-3 py-1 text-[11px] font-bold text-primary hover:bg-primary hover:text-primary-foreground transition-all"
+                              className="inline-flex items-center gap-1 rounded-lg bg-primary/10 border border-primary/20 px-3 py-1 text-2xs font-bold text-primary hover:bg-primary hover:text-primary-foreground transition-colors duration-200"
                             >
                               <ArrowSquareOut className="h-3.5 w-3.5" />
                               Link Oficial
                             </a>
                           ) : (
-                            <span className="text-muted-foreground text-[11px]">Interna</span>
+                            <span className="text-muted-foreground text-2xs">Interna</span>
                           )}
                           <button
                             onClick={() => handleGenerateCarousel("empregos", job)}
                             disabled={isGeneratingCarousel}
-                            className="inline-flex items-center gap-1 rounded-lg border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:bg-sky-500/20 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            className="inline-flex items-center gap-1 rounded-lg border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-2xs font-bold text-sky-600 dark:text-sky-400 hover:bg-sky-500/20 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             title="Gerar Carrossel de Vaga para Instagram"
                           >
                             <Star className="h-3 w-3" />
@@ -1689,10 +1689,10 @@ function AdminMiningHubPage() {
   <button
   onClick={handleSyncPncpContracts}
   disabled={isSyncingPncp}
-  className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-3 text-xs font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+  className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-3 text-xs font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
   >
   {isSyncingPncp ? (
-  <SpinnerGap className="h-4 w-4 animate-spin" />
+  <SpinnerGap className="h-4 w-4 animate-spin motion-reduce:animate-none" />
   ) : (
   <ArrowsClockwise className="h-4 w-4" />
   )}
@@ -1733,14 +1733,14 @@ function AdminMiningHubPage() {
   {item.orgaoEntidade?.razaoSocial || item.unidadeOrgao?.municipioNome || "Município de Chapecó"}
   </div>
   <div className="flex items-center gap-2 flex-wrap pt-1">
-  <span className="text-[11px] text-muted-foreground font-mono">
+  <span className="text-2xs text-muted-foreground font-mono">
   {item.numeroControlePNCP}
   </span>
   {item.modalidadeNome && (
   <Badge
   variant="outline"
   className={cn(
-  "text-[10px] px-2 py-0 font-medium rounded-md",
+  "text-2xs px-2 py-0 font-medium rounded-md",
   item.modalidadeNome.toLowerCase().includes("pregão")
   ? "bg-primary/10 text-primary border-primary/20"
   : item.modalidadeNome.toLowerCase().includes("dispensa") || item.modalidadeNome.toLowerCase().includes("inexigibilidade")
@@ -1772,7 +1772,7 @@ function AdminMiningHubPage() {
         href={`https://pncp.gov.br/app/editais/${item.numeroControlePNCP}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-1 rounded-lg bg-primary/10 border border-primary/20 px-3 py-1 text-[11px] font-bold text-primary hover:bg-primary hover:text-primary-foreground transition-all"
+        className="inline-flex items-center gap-1 rounded-lg bg-primary/10 border border-primary/20 px-3 py-1 text-2xs font-bold text-primary hover:bg-primary hover:text-primary-foreground transition-colors duration-200"
       >
         <ArrowSquareOut className="h-3.5 w-3.5" />
         PNCP Oficial
@@ -1780,11 +1780,11 @@ function AdminMiningHubPage() {
       <button
         onClick={() => handleCreateNewsFromPncp(item)}
         disabled={convertingPncpId === item.numeroControlePNCP}
-        className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-600 hover:bg-emerald-600 hover:text-white transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-600 hover:bg-emerald-600 hover:text-foreground transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         title="Gerar Pauta"
       >
         {convertingPncpId === item.numeroControlePNCP ? (
-          <SpinnerGap className="h-3.5 w-3.5 animate-spin" />
+          <SpinnerGap className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none" />
         ) : (
           <Article className="h-3.5 w-3.5" />
         )}
@@ -1793,7 +1793,7 @@ function AdminMiningHubPage() {
       <button
         onClick={() => handleGenerateCarousel("licitacoes", item)}
         disabled={isGeneratingCarousel}
-        className="inline-flex items-center gap-1 rounded-lg bg-sky-500/10 border border-sky-500/20 px-3 py-1 text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:bg-sky-500/20 transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="inline-flex items-center gap-1 rounded-lg bg-sky-500/10 border border-sky-500/20 px-3 py-1 text-2xs font-bold text-sky-600 dark:text-sky-400 hover:bg-sky-500/20 transition-colors duration-200 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         title="Gerar Carrossel para Redes Sociais"
       >
         <Star className="h-3.5 w-3.5" />
@@ -1823,7 +1823,7 @@ function AdminMiningHubPage() {
  <div className="flex items-start justify-between gap-2">
  <div className="min-w-0">
  <h3 className="text-sm font-bold text-foreground truncate">{feed.name}</h3>
- <p className="text-[11px] font-mono text-muted-foreground truncate mt-1">{feed.feed_url}</p>
+ <p className="text-2xs font-mono text-muted-foreground truncate mt-1">{feed.feed_url}</p>
  </div>
  <button
  onClick={() => handleToggleFeed(feed.id, feed.is_active)}
@@ -1837,7 +1837,7 @@ function AdminMiningHubPage() {
  </button>
  </div>
 
- <div className="flex items-center gap-3 text-[11px] text-muted-foreground border-t border-border pt-3">
+ <div className="flex items-center gap-3 text-2xs text-muted-foreground border-t border-border pt-3">
  <span className="font-mono">{feed.items_count || 0} itens</span>
  <span>·</span>
  <span className="font-mono">{feed.items_published_count || 0} publicados</span>
@@ -1855,10 +1855,10 @@ function AdminMiningHubPage() {
  id={`btn-fetch-rss-${feed.id}`}
  onClick={() => handleFetchRss(feed.id)}
  disabled={fetchingFeedId === feed.id || !feed.is_active}
- className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary/10 border border-primary/20 py-2 text-xs font-bold text-primary hover:bg-primary hover:text-primary-foreground disabled:opacity-50 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary/10 border border-primary/20 py-2 text-xs font-bold text-primary hover:bg-primary hover:text-primary-foreground disabled:opacity-50 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {fetchingFeedId === feed.id
- ? <SpinnerGap className="h-3.5 w-3.5 animate-spin" />
+ ? <SpinnerGap className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none" />
  : <Broadcast className="h-3.5 w-3.5" />
  }
  {fetchingFeedId === feed.id ? "Buscando..." : "Fetch Agora"}
@@ -1890,7 +1890,7 @@ function AdminMiningHubPage() {
  <button
  type="submit"
  disabled={isPending}
- className="rounded-lg bg-primary px-4 py-3 text-sm font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="rounded-lg bg-primary px-4 py-3 text-sm font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {isPending ? "Cadastrando..." : "Cadastrar Feed"}
  </button>
@@ -1932,7 +1932,7 @@ function AdminMiningHubPage() {
  <tr key={sc.id} className="hover:bg-muted/30 transition-colors">
  <td className="py-3 pr-4">
  <div className="font-semibold text-foreground">{sc.label}</div>
- <div className="font-mono text-[11px] text-muted-foreground">{sc.domain}</div>
+ <div className="font-mono text-2xs text-muted-foreground">{sc.domain}</div>
  </td>
  <td className="py-3 pr-4">
  <span className={`font-semibold capitalize ${
@@ -1958,11 +1958,11 @@ function AdminMiningHubPage() {
  </td>
  <td className="py-3">
  {sc.is_blocked
- ? <span className="rounded-lg bg-destructive/10 px-2 py-1 text-[10px] font-bold text-destructive flex items-center gap-1">
+ ? <span className="rounded-lg bg-destructive/10 px-2 py-1 text-2xs font-bold text-destructive flex items-center gap-1">
  <Shield className="h-3 w-3" />
  Bloqueado
  </span>
- : <span className="rounded-lg bg-emerald-500/10 px-2 py-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">Ativo</span>
+ : <span className="rounded-lg bg-emerald-500/10 px-2 py-1 text-2xs font-bold text-emerald-600 dark:text-emerald-400">Ativo</span>
  }
  </td>
  </tr>
@@ -2040,11 +2040,11 @@ function AdminMiningHubPage() {
  type="submit"
  disabled={isImporting || !importUrl}
  id="btn-import-url-ai"
- className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary py-3 text-sm font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary py-3 text-sm font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {isImporting ? (
  <>
- <SpinnerGap className="h-4 w-4 animate-spin" />
+ <SpinnerGap className="h-4 w-4 animate-spin motion-reduce:animate-none" />
  Extraindo e estruturando com IA...
  </>
  ) : (
@@ -2080,7 +2080,7 @@ function StatCard({
  return (
  <div className="rounded-lg border border-border bg-card p-4">
  <div className="flex items-center justify-between text-muted-foreground mb-2">
- <span className="text-[10px] font-bold uppercase tracking-wider">{label}</span>
+ <span className="text-2xs font-bold uppercase tracking-wider">{label}</span>
  {icon}
  </div>
  <div className={`text-xl font-bold ${

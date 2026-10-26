@@ -127,7 +127,7 @@ export function CopilotBackgroundTasksDrawer({
           {/* ── Topo da Gaveta ── */}
           <SheetHeader className="p-5 border-b border-border/40">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-3">
                 <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
                   <Clock className="size-5" />
                 </div>
@@ -170,7 +170,7 @@ export function CopilotBackgroundTasksDrawer({
                 )}
               >
                 <span>Em Execução</span>
-                <span className="ml-1.5 px-1.5 py-0.2 rounded-full bg-background/20 text-2xs font-mono">
+                <span className="ml-2 px-2 py-0.2 rounded-full bg-background/20 text-2xs font-mono">
                   {runningTasks.length}
                 </span>
               </Button>
@@ -188,7 +188,7 @@ export function CopilotBackgroundTasksDrawer({
                 )}
               >
                 <span>Concluídas</span>
-                <span className="ml-1.5 px-1.5 py-0.2 rounded-full bg-background/20 text-2xs font-mono">
+                <span className="ml-2 px-2 py-0.2 rounded-full bg-background/20 text-2xs font-mono">
                   {completedTasks.length}
                 </span>
               </Button>
@@ -214,7 +214,7 @@ export function CopilotBackgroundTasksDrawer({
                 return (
                   <div
                     key={task.id}
-                    className="group rounded-2xl border border-border/40 bg-card p-4 space-y-3 transition-all hover:border-primary/30"
+                    className="group rounded-2xl border border-border/40 bg-card p-4 space-y-3 transition-colors duration-200 hover:border-primary/30"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="space-y-1">
@@ -223,7 +223,7 @@ export function CopilotBackgroundTasksDrawer({
                             className={cn(
                               "size-2 rounded-full shrink-0",
                               isRunning
-                                ? "bg-primary animate-pulse"
+                                ? "bg-primary animate-pulse motion-reduce:animate-none"
                                 : task.status === "completed"
                                 ? "bg-emerald-500"
                                 : "bg-rose-500"
@@ -247,7 +247,7 @@ export function CopilotBackgroundTasksDrawer({
                     </div>
 
                     {/* Barra de Progresso Fina */}
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <div className="flex items-center justify-between text-2xs text-muted-foreground">
                         <span className="truncate max-w-[240px]">
                           {task.current_step || "Executando etapas..."}
@@ -256,7 +256,7 @@ export function CopilotBackgroundTasksDrawer({
                       </div>
                       <div className="h-1.5 w-full bg-muted/60 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-primary transition-all duration-300 rounded-full"
+                          className="h-full bg-primary transition-colors duration-200 duration-300 rounded-full"
                           style={{ width: `${task.progress_percent}%` }}
                         />
                       </div>
@@ -273,7 +273,7 @@ export function CopilotBackgroundTasksDrawer({
                             setSelectedTask(task);
                             setLiveSandboxOpen(true);
                           }}
-                          className="h-11 min-h-11 px-3 text-xs font-semibold text-primary hover:bg-primary/5 rounded-xl gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer"
+                          className="h-11 min-h-11 px-3 text-xs font-semibold text-primary hover:bg-primary/5 rounded-xl gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer"
                         >
                           <Laptop className="size-4" />
                           <span>Ver Execução</span>
@@ -321,7 +321,7 @@ export function CopilotBackgroundTasksDrawer({
                     Computador do Agente
                   </h3>
                   <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 text-2xs gap-1">
-                    <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none" />
                     <span>Ao Vivo</span>
                   </Badge>
                 </div>
@@ -349,7 +349,7 @@ export function CopilotBackgroundTasksDrawer({
                 <span>Ambiente: Sandbox Isolado Waesy</span>
                 <span>Worker: Node 20 / headless</span>
               </div>
-              <div className="space-y-1.5 text-xs text-foreground">
+              <div className="space-y-2 text-xs text-foreground">
                 <p className="text-muted-foreground">&gt; [00:01] Inicializando plano de execução MECE...</p>
                 <p className="text-muted-foreground">&gt; [00:02] Conectando ao catalogador de dados públicos...</p>
                 <p className="text-primary font-semibold">

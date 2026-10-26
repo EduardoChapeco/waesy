@@ -200,7 +200,7 @@ export function ContentActionsMenu({
  {isOwner && (
  <>
  <DropdownMenuSeparator className="my-1" />
- <DropdownMenuLabel className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider px-2 py-1">
+ <DropdownMenuLabel className="text-2xs uppercase font-bold text-muted-foreground tracking-wider px-2 py-1">
  Gerenciar Anúncio
  </DropdownMenuLabel>
 
@@ -377,7 +377,7 @@ export function ContentActionsMenu({
  >
  {isPerformingAction ? (
  <>
- <Loader2 className="size-3.5 animate-spin" />
+ <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
  <span>Excluindo...</span>
  </>
  ) : (

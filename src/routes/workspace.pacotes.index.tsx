@@ -234,7 +234,7 @@ function WorkspacePackagesPage() {
               {packages.map((pkg: any) => (
                 <div
                   key={pkg.id}
-                  className="p-5 rounded-xl bg-card border border-border/60 space-y-4 flex flex-col justify-between hover:border-foreground/20 transition-all shadow-xs"
+                  className="p-5 rounded-xl bg-card border border-border/60 space-y-4 flex flex-col justify-between hover:border-foreground/20 transition-colors duration-200 shadow-xs"
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
@@ -242,12 +242,12 @@ function WorkspacePackagesPage() {
                         <span className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                           <Ticket size={18} />
                         </span>
-                        <Badge className="bg-muted text-muted-foreground font-mono text-xs px-2 py-0.5">
+                        <Badge className="bg-muted text-muted-foreground font-mono text-xs px-2 py-1">
                           {pkg.total_credits} {pkg.total_credits === 1 ? "Sessão" : "Sessões"}
                         </Badge>
                       </div>
                       <Badge
-                        className={`text-xs font-mono px-2 py-0.5 ${
+                        className={`text-xs font-mono px-2 py-1 ${
                           pkg.is_active
                             ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
                             : "bg-muted text-muted-foreground"
@@ -303,7 +303,7 @@ function WorkspacePackagesPage() {
                         onClick={() => handleOpenEdit(pkg)}
                         className="h-11 min-h-11 px-3 rounded-lg border-border text-xs font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
                       >
-                        <Edit2 className="size-3.5 mr-1.5" /> Editar
+                        <Edit2 className="size-3.5 mr-2" /> Editar
                       </Button>
                       <CrudActionsMenu
                         entityName="Pacote"
@@ -351,7 +351,7 @@ function WorkspacePackagesPage() {
                           <span className="font-bold text-foreground block">
                             {pass.profiles?.full_name || "Cliente Civil"}
                           </span>
-                          <span className="text-[11px] text-muted-foreground font-mono">
+                          <span className="text-2xs text-muted-foreground font-mono">
                             {pass.profiles?.phone || "Sem telefone"}
                           </span>
                         </td>
@@ -359,7 +359,7 @@ function WorkspacePackagesPage() {
                           <span className="font-semibold text-foreground block">
                             {pass.package_snapshot?.title || pass.service_packages?.title || "Pacote"}
                           </span>
-                          <span className="text-[11px] text-muted-foreground">
+                          <span className="text-2xs text-muted-foreground">
                             {pass.package_snapshot?.service_title || "Atendimento"}
                           </span>
                         </td>
@@ -367,11 +367,11 @@ function WorkspacePackagesPage() {
                           <span className="font-black text-sm text-foreground">
                             {pass.remaining_credits}
                           </span>
-                          <span className="text-muted-foreground text-[11px]"> / {pass.total_credits}</span>
+                          <span className="text-muted-foreground text-2xs"> / {pass.total_credits}</span>
                         </td>
                         <td className="p-3 text-center">
                           <Badge
-                            className={`text-xs font-mono px-2 py-0.5 ${
+                            className={`text-xs font-mono px-2 py-1 ${
                               pass.status === "active" && !isExpired
                                 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
                                 : "bg-muted text-muted-foreground"
@@ -440,12 +440,12 @@ function WorkspacePackagesPage() {
                           <span className="font-bold text-foreground block">
                             {pass?.profiles?.full_name || "Cliente"}
                           </span>
-                          <span className="text-[11px] text-muted-foreground font-mono">
+                          <span className="text-2xs text-muted-foreground font-mono">
                             {pass?.package_snapshot?.title || pass?.service_packages?.title || "Passe"}
                           </span>
                         </td>
                         <td className="p-3 font-mono text-muted-foreground">
-                          <Badge variant="outline" className="font-mono text-[10px]">
+                          <Badge variant="outline" className="font-mono text-2xs">
                             {log.movement_type}
                           </Badge>
                         </td>
@@ -589,7 +589,7 @@ function WorkspacePackagesPage() {
                 <div className="pt-2 flex items-center justify-between border-t border-border/40">
                   <div>
                     <span className="text-xs font-semibold block text-foreground">Pacote Ativo</span>
-                    <span className="text-[11px] text-muted-foreground block">
+                    <span className="text-2xs text-muted-foreground block">
                       Visível para compra pelos clientes na vitrine pública
                     </span>
                   </div>
@@ -637,7 +637,7 @@ function WorkspacePackagesPage() {
                 <span className="font-bold text-foreground text-sm block">
                   {adjustModalPass.profiles?.full_name || "Cliente"}
                 </span>
-                <span className="text-[11px] text-muted-foreground font-mono block">
+                <span className="text-2xs text-muted-foreground font-mono block">
                   Saldo atual: {adjustModalPass.remaining_credits} de {adjustModalPass.total_credits}
                 </span>
               </div>
@@ -650,7 +650,7 @@ function WorkspacePackagesPage() {
                   onChange={(e) => setAdjustDelta(parseInt(e.target.value) || 0)}
                   className="h-11 min-h-11 rounded-lg text-xs font-mono font-bold"
                 />
-                <span className="text-[11px] text-muted-foreground block">
+                <span className="text-2xs text-muted-foreground block">
                   Ex: +1 para cortesia/bonificação, -1 para dedução de sessão realizada fora da agenda.
                 </span>
               </div>

@@ -374,14 +374,14 @@ export function AIChatShell({
       >
         {/* ── RÉGUA DE NAVEGAÇÃO CANÔNICA DO COPILOT ── */}
         <div className="flex items-center justify-between px-3 py-2 border-b border-border/40 bg-card/60 backdrop-blur-md gap-2 shrink-0 overflow-x-auto no-scrollbar">
-          <div className="flex items-center gap-1.5 min-w-max">
+          <div className="flex items-center gap-2 min-w-max">
             <Button
               type="button"
               variant="ghost"
               size="sm"
               onClick={() => setViewMode("chat")}
               className={cn(
-                "h-11 min-h-11 px-3.5 rounded-xl text-xs font-semibold cursor-pointer gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                "h-11 min-h-11 px-4 rounded-xl text-xs font-semibold cursor-pointer gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
                 viewMode === "chat"
                   ? "bg-primary text-primary-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -397,7 +397,7 @@ export function AIChatShell({
               size="sm"
               onClick={() => setViewMode("skills")}
               className={cn(
-                "h-11 min-h-11 px-3.5 rounded-xl text-xs font-semibold cursor-pointer gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                "h-11 min-h-11 px-4 rounded-xl text-xs font-semibold cursor-pointer gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
                 viewMode === "skills"
                   ? "bg-primary text-primary-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -412,7 +412,7 @@ export function AIChatShell({
               variant="ghost"
               size="sm"
               onClick={() => setTasksDrawerOpen(true)}
-              className="h-11 min-h-11 px-3.5 rounded-xl text-xs font-semibold cursor-pointer gap-2 transition-colors text-muted-foreground hover:text-foreground hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              className="h-11 min-h-11 px-4 rounded-xl text-xs font-semibold cursor-pointer gap-2 transition-colors text-muted-foreground hover:text-foreground hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
             >
               <Clock className="size-4" />
               <span>Tarefas</span>
@@ -424,7 +424,7 @@ export function AIChatShell({
               size="sm"
               onClick={() => setViewMode("schedule")}
               className={cn(
-                "h-11 min-h-11 px-3.5 rounded-xl text-xs font-semibold cursor-pointer gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                "h-11 min-h-11 px-4 rounded-xl text-xs font-semibold cursor-pointer gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
                 viewMode === "schedule"
                   ? "bg-primary text-primary-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -440,7 +440,7 @@ export function AIChatShell({
               size="sm"
               onClick={() => setViewMode("connectors")}
               className={cn(
-                "h-11 min-h-11 px-3.5 rounded-xl text-xs font-semibold cursor-pointer gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                "h-11 min-h-11 px-4 rounded-xl text-xs font-semibold cursor-pointer gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
                 viewMode === "connectors"
                   ? "bg-primary text-primary-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -456,7 +456,7 @@ export function AIChatShell({
               size="sm"
               onClick={() => setViewMode("analytics")}
               className={cn(
-                "h-11 min-h-11 px-3.5 rounded-xl text-xs font-semibold cursor-pointer gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                "h-11 min-h-11 px-4 rounded-xl text-xs font-semibold cursor-pointer gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
                 viewMode === "analytics"
                   ? "bg-primary text-primary-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/50"

@@ -170,7 +170,7 @@ function PublicRecipesPage() {
               key={rec.id}
               to="/receitas/$id"
               params={{ id: rec.id }}
-              className="group rounded-lg bg-card border border-border/60 overflow-hidden hover:border-primary/40 transition-all cursor-pointer flex flex-col justify-between"
+              className="group rounded-lg bg-card border border-border/60 overflow-hidden hover:border-primary/40 transition-colors duration-200 cursor-pointer flex flex-col justify-between"
             >
               <div>
                 {/* Imagem de Capa 16:9 */}
@@ -185,17 +185,17 @@ function PublicRecipesPage() {
                   ) : (
                     <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground/60 p-4">
                       <CookingPot className="size-8" />
-                      <span className="text-[11px] font-mono">Receita Editorial</span>
+                      <span className="text-2xs font-mono">Receita Editorial</span>
                     </div>
                   )}
                   {rec.total_time && (
-                    <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-lg bg-background/90 px-2 py-1 text-[11px] font-mono font-bold text-foreground">
+                    <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-lg bg-background/90 px-2 py-1 text-2xs font-mono font-bold text-foreground">
                       <Clock className="size-3 text-primary" />
                       {rec.total_time}
                     </span>
                   )}
                   {rec.recipe_yield && (
-                    <span className="absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-lg bg-background/90 px-2 py-1 text-[11px] font-mono font-bold text-foreground">
+                    <span className="absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-lg bg-background/90 px-2 py-1 text-2xs font-mono font-bold text-foreground">
                       <Users className="size-3 text-muted-foreground" />
                       {rec.recipe_yield}
                     </span>
@@ -209,7 +209,7 @@ function PublicRecipesPage() {
                       {rec.category || "Culinária"}
                     </Badge>
                     {rec.cuisine && (
-                      <span className="text-[11px] text-muted-foreground font-mono">
+                      <span className="text-2xs text-muted-foreground font-mono">
                         {rec.cuisine}
                       </span>
                     )}
@@ -227,7 +227,7 @@ function PublicRecipesPage() {
 
               {/* Rodapé do Card com Ação */}
               <div className="px-4 pb-4 pt-1 flex items-center justify-between border-t border-border/30 mt-2 text-xs">
-                <span className="text-[11px] text-muted-foreground font-mono">
+                <span className="text-2xs text-muted-foreground font-mono">
                   {rec.ingredients.length} ingredientes
                 </span>
                 <span className="font-semibold text-primary inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
@@ -312,7 +312,7 @@ function PublicRecipesPage() {
                       size="sm"
                       variant="outline"
                       onClick={() => handleCopyShoppingList(selectedRecipe)}
-                      className="h-7 px-2 text-[11px] rounded-lg gap-1 font-semibold cursor-pointer"
+                      className="h-7 px-2 text-2xs rounded-lg gap-1 font-semibold cursor-pointer"
                     >
                       <Copy className="size-3" />
                       Copiar Lista
@@ -370,7 +370,7 @@ function PublicRecipesPage() {
 
                 {/* Fonte e Compartilhar */}
                 <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-border/40 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-1 font-mono text-[11px]">
+                  <div className="flex items-center gap-1 font-mono text-2xs">
                     <span>Fonte:</span>
                     <a
                       href={selectedRecipe.source_url}
@@ -392,7 +392,7 @@ function PublicRecipesPage() {
                         toast.success("Link da receita copiado!");
                       }
                     }}
-                    className="h-7 px-2 text-[11px] rounded-lg gap-1 cursor-pointer"
+                    className="h-7 px-2 text-2xs rounded-lg gap-1 cursor-pointer"
                   >
                     <Share2 className="size-3" />
                     Compartilhar

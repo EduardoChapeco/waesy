@@ -298,7 +298,7 @@ function HotelPickerPanel({
                         {hotel.name}
                       </span>
                       {hotel.stars > 0 && (
-                        <span className="inline-flex items-center text-[11px] font-semibold text-amber-500">
+                        <span className="inline-flex items-center text-2xs font-semibold text-amber-500">
                           <Star className="size-3 fill-amber-500 mr-1" />
                           {hotel.stars}★
                         </span>
@@ -306,7 +306,7 @@ function HotelPickerPanel({
                       {hotel.is_canonical && (
                         <Badge
                           variant="secondary"
-                          className="text-[9px] px-2 py-0 h-4 bg-primary/10 text-primary border-primary/20"
+                          className="text-3xs px-2 py-0 h-4 bg-primary/10 text-primary border-primary/20"
                         >
                           Oficial
                         </Badge>
@@ -495,7 +495,7 @@ export function HotelCombobox({
             {required && <span className="text-destructive">*</span>}
           </span>
           {selectedHotel && (
-            <span className="text-[10px] text-primary font-mono font-normal">
+            <span className="text-2xs text-primary font-mono font-normal">
               {selectedHotel.is_canonical ? "Catálogo Central" : "Banco da Agência"}
             </span>
           )}
@@ -612,7 +612,7 @@ export function HotelCombobox({
       )}
 
       {helperText && (
-        <p className="text-[11px] text-muted-foreground">{helperText}</p>
+        <p className="text-2xs text-muted-foreground">{helperText}</p>
       )}
     </div>
   );

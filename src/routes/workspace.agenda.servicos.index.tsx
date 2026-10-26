@@ -172,7 +172,7 @@ function ServicesIndexPage() {
 
  {isLoading ? (
  <div className="h-40 flex items-center justify-center">
- <Loader2 className="size-6 animate-spin text-muted-foreground" />
+ <Loader2 className="size-6 animate-spin motion-reduce:animate-none text-muted-foreground" />
  </div>
  ) : services.length === 0 ? (
  <EmptyState /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
@@ -390,7 +390,7 @@ function ServicesIndexPage() {
  >
  {saveMutation.isPending ? (
  <>
- <Loader2 className="size-3.5 animate-spin" />
+ <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
  Salvando...
  </>
  ) : (

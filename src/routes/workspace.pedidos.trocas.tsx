@@ -471,7 +471,7 @@ function ExchangesDashboardPage() {
           <Button
             size="sm"
             variant="default"
-            className="rounded-lg h-8 text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer"
+            className="rounded-lg h-8 text-xs font-semibold bg-emerald-600 text-foreground hover:bg-emerald-700 cursor-pointer"
             onClick={() => setResolvingExchange(exchange)}
             disabled={processingId === exchange.id}
           >

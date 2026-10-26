@@ -198,7 +198,7 @@ function WorkspaceTelemetriaPage() {
  key={tab}
  type="button"
  onClick={() => setActiveTab(tab)}
- className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+ className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-colors duration-200 ${
  activeTab === tab
  ? "bg-background text-foreground "
  : "text-muted-foreground hover:text-foreground"
@@ -254,7 +254,7 @@ function WorkspaceTelemetriaPage() {
  <span className="font-mono text-muted-foreground">{item.count} ({pct}%)</span>
  </div>
  <div className="h-1.5 rounded-full bg-muted overflow-hidden">
- <div className="h-full rounded-full bg-emerald-500 transition-all" style={{ width: `${pct}%` }} />
+ <div className="h-full rounded-full bg-emerald-500 transition-colors duration-200" style={{ width: `${pct}%` }} />
  </div>
  </div>
  );
@@ -311,7 +311,7 @@ function WorkspaceTelemetriaPage() {
 
  {leadsLoading ? (
  <div className="py-12 text-center">
- <ClockCounterClockwise size={32} weight="bold" className="text-muted-foreground/30 mx-auto mb-2 animate-spin" />
+ <ClockCounterClockwise size={32} weight="bold" className="text-muted-foreground/30 mx-auto mb-2 animate-spin motion-reduce:animate-none" />
  <p className="text-xs text-muted-foreground">Carregando leads...</p>
  </div>
  ) : leads.length === 0 ? (

@@ -511,7 +511,7 @@ function WorkspaceLeadFormsPage() {
         <button
           type="button"
           onClick={() => setActiveTab("formularios")}
-          className={`px-4 py-2 text-xs font-medium rounded-lg transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
+          className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
             activeTab === "formularios"
               ? "bg-background text-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground"
@@ -522,7 +522,7 @@ function WorkspaceLeadFormsPage() {
         <button
           type="button"
           onClick={() => setActiveTab("builder")}
-          className={`px-4 py-2 text-xs font-medium rounded-lg transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
+          className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
             activeTab === "builder"
               ? "bg-background text-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground"
@@ -533,7 +533,7 @@ function WorkspaceLeadFormsPage() {
         <button
           type="button"
           onClick={() => setActiveTab("crm")}
-          className={`px-4 py-2 text-xs font-medium rounded-lg transition-all flex items-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
+          className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors duration-200 flex items-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
             activeTab === "crm"
               ? "bg-background text-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground"
@@ -805,13 +805,13 @@ function WorkspaceLeadFormsPage() {
                   <button
                     type="button"
                     onClick={() => setBuilderAfterSubmitAction("start_sdr_chat")}
-                    className={`p-3 rounded-lg border text-xs font-medium text-left transition-all flex flex-col justify-between gap-1.5 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
+                    className={`p-3 rounded-lg border text-xs font-medium text-left transition-colors duration-200 flex flex-col justify-between gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
                       builderAfterSubmitAction === "start_sdr_chat"
                         ? "border-primary bg-primary/10 text-primary"
                         : "border-border/50 text-muted-foreground hover:bg-muted/40"
                     }`}
                   >
-                    <div className="flex items-center gap-1.5 font-semibold text-foreground">
+                    <div className="flex items-center gap-2 font-semibold text-foreground">
                       <Bot className="w-3.5 h-3.5 text-primary" />
                       <span>SDR IA</span>
                     </div>
@@ -820,13 +820,13 @@ function WorkspaceLeadFormsPage() {
                   <button
                     type="button"
                     onClick={() => setBuilderAfterSubmitAction("whatsapp_redirect")}
-                    className={`p-3 rounded-lg border text-xs font-medium text-left transition-all flex flex-col justify-between gap-1.5 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
+                    className={`p-3 rounded-lg border text-xs font-medium text-left transition-colors duration-200 flex flex-col justify-between gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
                       builderAfterSubmitAction === "whatsapp_redirect"
                         ? "border-primary bg-primary/10 text-primary"
                         : "border-border/50 text-muted-foreground hover:bg-muted/40"
                     }`}
                   >
-                    <div className="flex items-center gap-1.5 font-semibold text-foreground">
+                    <div className="flex items-center gap-2 font-semibold text-foreground">
                       <Phone className="w-3.5 h-3.5 text-emerald-600" />
                       <span>WhatsApp</span>
                     </div>
@@ -835,13 +835,13 @@ function WorkspaceLeadFormsPage() {
                   <button
                     type="button"
                     onClick={() => setBuilderAfterSubmitAction("show_success_message")}
-                    className={`p-3 rounded-lg border text-xs font-medium text-left transition-all flex flex-col justify-between gap-1.5 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
+                    className={`p-3 rounded-lg border text-xs font-medium text-left transition-colors duration-200 flex flex-col justify-between gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
                       builderAfterSubmitAction === "show_success_message"
                         ? "border-primary bg-primary/10 text-primary"
                         : "border-border/50 text-muted-foreground hover:bg-muted/40"
                     }`}
                   >
-                    <div className="flex items-center gap-1.5 font-semibold text-foreground">
+                    <div className="flex items-center gap-2 font-semibold text-foreground">
                       <CheckCircle2 className="w-3.5 h-3.5 text-blue-500" />
                       <span>Mensagem</span>
                     </div>
@@ -969,7 +969,7 @@ function WorkspaceLeadFormsPage() {
                     {/* Controles de Etapa e Ramificação Condicional */}
                     <div className="grid grid-cols-2 gap-2 pt-1 border-t border-border/30">
                       <div>
-                        <Label className="text-[11px] text-muted-foreground">Etapa do Assistente (Step)</Label>
+                        <Label className="text-2xs text-muted-foreground">Etapa do Assistente (Step)</Label>
                         <select
                           value={field.step_index || 1}
                           onChange={(e) => {
@@ -989,7 +989,7 @@ function WorkspaceLeadFormsPage() {
                       </div>
 
                       <div>
-                        <Label className="text-[11px] text-muted-foreground">Pular para Etapa (Opcional)</Label>
+                        <Label className="text-2xs text-muted-foreground">Pular para Etapa (Opcional)</Label>
                         <select
                           value={field.skip_to_step ?? ""}
                           onChange={(e) => {
@@ -1011,9 +1011,9 @@ function WorkspaceLeadFormsPage() {
 
                     {/* Editor de Opções para Campos de Seleção */}
                     {field.field_type === "select" && (
-                      <div className="p-2.5 rounded-lg bg-muted/20 border border-border/40 space-y-2">
+                      <div className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-[11px] font-semibold text-foreground">Opções de Escolha</span>
+                          <span className="text-2xs font-semibold text-foreground">Opções de Escolha</span>
                           <button
                             type="button"
                             onClick={() => {
@@ -1026,14 +1026,14 @@ function WorkspaceLeadFormsPage() {
                                 prev.map((f, i) => (i === idx ? { ...f, options: newOpts } : f))
                               );
                             }}
-                            className="text-[11px] text-primary hover:underline font-medium"
+                            className="text-2xs text-primary hover:underline font-medium"
                           >
                             + Adicionar Opção
                           </button>
                         </div>
-                        <div className="space-y-1.5 max-h-[140px] overflow-y-auto">
+                        <div className="space-y-2 max-h-[140px] overflow-y-auto">
                           {(field.options || []).map((opt, optIdx) => (
-                            <div key={optIdx} className="flex items-center gap-1.5">
+                            <div key={optIdx} className="flex items-center gap-2">
                               <Input
                                 value={opt.label}
                                 onChange={(e) => {
@@ -1107,7 +1107,7 @@ function WorkspaceLeadFormsPage() {
             >
               {isSaving ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                   <span>Salvando...</span>
                 </>
               ) : (
@@ -1150,7 +1150,7 @@ function WorkspaceLeadFormsPage() {
                   key={opt.value}
                   type="button"
                   onClick={() => setCrmStatusFilter(opt.value)}
-                  className={`px-3 py-2 text-xs rounded-lg transition-all whitespace-nowrap ${
+                  className={`px-3 py-2 text-xs rounded-lg transition-colors duration-200 whitespace-nowrap ${
                     crmStatusFilter === opt.value
                       ? "bg-primary text-primary-foreground font-medium"
                       : "bg-muted/40 text-muted-foreground hover:text-foreground"
@@ -1185,7 +1185,7 @@ function WorkspaceLeadFormsPage() {
                 return (
                   <div
                     key={sub.id}
-                    className="bg-card rounded-lg border border-border/60 p-4 sm:p-5 transition-all shadow-2xs hover:border-primary/30"
+                    className="bg-card rounded-lg border border-border/60 p-4 sm:p-5 transition-colors duration-200 shadow-2xs hover:border-primary/30"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div className="flex items-start gap-3">

@@ -79,7 +79,7 @@ export function SuggestedFriendsBlock({ friends = [] }: SuggestedFriendsBlockPro
  </Avatar>
 
  <p className="text-xs font-bold text-foreground truncate w-full">{friend.name}</p>
- <p className="text-[10px] text-muted-foreground truncate w-full mt-1 mb-3">
+ <p className="text-2xs text-muted-foreground truncate w-full mt-1 mb-3">
  {friend.reason || "Membro comunitário"}
  </p>
 
@@ -91,7 +91,7 @@ export function SuggestedFriendsBlock({ friends = [] }: SuggestedFriendsBlockPro
  onClick={() => handleToggleFollow(friend.id, friend.name)}
  >
  {isLoading ? (
- <Loader2 className="size-3 animate-spin" />
+ <Loader2 className="size-3 animate-spin motion-reduce:animate-none" />
  ) : isFollowing ? (
  <>
  <Check className="size-3 mr-1" /> Seguindo

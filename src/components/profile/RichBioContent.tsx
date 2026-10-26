@@ -9,10 +9,10 @@ interface RichBioContentProps {
 /**
  * Parser seguro de Bio Rica (Máximo 150 caracteres).
  * Suporta:
- * - ==destaque suave== (bg-primary/10 text-primary font-medium px-1.5 py-0.5 rounded)
+ * - ==destaque suave== (bg-primary/10 text-primary font-medium px-2 py-1 rounded)
  * - **negrito** (font-bold)
  * - *itálico* (italic)
- * - [mono]texto[/mono] (font-mono text-xs bg-muted/50 px-1 py-0.5 rounded)
+ * - [mono]texto[/mono] (font-mono text-xs bg-muted/50 px-1 py-1 rounded)
  *
  * Bloqueio absoluto contra injeção de tags HTML cruas ou scripts.
  */

@@ -81,7 +81,7 @@ function AfiliadosFinanceiroPage() {
             <h2 className="text-xs font-semibold text-muted-foreground">Comissões Pendentes</h2>
           </div>
           {isSummaryLoading ? (
-            <div className="h-8 bg-muted animate-pulse rounded-lg w-32 mt-1" />
+            <div className="h-8 bg-muted animate-pulse motion-reduce:animate-none rounded-lg w-32 mt-1" />
           ) : (
             <p className="text-2xl font-bold text-foreground font-mono">
               {formatMoney(summary?.totalPendingCents ?? 0)}
@@ -94,7 +94,7 @@ function AfiliadosFinanceiroPage() {
             <h2 className="text-xs font-semibold text-muted-foreground">Comissões Pagas</h2>
           </div>
           {isSummaryLoading ? (
-            <div className="h-8 bg-muted animate-pulse rounded-lg w-32 mt-1" />
+            <div className="h-8 bg-muted animate-pulse motion-reduce:animate-none rounded-lg w-32 mt-1" />
           ) : (
             <p className="text-2xl font-bold text-foreground font-mono">
               {formatMoney(summary?.totalPaidCents ?? 0)}
@@ -107,7 +107,7 @@ function AfiliadosFinanceiroPage() {
             <h2 className="text-xs font-semibold text-muted-foreground">Parceiros Ativos</h2>
           </div>
           {isSummaryLoading ? (
-            <div className="h-8 bg-muted animate-pulse rounded-lg w-16 mt-1" />
+            <div className="h-8 bg-muted animate-pulse motion-reduce:animate-none rounded-lg w-16 mt-1" />
           ) : (
             <p className="text-2xl font-bold text-foreground font-mono">{summary?.sellerCount ?? 0}</p>
           )}
@@ -152,7 +152,7 @@ function AfiliadosFinanceiroPage() {
  {/* Table */}
  {isPerformanceLoading && (
  <div className="flex justify-center py-16">
- <Loader2 className="size-6 animate-spin text-muted-foreground" />
+ <Loader2 className="size-6 animate-spin motion-reduce:animate-none text-muted-foreground" />
  </div>
  )}
 
@@ -229,7 +229,7 @@ function AfiliadosFinanceiroPage() {
  onClick={() => payoutMutation.mutate({ data: { sellerId: p.sellerId } })}
  >
  {payoutMutation.isPending ? (
- <Loader2 className="size-4 mr-2 animate-spin" />
+ <Loader2 className="size-4 mr-2 animate-spin motion-reduce:animate-none" />
  ) : (
  <Banknote className="size-4 mr-2" />
  )}

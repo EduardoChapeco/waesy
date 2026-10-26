@@ -514,7 +514,7 @@ export function ClassifiedDetailDesktop({
   <button
     type="button"
     onClick={() => setFullscreenImage(images[0])}
-    className="absolute bottom-4 right-4 px-4 py-2 rounded-lg bg-background/90 hover:bg-background text-foreground text-xs font-semibold border border-border/60 flex items-center gap-2 transition-all shadow-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    className="absolute bottom-4 right-4 px-4 py-2 rounded-lg bg-background/90 hover:bg-background text-foreground text-xs font-semibold border border-border/60 flex items-center gap-2 transition-colors duration-200 shadow-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
   >
               <Maximize2 className="size-4" />
               <span>Ver em tela cheia</span>
@@ -919,7 +919,7 @@ export function ClassifiedDetailDesktop({
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {/* Item 1: Alimentação */}
                       <div className="p-3 rounded-lg bg-muted/20 border border-border/40 flex items-start gap-3">
-                        <div className="size-9 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+                        <div className="size-9 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
                           <Utensils className="size-4" />
                         </div>
                         <div className="min-w-0 text-xs leading-snug space-y-1">
@@ -930,7 +930,7 @@ export function ClassifiedDetailDesktop({
 
                       {/* Item 2: Traslados */}
                       <div className="p-3 rounded-lg bg-muted/20 border border-border/40 flex items-start gap-3">
-                        <div className="size-9 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+                        <div className="size-9 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
                           <Truck className="size-4" />
                         </div>
                         <div className="min-w-0 text-xs leading-snug space-y-1">
@@ -941,7 +941,7 @@ export function ClassifiedDetailDesktop({
 
                       {/* Item 3: Passeios */}
                       <div className="p-3 rounded-lg bg-muted/20 border border-border/40 flex items-start gap-3">
-                        <div className="size-9 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+                        <div className="size-9 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
                           <Compass className="size-4" />
                         </div>
                         <div className="min-w-0 text-xs leading-snug space-y-1">
@@ -952,7 +952,7 @@ export function ClassifiedDetailDesktop({
 
                       {/* Item 4: Suporte e Seguro */}
                       <div className="p-3 rounded-lg bg-muted/20 border border-border/40 flex items-start gap-3">
-                        <div className="size-9 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
+                        <div className="size-9 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-1">
                           <ShieldCheck className="size-4" />
                         </div>
                         <div className="min-w-0 text-xs leading-snug space-y-1">
@@ -1418,7 +1418,7 @@ export function ClassifiedDetailDesktop({
                 <Button
                   type="button"
                   onClick={() => setIsLeadFormModalOpen(true)}
-                  className="h-12 w-full rounded-lg text-sm font-bold bg-primary text-primary-foreground shadow-sm hover:opacity-95 active:scale-[0.99] transition-all cursor-pointer flex items-center justify-center gap-2"
+                  className="h-12 w-full rounded-lg text-sm font-bold bg-primary text-primary-foreground shadow-sm hover:opacity-95 active:scale-[0.99] transition-transform duration-200 cursor-pointer flex items-center justify-center gap-2"
                 >
                   <FileText className="size-4" />
                   <span>{attrs?.inquiry_config?.title || "Tenho Interesse neste Anúncio"}</span>
@@ -1430,7 +1430,7 @@ export function ClassifiedDetailDesktop({
                 onClick={primaryCta.action}
                 disabled={isBooking || isBuyingDirect || isDownloadingDigital}
                 className={cn(
-                  "h-12 w-full rounded-lg text-sm font-bold shadow-sm hover:opacity-95 active:scale-[0.99] transition-all cursor-pointer",
+                  "h-12 w-full rounded-lg text-sm font-bold shadow-sm hover:opacity-95 active:scale-[0.99] transition-transform duration-200 cursor-pointer",
                   classified.lead_form || classified.form_id
                     ? "bg-secondary text-secondary-foreground hover:bg-secondary/80"
                     : "bg-primary text-primary-foreground"
@@ -1494,7 +1494,7 @@ export function ClassifiedDetailDesktop({
       {/* ── LIGHTBOX MODAL ── */}
       {fullscreenImage && (
         <div
-    className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4 select-none animate-in fade-in duration-200 focus-visible:outline-none"
+    className="fixed inset-0 z-50 bg-foreground/95 flex items-center justify-center p-4 select-none animate-in fade-in duration-200 focus-visible:outline-none"
     onClick={() => setFullscreenImage(null)}
   >
           <button

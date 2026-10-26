@@ -27,7 +27,7 @@ export function BetaExplanationModal({
       <DialogContent className="max-w-md p-6 rounded-lg bg-background/95 backdrop-blur-xl border border-border/60 shadow-2xl">
         <DialogHeader className="space-y-3 text-left">
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold tracking-wider uppercase bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-2xs font-bold tracking-wider uppercase bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
               <Zap className="size-3" />
               Versão Beta Pública
             </span>

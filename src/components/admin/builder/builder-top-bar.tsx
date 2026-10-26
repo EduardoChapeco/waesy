@@ -78,7 +78,7 @@ export function BuilderTopBar({
  <Badge
  variant="outline"
  className={cn(
- "text-[10px] font-bold px-2 py-0 rounded-md",
+ "text-2xs font-bold px-2 py-0 rounded-md",
  version?.status === "published"
  ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
  : "bg-amber-500/10 text-amber-600 border-amber-500/20"
@@ -87,7 +87,7 @@ export function BuilderTopBar({
  {version?.status === "published" ? "Publicada" : "Rascunho"} v{version?.version_number ?? 1}
  </Badge>
  </div>
- <span className="text-[10px] text-muted-foreground font-mono hidden sm:inline">
+ <span className="text-2xs text-muted-foreground font-mono hidden sm:inline">
  Slug: /{document?.slug || "home"}
  </span>
  </div>
@@ -100,7 +100,7 @@ export function BuilderTopBar({
  onClick={() => setViewport("desktop")}
  title="Modo Desktop (1440px)"
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "h-8 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-all cursor-pointer",
+ "h-8 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-colors duration-200 cursor-pointer",
  viewport === "desktop"
  ? "bg-background text-foreground shadow-2xs font-bold"
  : "text-muted-foreground hover:text-foreground"
@@ -115,7 +115,7 @@ export function BuilderTopBar({
  onClick={() => setViewport("mobile")}
  title="Modo Mobile (390px)"
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "h-8 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-all cursor-pointer",
+ "h-8 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-colors duration-200 cursor-pointer",
  viewport === "mobile"
  ? "bg-background text-foreground shadow-2xs font-bold"
  : "text-muted-foreground hover:text-foreground"
@@ -185,7 +185,7 @@ export function BuilderTopBar({
  className="h-9 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer"
  >
  {isSaving ? (
- <Loader2 className="size-3.5 animate-spin" />
+ <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
  ) : (
  <Save className="size-3.5" />
  )}
@@ -201,7 +201,7 @@ export function BuilderTopBar({
  className="h-9 px-4 rounded-lg text-xs font-bold gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer"
  >
  {isPublishing ? (
- <Loader2 className="size-3.5 animate-spin" />
+ <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
  ) : (
  <CheckCircle2 className="size-3.5" />
  )}

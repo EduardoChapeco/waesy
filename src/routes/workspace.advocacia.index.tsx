@@ -965,7 +965,7 @@ function WorkspaceAdvocaciaPage() {
  key={area.id}
  onClick={() => setSelectedArea(area.id)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "rounded-lg px-3 py-2 text-xs font-semibold transition-all cursor-pointer",
+ "rounded-lg px-3 py-2 text-xs font-semibold transition-colors duration-200 cursor-pointer",
  selectedArea === area.id
  ? "bg-primary text-primary-foreground"
  : "bg-muted/40 text-muted-foreground hover:text-foreground"
@@ -986,7 +986,7 @@ function WorkspaceAdvocaciaPage() {
  key={demand.id}
  onClick={() => setSelectedDemand(demand)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "rounded-lg border p-5 transition-all cursor-pointer bg-card",
+ "rounded-lg border p-5 transition-colors duration-200 cursor-pointer bg-card",
  selectedDemand?.id === demand.id
  ? "border-primary ring-1 ring-primary shadow-xs"
  : "border-border hover:border-border/80"

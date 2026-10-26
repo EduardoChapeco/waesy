@@ -267,7 +267,7 @@ function WorkspaceJobsPage() {
           {jobs.map((job) => (
             <div
               key={job.id}
-              className="p-4 sm:p-5 rounded-lg bg-card border border-border/60 hover:border-primary/40 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+              className="p-4 sm:p-5 rounded-lg bg-card border border-border/60 hover:border-primary/40 transition-colors duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
             >
               <div className="space-y-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -589,7 +589,7 @@ function WorkspaceJobsPage() {
             {/* LinkedIn Omni-Bridge Quick Toggle */}
             <div className="p-4 rounded-lg bg-[#0A66C2]/5 border border-[#0A66C2]/20 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="size-7 rounded-lg bg-[#0A66C2] text-white flex items-center justify-center shrink-0">
+                <div className="size-7 rounded-lg bg-[#0A66C2] text-foreground flex items-center justify-center shrink-0">
                   <Linkedin className="size-4 fill-current" />
                 </div>
                 <div>

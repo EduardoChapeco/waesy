@@ -376,7 +376,7 @@ export function NewTravelContractSheet({
 
  {isLoadingProposals ? (
  <div className="py-12 text-center text-muted-foreground">
- <Loader2 className="size-6 animate-spin mx-auto mb-2" />
+ <Loader2 className="size-6 animate-spin motion-reduce:animate-none mx-auto mb-2" />
  <p>Carregando propostas da agência...</p>
  </div>
  ) : agencyProposals.length === 0 ? (
@@ -472,7 +472,7 @@ export function NewTravelContractSheet({
  className="h-10 rounded-lg text-xs bg-muted/20 pl-3 pr-8 border-border/70"
  />
  {isLoadingCustomers && (
- <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 size-3.5 animate-spin text-muted-foreground" />
+ <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 size-3.5 animate-spin motion-reduce:animate-none text-muted-foreground" />
  )}
  </div>
 
@@ -618,7 +618,7 @@ export function NewTravelContractSheet({
  className="w-full h-8 text-xs rounded-lg font-bold"
  >
  {quickCreateMutation.isPending ? (
- <Loader2 className="mr-2 size-3.5 animate-spin" />
+ <Loader2 className="mr-2 size-3.5 animate-spin motion-reduce:animate-none" />
  ) : (
  <Check className="mr-2 size-3.5" />
  )}
@@ -952,7 +952,7 @@ export function NewTravelContractSheet({
  >
  {isSubmitting ? (
  <>
- <Loader2 className="size-4 animate-spin" />
+ <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
  <span>Gerando Minuta Jurídica...</span>
  </>
  ) : (

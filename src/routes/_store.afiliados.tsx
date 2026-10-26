@@ -354,7 +354,7 @@ function AfiliadosPage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
         {isLoading && !partner ? (
           <div className="max-w-md mx-auto py-20 text-center space-y-4">
-            <div className="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto animate-pulse">
+            <div className="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto animate-pulse motion-reduce:animate-none">
               <Star className="size-6" />
             </div>
             <p className="text-sm font-semibold text-foreground">Carregando central de afiliados...</p>

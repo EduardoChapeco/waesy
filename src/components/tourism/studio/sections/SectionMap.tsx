@@ -34,7 +34,7 @@ export function SectionMap({ draft, save }: SectionMapProps) {
                 <Button
                   type="button"
                   onClick={() => save({ map_image_url: null })}
-                  className="absolute right-1 top-1 rounded bg-destructive/80 px-2 py-1 text-[9px] text-white hover:bg-destructive"
+                  className="absolute right-1 top-1 rounded bg-destructive/80 px-2 py-1 text-3xs text-foreground hover:bg-destructive"
                 >
                   Remover
                 </Button>
@@ -65,7 +65,7 @@ export function SectionMap({ draft, save }: SectionMapProps) {
             </div>
             <Suspense
               fallback={
-                <div className="h-[400px] w-full rounded-full border bg-surface-alt/30 flex items-center justify-center text-muted-foreground text-sm animate-pulse">
+                <div className="h-[400px] w-full rounded-full border bg-surface-alt/30 flex items-center justify-center text-muted-foreground text-sm animate-pulse motion-reduce:animate-none">
                   Carregando mapa interativo...
                 </div>
               }

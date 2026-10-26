@@ -203,7 +203,7 @@ function WorkspacePatrocinadoresPage() {
             return (
               <div
                 key={sp.id}
-                className="p-5 rounded-lg bg-card border hover-elevate transition-all space-y-4 flex flex-col justify-between"
+                className="p-5 rounded-lg bg-card border hover-elevate transition-colors duration-200 space-y-4 flex flex-col justify-between"
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -494,7 +494,7 @@ function WorkspacePatrocinadoresPage() {
                 className="rounded-lg font-bold bg-primary text-primary-foreground h-11 min-h-11"
               >
                 {isSubmitting ? (
-                  <Loader2 className="size-4 animate-spin mr-2" />
+                  <Loader2 className="size-4 animate-spin motion-reduce:animate-none mr-2" />
                 ) : (
                   <CheckCircle2 className="size-4 mr-2" />
                 )}

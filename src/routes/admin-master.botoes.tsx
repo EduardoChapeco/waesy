@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 import { DynamicMediaChip } from "@/components/commerce/dynamic-media-chip";
 import { CANONICAL_CITIES } from "@/lib/constants/cities";
 
-type MainSectionTab = "hero_module" | "category_hub" | "editorial_card";
+type MainSectionTab = "hero_module" | "category_hub" | "editorial_card" | "drawer_module";
 
 const MODULE_TABS: Array<{ id: HotpageModule; label: string }> = [
  { id: "all", label: "Todas as Páginas" },
@@ -53,7 +53,7 @@ const MODULE_TABS: Array<{ id: HotpageModule; label: string }> = [
 
 export const Route = createFileRoute("/admin-master/botoes")({
  validateSearch: z.object({
- tab: z.enum(["hero_module", "category_hub", "editorial_card"]).optional(),
+ tab: z.enum(["hero_module", "category_hub", "editorial_card", "drawer_module"]).optional(),
  module: z.string().optional(),
  }),
  head: () => ({ meta: [{ title: "Cards Herói, Chips e Hotpages | Admin Master" }] }),
@@ -128,6 +128,8 @@ function AdminMasterHotpagesPage() {
  item.template_type !== "editorial_card");
  } else if (activeMainTab === "category_hub") {
  matchesType = item.template_type === "category_hub";
+      } else if (activeMainTab === "drawer_module") {
+        matchesType = item.template_type === "drawer_module";
  } else {
  matchesType =
  item.template_type === "editorial_card" ||
@@ -137,7 +139,7 @@ function AdminMasterHotpagesPage() {
  const matchesModule =
  selectedModuleTab === "all" || item.module === selectedModuleTab;
 
-      return matchesType && (activeMainTab === "hero_module" ? true : matchesModule);
+      return matchesType && (activeMainTab === "hero_module" || activeMainTab === "drawer_module" ? true : matchesModule);
  });
  }, [hotpages, activeMainTab, selectedModuleTab]);
 
@@ -165,7 +167,12 @@ function AdminMasterHotpagesPage() {
  if (forTab === "hero_module") {
  setShowTitle(true);
  setShowBadge(false);
- } else if (forTab === "category_hub") {
+ } else if (forTab === "drawer_module") {
+      setShowTitle(true);
+      setShowBadge(false);
+      setShowOverlay(false);
+      setBgColor("#EFF6FF");
+    } else if (forTab === "category_hub") {
  setShowTitle(true);
  setShowBadge(false);
  } else {
@@ -402,11 +409,11 @@ function AdminMasterHotpagesPage() {
  </div>
 
  {/* ── 3 Abas Principais de Segregação Arquitetural ── */}
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-2 rounded-lg bg-muted/40 border border-border/60">
+ <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 p-2 rounded-lg bg-muted/40 border border-border/60">
  <button
  onClick={() => setActiveMainTab("hero_module")}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-all",
+ "flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-colors duration-200",
  activeMainTab === "hero_module"
  ? "bg-background text-foreground shadow-sm border border-border/60"
  : "text-muted-foreground hover:text-foreground hover:bg-background/50"
@@ -419,7 +426,7 @@ function AdminMasterHotpagesPage() {
  <button
  onClick={() => setActiveMainTab("category_hub")}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-all",
+ "flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-colors duration-200",
  activeMainTab === "category_hub"
  ? "bg-background text-foreground shadow-sm border border-border/60"
  : "text-muted-foreground hover:text-foreground hover:bg-background/50"
@@ -432,7 +439,7 @@ function AdminMasterHotpagesPage() {
  <button
  onClick={() => setActiveMainTab("editorial_card")}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-all",
+ "flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-colors duration-200",
  activeMainTab === "editorial_card"
  ? "bg-background text-foreground shadow-sm border border-border/60"
  : "text-muted-foreground hover:text-foreground hover:bg-background/50"
@@ -484,7 +491,7 @@ function AdminMasterHotpagesPage() {
  key={tab.id}
  onClick={() => setSelectedModuleTab(tab.id)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-2",
+ "px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors duration-200 flex items-center gap-2",
  isSelected
  ? "bg-foreground text-background shadow-xs font-bold"
  : "bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -493,7 +500,7 @@ function AdminMasterHotpagesPage() {
  <span>{tab.label}</span>
  <span
  className={cn(
- "text-[11px] px-2 py-1 rounded-md font-medium",
+ "text-2xs px-2 py-1 rounded-md font-medium",
  isSelected
  ? "bg-background/20 text-background"
  : "bg-background/80 text-muted-foreground"
@@ -543,7 +550,7 @@ function AdminMasterHotpagesPage() {
  {filteredItems.map((item) => (
  <div
  key={item.id}
- className="group relative flex flex-col justify-end aspect-16/9 rounded-lg sm:rounded-lg border border-border/80 bg-card overflow-hidden transition-all duration-300 shadow-xs hover:border-foreground/30 hover:shadow-xs"
+ className="group relative flex flex-col justify-end aspect-16/9 rounded-lg sm:rounded-lg border border-border/80 bg-card overflow-hidden transition-colors duration-200 duration-300 shadow-xs hover:border-foreground/30 hover:shadow-xs"
  >
  {item.cover_image_url ? (
  <img
@@ -561,7 +568,7 @@ function AdminMasterHotpagesPage() {
  {/* Se explicitamente habilitado título */}
  {item.show_title && (
  <div className="relative z-10 p-3 bg-linear-to-t from-black/80 via-black/20 to-transparent">
- <p className="text-xs font-bold text-white leading-tight truncate">
+ <p className="text-xs font-bold text-foreground leading-tight truncate">
  {item.title}
  </p>
  </div>
@@ -569,7 +576,7 @@ function AdminMasterHotpagesPage() {
 
  {/* Rota Tag */}
  <div className="absolute bottom-2 left-2 z-20">
- <span className="text-xs font-mono font-bold bg-black/75 text-white/90 px-2 py-1 rounded-lg border border-white/10 backdrop-blur-xs">
+ <span className="text-xs font-mono font-bold bg-foreground/75 text-foreground/90 px-2 py-1 rounded-lg border border-white/10 backdrop-blur-xs">
  {item.target_route || `/${item.slug.replace(/^home-/, "")}`}
  </span>
  </div>
@@ -606,7 +613,7 @@ function AdminMasterHotpagesPage() {
  {filteredItems.map((item) => (
  <div
  key={item.id}
- className="group relative p-3 rounded-lg border border-border/80 bg-card hover:border-foreground/30 transition-all flex items-center justify-between gap-2 shadow-xs"
+ className="group relative p-3 rounded-lg border border-border/80 bg-card hover:border-foreground/30 transition-colors duration-200 flex items-center justify-between gap-2 shadow-xs"
  >
  <div className="flex items-center gap-3 min-w-0">
  <div className="size-10 rounded-lg bg-muted/60 flex items-center justify-center shrink-0 border border-border/40 overflow-hidden">
@@ -663,7 +670,7 @@ function AdminMasterHotpagesPage() {
  return (
  <div
  key={item.id}
- className={`group relative flex flex-col justify-end aspect-16/9 rounded-lg sm:rounded-lg border border-border/80 bg-card overflow-hidden transition-all duration-300 hover:border-foreground/30 ${showShadowOnCard ? "shadow-xs hover:shadow-xs" : "shadow-xs"}`}
+ className={`group relative flex flex-col justify-end aspect-16/9 rounded-lg sm:rounded-lg border border-border/80 bg-card overflow-hidden transition-colors duration-200 duration-300 hover:border-foreground/30 ${showShadowOnCard ? "shadow-xs hover:shadow-xs" : "shadow-xs"}`}
  >
  {item.cover_image_url ? (
  <img
@@ -691,12 +698,12 @@ function AdminMasterHotpagesPage() {
  {showBadgeOnCard && (
  <div className="flex items-center gap-2 flex-wrap">
  {item.badge_label && (
- <span className="inline-block px-2 py-1 rounded-md text-[9px] font-mono font-bold uppercase tracking-wider bg-white/25 backdrop-blur-md text-white border border-white/20">
+ <span className="inline-block px-2 py-1 rounded-md text-3xs font-mono font-bold uppercase tracking-wider bg-card/25 backdrop-blur-md text-foreground border border-white/20">
  {item.badge_label}
  </span>
  )}
  {item.hero_stat_badge && (
- <span className="inline-block px-2 py-1 rounded-md text-[9px] font-mono font-bold uppercase tracking-wider bg-primary text-primary-foreground border border-primary/30">
+ <span className="inline-block px-2 py-1 rounded-md text-3xs font-mono font-bold uppercase tracking-wider bg-primary text-primary-foreground border border-primary/30">
  {item.hero_stat_badge}
  </span>
  )}
@@ -704,7 +711,7 @@ function AdminMasterHotpagesPage() {
  )}
 
  {showTitleOnCard && item.title && (
- <h3 className="text-xs sm:text-sm font-semibold text-white leading-tight line-clamp-2">
+ <h3 className="text-xs sm:text-sm font-semibold text-foreground leading-tight line-clamp-2">
  {item.title}
  </h3>
  )}
@@ -764,7 +771,7 @@ function AdminMasterHotpagesPage() {
  <form onSubmit={handleSubmit} className="space-y-4 p-1 max-h-[85vh] overflow-y-auto no-scrollbar pr-1">
  {/* Pré-visualização ao Vivo */}
  <div className="p-4 rounded-lg bg-muted/30 border border-border/80 space-y-2">
- <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+ <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
  <Eye className="size-3.5 text-primary" />
  Pré-visualização em Tempo Real
  </span>
@@ -805,12 +812,12 @@ function AdminMasterHotpagesPage() {
  {showBadge && (badgeLabel || heroStatBadge) && (
  <div className="absolute top-2 right-2 flex items-center gap-1">
  {badgeLabel && (
- <span className="text-[9px] font-mono font-bold uppercase tracking-wider bg-white/25 backdrop-blur-md text-white px-2 py-1 rounded-md border border-white/20 shadow-xs">
+ <span className="text-3xs font-mono font-bold uppercase tracking-wider bg-card/25 backdrop-blur-md text-foreground px-2 py-1 rounded-md border border-white/20 shadow-xs">
  {badgeLabel}
  </span>
  )}
  {heroStatBadge && (
- <span className="text-[9px] font-mono font-bold uppercase tracking-wider bg-primary text-primary-foreground px-2 py-1 rounded-md border border-primary/30 shadow-xs">
+ <span className="text-3xs font-mono font-bold uppercase tracking-wider bg-primary text-primary-foreground px-2 py-1 rounded-md border border-primary/30 shadow-xs">
  {heroStatBadge}
  </span>
  )}
@@ -819,7 +826,7 @@ function AdminMasterHotpagesPage() {
 
  {showTitle && title && (
  <div className="absolute bottom-2.5 left-3 right-3 text-left">
- <p className="text-sm font-bold text-white leading-tight truncate">{title}</p>
+ <p className="text-sm font-bold text-foreground leading-tight truncate">{title}</p>
  </div>
  )}
  </div>
@@ -965,7 +972,7 @@ function AdminMasterHotpagesPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <div className="space-y-2">
- <Label className="text-[11px] font-bold text-muted-foreground">Badge</Label>
+ <Label className="text-2xs font-bold text-muted-foreground">Badge</Label>
  <Input
  value={badgeLabel}
  onChange={(e) => setBadgeLabel(e.target.value)}
@@ -975,7 +982,7 @@ function AdminMasterHotpagesPage() {
  </div>
 
  <div className="space-y-2">
- <Label className="text-[11px] font-bold text-muted-foreground">Pill de Destaque</Label>
+ <Label className="text-2xs font-bold text-muted-foreground">Pill de Destaque</Label>
  <Input
  value={heroStatBadge}
  onChange={(e) => setHeroStatBadge(e.target.value)}
@@ -1039,8 +1046,8 @@ function AdminMasterHotpagesPage() {
  <div className="pl-2 border-l-2 border-primary/30 space-y-3 mt-1">
  <div className="space-y-2">
  <div className="flex items-center justify-between">
- <Label className="text-[11px] font-bold text-muted-foreground">Opacidade do Overlay</Label>
- <span className="text-[11px] font-mono text-primary font-bold">{bgOverlayOpacity}%</span>
+ <Label className="text-2xs font-bold text-muted-foreground">Opacidade do Overlay</Label>
+ <span className="text-2xs font-mono text-primary font-bold">{bgOverlayOpacity}%</span>
  </div>
  <input
  type="range"
@@ -1051,14 +1058,14 @@ function AdminMasterHotpagesPage() {
  onChange={(e) => setBgOverlayOpacity(Number(e.target.value))}
  className="w-full h-2 rounded-full bg-muted accent-primary cursor-pointer"
  />
- <div className="flex justify-between text-[9px] text-muted-foreground/70 font-mono">
+ <div className="flex justify-between text-3xs text-muted-foreground/70 font-mono">
  <span>0% (Transparente)</span>
  <span>100% (Opaco)</span>
  </div>
  </div>
 
  <div className="space-y-2">
- <Label className="text-[11px] font-bold text-muted-foreground">Cor do Overlay</Label>
+ <Label className="text-2xs font-bold text-muted-foreground">Cor do Overlay</Label>
  <div className="flex items-center gap-2">
  <input
  type="color"
@@ -1096,7 +1103,7 @@ function AdminMasterHotpagesPage() {
                 {showTitle && (
                   <div className="space-y-2 border-t border-border/40 pt-2">
                     <div className="flex items-center justify-between">
-                      <Label className="text-[11px] font-bold text-muted-foreground">Cor do Título</Label>
+                      <Label className="text-2xs font-bold text-muted-foreground">Cor do Título</Label>
                       {textColor && (
                         <button
                           type="button"

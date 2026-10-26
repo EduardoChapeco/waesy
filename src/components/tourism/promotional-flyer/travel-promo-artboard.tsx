@@ -126,7 +126,7 @@ export function TravelPromoArtboard({
         transformOrigin: "top left",
         backgroundColor: "rgb(10, 25, 47)",
       }}
-      className={`relative overflow-hidden text-white select-none ${className}`}
+      className={`relative overflow-hidden text-foreground select-none ${className}`}
     >
       {isAnimated ? (
         <div

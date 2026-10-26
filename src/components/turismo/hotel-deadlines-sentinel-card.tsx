@@ -45,7 +45,7 @@ export function HotelDeadlinesSentinelCard({
     <div className="p-5 rounded-lg border border-border bg-card space-y-4 shadow-sm">
       {/* Header do Card */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-3">
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-3">
           <div className={`size-10 rounded-lg flex items-center justify-center shrink-0 ${
             auditSummary.criticalCount > 0
               ? "bg-destructive/10 text-destructive"
@@ -68,20 +68,20 @@ export function HotelDeadlinesSentinelCard({
         {/* Badges de Resumo */}
         <div className="flex flex-wrap items-center gap-2">
           {auditSummary.criticalCount > 0 && (
-            <Badge variant="destructive" className="text-xs font-semibold px-2.5 py-1 flex items-center gap-1.5">
+            <Badge variant="destructive" className="text-xs font-semibold px-3 py-1 flex items-center gap-2">
               <AlertTriangle className="size-3.5 shrink-0" />
               <span>{auditSummary.criticalCount} Crítico (&lt;48h)</span>
             </Badge>
           )}
 
           {auditSummary.warningCount > 0 && (
-            <Badge variant="outline" className="border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-500/10 text-xs font-semibold px-2.5 py-1 flex items-center gap-1.5">
+            <Badge variant="outline" className="border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-500/10 text-xs font-semibold px-3 py-1 flex items-center gap-2">
               <span>{auditSummary.warningCount} Atenção (&lt;5 dias)</span>
             </Badge>
           )}
 
           {!hasUrgent && (
-            <Badge variant="outline" className="border-emerald-500/30 text-emerald-600 bg-emerald-500/10 text-xs font-semibold px-2.5 py-1 flex items-center gap-1.5">
+            <Badge variant="outline" className="border-emerald-500/30 text-emerald-600 bg-emerald-500/10 text-xs font-semibold px-3 py-1 flex items-center gap-2">
               <CheckCircle2 className="size-3.5 shrink-0" />
               <span>Prazos Seguros</span>
             </Badge>
@@ -91,19 +91,19 @@ export function HotelDeadlinesSentinelCard({
 
       {/* Métricas do Radar */}
       <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="p-3.5 rounded-lg bg-muted/40 border border-border/60 space-y-1">
+        <div className="p-4 rounded-lg bg-muted/40 border border-border/60 space-y-1">
           <span className="text-xs text-muted-foreground font-medium">Reservas em Monitoramento</span>
           <p className="text-lg font-bold text-foreground">{auditSummary.totalReservationsAudited}</p>
         </div>
 
-        <div className="p-3.5 rounded-lg bg-muted/40 border border-border/60 space-y-1">
+        <div className="p-4 rounded-lg bg-muted/40 border border-border/60 space-y-1">
           <span className="text-xs text-muted-foreground font-medium">Alertas de Criticidade</span>
           <p className="text-lg font-bold text-destructive">
             {auditSummary.criticalCount + auditSummary.warningCount}
           </p>
         </div>
 
-        <div className="p-3.5 rounded-lg bg-muted/40 border border-border/60 space-y-1">
+        <div className="p-4 rounded-lg bg-muted/40 border border-border/60 space-y-1">
           <span className="text-xs text-muted-foreground font-medium">Total em Risco de Multa</span>
           <p className="text-lg font-bold text-foreground">
             {formatMoney(auditSummary.totalAmountAtRiskCents)}
@@ -126,9 +126,9 @@ export function HotelDeadlinesSentinelCard({
             >
               <span>{isExpanded ? "Ocultar Detalhes" : "Ver Detalhes"}</span>
               {isExpanded ? (
-                <ChevronUp className="size-4 ml-1.5" />
+                <ChevronUp className="size-4 ml-2" />
               ) : (
-                <ChevronDown className="size-4 ml-1.5" />
+                <ChevronDown className="size-4 ml-2" />
               )}
             </Button>
           </div>
@@ -137,7 +137,7 @@ export function HotelDeadlinesSentinelCard({
             (alert: HotelDeadlineAlert) => (
               <div
                 key={alert.reservationId}
-                className={`p-3.5 rounded-lg border space-y-2 text-xs transition-colors ${
+                className={`p-4 rounded-lg border space-y-2 text-xs transition-colors ${
                   alert.status === "critical"
                     ? "bg-destructive/5 border-destructive/30"
                     : alert.status === "warning"
@@ -173,7 +173,7 @@ export function HotelDeadlinesSentinelCard({
                       className="h-11 min-h-11 px-3 text-xs font-semibold focus-visible:ring-2 cursor-pointer shrink-0"
                     >
                       <span>Gerenciar Reserva</span>
-                      <ExternalLink className="size-3.5 ml-1.5" />
+                      <ExternalLink className="size-3.5 ml-2" />
                     </Button>
                   )}
                 </div>

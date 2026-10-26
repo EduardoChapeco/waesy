@@ -110,7 +110,7 @@ function AdminCourierAuditPage() {
           disabled={isFetching}
           className="rounded-lg h-9 text-xs font-semibold gap-2"
         >
-          <ArrowsClockwise size={14} className={isFetching ? "animate-spin" : ""} />
+          <ArrowsClockwise size={14} className={isFetching ? "animate-spin motion-reduce:animate-none" : ""} />
           <span>Atualizar Fila</span>
         </Button>
       </div>
@@ -128,7 +128,7 @@ function AdminCourierAuditPage() {
             key={tab.id}
             type="button"
             onClick={() => setSelectedStatus(tab.id)}
-            className={`px-3 py-2 rounded-lg text-xs font-mono transition-all cursor-pointer ${
+            className={`px-3 py-2 rounded-lg text-xs font-mono transition-colors duration-200 cursor-pointer ${
               selectedStatus === tab.id
                 ? "bg-foreground text-background font-bold shadow-xs"
                 : "bg-muted/40 text-muted-foreground hover:text-foreground"
@@ -143,7 +143,7 @@ function AdminCourierAuditPage() {
       <div className="rounded-lg border border-border/60 bg-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-muted/40 border-b border-border/60 text-muted-foreground font-mono uppercase text-[10px]">
+            <thead className="bg-muted/40 border-b border-border/60 text-muted-foreground font-mono uppercase text-2xs">
               <tr>
                 <th className="px-4 py-3">Candidato</th>
                 <th className="px-4 py-3">CPF</th>
@@ -165,21 +165,21 @@ function AdminCourierAuditPage() {
                   <tr key={app.id} className="hover:bg-muted/10 transition-colors">
                     <td className="px-4 py-3">
                       <div className="font-bold text-foreground">{app.full_name}</div>
-                      <div className="text-[10px] text-muted-foreground font-mono">
+                      <div className="text-2xs text-muted-foreground font-mono">
                         CNH: {app.document_number}
                       </div>
                     </td>
                     <td className="px-4 py-3 font-mono">{app.cpf}</td>
-                    <td className="px-4 py-3 capitalize font-mono text-[11px]">
+                    <td className="px-4 py-3 capitalize font-mono text-2xs">
                       {app.vehicle_type}
                       {app.vehicle_plate && (
-                        <span className="block text-[10px] text-muted-foreground">
+                        <span className="block text-2xs text-muted-foreground">
                           {app.vehicle_plate}
                         </span>
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-2 font-mono text-[11px]">
+                      <div className="flex items-center gap-2 font-mono text-2xs">
                         <span>Match Face:</span>
                         <strong
                           className={
@@ -192,34 +192,34 @@ function AdminCourierAuditPage() {
                         </strong>
                       </div>
                       {details.divergence_reasons && details.divergence_reasons.length > 0 && (
-                        <span className="text-[10px] text-destructive block truncate max-w-52">
+                        <span className="text-2xs text-destructive block truncate max-w-52">
                           {details.divergence_reasons[0]}
                         </span>
                       )}
                     </td>
                     <td className="px-4 py-3">
                       {isDivergent && (
-                        <Badge className="bg-warning/15 text-warning text-[10px] font-bold">
+                        <Badge className="bg-warning/15 text-warning text-2xs font-bold">
                           Divergência
                         </Badge>
                       )}
                       {isApproved && (
-                        <Badge className="bg-emerald-500/20 text-emerald-600 text-[10px] font-bold">
+                        <Badge className="bg-emerald-500/20 text-emerald-600 text-2xs font-bold">
                           Aprovado
                         </Badge>
                       )}
                       {isFraud && (
-                        <Badge className="bg-destructive/20 text-destructive text-[10px] font-bold">
+                        <Badge className="bg-destructive/20 text-destructive text-2xs font-bold">
                           Fraude / Polícia
                         </Badge>
                       )}
                       {!isDivergent && !isApproved && !isFraud && (
-                        <Badge variant="outline" className="text-[10px] font-mono">
+                        <Badge variant="outline" className="text-2xs font-mono">
                           {app.crosscheck_status}
                         </Badge>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground font-mono text-[11px]">
+                    <td className="px-4 py-3 text-muted-foreground font-mono text-2xs">
                       {new Date(app.created_at).toLocaleDateString("pt-BR")}
                     </td>
                     <td className="px-4 py-3 text-right">
@@ -317,7 +317,7 @@ function AdminCourierAuditPage() {
                     <VideoCamera size={14} />
                     <span>Minivídeo Liveness (Prova de Vida)</span>
                   </Label>
-                  <div className="aspect-[4/3] rounded-lg border border-border overflow-hidden bg-black flex items-center justify-center">
+                  <div className="aspect-[4/3] rounded-lg border border-border overflow-hidden bg-foreground flex items-center justify-center">
                     {selectedApp.liveness_video_url.endsWith(".mp4") ||
                     selectedApp.liveness_video_url.endsWith(".webm") ? (
                       <video
@@ -339,19 +339,19 @@ function AdminCourierAuditPage() {
               {/* Dados Cadastrais em Colunas */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-lg bg-muted/30 border border-border/40 text-xs">
                 <div>
-                  <span className="text-muted-foreground block text-[10px] uppercase font-mono">
+                  <span className="text-muted-foreground block text-2xs uppercase font-mono">
                     Nome Candidato
                   </span>
                   <strong className="text-foreground">{selectedApp.full_name}</strong>
                 </div>
                 <div>
-                  <span className="text-muted-foreground block text-[10px] uppercase font-mono">
+                  <span className="text-muted-foreground block text-2xs uppercase font-mono">
                     CPF Candidato
                   </span>
                   <strong className="text-foreground font-mono">{selectedApp.cpf}</strong>
                 </div>
                 <div>
-                  <span className="text-muted-foreground block text-[10px] uppercase font-mono">
+                  <span className="text-muted-foreground block text-2xs uppercase font-mono">
                     Veículo / Placa
                   </span>
                   <strong className="text-foreground">
@@ -359,7 +359,7 @@ function AdminCourierAuditPage() {
                   </strong>
                 </div>
                 <div>
-                  <span className="text-muted-foreground block text-[10px] uppercase font-mono">
+                  <span className="text-muted-foreground block text-2xs uppercase font-mono">
                     Titular da Conta
                   </span>
                   <strong className="text-foreground">
@@ -402,7 +402,7 @@ function AdminCourierAuditPage() {
                       handleAuditDecision(selectedApp.id, "match_approved")
                     }
                     disabled={isPending}
-                    className="rounded-lg h-10 px-5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white gap-2 cursor-pointer shadow-xs"
+                    className="rounded-lg h-10 px-5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-foreground gap-2 cursor-pointer shadow-xs"
                   >
                     <CheckCircle size={15} weight="bold" />
                     <span>Aprovar Credenciamento</span>

@@ -100,7 +100,7 @@ export function StoreShareQrModal({
  <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-lg border-border/70">
  <DialogHeader className="p-6 pb-2 text-left space-y-1">
  <div className="flex items-center gap-2">
- <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary uppercase">
+ <Badge variant="outline" className="text-2xs font-mono border-primary/30 text-primary uppercase">
  Divulgação & Vendas • {semantics.name}
  </Badge>
  </div>
@@ -125,11 +125,11 @@ export function StoreShareQrModal({
  </div>
  <div>
  <h4 className="text-sm font-bold text-foreground">{store.name}</h4>
- <p className="text-[11px] text-muted-foreground">{semantics.qrCardCallout}</p>
+ <p className="text-2xs text-muted-foreground">{semantics.qrCardCallout}</p>
  </div>
 
  {/* Imagem do QR Code em Alta Resolução */}
- <div className="p-3 rounded-lg bg-white border border-border/80 shadow-xs">
+ <div className="p-3 rounded-lg bg-card border border-border/80 shadow-xs">
  <img
  src={qrImageUrl}
  alt={`QR Code de ${store.name}`}
@@ -166,7 +166,7 @@ export function StoreShareQrModal({
  type="button"
  onClick={handleShareWhatsApp}
  size="sm"
- className="h-10 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white gap-2 cursor-pointer"
+ className="h-10 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-foreground gap-2 cursor-pointer"
  >
  <WhatsappLogo className="size-4" weight="bold" />
  <span>Enviar WhatsApp</span>

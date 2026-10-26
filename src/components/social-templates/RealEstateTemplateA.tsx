@@ -44,7 +44,7 @@ export function RealEstateTemplateA({ data, className = "" }: SocialTemplateProp
   const resolvedSpecs = highlights && highlights.length > 0 ? highlights.slice(0, 4) : defaultSpecs;
 
   return (
-    <div className={`relative w-full h-full overflow-hidden bg-neutral-950 text-white select-none ${className}`}>
+    <div className={`relative w-full h-full overflow-hidden bg-neutral-950 text-foreground select-none ${className}`}>
       {/* 1. Fotografia Ampla do Imóvel */}
       <div className="absolute inset-0 overflow-hidden">
         <img
@@ -67,16 +67,16 @@ export function RealEstateTemplateA({ data, className = "" }: SocialTemplateProp
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             {promoBadge ? (
-              <span className="px-4 py-2 rounded-full bg-amber-400 text-black font-black uppercase tracking-wider text-xs sm:text-sm shadow-md">
+              <span className="px-4 py-2 rounded-full bg-amber-400 text-foreground font-black uppercase tracking-wider text-xs sm:text-sm shadow-md">
                 {promoBadge}
               </span>
             ) : (
-              <span className="px-4 py-2 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white font-bold uppercase tracking-wider text-xs sm:text-sm">
+              <span className="px-4 py-2 rounded-full bg-card/20 backdrop-blur-md border border-white/30 text-foreground font-bold uppercase tracking-wider text-xs sm:text-sm">
                 Oportunidade Única
               </span>
             )}
 
-            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-black/60 backdrop-blur-md border border-white/15 text-white/90 text-xs sm:text-sm font-medium">
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-foreground/60 backdrop-blur-md border border-white/15 text-foreground/90 text-xs sm:text-sm font-medium">
               <MapPin className="size-4 text-primary shrink-0" />
               <span className="truncate max-w-60">
                 {destinationOrLocation || "Localização Privilegiada"}
@@ -86,13 +86,13 @@ export function RealEstateTemplateA({ data, className = "" }: SocialTemplateProp
 
           <div className="pt-4">
             <h1
-              className={`font-black uppercase tracking-tight text-white drop-shadow-md leading-[1.05] line-clamp-2 ${
+              className={`font-black uppercase tracking-tight text-foreground drop-shadow-md leading-[1.05] line-clamp-2 ${
                 aspectRatio === "1:1" ? "text-4xl md:text-5xl" : "text-6xl md:text-7xl"
               }`}
             >
               {title}
             </h1>
-            <p className="text-white/80 font-medium text-lg sm:text-xl mt-2 line-clamp-1">
+            <p className="text-foreground/80 font-medium text-lg sm:text-xl mt-2 line-clamp-1">
               {subtitle || datesOrAvailability || "Pronto para Morar ou Investir"}
             </p>
           </div>
@@ -103,7 +103,7 @@ export function RealEstateTemplateA({ data, className = "" }: SocialTemplateProp
           {resolvedSpecs.map((spec, i) => (
             <div
               key={i}
-              className="flex items-center gap-3 px-4 py-3 rounded-lg bg-black/60 backdrop-blur-md border border-white/20 text-white font-semibold text-sm sm:text-base shadow-sm"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg bg-foreground/60 backdrop-blur-md border border-white/20 text-foreground font-semibold text-sm sm:text-base shadow-sm"
             >
               <CheckCircle2 className="size-5 text-primary shrink-0" />
               <span className="truncate">{spec}</span>
@@ -114,23 +114,23 @@ export function RealEstateTemplateA({ data, className = "" }: SocialTemplateProp
         {/* Base: Preço + Condições + Selo da Imobiliária */}
         <div className="w-full flex items-end justify-between gap-4 pt-4 border-t border-white/20">
           <div className="space-y-1">
-            <span className="text-xs sm:text-sm font-semibold text-white/70 uppercase tracking-wider block">
+            <span className="text-xs sm:text-sm font-semibold text-foreground/70 uppercase tracking-wider block">
               {pricingMode === "monthly" ? "Aluguel Mensal" : "Valor de Venda"}
             </span>
-            <div className="text-4xl sm:text-5xl font-black font-mono text-white tracking-tight">
+            <div className="text-4xl sm:text-5xl font-black font-mono text-foreground tracking-tight">
               {formatMoney(priceCents)}
             </div>
             {maxInstallments > 1 && (
-              <p className="text-xs sm:text-sm text-white/80 font-mono">
+              <p className="text-xs sm:text-sm text-foreground/80 font-mono">
                 Ou entrada + parcelas de <span className="text-amber-400 font-bold">{formatMoney(effectiveInstallmentCents)}</span>
               </p>
             )}
-            <p className="text-[11px] sm:text-xs text-white/60">
+            <p className="text-2xs sm:text-xs text-foreground/60">
               {paymentMethodsLabel}
             </p>
           </div>
 
-          <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 backdrop-blur-md border border-white/15 text-white/90 text-xs sm:text-sm font-bold shrink-0">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-card/10 backdrop-blur-md border border-white/15 text-foreground/90 text-xs sm:text-sm font-bold shrink-0">
             <ShieldCheck className="size-5 text-emerald-400 shrink-0" />
             <span className="truncate max-w-[180px]">{storeName}</span>
           </div>

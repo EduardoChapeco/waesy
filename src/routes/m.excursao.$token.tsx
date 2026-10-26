@@ -114,7 +114,7 @@ function PublicPassengerRegistrationPage() {
 
  {formData.passenger_seat_number && (
  <div className="p-4 rounded-lg bg-primary/10 border border-primary/20 text-center">
- <span className="text-[11px] font-mono text-primary uppercase font-bold">
+ <span className="text-2xs font-mono text-primary uppercase font-bold">
  Sua Poltrona Reservada
  </span>
  <p className="text-2xl font-black text-primary font-mono">
@@ -143,7 +143,7 @@ function PublicPassengerRegistrationPage() {
  {/* Header da Viagem */}
  <div className="p-6 rounded-lg bg-card border border-border/70 space-y-3 shadow-xs">
  <div className="flex items-center justify-between">
- <Badge variant="outline" className="text-[10px] font-mono gap-1 text-primary border-primary/30">
+ <Badge variant="outline" className="text-2xs font-mono gap-1 text-primary border-primary/30">
  <Bus className="size-3" /> Ficha de Embarque
  </Badge>
 

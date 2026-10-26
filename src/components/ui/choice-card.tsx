@@ -68,7 +68,7 @@ export const ChoiceCard = React.forwardRef<HTMLDivElement, ChoiceCardProps>(
 
  <div className="flex items-center gap-2">
  {badge && (
- <Badge variant="outline" className="text-[10px] font-mono uppercase tracking-wider">
+ <Badge variant="outline" className="text-2xs font-mono uppercase tracking-wider">
  {badge}
  </Badge>
  )}

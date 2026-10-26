@@ -84,7 +84,7 @@ export function LawsuitDetailsSheet({
  {tags.map((tag: string) => (
  <Badge
  key={tag}
- className="bg-primary/10 text-primary border-primary/20 text-[10px] font-bold"
+ className="bg-primary/10 text-primary border-primary/20 text-2xs font-bold"
  >
  {tag}
  </Badge>
@@ -96,7 +96,7 @@ export function LawsuitDetailsSheet({
  <Button
  size="sm"
  onClick={() => setIsDeadlineSheetOpen(true)}
- className="h-8 px-3 rounded-lg bg-primary text-primary-foreground font-bold text-[11px] gap-2 shadow-2xs"
+ className="h-8 px-3 rounded-lg bg-primary text-primary-foreground font-bold text-2xs gap-2 shadow-2xs"
  >
  <Clock className="size-3.5" />
  <span>+ Prazo Fatal</span>
@@ -119,7 +119,7 @@ export function LawsuitDetailsSheet({
  <Radio
  className={cn(
  "size-3.5",
- isMonitored ? "text-emerald-500 animate-pulse" : "text-muted-foreground"
+ isMonitored ? "text-emerald-500 animate-pulse motion-reduce:animate-none" : "text-muted-foreground"
  )}
  />
  <span className="font-semibold text-foreground">Monitoramento automatizado</span>
@@ -131,7 +131,7 @@ export function LawsuitDetailsSheet({
  </div>
 
  {lawsuit.last_movement_date && (
- <span className="text-muted-foreground font-mono text-[11px]">
+ <span className="text-muted-foreground font-mono text-2xs">
  Última movimentação:{" "}
  <strong className="text-foreground">{formatDate(lawsuit.last_movement_date)}</strong>
  </span>
@@ -155,7 +155,7 @@ export function LawsuitDetailsSheet({
  {/* ── GRID DOS 5 STAT CARDS RÁPIDOS ── */}
  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-2">
  <div className="p-3 rounded-lg bg-card border border-border/70 space-y-1">
- <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase">
+ <div className="flex items-center gap-2 text-2xs font-bold text-muted-foreground uppercase">
  <Building2 className="size-3.5 text-primary" />
  <span>Tribunal</span>
  </div>
@@ -165,7 +165,7 @@ export function LawsuitDetailsSheet({
  </div>
 
  <div className="p-3 rounded-lg bg-card border border-border/70 space-y-1">
- <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase">
+ <div className="flex items-center gap-2 text-2xs font-bold text-muted-foreground uppercase">
  <DollarSign className="size-3.5 text-emerald-500" />
  <span>Valor Causa</span>
  </div>
@@ -175,7 +175,7 @@ export function LawsuitDetailsSheet({
  </div>
 
  <div className="p-3 rounded-lg bg-card border border-border/70 space-y-1">
- <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase">
+ <div className="flex items-center gap-2 text-2xs font-bold text-muted-foreground uppercase">
  <Calendar className="size-3.5 text-blue-500" />
  <span>Distribuição</span>
  </div>
@@ -185,7 +185,7 @@ export function LawsuitDetailsSheet({
  </div>
 
  <div className="p-3 rounded-lg bg-card border border-border/70 space-y-1">
- <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase">
+ <div className="flex items-center gap-2 text-2xs font-bold text-muted-foreground uppercase">
  <Users className="size-3.5 text-amber-500" />
  <span>Partes</span>
  </div>
@@ -197,13 +197,13 @@ export function LawsuitDetailsSheet({
  </div>
 
  <div className="p-3 rounded-lg bg-card border border-border/70 space-y-1 col-span-2 sm:col-span-1">
- <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase">
+ <div className="flex items-center gap-2 text-2xs font-bold text-muted-foreground uppercase">
  <CheckCircle2 className="size-3.5 text-primary" />
  <span>Status</span>
  </div>
  <Badge
  variant={lawsuit.status === "active" ? "default" : "secondary"}
- className="text-[10px] font-mono capitalize"
+ className="text-2xs font-mono capitalize"
  >
  {lawsuit.status === "active" ? "Ativo" : lawsuit.status || "Em andamento"}
  </Badge>
@@ -213,11 +213,11 @@ export function LawsuitDetailsSheet({
  {/* Órgão Julgador & Classe Processual */}
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-lg bg-muted/20 border border-border/50 text-xs">
  <div>
- <span className="text-muted-foreground text-[10px] uppercase font-bold">Órgão Julgador:</span>
+ <span className="text-muted-foreground text-2xs uppercase font-bold">Órgão Julgador:</span>
  <p className="font-semibold text-foreground">{lawsuit.organ_name || "Vara Cível / Comarca Competente"}</p>
  </div>
  <div>
- <span className="text-muted-foreground text-[10px] uppercase font-bold">Classe Processual:</span>
+ <span className="text-muted-foreground text-2xs uppercase font-bold">Classe Processual:</span>
  <p className="font-semibold text-foreground">{lawsuit.class_name || "Procedimento Comum Cível"}</p>
  </div>
  </div>
@@ -255,7 +255,7 @@ export function LawsuitDetailsSheet({
  <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
  <span className="font-bold text-foreground">{formatDate(mov.movement_date)}</span>
  {mov.movement_type && (
- <Badge variant="outline" className="text-[10px] font-mono">
+ <Badge variant="outline" className="text-2xs font-mono">
  {mov.movement_type}
  </Badge>
  )}
@@ -320,7 +320,7 @@ export function LawsuitDetailsSheet({
  {parties.active?.[0]?.name || "William Marcos de Braga"}
  </p>
  {parties.active?.[0]?.document && (
- <p className="font-mono text-muted-foreground text-[11px]">
+ <p className="font-mono text-muted-foreground text-2xs">
  Doc: {parties.active[0].document}
  </p>
  )}
@@ -337,7 +337,7 @@ export function LawsuitDetailsSheet({
  {parties.passive?.[0]?.name || "BUSER BRASIL TECNOLOGIA LTDA"}
  </p>
  {parties.passive?.[0]?.document && (
- <p className="font-mono text-muted-foreground text-[11px]">
+ <p className="font-mono text-muted-foreground text-2xs">
  CNPJ: {parties.passive[0].document}
  </p>
  )}
@@ -364,7 +364,7 @@ export function LawsuitDetailsSheet({
  <ShieldCheck className="size-4 text-emerald-500" />
  <span className="font-medium text-foreground">Auditoria de Compliance Concluída</span>
  </div>
- <Badge variant="outline" className="text-[10px] font-mono text-emerald-600 border-emerald-500/30">
+ <Badge variant="outline" className="text-2xs font-mono text-emerald-600 border-emerald-500/30">
  Sem Restrições
  </Badge>
  </div>

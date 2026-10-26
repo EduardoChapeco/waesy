@@ -98,7 +98,7 @@ export function CuratedHitsRailSection({
  return (
  <div
  key={item.id}
- className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-2xs group hover:border-primary/40 transition-all flex flex-col justify-between"
+ className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-2xs group hover:border-primary/40 transition-colors duration-200 flex flex-col justify-between"
  >
  {/* Imagem do Produto com Badge de Ranking */}
  <div className="aspect-4/3 overflow-hidden bg-muted relative">
@@ -119,7 +119,7 @@ export function CuratedHitsRailSection({
 
  {discount && (
  <div className="absolute top-2.5 right-2.5">
- <Badge className="bg-rose-500 text-white font-bold text-[10px] shadow-sm">
+ <Badge className="bg-rose-500 text-foreground font-bold text-2xs shadow-sm">
  -{discount}%
  </Badge>
  </div>
@@ -130,7 +130,7 @@ export function CuratedHitsRailSection({
  <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
  <div className="space-y-1">
  {item.storeName && (
- <span className="text-[10px] font-semibold text-muted-foreground block truncate">
+ <span className="text-2xs font-semibold text-muted-foreground block truncate">
  {item.storeName}
  </span>
  )}
@@ -145,7 +145,7 @@ export function CuratedHitsRailSection({
  <div className="pt-2 border-t border-border/60 flex items-center justify-between">
  <div>
  {item.originalPriceCents && (
- <span className="text-[10px] text-muted-foreground line-through block font-mono">
+ <span className="text-2xs text-muted-foreground line-through block font-mono">
  {formatPrice(item.originalPriceCents)}
  </span>
  )}

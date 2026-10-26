@@ -217,7 +217,7 @@ export default function WorkspaceCrmPage() {
         <button
           type="button"
           onClick={() => setActiveTab("clientes")}
-          className={`h-9 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
+          className={`h-9 px-3 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer flex items-center gap-2 shrink-0 ${
             activeTab === "clientes"
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -230,7 +230,7 @@ export default function WorkspaceCrmPage() {
         <button
           type="button"
           onClick={() => setActiveTab("funil")}
-          className={`h-9 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
+          className={`h-9 px-3 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer flex items-center gap-2 shrink-0 ${
             activeTab === "funil"
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -243,7 +243,7 @@ export default function WorkspaceCrmPage() {
         <button
           type="button"
           onClick={() => setActiveTab("personas")}
-          className={`h-9 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
+          className={`h-9 px-3 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer flex items-center gap-2 shrink-0 ${
             activeTab === "personas"
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -634,7 +634,7 @@ export default function WorkspaceCrmPage() {
               <SheetTitle className="text-base font-bold text-foreground">
                 {selectedEntity?.name}
               </SheetTitle>
-              <Badge variant="outline" className="text-[11px] font-semibold">
+              <Badge variant="outline" className="text-2xs font-semibold">
                 {selectedEntity?.type === "lead" ? "Oportunidade" : "Cliente"}
               </Badge>
             </div>

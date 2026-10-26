@@ -48,7 +48,7 @@ function MinhasCandidaturasPage() {
       case "shortlisted":
         return <Badge variant="outline" className="text-xs text-primary border-primary/30">Selecionado</Badge>;
       case "interview_scheduled":
-        return <Badge className="text-xs bg-amber-500 hover:bg-amber-600 text-white">Entrevista</Badge>;
+        return <Badge className="text-xs bg-amber-500 hover:bg-amber-600 text-foreground">Entrevista</Badge>;
       case "hired":
       case "approved":
         return <Badge className="text-xs bg-primary hover:bg-primary/90 text-primary-foreground">Aprovado</Badge>;
@@ -127,7 +127,7 @@ function MinhasCandidaturasPage() {
  {app.company_name} • {app.location} ({app.workplace_type})
  </p>
 
- <div className="flex items-center gap-2 text-[11px] text-muted-foreground font-mono">
+ <div className="flex items-center gap-2 text-2xs text-muted-foreground font-mono">
  <span>{app.contract_type}</span>
  <span>•</span>
  <span>{app.salary_display}</span>

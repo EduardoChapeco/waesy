@@ -129,7 +129,7 @@ function MasterInfluencersPage() {
             return (
                 <Card
                 key={creator.id}
-                className={`overflow-hidden rounded-lg border transition-all ${
+                className={`overflow-hidden rounded-lg border transition-colors duration-200 ${
                   isAmbassador
                     ? "border-purple-500/40 bg-purple-500/5"
                     : "border-border/60 bg-card"

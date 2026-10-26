@@ -186,7 +186,7 @@ function FullscreenMapaPage() {
  <div className="absolute top-3 left-3 right-3 z-30 flex items-center justify-between pointer-events-none">
  <Link
  to="/"
- className="pointer-events-auto inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-card/90 backdrop-blur-md text-xs font-bold text-foreground hover:bg-card active:scale-95 transition-all cursor-pointer"
+ className="pointer-events-auto inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-card/90 backdrop-blur-md text-xs font-bold text-foreground hover:bg-card active:scale-95 transition-transform duration-200 cursor-pointer"
  >
  <ArrowLeft size={16} weight="bold" />
  <span className="hidden sm:inline">Início</span>
@@ -196,7 +196,7 @@ function FullscreenMapaPage() {
  <Button
  size="sm"
  onClick={handleLocateMe}
- className="size-9 rounded-lg p-0 bg-card/90 backdrop-blur-md text-foreground hover:bg-card active:scale-95 transition-all cursor-pointer"
+ className="size-9 rounded-lg p-0 bg-card/90 backdrop-blur-md text-foreground hover:bg-card active:scale-95 transition-transform duration-200 cursor-pointer"
  title="Minha Localização"
  aria-label="Minha Localização"
  >
@@ -206,7 +206,7 @@ function FullscreenMapaPage() {
  <Button
  size="sm"
  onClick={() => setIsPublishModalOpen(true)}
- className="h-9 px-4 rounded-lg font-bold text-xs gap-2 active:scale-95 transition-all cursor-pointer"
+ className="h-9 px-4 rounded-lg font-bold text-xs gap-2 active:scale-95 transition-transform duration-200 cursor-pointer"
  >
  <Plus size={14} weight="bold" />
  <span>Publicar</span>
@@ -217,7 +217,7 @@ function FullscreenMapaPage() {
  {/* ── 3. BOTTOM SHEET FLUTUANTE DE MOMENTOS (ESTILO GOOGLE MAPS / UBER) ── */}
  <div
  className={cn(
- "absolute z-30 transition-all duration-300 ease-out",
+ "absolute z-30 transition-colors duration-200 duration-300 ease-out",
         /* Mobile: Bottom Sheet ancorado embaixo */
         "bottom-0 left-0 right-0 rounded-t-lg border-t border-x sm:border bg-card flex flex-col shadow-xs",
         isExpandedMobile ? "h-[85vh]" : "h-[36vh]",
@@ -237,7 +237,7 @@ function FullscreenMapaPage() {
  <div className="p-4 sm:p-4 pb-2 space-y-3 shrink-0">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
- <span className="size-2 rounded-full bg-destructive animate-ping" />
+ <span className="size-2 rounded-full bg-destructive animate-ping motion-reduce:animate-none" />
  <h2 className="text-xs font-bold uppercase tracking-wider text-foreground">
  Moments {location.city && location.city.toLowerCase() !== "global" ? location.city : "Região"}
  </h2>
@@ -286,7 +286,7 @@ function FullscreenMapaPage() {
  type="button"
  onClick={() => setActiveVibe(f.id)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "h-7 px-3 rounded-lg text-[11px] font-bold shrink-0 transition-all border cursor-pointer flex items-center gap-2",
+ "h-7 px-3 rounded-lg text-2xs font-bold shrink-0 transition-colors duration-200 border cursor-pointer flex items-center gap-2",
  isSelected
  ? "bg-primary/10 text-primary border-primary/30 font-bold"
  : "bg-background/80 border-border/80 text-muted-foreground hover:text-foreground"
@@ -333,7 +333,7 @@ function FullscreenMapaPage() {
  type="button"
  onClick={() => handleSelectMoment(m)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "w-full p-3 rounded-lg text-left transition-all border flex items-start gap-3 cursor-pointer",
+ "w-full p-3 rounded-lg text-left transition-colors duration-200 border flex items-start gap-3 cursor-pointer",
  isSelected
  ? "bg-primary/10 border-primary text-foreground ring-1 ring-primary "
  : "bg-card border-border/70 hover:bg-muted/40 text-foreground "
@@ -349,17 +349,17 @@ function FullscreenMapaPage() {
  </div>
  )}
  {m.is_live && (
- <div className="absolute top-1 left-1 size-1.5 rounded-full bg-destructive animate-ping" />
+ <div className="absolute top-1 left-1 size-1.5 rounded-full bg-destructive animate-ping motion-reduce:animate-none" />
  )}
  </div>
 
  {/* Informações da Pessoa & Atividade */}
  <div className="min-w-0 flex-1 space-y-1">
  <div className="flex items-center justify-between gap-1">
- <span className="text-[11px] font-bold text-foreground truncate">
+ <span className="text-2xs font-bold text-foreground truncate">
  {m.author_name || "Membro Waesy"}
  </span>
- <span className="text-[9px] text-muted-foreground font-mono shrink-0">
+ <span className="text-3xs text-muted-foreground font-mono shrink-0">
  {formatRelativeTime(m.created_at || new Date().toISOString())}
  </span>
  </div>
@@ -367,7 +367,7 @@ function FullscreenMapaPage() {
  <h4 className="text-xs font-bold text-foreground line-clamp-1">
  {m.title || "Atividade ao Vivo"}
  </h4>
- <p className="text-[10px] text-muted-foreground line-clamp-1">
+ <p className="text-2xs text-muted-foreground line-clamp-1">
  {m.subtitle || m.content_text}
  </p>
  </div>

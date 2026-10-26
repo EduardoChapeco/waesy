@@ -258,7 +258,7 @@ function SupermarketMasterPage() {
  type="button"
  onClick={() => setSelectedStore("todos")}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98",
+ "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-colors duration-200 cursor-pointer select-none active:scale-98",
  selectedStore === "todos"
  ? "bg-foreground text-background border-foreground font-bold"
  : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
@@ -273,7 +273,7 @@ function SupermarketMasterPage() {
  type="button"
  onClick={() => setSelectedStore(store)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 shadow-2xs",
+ "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-colors duration-200 cursor-pointer select-none active:scale-98 shadow-2xs",
  selectedStore === store
  ? "bg-foreground text-background border-foreground font-bold shadow-xs"
  : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
@@ -315,7 +315,7 @@ function SupermarketMasterPage() {
  type="button"
  onClick={() => setSelectedDietary(f.id)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 shadow-2xs",
+ "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-colors duration-200 cursor-pointer select-none active:scale-98 shadow-2xs",
  isSelected
  ? "bg-foreground text-background border-foreground font-bold shadow-xs"
  : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"

@@ -82,7 +82,7 @@ function PublicLeadPassageirosPage() {
   if (!leadData || leadData.error) {
     return (
       <div className="min-h-[100dvh] bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center p-4">
-        <div className="max-w-md w-full p-8 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-center space-y-4 shadow-xs">
+        <div className="max-w-md w-full p-8 rounded-lg bg-card dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-center space-y-4 shadow-xs">
           <div className="size-14 rounded-lg bg-rose-500/10 text-rose-600 flex items-center justify-center mx-auto">
             <AlertCircle className="size-7" />
           </div>
@@ -168,7 +168,7 @@ function PublicLeadPassageirosPage() {
   if (isSubmitted) {
     return (
       <div className="min-h-[100dvh] bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center p-4">
-        <div className="max-w-md w-full p-8 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-center space-y-5 shadow-xs animate-in fade-in zoom-in-95 duration-300">
+        <div className="max-w-md w-full p-8 rounded-lg bg-card dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-center space-y-5 shadow-xs animate-in fade-in zoom-in-95 duration-300">
           <div className="size-16 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto border border-emerald-500/20 shadow-xs">
             <CheckCircle2 className="size-8" />
           </div>
@@ -219,7 +219,7 @@ function PublicLeadPassageirosPage() {
     <div className="min-h-[100dvh] bg-neutral-50 dark:bg-neutral-950 text-foreground py-8 px-4 sm:px-6 lg:px-8 flex flex-col justify-between">
       <div className="max-w-2xl mx-auto w-full space-y-6">
         {/* Cabeçalho da Agência */}
-        <header className="rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 shadow-sm flex items-center justify-between gap-4">
+        <header className="rounded-lg bg-card dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 shadow-sm flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             {leadData.store_logo ? (
               <img
@@ -233,7 +233,7 @@ function PublicLeadPassageirosPage() {
               </div>
             )}
             <div className="min-w-0">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                 Central do Passageiro
               </span>
               <h1 className="text-base font-bold text-foreground truncate">
@@ -242,15 +242,15 @@ function PublicLeadPassageirosPage() {
             </div>
           </div>
 
-          <Badge variant="outline" className="text-[11px] font-medium py-1 px-3 rounded-full border-primary/30 text-primary bg-primary/5 shrink-0">
+          <Badge variant="outline" className="text-2xs font-medium py-1 px-3 rounded-full border-primary/30 text-primary bg-primary/5 shrink-0">
             Formulário Seguro
           </Badge>
         </header>
 
         {/* Card do Titular e Destino */}
-        <div className="rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 shadow-sm space-y-4">
+        <div className="rounded-lg bg-card dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 shadow-sm space-y-4">
           <div className="space-y-1">
-            <span className="text-[10px] font-mono uppercase font-bold text-primary">
+            <span className="text-2xs font-mono uppercase font-bold text-primary">
               Titular da Cotação
             </span>
             <h2 className="text-xl font-bold text-foreground">
@@ -267,7 +267,7 @@ function PublicLeadPassageirosPage() {
                 <MapPin className="size-4" />
               </div>
               <div className="min-w-0">
-                <span className="text-[10px] uppercase font-semibold text-muted-foreground block">
+                <span className="text-2xs uppercase font-semibold text-muted-foreground block">
                   Destino
                 </span>
                 <span className="text-xs font-bold text-foreground truncate block">
@@ -281,7 +281,7 @@ function PublicLeadPassageirosPage() {
                 <Calendar className="size-4" />
               </div>
               <div className="min-w-0">
-                <span className="text-[10px] uppercase font-semibold text-muted-foreground block">
+                <span className="text-2xs uppercase font-semibold text-muted-foreground block">
                   Período Previsto
                 </span>
                 <span className="text-xs font-bold text-foreground truncate block">
@@ -297,7 +297,7 @@ function PublicLeadPassageirosPage() {
         {/* Formulário Principal */}
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Seção 1: Lista de Acompanhantes */}
-          <div className="rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 shadow-sm space-y-4">
+          <div className="rounded-lg bg-card dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-base font-bold text-foreground flex items-center gap-2">
@@ -326,7 +326,7 @@ function PublicLeadPassageirosPage() {
                 <p className="text-xs font-medium text-foreground">
                   Nenhum acompanhante cadastrado ainda
                 </p>
-                <p className="text-[11px] text-muted-foreground max-w-xs mx-auto">
+                <p className="text-2xs text-muted-foreground max-w-xs mx-auto">
                   Clique no botão acima para adicionar cônjuge, filhos, amigos ou parentes que irão viajar.
                 </p>
               </div>
@@ -346,7 +346,7 @@ function PublicLeadPassageirosPage() {
                           <span className="text-xs font-bold text-foreground truncate">
                             {pax.full_name}
                           </span>
-                          <Badge variant="outline" className="text-[9px] py-0 px-2 capitalize">
+                          <Badge variant="outline" className="text-3xs py-0 px-2 capitalize">
                             {pax.relationship === "spouse"
                               ? "Cônjuge"
                               : pax.relationship === "child"
@@ -358,7 +358,7 @@ function PublicLeadPassageirosPage() {
                               : "Outro"}
                           </Badge>
                         </div>
-                        <div className="flex items-center gap-3 text-[11px] text-muted-foreground pt-1">
+                        <div className="flex items-center gap-3 text-2xs text-muted-foreground pt-1">
                           {pax.birth_date && (
                             <span>Nasc: {new Date(pax.birth_date).toLocaleDateString("pt-BR")}</span>
                           )}
@@ -384,7 +384,7 @@ function PublicLeadPassageirosPage() {
           </div>
 
           {/* Seção 2: Saúde, Acessibilidade & Restrições */}
-          <div className="rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 shadow-sm space-y-4">
+          <div className="rounded-lg bg-card dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 shadow-sm space-y-4">
             <div>
               <h3 className="text-base font-bold text-foreground flex items-center gap-2">
                 <HeartPulse className="size-4 text-rose-500" />
@@ -436,7 +436,7 @@ function PublicLeadPassageirosPage() {
           </div>
 
           {/* Seção 3: Termo LGPD & Consentimento */}
-          <div className="rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 shadow-sm space-y-3">
+          <div className="rounded-lg bg-card dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 shadow-sm space-y-3">
             <div className="flex items-center gap-2">
               <ShieldCheck className="size-4 text-emerald-600" />
               <h3 className="text-sm font-bold text-foreground">
@@ -444,7 +444,7 @@ function PublicLeadPassageirosPage() {
               </h3>
             </div>
 
-            <p className="text-[11px] text-muted-foreground leading-relaxed">
+            <p className="text-2xs text-muted-foreground leading-relaxed">
               Em cumprimento à Lei Geral de Proteção de Dados Pessoais (LGPD - Lei nº 13.709/2018), seus dados e os dos passageiros indicados serão utilizados estritamente para a finalidade de cotação de serviços turísticos, emissão de bilhetes e reservas junto a companhias aéreas, seguradoras e hotéis parceiros.
             </p>
 
@@ -591,7 +591,7 @@ function PublicLeadPassageirosPage() {
       </Dialog>
 
       {/* Rodapé institucional silencioso */}
-      <footer className="mt-8 text-center text-[11px] text-muted-foreground/60 py-4">
+      <footer className="mt-8 text-center text-2xs text-muted-foreground/60 py-4">
         Plataforma Segura Waesy · Criptografia de ponta a ponta
       </footer>
     </div>

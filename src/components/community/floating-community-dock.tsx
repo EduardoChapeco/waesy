@@ -181,13 +181,13 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  <div className="flex items-center gap-3">
  <Avatar className="size-8 rounded-full border border-border/60">
  <AvatarImage src={userAvatar} alt={userName} />
- <AvatarFallback className="text-[11px] font-bold bg-primary/10 text-primary">
+ <AvatarFallback className="text-2xs font-bold bg-primary/10 text-primary">
  {userInitial}
  </AvatarFallback>
  </Avatar>
  <div>
  <p className="text-xs font-bold text-foreground leading-none">{userName}</p>
- <p className="text-[10px] text-muted-foreground mt-1">Novo Post no Feed</p>
+ <p className="text-2xs text-muted-foreground mt-1">Novo Post no Feed</p>
  </div>
  </div>
 
@@ -211,7 +211,7 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  type="button"
  onClick={() => setActiveFormat(fmt.id as PostType)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "px-3 py-2 min-h-11 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0",
+ "px-3 py-2 min-h-11 rounded-lg text-xs font-bold flex items-center gap-2 transition-colors duration-200 cursor-pointer shrink-0",
  isSelected
  ? "bg-foreground text-background shadow-xs"
  : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -287,7 +287,7 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  <button
  type="button"
  onClick={() => handleRemoveMedia(idx)}
- className="absolute top-1 right-1 size-8 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-destructive transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="absolute top-1 right-1 size-8 rounded-full bg-foreground/70 text-foreground flex items-center justify-center hover:bg-destructive transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Trash size={12} weight="bold" />
  </button>
@@ -315,7 +315,7 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold text-muted-foreground hover:text-foreground gap-2 cursor-pointer"
  >
  {isUploading ? (
- <CircleNotch size={14} className="animate-spin text-primary" />
+ <CircleNotch size={14} className="animate-spin motion-reduce:animate-none text-primary" />
  ) : (
  <ImageSquare size={16} weight="bold" className="text-primary" />
  )}
@@ -337,11 +337,11 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  onClick={handlePublish}
  disabled={isSubmitting || isUploading || (!content.trim() && mediaUrls.length === 0 && !newsTitle.trim())}
  size="sm"
- className="bg-primary text-primary-foreground font-bold rounded-lg h-11 min-h-11 px-4 text-xs hover:scale-102 active:scale-98 transition-all cursor-pointer shadow-xs"
+ className="bg-primary text-primary-foreground font-bold rounded-lg h-11 min-h-11 px-4 text-xs hover:scale-102 active:scale-98 transition-transform duration-200 cursor-pointer shadow-xs"
  >
  {isSubmitting ? (
  <>
- <CircleNotch size={14} className="animate-spin mr-1" />
+ <CircleNotch size={14} className="animate-spin motion-reduce:animate-none mr-1" />
  <span>Publicando...</span>
  </>
  ) : (
@@ -358,7 +358,7 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  <Button
  asChild
  size="icon"
- className="size-11 sm:size-12 rounded-lg bg-card border border-border/80 text-foreground hover:bg-muted shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer"
+ className="size-11 sm:size-12 rounded-lg bg-card border border-border/80 text-foreground hover:bg-muted shadow-lg hover:scale-105 active:scale-95 transition-transform duration-200 cursor-pointer"
  title="Abrir Conversas e Mensagens"
  >
  <Link to="/conta/conversas/$id" params={{ id: "novo" }}>
@@ -370,7 +370,7 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  <Button
  onClick={() => setIsExpanded(!isExpanded)}
  className={cn(
- "h-11 sm:h-12 px-4 rounded-lg bg-primary text-primary-foreground font-bold text-xs shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center gap-2 cursor-pointer",
+ "h-11 sm:h-12 px-4 rounded-lg bg-primary text-primary-foreground font-bold text-xs shadow-lg hover:scale-105 active:scale-95 transition-transform duration-200 flex items-center gap-2 cursor-pointer",
  isExpanded ? "ring-2 ring-primary/40 bg-foreground text-background" : ""
  )}
  >

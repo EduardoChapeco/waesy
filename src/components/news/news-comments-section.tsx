@@ -97,8 +97,8 @@ export function NewsCommentsSection({ articleId }: NewsCommentsSectionProps) {
  size="sm"
  onClick={handleToggleLike}
  disabled={isLiking}
- className={`rounded-lg font-bold gap-2 text-xs transition-all ${
- isLiked ? "bg-destructive hover:bg-destructive text-white border-transparent" : ""
+ className={`rounded-lg font-bold gap-2 text-xs transition-colors duration-200 ${
+ isLiked ? "bg-destructive hover:bg-destructive text-foreground border-transparent" : ""
  }`}
  >
  <Heart className={`size-4 ${isLiked ? "fill-white" : ""}`} />
@@ -134,7 +134,7 @@ export function NewsCommentsSection({ articleId }: NewsCommentsSectionProps) {
  className="rounded-lg font-bold gap-2 text-xs bg-primary text-primary-foreground"
  >
  {isSubmitting ? (
- <Loader2 className="size-3.5 animate-spin" />
+ <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
  ) : (
  <Send className="size-3.5" />
  )}
@@ -147,7 +147,7 @@ export function NewsCommentsSection({ articleId }: NewsCommentsSectionProps) {
  <div className="space-y-3">
  {isLoading ? (
  <div className="py-6 flex items-center justify-center">
- <Loader2 className="size-5 animate-spin text-muted-foreground" />
+ <Loader2 className="size-5 animate-spin motion-reduce:animate-none text-muted-foreground" />
  </div>
  ) : comments.length === 0 ? (
  <p className="text-center py-6 text-xs text-muted-foreground font-medium">
@@ -161,7 +161,7 @@ export function NewsCommentsSection({ articleId }: NewsCommentsSectionProps) {
  >
  <div className="flex items-center justify-between text-xs">
  <div className="flex items-center gap-2">
- <div className="size-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+ <div className="size-6 rounded-full bg-primary/10 flex items-center justify-center text-2xs font-bold text-primary">
  {c.author_avatar ? (
  <img
  src={c.author_avatar}
@@ -174,7 +174,7 @@ export function NewsCommentsSection({ articleId }: NewsCommentsSectionProps) {
  </div>
  <span className="font-bold text-foreground">{c.author_name}</span>
  </div>
- <span className="text-[10px] text-muted-foreground">
+ <span className="text-2xs text-muted-foreground">
  {new Date(c.created_at).toLocaleDateString("pt-BR", {
  day: "2-digit",
  month: "short",

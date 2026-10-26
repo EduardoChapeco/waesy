@@ -27,7 +27,7 @@ export const TravelPassportBoarding: React.FC<SocialTemplateProps> = ({ data, sc
         transform: `scale(${scale})`,
         transformOrigin: "top left",
       }}
-      className={`relative bg-[#0A0E1A] text-white overflow-hidden font-sans select-none flex flex-col justify-between p-12 ${className}`}
+      className={`relative bg-[#0A0E1A] text-foreground overflow-hidden font-sans select-none flex flex-col justify-between p-12 ${className}`}
     >
       {/* Background Decorativo com Trajetória Aérea Sutil */}
       <div className="absolute inset-0 opacity-20 pointer-events-none">
@@ -47,7 +47,7 @@ export const TravelPassportBoarding: React.FC<SocialTemplateProps> = ({ data, sc
             <span className="text-xs uppercase tracking-widest text-sky-400 font-bold block">
               BOARDING PASS e EXPEDITION
             </span>
-            <span className="text-xl font-black tracking-tight text-white">
+            <span className="text-xl font-black tracking-tight text-foreground">
               {data.storeName || "Waesy Travel Club"}
             </span>
           </div>
@@ -62,7 +62,7 @@ export const TravelPassportBoarding: React.FC<SocialTemplateProps> = ({ data, sc
       </div>
 
       {/* Cartão de Embarque Central (Ticket com Recortes Laterais) */}
-      <div className="relative z-10 bg-white text-slate-950 rounded-lg overflow-hidden shadow-2xl flex-1 flex flex-col justify-between my-4 border border-slate-200">
+      <div className="relative z-10 bg-card text-slate-950 rounded-lg overflow-hidden shadow-2xl flex-1 flex flex-col justify-between my-4 border border-slate-200">
         {/* Bloco Superior do Ticket: Imagem do Destino */}
         <div className="relative h-[48%] overflow-hidden bg-slate-900">
           <img
@@ -79,7 +79,7 @@ export const TravelPassportBoarding: React.FC<SocialTemplateProps> = ({ data, sc
               <span className="text-xs font-bold uppercase tracking-widest text-sky-400 block mb-1">
                 DESTINO CONFIRMADO
               </span>
-              <h2 className="text-3xl font-black text-white tracking-tight drop-shadow-md">
+              <h2 className="text-3xl font-black text-foreground tracking-tight drop-shadow-md">
                 {data.destinationOrLocation || "Paraíso Exclusivo"}
               </h2>
             </div>
@@ -148,7 +148,7 @@ export const TravelPassportBoarding: React.FC<SocialTemplateProps> = ({ data, sc
             <div className="flex items-center gap-3">
               <div className="hidden sm:flex flex-col items-center opacity-70">
                 <QrCode className="w-12 h-12 text-slate-800" />
-                <span className="text-[10px] font-mono text-slate-500 uppercase mt-1">AUTH-W3Y</span>
+                <span className="text-2xs font-mono text-slate-500 uppercase mt-1">AUTH-W3Y</span>
               </div>
             </div>
           </div>

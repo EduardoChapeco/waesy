@@ -194,7 +194,7 @@ function WorkspaceAiSettingsPage() {
  return (
  <div
  key={prov}
- className={`p-5 rounded-lg border transition-all space-y-4 flex flex-col justify-between ${
+ className={`p-5 rounded-lg border transition-colors duration-200 space-y-4 flex flex-col justify-between ${
  isConfigured
  ? "bg-card border-border/80 shadow-xs"
  : "bg-muted/10 border-dashed border-border/70 opacity-80"
@@ -213,7 +213,7 @@ function WorkspaceAiSettingsPage() {
 
  {isConfigured ? (
  config?.status === "active" ? (
- <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white text-xs gap-1">
+ <Badge className="bg-emerald-600 hover:bg-emerald-600 text-foreground text-xs gap-1">
  <CheckCircle2 className="size-3" /> Conectado
  </Badge>
  ) : config?.status === "error" ? (
@@ -265,7 +265,7 @@ function WorkspaceAiSettingsPage() {
  onClick={() => handleTest(prov)}
  className="flex-1 h-9 rounded-lg text-xs font-bold gap-2 cursor-pointer"
  >
- <Zap className={`size-3.5 ${isTesting ? "animate-spin text-primary" : ""}`} />
+ <Zap className={`size-3.5 ${isTesting ? "animate-spin motion-reduce:animate-none text-primary" : ""}`} />
  {isTesting ? "Testando..." : "Testar"}
  </Button>
 

@@ -120,7 +120,7 @@ export function ReputationComplaintModal({ isOpen, onClose, companyName }: Reput
  <Button type="button" variant="ghost" onClick={onClose} className="min-h-11">
  Cancelar
  </Button>
- <Button type="submit" disabled={isSubmitting} className="min-h-11 bg-rose-600 hover:bg-rose-700 text-white">
+ <Button type="submit" disabled={isSubmitting} className="min-h-11 bg-rose-600 hover:bg-rose-700 text-foreground">
  {isSubmitting ? "Registrando Protocolo..." : "Enviar Reclamação"}
  </Button>
  </DialogFooter>

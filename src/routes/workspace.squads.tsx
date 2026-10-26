@@ -84,7 +84,7 @@ function SquadsPage() {
                   setPromptInput("Comprovante PIX de R$ 1.250,00 pago pela Fornecedora de Embalagens Brasil LTDA em 28/09/2026");
                 }
               }}
-              className={`p-4 rounded-lg border text-left transition-all ${
+              className={`p-4 rounded-lg border text-left transition-colors duration-200 ${
                 isSelected
                   ? "bg-card border-primary shadow-sm ring-1 ring-primary/20"
                   : "bg-card/50 border-border/60 hover:border-border hover:bg-card"
@@ -183,7 +183,7 @@ function SquadsPage() {
               >
                 {executeMutation.isPending ? (
                   <>
-                    <Loader2 className="size-4 mr-2 animate-spin" /> Processando Grafo...
+                    <Loader2 className="size-4 mr-2 animate-spin motion-reduce:animate-none" /> Processando Grafo...
                   </>
                 ) : (
                   <>

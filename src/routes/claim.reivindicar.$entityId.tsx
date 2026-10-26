@@ -171,7 +171,7 @@ function ClaimReivindicarPage() {
                     key={opt.type}
                     type="button"
                     onClick={() => setProofType(opt.type)}
-                    className={`p-4 sm:p-4 rounded-lg border text-left flex items-start gap-3 transition-all min-h-11 cursor-pointer ${
+                    className={`p-4 sm:p-4 rounded-lg border text-left flex items-start gap-3 transition-colors duration-200 min-h-11 cursor-pointer ${
                       isSelected 
                         ? 'border-primary bg-primary/10 shadow-xs ring-1 ring-primary' 
                         : 'border-border/70 bg-card hover:bg-muted/30'
@@ -180,7 +180,7 @@ function ClaimReivindicarPage() {
                     <Icon className={`size-5 shrink-0 mt-1 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
                     <div>
                       <p className="text-base sm:text-sm font-semibold text-foreground">{opt.label}</p>
-                      <p className="text-[11px] text-muted-foreground mt-1 leading-snug">{opt.desc}</p>
+                      <p className="text-2xs text-muted-foreground mt-1 leading-snug">{opt.desc}</p>
                     </div>
                   </button>
                 );

@@ -251,7 +251,7 @@ export default function TableReservationsPage() {
  type="button"
  onClick={() => setActiveView("map")}
  className={cn(
- "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer",
+ "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer",
  activeView === "map"
  ? "bg-background text-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground",
@@ -264,7 +264,7 @@ export default function TableReservationsPage() {
  type="button"
  onClick={() => setActiveView("list")}
  className={cn(
- "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer",
+ "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer",
  activeView === "list"
  ? "bg-background text-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground",
@@ -380,7 +380,7 @@ export default function TableReservationsPage() {
  gridRow: "span 1",
  }}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "relative flex flex-col items-center justify-center gap-2 rounded-lg border-2 transition-all cursor-pointer group",
+ "relative flex flex-col items-center justify-center gap-2 rounded-lg border-2 transition-colors duration-200 cursor-pointer group",
  "p-4 min-h-28 text-center",
  style.border,
  style.bg,

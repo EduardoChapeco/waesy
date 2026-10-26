@@ -95,14 +95,14 @@ export const TourismServicesGrid: React.FC<TourismServicesGridProps> = ({
  <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  key={idx}
  onClick={() => handleServiceClick(srv.title)}
- className="group p-5 rounded-lg bg-card border border-border/70 hover:border-sky-500/60 transition-all cursor-pointer hover:shadow-md flex flex-col justify-between space-y-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="group p-5 rounded-lg bg-card border border-border/70 hover:border-sky-500/60 transition-colors duration-200 cursor-pointer hover:shadow-md flex flex-col justify-between space-y-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="space-y-3">
  <div className="flex items-center justify-between">
  <div className="size-10 rounded-lg bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center group-hover:scale-105 transition-transform">
  <Icon className="size-5" />
  </div>
- <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-muted text-muted-foreground border border-border/50">
+ <span className="text-2xs font-bold px-2 py-1 rounded-full bg-muted text-muted-foreground border border-border/50">
  {srv.badge}
  </span>
  </div>
@@ -116,7 +116,7 @@ export const TourismServicesGrid: React.FC<TourismServicesGridProps> = ({
  </p>
  </div>
 
- <div className="flex items-center text-[11px] font-bold text-sky-600 gap-1 pt-2 border-t border-border/40">
+ <div className="flex items-center text-2xs font-bold text-sky-600 gap-1 pt-2 border-t border-border/40">
  <span>Consultar Opções</span>
  <ArrowRight className="size-3 group-hover:translate-x-1 transition-transform" />
  </div>

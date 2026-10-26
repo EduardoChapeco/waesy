@@ -131,7 +131,7 @@ export function GroceryProductCard({
 
           {hasDiscount && discountPercent > 0 && (
             <div className="absolute top-2 left-2 z-10">
-              <Badge className="bg-destructive text-destructive-foreground text-[9px] font-black px-2 py-0 rounded-md">
+              <Badge className="bg-destructive text-destructive-foreground text-3xs font-black px-2 py-0 rounded-md">
                 -{discountPercent}%
               </Badge>
             </div>
@@ -139,7 +139,7 @@ export function GroceryProductCard({
 
           {product.isOutOfStock && (
             <div className="absolute inset-0 bg-background/85 flex items-center justify-center">
-              <span className="text-[9px] font-black uppercase tracking-wider text-muted-foreground bg-card px-2 py-1 rounded-lg">
+              <span className="text-3xs font-black uppercase tracking-wider text-muted-foreground bg-card px-2 py-1 rounded-lg">
                 Esgotado
               </span>
             </div>
@@ -154,7 +154,7 @@ export function GroceryProductCard({
             className="space-y-1 focus-visible:outline-none block"
           >
             {((product as any).store_name || (product as any).storeName || product.brand) && (
-              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-muted-foreground break-words text-wrap block">
+              <span className="text-3xs sm:text-2xs font-bold uppercase tracking-wider text-muted-foreground break-words text-wrap block">
                 {(product as any).store_name || (product as any).storeName || product.brand}
               </span>
             )}
@@ -164,7 +164,7 @@ export function GroceryProductCard({
             </h3>
 
             {unitLabel && (
-              <span className="text-[10px] text-muted-foreground font-medium block">
+              <span className="text-2xs text-muted-foreground font-medium block">
                 {unitLabel}
               </span>
             )}
@@ -174,7 +174,7 @@ export function GroceryProductCard({
         <div className="shrink-0 flex flex-col items-end gap-2 pl-1">
           <div className="flex flex-col items-end min-w-0">
             {hasDiscount && typeof compareAtCents === "number" && (
-              <span className="text-[9px] text-muted-foreground line-through font-mono">
+              <span className="text-3xs text-muted-foreground line-through font-mono">
                 {formatMoney(compareAtCents)}
               </span>
             )}
@@ -214,7 +214,7 @@ export function GroceryProductCard({
               <Button
                 size="sm"
                 onClick={handleQuickAdd}
-                className="rounded-lg h-7 sm:h-8 px-2 sm:px-3 font-bold text-[11px] sm:text-xs gap-1 cursor-pointer"
+                className="rounded-lg h-7 sm:h-8 px-2 sm:px-3 font-bold text-2xs sm:text-xs gap-1 cursor-pointer"
               >
                 <Plus className="size-3" />
                 <span>Pedir</span>
@@ -224,7 +224,7 @@ export function GroceryProductCard({
                 asChild
                 size="sm"
                 variant="outline"
-                className="rounded-lg h-7 sm:h-8 px-2 sm:px-3 font-bold text-[11px] sm:text-xs border-border cursor-pointer"
+                className="rounded-lg h-7 sm:h-8 px-2 sm:px-3 font-bold text-2xs sm:text-xs border-border cursor-pointer"
               >
                 <Link
                   to="/produto/$slug"
@@ -272,7 +272,7 @@ export function GroceryProductCard({
  {/* Discount Badge */}
  {hasDiscount && discountPercent > 0 && (
  <div className="absolute top-2.5 left-2.5 z-10">
- <Badge className="bg-destructive text-destructive-foreground text-[10px] font-black px-2 py-1 rounded-md ">
+ <Badge className="bg-destructive text-destructive-foreground text-2xs font-black px-2 py-1 rounded-md ">
  -{discountPercent}%
  </Badge>
  </div>
@@ -281,7 +281,7 @@ export function GroceryProductCard({
  {/* Stock out badge */}
  {product.isOutOfStock && (
  <div className="absolute inset-0 bg-background/85 flex items-center justify-center">
- <span className="text-[11px] font-black uppercase tracking-wider text-muted-foreground bg-card px-3 py-1 rounded-lg ">
+ <span className="text-2xs font-black uppercase tracking-wider text-muted-foreground bg-card px-3 py-1 rounded-lg ">
  Esgotado
  </span>
  </div>
@@ -297,7 +297,7 @@ export function GroceryProductCard({
  className="space-y-1 focus-visible:outline-none block"
  >
  {((product as any).store_name || (product as any).storeName || product.brand) && (
- <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground break-words text-wrap">
+ <div className="flex items-center gap-1 text-2xs font-bold uppercase tracking-wider text-muted-foreground break-words text-wrap">
  <span className="break-words text-wrap text-primary/80">
  {(product as any).store_name || (product as any).storeName || product.brand}
  </span>
@@ -309,7 +309,7 @@ export function GroceryProductCard({
  </h3>
 
  {unitLabel ? (
- <span className="text-[11px] text-muted-foreground font-medium block min-h-4 break-words text-wrap">
+ <span className="text-2xs text-muted-foreground font-medium block min-h-4 break-words text-wrap">
  {unitLabel}
  </span>
  ) : (
@@ -321,7 +321,7 @@ export function GroceryProductCard({
  <div className="pt-2 mt-2 flex items-center justify-between gap-2 border-t border-border/40">
  <div className="flex flex-col min-w-0 min-h-9 justify-center">
  {hasDiscount && typeof compareAtCents === "number" && (
- <span className="text-[10px] text-muted-foreground line-through font-mono">
+ <span className="text-2xs text-muted-foreground line-through font-mono">
  {formatMoney(compareAtCents)}
  </span>
  )}

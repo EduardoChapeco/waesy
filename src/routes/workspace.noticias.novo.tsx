@@ -191,7 +191,7 @@ function WorkspaceNovaMateriaPage() {
  className="rounded-lg font-bold text-xs bg-primary text-primary-foreground"
  >
  {isSubmitting ? (
- <Loader2 className="size-3.5 animate-spin mr-2" />
+ <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none mr-2" />
  ) : (
  <CheckCircle2 className="size-3.5 mr-2" />
  )}
@@ -248,7 +248,7 @@ function WorkspaceNovaMateriaPage() {
  >
  {isAiProcessing ? (
  <>
- <Loader2 className="size-3.5 animate-spin" />
+ <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
  Processando...
  </>
  ) : (

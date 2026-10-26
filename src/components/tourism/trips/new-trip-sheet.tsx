@@ -341,7 +341,7 @@ export function NewTripSheet({
           >
             {createMutation.isPending ? (
               <>
-                <Loader2 className="size-3.5 animate-spin" />
+                <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
                 <span>Registrando...</span>
               </>
             ) : (

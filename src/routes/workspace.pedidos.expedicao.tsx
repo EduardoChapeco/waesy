@@ -326,7 +326,7 @@ function WmsExpedicaoPage() {
                 <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} 
                   key={batch.id} 
                   onClick={() => setSelectedBatchId(batch.id)}
-                  className={`p-4 rounded-lg border transition-all cursor-pointer select-none space-y-3 ${
+                  className={`p-4 rounded-lg border transition-colors duration-200 cursor-pointer select-none space-y-3 ${
                     isSelected 
                       ? "bg-primary/5 border-primary shadow-xs ring-2 ring-primary/20" 
                       : "bg-muted/40 border-border hover:border-primary/40"

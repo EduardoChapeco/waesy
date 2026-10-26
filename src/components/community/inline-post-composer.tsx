@@ -492,7 +492,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
                 type="button"
                 onClick={() => setPostAsCreator(false)}
                 className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "h-7 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer",
+                  "h-7 px-3 rounded-lg text-xs font-semibold transition-colors duration-200 cursor-pointer",
                   !postAsCreator
                     ? "bg-background text-foreground shadow-2xs font-bold"
                     : "text-muted-foreground hover:text-foreground"
@@ -504,7 +504,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
                 type="button"
                 onClick={() => setPostAsCreator(true)}
                 className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "h-7 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1",
+                  "h-7 px-3 rounded-lg text-xs font-semibold transition-colors duration-200 cursor-pointer flex items-center gap-1",
                   postAsCreator
                     ? "bg-background text-foreground shadow-2xs font-bold"
                     : "text-muted-foreground hover:text-foreground"
@@ -543,7 +543,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
               type="button"
               onClick={() => setSelectedTemplate(opt.id)}
               className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                "h-8 px-3 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-2 select-none",
+                "h-8 px-3 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors duration-200 cursor-pointer flex items-center gap-2 select-none",
                 isActive
                   ? "bg-foreground text-background font-bold shadow-2xs"
                   : "bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -560,7 +560,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
       {selectedTemplate === "travel" && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-lg bg-muted/30 border border-border/60">
           <div className="space-y-1">
-            <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Origem</label>
+            <label className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">Origem</label>
             <Input
               value={travelOrigin}
               onChange={(e) => setTravelOrigin(e.target.value)}
@@ -569,7 +569,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Destino</label>
+            <label className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">Destino</label>
             <Input
               value={travelDestination}
               onChange={(e) => setTravelDestination(e.target.value)}
@@ -651,7 +651,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
         value={content}
         onChange={(e) => setContent(e.target.value)}
         onPaste={handleClipboardPaste}
-        className="min-h-24 text-sm sm:text-base border border-border/40 rounded-lg bg-muted/20 focus:bg-background focus:border-primary/40 p-4 text-foreground transition-all resize-none focus-visible:ring-1 focus-visible:ring-primary/20 placeholder:text-muted-foreground/70"
+        className="min-h-24 text-sm sm:text-base border border-border/40 rounded-lg bg-muted/20 focus:bg-background focus:border-primary/40 p-4 text-foreground transition-colors duration-200 resize-none focus-visible:ring-1 focus-visible:ring-primary/20 placeholder:text-muted-foreground/70"
       />
 
       {/* ── 5. Previews de Mídia com Upload Múltiplo (Até 10) ────────────────── */}
@@ -660,12 +660,12 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
           {mediaPreviews.map((preview, index) => (
             <div
               key={index}
-              className="relative overflow-hidden rounded-lg bg-black inline-block size-24 shrink-0 border border-border/50"
+              className="relative overflow-hidden rounded-lg bg-foreground inline-block size-24 shrink-0 border border-border/50"
             >
               {isUploadingMedia && index >= mediaUrls.length && (
-                <div className="absolute inset-0 bg-black/70 backdrop-blur-xs flex flex-col items-center justify-center z-20 gap-1 text-white">
-                  <CircleNotch className="size-5 animate-spin text-primary" />
-                  <span className="text-[10px] font-bold">Enviando...</span>
+                <div className="absolute inset-0 bg-foreground/70 backdrop-blur-xs flex flex-col items-center justify-center z-20 gap-1 text-foreground">
+                  <CircleNotch className="size-5 animate-spin motion-reduce:animate-none text-primary" />
+                  <span className="text-2xs font-bold">Enviando...</span>
                 </div>
               )}
 
@@ -687,7 +687,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
               )}
 
               {preview.type === "video" && (
-                <div className="absolute bottom-1.5 left-1.5 bg-black/70 text-white px-2 py-1 rounded-md text-[9px] flex items-center gap-1 font-bold">
+                <div className="absolute bottom-1.5 left-1.5 bg-foreground/70 text-foreground px-2 py-1 rounded-md text-3xs flex items-center gap-1 font-bold">
                   <FilmStrip size={10} weight="bold" />
                   <span>Vídeo</span>
                 </div>
@@ -696,7 +696,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
               <button
                 type="button"
                 onClick={() => removeMedia(index)}
-                className="absolute top-1.5 right-1.5 size-6 bg-black/80 text-white rounded-lg flex items-center justify-center hover:bg-black z-30 transition-all hover:scale-110 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="absolute top-1.5 right-1.5 size-6 bg-foreground/80 text-foreground rounded-lg flex items-center justify-center hover:bg-foreground z-30 transition-transform duration-200 hover:scale-110 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label="Remover mídia"
               >
                 <X size={12} weight="bold" />
@@ -721,7 +721,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
                 variant={isPaidPartnership ? "default" : "outline"}
                 size="sm"
                 onClick={() => setIsPaidPartnership(!isPaidPartnership)}
-                className="h-7 px-3 rounded-lg text-[11px] font-semibold"
+                className="h-7 px-3 rounded-lg text-2xs font-semibold"
               >
                 {isPaidPartnership ? "Parceria Paga Ativa" : "Marcar Parceria"}
               </Button>
@@ -836,11 +836,11 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
             isUploadingMedia ||
             (!content.trim() && mediaUrls.length === 0 && !newsTitle.trim() && !travelDestination.trim())
           }
-          className="h-11 px-7 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:opacity-90 active:scale-98 transition-all cursor-pointer shadow-xs"
+          className="h-11 px-7 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:opacity-90 active:scale-98 transition-transform duration-200 cursor-pointer shadow-xs"
         >
           {isSubmitting ? (
             <>
-              <CircleNotch size={14} className="animate-spin mr-2" />
+              <CircleNotch size={14} className="animate-spin motion-reduce:animate-none mr-2" />
               Publicando...
             </>
           ) : (

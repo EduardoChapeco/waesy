@@ -3,6 +3,9 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { InlinePostComposer } from "@/components/community/inline-post-composer";
 import { PostCard } from "@/components/community/post-card";
+import { FeedThreadPostCard } from "@/components/community/FeedThreadPostCard";
+import { UnifiedFeedCard } from "@/components/commerce/unified-feed-card";
+import { LayoutGrid, AlignLeft } from "lucide-react";
 import { FeedBannerBlock } from "@/components/community/feed-banner-block";
 import { FloatingCommunityDock } from "@/components/community/floating-community-dock";
 import { StoryRail } from "@/components/community/story-rail";
@@ -59,6 +62,7 @@ const FEED_TABS: { id: FeedTab; label: string }[] = [
 function FeedPage() {
   const { initialFeed, profile, session } = ((Route.useLoaderData?.() as any) || {});
   const [activeTab, setActiveTab] = useState<FeedTab>("for_you");
+  const [displayMode, setDisplayMode] = useState<"threads" | "instagram">("threads");
 
   const { data: feed, isLoading } = useQuery({
     queryKey: ["community-feed", activeTab],
@@ -83,24 +87,57 @@ function FeedPage() {
       <div className="max-w-2xl mx-auto px-0 sm:px-4 py-2 sm:py-5 space-y-3 sm:space-y-4">
         {/* ── 1. Menu de Abas Canônicas (Apple HIG) ───────────────────────── */}
         <div className="flex items-center justify-between gap-2 overflow-x-auto no-scrollbar px-0">
-          <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-lg border border-border/40 w-full sm:w-auto overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-xl border border-border/40 grow sm:grow-0 overflow-x-auto no-scrollbar">
             {FEED_TABS.map((tab) => {
               const isActive = activeTab === tab.id;
               return (
                 <button
                   key={tab.id}
                   type="button"
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`h-9 px-4 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer select-none ${
+                  className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary h-11 min-h-11 px-4 sm:px-4 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors duration-200 cursor-pointer select-none ${
                     isActive
-                      ? "bg-card text-foreground shadow-2xs font-bold"
+                      ? "bg-card text-foreground shadow-xs font-bold"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
-                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+                  }`}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    if (tab.id === "photos") setDisplayMode("instagram");
+                  }}
                 >
                   {tab.label}
                 </button>
               );
             })}
+          </div>
+
+          {/* Alternador de Visualização Canônica: Threads (Editorial) vs Instagram (Grade Visual) */}
+          <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-xl border border-border/40 shrink-0">
+            <button
+              type="button"
+              className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center transition-colors duration-200 cursor-pointer select-none ${
+                displayMode === "threads"
+                  ? "bg-card text-foreground shadow-xs font-bold"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+              }`}
+              onClick={() => setDisplayMode("threads")}
+              title="Modo Threads (Editorial & Conversas)"
+              aria-label="Modo Threads"
+            >
+              <AlignLeft className="size-4" />
+            </button>
+            <button
+              type="button"
+              className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center transition-colors duration-200 cursor-pointer select-none ${
+                displayMode === "instagram"
+                  ? "bg-card text-foreground shadow-xs font-bold"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+              }`}
+              onClick={() => setDisplayMode("instagram")}
+              title="Modo Instagram (Grade Fotográfica)"
+              aria-label="Modo Instagram"
+            >
+              <LayoutGrid className="size-4" />
+            </button>
           </div>
         </div>
 
@@ -113,7 +150,7 @@ function FeedPage() {
         {/* ── 3. Lista de Publicações & Estados da Comunidade ───────────────── */}
         {isLoading ? (
           <div className="py-14 flex flex-col items-center justify-center gap-2 text-muted-foreground">
-            <Loader2 className="size-6 animate-spin text-primary" />
+            <Loader2 className="size-6 animate-spin motion-reduce:animate-none text-primary" />
             <span className="text-xs">Carregando feed...</span>
           </div>
         ) : activeTab === "following" && requiresAuth ? (
@@ -175,12 +212,38 @@ function FeedPage() {
               </p>
             </div>
           </div>
-        ) : (
-          <div className="space-y-4">
+        ) : displayMode === "instagram" || activeTab === "photos" ? (
+          /* ── Modo Instagram: Grade Fotográfica 3 Colunas (CLS = 0) ── */
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
             {items.map((post: any) => (
-              <PostCard
+              <UnifiedFeedCard
                 key={post.id}
-                item={post}
+                post={{
+                  id: post.id,
+                  content_text: post.content_text,
+                  media_urls: post.media_urls,
+                  media_url: post.media_urls?.[0],
+                  likes_count: post.likes_count,
+                  comments_count: post.comments_count ?? post.replies_count ?? 0,
+                  author: {
+                    id: post.author?.id,
+                    full_name: post.author?.name,
+                    avatar_url: post.author?.avatar_url,
+                    is_verified: post.author?.is_verified,
+                  },
+                  created_at: post.created_at,
+                }}
+                mode="grid"
+              />
+            ))}
+          </div>
+        ) : (
+          /* ── Modo Threads: Card Editorial com Linha Contínua & Ações Táteis ── */
+          <div className="space-y-3 sm:space-y-4">
+            {items.map((post: any) => (
+              <FeedThreadPostCard
+                key={post.id}
+                post={post}
                 session={session || (profile ? { user: profile } : undefined)}
                 queryKey={["community-feed", activeTab]}
               />

@@ -254,7 +254,7 @@ export default function WorkspaceTurismoCockpitPage() {
     <div className="w-full max-w-7xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0 animate-in fade-in duration-200">
       {/* ── Barra Superior Canônica ── */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-border/40 pb-4 pt-1">
-        <div className="flex items-center gap-2.5 min-w-0">
+        <div className="flex items-center gap-3 min-w-0">
           <span className="p-2 rounded-lg bg-primary/10 text-primary shrink-0">
             <Compass className="size-5" />
           </span>
@@ -267,7 +267,7 @@ export default function WorkspaceTurismoCockpitPage() {
                 {pipelineMetrics.totalLeads} oportunidades
               </Badge>
             </div>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted-foreground mt-1">
               Cockpit comercial unificado: Atendimento, montagem de propostas e viagens confirmadas
             </p>
           </div>
@@ -279,7 +279,7 @@ export default function WorkspaceTurismoCockpitPage() {
             type="button"
             variant="outline"
             onClick={() => setIsDashboardOpen(true)}
-            className="h-11 min-h-11 px-3.5 text-xs font-medium gap-1.5"
+            className="h-11 min-h-11 px-4 text-xs font-medium gap-2"
           >
             <TrendingUp className="size-3.5 text-primary" />
             <span>Métricas</span>
@@ -384,7 +384,7 @@ export default function WorkspaceTurismoCockpitPage() {
                     <span className={`size-2 rounded-full ${stage.dotColor}`} />
                     <span className="text-xs font-bold text-foreground">{stage.title}</span>
                   </div>
-                  <Badge variant="outline" className="text-xs font-mono px-1.5 h-5">
+                  <Badge variant="outline" className="text-xs font-mono px-2 h-5">
                     {stageLeads.length}
                   </Badge>
                 </div>
@@ -407,7 +407,7 @@ export default function WorkspaceTurismoCockpitPage() {
                             setSelectedLead(lead);
                           }
                         }}
-                        className="p-3 rounded-lg border border-border/60 bg-background hover:border-primary/50 transition-colors shadow-sm space-y-2.5 cursor-pointer text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        className="p-3 rounded-lg border border-border/60 bg-background hover:border-primary/50 transition-colors shadow-sm space-y-3 cursor-pointer text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         onClick={() => setSelectedLead(lead)}
                       >
                         <div className="flex items-start justify-between gap-2">
@@ -420,7 +420,7 @@ export default function WorkspaceTurismoCockpitPage() {
                         </div>
 
                         {lead.destination && (
-                          <div className="flex items-center gap-1.5 text-muted-foreground text-xs">
+                          <div className="flex items-center gap-2 text-muted-foreground text-xs">
                             <MapPin className="size-3 text-primary shrink-0" />
                             <span className="truncate">{lead.destination}</span>
                           </div>
@@ -480,7 +480,7 @@ export default function WorkspaceTurismoCockpitPage() {
                   key={trip.id}
                   to="/workspace/turismo/viagens/$id"
                   params={{ id: trip.id }}
-                  className="p-4 rounded-lg border border-border/60 bg-card hover:border-primary/50 transition-colors block text-xs space-y-2.5"
+                  className="p-4 rounded-lg border border-border/60 bg-card hover:border-primary/50 transition-colors block text-xs space-y-3"
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-foreground text-sm truncate">
@@ -531,7 +531,7 @@ export default function WorkspaceTurismoCockpitPage() {
               {proposals.map((prop: any) => (
                 <div
                   key={prop.id}
-                  className="p-4 rounded-lg border border-border/60 bg-card space-y-2.5 text-xs"
+                  className="p-4 rounded-lg border border-border/60 bg-card space-y-3 text-xs"
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-foreground truncate block">
@@ -555,7 +555,7 @@ export default function WorkspaceTurismoCockpitPage() {
                       asChild
                       variant="outline"
                       size="sm"
-                      className="h-8 px-2.5 text-xs font-semibold gap-1.5"
+                      className="h-8 px-3 text-xs font-semibold gap-2"
                     >
                       <Link to="/workspace/turismo/propostas/$id" params={{ id: prop.id }}>
                         <Eye className="size-3" />

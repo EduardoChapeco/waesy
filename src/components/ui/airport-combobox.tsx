@@ -163,11 +163,11 @@ function AirportPickerPanel({
 
       {/* Hubs Rápidos de 1 Toque */}
       {isSearchEmpty && (
-        <div className="px-4 space-y-1.5">
+        <div className="px-4 space-y-2">
           <div className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
             Destinos Mais Procurados
           </div>
-          <div className="flex flex-wrap items-center gap-1.5 pb-1 max-h-28 overflow-y-auto no-scrollbar">
+          <div className="flex flex-wrap items-center gap-2 pb-1 max-h-28 overflow-y-auto no-scrollbar">
             {POPULAR_HUBS.map((hub) => {
               const isSelected = selectedAirport?.iata_code === hub.iata;
               return (
@@ -440,7 +440,7 @@ export function AirportCombobox({
       </div>
 
       {showAirportLink && selectedAirport && (
-        <div className="flex items-center justify-between text-xs pt-1 px-0.5">
+        <div className="flex items-center justify-between text-xs pt-1 px-1">
           <span className="text-muted-foreground text-2xs">Aeroporto selecionado:</span>
           <a
             href={`/aeroporto/${selectedAirport.iata_code.toLowerCase()}`}

@@ -529,7 +529,7 @@ export function ClassifiedDetailMobile({
 
       {/* ── 2.1 MINIATURAS INICIANDO RENTE À MARGEM ESQUERDA (100% visíveis com px-4) ── */}
       {images.length > 1 && (
-        <div className="px-4 py-1.5 flex gap-2 overflow-x-auto no-scrollbar w-full">
+        <div className="px-4 py-2 flex gap-2 overflow-x-auto no-scrollbar w-full">
           {images.map((imgUrl, idx) => (
             <button
               key={idx}
@@ -885,7 +885,7 @@ export function ClassifiedDetailMobile({
                   <div className="space-y-2">
                     {/* Item 1: Alimentação */}
                     <div className="p-3 rounded-lg bg-muted/20 border border-border/40 flex items-start gap-3">
-                      <div className="size-8 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+                      <div className="size-8 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
                         <Utensils className="size-4" />
                       </div>
                       <div className="min-w-0 text-xs leading-snug space-y-0.5">
@@ -896,7 +896,7 @@ export function ClassifiedDetailMobile({
 
                     {/* Item 2: Traslados */}
                     <div className="p-3 rounded-lg bg-muted/20 border border-border/40 flex items-start gap-3">
-                      <div className="size-8 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+                      <div className="size-8 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
                         <Truck className="size-4" />
                       </div>
                       <div className="min-w-0 text-xs leading-snug space-y-0.5">
@@ -907,7 +907,7 @@ export function ClassifiedDetailMobile({
 
                     {/* Item 3: Passeios */}
                     <div className="p-3 rounded-lg bg-muted/20 border border-border/40 flex items-start gap-3">
-                      <div className="size-8 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+                      <div className="size-8 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
                         <Compass className="size-4" />
                       </div>
                       <div className="min-w-0 text-xs leading-snug space-y-0.5">
@@ -918,7 +918,7 @@ export function ClassifiedDetailMobile({
 
                     {/* Item 4: Suporte e Seguro */}
                     <div className="p-3 rounded-lg bg-muted/20 border border-border/40 flex items-start gap-3">
-                      <div className="size-8 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
+                      <div className="size-8 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-1">
                         <ShieldCheck className="size-4" />
                       </div>
                       <div className="min-w-0 text-xs leading-snug space-y-0.5">

@@ -96,7 +96,7 @@ export function BiolinkActionButtonsSection({
  target="_blank"
  rel="noreferrer"
  className={cn(
- "w-full h-12 px-5 rounded-lg flex items-center justify-between text-xs font-bold transition-all shadow-2xs group cursor-pointer border",
+ "w-full h-12 px-5 rounded-lg flex items-center justify-between text-xs font-bold transition-colors duration-200 shadow-2xs group cursor-pointer border",
  link.isHighlight
  ? "bg-primary text-primary-foreground border-primary hover:opacity-90"
  : "bg-card text-foreground border-border/80 hover:bg-muted/60 hover:border-primary/40"
@@ -108,8 +108,8 @@ export function BiolinkActionButtonsSection({
  <Badge
  variant="secondary"
  className={cn(
- "text-[10px] px-2 py-0",
- link.isHighlight && "bg-white/20 text-white border-0"
+ "text-2xs px-2 py-0",
+ link.isHighlight && "bg-card/20 text-foreground border-0"
  )}
  >
  {link.badge}
@@ -154,12 +154,12 @@ export function BiolinkPixCardSection({
 
  <div className="space-y-1">
  <p className="text-sm font-bold text-foreground">{beneficiaryName}</p>
- <span className="text-[11px] text-muted-foreground">{bankName}</span>
+ <span className="text-2xs text-muted-foreground">{bankName}</span>
  </div>
 
  <div className="p-3 rounded-lg bg-muted/50 border border-border/60 flex items-center justify-between gap-2">
  <div className="text-left min-w-0 flex-1">
- <span className="text-[10px] text-muted-foreground block font-mono">{pixKeyType}</span>
+ <span className="text-2xs text-muted-foreground block font-mono">{pixKeyType}</span>
  <span className="text-xs font-mono font-bold text-foreground truncate block">{pixKey}</span>
  </div>
 
@@ -167,7 +167,7 @@ export function BiolinkPixCardSection({
  type="button"
  size="sm"
  onClick={handleCopy}
- className="h-8 rounded-lg font-bold text-[11px] gap-2 bg-primary text-primary-foreground cursor-pointer shrink-0"
+ className="h-8 rounded-lg font-bold text-2xs gap-2 bg-primary text-primary-foreground cursor-pointer shrink-0"
  >
  {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
  <span>{copied ? "Copiado!" : "Copiar"}</span>

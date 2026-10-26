@@ -866,7 +866,7 @@ function WorkspaceHotelsPage() {
  return (
  <div
  key={hotel.id}
- className="bg-card rounded-lg overflow-hidden border border-border/70 hover:border-primary/40 transition-all group flex flex-col shadow-2xs hover:shadow-sm"
+ className="bg-card rounded-lg overflow-hidden border border-border/70 hover:border-primary/40 transition-colors duration-200 group flex flex-col shadow-2xs hover:shadow-sm"
  >
  {/* Foto de Capa & Badges */}
  <div className="relative aspect-video w-full bg-muted/30 overflow-hidden">
@@ -886,27 +886,27 @@ function WorkspaceHotelsPage() {
 
  {/* Top Badges */}
  <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
- <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-bold font-mono tracking-wide">
+ <span className="px-3 py-1 rounded-full bg-foreground/60 backdrop-blur-md text-foreground text-xs font-bold font-mono tracking-wide">
  {hotel.stars || 4} Estrelas
  </span>
 
  <div className="flex items-center gap-2">
  {photosCount > 1 && (
- <span className="px-2 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-semibold flex items-center gap-1">
+ <span className="px-2 py-1 rounded-full bg-foreground/60 backdrop-blur-md text-foreground text-xs font-semibold flex items-center gap-1">
  <Camera className="size-3" />
  <span>{photosCount} fotos</span>
  </span>
  )}
- <Badge className="bg-emerald-600 text-white font-semibold text-xs border-none shadow-xs">
+ <Badge className="bg-emerald-600 text-foreground font-semibold text-xs border-none shadow-xs">
  {hotel.internal_rating ? `Nota ${hotel.internal_rating}` : "Novo"}
  </Badge>
  </div>
  </div>
 
  {/* Bottom Info on Capa */}
- <div className="absolute bottom-3 left-3 right-3 text-white space-y-1">
+ <div className="absolute bottom-3 left-3 right-3 text-foreground space-y-1">
  <h4 className="text-base font-bold drop-shadow-sm truncate">{hotel.name}</h4>
- <p className="text-xs text-white/80 truncate flex items-center gap-1">
+ <p className="text-xs text-foreground/80 truncate flex items-center gap-1">
  <MapPin className="size-3 shrink-0 text-primary-foreground/90" />
  <span>
  {hotel.city}, {hotel.state || hotel.country}
@@ -1190,15 +1190,15 @@ function WorkspaceHotelsPage() {
                     </div>
                   )}
  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
- <div className="absolute bottom-4 left-5 right-5 text-white">
+ <div className="absolute bottom-4 left-5 right-5 text-foreground">
  <div className="flex items-center gap-2 text-xs font-bold mb-1">
- <span className="px-2 py-1 rounded-full bg-white/20 backdrop-blur-md text-white font-mono text-xs">
+ <span className="px-2 py-1 rounded-full bg-card/20 backdrop-blur-md text-foreground font-mono text-xs">
  {previewHotel.stars || 4} Estrelas
  </span>
- {(previewHotel.internal_rating || 0) > 0 ? <span className="text-white/80 font-normal ml-1">Nota {previewHotel.internal_rating} / 5.0</span> : null}
+ {(previewHotel.internal_rating || 0) > 0 ? <span className="text-foreground/80 font-normal ml-1">Nota {previewHotel.internal_rating} / 5.0</span> : null}
  </div>
  <h2 className="text-xl font-bold">{previewHotel.name}</h2>
- <p className="text-xs text-white/80 flex items-center gap-1">
+ <p className="text-xs text-foreground/80 flex items-center gap-1">
  <MapPin className="size-3 text-primary-foreground" />
  <span>{previewHotel.address || `${previewHotel.city}, ${previewHotel.state || previewHotel.country}`}</span>
  </p>
@@ -1725,7 +1725,7 @@ function WorkspaceHotelsPage() {
  <button
  type="button"
  onClick={() => handleRemovePhoto(idx)}
- className="absolute top-1.5 right-1.5 size-6 rounded-full bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="absolute top-1.5 right-1.5 size-6 rounded-full bg-foreground/70 text-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <X className="size-3.5" />
  </button>
@@ -1885,7 +1885,7 @@ function WorkspaceHotelsPage() {
  type="button"
  onClick={() => toggleAmenityBadge(opt)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "p-3 rounded-lg text-left text-xs font-semibold border transition-all cursor-pointer flex items-center justify-between",
+ "p-3 rounded-lg text-left text-xs font-semibold border transition-colors duration-200 cursor-pointer flex items-center justify-between",
  isActive
  ? "bg-primary/10 text-primary border-primary shadow-xs"
  : "bg-background text-muted-foreground border-border/70 hover:text-foreground hover:bg-muted/30"

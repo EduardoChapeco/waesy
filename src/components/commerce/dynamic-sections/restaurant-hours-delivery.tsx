@@ -75,7 +75,7 @@ export function RestaurantHoursDeliverySection({
  <section className="py-12 bg-background w-full">
  <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-6">
  <div className="text-center max-w-xl mx-auto space-y-2">
- <Badge variant="outline" className="text-[11px] font-mono text-muted-foreground border-border/80">
+ <Badge variant="outline" className="text-2xs font-mono text-muted-foreground border-border/80">
  Operação
  </Badge>
  <h2 className="text-2xl font-bold text-foreground tracking-tight">{title}</h2>

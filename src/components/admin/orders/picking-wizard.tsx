@@ -140,7 +140,7 @@ export function PickingWizard({ order, isOpen, onOpenChange, onComplete }: Picki
 
  {isLoadingSession ? (
  <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
- <Loader2 className="h-8 w-8 animate-spin mb-4" />
+ <Loader2 className="h-8 w-8 animate-spin motion-reduce:animate-none mb-4" />
  <p>Estabelecendo sessão segura com o WMS...</p>
  </div>
  ) : (
@@ -184,14 +184,14 @@ export function PickingWizard({ order, isOpen, onOpenChange, onComplete }: Picki
         if (!isChecked) handlePickItem(item);
       }
     }}
-    className={`flex gap-4 p-4 border transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${isChecked ? "border-success/40 bg-success/5" : "border-border/50 hover:border-primary/40 hover:bg-muted/20"} ${isProcessing ? "opacity-50 pointer-events-none" : ""}`}
+    className={`flex gap-4 p-4 border transition-colors duration-200 duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${isChecked ? "border-success/40 bg-success/5" : "border-border/50 hover:border-primary/40 hover:bg-muted/20"} ${isProcessing ? "opacity-50 pointer-events-none" : ""}`}
     onClick={() => {
       if (!isChecked) handlePickItem(item);
     }}
   >
  <div className="pt-1">
  {isProcessing ? (
- <Loader2 className="h-5 w-5 animate-spin text-primary" />
+ <Loader2 className="h-5 w-5 animate-spin motion-reduce:animate-none text-primary" />
  ) : (
  <Checkbox
  checked={isChecked}

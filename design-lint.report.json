@@ -1,79 +1,76 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-23T18:59:10.019Z",
-  "inspectedFiles": 2337,
-  "totalViolations": 10256,
+  "timestamp": "2026-10-26T21:00:39.977Z",
+  "inspectedFiles": 2354,
+  "totalViolations": 5608,
   "summary": {
-    "totalViolations": 10256,
+    "totalViolations": 5608,
     "bySeverity": {
       "P0": 0,
-      "P1": 7731,
-      "P2": 1342,
-      "P3": 1183
+      "P1": 3913,
+      "P2": 1439,
+      "P3": 256
     },
     "byRule": {
-      "DL-30": 259,
-      "DL-27": 924,
+      "DL-30": 256,
       "DL-26": 81,
-      "DL-07": 449,
-      "DL-29": 116,
-      "DL-02": 3094,
-      "DL-14": 1794,
-      "DL-28": 269,
-      "DL-18": 1133,
-      "DL-03": 427,
-      "DL-09": 222,
-      "DL-08": 95,
-      "DL-01": 826,
+      "DL-07": 457,
+      "DL-29": 119,
+      "DL-02": 1037,
+      "DL-14": 1796,
+      "DL-09": 306,
+      "DL-08": 96,
+      "DL-01": 863,
+      "DL-03": 28,
       "DL-25": 21,
-      "DL-23": 353,
+      "DL-23": 354,
       "DL-24": 2,
       "DL-05": 129,
       "DL-13": 10,
-      "DL-12": 29,
+      "DL-12": 30,
       "DL-11": 20,
       "DL-06": 3
     },
     "byModule": {
       "components/app": {
-        "total": 4368,
+        "total": 2033,
         "P0": 0,
-        "P1": 3264,
-        "P2": 617,
-        "P3": 487
+        "P1": 1298,
+        "P2": 670,
+        "P3": 65
       },
       "components/builder": {
-        "total": 77,
+        "total": 44,
         "P0": 0,
-        "P1": 45,
+        "P1": 21,
         "P2": 21,
-        "P3": 11
+        "P3": 2
       },
       "components/chat": {
-        "total": 193,
+        "total": 86,
         "P0": 0,
-        "P1": 116,
+        "P1": 18,
         "P2": 62,
-        "P3": 15
+        "P3": 6
       },
       "components/tourism": {
-        "total": 899,
+        "total": 481,
         "P0": 0,
-        "P1": 729,
+        "P1": 352,
         "P2": 126,
-        "P3": 44
+        "P3": 3
       },
       "components/ui": {
-        "total": 278,
+        "total": 222,
         "P0": 0,
-        "P1": 219,
-        "P2": 19,
-        "P3": 40
+        "P1": 172,
+        "P2": 34,
+        "P3": 16
       },
       "hooks": {
-        "total": 12,
+        "total": 11,
         "P0": 0,
-        "P1": 8,
+        "P1": 7,
         "P2": 4,
         "P3": 0
       },
@@ -85,11 +82,11 @@
         "P3": 0
       },
       "routes/admin": {
-        "total": 921,
+        "total": 330,
         "P0": 0,
-        "P1": 749,
+        "P1": 232,
         "P2": 50,
-        "P3": 122
+        "P3": 48
       },
       "routes/api": {
         "total": 6,
@@ -99,32 +96,32 @@
         "P3": 0
       },
       "routes/other": {
-        "total": 113,
+        "total": 92,
         "P0": 0,
-        "P1": 91,
-        "P2": 16,
-        "P3": 6
+        "P1": 46,
+        "P2": 45,
+        "P3": 1
       },
       "routes/workspace": {
-        "total": 1664,
+        "total": 1197,
         "P0": 0,
-        "P1": 1296,
+        "P1": 1016,
         "P2": 109,
-        "P3": 259
+        "P3": 72
       },
       "routes/store": {
-        "total": 1251,
+        "total": 600,
         "P0": 0,
-        "P1": 843,
-        "P2": 211,
-        "P3": 197
+        "P1": 345,
+        "P2": 213,
+        "P3": 42
       },
       "services": {
-        "total": 210,
+        "total": 242,
         "P0": 0,
-        "P1": 145,
-        "P2": 63,
-        "P3": 2
+        "P1": 180,
+        "P2": 61,
+        "P3": 1
       },
       "styles": {
         "total": 9,
@@ -141,8 +138,8 @@
         "P3": 0
       }
     },
-    "filesWithViolations": 861,
-    "filesCount": 2337
+    "filesWithViolations": 804,
+    "filesCount": 2354
   },
   "config": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -385,17 +382,6 @@
       "message": "Overflow horizontal \"overflow-x-auto\" em superfície de aplicação fora de tabela/carrossel."
     },
     {
-      "id": "DL-27",
-      "rule": "DL-27",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
-      "module": "components/app",
-      "line": 8,
-      "column": 30,
-      "severity": "P3",
-      "match": "transition-all",
-      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
-    },
-    {
       "id": "DL-26",
       "rule": "DL-26",
       "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
@@ -451,17 +437,6 @@
       "message": "Sombra decorativa \"shadow-xl\" em superfície de aplicação. Sombras restritas a overlays."
     },
     {
-      "id": "DL-27",
-      "rule": "DL-27",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
-      "module": "components/app",
-      "line": 21,
-      "column": 55,
-      "severity": "P3",
-      "match": "transition-all",
-      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
-    },
-    {
       "id": "DL-07",
       "rule": "DL-07",
       "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
@@ -471,17 +446,6 @@
       "severity": "P2",
       "match": "shadow-lg",
       "message": "Sombra decorativa \"shadow-lg\" em superfície de aplicação. Sombras restritas a overlays."
-    },
-    {
-      "id": "DL-27",
-      "rule": "DL-27",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
-      "module": "components/app",
-      "line": 23,
-      "column": 67,
-      "severity": "P3",
-      "match": "transition-all",
-      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
     },
     {
       "id": "DL-26",
@@ -506,39 +470,6 @@
       "message": "Sombra decorativa \"shadow-xl\" em superfície de aplicação. Sombras restritas a overlays."
     },
     {
-      "id": "DL-27",
-      "rule": "DL-27",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
-      "module": "components/app",
-      "line": 80,
-      "column": 146,
-      "severity": "P3",
-      "match": "transition-all",
-      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
-    },
-    {
-      "id": "DL-27",
-      "rule": "DL-27",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
-      "module": "components/app",
-      "line": 160,
-      "column": 147,
-      "severity": "P3",
-      "match": "transition-all",
-      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
-    },
-    {
-      "id": "DL-27",
-      "rule": "DL-27",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
-      "module": "components/app",
-      "line": 224,
-      "column": 144,
-      "severity": "P3",
-      "match": "transition-all",
-      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
-    },
-    {
       "id": "DL-29",
       "rule": "DL-29",
       "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-docking-matrix.tsx",
@@ -548,17 +479,6 @@
       "severity": "P2",
       "match": "grid-cols-3",
       "message": "Grid de 3 ou mais colunas \"grid-cols-3\" aplicado sem prefixo responsivo (sm:/md:/lg:), quebrando telas móveis."
-    },
-    {
-      "id": "DL-27",
-      "rule": "DL-27",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-docking-matrix.tsx",
-      "module": "components/app",
-      "line": 56,
-      "column": 73,
-      "severity": "P3",
-      "match": "transition-all",
-      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
     },
     {
       "id": "DL-07",
@@ -583,83 +503,6 @@
       "message": "Overflow horizontal \"overflow-x-auto\" em superfície de aplicação fora de tabela/carrossel."
     },
     {
-      "id": "DL-27",
-      "rule": "DL-27",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
-      "module": "components/app",
-      "line": 336,
-      "column": 26,
-      "severity": "P3",
-      "match": "transition-all",
-      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
-    },
-    {
-      "id": "DL-27",
-      "rule": "DL-27",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
-      "module": "components/app",
-      "line": 350,
-      "column": 26,
-      "severity": "P3",
-      "match": "transition-all",
-      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
-    },
-    {
-      "id": "DL-27",
-      "rule": "DL-27",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
-      "module": "components/app",
-      "line": 364,
-      "column": 26,
-      "severity": "P3",
-      "match": "transition-all",
-      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
-    },
-    {
-      "id": "DL-27",
-      "rule": "DL-27",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
-      "module": "components/app",
-      "line": 378,
-      "column": 26,
-      "severity": "P3",
-      "match": "transition-all",
-      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
-    },
-    {
-      "id": "DL-27",
-      "rule": "DL-27",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
-      "module": "components/app",
-      "line": 392,
-      "column": 26,
-      "severity": "P3",
-      "match": "transition-all",
-      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
-    },
-    {
-      "id": "DL-27",
-      "rule": "DL-27",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
-      "module": "components/app",
-      "line": 778,
-      "column": 41,
-      "severity": "P3",
-      "match": "transition-all",
-      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
-    },
-    {
-      "id": "DL-27",
-      "rule": "DL-27",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
-      "module": "components/app",
-      "line": 790,
-      "column": 41,
-      "severity": "P3",
-      "match": "transition-all",
-      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
-    },
-    {
       "id": "DL-29",
       "rule": "DL-29",
       "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
@@ -669,28 +512,6 @@
       "severity": "P2",
       "match": "grid-cols-3",
       "message": "Grid de 3 ou mais colunas \"grid-cols-3\" aplicado sem prefixo responsivo (sm:/md:/lg:), quebrando telas móveis."
-    },
-    {
-      "id": "DL-27",
-      "rule": "DL-27",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
-      "module": "components/app",
-      "line": 1065,
-      "column": 53,
-      "severity": "P3",
-      "match": "transition-all",
-      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
-    },
-    {
-      "id": "DL-27",
-      "rule": "DL-27",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
-      "module": "components/app",
-      "line": 1098,
-      "column": 63,
-      "severity": "P3",
-      "match": "transition-all",
-      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
     },
     {
       "id": "DL-02",
@@ -713,50 +534,6 @@
       "severity": "P1",
       "match": "max-w-[260px]",
       "message": "Classe arbitrária com colchetes \"max-w-[260px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-top-bar.tsx",
-      "module": "components/app",
-      "line": 81,
-      "column": 3,
-      "severity": "P1",
-      "match": "text-[10px]",
-      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-top-bar.tsx",
-      "module": "components/app",
-      "line": 90,
-      "column": 19,
-      "severity": "P1",
-      "match": "text-[10px]",
-      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-27",
-      "rule": "DL-27",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-top-bar.tsx",
-      "module": "components/app",
-      "line": 103,
-      "column": 69,
-      "severity": "P3",
-      "match": "transition-all",
-      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
-    },
-    {
-      "id": "DL-27",
-      "rule": "DL-27",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-top-bar.tsx",
-      "module": "components/app",
-      "line": 118,
-      "column": 69,
-      "severity": "P3",
-      "match": "transition-all",
-      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
     },
     {
       "id": "DL-14",
@@ -858,28 +635,6 @@
       "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-9\"). Exige min-h-11 (44px)."
     },
     {
-      "id": "DL-28",
-      "rule": "DL-28",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-top-bar.tsx",
-      "module": "components/app",
-      "line": 1,
-      "column": 1,
-      "severity": "P1",
-      "match": "animate-* sem motion-reduce",
-      "message": "Animação ativa sem tratamento para preferências de movimento reduzido (motion-reduce:transition-none)."
-    },
-    {
-      "id": "DL-18",
-      "rule": "DL-18",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/guided-section-picker.tsx",
-      "module": "components/app",
-      "line": 48,
-      "column": 34,
-      "severity": "P1",
-      "match": "bg-black",
-      "message": "Cor literal hardcoded \"bg-black\". Use tokens semânticos text-foreground/bg-background."
-    },
-    {
       "id": "DL-07",
       "rule": "DL-07",
       "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/guided-section-picker.tsx",
@@ -913,28 +668,6 @@
       "message": "Classe arbitrária com colchetes \"min-h-[38px]\". Use tokens canônicos."
     },
     {
-      "id": "DL-27",
-      "rule": "DL-27",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/guided-section-picker.tsx",
-      "module": "components/app",
-      "line": 125,
-      "column": 132,
-      "severity": "P3",
-      "match": "transition-all",
-      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/guided-section-picker.tsx",
-      "module": "components/app",
-      "line": 132,
-      "column": 59,
-      "severity": "P1",
-      "match": "text-[10px]",
-      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
-    },
-    {
       "id": "DL-14",
       "rule": "DL-14",
       "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/guided-section-picker.tsx",
@@ -944,17 +677,6 @@
       "severity": "P1",
       "match": "size-10",
       "message": "Alvo de toque com altura/dimensão inferior a 44px (\"size-10\"). Exige min-h-11 (44px)."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/advanced-variant-editor.tsx",
-      "module": "components/app",
-      "line": 160,
-      "column": 16,
-      "severity": "P1",
-      "match": "text-[10px]",
-      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
     },
     {
       "id": "DL-02",
@@ -972,110 +694,11 @@
       "rule": "DL-02",
       "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/import-catalog-modal.tsx",
       "module": "components/app",
-      "line": 107,
-      "column": 38,
-      "severity": "P1",
-      "match": "text-[10px]",
-      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/import-catalog-modal.tsx",
-      "module": "components/app",
-      "line": 143,
-      "column": 16,
-      "severity": "P1",
-      "match": "text-[11px]",
-      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/import-catalog-modal.tsx",
-      "module": "components/app",
-      "line": 161,
-      "column": 16,
-      "severity": "P1",
-      "match": "text-[11px]",
-      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/import-catalog-modal.tsx",
-      "module": "components/app",
-      "line": 177,
-      "column": 16,
-      "severity": "P1",
-      "match": "text-[11px]",
-      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/import-catalog-modal.tsx",
-      "module": "components/app",
       "line": 192,
       "column": 25,
       "severity": "P1",
       "match": "max-h-[40vh]",
       "message": "Classe arbitrária com colchetes \"max-h-[40vh]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/import-catalog-modal.tsx",
-      "module": "components/app",
-      "line": 200,
-      "column": 70,
-      "severity": "P1",
-      "match": "text-[11px]",
-      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/import-catalog-modal.tsx",
-      "module": "components/app",
-      "line": 203,
-      "column": 40,
-      "severity": "P1",
-      "match": "text-[10px]",
-      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/import-catalog-modal.tsx",
-      "module": "components/app",
-      "line": 215,
-      "column": 55,
-      "severity": "P1",
-      "match": "text-[11px]",
-      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/import-catalog-modal.tsx",
-      "module": "components/app",
-      "line": 219,
-      "column": 16,
-      "severity": "P1",
-      "match": "text-[10px]",
-      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-18",
-      "rule": "DL-18",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/import-catalog-modal.tsx",
-      "module": "components/app",
-      "line": 270,
-      "column": 88,
-      "severity": "P1",
-      "match": "text-white",
-      "message": "Cor literal hardcoded \"text-white\". Use tokens semânticos text-foreground/bg-background."
     },
     {
       "id": "DL-14",
@@ -1111,28 +734,6 @@
       "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-10\"). Exige min-h-11 (44px)."
     },
     {
-      "id": "DL-28",
-      "rule": "DL-28",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/import-catalog-modal.tsx",
-      "module": "components/app",
-      "line": 1,
-      "column": 1,
-      "severity": "P1",
-      "match": "animate-* sem motion-reduce",
-      "message": "Animação ativa sem tratamento para preferências de movimento reduzido (motion-reduce:transition-none)."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
-      "module": "components/app",
-      "line": 99,
-      "column": 55,
-      "severity": "P1",
-      "match": "text-[10px]",
-      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
-    },
-    {
       "id": "DL-30",
       "rule": "DL-30",
       "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
@@ -1144,136 +745,15 @@
       "message": "Overflow horizontal \"overflow-x-auto\" em superfície de aplicação fora de tabela/carrossel."
     },
     {
-      "id": "DL-27",
-      "rule": "DL-27",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
-      "module": "components/app",
-      "line": 138,
-      "column": 90,
-      "severity": "P3",
-      "match": "transition-all",
-      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
-    },
-    {
       "id": "DL-07",
       "rule": "DL-07",
       "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
       "module": "components/app",
       "line": 173,
-      "column": 124,
+      "column": 140,
       "severity": "P2",
       "match": "shadow-sm",
       "message": "Sombra decorativa \"shadow-sm\" em superfície de aplicação. Sombras restritas a overlays."
-    },
-    {
-      "id": "DL-27",
-      "rule": "DL-27",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
-      "module": "components/app",
-      "line": 173,
-      "column": 103,
-      "severity": "P3",
-      "match": "transition-all",
-      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
-      "module": "components/app",
-      "line": 193,
-      "column": 44,
-      "severity": "P1",
-      "match": "text-[10px]",
-      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
-      "module": "components/app",
-      "line": 196,
-      "column": 44,
-      "severity": "P1",
-      "match": "text-[10px]",
-      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
-      "module": "components/app",
-      "line": 197,
-      "column": 44,
-      "severity": "P1",
-      "match": "text-[10px]",
-      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
-      "module": "components/app",
-      "line": 210,
-      "column": 44,
-      "severity": "P1",
-      "match": "text-[10px]",
-      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
-      "module": "components/app",
-      "line": 218,
-      "column": 98,
-      "severity": "P1",
-      "match": "text-[11px]",
-      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
-      "module": "components/app",
-      "line": 236,
-      "column": 51,
-      "severity": "P1",
-      "match": "text-[9px]",
-      "message": "Classe arbitrária com colchetes \"text-[9px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
-      "module": "components/app",
-      "line": 240,
-      "column": 69,
-      "severity": "P1",
-      "match": "text-[10px]",
-      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
-      "module": "components/app",
-      "line": 248,
-      "column": 42,
-      "severity": "P1",
-      "match": "text-[10px]",
-      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-27",
-      "rule": "DL-27",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
-      "module": "components/app",
-      "line": 259,
-      "column": 179,
-      "severity": "P3",
-      "match": "transition-all",
-      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
     },
     {
       "id": "DL-14",
@@ -1285,138 +765,6 @@
       "severity": "P1",
       "match": "h-8",
       "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-8\"). Exige min-h-11 (44px)."
-    },
-    {
-      "id": "DL-28",
-      "rule": "DL-28",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
-      "module": "components/app",
-      "line": 1,
-      "column": 1,
-      "severity": "P1",
-      "match": "animate-* sem motion-reduce",
-      "message": "Animação ativa sem tratamento para preferências de movimento reduzido (motion-reduce:transition-none)."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-bom-card.tsx",
-      "module": "components/app",
-      "line": 136,
-      "column": 38,
-      "severity": "P1",
-      "match": "text-[10px]",
-      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-bom-card.tsx",
-      "module": "components/app",
-      "line": 165,
-      "column": 19,
-      "severity": "P1",
-      "match": "text-[10px]",
-      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-bom-card.tsx",
-      "module": "components/app",
-      "line": 174,
-      "column": 19,
-      "severity": "P1",
-      "match": "text-[10px]",
-      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-bom-card.tsx",
-      "module": "components/app",
-      "line": 183,
-      "column": 19,
-      "severity": "P1",
-      "match": "text-[10px]",
-      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-bom-card.tsx",
-      "module": "components/app",
-      "line": 192,
-      "column": 19,
-      "severity": "P1",
-      "match": "text-[10px]",
-      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-bom-card.tsx",
-      "module": "components/app",
-      "line": 213,
-      "column": 20,
-      "severity": "P1",
-      "match": "text-[11px]",
-      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-bom-card.tsx",
-      "module": "components/app",
-      "line": 223,
-      "column": 20,
-      "severity": "P1",
-      "match": "text-[11px]",
-      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-bom-card.tsx",
-      "module": "components/app",
-      "line": 241,
-      "column": 20,
-      "severity": "P1",
-      "match": "text-[11px]",
-      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-bom-card.tsx",
-      "module": "components/app",
-      "line": 253,
-      "column": 20,
-      "severity": "P1",
-      "match": "text-[11px]",
-      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-bom-card.tsx",
-      "module": "components/app",
-      "line": 281,
-      "column": 16,
-      "severity": "P1",
-      "match": "text-[11px]",
-      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-bom-card.tsx",
-      "module": "components/app",
-      "line": 305,
-      "column": 19,
-      "severity": "P1",
-      "match": "text-[10px]",
-      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
     },
     {
       "id": "DL-14",
@@ -1551,193 +899,6 @@
       "message": "Alvo de toque com altura/dimensão inferior a 44px (\"size-4\"). Exige min-h-11 (44px)."
     },
     {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
-      "module": "components/app",
-      "line": 124,
-      "column": 49,
-      "severity": "P1",
-      "match": "text-[10px]",
-      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
-      "module": "components/app",
-      "line": 148,
-      "column": 25,
-      "severity": "P1",
-      "match": "text-[11px]",
-      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
-      "module": "components/app",
-      "line": 164,
-      "column": 25,
-      "severity": "P1",
-      "match": "text-[11px]",
-      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
-      "module": "components/app",
-      "line": 178,
-      "column": 27,
-      "severity": "P1",
-      "match": "text-[11px]",
-      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
-      "module": "components/app",
-      "line": 224,
-      "column": 78,
-      "severity": "P1",
-      "match": "text-[10px]",
-      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
-      "module": "components/app",
-      "line": 246,
-      "column": 33,
-      "severity": "P1",
-      "match": "text-[11px]",
-      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-27",
-      "rule": "DL-27",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
-      "module": "components/app",
-      "line": 258,
-      "column": 109,
-      "severity": "P3",
-      "match": "transition-all",
-      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
-      "module": "components/app",
-      "line": 285,
-      "column": 27,
-      "severity": "P1",
-      "match": "text-[11px]",
-      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
-      "module": "components/app",
-      "line": 345,
-      "column": 25,
-      "severity": "P1",
-      "match": "text-[11px]",
-      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
-      "module": "components/app",
-      "line": 354,
-      "column": 88,
-      "severity": "P1",
-      "match": "text-[11px]",
-      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
-      "module": "components/app",
-      "line": 357,
-      "column": 28,
-      "severity": "P1",
-      "match": "text-[10px]",
-      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-27",
-      "rule": "DL-27",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
-      "module": "components/app",
-      "line": 370,
-      "column": 99,
-      "severity": "P3",
-      "match": "transition-all",
-      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
-      "module": "components/app",
-      "line": 387,
-      "column": 86,
-      "severity": "P1",
-      "match": "text-[11px]",
-      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-27",
-      "rule": "DL-27",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
-      "module": "components/app",
-      "line": 399,
-      "column": 99,
-      "severity": "P3",
-      "match": "transition-all",
-      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
-      "module": "components/app",
-      "line": 415,
-      "column": 86,
-      "severity": "P1",
-      "match": "text-[11px]",
-      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
-      "module": "components/app",
-      "line": 495,
-      "column": 74,
-      "severity": "P1",
-      "match": "text-[10px]",
-      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
-      "module": "components/app",
-      "line": 504,
-      "column": 81,
-      "severity": "P1",
-      "match": "text-[11px]",
-      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
-    },
-    {
       "id": "DL-14",
       "rule": "DL-14",
       "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
@@ -1764,110 +925,11 @@
       "rule": "DL-02",
       "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-modifiers-card.tsx",
       "module": "components/app",
-      "line": 79,
-      "column": 40,
-      "severity": "P1",
-      "match": "text-[10px]",
-      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-modifiers-card.tsx",
-      "module": "components/app",
-      "line": 99,
-      "column": 13,
-      "severity": "P1",
-      "match": "text-[11px]",
-      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-modifiers-card.tsx",
-      "module": "components/app",
-      "line": 108,
-      "column": 16,
-      "severity": "P1",
-      "match": "text-[11px]",
-      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-modifiers-card.tsx",
-      "module": "components/app",
-      "line": 153,
-      "column": 52,
-      "severity": "P1",
-      "match": "text-[10px]",
-      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-modifiers-card.tsx",
-      "module": "components/app",
-      "line": 157,
-      "column": 3,
-      "severity": "P1",
-      "match": "text-[9px]",
-      "message": "Classe arbitrária com colchetes \"text-[9px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-modifiers-card.tsx",
-      "module": "components/app",
-      "line": 183,
-      "column": 77,
-      "severity": "P1",
-      "match": "text-[10px]",
-      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-modifiers-card.tsx",
-      "module": "components/app",
-      "line": 194,
-      "column": 19,
-      "severity": "P1",
-      "match": "text-[10px]",
-      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-27",
-      "rule": "DL-27",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-modifiers-card.tsx",
-      "module": "components/app",
-      "line": 224,
-      "column": 123,
-      "severity": "P3",
-      "match": "transition-all",
-      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-modifiers-card.tsx",
-      "module": "components/app",
       "line": 225,
       "column": 26,
       "severity": "P1",
       "match": "stroke-[2.5]",
       "message": "Classe arbitrária com colchetes \"stroke-[2.5]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-modifiers-card.tsx",
-      "module": "components/app",
-      "line": 232,
-      "column": 16,
-      "severity": "P1",
-      "match": "text-[11px]",
-      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
     },
     {
       "id": "DL-14",
@@ -1903,125 +965,1060 @@
       "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-8\"). Exige min-h-11 (44px)."
     },
     {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-upsell-card.tsx",
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/quick-option-group-dialog.tsx",
       "module": "components/app",
-      "line": 241,
-      "column": 29,
+      "line": 570,
+      "column": 25,
       "severity": "P1",
-      "match": "space-y-1.5",
-      "message": "Espaçamento \"space-y-1.5\" viola a grade estrita de múltiplos de 4px."
+      "match": "min-w-[140px]",
+      "message": "Classe arbitrária com colchetes \"min-w-[140px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/quick-option-group-dialog.tsx",
+      "module": "components/app",
+      "line": 520,
+      "column": 13,
+      "severity": "P1",
+      "match": "h-7",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-7\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/quick-option-group-dialog.tsx",
+      "module": "components/app",
+      "line": 597,
+      "column": 13,
+      "severity": "P1",
+      "match": "size-8",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"size-8\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/quick-option-group-dialog.tsx",
+      "module": "components/app",
+      "line": 631,
+      "column": 13,
+      "severity": "P1",
+      "match": "h-10",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-10\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/quick-option-group-dialog.tsx",
+      "module": "components/app",
+      "line": 639,
+      "column": 13,
+      "severity": "P1",
+      "match": "h-10",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-10\"). Exige min-h-11 (44px)."
     },
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-upsell-card.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/gmaps-scraper-panel.tsx",
       "module": "components/app",
-      "line": 260,
-      "column": 29,
+      "line": 258,
+      "column": 45,
       "severity": "P1",
-      "match": "text-[11px]",
-      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
+      "match": "grid-cols-[2fr_2fr_1fr]",
+      "message": "Classe arbitrária com colchetes \"grid-cols-[2fr_2fr_1fr]\". Use tokens canônicos."
     },
     {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-upsell-card.tsx",
+      "id": "DL-30",
+      "rule": "DL-30",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/marketing/seasonal-marketing-calendar-widget.tsx",
       "module": "components/app",
-      "line": 266,
-      "column": 29,
+      "line": 135,
+      "column": 58,
+      "severity": "P3",
+      "match": "overflow-x-auto",
+      "message": "Overflow horizontal \"overflow-x-auto\" em superfície de aplicação fora de tabela/carrossel."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/orders/order-edit-wizard.tsx",
+      "module": "components/app",
+      "line": 101,
+      "column": 13,
       "severity": "P1",
-      "match": "space-y-1.5",
-      "message": "Espaçamento \"space-y-1.5\" viola a grade estrita de múltiplos de 4px."
+      "match": "h-7",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-7\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/orders/order-edit-wizard.tsx",
+      "module": "components/app",
+      "line": 111,
+      "column": 13,
+      "severity": "P1",
+      "match": "h-7",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-7\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/orders/order-edit-wizard.tsx",
+      "module": "components/app",
+      "line": 119,
+      "column": 13,
+      "severity": "P1",
+      "match": "h-7",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-7\"). Exige min-h-11 (44px)."
     },
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-upsell-card.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/orders/picking-wizard.tsx",
       "module": "components/app",
-      "line": 304,
-      "column": 29,
+      "line": 130,
+      "column": 41,
       "severity": "P1",
-      "match": "text-[11px]",
-      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
+      "match": "max-h-[90vh]",
+      "message": "Classe arbitrária com colchetes \"max-h-[90vh]\". Use tokens canônicos."
     },
     {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-upsell-card.tsx",
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/orders/rma-request-wizard.tsx",
       "module": "components/app",
-      "line": 316,
+      "line": 114,
+      "column": 41,
+      "severity": "P1",
+      "match": "max-h-[90vh]",
+      "message": "Classe arbitrária com colchetes \"max-h-[90vh]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/product-editor/product-editor-layout.tsx",
+      "module": "components/app",
+      "line": 124,
+      "column": 24,
+      "severity": "P1",
+      "match": "h-8",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-8\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/product-editor/product-editor-layout.tsx",
+      "module": "components/app",
+      "line": 156,
+      "column": 28,
+      "severity": "P1",
+      "match": "h-7",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-7\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-07",
+      "rule": "DL-07",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/product-editor/product-editor-sticky-bar.tsx",
+      "module": "components/app",
+      "line": 28,
+      "column": 112,
+      "severity": "P2",
+      "match": "shadow-lg",
+      "message": "Sombra decorativa \"shadow-lg\" em superfície de aplicação. Sombras restritas a overlays."
+    },
+    {
+      "id": "DL-09",
+      "rule": "DL-09",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/product-editor/product-editor-sticky-bar.tsx",
+      "module": "components/app",
+      "line": 28,
+      "column": 122,
+      "severity": "P2",
+      "match": "rounded-xl",
+      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/product-editor/variant-options-builder.tsx",
+      "module": "components/app",
+      "line": 168,
+      "column": 13,
+      "severity": "P1",
+      "match": "max-w-[250px]",
+      "message": "Classe arbitrária com colchetes \"max-w-[250px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/product-editor/variant-options-builder.tsx",
+      "module": "components/app",
+      "line": 203,
+      "column": 60,
+      "severity": "P1",
+      "match": "min-w-[150px]",
+      "message": "Classe arbitrária com colchetes \"min-w-[150px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-07",
+      "rule": "DL-07",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/professions/profession-search-dialog.tsx",
+      "module": "components/app",
+      "line": 80,
+      "column": 98,
+      "severity": "P2",
+      "match": "shadow-2xl",
+      "message": "Sombra decorativa \"shadow-2xl\" em superfície de aplicação. Sombras restritas a overlays."
+    },
+    {
+      "id": "DL-07",
+      "rule": "DL-07",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/professions/profession-search-dialog.tsx",
+      "module": "components/app",
+      "line": 112,
+      "column": 115,
+      "severity": "P2",
+      "match": "shadow-sm",
+      "message": "Sombra decorativa \"shadow-sm\" em superfície de aplicação. Sombras restritas a overlays."
+    },
+    {
+      "id": "DL-30",
+      "rule": "DL-30",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/professions/profession-search-dialog.tsx",
+      "module": "components/app",
+      "line": 126,
+      "column": 51,
+      "severity": "P3",
+      "match": "overflow-x-auto",
+      "message": "Overflow horizontal \"overflow-x-auto\" em superfície de aplicação fora de tabela/carrossel."
+    },
+    {
+      "id": "DL-07",
+      "rule": "DL-07",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/professions/profession-search-dialog.tsx",
+      "module": "components/app",
+      "line": 133,
+      "column": 59,
+      "severity": "P2",
+      "match": "shadow-sm",
+      "message": "Sombra decorativa \"shadow-sm\" em superfície de aplicação. Sombras restritas a overlays."
+    },
+    {
+      "id": "DL-07",
+      "rule": "DL-07",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/professions/profession-search-dialog.tsx",
+      "module": "components/app",
+      "line": 171,
+      "column": 180,
+      "severity": "P2",
+      "match": "shadow-sm",
+      "message": "Sombra decorativa \"shadow-sm\" em superfície de aplicação. Sombras restritas a overlays."
+    },
+    {
+      "id": "DL-30",
+      "rule": "DL-30",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/professions/profession-search-dialog.tsx",
+      "module": "components/app",
+      "line": 247,
+      "column": 59,
+      "severity": "P3",
+      "match": "overflow-x-auto",
+      "message": "Overflow horizontal \"overflow-x-auto\" em superfície de aplicação fora de tabela/carrossel."
+    },
+    {
+      "id": "DL-07",
+      "rule": "DL-07",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/services/service-search-dialog.tsx",
+      "module": "components/app",
+      "line": 78,
+      "column": 98,
+      "severity": "P2",
+      "match": "shadow-2xl",
+      "message": "Sombra decorativa \"shadow-2xl\" em superfície de aplicação. Sombras restritas a overlays."
+    },
+    {
+      "id": "DL-07",
+      "rule": "DL-07",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/services/service-search-dialog.tsx",
+      "module": "components/app",
+      "line": 110,
+      "column": 115,
+      "severity": "P2",
+      "match": "shadow-sm",
+      "message": "Sombra decorativa \"shadow-sm\" em superfície de aplicação. Sombras restritas a overlays."
+    },
+    {
+      "id": "DL-30",
+      "rule": "DL-30",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/services/service-search-dialog.tsx",
+      "module": "components/app",
+      "line": 124,
+      "column": 51,
+      "severity": "P3",
+      "match": "overflow-x-auto",
+      "message": "Overflow horizontal \"overflow-x-auto\" em superfície de aplicação fora de tabela/carrossel."
+    },
+    {
+      "id": "DL-07",
+      "rule": "DL-07",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/services/service-search-dialog.tsx",
+      "module": "components/app",
+      "line": 131,
+      "column": 59,
+      "severity": "P2",
+      "match": "shadow-sm",
+      "message": "Sombra decorativa \"shadow-sm\" em superfície de aplicação. Sombras restritas a overlays."
+    },
+    {
+      "id": "DL-07",
+      "rule": "DL-07",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/services/service-search-dialog.tsx",
+      "module": "components/app",
+      "line": 169,
+      "column": 180,
+      "severity": "P2",
+      "match": "shadow-sm",
+      "message": "Sombra decorativa \"shadow-sm\" em superfície de aplicação. Sombras restritas a overlays."
+    },
+    {
+      "id": "DL-30",
+      "rule": "DL-30",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/services/service-search-dialog.tsx",
+      "module": "components/app",
+      "line": 222,
+      "column": 59,
+      "severity": "P3",
+      "match": "overflow-x-auto",
+      "message": "Overflow horizontal \"overflow-x-auto\" em superfície de aplicação fora de tabela/carrossel."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/stock-audit-dialog.tsx",
+      "module": "components/app",
+      "line": 80,
+      "column": 35,
+      "severity": "P1",
+      "match": "h-8",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-8\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/stock-audit-dialog.tsx",
+      "module": "components/app",
+      "line": 111,
+      "column": 27,
+      "severity": "P1",
+      "match": "size-3",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"size-3\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/adtech/campaign-draft-card.tsx",
+      "module": "components/app",
+      "line": 157,
+      "column": 34,
+      "severity": "P1",
+      "match": "max-w-[340px]",
+      "message": "Classe arbitrária com colchetes \"max-w-[340px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/adtech/campaign-draft-card.tsx",
+      "module": "components/app",
+      "line": 161,
+      "column": 78,
+      "severity": "P1",
+      "match": "p-[1.5px]",
+      "message": "Classe arbitrária com colchetes \"p-[1.5px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-29",
+      "rule": "DL-29",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/adtech/campaign-draft-card.tsx",
+      "module": "components/app",
+      "line": 330,
       "column": 86,
+      "severity": "P2",
+      "match": "grid-cols-3",
+      "message": "Grid de 3 ou mais colunas \"grid-cols-3\" aplicado sem prefixo responsivo (sm:/md:/lg:), quebrando telas móveis."
+    },
+    {
+      "id": "DL-07",
+      "rule": "DL-07",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/adtech/campaign-draft-card.tsx",
+      "module": "components/app",
+      "line": 386,
+      "column": 158,
+      "severity": "P2",
+      "match": "shadow-sm",
+      "message": "Sombra decorativa \"shadow-sm\" em superfície de aplicação. Sombras restritas a overlays."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/adtech/campaign-draft-card.tsx",
+      "module": "components/app",
+      "line": 236,
+      "column": 26,
       "severity": "P1",
-      "match": "space-y-2.5",
-      "message": "Espaçamento \"space-y-2.5\" viola a grade estrita de múltiplos de 4px."
+      "match": "h-8",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-8\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-29",
+      "rule": "DL-29",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-detail-desktop.tsx",
+      "module": "components/app",
+      "line": 50,
+      "column": 27,
+      "severity": "P2",
+      "match": "grid-cols-12",
+      "message": "Grid de 3 ou mais colunas \"grid-cols-12\" aplicado sem prefixo responsivo (sm:/md:/lg:), quebrando telas móveis."
     },
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-upsell-card.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-detail-desktop.tsx",
       "module": "components/app",
-      "line": 325,
+      "line": 54,
+      "column": 27,
+      "severity": "P1",
+      "match": "aspect-[16/9]",
+      "message": "Classe arbitrária com colchetes \"aspect-[16/9]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-07",
+      "rule": "DL-07",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-detail-desktop.tsx",
+      "module": "components/app",
+      "line": 203,
+      "column": 84,
+      "severity": "P2",
+      "match": "shadow-sm",
+      "message": "Sombra decorativa \"shadow-sm\" em superfície de aplicação. Sombras restritas a overlays."
+    },
+    {
+      "id": "DL-07",
+      "rule": "DL-07",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-detail-desktop.tsx",
+      "module": "components/app",
+      "line": 217,
+      "column": 123,
+      "severity": "P2",
+      "match": "shadow-sm",
+      "message": "Sombra decorativa \"shadow-sm\" em superfície de aplicação. Sombras restritas a overlays."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-detail-desktop.tsx",
+      "module": "components/app",
+      "line": 190,
+      "column": 94,
+      "severity": "P1",
+      "match": "h-9",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-9\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-detail-mobile.tsx",
+      "module": "components/app",
+      "line": 31,
+      "column": 28,
+      "severity": "P1",
+      "match": "min-h-[100dvh]",
+      "message": "Classe arbitrária com colchetes \"min-h-[100dvh]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-detail-mobile.tsx",
+      "module": "components/app",
+      "line": 33,
+      "column": 55,
+      "severity": "P1",
+      "match": "aspect-[16/9]",
+      "message": "Classe arbitrária com colchetes \"aspect-[16/9]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-08",
+      "rule": "DL-08",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-detail-mobile.tsx",
+      "module": "components/app",
+      "line": 47,
+      "column": 55,
+      "severity": "P2",
+      "match": "bg-gradient-to-b",
+      "message": "Gradiente decorativo \"bg-gradient-to-b\" em superfície utilitária de aplicação."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-detail-mobile.tsx",
+      "module": "components/app",
+      "line": 213,
+      "column": 103,
+      "severity": "P1",
+      "match": "pb-[calc(0.65rem+env(safe-area-inset-bottom))]",
+      "message": "Classe arbitrária com colchetes \"pb-[calc(0.65rem+env(safe-area-inset-bottom))]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-07",
+      "rule": "DL-07",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-detail-mobile.tsx",
+      "module": "components/app",
+      "line": 213,
+      "column": 218,
+      "severity": "P2",
+      "match": "shadow-lg",
+      "message": "Sombra decorativa \"shadow-lg\" em superfície de aplicação. Sombras restritas a overlays."
+    },
+    {
+      "id": "DL-07",
+      "rule": "DL-07",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-detail-mobile.tsx",
+      "module": "components/app",
+      "line": 225,
+      "column": 102,
+      "severity": "P2",
+      "match": "shadow-sm",
+      "message": "Sombra decorativa \"shadow-sm\" em superfície de aplicação. Sombras restritas a overlays."
+    },
+    {
+      "id": "DL-07",
+      "rule": "DL-07",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-drawer-sheet.tsx",
+      "module": "components/app",
+      "line": 71,
+      "column": 120,
+      "severity": "P2",
+      "match": "shadow-2xl",
+      "message": "Sombra decorativa \"shadow-2xl\" em superfície de aplicação. Sombras restritas a overlays."
+    },
+    {
+      "id": "DL-29",
+      "rule": "DL-29",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-drawer-sheet.tsx",
+      "module": "components/app",
+      "line": 119,
+      "column": 37,
+      "severity": "P2",
+      "match": "grid-cols-4",
+      "message": "Grid de 3 ou mais colunas \"grid-cols-4\" aplicado sem prefixo responsivo (sm:/md:/lg:), quebrando telas móveis."
+    },
+    {
+      "id": "DL-30",
+      "rule": "DL-30",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-drawer-sheet.tsx",
+      "module": "components/app",
+      "line": 153,
+      "column": 59,
+      "severity": "P3",
+      "match": "overflow-x-auto",
+      "message": "Overflow horizontal \"overflow-x-auto\" em superfície de aplicação fora de tabela/carrossel."
+    },
+    {
+      "id": "DL-29",
+      "rule": "DL-29",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-drawer-sheet.tsx",
+      "module": "components/app",
+      "line": 212,
+      "column": 39,
+      "severity": "P2",
+      "match": "grid-cols-3",
+      "message": "Grid de 3 ou mais colunas \"grid-cols-3\" aplicado sem prefixo responsivo (sm:/md:/lg:), quebrando telas móveis."
+    },
+    {
+      "id": "DL-07",
+      "rule": "DL-07",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-drawer-sheet.tsx",
+      "module": "components/app",
+      "line": 331,
+      "column": 115,
+      "severity": "P2",
+      "match": "shadow-sm",
+      "message": "Sombra decorativa \"shadow-sm\" em superfície de aplicação. Sombras restritas a overlays."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-drawer-sheet.tsx",
+      "module": "components/app",
+      "line": 102,
+      "column": 66,
+      "severity": "P1",
+      "match": "h-10",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-10\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-drawer-sheet.tsx",
+      "module": "components/app",
+      "line": 108,
       "column": 59,
       "severity": "P1",
-      "match": "text-[10px]",
-      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
+      "match": "h-10",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-10\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-drawer-sheet.tsx",
+      "module": "components/app",
+      "line": 161,
+      "column": 26,
+      "severity": "P1",
+      "match": "h-8",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-8\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-drawer-sheet.tsx",
+      "module": "components/app",
+      "line": 180,
+      "column": 30,
+      "severity": "P1",
+      "match": "h-8",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-8\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-drawer-sheet.tsx",
+      "module": "components/app",
+      "line": 226,
+      "column": 30,
+      "severity": "P1",
+      "match": "h-9",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-9\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-09",
+      "rule": "DL-09",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/BlockErrorBoundary.tsx",
+      "module": "components/builder",
+      "line": 55,
+      "column": 38,
+      "severity": "P2",
+      "match": "rounded-xl",
+      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/blocks/BentoAsymmetricGrid.tsx",
+      "module": "components/builder",
+      "line": 68,
+      "column": 72,
+      "severity": "P1",
+      "match": "#9842",
+      "message": "Cor hexadecimal literal \"#9842\" fora da camada de token."
     },
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-upsell-card.tsx",
-      "module": "components/app",
-      "line": 353,
-      "column": 42,
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/blocks/HeroMinimalSplit.tsx",
+      "module": "components/builder",
+      "line": 39,
+      "column": 89,
       "severity": "P1",
-      "match": "text-[11px]",
-      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-28",
-      "rule": "DL-28",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-upsell-card.tsx",
-      "module": "components/app",
-      "line": 1,
-      "column": 1,
-      "severity": "P1",
-      "match": "animate-* sem motion-reduce",
-      "message": "Animação ativa sem tratamento para preferências de movimento reduzido (motion-reduce:transition-none)."
+      "match": "leading-[1.08]",
+      "message": "Classe arbitrária com colchetes \"leading-[1.08]\". Use tokens canônicos."
     },
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/quick-option-group-dialog.tsx",
-      "module": "components/app",
-      "line": 309,
-      "column": 42,
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/blocks/HeroMinimalSplit.tsx",
+      "module": "components/builder",
+      "line": 108,
+      "column": 142,
       "severity": "P1",
-      "match": "text-[11px]",
-      "message": "Classe arbitrária com colchetes \"text-[11px]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-27",
-      "rule": "DL-27",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/quick-option-group-dialog.tsx",
-      "module": "components/app",
-      "line": 321,
-      "column": 134,
-      "severity": "P3",
-      "match": "transition-all",
-      "message": "Uso de transition-all proibido. Especifique propriedades: transition-transform, transition-opacity, transition-colors."
+      "match": "aspect-[4/5]",
+      "message": "Classe arbitrária com colchetes \"aspect-[4/5]\". Use tokens canônicos."
     },
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/quick-option-group-dialog.tsx",
-      "module": "components/app",
-      "line": 327,
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/blocks/HeroMinimalSplit.tsx",
+      "module": "components/builder",
+      "line": 108,
+      "column": 175,
+      "severity": "P1",
+      "match": "aspect-[4/5]",
+      "message": "Classe arbitrária com colchetes \"aspect-[4/5]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-08",
+      "rule": "DL-08",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/blocks/HeroMinimalSplit.tsx",
+      "module": "components/builder",
+      "line": 116,
+      "column": 89,
+      "severity": "P2",
+      "match": "bg-gradient-to-tr",
+      "message": "Gradiente decorativo \"bg-gradient-to-tr\" em superfície utilitária de aplicação."
+    },
+    {
+      "id": "DL-07",
+      "rule": "DL-07",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/blocks/HeroMinimalSplit.tsx",
+      "module": "components/builder",
+      "line": 127,
+      "column": 165,
+      "severity": "P2",
+      "match": "shadow-lg",
+      "message": "Sombra decorativa \"shadow-lg\" em superfície de aplicação. Sombras restritas a overlays."
+    },
+    {
+      "id": "DL-07",
+      "rule": "DL-07",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/blocks/MediaGalleryMosaic.tsx",
+      "module": "components/builder",
+      "line": 87,
+      "column": 176,
+      "severity": "P2",
+      "match": "shadow-lg",
+      "message": "Sombra decorativa \"shadow-lg\" em superfície de aplicação. Sombras restritas a overlays."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/blocks/MediaGalleryMosaic.tsx",
+      "module": "components/builder",
+      "line": 88,
+      "column": 61,
+      "severity": "P1",
+      "match": "aspect-[16/9]",
+      "message": "Classe arbitrária com colchetes \"aspect-[16/9]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-26",
+      "rule": "DL-26",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/blocks/MediaGalleryMosaic.tsx",
+      "module": "components/builder",
+      "line": 94,
+      "column": 78,
+      "severity": "P2",
+      "match": "duration-500",
+      "message": "Duração de animação superior a 300ms: \"duration-500\"."
+    },
+    {
+      "id": "DL-08",
+      "rule": "DL-08",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/blocks/MediaGalleryMosaic.tsx",
+      "module": "components/builder",
+      "line": 97,
+      "column": 50,
+      "severity": "P2",
+      "match": "bg-gradient-to-t",
+      "message": "Gradiente decorativo \"bg-gradient-to-t\" em superfície utilitária de aplicação."
+    },
+    {
+      "id": "DL-07",
+      "rule": "DL-07",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/blocks/MediaGalleryMosaic.tsx",
+      "module": "components/builder",
+      "line": 129,
+      "column": 74,
+      "severity": "P2",
+      "match": "shadow-2xl",
+      "message": "Sombra decorativa \"shadow-2xl\" em superfície de aplicação. Sombras restritas a overlays."
+    },
+    {
+      "id": "DL-09",
+      "rule": "DL-09",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/GiftCardCommerceBlocks.tsx",
+      "module": "components/builder",
+      "line": 56,
+      "column": 40,
+      "severity": "P2",
+      "match": "rounded-xl",
+      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
+    },
+    {
+      "id": "DL-09",
+      "rule": "DL-09",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/GiftCardCommerceBlocks.tsx",
+      "module": "components/builder",
+      "line": 62,
+      "column": 58,
+      "severity": "P2",
+      "match": "rounded-xl",
+      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
+    },
+    {
+      "id": "DL-09",
+      "rule": "DL-09",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/GiftCardCommerceBlocks.tsx",
+      "module": "components/builder",
+      "line": 138,
+      "column": 36,
+      "severity": "P2",
+      "match": "rounded-2xl",
+      "message": "Raio de curvatura não-canônico \"rounded-2xl\". Permitidos: none, sm, md, lg, full."
+    },
+    {
+      "id": "DL-09",
+      "rule": "DL-09",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/GiftCardCommerceBlocks.tsx",
+      "module": "components/builder",
+      "line": 159,
+      "column": 51,
+      "severity": "P2",
+      "match": "rounded-xl",
+      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
+    },
+    {
+      "id": "DL-09",
+      "rule": "DL-09",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/HostingDomainConnectModal.tsx",
+      "module": "components/builder",
+      "line": 80,
+      "column": 31,
+      "severity": "P2",
+      "match": "rounded-xl",
+      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
+    },
+    {
+      "id": "DL-09",
+      "rule": "DL-09",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/HostingDomainConnectModal.tsx",
+      "module": "components/builder",
+      "line": 95,
+      "column": 63,
+      "severity": "P2",
+      "match": "rounded-xl",
+      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
+    },
+    {
+      "id": "DL-09",
+      "rule": "DL-09",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/HostingDomainConnectModal.tsx",
+      "module": "components/builder",
+      "line": 137,
+      "column": 31,
+      "severity": "P2",
+      "match": "rounded-xl",
+      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
+    },
+    {
+      "id": "DL-09",
+      "rule": "DL-09",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/HostingDomainConnectModal.tsx",
+      "module": "components/builder",
+      "line": 207,
+      "column": 31,
+      "severity": "P2",
+      "match": "rounded-xl",
+      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
+    },
+    {
+      "id": "DL-09",
+      "rule": "DL-09",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/HostingDomainConnectModal.tsx",
+      "module": "components/builder",
+      "line": 231,
+      "column": 31,
+      "severity": "P2",
+      "match": "rounded-xl",
+      "message": "Raio de curvatura não-canônico \"rounded-xl\". Permitidos: none, sm, md, lg, full."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/HostingDomainConnectModal.tsx",
+      "module": "components/builder",
+      "line": 261,
+      "column": 45,
+      "severity": "P1",
+      "match": "max-h-[90vh]",
+      "message": "Classe arbitrária com colchetes \"max-h-[90vh]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-09",
+      "rule": "DL-09",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/HostingDomainConnectModal.tsx",
+      "module": "components/builder",
+      "line": 261,
+      "column": 121,
+      "severity": "P2",
+      "match": "rounded-2xl",
+      "message": "Raio de curvatura não-canônico \"rounded-2xl\". Permitidos: none, sm, md, lg, full."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/LiveTemplatePreviewModal.tsx",
+      "module": "components/builder",
+      "line": 35,
+      "column": 72,
+      "severity": "P1",
+      "match": "h-[100dvh]",
+      "message": "Classe arbitrária com colchetes \"h-[100dvh]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/LiveTemplatePreviewModal.tsx",
+      "module": "components/builder",
+      "line": 112,
+      "column": 25,
+      "severity": "P1",
+      "match": "transition-[width,box-shadow]",
+      "message": "Classe arbitrária com colchetes \"transition-[width,box-shadow]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/omni-builder.test.ts",
+      "module": "components/builder",
+      "line": 54,
+      "column": 27,
+      "severity": "P1",
+      "match": "#f4f4f5",
+      "message": "Cor hexadecimal literal \"#f4f4f5\" fora da camada de token."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/omni-builder.test.ts",
+      "module": "components/builder",
+      "line": 65,
+      "column": 66,
+      "severity": "P1",
+      "match": "#f4f4f5",
+      "message": "Cor hexadecimal literal \"#f4f4f5\" fora da camada de token."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/omni-builder.test.ts",
+      "module": "components/builder",
+      "line": 156,
+      "column": 25,
+      "severity": "P1",
+      "match": "#0f172a",
+      "message": "Cor hexadecimal literal \"#0f172a\" fora da camada de token."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/omni-builder.test.ts",
+      "module": "components/builder",
+      "line": 157,
       "column": 19,
       "severity": "P1",
-      "match": "text-[10px]",
-      "message": "Classe arbitrária com colchetes \"text-[10px]\". Use tokens canônicos."
+      "match": "#f8fafc",
+      "message": "Cor hexadecimal literal \"#f8fafc\" fora da camada de token."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/omni-builder.test.ts",
+      "module": "components/builder",
+      "line": 162,
+      "column": 53,
+      "severity": "P1",
+      "match": "#0f172a",
+      "message": "Cor hexadecimal literal \"#0f172a\" fora da camada de token."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/omni-builder.test.ts",
+      "module": "components/builder",
+      "line": 163,
+      "column": 43,
+      "severity": "P1",
+      "match": "#f8fafc",
+      "message": "Cor hexadecimal literal \"#f8fafc\" fora da camada de token."
+    },
+    {
+      "id": "DL-07",
+      "rule": "DL-07",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/OmniEditor.tsx",
+      "module": "components/builder",
+      "line": 2231,
+      "column": 178,
+      "severity": "P2",
+      "match": "shadow-sm",
+      "message": "Sombra decorativa \"shadow-sm\" em superfície de aplicação. Sombras restritas a overlays."
+    },
+    {
+      "id": "DL-30",
+      "rule": "DL-30",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/OmniEditor.tsx",
+      "module": "components/builder",
+      "line": 2269,
+      "column": 59,
+      "severity": "P3",
+      "match": "overflow-x-auto",
+      "message": "Overflow horizontal \"overflow-x-auto\" em superfície de aplicação fora de tabela/carrossel."
+    },
+    {
+      "id": "DL-07",
+      "rule": "DL-07",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/OmniEditor.tsx",
+      "module": "components/builder",
+      "line": 2374,
+      "column": 46,
+      "severity": "P2",
+      "match": "shadow-2xl",
+      "message": "Sombra decorativa \"shadow-2xl\" em superfície de aplicação. Sombras restritas a overlays."
+    },
+    {
+      "id": "DL-07",
+      "rule": "DL-07",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/OmniEditor.tsx",
+      "module": "components/builder",
+      "line": 2375,
+      "column": 37,
+      "severity": "P2",
+      "match": "shadow-sm",
+      "message": "Sombra decorativa \"shadow-sm\" em superfície de aplicação. Sombras restritas a overlays."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/OmniEditor.tsx",
+      "module": "components/builder",
+      "line": 2555,
+      "column": 75,
+      "severity": "P1",
+      "match": "#ffffff",
+      "message": "Cor hexadecimal literal \"#ffffff\" fora da camada de token."
+    },
+    {
+      "id": "DL-07",
+      "rule": "DL-07",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/OmniEditor.tsx",
+      "module": "components/builder",
+      "line": 2640,
+      "column": 125,
+      "severity": "P2",
+      "match": "shadow-xl",
+      "message": "Sombra decorativa \"shadow-xl\" em superfície de aplicação. Sombras restritas a overlays."
+    },
+    {
+      "id": "DL-30",
+      "rule": "DL-30",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/OmniEditor.tsx",
+      "module": "components/builder",
+      "line": 2691,
+      "column": 51,
+      "severity": "P3",
+      "match": "overflow-x-auto",
+      "message": "Overflow horizontal \"overflow-x-auto\" em superfície de aplicação fora de tabela/carrossel."
     }
   ]
 }

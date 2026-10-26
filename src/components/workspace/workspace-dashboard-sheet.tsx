@@ -95,7 +95,7 @@ export function WorkspaceDashboardSheet({
                 type="button"
                 onClick={() => setPeriod("today")}
                 className={cn(
-                  "px-3 py-2 rounded-lg transition-all cursor-pointer min-h-11 h-11 inline-flex items-center justify-center focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
+                  "px-3 py-2 rounded-lg transition-colors duration-200 cursor-pointer min-h-11 h-11 inline-flex items-center justify-center focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
                   period === "today"
                     ? "bg-background text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -107,7 +107,7 @@ export function WorkspaceDashboardSheet({
                 type="button"
                 onClick={() => setPeriod("7d")}
                 className={cn(
-                  "px-3 py-2 rounded-lg transition-all cursor-pointer min-h-11 h-11 inline-flex items-center justify-center focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
+                  "px-3 py-2 rounded-lg transition-colors duration-200 cursor-pointer min-h-11 h-11 inline-flex items-center justify-center focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
                   period === "7d"
                     ? "bg-background text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -119,7 +119,7 @@ export function WorkspaceDashboardSheet({
                 type="button"
                 onClick={() => setPeriod("30d")}
                 className={cn(
-                  "px-3 py-2 rounded-lg transition-all cursor-pointer min-h-11 h-11 inline-flex items-center justify-center focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
+                  "px-3 py-2 rounded-lg transition-colors duration-200 cursor-pointer min-h-11 h-11 inline-flex items-center justify-center focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
                   period === "30d"
                     ? "bg-background text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -131,7 +131,7 @@ export function WorkspaceDashboardSheet({
                 type="button"
                 onClick={() => setPeriod("all")}
                 className={cn(
-                  "px-3 py-2 rounded-lg transition-all cursor-pointer min-h-11 h-11 inline-flex items-center justify-center focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
+                  "px-3 py-2 rounded-lg transition-colors duration-200 cursor-pointer min-h-11 h-11 inline-flex items-center justify-center focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
                   period === "all"
                     ? "bg-background text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -157,7 +157,7 @@ export function WorkspaceDashboardSheet({
                   <div
                     key={m.id || m.label || m.title}
                     className={cn(
-                      "p-4 sm:p-5 rounded-lg border space-y-2 transition-all shadow-2xs",
+                      "p-4 sm:p-5 rounded-lg border space-y-2 transition-colors duration-200 shadow-2xs",
                       getVariantStyles(m.variant)
                     )}
                   >

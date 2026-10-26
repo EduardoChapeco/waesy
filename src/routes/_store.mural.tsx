@@ -119,7 +119,7 @@ function MuralPage() {
         {/* Lista de Posts */}
         {isLoading ? (
           <div className="py-12 flex flex-col items-center justify-center gap-2 text-muted-foreground">
-            <Loader2 className="size-6 animate-spin text-primary" />
+            <Loader2 className="size-6 animate-spin motion-reduce:animate-none text-primary" />
             <span className="text-xs">Carregando feed...</span>
           </div>
         ) : items.length === 0 ? (

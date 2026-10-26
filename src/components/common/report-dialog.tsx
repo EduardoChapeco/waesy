@@ -136,7 +136,7 @@ export function ReportDialog({
  >
  {reportMutation.isPending ? (
  <>
- <Loader2 className="size-3.5 animate-spin" />
+ <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
  <span>Enviando...</span>
  </>
  ) : (

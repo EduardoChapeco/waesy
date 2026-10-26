@@ -230,7 +230,7 @@ export function UnifiedNewProductPage() {
                   variant="ghost"
                   size="sm"
                   onClick={() => setIsWideMode((prev) => !prev)}
-                  className="h-9 px-3 text-xs font-semibold gap-1.5 text-primary hover:bg-primary/10 rounded-lg focus-visible:ring-2 focus-visible:ring-ring shrink-0 cursor-pointer"
+                  className="h-9 px-3 text-xs font-semibold gap-2 text-primary hover:bg-primary/10 rounded-lg focus-visible:ring-2 focus-visible:ring-ring shrink-0 cursor-pointer"
                   title={isWideMode ? "Restaurar layout dividido com preview" : "Expandir para tela cheia (Modo Amplo focado na grade)"}
                 >
                   {isWideMode ? <Minimize2 className="size-3.5" /> : <Maximize2 className="size-3.5" />}

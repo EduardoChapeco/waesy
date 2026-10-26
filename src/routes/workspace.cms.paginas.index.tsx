@@ -450,7 +450,7 @@ function CmsPagesPage() {
             return (
               <div
                 key={page.id}
-                className="group relative flex flex-col bg-card border border-border/80 rounded-lg overflow-hidden hover:border-foreground/30 transition-all"
+                className="group relative flex flex-col bg-card border border-border/80 rounded-lg overflow-hidden hover:border-foreground/30 transition-colors duration-200"
               >
                 {/* Viewport Preview / Thumbnail */}
                 <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
@@ -684,7 +684,7 @@ function CmsPagesPage() {
                       <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                         key={tpl.id}
                         onClick={() => setSelectedTemplateId(tpl.id)}
-                        className={`p-3 rounded-lg border transition-all cursor-pointer flex flex-col justify-between ${
+                        className={`p-3 rounded-lg border transition-colors duration-200 cursor-pointer flex flex-col justify-between ${
                           isSelected
                             ? "border-foreground bg-muted/40"
                             : "border-border/80 bg-card hover:border-foreground/40"

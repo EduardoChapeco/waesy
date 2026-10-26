@@ -115,7 +115,7 @@ export function OrderTimeline({ status, events = [], shippingMethod = "delivery"
           <Clock className="size-4 text-primary" />
           Acompanhamento em Tempo Real
         </h3>
-        <span className="text-[11px] font-mono text-muted-foreground animate-pulse">
+        <span className="text-2xs font-mono text-muted-foreground animate-pulse motion-reduce:animate-none">
           Sincronizado
         </span>
       </div>
@@ -136,11 +136,11 @@ export function OrderTimeline({ status, events = [], shippingMethod = "delivery"
             <div key={step.key} className="relative group">
               {/* Node Icon on Timeline */}
               <div
-                className={`absolute -left-6 sm:-left-8 top-0.5 size-6 sm:size-7 rounded-full flex items-center justify-center border-2 transition-all ${
+                className={`absolute -left-6 sm:-left-8 top-0.5 size-6 sm:size-7 rounded-full flex items-center justify-center border-2 transition-colors duration-200 ${
                   isDone
                     ? "bg-primary border-primary text-primary-foreground"
                     : isCurrent
-                    ? "bg-background border-primary text-primary ring-4 ring-primary/20 animate-pulse"
+                    ? "bg-background border-primary text-primary ring-4 ring-primary/20 animate-pulse motion-reduce:animate-none"
                     : "bg-muted/40 border-border/60 text-muted-foreground/50"
                 }`}
               >
@@ -162,12 +162,12 @@ export function OrderTimeline({ status, events = [], shippingMethod = "delivery"
                     {step.title}
                   </p>
                   {recordedAt && (
-                    <span className="text-[10px] font-mono text-muted-foreground">
+                    <span className="text-2xs font-mono text-muted-foreground">
                       {formatDate(recordedAt)}
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                <p className="text-2xs text-muted-foreground leading-relaxed">
                   {step.subtitle}
                 </p>
               </div>

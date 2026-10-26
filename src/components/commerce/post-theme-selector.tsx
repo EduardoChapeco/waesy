@@ -19,7 +19,7 @@ export function PostThemeSelector({ selectedThemeId, onSelectTheme }: PostThemeS
  <Layers className="size-3.5 text-primary" />
  Estilo Visual / Tema do Post
  </label>
- <span className="text-[11px] text-muted-foreground">
+ <span className="text-2xs text-muted-foreground">
  {PRESENTATION_THEMES.length} estilos disponíveis
  </span>
  </div>
@@ -33,7 +33,7 @@ export function PostThemeSelector({ selectedThemeId, onSelectTheme }: PostThemeS
  type="button"
  onClick={() => onSelectTheme(theme.id)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "p-3 rounded-lg border text-left flex flex-col justify-between transition-all duration-150 relative overflow-hidden",
+ "p-3 rounded-lg border text-left flex flex-col justify-between transition-colors duration-200 duration-150 relative overflow-hidden",
  isSelected
  ? "border-primary ring-1 ring-primary/40 bg-card "
  : "border-border/70 bg-card hover:bg-muted/40 hover:border-border",
@@ -61,7 +61,7 @@ export function PostThemeSelector({ selectedThemeId, onSelectTheme }: PostThemeS
  <p className="text-xs font-bold text-foreground leading-tight truncate">
  {theme.name}
  </p>
- <p className="text-[10px] text-muted-foreground line-clamp-1 mt-1">
+ <p className="text-2xs text-muted-foreground line-clamp-1 mt-1">
  {theme.description}
  </p>
  </div>

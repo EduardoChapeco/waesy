@@ -126,7 +126,7 @@ export function ContractVariablePicker({
                 type="button"
                 onClick={() => setActiveNiche(group.id)}
                 className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer border",
+                  "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors duration-200 whitespace-nowrap cursor-pointer border",
                   isActive
                     ? cn("shadow-xs ring-1 ring-primary/20", colors.bg, colors.text, colors.border)
                     : "bg-muted/40 text-muted-foreground border-transparent hover:text-foreground hover:bg-muted/70"
@@ -160,7 +160,7 @@ export function ContractVariablePicker({
                       type="button"
                       onClick={() => handleSelect(variable)}
                       className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                        "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium border transition-all cursor-pointer min-h-9",
+                        "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium border transition-colors duration-200 cursor-pointer min-h-9",
                         colors.bg,
                         colors.text,
                         colors.border,

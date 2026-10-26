@@ -168,7 +168,7 @@ export function MultimodalOcrUploader({
     <div className={`space-y-4 ${className}`}>
       {/* ── SELETOR RÁPIDO DE NICHO ── */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-        <span className="text-[11px] font-bold text-muted-foreground shrink-0 mr-1">
+        <span className="text-2xs font-bold text-muted-foreground shrink-0 mr-1">
           Modo:
         </span>
         {NICHE_PILLS.map((n) => (
@@ -176,7 +176,7 @@ export function MultimodalOcrUploader({
             key={n.id}
             type="button"
             onClick={() => setSelectedNiche(n.id as any)}
-            className={`h-7 px-3 rounded-lg text-xs font-semibold shrink-0 transition-all cursor-pointer ${
+            className={`h-7 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors duration-200 cursor-pointer ${
               selectedNiche === n.id
                 ? "bg-primary text-primary-foreground shadow-2xs"
                 : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground"
@@ -200,7 +200,7 @@ export function MultimodalOcrUploader({
     onDragOver={(e) => e.preventDefault()}
     onDrop={handleDrop}
     onClick={() => fileInputRef.current?.click()}
-    className="relative border-2 border-dashed border-border/80 hover:border-primary/50 bg-card hover:bg-muted/20 rounded-lg p-6 text-center cursor-pointer transition-all space-y-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    className="relative border-2 border-dashed border-border/80 hover:border-primary/50 bg-card hover:bg-muted/20 rounded-lg p-6 text-center cursor-pointer transition-colors duration-200 space-y-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
   >
         <input
           ref={fileInputRef}
@@ -219,10 +219,10 @@ export function MultimodalOcrUploader({
           <p className="text-xs font-bold text-foreground">
             Clique para selecionar ou arraste seus arquivos aqui
           </p>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             PDFs ou fotos de vouchers, comprovantes, passagens e contratos (até 20MB cada).
           </p>
-          <p className="text-[10px] text-primary font-medium flex items-center justify-center gap-1">
+          <p className="text-2xs text-primary font-medium flex items-center justify-center gap-1">
             <Clipboard className="size-3" /> Pressione <kbd className="px-2 py-1 rounded bg-muted font-mono font-bold">Ctrl + V</kbd> para colar print direto
           </p>
         </div>
@@ -236,7 +236,7 @@ export function MultimodalOcrUploader({
             <button
               type="button"
               onClick={() => setFiles([])}
-              className="text-[11px] text-muted-foreground hover:text-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="text-2xs text-muted-foreground hover:text-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               Limpar todos
             </button>
@@ -262,7 +262,7 @@ export function MultimodalOcrUploader({
                   )}
                   <div className="truncate">
                     <p className="text-xs font-semibold text-foreground truncate">{f.name}</p>
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-2xs text-muted-foreground">
                       {(f.size / 1024).toFixed(0)} KB · {f.type.split("/")[1]?.toUpperCase() || "DOC"}
                     </p>
                   </div>
@@ -286,7 +286,7 @@ export function MultimodalOcrUploader({
 
       {/* ── PISTA DE CONTEXTO OPCIONAL ── */}
       <div className="space-y-1">
-        <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+        <label className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
           Pista de Contexto (Opcional)
         </label>
         <Input
@@ -306,7 +306,7 @@ export function MultimodalOcrUploader({
       >
         {isProcessing ? (
           <>
-            <Loader2 className="size-4 animate-spin" />
+            <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
             <span>{statusMessage || "Processando Documentos..."}</span>
           </>
         ) : (
@@ -332,7 +332,7 @@ export function MultimodalOcrUploader({
                     <span className="text-xs font-bold text-foreground">
                       Documento Estruturado com Sucesso
                     </span>
-                    <Badge variant="outline" className="text-[10px]">
+                    <Badge variant="outline" className="text-2xs">
                       Confiança: {extractedResult.confidence}
                     </Badge>
                   </div>
@@ -352,11 +352,11 @@ export function MultimodalOcrUploader({
                             setIsSavingToDb(false);
                           }
                         }}
-                        className="h-8 rounded-lg text-xs font-bold gap-2 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-2xs"
+                        className="h-8 rounded-lg text-xs font-bold gap-2 bg-emerald-600 hover:bg-emerald-700 text-foreground cursor-pointer shadow-2xs"
                       >
                         {isSavingToDb ? (
                           <>
-                            <Loader2 className="size-3.5 animate-spin" />
+                            <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
                             <span>Salvando...</span>
                           </>
                         ) : (

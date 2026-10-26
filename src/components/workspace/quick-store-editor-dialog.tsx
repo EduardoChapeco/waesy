@@ -164,7 +164,7 @@ export function QuickStoreEditorDialog({
  >
  {isSaving ? (
  <>
- <Loader2 className="size-3.5 animate-spin" />
+ <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
  <span>Salvando...</span>
  </>
  ) : (
@@ -388,7 +388,7 @@ export function QuickStoreEditorDialog({
  <Label htmlFor="hide-address-store" className="text-xs font-bold text-foreground cursor-pointer">
  Ocultar endereço completo na visualização pública
  </Label>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Exibe publicamente apenas Cidade e Estado, preservando rua, número e rotas GPS.
  </p>
  </div>

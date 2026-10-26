@@ -437,7 +437,7 @@ export function ChatArtifactCard({
                     </span>
                   </div>
                   {Array.isArray(d.activities || d.stops) && (
-                    <ul className="text-xs text-muted-foreground space-y-1.5 list-disc pl-5">
+                    <ul className="text-xs text-muted-foreground space-y-2 list-disc pl-5">
                       {(d.activities || d.stops).map((act: any, aIdx: number) => (
                         <li key={aIdx}>
                           <strong className="text-foreground">{typeof act === "string" ? act : act.time || act.title}:</strong>{" "}
@@ -485,7 +485,7 @@ export function ChatArtifactCard({
             variant="outline"
             size="sm"
             onClick={() => window.print()}
-            className="h-11 px-3 text-xs gap-1.5 focus-visible:ring-2 focus-visible:ring-primary/40"
+            className="h-11 px-3 text-xs gap-2 focus-visible:ring-2 focus-visible:ring-primary/40"
           >
             <Printer className="size-3.5" />
             <span>Imprimir</span>

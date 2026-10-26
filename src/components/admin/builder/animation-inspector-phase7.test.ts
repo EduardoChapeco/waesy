@@ -5,7 +5,7 @@ function testResolveAnimationClasses(designTokens?: Record<string, any>, layoutR
  const anim = designTokens?.animation || layoutRules?.animation;
  if (!anim || anim.trigger === "none") return "";
 
- const classes: string[] = ["transition-all"];
+ const classes: string[] = ["transition-colors duration-200"];
 
  if (anim.trigger === "fade_up") {
  classes.push("animate-in fade-in slide-in-from-bottom-6 duration-700 ease-out fill-mode-both");
@@ -18,9 +18,9 @@ function testResolveAnimationClasses(designTokens?: Record<string, any>, layoutR
  }
 
  if (anim.hover === "lift") {
- classes.push("hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300");
+ classes.push("hover:-translate-y-1.5 hover:shadow-xl transition-transform duration-200 duration-300");
  } else if (anim.hover === "glow") {
- classes.push("hover:ring-2 hover:ring-primary/40 hover:shadow-lg transition-all duration-300");
+ classes.push("hover:ring-2 hover:ring-primary/40 hover:shadow-lg transition-colors duration-200 duration-300");
  }
 
  return classes.join(" ");

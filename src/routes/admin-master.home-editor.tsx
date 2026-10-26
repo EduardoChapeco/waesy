@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { MediaUploader } from "@/components/ui/media-uploader";
+import { BidirectionalMediaUploader } from "@/components/ui/bidirectional-media-uploader";
 import { DestinationPicker } from "@/components/ui/destination-picker";
 import {
   listAdminHomePageSections,
@@ -834,65 +835,22 @@ function AdminMasterHomeEditorPage() {
 
           <div className="space-y-4 py-2">
             {/* Upload de Mídia com MediaUploader Canônico */}
-            <div className="space-y-3 p-3 rounded-lg bg-muted/20 border border-border/50">
-              <div className="space-y-1">
-                <Label className="text-xs font-bold">Mídia Principal / Padrão (Fallback)</Label>
-                <MediaUploader
-                  value={itemImageUrl ? [itemImageUrl] : []}
-                  onChange={(urls) => {
-                    if (urls && urls.length > 0) {
-                      setItemImageUrl(urls[0]);
-                    }
-                  }}
-                  bucket="home-banners"
-                  folder="home-cms"
-                  accept="image"
-                  maxFiles={1}
-                  enableCrop={false}
-                  showExternalUrlOption={true}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border/30">
-                <div className="space-y-1">
-                  <Label className="text-2xs font-semibold text-foreground/90">
-                    Mídia Desktop (Widescreen Fino 28:9)
-                  </Label>
-                  <MediaUploader
-                    value={itemImageDesktopUrl ? [itemImageDesktopUrl] : []}
-                    onChange={(urls) => setItemImageDesktopUrl(urls[0] || "")}
-                    bucket="home-banners"
-                    folder="home-cms/desktop"
-                    accept="image"
-                    maxFiles={1}
-                    enableCrop={false}
-                    showExternalUrlOption={true}
-                  />
-                  <p className="text-3xs text-muted-foreground">
-                    Exibido no desktop sem cortes ou perdas laterais.
-                  </p>
-                </div>
-
-                <div className="space-y-1">
-                  <Label className="text-2xs font-semibold text-foreground/90">
-                    Mídia Mobile (Nativa App 16:9 / 21:9)
-                  </Label>
-                  <MediaUploader
-                    value={itemImageMobileUrl ? [itemImageMobileUrl] : []}
-                    onChange={(urls) => setItemImageMobileUrl(urls[0] || "")}
-                    bucket="home-banners"
-                    folder="home-cms/mobile"
-                    accept="image"
-                    maxFiles={1}
-                    enableCrop={false}
-                    showExternalUrlOption={true}
-                  />
-                  <p className="text-3xs text-muted-foreground">
-                    Exibido no mobile no frame nativo do app.
-                  </p>
-                </div>
-              </div>
-            </div>
+            <BidirectionalMediaUploader
+                mobileUrl={itemImageMobileUrl || itemImageUrl}
+                desktopUrl={itemImageDesktopUrl || itemImageUrl}
+                onMobileChange={(url) => {
+                  setItemImageMobileUrl(url);
+                  if (!itemImageUrl) setItemImageUrl(url);
+                }}
+                onDesktopChange={(url) => {
+                  setItemImageDesktopUrl(url);
+                  if (!itemImageUrl) setItemImageUrl(url);
+                }}
+                bucket="home-banners"
+                folder="home-cms"
+                mobileAspect={16 / 9}
+                desktopAspect={28 / 9}
+              />
 
             {/* Configurações de Botão / Card Customizado */}
             <div className="grid grid-cols-2 gap-3">

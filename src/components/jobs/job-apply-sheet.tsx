@@ -224,7 +224,7 @@ export function JobApplySheet({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-[11px] font-semibold text-muted-foreground">Pretensão Salarial (R$)</label>
+                    <label className="text-2xs font-semibold text-muted-foreground">Pretensão Salarial (R$)</label>
                     <Input
                       placeholder="Ex: 3.500,00"
                       value={salaryExpectationStr}
@@ -233,7 +233,7 @@ export function JobApplySheet({
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[11px] font-semibold text-muted-foreground">Última Empresa</label>
+                    <label className="text-2xs font-semibold text-muted-foreground">Última Empresa</label>
                     <Input
                       placeholder="Ex: Supermercado Central"
                       value={previousCompanyName}
@@ -244,7 +244,7 @@ export function JobApplySheet({
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[11px] font-semibold text-muted-foreground">Por que você saiu da empresa anterior?</label>
+                  <label className="text-2xs font-semibold text-muted-foreground">Por que você saiu da empresa anterior?</label>
                   <Input
                     placeholder="Ex: Mudança de cidade, busca de crescimento..."
                     value={reasonForLeaving}
@@ -285,7 +285,7 @@ export function JobApplySheet({
               >
                 {isPending ? (
                   <>
-                    <CircleNotch size={16} className="animate-spin mr-2" />
+                    <CircleNotch size={16} className="animate-spin motion-reduce:animate-none mr-2" />
                     Enviando candidatura...
                   </>
                 ) : (

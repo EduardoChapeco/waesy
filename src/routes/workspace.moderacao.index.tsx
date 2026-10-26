@@ -144,7 +144,7 @@ function ModerationQueuePage() {
  {/* ── Lista de Denúncias ─────────────────────────────────── */}
  {isLoading ? (
  <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-2">
- <Loader2 className="size-6 animate-spin text-primary" />
+ <Loader2 className="size-6 animate-spin motion-reduce:animate-none text-primary" />
  <p className="text-xs">Carregando fila de moderação...</p>
  </div>
  ) : reports && reports.length > 0 ? (

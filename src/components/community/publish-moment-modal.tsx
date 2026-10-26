@@ -189,7 +189,7 @@ export function PublishMomentModal({
  setVibe(v.id as any);
  if (v.id === "mesa_aberta") setIsBillSplitOpen(true);
  }}
- className={`px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all border cursor-pointer ${
+ className={`px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors duration-200 border cursor-pointer ${
  isSelected
  ? "bg-foreground text-background border-foreground font-bold "
  : "bg-background border-border text-muted-foreground hover:text-foreground hover:bg-muted/70"
@@ -213,7 +213,7 @@ export function PublishMomentModal({
  type="button"
  onClick={handleGetLocation}
  disabled={isLocating}
- className="text-[11px] font-bold text-primary flex items-center gap-1 hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="text-2xs font-bold text-primary flex items-center gap-1 hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Crosshair size={12} weight="bold" />
  <span>{isLocating ? "Pegando GPS..." : "Usar meu GPS"}</span>
@@ -235,7 +235,7 @@ export function PublishMomentModal({
  <BeerBottle size={18} weight="bold" className="text-primary" />
  <div>
  <h4 className="text-xs font-bold text-foreground">Mesa Aberta para Dividir Conta?</h4>
- <p className="text-[10px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Convide pessoas para socializar no Happy Hour, almoço ou café e rachar a conta.
  </p>
  </div>
@@ -250,14 +250,14 @@ export function PublishMomentModal({
 
  {isBillSplitOpen && (
  <div className="pt-2 flex items-center justify-between gap-2">
- <span className="text-[11px] font-medium text-foreground">Vagas na mesa:</span>
+ <span className="text-2xs font-medium text-foreground">Vagas na mesa:</span>
  <div className="flex items-center gap-2">
  {[4, 6, 8, 12].map((num) => (
  <button
  key={num}
  type="button"
  onClick={() => setTableSize(num)}
- className={`size-7 rounded-lg text-xs font-bold transition-all border cursor-pointer flex items-center justify-center ${
+ className={`size-7 rounded-lg text-xs font-bold transition-colors duration-200 border cursor-pointer flex items-center justify-center ${
  tableSize === num
  ? "bg-foreground text-background border-foreground"
  : "bg-background border-border text-muted-foreground hover:text-foreground"

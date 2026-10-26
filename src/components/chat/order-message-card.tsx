@@ -61,12 +61,12 @@ export const OrderMessageCard: React.FC<OrderMessageCardProps> = ({
  <Copy className="size-3" />
  </button>
  </div>
- <span className="text-[10px] text-muted-foreground">
+ <span className="text-2xs text-muted-foreground">
  {order.payment_method?.toUpperCase() || "PIX / CARTÃO"}
  </span>
  </div>
  </div>
- <Badge variant={statusConfig.variant} className="text-[10px] uppercase font-bold shrink-0">
+ <Badge variant={statusConfig.variant} className="text-2xs uppercase font-bold shrink-0">
  {statusConfig.label}
  </Badge>
  </div>
@@ -85,7 +85,7 @@ export const OrderMessageCard: React.FC<OrderMessageCardProps> = ({
  </div>
  ))}
  {order.items.length > 3 && (
- <p className="text-[10px] text-muted-foreground text-center pt-1">
+ <p className="text-2xs text-muted-foreground text-center pt-1">
  + {order.items.length - 3} outro(s) item(ns)
  </p>
  )}
@@ -95,7 +95,7 @@ export const OrderMessageCard: React.FC<OrderMessageCardProps> = ({
  {/* Total e Ações */}
  <div className="flex items-center justify-between pt-2 border-t border-border/50">
  <div>
- <span className="text-[10px] text-muted-foreground uppercase font-bold">Total do Pedido</span>
+ <span className="text-2xs text-muted-foreground uppercase font-bold">Total do Pedido</span>
  <p className="text-sm font-extrabold text-foreground">
  {formatBRL(order.total_amount_cents / 100)}
  </p>

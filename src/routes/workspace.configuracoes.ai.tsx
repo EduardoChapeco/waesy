@@ -207,7 +207,7 @@ function AIConfigurationPage() {
  >
  {saveMutation.isPending ? (
  <>
- <Loader2 className="size-4 animate-spin" />
+ <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
  <span>Criptografando e Salvando...</span>
  </>
  ) : (
@@ -263,7 +263,7 @@ function AIConfigurationPage() {
  </div>
 
  {loadingQuota ? (
- <div className="py-4 text-center text-xs text-muted-foreground animate-pulse">
+ <div className="py-4 text-center text-xs text-muted-foreground animate-pulse motion-reduce:animate-none">
  Carregando cota e consumo mensal de IA...
  </div>
  ) : quota ? (
@@ -278,7 +278,7 @@ function AIConfigurationPage() {
  </div>
  <div className="w-full bg-muted/60 h-2 rounded-full overflow-hidden">
  <div
- className="bg-primary h-full transition-all duration-300 rounded-full"
+ className="bg-primary h-full transition-colors duration-200 duration-300 rounded-full"
  style={{ width: `${Math.min(100, Math.round((quota.monthlyUsed / Math.max(1, quota.monthlyLimit)) * 100))}%` }}
  />
  </div>
@@ -300,7 +300,7 @@ function AIConfigurationPage() {
 
  {loadingSecrets ? (
  <div className="py-10 text-center text-xs text-muted-foreground">
- <Loader2 className="size-5 animate-spin mx-auto text-primary mb-2" />
+ <Loader2 className="size-5 animate-spin motion-reduce:animate-none mx-auto text-primary mb-2" />
  Carregando credenciais...
  </div>
  ) : secrets && secrets.length > 0 ? (

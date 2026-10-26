@@ -59,7 +59,7 @@ export function TableBookingSection({
  <div className="max-w-4xl mx-auto px-4 sm:px-6">
  <div className="rounded-lg border border-border/80 bg-card p-6 sm:p-10 shadow-2xs space-y-6">
  <div className="text-center max-w-xl mx-auto space-y-2">
- <Badge variant="outline" className="text-[11px] font-mono text-muted-foreground border-border/80">
+ <Badge variant="outline" className="text-2xs font-mono text-muted-foreground border-border/80">
  Atendimento VIP
  </Badge>
  <h2 className="text-2xl font-bold text-foreground tracking-tight">{title}</h2>

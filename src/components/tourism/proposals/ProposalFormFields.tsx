@@ -3,7 +3,7 @@ import { ChevronDown, ChevronRight, Trash2, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const SMALL_INPUT =
-  "w-full h-11 sm:h-9 px-4 rounded-lg border border-border/60 bg-background text-sm sm:text-xs font-medium outline-none transition-all hover:bg-muted/30 focus:bg-background focus:border-primary/50 focus:ring-2 focus:ring-primary/20";
+  "w-full h-11 sm:h-9 px-4 rounded-lg border border-border/60 bg-background text-sm sm:text-xs font-medium outline-none transition-colors duration-200 hover:bg-muted/30 focus:bg-background focus:border-primary/50 focus:ring-2 focus:ring-primary/20";
 
 export function replaceAt<T>(arr: T[], i: number, item: T): T[] {
   const c = arr.slice();
@@ -22,7 +22,7 @@ export function Accordion({
 }) {
   const [open, setOpen] = useState(!!defaultOpen);
   return (
-    <div className="mb-4 overflow-hidden rounded-card bg-surface  ring-1 ring-border/50 transition-all">
+    <div className="mb-4 overflow-hidden rounded-card bg-surface  ring-1 ring-border/50 transition-colors duration-200">
       <Button
         variant="ghost"
         onClick={() => setOpen(!open)}

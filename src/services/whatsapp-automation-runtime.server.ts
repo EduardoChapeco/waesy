@@ -33,10 +33,62 @@ export async function resolveWhatsAppIdentity(input: InboundIdentityInput) {
 }
 
 function conditionMatches(condition: any, input: Record<string, any>) {
-  if (!condition?.config?.field) return true;
+  if (!condition?.config) return true;
+  // Keyword match condicional (Typebot-grade)
+  if (condition.config.keyword) {
+    const kw = String(condition.config.keyword).toLowerCase().trim();
+    const text = String(input.text || "").toLowerCase();
+    return text.includes(kw);
+  }
+  if (condition.config.keywords && Array.isArray(condition.config.keywords)) {
+    const text = String(input.text || "").toLowerCase();
+    return condition.config.keywords.some((k: string) => text.includes(k.toLowerCase().trim()));
+  }
+  if (!condition.config.field) return true;
   const actual = input[condition.config.field];
   if (condition.config.equals !== undefined) return actual === condition.config.equals;
   if (condition.config.in && Array.isArray(condition.config.in)) return condition.config.in.includes(actual);
+  return true;
+}
+
+/**
+ * Verifica se o horário atual está fora do expediente da loja e enfileira resposta automática de ausência
+ */
+export async function checkStoreBusinessHoursAndAutoReply(input: {
+  storeId: string;
+  instanceId: string | null;
+  provider: string;
+  threadId: string;
+  phone: string;
+}) {
+  const db = getServerClient();
+  const { data: store } = await db.from("stores").select("settings").eq("id", input.storeId).maybeSingle();
+  const supportSettings = (store?.settings as any)?.support_settings;
+
+  if (!supportSettings || supportSettings.auto_reply_enabled === false) return false;
+
+  const awayMessage = String(supportSettings.away_message || "").trim();
+  if (!awayMessage) return false;
+
+  // Idempotência: envia mensagem de ausência no máximo 1x a cada 12 horas para o mesmo telefone
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const idempotencyKey = `away:${input.storeId}:${input.phone}:${todayKey}`;
+
+  await db.from("whatsapp_outbox").upsert(
+    {
+      store_id: input.storeId,
+      thread_id: input.threadId,
+      channel_instance_id: input.instanceId,
+      provider: input.provider,
+      idempotency_key: idempotencyKey,
+      recipient_phone: input.phone,
+      message_type: "text",
+      payload: { text: awayMessage },
+      status: "pending",
+    },
+    { onConflict: "store_id,idempotency_key", ignoreDuplicates: true }
+  );
+
   return true;
 }
 
@@ -45,9 +97,25 @@ export async function dispatchWhatsAppInboundFlows(input: { storeId: string; ins
   const { data: flows, error } = await db.from("store_workflows").select("id, nodes, edges, workflow_version, execution_count, channel_instance_id").eq("store_id", input.storeId).eq("channel", "whatsapp").eq("trigger_type", "whatsapp_inbound").eq("status", "active");
   if (error) throw new Error(`flow_lookup_failed:${error.message}`);
   const results: Array<{ workflowId: string; runId?: string; status: string; error?: string }> = [];
+
+  // 1. Checa mensagem de ausência fora de horário de expediente
+  await checkStoreBusinessHoursAndAutoReply(input).catch(() => null);
+
   for (const flow of flows || []) {
     if (flow.channel_instance_id && flow.channel_instance_id !== input.instanceId) continue;
     const nodes = Array.isArray(flow.nodes) ? flow.nodes : [];
+
+    // Trigger keyword match
+    const trigger = nodes.find((n: any) => n.type === "trigger");
+    if (trigger?.config?.keyword) {
+      const kw = String(trigger.config.keyword).toLowerCase().trim();
+      if (!input.text.toLowerCase().includes(kw)) continue;
+    }
+    if (trigger?.config?.keywords && Array.isArray(trigger.config.keywords)) {
+      const matchAny = trigger.config.keywords.some((k: string) => input.text.toLowerCase().includes(k.toLowerCase().trim()));
+      if (!matchAny) continue;
+    }
+
     const conditions = nodes.filter((node: any) => node.type === "condition");
     if (!conditions.every((node: any) => conditionMatches(node, { ...input.payload, text: input.text, provider: input.provider }))) continue;
     const { data: run, error: runError } = await db.from("whatsapp_flow_runs").insert({ workflow_id: flow.id, store_id: input.storeId, thread_id: input.threadId, identity_id: input.identityId, trigger_event_id: input.eventId || null, status: "running", input_payload: { text: input.text, provider: input.provider, payload: input.payload }, output_payload: {}, current_node_id: nodes[0]?.id || null }).select("id").single();
@@ -61,6 +129,14 @@ export async function dispatchWhatsAppInboundFlows(input: { storeId: string; ins
           if (["unknown", "opted_in", "opted_out"].includes(consent)) await db.from("whatsapp_contact_identities").update({ consent_status: consent, consent_source: `flow:${flow.id}`, consent_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", input.identityId).eq("store_id", input.storeId);
         } else if (action === "assign_agent" && node.config?.profile_id) {
           await db.from("chat_threads").update({ assigned_to_profile_id: node.config.profile_id, updated_at: new Date().toISOString() }).eq("id", input.threadId).eq("store_id", input.storeId);
+        } else if (action === "route_department" && node.config?.department) {
+          await db.from("chat_threads").update({ department: node.config.department, updated_at: new Date().toISOString() }).eq("id", input.threadId).eq("store_id", input.storeId);
+        } else if (action === "add_tag" && node.config?.tag) {
+          const { data: t } = await db.from("chat_threads").select("tags").eq("id", input.threadId).single();
+          const currentTags = Array.isArray(t?.tags) ? t.tags : [];
+          if (!currentTags.includes(node.config.tag)) {
+            await db.from("chat_threads").update({ tags: [...currentTags, node.config.tag], updated_at: new Date().toISOString() }).eq("id", input.threadId).eq("store_id", input.storeId);
+          }
         } else if (action === "send_text") {
           const body = String(node.config?.text || "").trim();
           if (!body) continue;

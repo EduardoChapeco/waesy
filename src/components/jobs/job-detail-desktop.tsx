@@ -70,7 +70,7 @@ export function JobDetailDesktop({
                     {job.company_name}
                   </span>
                   {job.is_featured && (
-                    <Badge variant="default" className="rounded-md font-mono text-[9px] uppercase px-2 py-0">
+                    <Badge variant="default" className="rounded-md font-mono text-3xs uppercase px-2 py-0">
                       Destaque
                     </Badge>
                   )}
@@ -159,33 +159,33 @@ export function JobDetailDesktop({
             <div className="rounded-lg border border-border/70 bg-card p-6 space-y-4 shadow-xs">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                  <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
                     Inteligência de Mercado
                   </span>
                   <h3 className="text-sm font-bold text-foreground">
                     Faixa Salarial para {matchedProfession.title}
                   </h3>
                 </div>
-                <Badge variant="outline" className="text-[10px] font-mono border-border/60">
+                <Badge variant="outline" className="text-2xs font-mono border-border/60">
                   Pesquisa Regional
                 </Badge>
               </div>
 
               <div className="grid grid-cols-4 gap-3">
                 <div className="p-3 rounded-lg bg-muted/30 border border-border/40 text-center">
-                  <span className="text-[10px] text-muted-foreground block font-medium">Júnior</span>
+                  <span className="text-2xs text-muted-foreground block font-medium">Júnior</span>
                   <span className="text-xs font-bold font-mono text-foreground">{formatMoney(matchedProfession.junior_salary_cents)}</span>
                 </div>
                 <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 text-center">
-                  <span className="text-[10px] text-primary block font-medium">Pleno</span>
+                  <span className="text-2xs text-primary block font-medium">Pleno</span>
                   <span className="text-xs font-bold font-mono text-primary">{formatMoney(matchedProfession.mid_salary_cents)}</span>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/30 border border-border/40 text-center">
-                  <span className="text-[10px] text-muted-foreground block font-medium">Sênior</span>
+                  <span className="text-2xs text-muted-foreground block font-medium">Sênior</span>
                   <span className="text-xs font-bold font-mono text-foreground">{formatMoney(matchedProfession.senior_salary_cents)}</span>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/30 border border-border/40 text-center">
-                  <span className="text-[10px] text-muted-foreground block font-medium">Lead</span>
+                  <span className="text-2xs text-muted-foreground block font-medium">Lead</span>
                   <span className="text-xs font-bold font-mono text-foreground">{formatMoney(matchedProfession.lead_salary_cents)}</span>
                 </div>
               </div>
@@ -196,7 +196,7 @@ export function JobDetailDesktop({
           {employerInsights && employerInsights.total_reviews > 0 && (
             <div className="rounded-lg border border-border/70 bg-card p-6 space-y-3 shadow-xs">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                   Perfil do Empregador
                 </span>
                 <span className="text-xs font-bold text-amber-500">
@@ -216,7 +216,7 @@ export function JobDetailDesktop({
           <div className="rounded-lg border border-border/80 bg-card p-6 space-y-5 shadow-sm">
             {/* Salário */}
             <div className="space-y-1">
-              <span className="text-[11px] font-mono text-muted-foreground uppercase tracking-wider block font-bold">
+              <span className="text-2xs font-mono text-muted-foreground uppercase tracking-wider block font-bold">
                 Remuneração Prevista
               </span>
               <span className="text-2xl font-black text-foreground font-mono">
@@ -267,7 +267,7 @@ export function JobDetailDesktop({
             )}
 
             {/* Selo de Verificação */}
-            <div className="pt-2 border-t border-border/40 flex items-center gap-2 text-[11px] text-muted-foreground">
+            <div className="pt-2 border-t border-border/40 flex items-center gap-2 text-2xs text-muted-foreground">
               <ShieldCheck size={16} weight="bold" className="text-foreground shrink-0" />
               <span>Processo seletivo verificado pela Comunidade Waesy.</span>
             </div>

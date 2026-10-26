@@ -189,7 +189,7 @@ function AdminMasterLogisticaPage() {
         >
           {isSubmitting ? (
             <>
-              <Loader2 className="size-4 animate-spin" />
+              <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
               <span>Salvando...</span>
             </>
           ) : (
@@ -453,7 +453,7 @@ function AdminMasterLogisticaPage() {
                   type="button"
                   onClick={() => setPreviewMode("desktop")}
                   className={cn(
-                    "size-11 rounded-lg text-xs flex items-center justify-center transition-all focus-visible:ring-2 focus-visible:ring-primary",
+                    "size-11 rounded-lg text-xs flex items-center justify-center transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-primary",
                     previewMode === "desktop"
                       ? "bg-foreground text-background font-bold"
                       : "text-muted-foreground hover:text-foreground"
@@ -466,7 +466,7 @@ function AdminMasterLogisticaPage() {
                   type="button"
                   onClick={() => setPreviewMode("tablet")}
                   className={cn(
-                    "size-11 rounded-lg text-xs flex items-center justify-center transition-all focus-visible:ring-2 focus-visible:ring-primary",
+                    "size-11 rounded-lg text-xs flex items-center justify-center transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-primary",
                     previewMode === "tablet"
                       ? "bg-foreground text-background font-bold"
                       : "text-muted-foreground hover:text-foreground"
@@ -479,7 +479,7 @@ function AdminMasterLogisticaPage() {
                   type="button"
                   onClick={() => setPreviewMode("mobile")}
                   className={cn(
-                    "size-11 rounded-lg text-xs flex items-center justify-center transition-all focus-visible:ring-2 focus-visible:ring-primary",
+                    "size-11 rounded-lg text-xs flex items-center justify-center transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-primary",
                     previewMode === "mobile"
                       ? "bg-foreground text-background font-bold"
                       : "text-muted-foreground hover:text-foreground"
@@ -494,7 +494,7 @@ function AdminMasterLogisticaPage() {
             {/* Mockup do Bloco de Logística */}
             <div
               className={cn(
-                "rounded-lg border border-border/80 overflow-hidden bg-background p-4 space-y-3 transition-all",
+                "rounded-lg border border-border/80 overflow-hidden bg-background p-4 space-y-3 transition-colors duration-200",
                 previewMode === "mobile" && "max-w-80 mx-auto",
                 previewMode === "tablet" && "max-w-md mx-auto"
               )}

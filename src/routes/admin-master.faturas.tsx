@@ -274,7 +274,7 @@ function MasterFaturasPage() {
           <div className="text-xl font-bold mt-2 text-foreground">
             {formatMoney(totalInvoicedCents)}
           </div>
-          <span className="text-[11px] text-muted-foreground mt-1 block">
+          <span className="text-2xs text-muted-foreground mt-1 block">
             {invoices.length} faturas registradas
           </span>
         </div>
@@ -287,7 +287,7 @@ function MasterFaturasPage() {
           <div className="text-xl font-bold mt-2 text-emerald-600">
             {formatMoney(totalPaidCents)}
           </div>
-          <span className="text-[11px] text-muted-foreground mt-1 block">
+          <span className="text-2xs text-muted-foreground mt-1 block">
             Recebimento confirmado
           </span>
         </div>
@@ -300,7 +300,7 @@ function MasterFaturasPage() {
           <div className="text-xl font-bold mt-2 text-destructive">
             {formatMoney(totalOverdueCents)}
           </div>
-          <span className="text-[11px] text-muted-foreground mt-1 block">
+          <span className="text-2xs text-muted-foreground mt-1 block">
             Inadimplência atualizada pro-rata
           </span>
         </div>
@@ -447,7 +447,7 @@ function MasterFaturasPage() {
               placeholder="Buscar por loja ou fatura..."
               className="h-8 w-full sm:w-48 text-xs rounded-lg"
             />
-            <span className="text-[11px] text-muted-foreground shrink-0">
+            <span className="text-2xs text-muted-foreground shrink-0">
               {filteredInvoices.length} de {invoices.length}
             </span>
           </div>
@@ -455,7 +455,7 @@ function MasterFaturasPage() {
 
         <div className="overflow-x-auto no-scrollbar">
           <table className="w-full text-xs text-left">
-            <thead className="bg-muted/30 text-muted-foreground border-b border-border/40 font-semibold uppercase text-[10px] tracking-wider">
+            <thead className="bg-muted/30 text-muted-foreground border-b border-border/40 font-semibold uppercase text-2xs tracking-wider">
               <tr>
                 <th className="px-5 py-3">Descrição</th>
                 <th className="px-5 py-3">Loja / Status da Conta</th>
@@ -477,14 +477,14 @@ function MasterFaturasPage() {
                     <td className="px-5 py-3 font-semibold text-foreground">
                       <div>{inv.description || "Assinatura Mensal"}</div>
                       {inv.notes && (
-                        <div className="text-[10px] text-muted-foreground font-normal">{inv.notes}</div>
+                        <div className="text-2xs text-muted-foreground font-normal">{inv.notes}</div>
                       )}
                     </td>
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-foreground">{inv.stores?.name || "Global"}</span>
                         {isStoreBlocked && (
-                          <Badge variant="destructive" className="text-[9px] px-2 py-0">
+                          <Badge variant="destructive" className="text-3xs px-2 py-0">
                             Bloqueada
                           </Badge>
                         )}
@@ -493,7 +493,7 @@ function MasterFaturasPage() {
                         <button
                           onClick={() => handleToggleDebtBlock(inv.stores)}
                           disabled={loadingAction === `debt-${inv.stores?.id}`}
-                          className="text-[10px] text-muted-foreground hover:text-foreground underline block mt-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          className="text-2xs text-muted-foreground hover:text-foreground underline block mt-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           {isStoreBlocked ? "Desbloquear conta" : "Bloquear por inadimplência"}
                         </button>
@@ -501,19 +501,19 @@ function MasterFaturasPage() {
                     </td>
                     <td className="px-5 py-3">
                       <div className="font-bold text-foreground">{formatMoney(inv.amount_cents)}</div>
-                      <div className="text-[10px] text-muted-foreground mt-1" title="Reforma Tributária 2026: IBS 1,77% + CBS 8,8%">
+                      <div className="text-2xs text-muted-foreground mt-1" title="Reforma Tributária 2026: IBS 1,77% + CBS 8,8%">
                         Líq. Est.: {formatMoney(calculateReformaTributaria2026(inv.amount_cents).netCents)}
                       </div>
                       {isOverdue && inv.status !== "paid" && (
-                        <div className="text-[10px] font-semibold text-destructive mt-1">
+                        <div className="text-2xs font-semibold text-destructive mt-1">
                           Total: {formatMoney(inv.total_updated_cents)}
-                          <span className="block text-[9px] font-normal text-muted-foreground">
+                          <span className="block text-3xs font-normal text-muted-foreground">
                             (+{formatMoney(inv.fine_cents + inv.interest_cents)} juros/multa)
                           </span>
                         </div>
                       )}
                     </td>
-                    <td className="px-5 py-3 text-muted-foreground text-[11px]">
+                    <td className="px-5 py-3 text-muted-foreground text-2xs">
                       {safeFormatDate(inv.due_date || inv.created_at)}
                     </td>
                     <td className="px-5 py-3">
@@ -530,13 +530,13 @@ function MasterFaturasPage() {
                             <ExternalLink className="size-3 opacity-60" />
                           </a>
                           {inv.status !== "paid" && (
-                            <span className="text-[9px] font-semibold text-amber-600 bg-amber-500/10 px-2 py-1 rounded">
+                            <span className="text-3xs font-semibold text-amber-600 bg-amber-500/10 px-2 py-1 rounded">
                               Anexado p/ Lojista
                             </span>
                           )}
                         </div>
                       ) : (
-                        <span className="text-muted-foreground/50 text-[11px]">—</span>
+                        <span className="text-muted-foreground/50 text-2xs">—</span>
                       )}
                     </td>
                     <td className="px-5 py-3">
@@ -549,8 +549,8 @@ function MasterFaturasPage() {
                             : "secondary"
                         }
                         className={cn(
-                          "text-[10px] font-medium px-2 py-1",
-                          inv.status === "paid" ? "bg-emerald-600/90 text-white" : ""
+                          "text-2xs font-medium px-2 py-1",
+                          inv.status === "paid" ? "bg-emerald-600/90 text-foreground" : ""
                         )}
                       >
                         {inv.status === "paid"
@@ -566,7 +566,7 @@ function MasterFaturasPage() {
                           inv.receipt_url ? (
                             <Button
                               size="sm"
-                              className="h-7 px-3 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs gap-1 cursor-pointer"
+                              className="h-7 px-3 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-foreground shadow-xs gap-1 cursor-pointer"
                               disabled={loadingAction === inv.id}
                               onClick={() => handleUpdateStatus(inv.id, "paid")}
                             >

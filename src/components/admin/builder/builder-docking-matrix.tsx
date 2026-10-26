@@ -53,7 +53,7 @@ export function BuilderDockingMatrix({
  onClick={() => onChange(pos.id)}
  title={pos.label}
  className={cn(
- "size-11 min-h-11 min-w-11 rounded-md flex items-center justify-center transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+ "size-11 min-h-11 min-w-11 rounded-md flex items-center justify-center transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  isSelected
  ? "bg-primary text-primary-foreground shadow-2xs ring-2 ring-primary/30"
  : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground"

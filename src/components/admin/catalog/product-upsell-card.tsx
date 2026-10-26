@@ -180,7 +180,7 @@ export function ProductUpsellCard({ productId, productTitle }: ProductUpsellCard
     return (
       <Card className="p-6 rounded-lg border-border bg-card">
         <div className="flex items-center justify-center py-10 text-muted-foreground gap-2">
-          <Loader2 className="size-4 animate-spin text-primary" />
+          <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-primary" />
           <span className="text-xs">Carregando configurações de oferta...</span>
         </div>
       </Card>
@@ -238,7 +238,7 @@ export function ProductUpsellCard({ productId, productTitle }: ProductUpsellCard
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Seletor de Produto Ofertado */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold text-foreground">
                 Produto Oferecido no Checkout
               </Label>
@@ -257,13 +257,13 @@ export function ProductUpsellCard({ productId, productTitle }: ProductUpsellCard
                   </option>
                 ))}
               </select>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-2xs text-muted-foreground">
                 Item complementar sugerido no resumo do pedido antes do pagamento.
               </p>
             </div>
 
             {/* Desconto Percentual */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-semibold text-foreground">
                 Desconto Promocional de 1-Clique (%)
               </Label>
@@ -301,7 +301,7 @@ export function ProductUpsellCard({ productId, productTitle }: ProductUpsellCard
                   ))}
                 </div>
               </div>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-2xs text-muted-foreground">
                 Aplique uma condição especial para maximizar o ticket médio do pedido.
               </p>
             </div>
@@ -313,16 +313,16 @@ export function ProductUpsellCard({ productId, productTitle }: ProductUpsellCard
               <span className="text-xs font-bold text-foreground">
                 Prévia da Oferta no Checkout
               </span>
-              <div className="p-4 rounded-lg border-2 border-primary/30 bg-primary/5 space-y-2.5">
+              <div className="p-4 rounded-lg border-2 border-primary/30 bg-primary/5 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Zap className="size-3.5 text-primary animate-pulse" />
+                    <Zap className="size-3.5 text-primary animate-pulse motion-reduce:animate-none" />
                     <span className="text-xs font-bold text-foreground">
                       Oferta Especial de 1-Clique
                     </span>
                   </div>
                   {discountPercentage > 0 && (
-                    <Badge variant="secondary" className="text-[10px] font-bold">
+                    <Badge variant="secondary" className="text-2xs font-bold">
                       {discountPercentage}% OFF
                     </Badge>
                   )}
@@ -350,7 +350,7 @@ export function ProductUpsellCard({ productId, productTitle }: ProductUpsellCard
                         {formatMoney(discountedPriceCents)}
                       </span>
                       {discountPercentage > 0 && (
-                        <span className="text-[11px] text-muted-foreground line-through">
+                        <span className="text-2xs text-muted-foreground line-through">
                           {formatMoney(originalPriceCents)}
                         </span>
                       )}
@@ -391,7 +391,7 @@ export function ProductUpsellCard({ productId, productTitle }: ProductUpsellCard
             >
               {saving ? (
                 <>
-                  <Loader2 className="size-4 mr-2 animate-spin" />
+                  <Loader2 className="size-4 mr-2 animate-spin motion-reduce:animate-none" />
                   Salvando...
                 </>
               ) : (

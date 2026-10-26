@@ -68,7 +68,7 @@ export function NewsCard({
 
         <div className="flex-1 min-w-0 flex flex-col justify-between h-full py-1 space-y-1">
           <div className="space-y-1">
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <div className="size-5 rounded-full overflow-hidden bg-primary/10 text-primary border border-border/50 flex items-center justify-center shrink-0 font-bold text-xs leading-none">
                 {article.store_avatar && !avatarError ? (
                   <img

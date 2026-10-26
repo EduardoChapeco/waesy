@@ -981,7 +981,7 @@ export function TravelPromoFlyerModal({
           <div className="flex items-center gap-2">
             {isConvertingImage && (
               <div className="hidden lg:flex items-center gap-2 text-xs text-muted-foreground">
-                <Loader2 className="size-4 animate-spin text-primary" />
+                <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-primary" />
                 <span>Otimizando...</span>
               </div>
             )}
@@ -1019,7 +1019,7 @@ export function TravelPromoFlyerModal({
               title="Gerar e baixar vídeo animado de 3s (Stories/Reels)"
             >
               {isExportingVideo ? (
-                <Loader2 className="size-4 animate-spin" />
+                <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
               ) : (
                 <Film className="size-4" />
               )}
@@ -1035,7 +1035,7 @@ export function TravelPromoFlyerModal({
               className="h-11 min-h-11 px-3 sm:px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer focus-visible:ring-2"
             >
               {isExporting ? (
-                <Loader2 className="size-4 animate-spin" />
+                <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
               ) : (
                 <Download className="size-4" />
               )}
@@ -1052,7 +1052,7 @@ export function TravelPromoFlyerModal({
                 className="h-11 min-h-11 px-3 sm:px-4 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer focus-visible:ring-2"
               >
                 {isSavingToAd ? (
-                  <Loader2 className="size-4 animate-spin" />
+                  <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                 ) : (
                   <Check className="size-4" />
                 )}
@@ -1883,7 +1883,7 @@ export function TravelPromoFlyerModal({
                           )}`;
                           window.open(waUrl, "_blank");
                         }}
-                        className="h-11 min-h-11 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2"
+                        className="h-11 min-h-11 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-foreground text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2"
                       >
                         <MessageCircle className="size-4" />
                         <span>Abrir WhatsApp</span>
@@ -1907,7 +1907,7 @@ export function TravelPromoFlyerModal({
                         className="w-full h-full object-cover"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-3">
-                        <span className="text-xs text-white/90 font-mono truncate">
+                        <span className="text-xs text-foreground/90 font-mono truncate">
                           {bgImageUrl.startsWith("data:")
                             ? "Imagem local carregada"
                             : bgImageUrl}

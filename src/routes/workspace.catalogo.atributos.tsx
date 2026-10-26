@@ -342,7 +342,7 @@ function OptionGroupsPage() {
  >
  {isSubmitting ? (
  <>
- <Loader2 className="size-3.5 animate-spin" />
+ <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
  <span>Salvando...</span>
  </>
  ) : (
@@ -371,7 +371,7 @@ function OptionGroupsPage() {
  key={preset.name}
  type="button"
  onClick={() => applyPreset(preset)}
- className="flex flex-col items-start p-3 rounded-lg border border-border/80 bg-background hover:bg-muted/40 hover:border-primary/40 transition-all text-left cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="flex flex-col items-start p-3 rounded-lg border border-border/80 bg-background hover:bg-muted/40 hover:border-primary/40 transition-colors duration-200 text-left cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="flex items-center gap-2 w-full mb-1">
  <Icon className="size-3.5 text-primary shrink-0" />
@@ -607,7 +607,7 @@ function OptionItemCard({
  };
 
  return (
- <div className="flex items-start gap-3 p-4 rounded-lg border border-border/70 bg-card hover:border-border transition-all">
+ <div className="flex items-start gap-3 p-4 rounded-lg border border-border/70 bg-card hover:border-border transition-colors duration-200">
  {/* Mini Uploader 1:1 */}
  <div className="relative shrink-0">
  <input
@@ -621,11 +621,11 @@ function OptionItemCard({
  {imageUrl ? (
  <div className="relative size-14 rounded-lg overflow-hidden border border-border/80 group">
  <img src={imageUrl} alt="" className="size-full object-cover" />
- <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
+ <div className="absolute inset-0 bg-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
  <button
  type="button"
  onClick={() => fileInputRef.current?.click()}
- className="p-1 rounded-md text-white hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="p-1 rounded-md text-foreground hover:bg-card/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  title="Trocar Foto"
  >
  <Edit className="size-3" />
@@ -645,10 +645,10 @@ function OptionItemCard({
  type="button"
  onClick={() => fileInputRef.current?.click()}
  disabled={isUploading}
- className="size-14 rounded-lg border border-dashed border-border/80 bg-muted/20 hover:bg-muted/50 flex flex-col items-center justify-center text-muted-foreground hover:text-foreground transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="size-14 rounded-lg border border-dashed border-border/80 bg-muted/20 hover:bg-muted/50 flex flex-col items-center justify-center text-muted-foreground hover:text-foreground transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {isUploading ? (
- <Loader2 className="size-4 animate-spin text-primary" />
+ <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-primary" />
  ) : (
  <>
  <ImagePlus className="size-4" />

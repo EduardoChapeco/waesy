@@ -88,7 +88,7 @@ function AdminMasterImprensaPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-6">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
+            <span className="px-3 py-1 rounded-md text-2xs font-black uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
               Governança de Conteúdo
             </span>
             <span className="text-xs text-muted-foreground font-mono">Consórcio de Imprensa</span>
@@ -139,7 +139,7 @@ function AdminMasterImprensaPage() {
         <div className="flex items-center gap-2 p-1 rounded-lg bg-muted/50 border self-start">
           <button
             onClick={() => setFilterTab("all")}
-            className={`px-3 py-2 rounded-lg text-xs font-bold transition-all ${
+            className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors duration-200 ${
               filterTab === "all" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground"
             } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
@@ -147,7 +147,7 @@ function AdminMasterImprensaPage() {
           </button>
           <button
             onClick={() => setFilterTab("approved")}
-            className={`px-3 py-2 rounded-lg text-xs font-bold transition-all ${
+            className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors duration-200 ${
               filterTab === "approved" ? "bg-background text-emerald-600 shadow-xs" : "text-muted-foreground"
             } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
@@ -155,7 +155,7 @@ function AdminMasterImprensaPage() {
           </button>
           <button
             onClick={() => setFilterTab("pending")}
-            className={`px-3 py-2 rounded-lg text-xs font-bold transition-all ${
+            className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors duration-200 ${
               filterTab === "pending" ? "bg-background text-amber-600 shadow-xs" : "text-muted-foreground"
             } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
@@ -163,7 +163,7 @@ function AdminMasterImprensaPage() {
           </button>
           <button
             onClick={() => setFilterTab("revoked")}
-            className={`px-3 py-2 rounded-lg text-xs font-bold transition-all ${
+            className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors duration-200 ${
               filterTab === "revoked" ? "bg-background text-destructive shadow-xs" : "text-muted-foreground"
             } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
@@ -203,12 +203,12 @@ function AdminMasterImprensaPage() {
             return (
               <div
                 key={st.id}
-                className="p-5 rounded-lg bg-card border space-y-4 flex flex-col justify-between hover-elevate transition-all"
+                className="p-5 rounded-lg bg-card border space-y-4 flex flex-col justify-between hover-elevate transition-colors duration-200"
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between gap-2">
                     <span
-                      className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider ${
+                      className={`px-3 py-1 rounded-full text-3xs font-black uppercase tracking-wider ${
                         isApproved
                           ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
                           : isPending
@@ -227,7 +227,7 @@ function AdminMasterImprensaPage() {
                         : "Não Homologado"}
                     </span>
 
-                    <span className="text-[10px] font-mono text-muted-foreground">
+                    <span className="text-2xs font-mono text-muted-foreground">
                       {st.city ? `${st.city}/${st.state || ""}` : "Local"}
                     </span>
                   </div>
@@ -247,7 +247,7 @@ function AdminMasterImprensaPage() {
 
                     <div className="min-w-0">
                       <h3 className="text-sm font-bold text-foreground truncate">{st.name}</h3>
-                      <p className="text-[11px] text-muted-foreground font-mono truncate">
+                      <p className="text-2xs text-muted-foreground font-mono truncate">
                         @{st.slug}
                       </p>
                     </div>
@@ -265,7 +265,7 @@ function AdminMasterImprensaPage() {
                         onClick={() => handleUpdateStatus(st.id, "revoked")}
                         className="h-8 rounded-lg text-xs font-bold text-destructive hover:bg-destructive/10"
                       >
-                        {isUpdating ? <Loader2 className="size-3.5 animate-spin mr-1" /> : <XCircle className="size-3.5 mr-1" />}
+                        {isUpdating ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none mr-1" /> : <XCircle className="size-3.5 mr-1" />}
                         <span>Revogar</span>
                       </Button>
                     ) : (
@@ -274,10 +274,10 @@ function AdminMasterImprensaPage() {
                         size="sm"
                         disabled={isUpdating}
                         onClick={() => handleUpdateStatus(st.id, "approved")}
-                        className="h-8 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white"
+                        className="h-8 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-foreground"
                       >
                         {isUpdating ? (
-                          <Loader2 className="size-3.5 animate-spin mr-1" />
+                          <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none mr-1" />
                         ) : (
                           <CheckCircle2 className="size-3.5 mr-1" />
                         )}

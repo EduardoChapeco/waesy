@@ -235,7 +235,7 @@ export default function WorkspaceTripsListPage() {
             return (
               <div
                 key={trip.id}
-                className="group relative rounded-lg border border-border/70 bg-card hover:border-foreground/20 hover:shadow-sm transition-all flex flex-col justify-between overflow-hidden shadow-2xs"
+                className="group relative rounded-lg border border-border/70 bg-card hover:border-foreground/20 hover:shadow-sm transition-colors duration-200 flex flex-col justify-between overflow-hidden shadow-2xs"
               >
                 <div className="p-4 space-y-3">
                   {/* Topo do Card */}

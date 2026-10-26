@@ -77,7 +77,7 @@ export const HostingDomainConnectContent: React.FC<Omit<HostingDomainConnectModa
     <div className="space-y-4">
       <div className="space-y-2">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-primary/10 text-primary shrink-0">
+          <div className="p-3 rounded-xl bg-primary/10 text-primary shrink-0">
             <Globe className="size-5" />
           </div>
           <div>
@@ -96,7 +96,7 @@ export const HostingDomainConnectContent: React.FC<Omit<HostingDomainConnectModa
         <button
           type="button"
           onClick={() => setActiveTab("subdomain")}
-          className={`flex-1 h-11 min-h-11 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+          className={`flex-1 h-11 min-h-11 rounded-lg text-xs font-semibold transition-colors duration-200 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
             activeTab === "subdomain"
               ? "bg-background text-foreground shadow-xs border border-border/40"
               : "text-muted-foreground hover:text-foreground"
@@ -108,7 +108,7 @@ export const HostingDomainConnectContent: React.FC<Omit<HostingDomainConnectModa
         <button
           type="button"
           onClick={() => setActiveTab("custom")}
-          className={`flex-1 h-11 min-h-11 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+          className={`flex-1 h-11 min-h-11 rounded-lg text-xs font-semibold transition-colors duration-200 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
             activeTab === "custom"
               ? "bg-background text-foreground shadow-xs border border-border/40"
               : "text-muted-foreground hover:text-foreground"
@@ -120,7 +120,7 @@ export const HostingDomainConnectContent: React.FC<Omit<HostingDomainConnectModa
         <button
           type="button"
           onClick={() => setActiveTab("email")}
-          className={`flex-1 h-11 min-h-11 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+          className={`flex-1 h-11 min-h-11 rounded-lg text-xs font-semibold transition-colors duration-200 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
             activeTab === "email"
               ? "bg-background text-foreground shadow-xs border border-border/40"
               : "text-muted-foreground hover:text-foreground"
@@ -137,8 +137,8 @@ export const HostingDomainConnectContent: React.FC<Omit<HostingDomainConnectModa
           <div className="p-4 rounded-xl border border-border/70 bg-muted/20 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-muted-foreground">Endereço Web Ativo</span>
-              <Badge variant="outline" className="text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 gap-1.5">
-                <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <Badge variant="outline" className="text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 gap-2">
+                <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none" />
                 Pronto para Acessar
               </Badge>
             </div>
@@ -162,7 +162,7 @@ export const HostingDomainConnectContent: React.FC<Omit<HostingDomainConnectModa
                 href={freeUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="h-11 min-h-11 px-3.5 rounded-md border border-border bg-background hover:bg-muted text-foreground flex items-center justify-center shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="h-11 min-h-11 px-4 rounded-md border border-border bg-background hover:bg-muted text-foreground flex items-center justify-center shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 title="Abrir em nova aba"
               >
                 <ExternalLink className="size-4" />
@@ -170,8 +170,8 @@ export const HostingDomainConnectContent: React.FC<Omit<HostingDomainConnectModa
             </div>
           </div>
 
-          <div className="flex items-start gap-2.5 p-3 rounded-lg bg-muted/30 text-xs text-muted-foreground">
-            <ShieldCheck className="size-4 text-primary shrink-0 mt-0.5" />
+          <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 text-xs text-muted-foreground">
+            <ShieldCheck className="size-4 text-primary shrink-0 mt-1" />
             <span>
               Certificado SSL gratuito pré-instalado com entrega em alta velocidade e cache global automático.
             </span>
@@ -209,16 +209,16 @@ export const HostingDomainConnectContent: React.FC<Omit<HostingDomainConnectModa
               Apontamento DNS Master da Hospedagem (LiteSpeed SSD):
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono">
-              <div className="p-2.5 rounded-lg bg-background border border-border">
-                <span className="text-muted-foreground block text-[10px] font-sans font-medium uppercase">DNS Primário</span>
+              <div className="p-3 rounded-lg bg-background border border-border">
+                <span className="text-muted-foreground block text-2xs font-sans font-medium uppercase">DNS Primário</span>
                 <span className="font-bold text-foreground">ns1.cloudweby.com</span>
               </div>
-              <div className="p-2.5 rounded-lg bg-background border border-border">
-                <span className="text-muted-foreground block text-[10px] font-sans font-medium uppercase">DNS Secundário</span>
+              <div className="p-3 rounded-lg bg-background border border-border">
+                <span className="text-muted-foreground block text-2xs font-sans font-medium uppercase">DNS Secundário</span>
                 <span className="font-bold text-foreground">ns2.cloudweby.com</span>
               </div>
             </div>
-            <p className="text-[11px] text-muted-foreground leading-relaxed">
+            <p className="text-2xs text-muted-foreground leading-relaxed">
               Ao alterar os nameservers no Registro.br ou provedor do domínio, a hospedagem assume o tráfego do site, ativa SSL Let's Encrypt automático e libera a criação de e-mails corporativos.
             </p>
           </div>
@@ -236,9 +236,9 @@ export const HostingDomainConnectContent: React.FC<Omit<HostingDomainConnectModa
             <p className="text-xs text-muted-foreground leading-relaxed">
               Cada domínio próprio vinculado à sua hospedagem conta com criação ilimitada de caixas postais corporativas (ex: contato@{customDomainInput || "seusite.com.br"}).
             </p>
-            <div className="p-3 rounded-lg bg-background border border-border text-xs space-y-1.5">
+            <div className="p-3 rounded-lg bg-background border border-border text-xs space-y-2">
               <p className="font-semibold text-foreground">Recursos do CloudMail:</p>
-              <ul className="list-disc pl-4 space-y-1 text-muted-foreground text-[11px]">
+              <ul className="list-disc pl-4 space-y-1 text-muted-foreground text-2xs">
                 <li>Interface webmail limpa e responsiva</li>
                 <li>Compatível com Outlook, Apple Mail e Gmail (POP3 / IMAP / SMTP)</li>
                 <li>Proteção antispam inteligente e criptografia SSL/TLS ativa</li>

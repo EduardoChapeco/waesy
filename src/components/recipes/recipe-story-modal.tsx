@@ -85,20 +85,20 @@ export function RecipeStoryModal({ recipe, isOpen, onClose }: RecipeStoryModalPr
           {/* 9:16 Canvas Card */}
           <div
             ref={cardRef}
-            className="w-[300px] h-[533px] bg-zinc-950 text-white rounded-lg p-5 flex flex-col justify-between relative overflow-hidden shadow-2xl shrink-0"
+            className="w-[300px] h-[533px] bg-zinc-950 text-foreground rounded-lg p-5 flex flex-col justify-between relative overflow-hidden shadow-2xl shrink-0"
             style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}
           >
             {/* Header Brand */}
             <div className="flex items-center justify-between relative z-10">
               <div className="flex items-center gap-2">
-                <div className="size-6 rounded-md bg-white text-zinc-950 flex items-center justify-center font-bold text-xs">
+                <div className="size-6 rounded-md bg-card text-zinc-950 flex items-center justify-center font-bold text-xs">
                   W
                 </div>
-                <span className="text-[11px] font-bold tracking-wider uppercase text-zinc-300">
+                <span className="text-2xs font-bold tracking-wider uppercase text-zinc-300">
                   Waesy Gastronomia
                 </span>
               </div>
-              <span className="text-[10px] font-mono uppercase bg-zinc-800/90 text-zinc-300 px-2 py-1 rounded-full">
+              <span className="text-2xs font-mono uppercase bg-zinc-800/90 text-zinc-300 px-2 py-1 rounded-full">
                 {recipe.category || "Receita"}
               </span>
             </div>
@@ -116,7 +116,7 @@ export function RecipeStoryModal({ recipe, isOpen, onClose }: RecipeStoryModalPr
               />
               <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-transparent to-transparent" />
               {recipe.total_time && (
-                <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-zinc-900/90 px-2 py-1 rounded-md text-[10px] font-mono text-zinc-200">
+                <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-zinc-900/90 px-2 py-1 rounded-md text-2xs font-mono text-zinc-200">
                   <Clock className="size-3 text-amber-400" />
                   {recipe.total_time}
                 </div>
@@ -125,24 +125,24 @@ export function RecipeStoryModal({ recipe, isOpen, onClose }: RecipeStoryModalPr
 
             {/* Título e Ingredientes Chave */}
             <div className="space-y-2 relative z-10 flex-1">
-              <h3 className="text-base font-bold leading-snug line-clamp-2 text-white">
+              <h3 className="text-base font-bold leading-snug line-clamp-2 text-foreground">
                 {recipe.title}
               </h3>
 
               {recipe.ingredients && recipe.ingredients.length > 0 && (
                 <div className="space-y-1">
-                  <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
+                  <span className="text-2xs uppercase font-bold text-zinc-400 tracking-wider">
                     Principais Ingredientes:
                   </span>
                   <div className="space-y-1">
                     {recipe.ingredients.slice(0, 3).map((ing, i) => (
-                      <p key={i} className="text-[10px] text-zinc-300 line-clamp-1 flex items-center gap-1">
+                      <p key={i} className="text-2xs text-zinc-300 line-clamp-1 flex items-center gap-1">
                         <span className="size-1 rounded-full bg-zinc-500 shrink-0" />
                         {ing}
                       </p>
                     ))}
                     {recipe.ingredients.length > 3 && (
-                      <p className="text-[9px] text-zinc-400 italic">
+                      <p className="text-3xs text-zinc-400 italic">
                         +{recipe.ingredients.length - 3} outros ingredientes...
                       </p>
                     )}
@@ -154,14 +154,14 @@ export function RecipeStoryModal({ recipe, isOpen, onClose }: RecipeStoryModalPr
             {/* Footer com QR Code Minimalista */}
             <div className="mt-2 pt-2 border-t border-zinc-800/80 flex items-center justify-between relative z-10 bg-zinc-900/50 p-3 rounded-lg">
               <div className="space-y-1">
-                <p className="text-[11px] font-bold text-white">
+                <p className="text-2xs font-bold text-foreground">
                   Veja o modo de preparo
                 </p>
-                <p className="text-[9px] text-zinc-400">
+                <p className="text-3xs text-zinc-400">
                   Aponte a câmera para o QR Code
                 </p>
               </div>
-              <div className="size-12 rounded-lg bg-white p-1 overflow-hidden shrink-0">
+              <div className="size-12 rounded-lg bg-card p-1 overflow-hidden shrink-0">
                 <img
                   src={qrImageUrl}
                   alt="QR Code da receita"

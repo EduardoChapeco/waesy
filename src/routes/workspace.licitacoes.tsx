@@ -295,7 +295,7 @@ export default function WorkspaceTendersPage() {
               </Button>
 
               <Button onClick={handleFilter} disabled={isLoading} className="h-9 px-4 text-xs font-semibold">
-                {isLoading ? <Loader2 className="size-3.5 animate-spin" /> : "Filtrar"}
+                {isLoading ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : "Filtrar"}
               </Button>
             </div>
           </div>
@@ -329,7 +329,7 @@ export default function WorkspaceTendersPage() {
                 return (
                   <div
                     key={t.id}
-                    className="p-4 rounded-lg border border-border/60 bg-card hover:border-border transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
+                    className="p-4 rounded-lg border border-border/60 bg-card hover:border-border transition-colors duration-200 flex flex-col md:flex-row md:items-center justify-between gap-4"
                   >
                     <div className="space-y-2 flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
@@ -441,7 +441,7 @@ export default function WorkspaceTendersPage() {
 
             <div className="pt-3 border-t border-border/40 flex justify-end">
               <Button onClick={handleSaveAlerts} disabled={isSavingAlert} className="text-xs font-semibold h-9">
-                {isSavingAlert ? <Loader2 className="size-3.5 animate-spin mr-2" /> : null}
+                {isSavingAlert ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none mr-2" /> : null}
                 Salvar Configurações de Radar
               </Button>
             </div>
@@ -473,7 +473,7 @@ export default function WorkspaceTendersPage() {
 
               {isUnlocking ? (
                 <div className="py-16 text-center space-y-3">
-                  <Loader2 className="size-8 animate-spin text-primary mx-auto" />
+                  <Loader2 className="size-8 animate-spin motion-reduce:animate-none text-primary mx-auto" />
                   <p className="text-xs font-medium text-foreground">
                     O Tollbooth está processando e mastigando o edital com IA...
                   </p>

@@ -74,7 +74,7 @@ function DemandBar({ score }: { score: number }) {
   return (
     <div className="flex items-center gap-2">
       <div className="flex-1 h-1.5 rounded-full bg-muted/40 overflow-hidden">
-        <div className={`h-full rounded-full transition-all duration-700 ${color}`} style={{ width: `${score}%` }} />
+        <div className={`h-full rounded-full transition-colors duration-200 duration-700 ${color}`} style={{ width: `${score}%` }} />
       </div>
       <span className="text-xs font-bold tabular-nums text-foreground">{score}</span>
     </div>
@@ -335,7 +335,7 @@ export default function TurismoRadarPage() {
               const cfg = getAlertConfig(alert.severity);
               return (
                 <div key={alert.id} className={`flex items-start gap-3 p-4 rounded-lg border ${cfg.bg}`}>
-                  <div className={`size-2 rounded-full mt-2 shrink-0 ${cfg.dot} animate-pulse`} />
+                  <div className={`size-2 rounded-full mt-2 shrink-0 ${cfg.dot} animate-pulse motion-reduce:animate-none`} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className={`text-xs font-semibold uppercase tracking-wide ${cfg.text}`}>
@@ -406,7 +406,7 @@ export default function TurismoRadarPage() {
                   }
                 }}
                 onClick={() => setSelectedDest(isSelected ? null : dest)}
-                className={`relative p-5 rounded-lg border cursor-pointer transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary  ${
+                className={`relative p-5 rounded-lg border cursor-pointer transition-colors duration-200 duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary  ${
                   isSelected
                     ? 'border-primary bg-primary/5 ring-1 ring-primary/20 '
                     : 'border-border/70 bg-card hover:border-primary/40'

@@ -313,7 +313,7 @@ function MovementsPage() {
               disabled={isSubmitting || !variantId}
               className="rounded-lg text-xs h-9 font-bold gap-2"
             >
-              {isSubmitting ? <Loader2 className="size-3.5 animate-spin" /> : <Plus className="size-3.5" />}
+              {isSubmitting ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : <Plus className="size-3.5" />}
               Registrar
             </Button>
           </DialogFooter>

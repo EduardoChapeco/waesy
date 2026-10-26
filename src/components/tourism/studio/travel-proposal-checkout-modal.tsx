@@ -296,7 +296,7 @@ export function TravelProposalCheckoutModal({
                 <ArrowLeft className="size-4" /> Voltar
               </Button>
               <Button type="button" onClick={handleSubmitAcceptance} disabled={!paymentPreference || isSubmitting || proposal.status !== "sent" || !proposal.snapshot_hash} className="h-11 min-h-11 gap-2 focus-visible:ring-2 focus-visible:ring-ring">
-                {isSubmitting ? <Loader2 className="size-4 animate-spin" /> : <ShieldCheck className="size-4" />}
+                {isSubmitting ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> : <ShieldCheck className="size-4" />}
                 {isSubmitting ? "Enviando" : "Registrar aceite"}
               </Button>
             </div>
@@ -305,7 +305,7 @@ export function TravelProposalCheckoutModal({
 
         {step === "processing" && (
           <div className="py-12 text-center space-y-3" role="status" aria-live="polite">
-            <Loader2 className="size-8 animate-spin mx-auto text-primary" />
+            <Loader2 className="size-8 animate-spin motion-reduce:animate-none mx-auto text-primary" />
             <p className="text-sm font-medium">Registrando o aceite</p>
             <p className="text-sm text-muted-foreground">Nenhuma cobrança ou reserva será criada nesta etapa.</p>
           </div>

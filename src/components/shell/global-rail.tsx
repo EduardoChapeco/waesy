@@ -46,7 +46,7 @@ export function GlobalRail({ session }: GlobalRailProps) {
  <TooltipTrigger asChild>
  <Link
  to={item.to}
- className={`size-11 rounded-lg flex items-center justify-center transition-all relative ${
+ className={`size-11 rounded-lg flex items-center justify-center transition-colors duration-200 relative ${
  active
  ? "bg-primary/10 text-primary font-bold "
  : "text-muted-foreground hover:text-foreground hover:bg-muted/70"
@@ -71,7 +71,7 @@ export function GlobalRail({ session }: GlobalRailProps) {
    <TooltipTrigger asChild>
      <Link
        to="/convite"
-       className={`size-11 rounded-lg flex items-center justify-center transition-all relative ${
+       className={`size-11 rounded-lg flex items-center justify-center transition-colors duration-200 relative ${
          location.pathname.startsWith("/convite")
            ? "bg-amber-500/15 text-amber-500 font-bold"
            : "text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10"
@@ -99,7 +99,7 @@ export function GlobalRail({ session }: GlobalRailProps) {
  <TooltipTrigger asChild>
  <Link
  to="/workspace"
- className={`size-10 rounded-lg flex items-center justify-center transition-all ${
+ className={`size-10 rounded-lg flex items-center justify-center transition-colors duration-200 ${
  isWorkspaceActive
  ? "bg-primary text-primary-foreground font-bold "
  : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -119,7 +119,7 @@ export function GlobalRail({ session }: GlobalRailProps) {
  <TooltipTrigger asChild>
  <Link
  to="/conta"
- className={`size-10 rounded-lg flex items-center justify-center transition-all ${
+ className={`size-10 rounded-lg flex items-center justify-center transition-colors duration-200 ${
  isAccountActive
  ? "bg-primary/10 text-primary font-bold "
  : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -139,7 +139,7 @@ export function GlobalRail({ session }: GlobalRailProps) {
  <TooltipTrigger asChild>
  <Link
  to="/entrar"
- className="size-10 rounded-lg flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
+ className="size-10 rounded-lg flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors duration-200"
  aria-label="Entrar / Cadastrar"
  >
  <LogIn className="size-4" />

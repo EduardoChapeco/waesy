@@ -495,17 +495,17 @@ function ProfileCivilPage() {
       {/* ── 2. Banner de Claridade de Identidade (Conta Civil Pessoal) ── */}
       <div className="rounded-lg border border-border/60 bg-muted/30 p-4 sm:p-5 flex items-start justify-between gap-4 text-xs text-foreground">
         <div className="flex items-start gap-3 min-w-0">
-          <div className="size-9 rounded-lg bg-card border border-border/50 text-foreground flex items-center justify-center shrink-0 mt-0.5">
+          <div className="size-9 rounded-lg bg-card border border-border/50 text-foreground flex items-center justify-center shrink-0 mt-1">
             <ShieldCheck className="size-5 text-primary" />
           </div>
           <div className="space-y-1 min-w-0">
             <div className="flex items-center gap-2">
               <h3 className="font-bold text-foreground text-sm">Conta Civil</h3>
-              <Badge variant="secondary" className="text-[10px] font-medium text-muted-foreground">
+              <Badge variant="secondary" className="text-2xs font-medium text-muted-foreground">
                 Perfil Oficial
               </Badge>
             </div>
-            <p className="text-muted-foreground leading-relaxed text-[11px] sm:text-xs">
+            <p className="text-muted-foreground leading-relaxed text-2xs sm:text-xs">
               Sua identidade pessoal para compras na loja, reservas, contratos e pedidos na comunidade.
             </p>
           </div>
@@ -568,7 +568,7 @@ function ProfileCivilPage() {
                   <Camera className="size-4 text-primary shrink-0" />
                   <span>Identidade Visual</span>
                 </div>
-                <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary">
+                <Badge variant="outline" className="text-2xs font-mono border-primary/30 text-primary">
                   1:1 Squircle + 21:9 Panorâmica
                 </Badge>
               </div>
@@ -595,11 +595,11 @@ function ProfileCivilPage() {
                     type="button"
                     onClick={() => avatarInputRef.current?.click()}
                     disabled={isUploadingMedia}
-                    className="absolute inset-0 bg-black/40 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-xs font-semibold gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="absolute inset-0 bg-foreground/40 text-foreground rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-xs font-semibold gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     title="Alterar Foto de Perfil (1:1)"
                   >
                     <Camera className="size-4 sm:size-5" />
-                    <span className="text-[10px]">Alterar</span>
+                    <span className="text-2xs">Alterar</span>
                   </button>
                   <input
                     ref={avatarInputRef}
@@ -628,7 +628,7 @@ function ProfileCivilPage() {
                     type="button"
                     onClick={() => coverInputRef.current?.click()}
                     disabled={isUploadingMedia}
-                    className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 bg-background/85 hover:bg-background backdrop-blur-md border border-border/80 text-foreground px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs transition-transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 bg-background/85 hover:bg-background backdrop-blur-md border border-border/80 text-foreground px-3 py-1 rounded-md text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-xs transition-transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     title="Alterar Banner (3:1)"
                   >
                     <Camera className="size-3.5" />
@@ -649,7 +649,7 @@ function ProfileCivilPage() {
                   <button
                     type="button"
                     onClick={() => set("coverUrl", "")}
-                    className="text-[11px] text-destructive hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="text-2xs text-destructive hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     Remover Imagem de Capa
                   </button>
@@ -699,7 +699,7 @@ function ProfileCivilPage() {
                     <Label className="text-xs font-semibold text-foreground">Nome de Usuário (@) *</Label>
                     {isCheckingHandle ? (
                       <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
-                        <Loader2 className="size-3 animate-spin text-primary" />
+                        <Loader2 className="size-3 animate-spin motion-reduce:animate-none text-primary" />
                         <span>Verificando @...</span>
                       </span>
                     ) : handleStatus?.isCurrent ? (
@@ -734,7 +734,7 @@ function ProfileCivilPage() {
                       )}
                     />
                     <div className="absolute right-3 flex items-center pointer-events-none">
-                      {isCheckingHandle && <Loader2 className="size-4 animate-spin text-muted-foreground" />}
+                      {isCheckingHandle && <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-muted-foreground" />}
                       {!isCheckingHandle && handleStatus?.isCurrent && (
                         <CheckCircle2 className="size-4 text-primary" />
                       )}
@@ -941,7 +941,7 @@ function ProfileCivilPage() {
                   <Label className="text-xs font-semibold text-foreground">Biografia Pessoal</Label>
                   <span
                     className={cn(
-                      "text-[10px] font-mono",
+                      "text-2xs font-mono",
                       formData.bio.length > 280 ? "text-amber-500 font-bold" : "text-muted-foreground"
                     )}
                   >
@@ -1006,7 +1006,7 @@ function ProfileCivilPage() {
               <Briefcase className="size-4 text-primary shrink-0 mt-1" />
               <div className="space-y-1">
                 <p className="font-semibold text-foreground">Vínculo Profissional e Candidaturas</p>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-2xs text-muted-foreground">
                   Seu currículo profissional é utilizado para candidaturas a vagas locais, prestação de serviços e
                   habilitação operacional (ex: entregadores MotoLink e motoristas).
                 </p>
@@ -1030,7 +1030,7 @@ function ProfileCivilPage() {
               <LinkIcon className="size-4 text-primary shrink-0 mt-1" />
               <div className="space-y-1">
                 <p className="font-semibold text-foreground">Biolinks e Botões Públicos</p>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-2xs text-muted-foreground">
                   Links rápidos e banners visuais exibidos diretamente no cabeçalho do seu perfil público de membro.
                 </p>
               </div>
@@ -1043,7 +1043,7 @@ function ProfileCivilPage() {
                   <Plus className="size-4 text-primary shrink-0" />
                   <span>Novo Link</span>
                 </div>
-                <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary">
+                <Badge variant="outline" className="text-2xs font-mono border-primary/30 text-primary">
                   Botão ou Banner 21:9
                 </Badge>
               </div>
@@ -1108,7 +1108,7 @@ function ProfileCivilPage() {
                   <LinkIcon className="size-4 text-primary shrink-0" />
                   <span>Links Salvos</span>
                 </div>
-                <Badge variant="outline" className="text-[10px] font-mono">
+                <Badge variant="outline" className="text-2xs font-mono">
                   {biolinks.length} {biolinks.length === 1 ? "link" : "links"}
                 </Badge>
               </div>
@@ -1117,7 +1117,7 @@ function ProfileCivilPage() {
                 <div className="py-8 text-center text-muted-foreground space-y-2">
                   <LinkIcon className="size-8 mx-auto text-muted-foreground/40" />
                   <p className="text-xs">Nenhum link adicionado ainda.</p>
-                  <p className="text-[10px] text-muted-foreground/75">
+                  <p className="text-2xs text-muted-foreground/75">
                     Utilize o formulário acima para adicionar links externos ou redes personalizadas.
                   </p>
                 </div>
@@ -1146,7 +1146,7 @@ function ProfileCivilPage() {
                           <p className="text-xs font-semibold text-foreground truncate">
                             {link.label || link.title}
                           </p>
-                          <p className="text-[11px] text-muted-foreground font-mono truncate">
+                          <p className="text-2xs text-muted-foreground font-mono truncate">
                             {link.url}
                           </p>
                         </div>
@@ -1317,7 +1317,7 @@ function ProfileCivilPage() {
                   <ShieldCheck className="size-4 text-primary shrink-0" />
                   <span>Visibilidade</span>
                 </div>
-                <Badge variant="outline" className="text-[10px] font-mono">
+                <Badge variant="outline" className="text-2xs font-mono">
                   {formData.isAnonymous ? "Perfil Discreto" : "Perfil Público"}
                 </Badge>
               </div>
@@ -1336,7 +1336,7 @@ function ProfileCivilPage() {
                       )}
                       <span>Perfil Discreto (Ocultar do Diretório)</span>
                     </Label>
-                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    <p className="text-2xs text-muted-foreground leading-relaxed">
                       Quando ativo, sua conta civil não é indexada na busca de membros nem no diretório público. Suas
                       compras, ingressos e contratos assinados continuam seguros e associados ao seu CPF real.
                     </p>
@@ -1355,7 +1355,7 @@ function ProfileCivilPage() {
                     <Label htmlFor="location-switch" className="text-xs font-bold text-foreground cursor-pointer">
                       Ocultar Cidade / Localização
                     </Label>
-                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    <p className="text-2xs text-muted-foreground leading-relaxed">
                       Impede que sua cidade seja exibida publicamente nos feeds comunitários.
                     </p>
                   </div>
@@ -1382,7 +1382,7 @@ function ProfileCivilPage() {
                   <Label htmlFor="newsletter-switch" className="text-xs font-bold text-foreground cursor-pointer">
                     Comunicados e Atualizações Legais
                   </Label>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  <p className="text-2xs text-muted-foreground leading-relaxed">
                     Receba resumos de transações, atualizações de termos de uso e novidades dos comércios locais no seu
                     e-mail cadastrado.
                   </p>
@@ -1406,7 +1406,7 @@ function ProfileCivilPage() {
 
               <div className="space-y-2">
                 <p className="text-xs text-foreground font-semibold">Excluir permanentemente minha Conta Civil</p>
-                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                <p className="text-2xs text-muted-foreground leading-relaxed">
                   Ao solicitar a exclusão, todos os seus dados pessoais, histórico de navegação e acessos serão revogados.
                   Por exigência da legislação fiscal brasileira, dados de notas fiscais e comprovantes de compras
                   efetuadas permanecerão arquivados de forma anônima pelo período legal de 5 anos.
@@ -1481,7 +1481,7 @@ function ProfileCivilPage() {
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="size-4 animate-spin" />
+                <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                 <span>Salvando...</span>
               </>
             ) : (
@@ -1503,7 +1503,7 @@ function ProfileCivilPage() {
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="size-4 animate-spin" />
+                <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                 <span>Salvando...</span>
               </>
             ) : (
@@ -1553,7 +1553,7 @@ function ProfileCivilPage() {
             <p>
               A <strong>Conta Civil</strong> é o seu perfil pessoal oficial como cidadão. É através dela que você realiza compras, agenda serviços, adquire ingressos nominais e fecha negociações com segurança jurídica.
             </p>
-            <div className="rounded-lg border border-border/50 bg-muted/30 p-3 space-y-1.5">
+            <div className="rounded-lg border border-border/50 bg-muted/30 p-3 space-y-2">
               <p className="font-semibold text-foreground">Como se conecta com seus outros perfis:</p>
               <ul className="list-disc list-inside space-y-1 pl-1">
                 <li>Você pode criar ou gerenciar empresas e negócios locais sem misturar os dados pessoais.</li>

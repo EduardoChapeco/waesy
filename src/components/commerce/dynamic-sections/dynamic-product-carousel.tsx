@@ -140,7 +140,7 @@ export const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
         <div className="flex items-end justify-between gap-4">
           <div className="space-y-1">
             {tagline && (
-              <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-primary">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
                 <Sparkles className="size-3.5" />
                 <span>{tagline}</span>
               </div>
@@ -190,7 +190,7 @@ export const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
             return (
               <div
                 key={pkg.id}
-                className="w-72 sm:w-80 shrink-0 snap-start rounded-2xl border border-border/80 bg-card overflow-hidden shadow-xs hover:shadow-md transition-all group flex flex-col justify-between"
+                className="w-72 sm:w-80 shrink-0 snap-start rounded-2xl border border-border/80 bg-card overflow-hidden shadow-xs hover:shadow-md transition-colors duration-200 group flex flex-col justify-between"
               >
                 {/* Imagem de Capa com Badges */}
                 <div className="relative aspect-4/3 w-full bg-muted/30 overflow-hidden">
@@ -209,7 +209,7 @@ export const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
                   {/* Badge de Duração (Canto Inferior Esquerdo da Imagem) */}
                   {pkg.durationText && (
                     <div className="absolute bottom-2.5 left-2.5">
-                      <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-black/75 text-white backdrop-blur-xs">
+                      <span className="px-3 py-1 rounded-md text-2xs font-bold bg-foreground/75 text-foreground backdrop-blur-xs">
                         {pkg.durationText}
                       </span>
                     </div>
@@ -218,7 +218,7 @@ export const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
 
                 {/* Conteúdo do Card */}
                 <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3">
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">
                       {pkg.title}
                     </h3>
@@ -226,13 +226,13 @@ export const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
                     {/* Inclusão & Datas */}
                     <div className="space-y-1 text-xs text-muted-foreground">
                       {pkg.inclusionText && (
-                        <div className="flex items-center gap-1.5 font-medium">
+                        <div className="flex items-center gap-2 font-medium">
                           <Plane className="size-3.5 text-primary" />
                           <span>{pkg.inclusionText}</span>
                         </div>
                       )}
                       {pkg.travelDatesText && (
-                        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/80">
+                        <div className="flex items-center gap-2 text-2xs text-muted-foreground/80">
                           <Calendar className="size-3 text-muted-foreground" />
                           <span>{pkg.travelDatesText}</span>
                         </div>
@@ -244,7 +244,7 @@ export const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
                       <div className="pt-1">
                         <Badge
                           variant="secondary"
-                          className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px] font-bold px-2 py-0.5"
+                          className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-2xs font-bold px-2 py-1"
                         >
                           {pkg.savedAmountText}
                         </Badge>
@@ -253,12 +253,12 @@ export const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
                   </div>
 
                   {/* Preço & CTA */}
-                  <div className="pt-3 border-t border-border/60 space-y-2.5">
+                  <div className="pt-3 border-t border-border/60 space-y-3">
                     <div>
-                      <span className="text-[10px] text-muted-foreground block">
+                      <span className="text-2xs text-muted-foreground block">
                         Preço por pessoa
                       </span>
-                      <div className="flex items-baseline gap-1.5">
+                      <div className="flex items-baseline gap-2">
                         <span className="text-base sm:text-lg font-black text-foreground">
                           {formatMoney(pkg.priceCents)}
                         </span>
@@ -269,7 +269,7 @@ export const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
                         )}
                       </div>
                       {installments > 1 && (
-                        <span className="text-[10px] text-muted-foreground block">
+                        <span className="text-2xs text-muted-foreground block">
                           ou em até {installments}x de {formatMoney(installmentValue)}
                         </span>
                       )}
@@ -278,10 +278,10 @@ export const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
                     <Button
                       type="button"
                       onClick={() => handleAction(pkg)}
-                      className="w-full h-11 min-h-11 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-xs"
+                      className="w-full h-11 min-h-11 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-xs"
                     >
                       <span>Ver Pacote</span>
-                      <ArrowRight className="size-3.5 ml-1.5" />
+                      <ArrowRight className="size-3.5 ml-2" />
                     </Button>
                   </div>
                 </div>

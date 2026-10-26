@@ -111,7 +111,7 @@ function AdminSimLabsPage() {
               <p className="text-xs text-muted-foreground">Exploração qualitativa sintética + análise de resultados observados</p>
             </div>
           </div>
-          <p className="text-[10px] text-muted-foreground">Workspace: {storeId ? "ativo" : "não identificado"}</p>
+          <p className="text-2xs text-muted-foreground">Workspace: {storeId ? "ativo" : "não identificado"}</p>
         </header>
 
         <nav className="flex gap-2 overflow-x-auto border-b border-border/60 pb-3">
@@ -135,7 +135,7 @@ function AdminSimLabsPage() {
                   <Badge variant={session.status === "completed" ? "secondary" : "outline"}>{session.status}</Badge>
                 </div>
                 <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-muted-foreground">{session.summary_insight}</div>
-                {session.execution_results?.length > 0 && <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{session.execution_results.map((item: any, index: number) => <div key={index} className="rounded-lg border border-border/60 p-3 space-y-2"><div className="flex items-center justify-between gap-2"><strong className="text-xs">{item.persona_name}</strong><Badge variant="outline" className="text-[10px]">{item.response_origin === "llm_synthetic" ? "IA · sintético" : "origem desconhecida"}</Badge></div><p className="text-xs text-muted-foreground">{item.feedback}</p></div>)}</div>}
+                {session.execution_results?.length > 0 && <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{session.execution_results.map((item: any, index: number) => <div key={index} className="rounded-lg border border-border/60 p-3 space-y-2"><div className="flex items-center justify-between gap-2"><strong className="text-xs">{item.persona_name}</strong><Badge variant="outline" className="text-2xs">{item.response_origin === "llm_synthetic" ? "IA · sintético" : "origem desconhecida"}</Badge></div><p className="text-xs text-muted-foreground">{item.feedback}</p></div>)}</div>}
               </article>
             ))}
           </section>
@@ -158,7 +158,7 @@ function AdminSimLabsPage() {
               <Button type="submit" disabled={isPending || !storeId} className="gap-2"><Plus className="size-4" />Salvar perfil não calibrado</Button>
             </form>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {personas.map((persona: any) => <article key={persona.id} className="rounded-lg border border-border/80 bg-card p-4 space-y-3"><div className="flex items-start justify-between gap-2"><div><h3 className="text-sm font-bold">{persona.display_name}</h3><p className="text-xs text-muted-foreground">{persona.code}</p></div><Badge variant="outline" className="text-[10px]">{persona.calibration_status || "desconhecida"}</Badge></div><p className="text-xs text-muted-foreground">{persona.region} · {persona.age_range_label} · Classe informada {persona.abep_social_class} · Renda {persona.median_income_brl == null ? "desconhecida" : `R$ ${persona.median_income_brl}`}</p><p className="rounded-lg bg-muted/40 p-3 text-[11px] text-muted-foreground">{persona.bio || "Sem descrição adicional."}</p></article>)}
+              {personas.map((persona: any) => <article key={persona.id} className="rounded-lg border border-border/80 bg-card p-4 space-y-3"><div className="flex items-start justify-between gap-2"><div><h3 className="text-sm font-bold">{persona.display_name}</h3><p className="text-xs text-muted-foreground">{persona.code}</p></div><Badge variant="outline" className="text-2xs">{persona.calibration_status || "desconhecida"}</Badge></div><p className="text-xs text-muted-foreground">{persona.region} · {persona.age_range_label} · Classe informada {persona.abep_social_class} · Renda {persona.median_income_brl == null ? "desconhecida" : `R$ ${persona.median_income_brl}`}</p><p className="rounded-lg bg-muted/40 p-3 text-2xs text-muted-foreground">{persona.bio || "Sem descrição adicional."}</p></article>)}
             </div>
           </section>
         )}

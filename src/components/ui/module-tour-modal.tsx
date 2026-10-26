@@ -87,11 +87,11 @@ export function ModuleTourModal({
         <div className="relative pt-6 px-6 pb-2">
           <div className="flex items-center justify-between pb-3 border-b border-border/40">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-primary font-mono">
+              <span className="text-2xs font-bold uppercase tracking-wider text-primary font-mono">
                 {moduleName}
               </span>
               <span className="text-muted-foreground/30">•</span>
-              <span className="text-[10px] font-mono font-medium text-muted-foreground">
+              <span className="text-2xs font-mono font-medium text-muted-foreground">
                 Etapa {currentSlideIndex + 1} de {slides.length}
               </span>
             </div>
@@ -111,7 +111,7 @@ export function ModuleTourModal({
               <div
                 key={idx}
                 className={cn(
-                  "h-1 rounded-full transition-all duration-300",
+                  "h-1 rounded-full transition-colors duration-200 duration-300",
                   idx === currentSlideIndex
                     ? "w-8 bg-primary"
                     : idx < currentSlideIndex
@@ -132,7 +132,7 @@ export function ModuleTourModal({
             </div>
             <div className="space-y-1 min-w-0">
               {currentSlide.highlightBadge && (
-                <span className="inline-block px-2 py-1 rounded-md text-[10px] font-bold bg-muted text-muted-foreground uppercase tracking-wider mb-1">
+                <span className="inline-block px-2 py-1 rounded-md text-2xs font-bold bg-muted text-muted-foreground uppercase tracking-wider mb-1">
                   {currentSlide.highlightBadge}
                 </span>
               )}
@@ -149,7 +149,7 @@ export function ModuleTourModal({
 
           {/* Dica de Ouro Pro */}
           {currentSlide.tip && (
-            <div className="p-3 rounded-lg bg-muted/30 border border-border/50 text-[11px] text-foreground/80 flex items-start gap-2">
+            <div className="p-3 rounded-lg bg-muted/30 border border-border/50 text-2xs text-foreground/80 flex items-start gap-2">
               <span className="font-bold text-primary shrink-0">Dica:</span>
               <span className="leading-snug">{currentSlide.tip}</span>
             </div>
@@ -184,7 +184,7 @@ export function ModuleTourModal({
               type="button"
               onClick={handleNext}
               className={cn(
-                "h-9 px-4 rounded-lg text-xs font-bold gap-2 shadow-xs transition-all cursor-pointer",
+                "h-9 px-4 rounded-lg text-xs font-bold gap-2 shadow-xs transition-colors duration-200 cursor-pointer",
                 isLast
                   ? "bg-primary text-primary-foreground hover:bg-primary/90"
                   : "bg-foreground text-background hover:bg-foreground/90"
@@ -218,7 +218,7 @@ export function ModuleTourTrigger({
       variant="outline"
       size="sm"
       onClick={onClick}
-      className={cn("h-8 px-3 rounded-lg text-[11px] font-semibold gap-2 border-border/60 hover:bg-muted/40 text-muted-foreground hover:text-foreground cursor-pointer shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary", className)}
+      className={cn("h-8 px-3 rounded-lg text-2xs font-semibold gap-2 border-border/60 hover:bg-muted/40 text-muted-foreground hover:text-foreground cursor-pointer shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary", className)}
       title={label}
     >
       <HelpCircle className="size-3.5 text-primary" />

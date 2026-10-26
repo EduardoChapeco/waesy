@@ -33,7 +33,7 @@ export function ProUpgradePaywallModal({
             <span className="p-2 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
               <Lock className="size-4" />
             </span>
-            <Badge variant="outline" className="text-[10px] font-mono border-amber-500/30 text-amber-600 bg-amber-500/10">
+            <Badge variant="outline" className="text-2xs font-mono border-amber-500/30 text-amber-600 bg-amber-500/10">
               RECURSO CORPORATIVO PRO
             </Badge>
           </div>
@@ -50,11 +50,11 @@ export function ProUpgradePaywallModal({
           <div className="flex items-baseline justify-between border-b border-border/40 pb-3">
             <div>
               <span className="text-sm font-bold text-foreground block">Waesy Enterprise PRO</span>
-              <span className="text-[11px] text-muted-foreground">Para empresas e RH ágil</span>
+              <span className="text-2xs text-muted-foreground">Para empresas e RH ágil</span>
             </div>
             <div className="text-right">
               <span className="text-base font-black text-foreground font-mono">R$ 149</span>
-              <span className="text-[10px] text-muted-foreground">/mês</span>
+              <span className="text-2xs text-muted-foreground">/mês</span>
             </div>
           </div>
 
@@ -104,7 +104,7 @@ export function ProUpgradePaywallModal({
           <Button
             asChild
             size="sm"
-            className="w-full sm:w-auto rounded-lg text-xs h-11 min-h-11 font-bold gap-2 bg-[#0A66C2] hover:bg-[#084e96] text-white shadow-xs cursor-pointer"
+            className="w-full sm:w-auto rounded-lg text-xs h-11 min-h-11 font-bold gap-2 bg-[#0A66C2] hover:bg-[#084e96] text-foreground shadow-xs cursor-pointer"
           >
             <Link
               to="/workspace/financeiro/faturas"

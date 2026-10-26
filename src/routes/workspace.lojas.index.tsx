@@ -236,11 +236,11 @@ export default function WorkspaceLojasPage() {
  {/* Badges Flutuantes no Banner */}
  <div className="absolute top-3 right-3 flex items-center gap-2">
  {isCurrentActive ? (
- <Badge className="bg-emerald-500 text-white border-0 text-xs font-bold px-2 py-1 ">
+ <Badge className="bg-emerald-500 text-foreground border-0 text-xs font-bold px-2 py-1 ">
  ● Ativa no Painel
  </Badge>
  ) : (
- <Badge variant="secondary" className="bg-black/50 text-white backdrop-blur-md border-0 text-xs">
+ <Badge variant="secondary" className="bg-foreground/50 text-foreground backdrop-blur-md border-0 text-xs">
  {st.status === "maintenance" ? "Em Manutenção" : "Disponível"}
  </Badge>
  )}

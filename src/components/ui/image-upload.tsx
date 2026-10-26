@@ -300,7 +300,7 @@ export function ImageUpload({
  ) : (
  <Button type="button" variant="outline" onClick={() => inputRef.current?.click()}
  disabled={isUploading}
- className="size-full min-h-24 rounded-lg border-2 border-dashed border-border/80 bg-muted/40 hover:bg-muted/70 hover:border-foreground/30 transition-all flex flex-col items-center justify-center p-2 text-muted-foreground group cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none h-auto"
+ className="size-full min-h-24 rounded-lg border-2 border-dashed border-border/80 bg-muted/40 hover:bg-muted/70 hover:border-foreground/30 transition-colors duration-200 flex flex-col items-center justify-center p-2 text-muted-foreground group cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none h-auto"
  title="Enviar imagem 1:1"
  >
  {isUploading ? (
@@ -378,7 +378,7 @@ export function ImageUpload({
  ) : (
  <Button type="button" variant="outline" onClick={() => inputRef.current?.click()}
  disabled={isUploading}
- className="w-full min-h-28 rounded-lg border-2 border-dashed border-border/80 bg-muted/40 hover:bg-muted/70 hover:border-foreground/30 transition-all flex flex-col items-center justify-center p-4 text-muted-foreground group cursor-pointer gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none h-auto"
+ className="w-full min-h-28 rounded-lg border-2 border-dashed border-border/80 bg-muted/40 hover:bg-muted/70 hover:border-foreground/30 transition-colors duration-200 flex flex-col items-center justify-center p-4 text-muted-foreground group cursor-pointer gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none h-auto"
  style={previewStyle}
  >
  {isUploading ? (
@@ -475,7 +475,7 @@ export function ImageUpload({
  }}
  style={defaultStyle}
  className={cn(
- "border-2 border-dashed border-border/80 rounded-lg flex flex-col items-center justify-center p-4 text-center cursor-pointer transition-all bg-muted/40 hover:bg-muted/70 hover:border-foreground/30 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+ "border-2 border-dashed border-border/80 rounded-lg flex flex-col items-center justify-center p-4 text-center cursor-pointer transition-colors duration-200 bg-muted/40 hover:bg-muted/70 hover:border-foreground/30 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
  isUploading && "pointer-events-none opacity-60",
  )}
  >

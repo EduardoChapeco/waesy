@@ -228,7 +228,7 @@ export function DigitalCompanionCard({
           <button
             type="button"
             onClick={() => setActiveTab("visual")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all cursor-pointer shrink-0 min-h-10 ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-200 cursor-pointer shrink-0 min-h-10 ${
               activeTab === "visual"
                 ? "bg-card text-foreground "
                 : "text-muted-foreground hover:text-foreground"
@@ -241,7 +241,7 @@ export function DigitalCompanionCard({
           <button
             type="button"
             onClick={() => setActiveTab("rules")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all cursor-pointer shrink-0 min-h-10 ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-200 cursor-pointer shrink-0 min-h-10 ${
               activeTab === "rules"
                 ? "bg-card text-foreground "
                 : "text-muted-foreground hover:text-foreground"
@@ -254,7 +254,7 @@ export function DigitalCompanionCard({
           <button
             type="button"
             onClick={() => setActiveTab("emergency")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all cursor-pointer shrink-0 min-h-10 ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-200 cursor-pointer shrink-0 min-h-10 ${
               activeTab === "emergency"
                 ? "bg-card text-foreground "
                 : "text-muted-foreground hover:text-foreground"
@@ -267,7 +267,7 @@ export function DigitalCompanionCard({
           <button
             type="button"
             onClick={() => setActiveTab("whatsapp")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all cursor-pointer shrink-0 min-h-10 ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-200 cursor-pointer shrink-0 min-h-10 ${
               activeTab === "whatsapp"
                 ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-bold border border-emerald-500/20"
                 : "text-muted-foreground hover:text-foreground"
@@ -319,7 +319,7 @@ export function DigitalCompanionCard({
                 className="rounded-lg text-xs font-semibold h-10 px-3 min-h-11 sm:min-h-9 bg-foreground text-background hover:bg-foreground/90"
                 title="Baixar PDF de Bolso"
               >
-                {isExporting ? <Loader2 className="size-4 animate-spin mr-2" /> : <Download className="size-4 mr-2" />}
+                {isExporting ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none mr-2" /> : <Download className="size-4 mr-2" />}
                 <span>Baixar PDF</span>
               </Button>
             </>
@@ -347,7 +347,7 @@ export function DigitalCompanionCard({
 
       {isExporting && (
         <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg text-xs font-semibold text-primary flex items-center justify-center gap-2">
-          <Loader2 className="size-4 animate-spin" />
+          <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
           <span>{exportMessage}</span>
         </div>
       )}
@@ -359,7 +359,7 @@ export function DigitalCompanionCard({
           <div ref={visualPagesRef} className="flex flex-wrap justify-center gap-6 sm:gap-8 pb-12 w-full">
             {/* PÁGINA 1: CAPA CINEMATOGRÁFICA DE TELA DE BLOQUEIO */}
             <div
-              className="companion-story-page relative flex flex-col overflow-hidden bg-zinc-950 text-white shadow-xl rounded-lg border border-border/60"
+              className="companion-story-page relative flex flex-col overflow-hidden bg-zinc-950 text-foreground shadow-xl rounded-lg border border-border/60"
               style={{ width: "400px", height: "711px" }}
             >
               {coverImageUrl && (
@@ -377,41 +377,41 @@ export function DigitalCompanionCard({
                   {companyLogoUrl ? (
                     <img src={companyLogoUrl} alt={companyName} className="h-9 w-auto object-contain brightness-0 invert" />
                   ) : (
-                    <div className="size-9 rounded-lg bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/30">
+                    <div className="size-9 rounded-lg bg-card/20 backdrop-blur-md flex items-center justify-center text-foreground border border-white/30">
                       <Star className="size-5" />
                     </div>
                   )}
                   <div>
-                    <p className="text-xs font-bold tracking-tight text-white">{companyName}</p>
-                    <p className="text-[10px] text-white/70">Documento Oficial de Atendimento</p>
+                    <p className="text-xs font-bold tracking-tight text-foreground">{companyName}</p>
+                    <p className="text-2xs text-foreground/70">Documento Oficial de Atendimento</p>
                   </div>
                 </div>
 
                 {/* Bloco Central / Inferior */}
                 <div className="space-y-4">
                   {code && (
-                    <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md px-3 py-2 rounded-full border border-white/20">
-                      <Ticket className="size-3 text-white/80" />
-                      <span className="text-[10px] font-mono font-bold tracking-widest text-white">ID: {code}</span>
+                    <div className="inline-flex items-center gap-2 bg-card/15 backdrop-blur-md px-3 py-2 rounded-full border border-white/20">
+                      <Ticket className="size-3 text-foreground/80" />
+                      <span className="text-2xs font-mono font-bold tracking-widest text-foreground">ID: {code}</span>
                     </div>
                   )}
 
                   <div>
-                    {subtitle && <p className="text-xs font-medium text-white/80">{subtitle}</p>}
-                    <h2 className="text-3xl sm:text-4xl font-black text-white leading-tight tracking-tight break-words">
+                    {subtitle && <p className="text-xs font-medium text-foreground/80">{subtitle}</p>}
+                    <h2 className="text-3xl sm:text-4xl font-black text-foreground leading-tight tracking-tight break-words">
                       {title}
                     </h2>
                   </div>
 
                   {participants.length > 0 && (
-                    <div className="p-4 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 space-y-2">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-white/70">
+                    <div className="p-4 rounded-lg bg-card/10 backdrop-blur-md border border-white/20 space-y-2">
+                      <p className="text-2xs font-bold uppercase tracking-wider text-foreground/70">
                         {participantsLabel}
                       </p>
                       <div className="space-y-2">
                         {participants.map((p, idx) => (
-                          <div key={idx} className="flex items-center gap-2 text-xs font-semibold text-white">
-                            <User className="size-3.5 text-white/70 shrink-0" />
+                          <div key={idx} className="flex items-center gap-2 text-xs font-semibold text-foreground">
+                            <User className="size-3.5 text-foreground/70 shrink-0" />
                             <span className="truncate">{p}</span>
                           </div>
                         ))}
@@ -419,7 +419,7 @@ export function DigitalCompanionCard({
                     </div>
                   )}
 
-                  <p className="text-[10px] text-center text-white/50 pt-2">
+                  <p className="text-2xs text-center text-foreground/50 pt-2">
                     Apresentação 100% digital no celular · Dispensa impressão
                   </p>
                 </div>
@@ -438,7 +438,7 @@ export function DigitalCompanionCard({
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-foreground truncate">{companyName}</span>
                   </div>
-                  <span className="text-[10px] font-mono text-muted-foreground font-bold">
+                  <span className="text-2xs font-mono text-muted-foreground font-bold">
                     Pág {pageIndex + 1} de {sectionChunks.length}
                   </span>
                 </div>
@@ -457,12 +457,12 @@ export function DigitalCompanionCard({
                           </div>
                           <div>
                             <p className="text-xs font-bold text-foreground leading-snug">{item.title}</p>
-                            {item.subtitle && <p className="text-[11px] text-muted-foreground">{item.subtitle}</p>}
+                            {item.subtitle && <p className="text-2xs text-muted-foreground">{item.subtitle}</p>}
                           </div>
                         </div>
 
                         {item.badge && (
-                          <Badge variant="outline" className="text-[10px] font-mono shrink-0">
+                          <Badge variant="outline" className="text-2xs font-mono shrink-0">
                             {item.badge}
                           </Badge>
                         )}
@@ -477,7 +477,7 @@ export function DigitalCompanionCard({
                               d.highlight ? "bg-primary/5 text-primary" : "bg-muted/30"
                             }`}
                           >
-                            <p className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">
+                            <p className="text-3xs uppercase tracking-wider font-bold text-muted-foreground">
                               {d.label}
                             </p>
                             <p className="text-xs font-bold truncate mt-1">{d.value}</p>
@@ -490,7 +490,7 @@ export function DigitalCompanionCard({
 
                 {/* Rodapé da Página */}
                 <div className="pt-3 border-t border-border/60 text-center">
-                  <p className="text-[10px] text-muted-foreground font-medium">
+                  <p className="text-2xs text-muted-foreground font-medium">
                     {title} · Código: {code || "OFICIAL"}
                   </p>
                 </div>
@@ -512,7 +512,7 @@ export function DigitalCompanionCard({
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-foreground line-clamp-1">Orientações Importantes</h3>
-                  <p className="text-[11px] text-muted-foreground">Guia essencial de atendimento</p>
+                  <p className="text-2xs text-muted-foreground">Guia essencial de atendimento</p>
                 </div>
               </div>
 
@@ -532,12 +532,12 @@ export function DigitalCompanionCard({
                         {rule.title}
                       </p>
                       {rule.badge && (
-                        <Badge variant="secondary" className="text-[9px] px-2 h-4">
+                        <Badge variant="secondary" className="text-3xs px-2 h-4">
                           {rule.badge}
                         </Badge>
                       )}
                     </div>
-                    <p className="text-[11px] text-muted-foreground leading-relaxed pl-5">
+                    <p className="text-2xs text-muted-foreground leading-relaxed pl-5">
                       {rule.description}
                     </p>
                   </div>
@@ -549,13 +549,13 @@ export function DigitalCompanionCard({
                       <HelpCircle className="size-3.5 text-amber-600" />
                       Observações:
                     </p>
-                    <p className="text-[11px] leading-relaxed whitespace-pre-line">{observations}</p>
+                    <p className="text-2xs leading-relaxed whitespace-pre-line">{observations}</p>
                   </div>
                 )}
               </div>
 
               <div className="pt-3 border-t border-border/60 text-center">
-                <p className="text-[10px] text-muted-foreground font-medium">Equipe {companyName}</p>
+                <p className="text-2xs text-muted-foreground font-medium">Equipe {companyName}</p>
               </div>
             </div>
           </div>
@@ -576,7 +576,7 @@ export function DigitalCompanionCard({
                   </div>
                   <div>
                     <h3 className="text-sm font-bold text-foreground line-clamp-1">Contatos de Emergência</h3>
-                    <p className="text-[11px] text-muted-foreground">Socorro e apoio imediato</p>
+                    <p className="text-2xs text-muted-foreground">Socorro e apoio imediato</p>
                   </div>
                 </div>
 
@@ -587,7 +587,7 @@ export function DigitalCompanionCard({
                       className="p-4 rounded-lg bg-card border border-border/80  space-y-3"
                     >
                       <div>
-                        <p className="text-[9px] uppercase tracking-wider font-bold text-blue-600 dark:text-blue-400">
+                        <p className="text-3xs uppercase tracking-wider font-bold text-blue-600 dark:text-blue-400">
                           {contact.category}
                         </p>
                         <p className="text-sm font-bold text-foreground">{contact.name}</p>
@@ -597,7 +597,7 @@ export function DigitalCompanionCard({
                         <div className="flex items-center gap-2 min-w-0">
                           <PhoneCall className="size-4 text-rose-600 shrink-0" />
                           <div className="min-w-0">
-                            <p className="text-[9px] font-bold uppercase text-rose-600">Telefone / Plantão</p>
+                            <p className="text-3xs font-bold uppercase text-rose-600">Telefone / Plantão</p>
                             <p className="text-xs font-mono font-bold text-foreground truncate">{contact.phone}</p>
                           </div>
                         </div>
@@ -605,7 +605,7 @@ export function DigitalCompanionCard({
                         <Button
                           asChild
                           size="sm"
-                          className="h-8 px-3 rounded-lg text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shrink-0"
+                          className="h-8 px-3 rounded-lg text-xs font-bold bg-rose-600 hover:bg-rose-700 text-foreground shrink-0"
                         >
                           <a href={`tel:${contact.phone.replace(/\D/g, "")}`}>Ligar</a>
                         </Button>
@@ -615,7 +615,7 @@ export function DigitalCompanionCard({
                 </div>
 
                 <div className="pt-3 border-t border-border/60 text-center">
-                  <p className="text-[10px] text-muted-foreground font-medium">Documento de Apoio · {companyName}</p>
+                  <p className="text-2xs text-muted-foreground font-medium">Documento de Apoio · {companyName}</p>
                 </div>
               </div>
             ))}
@@ -635,7 +635,7 @@ export function DigitalCompanionCard({
                 type="button"
                 size="sm"
                 onClick={copyWhatsApp}
-                className="rounded-lg text-xs font-bold h-10 px-4 bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
+                className="rounded-lg text-xs font-bold h-10 px-4 bg-emerald-600 hover:bg-emerald-700 text-foreground gap-2"
               >
                 {copied ? <CheckCircle2 className="size-4" /> : <Copy className="size-4" />}
                 <span>{copied ? "Copiado!" : "Copiar Texto"}</span>

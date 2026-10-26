@@ -215,7 +215,7 @@ function CmsStoriesPage() {
  </Badge>
  </div>
 
- <div className="absolute top-2.5 right-2.5 flex items-center gap-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded-md text-white text-xs font-mono">
+ <div className="absolute top-2.5 right-2.5 flex items-center gap-2 bg-foreground/60 backdrop-blur-md px-2 py-1 rounded-md text-foreground text-xs font-mono">
  <Clock className="size-3" />
  <span>{story.duration_seconds || 15}s</span>
  </div>

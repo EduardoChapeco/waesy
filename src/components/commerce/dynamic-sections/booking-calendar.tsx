@@ -125,7 +125,7 @@ export function BookingCalendar({ content }: BookingCalendarProps) {
  <CardTitle className="mb-4">Selecione o Serviço</CardTitle>
  {isLoadingServices ? (
  <div className="flex justify-center p-8">
- <Loader2 className="animate-spin text-primary" />
+ <Loader2 className="animate-spin motion-reduce:animate-none text-primary" />
  </div>
  ) : services.length === 0 ? (
  <div className="text-center p-8 text-muted-foreground">
@@ -137,7 +137,7 @@ export function BookingCalendar({ content }: BookingCalendarProps) {
  <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  key={svc.id}
  onClick={() => setSelectedService(svc.id)}
- className={`p-4 border cursor-pointer transition-all ${selectedService === svc.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+ className={`p-4 border cursor-pointer transition-colors duration-200 ${selectedService === svc.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <h3 className="font-semibold text-lg">{svc.title}</h3>
  <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
@@ -184,7 +184,7 @@ export function BookingCalendar({ content }: BookingCalendarProps) {
 
  {isLoadingSlots ? (
  <div className="flex justify-center p-8">
- <Loader2 className="animate-spin text-primary" />
+ <Loader2 className="animate-spin motion-reduce:animate-none text-primary" />
  </div>
  ) : slots.length === 0 ? (
  <div className="text-center p-8 text-muted-foreground bg-muted/50">
@@ -273,7 +273,7 @@ export function BookingCalendar({ content }: BookingCalendarProps) {
  disabled={!guestName || guestPhone.length < 10 || bookMutation.isPending}
  >
  {bookMutation.isPending ? (
- <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+ <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
  ) : null}
  Confirmar Agendamento
  </Button>

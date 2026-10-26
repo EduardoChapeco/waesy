@@ -141,7 +141,7 @@ export function GroupTourCashLedger({ tourId, storeId }: GroupTourCashLedgerProp
  >
  {formatMoney(balance)}
  </p>
- <p className="text-[11px] text-muted-foreground">Dinheiro disponível com o guia/motorista</p>
+ <p className="text-2xs text-muted-foreground">Dinheiro disponível com o guia/motorista</p>
  </div>
 
  {/* Total de Entradas */}
@@ -153,7 +153,7 @@ export function GroupTourCashLedger({ tourId, storeId }: GroupTourCashLedgerProp
  <p className="text-2xl font-extrabold text-foreground font-mono">
  {formatMoney(summary?.totalInflowsCents ?? 0)}
  </p>
- <p className="text-[11px] text-muted-foreground">Adiantamentos e recebimentos no ônibus</p>
+ <p className="text-2xs text-muted-foreground">Adiantamentos e recebimentos no ônibus</p>
  </div>
 
  {/* Total de Saídas */}
@@ -165,7 +165,7 @@ export function GroupTourCashLedger({ tourId, storeId }: GroupTourCashLedgerProp
  <p className="text-2xl font-extrabold text-foreground font-mono">
  {formatMoney(summary?.totalOutflowsCents ?? 0)}
  </p>
- <p className="text-[11px] text-muted-foreground">Pedágios, alimentação e despesas locais</p>
+ <p className="text-2xs text-muted-foreground">Pedágios, alimentação e despesas locais</p>
  </div>
  </div>
 
@@ -231,7 +231,7 @@ export function GroupTourCashLedger({ tourId, storeId }: GroupTourCashLedgerProp
  <p className="text-xs font-semibold text-foreground truncate">
  {item.description}
  </p>
- <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-mono">
+ <div className="flex items-center gap-2 text-2xs text-muted-foreground font-mono">
  <span>{cat.label}</span>
  <span>•</span>
  <span>{PAYMENT_METHODS[item.payment_method] || item.payment_method}</span>

@@ -415,7 +415,7 @@ function CustomerConversationsIndexPage() {
               key={tab.id}
               type="button"
               onClick={() => setActiveFilter(tab.id)}
-              className={`shrink-0 h-8 px-4 rounded-full text-xs font-semibold transition-all cursor-pointer select-none ${
+              className={`shrink-0 h-8 px-4 rounded-full text-xs font-semibold transition-colors duration-200 cursor-pointer select-none ${
                 isSelected
                   ? "bg-primary/15 text-primary font-bold"
                   : "bg-muted/40 hover:bg-muted/70 text-muted-foreground hover:text-foreground"
@@ -462,7 +462,7 @@ function CustomerConversationsIndexPage() {
         type="button"
         onClick={() => setNewChatOpen(true)}
         aria-label="Nova Conversa"
-        className="fixed bottom-20 md:bottom-8 right-4 md:right-8 z-40 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-xs hover:opacity-95 active:scale-95 transition-all flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="fixed bottom-20 md:bottom-8 right-4 md:right-8 z-40 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-xs hover:opacity-95 active:scale-95 transition-transform duration-200 flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <MessageSquarePlus className="size-6 stroke-[2.2]" />
       </button>
@@ -585,7 +585,7 @@ function CustomerConversationsIndexPage() {
 
               <div className="max-h-72 overflow-y-auto space-y-4 no-scrollbar">
                 <div className="space-y-2">
-                  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block px-1">
+                  <span className="text-2xs font-bold text-muted-foreground uppercase tracking-wider block px-1">
                     Membros
                   </span>
                   {!contactsData?.contacts || contactsData.contacts.length === 0 ? (
@@ -609,7 +609,7 @@ function CustomerConversationsIndexPage() {
                           </div>
                           <div className="min-w-0 flex-1">
                             <p className="text-xs font-bold text-foreground truncate">{c.name}</p>
-                            <p className="text-[10px] text-muted-foreground truncate">{c.subtitle}</p>
+                            <p className="text-2xs text-muted-foreground truncate">{c.subtitle}</p>
                           </div>
                         </div>
                       ))}
@@ -618,7 +618,7 @@ function CustomerConversationsIndexPage() {
                 </div>
 
                 <div className="space-y-2 border-t border-border/40 pt-3">
-                  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block px-1">
+                  <span className="text-2xs font-bold text-muted-foreground uppercase tracking-wider block px-1">
                     Lojas
                   </span>
                   {!contactsData?.stores || contactsData.stores.length === 0 ? (
@@ -642,7 +642,7 @@ function CustomerConversationsIndexPage() {
                           </div>
                           <div className="min-w-0 flex-1">
                             <p className="text-xs font-bold text-foreground truncate">{s.name}</p>
-                            <p className="text-[10px] text-muted-foreground truncate">{s.subtitle}</p>
+                            <p className="text-2xs text-muted-foreground truncate">{s.subtitle}</p>
                           </div>
                         </div>
                       ))}
@@ -669,7 +669,7 @@ function CustomerConversationsIndexPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-bold text-foreground truncate">{selectedTarget.name}</p>
-                  <p className="text-[10px] text-muted-foreground truncate">{selectedTarget.subtitle}</p>
+                  <p className="text-2xs text-muted-foreground truncate">{selectedTarget.subtitle}</p>
                 </div>
                 <button
                   type="button"

@@ -101,7 +101,7 @@ export function ChefSpecialBannerSection({
  <Badge
  key={idx}
  variant="secondary"
- className="text-[11px] font-normal px-3 py-1 bg-muted/60 text-muted-foreground border border-border/40"
+ className="text-2xs font-normal px-3 py-1 bg-muted/60 text-muted-foreground border border-border/40"
  >
  <Check className="size-3 mr-1 text-primary" />
  {ing}

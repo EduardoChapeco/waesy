@@ -35,7 +35,7 @@ export function useConfirm() {
               setOpen(false);
             }}
             className={
-              options?.variant === "destructive" ? "bg-danger hover:bg-danger/90 text-white" : ""
+              options?.variant === "destructive" ? "bg-danger hover:bg-danger/90 text-foreground" : ""
             }
           >
             Confirmar

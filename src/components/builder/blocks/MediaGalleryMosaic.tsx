@@ -84,7 +84,7 @@ export const MediaGalleryMosaic: React.FC<MediaGalleryMosaicProps> = ({
               <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                 key={item.id}
                 onClick={() => setSelectedImage(item.imageUrl)}
-                className={`group relative overflow-hidden ${radiusClass} border border-border/60 bg-muted/20 cursor-pointer transition-all duration-300 hover:shadow-lg hover:border-foreground/20 ${
+                className={`group relative overflow-hidden ${radiusClass} border border-border/60 bg-muted/20 cursor-pointer transition-colors duration-200 duration-300 hover:shadow-lg hover:border-foreground/20 ${
                   isFeatured ? "sm:col-span-2 lg:col-span-2 aspect-[16/9]" : "aspect-square"
                 } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
@@ -94,14 +94,14 @@ export const MediaGalleryMosaic: React.FC<MediaGalleryMosaicProps> = ({
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   loading="lazy"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5 text-white">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5 text-foreground">
                   {item.title && (
                     <span className="text-base font-bold tracking-tight">{item.title}</span>
                   )}
                   {item.caption && (
-                    <span className="text-xs text-white/80 mt-1">{item.caption}</span>
+                    <span className="text-xs text-foreground/80 mt-1">{item.caption}</span>
                   )}
-                  <div className="absolute top-4 right-4 size-8 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white/90">
+                  <div className="absolute top-4 right-4 size-8 rounded-full bg-foreground/40 backdrop-blur-md flex items-center justify-center text-foreground/90">
                     <ZoomIn className="size-4" />
                   </div>
                 </div>

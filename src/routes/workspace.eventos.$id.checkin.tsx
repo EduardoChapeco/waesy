@@ -379,7 +379,7 @@ function EventCheckinPage() {
         <div className="md:col-span-7 space-y-5">
           {/* Visualizador de Câmera */}
           {isCameraActive && (
-            <div className="relative rounded-lg overflow-hidden bg-black border border-primary/30 aspect-video flex items-center justify-center">
+            <div className="relative rounded-lg overflow-hidden bg-foreground border border-primary/30 aspect-video flex items-center justify-center">
               <video
                 ref={videoRef}
                 autoPlay
@@ -388,7 +388,7 @@ function EventCheckinPage() {
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 border-2 border-primary/40 rounded-lg pointer-events-none flex items-center justify-center">
-                <div className="size-48 border-2 border-dashed border-primary/80 rounded-lg animate-pulse" />
+                <div className="size-48 border-2 border-dashed border-primary/80 rounded-lg animate-pulse motion-reduce:animate-none" />
               </div>
             </div>
           )}
@@ -427,7 +427,7 @@ function EventCheckinPage() {
                 >
                   {isValidating ? (
                     <>
-                      <Loader2 className="size-4 animate-spin mr-2" />
+                      <Loader2 className="size-4 animate-spin motion-reduce:animate-none mr-2" />
                       Validando...
                     </>
                   ) : (

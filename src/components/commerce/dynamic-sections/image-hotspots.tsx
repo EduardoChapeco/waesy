@@ -95,7 +95,7 @@ export function ImageHotspots({
  className={`absolute -translate-x-1/2 -translate-y-1/2 group focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-full z-10 transition-transform ${isActive ? "scale-125 z-20" : "hover:scale-110"} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  {/* Outer pulsing ring */}
- <span className="absolute -inset-2 rounded-full bg-primary/40 animate-ping opacity-75" />
+ <span className="absolute -inset-2 rounded-full bg-primary/40 animate-ping motion-reduce:animate-none opacity-75" />
  {/* Inner pin */}
  <span className="relative flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary text-primary-foreground font-bold text-xs md:text-sm border border-background">
  {index + 1}
@@ -106,7 +106,7 @@ export function ImageHotspots({
 
  {/* Floating Mini-Card / Drawer for Active Hotspot */}
  {activeHotspot && !onHotspotClickInEditor && (
- <div className="absolute bottom-4 left-4 right-4 md:left-auto md:right-4 md:bottom-4 md:w-80 bg-background/95 backdrop-blur-md p-4 z-30 transition-all animate-in fade-in slide-in-">
+ <div className="absolute bottom-4 left-4 right-4 md:left-auto md:right-4 md:bottom-4 md:w-80 bg-background/95 backdrop-blur-md p-4 z-30 transition-colors duration-200 animate-in fade-in slide-in-">
  <div className="flex items-center justify-between mb-3 pb-2 ">
  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
  Produto em Destaque

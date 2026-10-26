@@ -141,7 +141,7 @@ export const TourismQuoteHero: React.FC<TourismQuoteHeroProps> = ({
                       type="button"
                       onClick={() => setDestination(dest)}
                       className={cn(
-                        "h-11 min-h-11 rounded-lg border px-4 text-xs font-medium transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                        "h-11 min-h-11 rounded-lg border px-4 text-xs font-medium transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                         destination === dest
                           ? "border-primary bg-primary text-primary-foreground font-bold"
                           : "border-border bg-card text-foreground hover:bg-muted"
@@ -276,7 +276,7 @@ export const TourismQuoteHero: React.FC<TourismQuoteHeroProps> = ({
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full h-11 min-h-11 mt-2 rounded-lg text-xs font-bold gap-2 bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer transition-all focus-visible:ring-2 focus-visible:ring-primary"
+                    className="w-full h-11 min-h-11 mt-2 rounded-lg text-xs font-bold gap-2 bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     <Send className="size-4" />
                     <span>{isSubmitting ? "Enviando..." : "Solicitar Roteiro e Preços"}</span>

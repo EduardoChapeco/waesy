@@ -242,12 +242,12 @@ export function CopilotScheduledTasksView({
             <div
               key={task.id}
               className={cn(
-                "rounded-2xl border p-5 transition-all bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-4",
+                "rounded-2xl border p-5 transition-colors duration-200 bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-4",
                 task.is_active ? "border-border/60 hover:border-primary/40 shadow-xs" : "border-border/30 opacity-70 bg-muted/10"
               )}
             >
               <div className="space-y-2 flex-1">
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-3">
                   <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
                     <Clock className="size-5" />
                   </div>
@@ -255,7 +255,7 @@ export function CopilotScheduledTasksView({
                     <h4 className="text-sm font-bold text-foreground leading-snug">
                       {task.title}
                     </h4>
-                    <div className="flex items-center gap-2 mt-0.5">
+                    <div className="flex items-center gap-2 mt-1">
                       <span className="text-2xs font-semibold text-primary">
                         {humanizeCron(task.cron_expression)}
                       </span>
@@ -284,7 +284,7 @@ export function CopilotScheduledTasksView({
                   size="sm"
                   disabled={runningTaskId === task.id}
                   onClick={() => handleDryRun(task)}
-                  className="h-11 min-h-11 px-3 text-xs font-semibold rounded-xl gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer"
+                  className="h-11 min-h-11 px-3 text-xs font-semibold rounded-xl gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer"
                 >
                   <Play className="size-3.5" />
                   <span>{runningTaskId === task.id ? "Executando..." : "Testar Agora"}</span>

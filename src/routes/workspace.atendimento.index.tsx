@@ -75,12 +75,17 @@ import {
 } from "@/services/whatsapp-channel-instances.functions";
 import { Link } from "@tanstack/react-router";
 import { WhatsAppOperationsMetricsPanel } from "@/components/chat/whatsapp-operations-metrics-panel";
+import { TransferTicketDialog } from "@/components/chat/TransferTicketDialog";
+import { QuickRepliesMenu, type QuickReplyItem } from "@/components/chat/QuickRepliesMenu";
+import { ThreadTagsPicker } from "@/components/chat/ThreadTagsPicker";
+import { listChatQuickReplies } from "@/services/chat.functions";
+import { ArrowRightLeft, Tag } from "lucide-react";
 
 export const Route = createFileRoute("/workspace/atendimento/")({
   head: () => ({ meta: [{ title: "Atendimento Omnichannel & WhatsApp" }] }),
   loader: async () => {
     try {
-      const [res, store, sdrData, instances] = await Promise.all([
+      const [res, store, sdrData, instances, quickReplies] = await Promise.all([
         listChatThreads().catch(() => null),
         getStoreSettings().catch(() => null),
         listSdrChatSessions().catch(() => ({
@@ -88,6 +93,7 @@ export const Route = createFileRoute("/workspace/atendimento/")({
           metrics: { total: 0, readyToBuy: 0, warm: 0, curious: 0 },
         })),
         listWorkspaceWhatsAppInstances().catch(() => []),
+        listChatQuickReplies().catch(() => [] as QuickReplyItem[]),
       ]);
       return {
         ...(res || {
@@ -98,6 +104,7 @@ export const Route = createFileRoute("/workspace/atendimento/")({
         sdrSessions: sdrData?.sessions || [],
         sdrMetrics: sdrData?.metrics || { total: 0, readyToBuy: 0, warm: 0, curious: 0 },
         whatsappInstances: (instances || []) as WhatsAppChannelInstanceDTO[],
+        quickReplies: (quickReplies || []) as QuickReplyItem[],
       };
     } catch (e) {
       console.warn("[workspace.atendimento] Fallback de segurança no loader:", e);
@@ -108,6 +115,7 @@ export const Route = createFileRoute("/workspace/atendimento/")({
         sdrSessions: [],
         sdrMetrics: { total: 0, readyToBuy: 0, warm: 0, curious: 0 },
         whatsappInstances: [] as WhatsAppChannelInstanceDTO[],
+        quickReplies: [] as QuickReplyItem[],
       };
     }
   },
@@ -132,6 +140,7 @@ function WorkspaceAtendimentoPage() {
     sdrSessions: initialSdrSessions,
     sdrMetrics: initialSdrMetrics,
     whatsappInstances: initialInstances,
+    quickReplies: initialQuickReplies,
   } = (Route.useLoaderData?.() as any) || {};
 
   const semantics = useMemo(() => getNicheSemantics(store), [store]);
@@ -144,7 +153,7 @@ function WorkspaceAtendimentoPage() {
   const [agentPresence, setAgentPresence] = useState<"online" | "busy" | "away">("online");
 
   // Filtro de status da lista (all: ativas | open: novas | archived: arquivadas)
-  const [statusFilter, setStatusFilter] = useState<"all" | "open" | "archived">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "open" | "waiting" | "archived">("all");
   const [deptFilter, setDeptFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -171,6 +180,14 @@ function WorkspaceAtendimentoPage() {
   const [isArchiving, setIsArchiving] = useState(false);
   const [showCustomer360, setShowCustomer360] = useState(false);
   const [isWhisperMode, setIsWhisperMode] = useState(false);
+  const [transferModalOpen, setTransferModalOpen] = useState(false);
+  const [quickReplies] = useState<QuickReplyItem[]>(initialQuickReplies || [
+    { id: "qr_ola", shortcut: "ola", title: "Saudação de Boas-Vindas", content: "Olá {{nome}}! Seja bem-vindo ao atendimento oficial da {{loja}}. Como podemos ajudar?", category: "geral" },
+    { id: "qr_pix", shortcut: "pix", title: "Chave PIX", content: "Nossa chave PIX oficial é gerada diretamente no seu pedido com confirmação automática em segundos!", category: "financeiro" },
+    { id: "qr_horarios", shortcut: "horarios", title: "Horários de Expediente", content: "Atendemos de Segunda a Sexta das 08h às 18h e Sábados das 08h às 12h.", category: "suporte" },
+    { id: "qr_rastreio", shortcut: "rastreio", title: "Rastreio do Pedido", content: "Seu pedido está em trânsito e você pode acompanhar pelo link de rastreio oficial.", category: "logistica" },
+    { id: "qr_cardapio", shortcut: "cardapio", title: "Cardápio e Catálogo", content: "Confira todos os itens do nosso cardápio atualizado no link da vitrine!", category: "vendas" }
+  ]);
 
   // Ticket Resolver Modal state
   const [ticketModalOpen, setTicketModalOpen] = useState(false);
@@ -219,7 +236,7 @@ function WorkspaceAtendimentoPage() {
 
   // Recarregar threads ao alternar statusFilter (para suportar 'archived' via backend)
   useEffect(() => {
-    listChatThreads({ data: { status: statusFilter } })
+    listChatThreads({ data: { status: (statusFilter === "waiting" ? "open" : statusFilter) as any } })
       .then((res) => {
         if (res?.threads) {
           setThreads(res.threads);
@@ -315,7 +332,7 @@ function WorkspaceAtendimentoPage() {
             return;
           }
           if (newThread.store_id === store.id) {
-            listChatThreads({ data: { status: statusFilter } }).then((res) => {
+            listChatThreads({ data: { status: (statusFilter === "waiting" ? "open" : statusFilter) as any } }).then((res) => {
               if (res?.threads) setThreads(res.threads);
             });
             playMessageChime();
@@ -446,6 +463,11 @@ function WorkspaceAtendimentoPage() {
   // Filtros de busca de threads
   const filteredThreads = useMemo(() => {
     return threads.filter((t) => {
+      // Filtro de 4 Abas Estilo WhatsApp Web / Whaticket
+      if (statusFilter === "open" && t.status !== "open") return false;
+      if (statusFilter === "archived" && t.status !== "archived") return false;
+      if (statusFilter === "waiting" && (t.status === "archived" || t.is_last_reply_staff)) return false;
+      if (statusFilter === "all" && t.status === "archived") return false;
       const matchDept = deptFilter === "all" || t.department === deptFilter;
       const matchSearch =
         !searchTerm.trim() ||
@@ -478,7 +500,7 @@ function WorkspaceAtendimentoPage() {
     <div className="flex flex-col h-[calc(100vh-theme(spacing.16))] overflow-hidden bg-background">
       {/* CABEÇALHO DO HUB DE ATENDIMENTO */}
       <header className={cn(
-        "shrink-0 border-b border-border/80 bg-card/90 px-4 py-2.5 flex-col md:flex-row md:items-center justify-between gap-3",
+        "shrink-0 border-b border-border/80 bg-card/90 px-4 py-3 flex-col md:flex-row md:items-center justify-between gap-3",
         activeHubTab === "live" && activeThreadId ? "hidden md:flex" : "flex"
       )}>
         <div className="flex items-center justify-between gap-3 min-w-0">
@@ -497,7 +519,7 @@ function WorkspaceAtendimentoPage() {
               type="button"
               onClick={() => setAgentPresence("online")}
               className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                "px-2 py-1 rounded text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer",
+                "px-2 py-1 rounded text-xs font-semibold flex items-center gap-1 transition-colors duration-200 cursor-pointer",
                 agentPresence === "online"
                   ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-bold"
                   : "text-muted-foreground hover:text-foreground",
@@ -510,7 +532,7 @@ function WorkspaceAtendimentoPage() {
               type="button"
               onClick={() => setAgentPresence("busy")}
               className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                "px-2 py-1 rounded text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer",
+                "px-2 py-1 rounded text-xs font-semibold flex items-center gap-1 transition-colors duration-200 cursor-pointer",
                 agentPresence === "busy"
                   ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 font-bold"
                   : "text-muted-foreground hover:text-foreground",
@@ -523,7 +545,7 @@ function WorkspaceAtendimentoPage() {
               type="button"
               onClick={() => setAgentPresence("away")}
               className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                "px-2 py-1 rounded text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer",
+                "px-2 py-1 rounded text-xs font-semibold flex items-center gap-1 transition-colors duration-200 cursor-pointer",
                 agentPresence === "away"
                   ? "bg-muted text-muted-foreground font-bold"
                   : "text-muted-foreground hover:text-foreground",
@@ -542,7 +564,7 @@ function WorkspaceAtendimentoPage() {
             type="button"
             onClick={() => setActiveHubTab("live")}
             className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-              "px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0",
+              "px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors duration-200 cursor-pointer shrink-0",
               activeHubTab === "live"
                 ? "bg-primary text-primary-foreground shadow-xs font-bold"
                 : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/50",
@@ -562,7 +584,7 @@ function WorkspaceAtendimentoPage() {
             type="button"
             onClick={() => setActiveHubTab("sdr")}
             className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-              "px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0",
+              "px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors duration-200 cursor-pointer shrink-0",
               activeHubTab === "sdr"
                 ? "bg-primary text-primary-foreground shadow-xs font-bold"
                 : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/50",
@@ -582,7 +604,7 @@ function WorkspaceAtendimentoPage() {
             type="button"
             onClick={() => setActiveHubTab("metrics")}
             className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-              "px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0",
+              "px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors duration-200 cursor-pointer shrink-0",
               activeHubTab === "metrics"
                 ? "bg-primary text-primary-foreground shadow-xs font-bold"
                 : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/50",
@@ -597,7 +619,7 @@ function WorkspaceAtendimentoPage() {
             type="button"
             onClick={() => setActiveHubTab("whatsapp")}
             className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-              "px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0",
+              "px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors duration-200 cursor-pointer shrink-0",
               activeHubTab === "whatsapp"
                 ? "bg-primary text-primary-foreground shadow-xs font-bold"
                 : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/50",
@@ -612,7 +634,7 @@ function WorkspaceAtendimentoPage() {
             type="button"
             onClick={() => setActiveHubTab("hours")}
             className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-              "px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0",
+              "px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors duration-200 cursor-pointer shrink-0",
               activeHubTab === "hours"
                 ? "bg-primary text-primary-foreground shadow-xs font-bold"
                 : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/50",
@@ -644,26 +666,28 @@ function WorkspaceAtendimentoPage() {
                   placeholder="Buscar conversa ou telefone..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8 h-9 rounded-lg text-xs bg-muted/40"
+                  className="pl-9 h-11 min-h-11 rounded-lg text-xs bg-muted/40"
                 />
               </div>
 
-              {/* Chips Rápidos: Todas / Abertas / Arquivadas */}
-              <div className="flex items-center gap-2 overflow-x-auto tab-list no-scrollbar">
+              
+              {/* Chips Rápidos de 4 Abas: Todas / Abertas / Aguardando / Arquivadas (WhatsApp Web / Whaticket) */}
+              <div className="flex items-center gap-2 overflow-x-auto tab-list no-scrollbar py-1">
                 {[
                   { id: "all", label: "Todas" },
                   { id: "open", label: "Abertas" },
+                  { id: "waiting", label: "Aguardando" },
                   { id: "archived", label: "Arquivadas" },
                 ].map((chip) => (
                   <button
                     key={chip.id}
                     type="button"
                     onClick={() => setStatusFilter(chip.id as any)}
-                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                      "px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer shrink-0",
+                    className={cn(
+                      "h-11 min-h-11 px-3 rounded-lg text-xs font-semibold transition-colors duration-200 cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                       statusFilter === chip.id
-                        ? "bg-primary text-primary-foreground font-bold shadow-2xs"
-                        : "bg-muted/60 text-muted-foreground hover:text-foreground border border-border/50",
+                        ? "bg-foreground text-background font-bold shadow-2xs"
+                        : "bg-muted/60 text-muted-foreground hover:text-foreground border border-border/50"
                     )}
                   >
                     {chip.label}
@@ -672,7 +696,7 @@ function WorkspaceAtendimentoPage() {
 
                 <div className="ml-auto">
                   <Select value={deptFilter} onValueChange={setDeptFilter}>
-                    <SelectTrigger className="h-7 text-xs rounded-md border-border/60">
+                    <SelectTrigger className="h-8 text-xs rounded-lg border-border/60">
                       <SelectValue placeholder="Setor" />
                     </SelectTrigger>
                     <SelectContent className="rounded-lg">
@@ -833,9 +857,23 @@ function WorkspaceAtendimentoPage() {
                         </span>
                       )}
                     </div>
+                    
                     <p className="text-xs text-muted-foreground truncate font-mono">
                       {activeThread.customer?.phone || activeThread.customer?.email || "Atendimento Direto"}
                     </p>
+                    {/* Tags Semânticas Coloridas (Whaticket / CRM Parity) */}
+                    <div className="pt-1">
+                      <ThreadTagsPicker
+                        threadId={activeThread.id}
+                        tags={activeThread.tags || []}
+                        onTagsChange={(newTags) => {
+                          setThreads((prev) =>
+                            prev.map((t) => (t.id === activeThread.id ? { ...t, tags: newTags } : t))
+                          );
+                        }}
+                      />
+                    </div>
+
                   </div>
                 </div>
 
@@ -855,22 +893,23 @@ function WorkspaceAtendimentoPage() {
                     </span>
                   </div>
 
-                  {/* Transferir Setor */}
-                  <Select
-                    value={activeThread.department || "geral"}
-                    onValueChange={handleDepartmentChange}
+                  
+                  {/* Transferir Fila / Operador com Nota Obrigatória (Whaticket / Chatwoot Parity) */}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setTransferModalOpen(true)}
+                    className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring border-primary/30 text-primary hover:bg-primary/5"
+                    title="Transferir conversa com nota de contexto"
                   >
-                    <SelectTrigger className="h-11 rounded-lg text-xs w-32 sm:w-36 focus-visible:ring-2 focus-visible:ring-ring">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-lg">
-                      <SelectItem value="vendas">Vendas</SelectItem>
-                      <SelectItem value="suporte">Suporte / SAC</SelectItem>
-                      <SelectItem value="financeiro">Financeiro</SelectItem>
-                      <SelectItem value="logistica">Logística</SelectItem>
-                      <SelectItem value="geral">Geral</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    <ArrowRightLeft className="size-4" />
+                    <span className="hidden sm:inline">Transferir</span>
+                    <Badge variant="secondary" className="text-3xs px-2 py-0 font-normal hidden xl:inline-block">
+                      {departmentLabels[activeThread.department || "geral"] || activeThread.department}
+                    </Badge>
+                  </Button>
+
 
                   {/* Ação de Arquivar / Desarquivar */}
                   <Button
@@ -1051,6 +1090,40 @@ function WorkspaceAtendimentoPage() {
 
               {/* Input de Envio do Atendente & Macros Rápidas */}
               <div className="bg-card border-t border-border/80 p-3 space-y-2">
+                
+                {/* Autocomplete de Respostas Rápidas / Macros com gatilho "/" */}
+                {text.startsWith("/") && (
+                  <QuickRepliesMenu
+                    searchTerm={text}
+                    quickReplies={quickReplies}
+                    customerName={activeThread.customer?.full_name}
+                    storeName={store?.name}
+                    onSelectReply={(expanded) => {
+                      setText(expanded);
+                    }}
+                    onClose={() => {}}
+                  />
+                )}
+
+                {/* Banner Modo Nota Interna (Whisper) com Design Âmbar Whaticket/Chatwoot */}
+                {isWhisperMode && (
+                  <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-950 dark:text-amber-100 text-xs font-semibold animate-in fade-in">
+                    <div className="flex items-center gap-2">
+                      <Lock className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                      <span>Nota Interna Privada: Visível apenas para a equipe (NÃO é enviada ao WhatsApp).</span>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsWhisperMode(false)}
+                      className="h-11 min-h-11 px-3 text-xs text-amber-900 dark:text-amber-200 hover:bg-amber-500/20 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      Voltar ao Chat
+                    </Button>
+                  </div>
+                )}
+
                 {/* Trilho de Respostas Rápidas / Macros */}
                 <div
                   role="tablist"
@@ -1126,7 +1199,7 @@ function WorkspaceAtendimentoPage() {
                       onClick={() => setIsWhisperMode(!isWhisperMode)}
                       className={cn(
                         "size-11 rounded-lg shrink-0 cursor-pointer",
-                        isWhisperMode ? "bg-amber-600 hover:bg-amber-700 text-white" : "",
+                        isWhisperMode ? "bg-amber-600 hover:bg-amber-700 text-foreground" : "",
                       )}
                       title={
                         isWhisperMode
@@ -1277,7 +1350,7 @@ function WorkspaceAtendimentoPage() {
                     <div
                       key={session.id}
                       className={cn(
-                        "bg-card p-4 rounded-lg border flex flex-col justify-between space-y-4 shadow-xs transition-all hover:border-primary/50",
+                        "bg-card p-4 rounded-lg border flex flex-col justify-between space-y-4 shadow-xs transition-colors duration-200 hover:border-primary/50",
                         isReady
                           ? "border-emerald-500/40 bg-emerald-500/5 dark:bg-emerald-950/10"
                           : isWarm
@@ -1468,7 +1541,7 @@ function WorkspaceAtendimentoPage() {
 
               {/* Área do QR Code */}
               <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-border/80 rounded-lg bg-muted/10 space-y-3">
-                <div className="size-48 bg-white p-3 rounded-lg border border-border shadow-xs flex items-center justify-center">
+                <div className="size-48 bg-card p-3 rounded-lg border border-border shadow-xs flex items-center justify-center">
                   <QrCode className="size-40 text-neutral-900" />
                 </div>
                 <p className="text-xs text-muted-foreground text-center">

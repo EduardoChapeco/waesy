@@ -129,7 +129,7 @@ export function FloorPlanEditorSheet({
  <p className="text-xs font-bold text-foreground">
  {tables.length} mesas cadastradas
  </p>
- <p className="text-[11px] text-muted-foreground font-mono">
+ <p className="text-2xs text-muted-foreground font-mono">
  Capacidade: {tables.reduce((acc, t) => acc + (t.seats || 0), 0)} lugares
  </p>
  </div>
@@ -181,7 +181,7 @@ export function FloorPlanEditorSheet({
  <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
  {/* Lugares */}
  <div className="flex items-center gap-2">
- <span className="text-[10px] text-muted-foreground font-mono uppercase font-bold">
+ <span className="text-2xs text-muted-foreground font-mono uppercase font-bold">
  Lugares:
  </span>
  <Input

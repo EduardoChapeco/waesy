@@ -47,7 +47,7 @@ export function StudioTemplatePicker({ format, value, onChange }: StudioTemplate
             key={tpl.id}
             type="button"
             onClick={() => onChange(tpl.id)}
-            className={`w-full flex items-center gap-3 p-3 rounded-card border text-left transition-all ${
+            className={`w-full flex items-center gap-3 p-3 rounded-card border text-left transition-colors duration-200 ${
               active
                 ? "border-brand bg-brand/5 dark:bg-brand/10"
                 : "border-border/60 bg-surface hover:border-border-hover"
@@ -84,7 +84,7 @@ export function StudioTemplatePicker({ format, value, onChange }: StudioTemplate
                 <span className="text-xs font-bold truncate">{tpl.label}</span>
                 {active && <Check className="h-3 w-3 text-brand shrink-0" />}
               </div>
-              <div className="text-[9px] text-muted-foreground leading-tight mt-1 line-clamp-2">
+              <div className="text-3xs text-muted-foreground leading-tight mt-1 line-clamp-2">
                 {tpl.description}
               </div>
             </div>

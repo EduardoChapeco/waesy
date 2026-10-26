@@ -41,14 +41,14 @@ export const PwaSplashPreview: React.FC<PwaSplashPreviewProps> = ({
         ) : (
           <div
             style={{ backgroundColor: themeColor }}
-            className="size-24 rounded-lg flex items-center justify-center font-black text-3xl text-white shadow-lg border border-white/15"
+            className="size-24 rounded-lg flex items-center justify-center font-black text-3xl text-foreground shadow-lg border border-white/15"
           >
             {shortName.slice(0, 2).toUpperCase()}
           </div>
         )}
 
         <div className="space-y-1 text-center">
-          <h3 className="font-bold text-lg text-white tracking-tight">{shortName}</h3>
+          <h3 className="font-bold text-lg text-foreground tracking-tight">{shortName}</h3>
           <p className="text-xs text-neutral-400 max-w-44 truncate">{appName}</p>
         </div>
 
@@ -58,9 +58,9 @@ export const PwaSplashPreview: React.FC<PwaSplashPreviewProps> = ({
             style={{ backgroundColor: themeColor }}
             className={`size-2 rounded-full ${
               animationType === "bounce"
-                ? "animate-bounce"
+                ? "animate-bounce motion-reduce:animate-none"
                 : animationType === "pulse"
-                ? "animate-pulse"
+                ? "animate-pulse motion-reduce:animate-none"
                 : "opacity-80"
             }`}
           />
@@ -68,9 +68,9 @@ export const PwaSplashPreview: React.FC<PwaSplashPreviewProps> = ({
             style={{ backgroundColor: themeColor }}
             className={`size-2 rounded-full ${
               animationType === "bounce"
-                ? "animate-bounce [animation-delay:0.2s]"
+                ? "animate-bounce motion-reduce:animate-none [animation-delay:0.2s]"
                 : animationType === "pulse"
-                ? "animate-pulse [animation-delay:0.2s]"
+                ? "animate-pulse motion-reduce:animate-none [animation-delay:0.2s]"
                 : "opacity-80"
             }`}
           />
@@ -78,9 +78,9 @@ export const PwaSplashPreview: React.FC<PwaSplashPreviewProps> = ({
             style={{ backgroundColor: themeColor }}
             className={`size-2 rounded-full ${
               animationType === "bounce"
-                ? "animate-bounce [animation-delay:0.4s]"
+                ? "animate-bounce motion-reduce:animate-none [animation-delay:0.4s]"
                 : animationType === "pulse"
-                ? "animate-pulse [animation-delay:0.4s]"
+                ? "animate-pulse motion-reduce:animate-none [animation-delay:0.4s]"
                 : "opacity-80"
             }`}
           />

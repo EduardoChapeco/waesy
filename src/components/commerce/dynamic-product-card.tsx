@@ -67,12 +67,12 @@ export function DynamicProductCard({ product }: DynamicProductCardProps) {
  </Badge>
  )}
  {tipo === "event_producer" && (
- <Badge className="bg-primary hover:bg-primary/90 text-white font-black uppercase ">
+ <Badge className="bg-primary hover:bg-primary/90 text-foreground font-black uppercase ">
  Ingresso
  </Badge>
  )}
  {tipo === "creator" && (
- <Badge variant="secondary" className="bg-primary text-white font-bold ">
+ <Badge variant="secondary" className="bg-primary text-foreground font-bold ">
  Serviço
  </Badge>
  )}

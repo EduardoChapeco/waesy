@@ -132,7 +132,7 @@ export function StudioCanvas({ onExportToHero, className = '', aspectRatio, back
  key={r}
  type="button"
  onClick={() => setAspect(r)}
- className={'px-3 py-2 rounded-lg text-xs font-bold transition-all ' + (
+ className={'px-3 py-2 rounded-lg text-xs font-bold transition-colors duration-200 ' + (
  aspect === r ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
@@ -208,7 +208,7 @@ export function StudioCanvas({ onExportToHero, className = '', aspectRatio, back
  color: l.color,
  fontSize: l.fontSize,
  }}
- className={'cursor-pointer p-1 border rounded transition-all ' + (
+ className={'cursor-pointer p-1 border rounded transition-colors duration-200 ' + (
  selectedLayerId === l.id ? 'border-primary bg-primary/10' : 'border-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >

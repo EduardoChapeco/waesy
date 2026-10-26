@@ -40,7 +40,7 @@ export function ReputationScoreHeader({ content, design_tokens }: ReputationScor
 	 <span className="text-2xl sm:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">
 	 {score === null ? "—" : score.toFixed(1)}
  </span>
- <span className="text-[10px] uppercase font-bold text-emerald-600/80 tracking-wider">de 10.0</span>
+ <span className="text-2xs uppercase font-bold text-emerald-600/80 tracking-wider">de 10.0</span>
  </div>
 
  <div className="space-y-2">
@@ -61,7 +61,7 @@ export function ReputationScoreHeader({ content, design_tokens }: ReputationScor
 
  <Button
  size="lg"
- className="min-h-11 gap-2 bg-rose-600 hover:bg-rose-700 text-white font-semibold shadow-sm w-full md:w-auto"
+ className="min-h-11 gap-2 bg-rose-600 hover:bg-rose-700 text-foreground font-semibold shadow-sm w-full md:w-auto"
  onClick={() => setIsComplaintModalOpen(true)}
  >
  <AlertCircle className="w-4 h-4" />
@@ -77,7 +77,7 @@ export function ReputationScoreHeader({ content, design_tokens }: ReputationScor
  <span>Índice de Solução</span>
  </div>
 	 <div className="text-xl sm:text-2xl font-bold text-foreground">{resolved === null ? "Sem dados" : `${resolved}%`}</div>
-	 <div className="text-[10px] text-muted-foreground">Taxa não é presumida</div>
+	 <div className="text-2xs text-muted-foreground">Taxa não é presumida</div>
  </div>
 
  <div className="p-4 rounded-lg border border-border/60 bg-card space-y-1">
@@ -86,7 +86,7 @@ export function ReputationScoreHeader({ content, design_tokens }: ReputationScor
  <span>Voltariam a Fazer Negócio</span>
  </div>
 	 <div className="text-xl sm:text-2xl font-bold text-foreground">{wouldBuyAgain === null ? "Sem dados" : `${wouldBuyAgain}%`}</div>
-	 <div className="text-[10px] text-muted-foreground">Recompra não é presumida</div>
+	 <div className="text-2xs text-muted-foreground">Recompra não é presumida</div>
  </div>
 
  <div className="p-4 rounded-lg border border-border/60 bg-card space-y-1">
@@ -95,7 +95,7 @@ export function ReputationScoreHeader({ content, design_tokens }: ReputationScor
  <span>Tempo de Resposta</span>
  </div>
 	 <div className="text-xl sm:text-2xl font-bold text-foreground">{responseTime === null ? "Sem dados" : `${responseTime}h`}</div>
-	 <div className="text-[10px] text-muted-foreground">Tempo não é presumido</div>
+	 <div className="text-2xs text-muted-foreground">Tempo não é presumido</div>
  </div>
 
  <div className="p-4 rounded-lg border border-border/60 bg-card space-y-1">
@@ -104,7 +104,7 @@ export function ReputationScoreHeader({ content, design_tokens }: ReputationScor
  <span>Total Reclamações</span>
  </div>
 	 <div className="text-xl sm:text-2xl font-bold text-foreground">{total ?? "Sem dados"}</div>
-	 <div className="text-[10px] text-muted-foreground">Contagem não verificada</div>
+	 <div className="text-2xs text-muted-foreground">Contagem não verificada</div>
  </div>
  </div>
  </div>

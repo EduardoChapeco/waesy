@@ -55,7 +55,7 @@ function BlackboardBlock({ code, title }: { code: string; title?: string }) {
   return (
     <div className="my-3 rounded-xl border border-slate-700/80 bg-slate-950/95 text-slate-100 shadow-lg overflow-hidden font-sans">
       {/* Moldura superior da lousa com giz e ferramentas */}
-      <div className="flex items-center justify-between px-3.5 py-2 bg-slate-900 border-b border-slate-800 text-xs text-slate-300">
+      <div className="flex items-center justify-between px-4 py-2 bg-slate-900 border-b border-slate-800 text-xs text-slate-300">
         <div className="flex items-center gap-2">
           <div className="size-5 rounded-md bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
             <ChalkboardTeacher className="size-3.5" weight="bold" />
@@ -68,7 +68,7 @@ function BlackboardBlock({ code, title }: { code: string; title?: string }) {
         <button
           type="button"
           onClick={handleCopy}
-          className="flex items-center gap-1.5 px-2 py-1 rounded text-2xs text-slate-400 hover:text-slate-100 hover:bg-slate-800/80 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-400 cursor-pointer"
+          className="flex items-center gap-2 px-2 py-1 rounded text-2xs text-slate-400 hover:text-slate-100 hover:bg-slate-800/80 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-400 cursor-pointer"
           title="Copiar conteúdo da lousa"
         >
           {copied ? (
@@ -86,7 +86,7 @@ function BlackboardBlock({ code, title }: { code: string; title?: string }) {
       </div>
 
       {/* Superfície da Lousa com efeito sutil de giz e tipografia nítida */}
-      <div className="p-4 overflow-x-auto text-xs sm:text-sm font-mono leading-relaxed space-y-1.5 text-emerald-300/90 selection:bg-emerald-500/30">
+      <div className="p-4 overflow-x-auto text-xs sm:text-sm font-mono leading-relaxed space-y-2 text-emerald-300/90 selection:bg-emerald-500/30">
         <pre className="whitespace-pre-wrap font-mono text-xs sm:text-sm text-slate-200">
           {code}
         </pre>
@@ -109,8 +109,8 @@ function CodeBlock({ code, language }: { code: string; language?: string }) {
 
   return (
     <div className="my-2.5 rounded-lg border border-border/60 bg-muted/50 overflow-hidden text-xs font-mono">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-muted/80 border-b border-border/40 text-2xs text-muted-foreground">
-        <div className="flex items-center gap-1.5 font-semibold uppercase tracking-wider">
+      <div className="flex items-center justify-between px-3 py-2 bg-muted/80 border-b border-border/40 text-2xs text-muted-foreground">
+        <div className="flex items-center gap-2 font-semibold uppercase tracking-wider">
           <CodeIcon className="size-3 text-primary" />
           <span>{language || "código"}</span>
         </div>
@@ -152,7 +152,7 @@ export function CopilotMessageRenderer({ content, isUser = false, className }: C
         components={{
           // Parágrafo com entrelinha ergonômica
           p: ({ children }) => (
-            <p className="my-1.5 leading-relaxed text-foreground/95 break-words">
+            <p className="my-2 leading-relaxed text-foreground/95 break-words">
               {children}
             </p>
           ),
@@ -173,12 +173,12 @@ export function CopilotMessageRenderer({ content, isUser = false, className }: C
 
           // Cabeçalhos proporcionais e limpos
           h1: ({ children }) => (
-            <h1 className="text-base sm:text-lg font-extrabold text-foreground mt-3 mb-1.5 tracking-tight border-b border-border/40 pb-1">
+            <h1 className="text-base sm:text-lg font-extrabold text-foreground mt-3 mb-2 tracking-tight border-b border-border/40 pb-1">
               {children}
             </h1>
           ),
           h2: ({ children }) => (
-            <h2 className="text-sm sm:text-base font-bold text-foreground mt-2.5 mb-1 tracking-tight">
+            <h2 className="text-sm sm:text-base font-bold text-foreground mt-3 mb-1 tracking-tight">
               {children}
             </h2>
           ),
@@ -207,7 +207,7 @@ export function CopilotMessageRenderer({ content, isUser = false, className }: C
 
           // Citações em estilo callout moderno
           blockquote: ({ children }) => (
-            <blockquote className="my-2.5 pl-3.5 py-1.5 border-l-2 border-primary bg-primary/5 rounded-r-lg text-foreground/90 italic text-xs leading-relaxed">
+            <blockquote className="my-2.5 pl-3.5 py-2 border-l-2 border-primary bg-primary/5 rounded-r-lg text-foreground/90 italic text-xs leading-relaxed">
               {children}
             </blockquote>
           ),
@@ -236,12 +236,12 @@ export function CopilotMessageRenderer({ content, isUser = false, className }: C
             </tr>
           ),
           th: ({ children }) => (
-            <th className="p-2 sm:p-2.5 text-left font-bold text-foreground">
+            <th className="p-2 sm:p-3 text-left font-bold text-foreground">
               {children}
             </th>
           ),
           td: ({ children }) => (
-            <td className="p-2 sm:p-2.5 text-left">
+            <td className="p-2 sm:p-3 text-left">
               {children}
             </td>
           ),
@@ -276,7 +276,7 @@ export function CopilotMessageRenderer({ content, isUser = false, className }: C
 
             // Inline code
             return (
-              <code className="px-1.5 py-0.5 rounded bg-muted font-mono text-2xs sm:text-xs text-primary font-semibold border border-border/40">
+              <code className="px-2 py-1 rounded bg-muted font-mono text-2xs sm:text-xs text-primary font-semibold border border-border/40">
                 {children}
               </code>
             );

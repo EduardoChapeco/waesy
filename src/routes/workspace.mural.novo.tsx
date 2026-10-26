@@ -111,7 +111,7 @@ function WorkspaceNewMuralPostPage() {
                   key={t.id}
                   type="button"
                   onClick={() => setPostType(t.id as any)}
-                  className={`p-3 rounded-lg border text-left flex items-center gap-3 transition-all cursor-pointer ${
+                  className={`p-3 rounded-lg border text-left flex items-center gap-3 transition-colors duration-200 cursor-pointer ${
                     isSelected
                       ? "bg-primary/10 border-primary text-foreground font-bold shadow-xs"
                       : "bg-background border-border/50 text-muted-foreground hover:bg-muted/40"
@@ -180,7 +180,7 @@ function WorkspaceNewMuralPostPage() {
                   <button
                     type="button"
                     onClick={() => handleRemoveMedia(idx)}
-                    className="absolute top-1 right-1 size-6 rounded-full bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="absolute top-1 right-1 size-6 rounded-full bg-foreground/70 text-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     ×
                   </button>
@@ -202,7 +202,7 @@ function WorkspaceNewMuralPostPage() {
             className="h-10 px-5 rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground cursor-pointer shadow-sm"
           >
             {isSubmitting ? (
-              <Loader2 className="size-4 animate-spin" />
+              <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
             ) : (
               <Send className="size-4" />
             )}

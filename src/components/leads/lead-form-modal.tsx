@@ -156,7 +156,7 @@ export function LeadFormModal({
         <div className="pt-2">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground gap-2">
-              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none text-primary" />
               <p className="text-xs">Carregando formulário...</p>
             </div>
           ) : form ? (

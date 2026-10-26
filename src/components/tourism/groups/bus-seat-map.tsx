@@ -94,7 +94,7 @@ export function BusSeatMap({ seats, onSeatsChange, readOnly = false }: BusSeatMa
  </span>
  </div>
 
- <div className="flex items-center gap-3 text-[11px]">
+ <div className="flex items-center gap-3 text-2xs">
  <span className="flex items-center gap-1">
  <span className="size-2.5 rounded-full bg-emerald-500" /> Livre
  </span>
@@ -107,7 +107,7 @@ export function BusSeatMap({ seats, onSeatsChange, readOnly = false }: BusSeatMa
  {/* Carcaça Visual do Ônibus */}
  <div className="p-5 rounded-lg bg-slate-100 border-2 border-slate-300 max-w-sm mx-auto space-y-3 shadow-inner">
  {/* Cabine do Motorista & Entrada */}
- <div className="flex items-center justify-between pb-3 border-b-2 border-dashed border-slate-300 text-[10px] font-mono font-bold text-slate-500 uppercase">
+ <div className="flex items-center justify-between pb-3 border-b-2 border-dashed border-slate-300 text-2xs font-mono font-bold text-slate-500 uppercase">
  <div className="flex items-center gap-1">
  <div className="size-7 rounded-lg bg-slate-300 flex items-center justify-center text-slate-700">
  💺
@@ -135,7 +135,7 @@ export function BusSeatMap({ seats, onSeatsChange, readOnly = false }: BusSeatMa
  </div>
 
  {/* Corredor Central com Número da Fileira */}
- <span className="text-[9px] font-mono text-slate-400 font-bold px-1">
+ <span className="text-3xs font-mono text-slate-400 font-bold px-1">
  {rowNum}
  </span>
 
@@ -153,7 +153,7 @@ export function BusSeatMap({ seats, onSeatsChange, readOnly = false }: BusSeatMa
  </div>
 
  {/* Fundo do Ônibus (Banheiro & Frigobar) */}
- <div className="flex items-center justify-between pt-3 border-t-2 border-dashed border-slate-300 text-[10px] font-mono font-bold text-slate-500 uppercase">
+ <div className="flex items-center justify-between pt-3 border-t-2 border-dashed border-slate-300 text-2xs font-mono font-bold text-slate-500 uppercase">
  <div className="px-2 py-1 rounded bg-slate-200 text-slate-600">
  🧊 Frigobar
  </div>
@@ -249,9 +249,9 @@ function SeatButton({ seat, onClick }: { seat: BusSeatDTO; onClick: () => void }
  <button
  type="button"
  onClick={onClick}
- className={`size-11 rounded-lg flex flex-col items-center justify-center font-mono transition-all cursor-pointer shadow-xs ${
+ className={`size-11 rounded-lg flex flex-col items-center justify-center font-mono transition-colors duration-200 cursor-pointer shadow-xs ${
  isOccupied
- ? "bg-slate-900 text-white font-black ring-1 ring-slate-800"
+ ? "bg-slate-900 text-foreground font-black ring-1 ring-slate-800"
  : "bg-emerald-50 hover:bg-emerald-100 text-emerald-950 font-bold border border-emerald-300"
  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  title={isOccupied ? `Ocupado: ${seat.passenger_name}` : `Poltrona ${seat.seat_number} Livre`}

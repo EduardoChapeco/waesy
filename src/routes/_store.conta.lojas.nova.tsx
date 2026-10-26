@@ -172,7 +172,7 @@ export default function NovaLojaPage() {
           </div>
         </div>
 
-        <Button asChild variant="outline" size="sm" className="h-11 min-h-11 sm:h-9 text-xs font-semibold gap-1.5">
+        <Button asChild variant="outline" size="sm" className="h-11 min-h-11 sm:h-9 text-xs font-semibold gap-2">
           <Link to="/criar-negocio" search={{ modo: "avancado" }}>
             <span>Onboarding Avançado</span>
             <ChevronRight className="size-3.5" />
@@ -352,7 +352,7 @@ export default function NovaLojaPage() {
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="size-4 animate-spin" />
+                  <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                   <span>Provisionando loja e ativando Workspace...</span>
                 </>
               ) : (

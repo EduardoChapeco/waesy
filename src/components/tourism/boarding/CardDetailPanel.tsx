@@ -267,7 +267,7 @@ export function CardDetailPanel({
       >
         {isLoading ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-3">
-            <Loader2 className="size-6 animate-spin text-primary" />
+            <Loader2 className="size-6 animate-spin motion-reduce:animate-none text-primary" />
             <p className="text-xs text-muted-foreground font-mono">Carregando detalhes do embarque...</p>
           </div>
         ) : !departure ? (
@@ -285,7 +285,7 @@ export function CardDetailPanel({
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <Badge variant="outline" className="text-[10px] font-bold uppercase">
+                    <Badge variant="outline" className="text-2xs font-bold uppercase">
                       {departure.destination_type === 'international'
                         ? 'Internacional'
                         : departure.destination_type === 'cruise'
@@ -295,7 +295,7 @@ export function CardDetailPanel({
                     {daysUntilDeparture !== null && (
                       <Badge
                         variant="outline"
-                        className={`text-[10px] font-bold ${
+                        className={`text-2xs font-bold ${
                           daysUntilDeparture <= 1
                             ? 'bg-red-500/10 text-red-600 border-red-500/30'
                             : daysUntilDeparture <= 3
@@ -372,7 +372,7 @@ export function CardDetailPanel({
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`px-4 py-3 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer min-h-11 whitespace-nowrap ${
+                    className={`px-4 py-3 text-xs sm:text-sm font-bold border-b-2 transition-colors duration-200 cursor-pointer min-h-11 whitespace-nowrap ${
                       activeTab === tab.id
                         ? 'border-primary text-primary'
                         : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -392,10 +392,10 @@ export function CardDetailPanel({
                   {Object.entries(checklistByCategory).map(([cat, items]) => (
                     <div key={cat} className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline" className={`text-[10px] font-bold uppercase ${CATEGORY_COLORS[cat as ChecklistCategory]}`}>
+                        <Badge variant="outline" className={`text-2xs font-bold uppercase ${CATEGORY_COLORS[cat as ChecklistCategory]}`}>
                           {CATEGORY_LABELS[cat as ChecklistCategory]}
                         </Badge>
-                        <span className="text-[10px] text-muted-foreground font-mono">
+                        <span className="text-2xs text-muted-foreground font-mono">
                           {items?.filter((i) => i.is_completed).length}/{items?.length} concluídos
                         </span>
                       </div>
@@ -403,7 +403,7 @@ export function CardDetailPanel({
                         {items?.map((item) => (
                           <div
                             key={item.id}
-                            className={`p-3 rounded-lg border transition-all flex items-center justify-between gap-3 ${
+                            className={`p-3 rounded-lg border transition-colors duration-200 flex items-center justify-between gap-3 ${
                               item.is_completed
                                 ? 'bg-emerald-500/[0.04] border-emerald-500/20'
                                 : 'bg-card border-border/70 hover:border-primary/40'
@@ -497,12 +497,12 @@ export function CardDetailPanel({
                           </div>
                           <div className="min-w-0 flex-1">
                             <p className="text-xs font-bold text-foreground truncate">{DOC_TYPE_LABELS[doc.document_type]}</p>
-                            <p className="text-[10px] text-muted-foreground truncate">{doc.file_name || 'Arquivo anexo'}</p>
+                            <p className="text-2xs text-muted-foreground truncate">{doc.file_name || 'Arquivo anexo'}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
                           {doc.ocr_status === 'completed' && (
-                            <Badge variant="outline" className="text-[9px] text-emerald-600 border-emerald-500/30">
+                            <Badge variant="outline" className="text-3xs text-emerald-600 border-emerald-500/30">
                               OCR ✓
                             </Badge>
                           )}
@@ -541,7 +541,7 @@ export function CardDetailPanel({
                     <Label className="text-xs font-bold text-foreground">Anexar Documento de Viagem</Label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="space-y-2">
-                        <Label className="text-[11px] text-muted-foreground">Tipo de Documento</Label>
+                        <Label className="text-2xs text-muted-foreground">Tipo de Documento</Label>
                         <select
                           value={docType}
                           onChange={(e) => setDocType(e.target.value as DocumentType)}
@@ -555,7 +555,7 @@ export function CardDetailPanel({
                         </select>
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-[11px] text-muted-foreground">Arquivo</Label>
+                        <Label className="text-2xs text-muted-foreground">Arquivo</Label>
                         <FileAttachmentUpload
                           value={docUrl}
                           onChange={setDocUrl}
@@ -569,7 +569,7 @@ export function CardDetailPanel({
                       className="w-full rounded-lg font-bold text-xs h-9 gap-2 cursor-pointer"
                     >
                       {uploadDocMutation.isPending ? (
-                        <Loader2 className="size-3.5 animate-spin" />
+                        <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
                       ) : (
                         <Plus className="size-3.5" />
                       )}
@@ -592,7 +592,7 @@ export function CardDetailPanel({
                         variant="ghost"
                         size="sm"
                         onClick={() => setIsEditing(!isEditing)}
-                        className="h-7 px-3 text-[11px] font-bold rounded-lg cursor-pointer"
+                        className="h-7 px-3 text-2xs font-bold rounded-lg cursor-pointer"
                       >
                         {isEditing ? <Check className="size-3 mr-1 text-emerald-500" /> : <Pencil className="size-3 mr-1" />}
                         {isEditing ? 'Pronto' : 'Editar'}
@@ -601,7 +601,7 @@ export function CardDetailPanel({
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <Label className="text-[11px] text-muted-foreground">Localizador / PNR</Label>
+                        <Label className="text-2xs text-muted-foreground">Localizador / PNR</Label>
                         {isEditing ? (
                           <Input
                             value={airlineLocator}
@@ -617,7 +617,7 @@ export function CardDetailPanel({
                       </div>
 
                       <div className="space-y-1">
-                        <Label className="text-[11px] text-muted-foreground">Número do Voo</Label>
+                        <Label className="text-2xs text-muted-foreground">Número do Voo</Label>
                         {isEditing ? (
                           <Input
                             value={flightNumber}
@@ -653,7 +653,7 @@ export function CardDetailPanel({
                     </h4>
 
                     <div className="space-y-1">
-                      <Label className="text-[11px] text-muted-foreground">Nome do Hotel / Resort</Label>
+                      <Label className="text-2xs text-muted-foreground">Nome do Hotel / Resort</Label>
                       {isEditing ? (
                         <Input
                           value={hotelName}
@@ -711,7 +711,7 @@ export function CardDetailPanel({
                   />
                   <Button
                     onClick={handleShareBriefing}
-                    className="w-full gap-2 font-bold text-xs rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
+                    className="w-full gap-2 font-bold text-xs rounded-lg bg-emerald-600 hover:bg-emerald-700 text-foreground cursor-pointer"
                   >
                     <Send className="size-3.5" />
                     Enviar Briefing pelo WhatsApp

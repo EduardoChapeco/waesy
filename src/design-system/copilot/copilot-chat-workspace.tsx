@@ -149,7 +149,7 @@ export function CopilotChatWorkspace({
 
         {isLoading && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground py-2">
-            <Bot className="size-4 animate-pulse text-primary" />
+            <Bot className="size-4 animate-pulse motion-reduce:animate-none text-primary" />
             <span>Copilot está processando...</span>
           </div>
         )}
@@ -162,7 +162,7 @@ export function CopilotChatWorkspace({
         onSubmit={handleSubmit}
         className="p-3 md:p-4 border-t border-border/50 bg-card/80 backdrop-blur-xs shrink-0 sticky bottom-0 z-10"
       >
-        <div className="relative flex items-center w-full max-w-4xl mx-auto rounded-lg border border-border/80 bg-background focus-within:border-primary/80 focus-within:ring-2 focus-within:ring-ring transition-all">
+        <div className="relative flex items-center w-full max-w-4xl mx-auto rounded-lg border border-border/80 bg-background focus-within:border-primary/80 focus-within:ring-2 focus-within:ring-ring transition-colors duration-200">
           <input
             type="text"
             value={inputText}

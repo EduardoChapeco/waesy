@@ -89,7 +89,7 @@ export function CarouselWizardModal({
  <h2 className="text-sm font-bold text-foreground">
  Gerador de Carrosséis
  </h2>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Motor Escamas Multi-Camadas nativo do Waesy
  </p>
  </div>
@@ -129,7 +129,7 @@ export function CarouselWizardModal({
  <button
  type="button"
  onClick={() => setGenerationEngine('escamas')}
- className={'p-5 rounded-lg border-2 text-left transition-all ' + (
+ className={'p-5 rounded-lg border-2 text-left transition-colors duration-200 ' + (
  generationEngine === 'escamas'
  ? 'border-primary bg-primary/5 shadow-md'
  : 'border-border bg-card hover:border-border/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
@@ -147,7 +147,7 @@ export function CarouselWizardModal({
  <button
  type="button"
  onClick={() => setGenerationEngine('classic')}
- className={'p-5 rounded-lg border-2 text-left transition-all ' + (
+ className={'p-5 rounded-lg border-2 text-left transition-colors duration-200 ' + (
  generationEngine === 'classic'
  ? 'border-primary bg-primary/5 shadow-md'
  : 'border-border bg-card hover:border-border/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
@@ -208,14 +208,14 @@ export function CarouselWizardModal({
  key={d.id}
  type="button"
  onClick={() => setDensity(d.id as any)}
- className={'p-4 rounded-lg border text-left transition-all ' + (
+ className={'p-4 rounded-lg border text-left transition-colors duration-200 ' + (
  density === d.id
  ? 'border-primary bg-primary/10 shadow-sm'
  : 'border-border bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
  <div className="font-bold text-xs text-foreground">{d.label}</div>
- <p className="text-[10px] text-muted-foreground mt-1">{d.desc}</p>
+ <p className="text-2xs text-muted-foreground mt-1">{d.desc}</p>
  </button>
  ))}
  </div>
@@ -229,7 +229,7 @@ export function CarouselWizardModal({
  key={count}
  type="button"
  onClick={() => setSlideCount(count)}
- className={'h-10 px-5 rounded-lg border text-xs font-bold transition-all ' + (
+ className={'h-10 px-5 rounded-lg border text-xs font-bold transition-colors duration-200 ' + (
  slideCount === count
  ? 'border-primary bg-primary text-primary-foreground'
  : 'border-border bg-card text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
@@ -259,7 +259,7 @@ export function CarouselWizardModal({
  type="button"
  size="sm"
  onClick={() => onApplyToBanner(generatedSlides[activeSlideIndex])}
- className="min-h-10 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs flex items-center gap-2 shadow-md"
+ className="min-h-10 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-foreground font-semibold text-xs flex items-center gap-2 shadow-md"
  >
  <Send className="w-3.5 h-3.5" />
  Aplicar ao Hero Banner
@@ -280,7 +280,7 @@ export function CarouselWizardModal({
  key={i}
  type="button"
  onClick={() => setActiveSlideIndex(i)}
- className={'w-8 h-8 rounded-lg text-xs font-bold transition-all ' + (
+ className={'w-8 h-8 rounded-lg text-xs font-bold transition-colors duration-200 ' + (
  activeSlideIndex === i
  ? 'bg-primary text-primary-foreground'
  : 'bg-muted text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
@@ -296,7 +296,7 @@ export function CarouselWizardModal({
  <h4 className="text-xs font-bold text-foreground">Camadas do Slide {activeSlideIndex + 1}</h4>
  <div className="space-y-2 text-xs">
  <div>
- <span className="text-muted-foreground text-[10px]">Título:</span>
+ <span className="text-muted-foreground text-2xs">Título:</span>
  <Input
  value={generatedSlides[activeSlideIndex]?.title || ''}
  onChange={(e) => {
@@ -309,7 +309,7 @@ export function CarouselWizardModal({
  />
  </div>
  <div>
- <span className="text-muted-foreground text-[10px]">Subtítulo:</span>
+ <span className="text-muted-foreground text-2xs">Subtítulo:</span>
  <Input
  value={generatedSlides[activeSlideIndex]?.subtitle || ''}
  onChange={(e) => {
@@ -322,7 +322,7 @@ export function CarouselWizardModal({
  />
  </div>
  <div>
- <span className="text-muted-foreground text-[10px]">Botão CTA:</span>
+ <span className="text-muted-foreground text-2xs">Botão CTA:</span>
  <Input
  value={generatedSlides[activeSlideIndex]?.ctaText || ''}
  onChange={(e) => {

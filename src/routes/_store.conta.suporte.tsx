@@ -258,7 +258,7 @@ function CustomerSupportPage() {
                     <ChevronLeft className="size-5" />
                   </Button>
                   {loadingThread ? (
-                    <div className="animate-pulse h-4 bg-muted rounded w-40"></div>
+                    <div className="animate-pulse motion-reduce:animate-none h-4 bg-muted rounded w-40"></div>
                   ) : (
                     <div>
                       <h3 className="font-semibold text-xs sm:text-sm text-foreground truncate">
@@ -329,7 +329,7 @@ function CustomerSupportPage() {
                     onKeyDown={(e) => {
                       if (e.key === "Enter") handleSend();
                     }}
-                    className="flex-1 h-11 min-h-11 rounded-lg bg-muted/50 px-4 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/20 transition-all border border-border/40"
+                    className="flex-1 h-11 min-h-11 rounded-lg bg-muted/50 px-4 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/20 transition-colors duration-200 border border-border/40"
                   />
                   <button
                     type="button"

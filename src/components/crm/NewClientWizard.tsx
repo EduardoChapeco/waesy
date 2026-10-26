@@ -230,7 +230,7 @@ export function NewClientWizard({
  {STEPS.map((s, idx) => (
  <div
  key={s}
- className={`flex items-center gap-2 py-1 px-2 rounded-lg text-xs font-semibold transition-all ${
+ className={`flex items-center gap-2 py-1 px-2 rounded-lg text-xs font-semibold transition-colors duration-200 ${
  idx === step
  ? "bg-primary text-primary-foreground shadow-xs"
  : idx < step
@@ -257,7 +257,7 @@ export function NewClientWizard({
  <button
  type="button"
  onClick={() => setKind("individual")}
- className={`flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all cursor-pointer ${
+ className={`flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-colors duration-200 cursor-pointer ${
  kind === "individual"
  ? "border-primary bg-primary/5 text-primary shadow-xs"
  : "border-border hover:border-primary/40 bg-card text-muted-foreground"
@@ -271,7 +271,7 @@ export function NewClientWizard({
  <button
  type="button"
  onClick={() => setKind("company")}
- className={`flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all cursor-pointer ${
+ className={`flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-colors duration-200 cursor-pointer ${
  kind === "company"
  ? "border-primary bg-primary/5 text-primary shadow-xs"
  : "border-border hover:border-primary/40 bg-card text-muted-foreground"
@@ -433,7 +433,7 @@ export function NewClientWizard({
  className="h-10 rounded-lg text-xs bg-background font-mono"
  />
  {loadingCep && (
- <Loader2 className="size-3.5 animate-spin absolute right-3 top-3 text-primary" />
+ <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none absolute right-3 top-3 text-primary" />
  )}
  </div>
  </div>
@@ -676,7 +676,7 @@ export function NewClientWizard({
  onClick={handleSubmit}
  className="text-xs font-bold gap-2 px-6 h-9 rounded-lg bg-primary text-primary-foreground shadow-sm"
  >
- {submitting ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />}
+ {submitting ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : <Check className="size-3.5" />}
  <span>Salvar Cliente na Carteira</span>
  </Button>
  )}

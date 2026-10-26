@@ -89,7 +89,7 @@ export function MonthYearPicker({
           onValueChange={handleMonthChange}
           disabled={disabled}
         >
-          <SelectTrigger className="h-9 rounded-lg text-xs bg-background border-border/60 focus:border-primary transition-all">
+          <SelectTrigger className="h-9 rounded-lg text-xs bg-background border-border/60 focus:border-primary transition-colors duration-200">
             <SelectValue placeholder={placeholderMonth} />
           </SelectTrigger>
           <SelectContent className="rounded-lg max-h-56">
@@ -107,7 +107,7 @@ export function MonthYearPicker({
           onValueChange={handleYearChange}
           disabled={disabled}
         >
-          <SelectTrigger className="h-9 rounded-lg text-xs bg-background border-border/60 focus:border-primary font-mono transition-all">
+          <SelectTrigger className="h-9 rounded-lg text-xs bg-background border-border/60 focus:border-primary font-mono transition-colors duration-200">
             <SelectValue placeholder={placeholderYear} />
           </SelectTrigger>
           <SelectContent className="rounded-lg max-h-56">
@@ -212,7 +212,7 @@ export function ExperienceDateRangeGroup({
 
         {/* Live Duration Counter */}
         {startYear && durationText && (
-          <div className="inline-flex items-center gap-2 text-[11px] font-mono font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">
+          <div className="inline-flex items-center gap-2 text-2xs font-mono font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">
             <span>Permanência:</span>
             <span>{durationText}</span>
           </div>

@@ -130,7 +130,7 @@ export default function ViajanteCarteiraPage() {
             <button
               type="button"
               onClick={() => setViewMode("cards")}
-              className={`px-3 py-1 rounded-md text-xs font-medium transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+              className={`px-3 py-1 rounded-md text-xs font-medium transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 viewMode === "cards"
                   ? "bg-card text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -141,7 +141,7 @@ export default function ViajanteCarteiraPage() {
             <button
               type="button"
               onClick={() => setViewMode("list")}
-              className={`px-3 py-1 rounded-md text-xs font-medium transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+              className={`px-3 py-1 rounded-md text-xs font-medium transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 viewMode === "list"
                   ? "bg-card text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -186,7 +186,7 @@ export default function ViajanteCarteiraPage() {
                   }}
                   onClick={() => setSelectedPass(isSelected ? null : pass)}
                   className={`
-                    w-full rounded-lg p-6 text-white cursor-pointer transition-all duration-300 border border-border/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary
+                    w-full rounded-lg p-6 text-foreground cursor-pointer transition-colors duration-200 duration-300 border border-border/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary
                     ${config.bg}
                     ${isSelected ? "relative z-50 min-h-128" : "h-48 -mb-28 hover:-translate-y-2"}
                   `}
@@ -212,7 +212,7 @@ export default function ViajanteCarteiraPage() {
                             e.stopPropagation();
                             handleDownloadPdf(pass);
                           }}
-                          className="size-7 rounded-md text-zinc-300 hover:text-white hover:bg-white/10"
+                          className="size-7 rounded-md text-zinc-300 hover:text-foreground hover:bg-card/10"
                         >
                           <Download className="size-3.5" />
                         </Button>
@@ -223,7 +223,7 @@ export default function ViajanteCarteiraPage() {
                             e.stopPropagation();
                             setSelectedPass(null);
                           }}
-                          className="size-7 rounded-md text-zinc-300 hover:text-white hover:bg-white/10"
+                          className="size-7 rounded-md text-zinc-300 hover:text-foreground hover:bg-card/10"
                         >
                           <X className="size-3.5" />
                         </Button>
@@ -244,7 +244,7 @@ export default function ViajanteCarteiraPage() {
                           e.stopPropagation();
                           setFullscreenQrPass(pass);
                         }}
-                        className="p-3 rounded-lg bg-white border border-border/40 hover:shadow-sm transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        className="p-3 rounded-lg bg-card border border-border/40 hover:shadow-sm transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         title="Toque para tela cheia de embarque"
                       >
                         <img
@@ -354,7 +354,7 @@ export default function ViajanteCarteiraPage() {
           </DialogHeader>
 
           {fullscreenQrPass && (
-            <div className="my-4 p-5 bg-white rounded-lg border border-border/60 flex flex-col items-center shadow-xs">
+            <div className="my-4 p-5 bg-card rounded-lg border border-border/60 flex flex-col items-center shadow-xs">
               <img
                 src={generateQrCodeDataUri(fullscreenQrPass.barcode_value)}
                 alt={`QR Code ${fullscreenQrPass.barcode_value}`}

@@ -239,7 +239,7 @@ export default function TourismIncidentsPage() {
       {/* ── Lista de Incidentes ── */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
-          <Loader2 className="size-4 animate-spin mr-2" />
+          <Loader2 className="size-4 animate-spin motion-reduce:animate-none mr-2" />
           Carregando incidentes...
         </div>
       ) : filtered.length === 0 ? (
@@ -259,7 +259,7 @@ export default function TourismIncidentsPage() {
               <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                 key={incident.id}
                 onClick={() => setSelectedId(incident.id)}
-                className="flex items-center justify-between p-4 sm:p-4 rounded-lg border border-border/70 bg-card hover:bg-muted/30 cursor-pointer transition-all shadow-2xs group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="flex items-center justify-between p-4 sm:p-4 rounded-lg border border-border/70 bg-card hover:bg-muted/30 cursor-pointer transition-colors duration-200 shadow-2xs group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <div className="flex items-center gap-3 min-w-0 flex-1">
                   <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
@@ -310,7 +310,7 @@ export default function TourismIncidentsPage() {
         >
           {detailLoading ? (
             <div className="flex-1 flex items-center justify-center">
-              <Loader2 className="size-5 animate-spin text-muted-foreground" />
+              <Loader2 className="size-5 animate-spin motion-reduce:animate-none text-muted-foreground" />
             </div>
           ) : detail ? (
             <>
@@ -649,7 +649,7 @@ export default function TourismIncidentsPage() {
                 className="h-10 px-5 rounded-lg text-xs font-bold cursor-pointer"
               >
                 {createMutation.isPending ? (
-                  <><Loader2 className="size-3 animate-spin mr-2" />Registrando...</>
+                  <><Loader2 className="size-3 animate-spin motion-reduce:animate-none mr-2" />Registrando...</>
                 ) : (
                   'Registrar Incidente'
                 )}

@@ -60,7 +60,7 @@ interface Props {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const SMALL =
-  "w-full h-8 px-3 rounded-full border border-border/50 bg-surface-alt/50 text-xs outline-none transition-all focus:bg-surface focus:border-border-strong";
+  "w-full h-8 px-3 rounded-full border border-border/50 bg-surface-alt/50 text-xs outline-none transition-colors duration-200 focus:bg-surface focus:border-border-strong";
 
 function Lbl({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -105,7 +105,7 @@ function AccordionSection({
         {icon}
         {label}
         {count !== undefined && (
-          <span className="ml-1 rounded-full bg-surface-alt px-2 py-1 text-[9px] font-mono text-muted-foreground">
+          <span className="ml-1 rounded-full bg-surface-alt px-2 py-1 text-3xs font-mono text-muted-foreground">
             {count}
           </span>
         )}
@@ -1068,7 +1068,7 @@ export function VoucherStudio({
           {mode === "whatsapp" ? (
             <div className="w-full max-w-sm bg-[#efeae2] rounded-card border border-border/80 overflow-hidden flex flex-col h-[36rem] font-sans">
               {/* WhatsApp Header */}
-              <div className="bg-[#00a884] text-white px-4 py-3 flex items-center gap-3 shrink-0">
+              <div className="bg-[#00a884] text-foreground px-4 py-3 flex items-center gap-3 shrink-0">
                 <div className="w-9 h-9 rounded-full glass-dark overflow-hidden flex items-center justify-center shrink-0">
                   {agency.logo_url ? (
                     <img src={agency.logo_url} alt="Logo" className="w-full h-full object-cover" />
@@ -1078,7 +1078,7 @@ export function VoucherStudio({
                 </div>
                 <div>
                   <div className="font-bold text-xs">{agency.name}</div>
-                  <div className="text-[9px] text-white/80">Online</div>
+                  <div className="text-3xs text-foreground/80">Online</div>
                 </div>
               </div>
 
@@ -1097,7 +1097,7 @@ export function VoucherStudio({
                     navigator.clipboard.writeText(generateWhatsAppText());
                     toast.success("Mensagem copiada!");
                   }}
-                  className="h-8 rounded-full bg-white border border-border px-3 text-xs font-semibold hover:bg-slate-50 flex items-center gap-2 transition-colors"
+                  className="h-8 rounded-full bg-card border border-border px-3 text-xs font-semibold hover:bg-slate-50 flex items-center gap-2 transition-colors"
                 >
                   Copiar Mensagem
                 </Button>
@@ -1107,7 +1107,7 @@ export function VoucherStudio({
                     const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(generateWhatsAppText())}`;
                     window.open(url, "_blank");
                   }}
-                  className="h-8 rounded-full bg-[#25d366] text-white px-4 text-xs font-semibold hover:bg-[#20ba5a] flex items-center gap-2 transition-colors"
+                  className="h-8 rounded-full bg-[#25d366] text-foreground px-4 text-xs font-semibold hover:bg-[#20ba5a] flex items-center gap-2 transition-colors"
                 >
                   Enviar
                 </Button>

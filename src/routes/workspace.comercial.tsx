@@ -670,7 +670,7 @@ function WorkspaceComercialPage() {
                 const el = document.getElementById(`kanban-col-${s.id}`);
                 el?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
               }}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap shrink-0 snap-start bg-card border border-border/70 text-foreground hover:bg-muted active:scale-95 transition-all cursor-pointer min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap shrink-0 snap-start bg-card border border-border/70 text-foreground hover:bg-muted active:scale-95 transition-transform duration-200 cursor-pointer min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <span className={cn("size-2 rounded-full", s.dotColor)} />
               <span>{s.title}</span>
@@ -699,7 +699,7 @@ function WorkspaceComercialPage() {
           return (
             <div
               key={stage.id}
-              className="flex flex-col rounded-lg border border-border/70 bg-card w-full sm:w-80 sm:w-80 min-w-full sm:w-80 sm:min-w-80 shrink-0 min-h-96 lg:min-h-96 shadow-2xs transition-all snap-center"
+              className="flex flex-col rounded-lg border border-border/70 bg-card w-full sm:w-80 sm:w-80 min-w-full sm:w-80 sm:min-w-80 shrink-0 min-h-96 lg:min-h-96 shadow-2xs transition-colors duration-200 snap-center"
             >
               {/* Header da Coluna com Somatório e Ação Rápida */}
               <div className="p-4 pb-3 border-b border-border/60 bg-muted/25 rounded-t-lg space-y-2 sticky top-0 z-10">
@@ -1024,9 +1024,9 @@ function WorkspaceComercialPage() {
                           type="button"
                           onClick={() => handleToggleNewLeadTag(tagStr)}
                           className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                            "text-xs font-bold uppercase px-2 py-1 rounded-md transition-all cursor-pointer border",
+                            "text-xs font-bold uppercase px-2 py-1 rounded-md transition-colors duration-200 cursor-pointer border",
                             isSelected
-                              ? "text-white border-transparent shadow-xs"
+                              ? "text-foreground border-transparent shadow-xs"
                               : "text-muted-foreground border-border bg-background hover:border-primary/40"
                           )}
                           style={{ backgroundColor: isSelected ? t.color : undefined }}
@@ -1393,7 +1393,7 @@ function WorkspaceComercialPage() {
                 {activeTabDetail === "cliente360" && (
                   <div className="space-y-4 pt-1">
                     {isLoading360 ? (
-                      <div className="p-8 text-center text-xs text-muted-foreground animate-pulse">
+                      <div className="p-8 text-center text-xs text-muted-foreground animate-pulse motion-reduce:animate-none">
                         Carregando histórico unificado do cliente...
                       </div>
                     ) : customer360Data?.customer ? (
@@ -1831,9 +1831,9 @@ function WorkspaceComercialPage() {
                               type="button"
                               onClick={() => handleToggleTag(tagStr)}
                               className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                                "text-xs font-bold uppercase px-2 py-1 rounded-md transition-all cursor-pointer border",
+                                "text-xs font-bold uppercase px-2 py-1 rounded-md transition-colors duration-200 cursor-pointer border",
                                 isSelected
-                                  ? "text-white border-transparent shadow-xs"
+                                  ? "text-foreground border-transparent shadow-xs"
                                   : "text-muted-foreground border-border bg-background hover:border-primary/40"
                               )}
                               style={{ backgroundColor: isSelected ? t.color : undefined }}

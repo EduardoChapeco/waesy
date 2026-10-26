@@ -50,7 +50,7 @@ export function RetailSupermarketClassicFlyer({ data, scale = 1, className = "" 
 
         {data.storeName && (
           <div className="mt-3 flex items-center justify-center gap-2">
-            <span className="bg-[#002277] text-white font-black text-2xl uppercase tracking-wider px-6 py-2 rounded-full shadow-md">
+            <span className="bg-[#002277] text-foreground font-black text-2xl uppercase tracking-wider px-6 py-2 rounded-full shadow-md">
               {data.storeName}
             </span>
           </div>
@@ -61,7 +61,7 @@ export function RetailSupermarketClassicFlyer({ data, scale = 1, className = "" 
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center my-4">
         {/* Foto do Produto se disponível */}
         {data.backgroundImageUrl && (
-          <div className="relative w-80 h-80 sm:w-96 sm:h-96 rounded-2xl overflow-hidden shadow-2xl border-4 border-white mb-6 bg-white flex items-center justify-center">
+          <div className="relative w-80 h-80 sm:w-96 sm:h-96 rounded-2xl overflow-hidden shadow-2xl border-4 border-white mb-6 bg-card flex items-center justify-center">
             <img
               src={data.backgroundImageUrl}
               alt={data.title}
@@ -72,7 +72,7 @@ export function RetailSupermarketClassicFlyer({ data, scale = 1, className = "" 
         )}
 
         {/* Título do Produto em Tipografia Condensada e Legível */}
-        <h1 className="text-6xl sm:text-7xl font-black uppercase tracking-tight text-center text-black leading-[1.05] max-w-3xl line-clamp-2 drop-shadow-sm">
+        <h1 className="text-6xl sm:text-7xl font-black uppercase tracking-tight text-center text-foreground leading-[1.05] max-w-3xl line-clamp-2 drop-shadow-sm">
           {data.title}
         </h1>
 
@@ -88,7 +88,7 @@ export function RetailSupermarketClassicFlyer({ data, scale = 1, className = "" 
             {data.highlights.slice(0, 3).map((h, i) => (
               <span
                 key={i}
-                className="bg-white border-2 border-slate-900 px-5 py-2 rounded-lg text-xl font-black text-slate-900 shadow-sm"
+                className="bg-card border-2 border-slate-900 px-5 py-2 rounded-lg text-xl font-black text-slate-900 shadow-sm"
               >
                 {h}
               </span>
@@ -112,7 +112,7 @@ export function RetailSupermarketClassicFlyer({ data, scale = 1, className = "" 
             </svg>
 
             {/* Valor do Preço em Branco Gigante */}
-            <div className="relative z-10 flex items-baseline text-white">
+            <div className="relative z-10 flex items-baseline text-foreground">
               <span className="text-5xl font-black mr-2 drop-shadow-[0_6px_0_#000000]">
                 R$
               </span>
@@ -139,7 +139,7 @@ export function RetailSupermarketClassicFlyer({ data, scale = 1, className = "" 
 
       {/* CTA Inferior de Alavancagem */}
       <div className="relative z-10 text-center pt-2">
-        <span className="inline-block bg-[#002277] text-white font-black text-2xl uppercase tracking-widest px-8 py-4 rounded-xl shadow-lg">
+        <span className="inline-block bg-[#002277] text-foreground font-black text-2xl uppercase tracking-widest px-8 py-4 rounded-xl shadow-lg">
           {data.ctaLabel || "APROVEITE HOJE MESMO"}
         </span>
       </div>

@@ -67,7 +67,7 @@ export function SocialGrid({ content }: SocialGridProps) {
 
  {/* Overlay Hover para Engajamento */}
  {(metrics.likes || metrics.comments) && (
- <div className="absolute inset-0 bg-black/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100 flex items-center justify-center gap-4 text-white">
+ <div className="absolute inset-0 bg-foreground/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100 flex items-center justify-center gap-4 text-foreground">
  {metrics.likes && (
  <div className="flex items-center gap-2 text-sm font-semibold">
  <Heart className="size-5 fill-white" />

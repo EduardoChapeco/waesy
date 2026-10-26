@@ -123,26 +123,26 @@ export function AiLiveExtractionDisplay({
   return (
     <div className={cn("w-full rounded-lg bg-card border border-border/80 overflow-hidden shadow-xs font-sans", className)}>
       {/* ── Topo do Terminal ── */}
-      <div className="bg-muted/60 px-4 py-2.5 border-b border-border/60 flex items-center justify-between">
+      <div className="bg-muted/60 px-4 py-3 border-b border-border/60 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <span className="size-2.5 rounded-full bg-destructive/60" />
             <span className="size-2.5 rounded-full bg-amber-500/60" />
             <span className="size-2.5 rounded-full bg-emerald-500/60" />
           </div>
-          <div className="flex items-center gap-1.5 ml-2 text-xs font-bold text-foreground">
+          <div className="flex items-center gap-2 ml-2 text-xs font-bold text-foreground">
             <Terminal className="size-3.5 text-primary" />
             <span>Terminal de Extração com IA</span>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="text-[10px] font-mono bg-background text-muted-foreground border-border/80">
+          <Badge variant="outline" className="text-2xs font-mono bg-background text-muted-foreground border-border/80">
             20.000 Tokens
           </Badge>
           {isProcessing && (
-            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold">
-              <span className="size-1.5 rounded-full bg-primary animate-pulse" />
+            <div className="flex items-center gap-2 px-2 py-1 rounded-full bg-primary/10 text-primary text-2xs font-bold">
+              <span className="size-1.5 rounded-full bg-primary animate-pulse motion-reduce:animate-none" />
               <span>Ao Vivo</span>
             </div>
           )}
@@ -159,7 +159,7 @@ export function AiLiveExtractionDisplay({
               <div
                 key={sq.id}
                 className={cn(
-                  "p-2.5 rounded-lg border text-left transition-all",
+                  "p-3 rounded-lg border text-left transition-colors duration-200",
                   isDone
                     ? "bg-primary/5 border-primary/20 text-foreground"
                     : isCurrent
@@ -167,25 +167,25 @@ export function AiLiveExtractionDisplay({
                     : "bg-muted/20 border-border/40 text-muted-foreground opacity-60"
                 )}
               >
-                <div className="flex items-center justify-between mb-1.5">
+                <div className="flex items-center justify-between mb-2">
                   <sq.icon className={cn("size-3.5", isDone || isCurrent ? "text-primary" : "text-muted-foreground")} />
                   {isDone ? (
                     <CheckCircle2 className="size-3 text-emerald-600 dark:text-emerald-400" />
                   ) : isCurrent ? (
-                    <Loader2 className="size-3 text-primary animate-spin" />
+                    <Loader2 className="size-3 text-primary animate-spin motion-reduce:animate-none" />
                   ) : (
                     <span className="size-1.5 rounded-full bg-muted-foreground/40" />
                   )}
                 </div>
-                <p className="text-[11px] font-bold truncate leading-tight">{sq.label}</p>
-                <p className="text-[9px] text-muted-foreground font-mono truncate">{sq.desc}</p>
+                <p className="text-2xs font-bold truncate leading-tight">{sq.label}</p>
+                <p className="text-3xs text-muted-foreground font-mono truncate">{sq.desc}</p>
               </div>
             );
           })}
         </div>
 
         {/* ── Linha de Progresso ── */}
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <div className="flex items-center justify-between text-xs font-mono text-muted-foreground">
             <span className="truncate">URL: {url}</span>
             <span className="font-bold text-foreground">
@@ -194,24 +194,24 @@ export function AiLiveExtractionDisplay({
           </div>
           <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
             <div
-              className="h-full bg-primary transition-all duration-500 rounded-full"
+              className="h-full bg-primary transition-colors duration-200 duration-500 rounded-full"
               style={{ width: `${result ? 100 : Math.max(progressPercent, (activeSquadIdx + 1) * 20)}%` }}
             />
           </div>
         </div>
 
         {/* ── Console de Logs Animado ── */}
-        <div className="rounded-lg bg-neutral-950 text-neutral-200 p-3.5 font-mono text-xs space-y-1.5 max-h-40 overflow-y-auto border border-neutral-800">
+        <div className="rounded-lg bg-neutral-950 text-neutral-200 p-4 font-mono text-xs space-y-2 max-h-40 overflow-y-auto border border-neutral-800">
           {terminalLogs.map((log) => (
-            <div key={log.id} className="flex items-start gap-2 leading-relaxed text-[11px]">
+            <div key={log.id} className="flex items-start gap-2 leading-relaxed text-2xs">
               <span className="text-neutral-500 shrink-0">[{log.time}]</span>
               <span className="text-primary font-bold shrink-0">&gt;</span>
               <span className="text-neutral-300 break-words">{log.text}</span>
             </div>
           ))}
           {isProcessing && (
-            <div className="flex items-center gap-2 text-primary text-[11px] animate-pulse pt-1">
-              <Loader2 className="size-3 animate-spin shrink-0" />
+            <div className="flex items-center gap-2 text-primary text-2xs animate-pulse motion-reduce:animate-none pt-1">
+              <Loader2 className="size-3 animate-spin motion-reduce:animate-none shrink-0" />
               <span>Processando dados em tempo real...</span>
             </div>
           )}
@@ -225,39 +225,39 @@ export function AiLiveExtractionDisplay({
                 <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400" />
                 <span className="text-xs font-bold text-foreground">Dados Reconhecidos com Sucesso</span>
               </div>
-              <Badge className="bg-primary text-primary-foreground text-[10px] font-bold">
+              <Badge className="bg-primary text-primary-foreground text-2xs font-bold">
                 Pronto para Aplicar
               </Badge>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-              <div className="bg-card p-2.5 rounded-lg border border-border/60">
-                <span className="text-[10px] text-muted-foreground uppercase font-bold block">Empresa</span>
+              <div className="bg-card p-3 rounded-lg border border-border/60">
+                <span className="text-2xs text-muted-foreground uppercase font-bold block">Empresa</span>
                 <span className="font-bold text-foreground truncate block">{result.company_name}</span>
               </div>
-              <div className="bg-card p-2.5 rounded-lg border border-border/60">
-                <span className="text-[10px] text-muted-foreground uppercase font-bold block">Categoria</span>
+              <div className="bg-card p-3 rounded-lg border border-border/60">
+                <span className="text-2xs text-muted-foreground uppercase font-bold block">Categoria</span>
                 <span className="font-bold text-foreground capitalize truncate block">{result.category}</span>
               </div>
               {result.contact?.city && (
-                <div className="bg-card p-2.5 rounded-lg border border-border/60">
-                  <span className="text-[10px] text-muted-foreground uppercase font-bold block">Localização</span>
+                <div className="bg-card p-3 rounded-lg border border-border/60">
+                  <span className="text-2xs text-muted-foreground uppercase font-bold block">Localização</span>
                   <span className="font-bold text-foreground truncate block">
                     {result.contact.city}, {result.contact.state || "SC"}
                   </span>
                 </div>
               )}
               {result.contact?.whatsapp && (
-                <div className="bg-card p-2.5 rounded-lg border border-border/60">
-                  <span className="text-[10px] text-muted-foreground uppercase font-bold block">WhatsApp</span>
+                <div className="bg-card p-3 rounded-lg border border-border/60">
+                  <span className="text-2xs text-muted-foreground uppercase font-bold block">WhatsApp</span>
                   <span className="font-bold text-foreground truncate block">{result.contact.whatsapp}</span>
                 </div>
               )}
             </div>
 
             {result.bio && (
-              <div className="bg-card p-2.5 rounded-lg border border-border/60 text-xs text-muted-foreground">
-                <span className="text-[10px] text-muted-foreground uppercase font-bold block mb-1">Apresentação</span>
+              <div className="bg-card p-3 rounded-lg border border-border/60 text-xs text-muted-foreground">
+                <span className="text-2xs text-muted-foreground uppercase font-bold block mb-1">Apresentação</span>
                 <p className="line-clamp-2 leading-relaxed">{result.bio}</p>
               </div>
             )}
@@ -278,7 +278,7 @@ export function AiLiveExtractionDisplay({
                 type="button"
                 size="sm"
                 onClick={() => onApplyResult(result)}
-                className="h-11 sm:h-9 px-5 rounded-lg font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs active:scale-95 cursor-pointer gap-1.5"
+                className="h-11 sm:h-9 px-5 rounded-lg font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs active:scale-95 cursor-pointer gap-2"
               >
                 <span>Preencher Formulário</span>
                 <ArrowRight className="size-3.5" />

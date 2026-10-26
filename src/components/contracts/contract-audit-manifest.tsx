@@ -73,7 +73,7 @@ export function ContractAuditManifest({
           </div>
         </div>
 
-        <Badge variant="outline" className="text-[11px] font-mono border-border/70 text-muted-foreground bg-muted/30">
+        <Badge variant="outline" className="text-2xs font-mono border-border/70 text-muted-foreground bg-muted/30">
           Protocolo de assinatura
         </Badge>
       </div>
@@ -88,14 +88,14 @@ export function ContractAuditManifest({
                 Termo de Quitação e Extinção de Obrigações Financeiras
               </span>
             </div>
-            <Badge className="bg-emerald-600 text-white font-mono text-[10px] px-2 py-1">
+            <Badge className="bg-emerald-600 text-foreground font-mono text-2xs px-2 py-1">
               QUITADO · SEM PENDÊNCIAS
             </Badge>
           </div>
           <p className="text-xs text-foreground/80 leading-relaxed">
             Certificamos que as obrigações financeiras pactuadas neste instrumento foram integralmente adimplidas, conferindo-se quitação plena, geral, irrevogável e irretratável.
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] pt-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-2xs pt-1">
             {dischargeIssuedAt && (
               <p className="text-muted-foreground">
                 <strong>Data de Liquidação:</strong> {formatDate(dischargeIssuedAt)}
@@ -115,7 +115,7 @@ export function ContractAuditManifest({
         <div className="space-y-2">
           <p className="text-muted-foreground font-medium">Documento:</p>
           <p className="font-semibold text-foreground text-sm truncate">{documentTitle}</p>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Código Verificador: <span className="font-mono font-bold text-foreground">{verificationCode}</span>
           </p>
         </div>
@@ -125,11 +125,11 @@ export function ContractAuditManifest({
             <Hash className="size-3.5 text-primary" />
             Hash Criptográfico do Arquivo (SHA-256):
           </p>
-          <p className="font-mono text-[10px] break-all bg-background/80 p-2 rounded-lg border border-border/60 text-foreground select-all">
+          <p className="font-mono text-2xs break-all bg-background/80 p-2 rounded-lg border border-border/60 text-foreground select-all">
             {hashSha256 || "Hash ainda não disponível"}
           </p>
           {sealedAt && (
-            <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+            <p className="text-2xs text-muted-foreground flex items-center gap-1">
               <Clock className="size-3" />
               Carimbo de Tempo: {formatDate(sealedAt)} (UTC-3)
             </p>
@@ -150,26 +150,26 @@ export function ContractAuditManifest({
             return (
               <div
                 key={idx}
-                className="p-4 rounded-lg border border-border/70 bg-card hover:bg-muted/20 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs"
+                className="p-4 rounded-lg border border-border/70 bg-card hover:bg-muted/20 transition-colors duration-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs"
               >
                 <div className="space-y-1 min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-foreground text-sm truncate">{signer.name}</span>
-                    <Badge variant={isSigned ? "default" : "secondary"} className="text-[10px] h-5">
+                    <Badge variant={isSigned ? "default" : "secondary"} className="text-2xs h-5">
                       {isSigned ? "Assinado" : "Pendente"}
                     </Badge>
-                    <span className="text-[11px] text-muted-foreground capitalize">
+                    <span className="text-2xs text-muted-foreground capitalize">
                       ({signer.role === "witness" ? "Testemunha" : "Parte"})
                     </span>
                   </div>
 
-                  <p className="text-muted-foreground text-[11px]">
+                  <p className="text-muted-foreground text-2xs">
                     {signer.document ? `CPF/Doc: ${signer.document} · ` : ""}
                     {signer.email || signer.phone || "Contato verificado"}
                   </p>
 
                   {isSigned && (
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-muted-foreground pt-1">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-2xs text-muted-foreground pt-1">
                       {signer.signedAt && (
                         <span>Data/Hora: {formatDate(signer.signedAt)}</span>
                       )}
@@ -188,7 +188,7 @@ export function ContractAuditManifest({
 
                 {/* Exibição da Assinatura Gráfica */}
                 {isSigned && signer.signatureImageUrl && (
-                  <div className="shrink-0 bg-white p-2 rounded-lg border border-border/60">
+                  <div className="shrink-0 bg-card p-2 rounded-lg border border-border/60">
                     <img
                       src={signer.signatureImageUrl}
                       alt={`Assinatura de ${signer.name}`}
@@ -205,12 +205,12 @@ export function ContractAuditManifest({
       {/* Lista de Observadores (Se houver) */}
       {observers.length > 0 && (
         <div className="space-y-2 pt-2">
-          <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+          <h4 className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
             Observadores Notificados (Cópia da Auditoria)
           </h4>
           <div className="flex flex-wrap gap-2">
             {observers.map((obs, i) => (
-              <Badge key={i} variant="outline" className="text-[11px] py-1 px-3">
+              <Badge key={i} variant="outline" className="text-2xs py-1 px-3">
                 {obs.name} ({obs.email})
               </Badge>
             ))}
@@ -225,7 +225,7 @@ export function ContractAuditManifest({
             <QrCode className="size-4 text-primary" />
             Validação Pública Instantânea
           </div>
-          <p className="text-[11px] text-muted-foreground leading-relaxed">
+          <p className="text-2xs text-muted-foreground leading-relaxed">
             Aponte a câmera do seu celular para o QR Code ao lado ou acesse o endereço abaixo para consultar a integridade do arquivo e o certificado digital original.
           </p>
           <a
@@ -239,7 +239,7 @@ export function ContractAuditManifest({
           </a>
         </div>
 
-        <div className="shrink-0 bg-white p-3 rounded-lg border border-border/80 shadow-2xs">
+        <div className="shrink-0 bg-card p-3 rounded-lg border border-border/80 shadow-2xs">
           <img
             src={qrImageUrl}
             alt="QR Code para validação pública do contrato"
@@ -249,7 +249,7 @@ export function ContractAuditManifest({
       </div>
 
       {/* Rodapé Legal & Fundamentação Jurídica */}
-      <div className="border-t border-border/50 pt-4 text-[10px] text-muted-foreground space-y-1 leading-normal">
+      <div className="border-t border-border/50 pt-4 text-2xs text-muted-foreground space-y-1 leading-normal">
         <p>
           <strong>Nota jurídica:</strong> A eficácia do documento depende do método de assinatura, da integridade da versão e dos requisitos legais aplicáveis.
         </p>

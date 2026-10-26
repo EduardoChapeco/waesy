@@ -77,7 +77,7 @@ export function BuilderCanvas({
  {/* ── 1. FRAME DE VISUALIZAÇÃO STUDIO: DESKTOP (EDGE-TO-EDGE REAL) ── */}
  {viewport === "desktop" && (
  <div
- className="w-full max-w-screen-2xl min-h-dvh bg-background border border-border/60 rounded-none shadow-none overflow-hidden flex flex-col mb-16 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="w-full max-w-screen-2xl min-h-dvh bg-background border border-border/60 rounded-none shadow-none overflow-hidden flex flex-col mb-16 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  onClick={(e) => e.stopPropagation()}
  >
  {/* Régua de Precisão Superior Studio (Sem Mac dots, sem cartoonismo) */}
@@ -157,7 +157,7 @@ export function BuilderCanvas({
  {/* ── 2. FRAME DE VISUALIZAÇÃO STUDIO: MOBILE (VIEWPORT PRECISO 390PX) ── */}
  {viewport === "mobile" && (
  <div
- className="w-96 min-h-screen bg-background border border-border/70 rounded-none shadow-none overflow-hidden flex flex-col my-4 relative shrink-0 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="w-96 min-h-screen bg-background border border-border/70 rounded-none shadow-none overflow-hidden flex flex-col my-4 relative shrink-0 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  onClick={(e) => e.stopPropagation()}
  >
  {/* Régua de Precisão Mobile */}
@@ -221,7 +221,7 @@ export function BuilderCanvas({
  {/* ── 3. FRAME DE VISUALIZAÇÃO STUDIO: STORY (9:16 VERTICAL CANVAS) ── */}
  {viewport === "story" && (
  <div
- className="w-90 min-h-160 bg-background border border-border/70 rounded-none shadow-none overflow-hidden flex flex-col my-4 relative shrink-0 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="w-90 min-h-160 bg-background border border-border/70 rounded-none shadow-none overflow-hidden flex flex-col my-4 relative shrink-0 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  onClick={(e) => e.stopPropagation()}
  >
  <div className="h-7 px-3 bg-muted/40 dark:bg-muted/20 border-b border-border/60 flex items-center justify-between select-none shrink-0 text-2xs font-mono text-muted-foreground">

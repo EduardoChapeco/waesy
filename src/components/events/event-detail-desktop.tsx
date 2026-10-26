@@ -167,7 +167,7 @@ export function EventDetailDesktop({
                 <Link
                   to="/noticias/$slug"
                   params={{ slug: linkedNews.slug }}
-                  className="block group p-4 rounded-lg border border-border/80 bg-card hover:border-primary/50 transition-all shadow-sm"
+                  className="block group p-4 rounded-lg border border-border/80 bg-card hover:border-primary/50 transition-colors duration-200 shadow-sm"
                 >
                   <div className="flex gap-4 items-center">
                     {linkedNews.cover_media_url && (
@@ -234,10 +234,10 @@ export function EventDetailDesktop({
                     return (
                       <div
                         key={partner.id}
-                        className="p-3 rounded-lg border border-border/70 bg-card hover:border-primary/50 transition-all space-y-2 flex flex-col justify-between"
+                        className="p-3 rounded-lg border border-border/70 bg-card hover:border-primary/50 transition-colors duration-200 space-y-2 flex flex-col justify-between"
                       >
                         <div className="flex items-center justify-between gap-2">
-                          <span className={`text-xs px-2 py-0.5 rounded font-bold border uppercase tracking-wider ${badgeClass}`}>
+                          <span className={`text-xs px-2 py-1 rounded font-bold border uppercase tracking-wider ${badgeClass}`}>
                             {nivelLabel}
                           </span>
                           {(partner.site_url || partner.siteUrl) && (
@@ -315,7 +315,7 @@ export function EventDetailDesktop({
                 type="button"
                 onClick={() => handleToggleRsvp("going")}
                 disabled={isSubmittingRsvp}
-                className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all min-h-14 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-colors duration-200 min-h-14 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                   userRsvp === "going"
                     ? "bg-primary/10 border-primary text-primary font-bold shadow-sm"
                     : "bg-background border-border/80 hover:border-border text-foreground hover:bg-muted/40"
@@ -334,7 +334,7 @@ export function EventDetailDesktop({
                 type="button"
                 onClick={() => handleToggleRsvp("interested")}
                 disabled={isSubmittingRsvp}
-                className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all min-h-14 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-colors duration-200 min-h-14 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                   userRsvp === "interested"
                     ? "bg-amber-500/10 border-amber-500 text-amber-700 dark:text-amber-400 font-bold shadow-sm"
                     : "bg-background border-border/80 hover:border-border text-foreground hover:bg-muted/40"
@@ -353,7 +353,7 @@ export function EventDetailDesktop({
                 type="button"
                 onClick={() => handleToggleRsvp("not_going")}
                 disabled={isSubmittingRsvp}
-                className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all min-h-14 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-colors duration-200 min-h-14 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                   userRsvp === "not_going"
                     ? "bg-rose-500/10 border-rose-500 text-rose-700 dark:text-rose-400 font-bold shadow-sm"
                     : "bg-background border-border/80 hover:border-border text-foreground hover:bg-muted/40"
@@ -420,7 +420,7 @@ export function EventDetailDesktop({
                   return (
                     <div
                       key={lot.id}
-                      className={`p-4 rounded-lg border transition-all ${
+                      className={`p-4 rounded-lg border transition-colors duration-200 ${
                         isSoldOut
                           ? "border-border/40 bg-muted/20 opacity-70"
                           : "border-border/80 bg-background hover:border-primary/50"

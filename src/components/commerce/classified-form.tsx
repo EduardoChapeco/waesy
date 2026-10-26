@@ -273,7 +273,7 @@ export function ClassifiedForm({ defaultValues, onSubmit, onCancel, isSubmitting
  Cancelar
  </Button>
  <Button type="submit" disabled={isSubmitting} className="h-11 min-h-11 px-5 rounded-lg text-xs font-bold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
- {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+ {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin motion-reduce:animate-none" />}
  {isSubmitting ? "Salvando..." : "Publicar Anúncio"}
  </Button>
  </div>

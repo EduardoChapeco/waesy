@@ -82,7 +82,7 @@ export function DestinationPicker({
  <button
  type="button"
  onClick={() => setCustomMode(!customMode)}
- className="text-[11px] font-semibold text-primary hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="text-2xs font-semibold text-primary hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {customMode ? "Escolher Página Pronta" : "Digitar Link Customizado"}
  </button>
@@ -98,7 +98,7 @@ export function DestinationPicker({
  </SelectTrigger>
  <SelectContent className="max-h-72">
  <SelectGroup>
- <SelectLabel className="text-[10px] uppercase font-bold text-muted-foreground">
+ <SelectLabel className="text-2xs uppercase font-bold text-muted-foreground">
  Vitrines e Comércio
  </SelectLabel>
  {SYSTEM_DESTINATIONS.filter((d) => d.category === "Vitrine & Comércio").map((dest) => {
@@ -110,7 +110,7 @@ export function DestinationPicker({
  <Icon className="size-3.5 text-muted-foreground" />
  <span className="font-semibold">{dest.label}</span>
  </div>
- <Badge variant="outline" className="text-[9px] font-mono px-1 py-0 h-4">
+ <Badge variant="outline" className="text-3xs font-mono px-1 py-0 h-4">
  {dest.url}
  </Badge>
  </div>
@@ -120,7 +120,7 @@ export function DestinationPicker({
  </SelectGroup>
 
  <SelectGroup>
- <SelectLabel className="text-[10px] uppercase font-bold text-muted-foreground">
+ <SelectLabel className="text-2xs uppercase font-bold text-muted-foreground">
  Conteúdo e Cidade
  </SelectLabel>
  {SYSTEM_DESTINATIONS.filter((d) => d.category === "Conteúdo & Cidade").map((dest) => {
@@ -132,7 +132,7 @@ export function DestinationPicker({
  <Icon className="size-3.5 text-muted-foreground" />
  <span className="font-semibold">{dest.label}</span>
  </div>
- <Badge variant="outline" className="text-[9px] font-mono px-1 py-0 h-4">
+ <Badge variant="outline" className="text-3xs font-mono px-1 py-0 h-4">
  {dest.url}
  </Badge>
  </div>
@@ -142,7 +142,7 @@ export function DestinationPicker({
  </SelectGroup>
 
  <SelectGroup>
- <SelectLabel className="text-[10px] uppercase font-bold text-muted-foreground">
+ <SelectLabel className="text-2xs uppercase font-bold text-muted-foreground">
  Serviços e Negócios
  </SelectLabel>
  {SYSTEM_DESTINATIONS.filter((d) => d.category === "Serviços & Negócios").map((dest) => {
@@ -154,7 +154,7 @@ export function DestinationPicker({
  <Icon className="size-3.5 text-muted-foreground" />
  <span className="font-semibold">{dest.label}</span>
  </div>
- <Badge variant="outline" className="text-[9px] font-mono px-1 py-0 h-4">
+ <Badge variant="outline" className="text-3xs font-mono px-1 py-0 h-4">
  {dest.url}
  </Badge>
  </div>
@@ -183,7 +183,7 @@ export function DestinationPicker({
  )}
 
  {helperText && (
- <p className="text-[11px] text-muted-foreground leading-relaxed">
+ <p className="text-2xs text-muted-foreground leading-relaxed">
  {helperText}
  </p>
  )}

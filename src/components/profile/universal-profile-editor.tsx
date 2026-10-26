@@ -119,9 +119,9 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
             )}
 
             {/* Overlay de Câmera */}
-            <label className="absolute inset-0 bg-black/40 text-white flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+            <label className="absolute inset-0 bg-foreground/40 text-foreground flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
               <Camera className="size-5" />
-              <span className="text-[10px] font-bold mt-1">Alterar</span>
+              <span className="text-2xs font-bold mt-1">Alterar</span>
               <input type="file" accept="image/*" onChange={handleAvatarFile} className="hidden" />
             </label>
           </div>
@@ -137,7 +137,7 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
             )}
 
             {/* Trigger de Alteração da Capa */}
-            <label className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 bg-background/85 hover:bg-background backdrop-blur-md border border-border/80 text-foreground px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs transition-transform active:scale-95">
+            <label className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 bg-background/85 hover:bg-background backdrop-blur-md border border-border/80 text-foreground px-3 py-2 rounded-full text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-xs transition-transform active:scale-95">
               <ImageIcon className="size-3.5" />
               <span className="hidden sm:inline">Alterar Capa</span>
               <input type="file" accept="image/*" onChange={handleCoverFile} className="hidden" />
@@ -156,8 +156,8 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5 shrink-0">
-            <div className={cn("inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border", personaBadge.color)}>
+          <div className="flex items-center gap-3 shrink-0">
+            <div className={cn("inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold border", personaBadge.color)}>
               <personaBadge.icon className="size-3.5" />
               <span>{personaBadge.label}</span>
             </div>
@@ -169,7 +169,7 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
               size="sm"
               className="h-11 sm:h-9 px-4 sm:px-5 rounded-lg font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs active:scale-95 cursor-pointer"
             >
-              {isSaving ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5 mr-1" />}
+              {isSaving ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : <Check className="size-3.5 mr-1" />}
               <span>Salvar</span>
             </Button>
           </div>
@@ -245,7 +245,7 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold text-foreground">Biografia / Descrição Curta</label>
-              <span className="text-[10px] text-muted-foreground font-mono">
+              <span className="text-2xs text-muted-foreground font-mono">
                 {(formData.bio || "").length}/160 caracteres
               </span>
             </div>

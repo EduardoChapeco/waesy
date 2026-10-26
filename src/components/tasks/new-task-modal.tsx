@@ -153,7 +153,7 @@ export function NewTaskModal({
               onClick={() => setIsMyDay((v) => !v)}
               title={isMyDay ? "Remover de Meu Dia" : "Adicionar ao Meu Dia"}
               className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer",
+                "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold border transition-colors duration-200 cursor-pointer",
                 isMyDay
                   ? "bg-amber-500/15 border-amber-500/40 text-amber-600 dark:text-amber-400"
                   : "bg-muted/30 border-border/60 text-muted-foreground hover:bg-muted"
@@ -192,7 +192,7 @@ export function NewTaskModal({
                     type="button"
                     onClick={() => setPriority(p)}
                     className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                      "h-9 rounded-lg border text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-2",
+                      "h-9 rounded-lg border text-xs font-semibold transition-colors duration-200 cursor-pointer flex items-center justify-center gap-2",
                       priority === p
                         ? `ring-1 ${cfg.ring}`
                         : "border-border/60 bg-background text-muted-foreground hover:bg-muted/50"
@@ -259,11 +259,11 @@ export function NewTaskModal({
             <div className="flex items-center gap-2">
               <Briefcase className="size-4 text-primary" />
               <span className="text-xs font-bold text-foreground">Vínculo Comercial</span>
-              <span className="text-[10px] text-muted-foreground ml-auto">Opcional</span>
+              <span className="text-2xs text-muted-foreground ml-auto">Opcional</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-[11px] font-semibold text-muted-foreground">Tipo</label>
+                <label className="text-2xs font-semibold text-muted-foreground">Tipo</label>
                 <select
                   value={contextType}
                   onChange={(e) => setContextType(e.target.value as TaskContextType)}
@@ -276,7 +276,7 @@ export function NewTaskModal({
               </div>
 
               <div className="space-y-1">
-                <label className="text-[11px] font-semibold text-muted-foreground">Referência</label>
+                <label className="text-2xs font-semibold text-muted-foreground">Referência</label>
                 <Input
                   value={contextLabel}
                   onChange={(e) => setContextLabel(e.target.value)}
@@ -340,7 +340,7 @@ export function NewTaskModal({
                   type="button"
                   onClick={() => handleAddTag(ct)}
                   className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                    "text-[11px] px-3 py-1 rounded-full border transition-colors cursor-pointer",
+                    "text-2xs px-3 py-1 rounded-full border transition-colors cursor-pointer",
                     tags.includes(ct)
                       ? "bg-primary text-primary-foreground border-primary font-medium"
                       : "bg-muted/30 text-muted-foreground border-border/60 hover:bg-muted"
@@ -412,7 +412,7 @@ export function NewTaskModal({
                     className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/60 text-xs text-foreground"
                   >
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="size-5 rounded bg-muted flex items-center justify-center font-mono text-[10px] text-muted-foreground shrink-0">
+                      <span className="size-5 rounded bg-muted flex items-center justify-center font-mono text-2xs text-muted-foreground shrink-0">
                         {idx + 1}
                       </span>
                       <span className="truncate">{item}</span>
@@ -433,7 +433,7 @@ export function NewTaskModal({
 
         {/* Footer de Ações */}
         <SheetFooter className="px-6 py-4 border-t border-border/60 bg-muted/20 flex flex-row items-center justify-between gap-3 shrink-0">
-          <div className="text-[11px] text-muted-foreground">
+          <div className="text-2xs text-muted-foreground">
             {checklists.length > 0 && (
               <span>{checklists.length} etapa{checklists.length !== 1 ? "s" : ""} • </span>
             )}

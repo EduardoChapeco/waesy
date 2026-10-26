@@ -140,7 +140,7 @@ function ColaboradorPortalPage() {
           <div className="flex gap-1 bg-muted/60 p-1 rounded-lg border border-border w-full sm:w-auto overflow-x-auto no-scrollbar">
             <button
               onClick={() => setActiveTab("ponto")}
-              className={`min-h-11 px-4 rounded-lg text-xs font-semibold transition-all shrink-0 focus-visible:ring-2 focus-visible:ring-primary ${
+              className={`min-h-11 px-4 rounded-lg text-xs font-semibold transition-colors duration-200 shrink-0 focus-visible:ring-2 focus-visible:ring-primary ${
                 activeTab === "ponto" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -148,7 +148,7 @@ function ColaboradorPortalPage() {
             </button>
             <button
               onClick={() => setActiveTab("holerites")}
-              className={`min-h-11 px-4 rounded-lg text-xs font-semibold transition-all shrink-0 focus-visible:ring-2 focus-visible:ring-primary ${
+              className={`min-h-11 px-4 rounded-lg text-xs font-semibold transition-colors duration-200 shrink-0 focus-visible:ring-2 focus-visible:ring-primary ${
                 activeTab === "holerites" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -156,7 +156,7 @@ function ColaboradorPortalPage() {
             </button>
             <button
               onClick={() => setActiveTab("solicitacoes")}
-              className={`min-h-11 px-4 rounded-lg text-xs font-semibold transition-all shrink-0 focus-visible:ring-2 focus-visible:ring-primary ${
+              className={`min-h-11 px-4 rounded-lg text-xs font-semibold transition-colors duration-200 shrink-0 focus-visible:ring-2 focus-visible:ring-primary ${
                 activeTab === "solicitacoes" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -206,10 +206,10 @@ function ColaboradorPortalPage() {
  <Button
  onClick={() => clockMutation.mutate("clock_in")}
  disabled={clockMutation.isPending}
- className="min-h-[52px] rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex flex-col gap-1 shadow-xs shadow-emerald-600/20"
+ className="min-h-[52px] rounded-lg bg-emerald-600 hover:bg-emerald-500 text-foreground font-bold flex flex-col gap-1 shadow-xs shadow-emerald-600/20"
  >
  <span>Entrada</span>
- <span className="text-[10px] opacity-80 font-normal">Início da jornada</span>
+ <span className="text-2xs opacity-80 font-normal">Início da jornada</span>
  </Button>
  <Button
  onClick={() => clockMutation.mutate("lunch_out")}
@@ -218,7 +218,7 @@ function ColaboradorPortalPage() {
  className="min-h-[52px] rounded-lg border-border font-bold flex flex-col gap-1"
  >
  <span>Saída Almoço</span>
- <span className="text-[10px] text-muted-foreground font-normal">Pausa refeição</span>
+ <span className="text-2xs text-muted-foreground font-normal">Pausa refeição</span>
  </Button>
  <Button
  onClick={() => clockMutation.mutate("lunch_in")}
@@ -227,15 +227,15 @@ function ColaboradorPortalPage() {
  className="min-h-[52px] rounded-lg border-border font-bold flex flex-col gap-1"
  >
  <span>Volta Almoço</span>
- <span className="text-[10px] text-muted-foreground font-normal">Retorno da pausa</span>
+ <span className="text-2xs text-muted-foreground font-normal">Retorno da pausa</span>
  </Button>
  <Button
  onClick={() => clockMutation.mutate("clock_out")}
  disabled={clockMutation.isPending}
- className="min-h-[52px] rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold flex flex-col gap-1 shadow-xs shadow-rose-600/20"
+ className="min-h-[52px] rounded-lg bg-rose-600 hover:bg-rose-500 text-foreground font-bold flex flex-col gap-1 shadow-xs shadow-rose-600/20"
  >
  <span>Saída</span>
- <span className="text-[10px] opacity-80 font-normal">Fim do expediente</span>
+ <span className="text-2xs opacity-80 font-normal">Fim do expediente</span>
  </Button>
  </div>
  </div>

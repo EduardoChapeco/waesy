@@ -99,7 +99,7 @@ export function OccupationAutocomplete({
           }}
           placeholder={placeholder}
           autoFocus={autoFocus}
-          className="h-10 rounded-lg text-xs pr-8 bg-background border-border/60 focus:border-primary transition-all"
+          className="h-10 rounded-lg text-xs pr-8 bg-background border-border/60 focus:border-primary transition-colors duration-200"
         />
         {matchedProfession && (
           <div
@@ -114,7 +114,7 @@ export function OccupationAutocomplete({
       {/* Floating Suggestions Dropdown (Apple HIG Polish) */}
       {isOpen && suggestions.length > 0 && (
         <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-lg bg-popover/95 backdrop-blur-md border border-border shadow-xl p-2 space-y-1 max-h-64 overflow-y-auto no-scrollbar animate-in fade-in slide-in-from-top-1 duration-150">
-          <div className="px-3 py-1 text-[10px] uppercase font-bold tracking-wider text-muted-foreground flex items-center justify-between">
+          <div className="px-3 py-1 text-2xs uppercase font-bold tracking-wider text-muted-foreground flex items-center justify-between">
             <span>Cargos e Funções Sugeridos</span>
             <span className="font-normal lowercase">Toque para selecionar</span>
           </div>
@@ -133,7 +133,7 @@ export function OccupationAutocomplete({
                     {p.title}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                <div className="flex items-center gap-2 text-2xs text-muted-foreground">
                   <span>{p.sector}</span>
                   {p.junior_salary_cents > 0 && (
                     <>
@@ -148,7 +148,7 @@ export function OccupationAutocomplete({
 
               <Badge
                 variant="outline"
-                className="text-[10px] shrink-0 font-medium border-border/50 group-hover:border-primary/40"
+                className="text-2xs shrink-0 font-medium border-border/50 group-hover:border-primary/40"
               >
                 Selecionar
               </Badge>
@@ -159,7 +159,7 @@ export function OccupationAutocomplete({
 
       {/* Benchmark Salarial Discreto (Silêncio Visual) */}
       {matchedProfession && (
-        <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px] text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-2 pt-1 text-2xs text-muted-foreground">
           <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-mono font-medium">
             <Star className="size-3" />
             Média de mercado: {formatMoney(matchedProfession.junior_salary_cents)} a {formatMoney(matchedProfession.senior_salary_cents)}

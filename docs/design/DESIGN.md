@@ -29,6 +29,13 @@ O que o Waesy NUNCA deve parecer:
 
 **Regra Suprema:** A interface deve comunicar clareza, ordem e contexto antes mesmo de o usuário ler o conteúdo textual.
 
+### C.1.1 Doutrina Apple HIG, Squircles Grandes e Anti-Truncate
+1. **Squircles Apple HIG com Curvatura Contínua:** Os containers de cards principais (`SquircleCard`, `.squircle-card`, `.squircle-card-lg`) utilizam raio generoso contínuo (`rounded-2xl` 16px e `rounded-3xl` 24px) com borda discreta de 1px (`border-border/70`), eliminando arestas duras e sensação brutalista.
+2. **Anti-Truncate Intelligence:** Proibido o uso de `truncate` ou reticências em títulos, preços, condições comerciais ou parâmetros técnicos. O container acomoda o texto integralmente com `break-words text-wrap: balance/pretty whitespace-normal leading-tight`.
+3. **Casca Workstation Desktop com Card Imersivo Elevado (>=840px):** A barra lateral ultrafina integra-se ao fundo da janela (Level 0), enquanto a área central de trabalho é elevada como um card contínuo (Level 1) com cantos suaves e padding generoso, unificando tanto as vitrines públicas quanto os workspaces corporativos.
+4. **Mobile Native App (<600px):** Ergonomia tátil com alvos de toque >= 44x44px (`h-11 min-h-11`), safe area superior e inferior, sheets em 100dvh e ações primárias ancoradas no polegar.
+
+
 ---
 
 ## C.2 Os Sete Princípios Visuais Operacionais

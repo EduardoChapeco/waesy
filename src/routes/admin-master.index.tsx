@@ -155,7 +155,7 @@ function AdminMasterDashboard() {
               className="bg-card rounded-lg p-4 border border-border/60 shadow-2xs space-y-2 flex flex-col justify-between"
             >
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-medium text-muted-foreground">{card.label}</span>
+                <span className="text-2xs font-medium text-muted-foreground">{card.label}</span>
                 <div className={cn("size-7 rounded-lg flex items-center justify-center", card.color)}>
                   <Icon className="size-3.5" />
                 </div>
@@ -176,7 +176,7 @@ function AdminMasterDashboard() {
           </div>
           <div className="overflow-x-auto no-scrollbar">
             <table className="w-full text-xs text-left">
-              <thead className="bg-muted/30 text-muted-foreground border-b border-border/40 font-semibold uppercase text-[10px]">
+              <thead className="bg-muted/30 text-muted-foreground border-b border-border/40 font-semibold uppercase text-2xs">
                 <tr>
                   <th className="px-4 py-3">Loja</th>
                   <th className="px-4 py-3">Status</th>
@@ -188,14 +188,14 @@ function AdminMasterDashboard() {
                   <tr key={store.id} className="hover:bg-muted/30 transition-colors">
                     <td className="px-4 py-3">
                       <p className="font-semibold text-foreground">{store.name}</p>
-                      <p className="text-[11px] text-muted-foreground font-mono">/{store.slug}</p>
+                      <p className="text-2xs text-muted-foreground font-mono">/{store.slug}</p>
                     </td>
                     <td className="px-4 py-3">
                       <Badge
                         variant={store.is_active ? "default" : "destructive"}
                         className={cn(
-                          "text-[10px] font-medium px-2 py-1",
-                          store.is_active ? "bg-emerald-600/90 text-white" : ""
+                          "text-2xs font-medium px-2 py-1",
+                          store.is_active ? "bg-emerald-600/90 text-foreground" : ""
                         )}
                       >
                         {store.is_active ? "Ativa" : "Bloqueada"}
@@ -227,7 +227,7 @@ function AdminMasterDashboard() {
           </div>
           <div className="overflow-x-auto no-scrollbar">
             <table className="w-full text-xs text-left">
-              <thead className="bg-muted/30 text-muted-foreground border-b border-border/40 font-semibold uppercase text-[10px]">
+              <thead className="bg-muted/30 text-muted-foreground border-b border-border/40 font-semibold uppercase text-2xs">
                 <tr>
                   <th className="px-4 py-3">Descrição</th>
                   <th className="px-4 py-3">Loja</th>
@@ -247,8 +247,8 @@ function AdminMasterDashboard() {
                       <Badge
                         variant={inv.status === "paid" ? "default" : "secondary"}
                         className={cn(
-                          "text-[10px] font-medium px-2 py-1",
-                          inv.status === "paid" ? "bg-emerald-600/90 text-white" : ""
+                          "text-2xs font-medium px-2 py-1",
+                          inv.status === "paid" ? "bg-emerald-600/90 text-foreground" : ""
                         )}
                       >
                         {inv.status === "paid" ? "Pago" : "Pendente"}
@@ -323,19 +323,19 @@ function AdminMasterDashboard() {
               className="h-11 px-4 flex items-center justify-between hover:bg-muted/30 transition-colors"
             >
               <div className="flex items-center gap-3 min-w-0">
-                <Badge variant="outline" className="text-[10px] font-mono">
+                <Badge variant="outline" className="text-2xs font-mono">
                   {tax.domain_group}
                 </Badge>
                 <span className="text-xs font-semibold text-foreground truncate">
                   {tax.label}
                 </span>
-                <span className="text-[11px] font-mono text-muted-foreground">
+                <span className="text-2xs font-mono text-muted-foreground">
                   /{tax.slug}
                 </span>
               </div>
               <Badge
                 variant={tax.is_active ? "default" : "secondary"}
-                className="text-[10px] h-5 px-2"
+                className="text-2xs h-5 px-2"
               >
                 {tax.is_active ? "Ativo" : "Inativo"}
               </Badge>

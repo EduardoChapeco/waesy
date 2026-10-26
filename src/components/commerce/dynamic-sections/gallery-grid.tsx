@@ -59,7 +59,7 @@ export function GalleryGrid({ content, layout_rules }: GalleryGridProps) {
  className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-300"
  />
  {(img.caption || img.alt) && (
- <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3 text-white text-xs font-semibold">
+ <div className="absolute inset-0 bg-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3 text-foreground text-xs font-semibold">
  <p className="line-clamp-2">{img.caption || img.alt}</p>
  </div>
  )}
@@ -157,7 +157,7 @@ export function GalleryGrid({ content, layout_rules }: GalleryGridProps) {
  <Wrapper
  key={idx}
  {...wrapperProps}
- className="relative group aspect-square overflow-hidden rounded-lg bg-muted/40 flex items-center justify-center cursor-pointer shadow-2xs hover:border-primary/40 transition-all"
+ className="relative group aspect-square overflow-hidden rounded-lg bg-muted/40 flex items-center justify-center cursor-pointer shadow-2xs hover:border-primary/40 transition-colors duration-200"
  >
  <img
  src={img.url || img.image_url}
@@ -165,7 +165,7 @@ export function GalleryGrid({ content, layout_rules }: GalleryGridProps) {
  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
  />
 
- <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center p-4 text-center text-white">
+ <div className="absolute inset-0 bg-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center p-4 text-center text-foreground">
  <ZoomIn className="size-6 mb-2 scale-75 group-hover:scale-100 transition-transform duration-300" />
  {(img.caption || img.alt) && (
  <p className="text-xs font-semibold leading-relaxed line-clamp-3">

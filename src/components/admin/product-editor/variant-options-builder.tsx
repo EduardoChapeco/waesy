@@ -192,7 +192,7 @@ export function VariantOptionsBuilder({ product, onClose }: VariantOptionsBuilde
     type="button"
     aria-label={`Remover valor ${val}`}
     onClick={() => handleRemoveValue(oIdx, vIdx)}
-    className="p-0.5 rounded hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+    className="p-1 rounded hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
   >
     <X className="size-3" />
   </button>

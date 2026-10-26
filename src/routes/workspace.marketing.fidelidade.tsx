@@ -357,7 +357,7 @@ export default function LoyaltyDashboardPage() {
  type="button"
  onClick={() => setStampIcon(item.id)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold border transition-all",
+ "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold border transition-colors duration-200",
  isSelected
  ? "bg-primary text-primary-foreground border-primary shadow-xs"
  : "bg-muted/40 text-muted-foreground border-border hover:bg-muted",
@@ -402,7 +402,7 @@ export default function LoyaltyDashboardPage() {
  {/* Cartão de Fidelidade Digital (Wallet Pass) */}
  <div
  style={{ backgroundColor: cardBgColor, color: cardTextColor }}
- className="rounded-lg p-5 shadow-xs flex flex-col justify-between min-h-[360px] relative overflow-hidden transition-all duration-300"
+ className="rounded-lg p-5 shadow-xs flex flex-col justify-between min-h-[360px] relative overflow-hidden transition-colors duration-200 duration-300"
  >
  {/* Topo do Cartão */}
  <div className="flex items-start justify-between">
@@ -414,13 +414,13 @@ export default function LoyaltyDashboardPage() {
  {name || "Seu Cartão Fidelidade"}
  </h4>
  </div>
- <div className="size-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center">
+ <div className="size-8 rounded-full bg-card/20 backdrop-blur-md flex items-center justify-center">
  <SelectedIconComponent className="size-4" />
  </div>
  </div>
 
  {/* Grade de Selos */}
- <div className="my-4 py-3 bg-white/10 backdrop-blur-xs rounded-lg p-3">
+ <div className="my-4 py-3 bg-card/10 backdrop-blur-xs rounded-lg p-3">
  <div className="flex items-center justify-between text-xs font-bold mb-2">
  <span>Selos: 3/{targetStamps}</span>
  <span className="text-xs uppercase opacity-80">
@@ -435,10 +435,10 @@ export default function LoyaltyDashboardPage() {
  <div
  key={i}
  className={cn(
- "size-8 rounded-full flex items-center justify-center text-xs font-bold border transition-all",
+ "size-8 rounded-full flex items-center justify-center text-xs font-bold border transition-colors duration-200",
  isStamped
- ? "bg-white text-black border-white shadow-xs"
- : "bg-black/20 text-white/40 border-white/20",
+ ? "bg-card text-foreground border-white shadow-xs"
+ : "bg-foreground/20 text-foreground/40 border-white/20",
  )}
  >
  {isStamped ? <SelectedIconComponent className="size-4 text-emerald-600" /> : i + 1}
@@ -449,7 +449,7 @@ export default function LoyaltyDashboardPage() {
  </div>
 
  {/* QR Code & Token */}
- <div className="bg-white text-black p-3 rounded-lg flex flex-col items-center justify-center space-y-1 shadow-xs">
+ <div className="bg-card text-foreground p-3 rounded-lg flex flex-col items-center justify-center space-y-1 shadow-xs">
  <div className="size-20 bg-muted/30 border border-border flex items-center justify-center rounded-lg">
  <QrCode className="size-16 text-foreground" />
  </div>
@@ -514,7 +514,7 @@ export default function LoyaltyDashboardPage() {
  <span className="font-black text-sm">{c.current_stamps}</span>
  <span className="text-muted-foreground text-xs">/ {target}</span>
  {canRedeem && (
- <Badge variant="default" className="bg-emerald-600 text-white text-xs ml-1">
+ <Badge variant="default" className="bg-emerald-600 text-foreground text-xs ml-1">
  Pronto p/ Resgate
  </Badge>
  )}

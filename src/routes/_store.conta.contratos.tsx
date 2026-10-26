@@ -42,7 +42,7 @@ function MyContractsPage() {
       <button
         type="button"
         onClick={() => setFilterTab("all")}
-        className={`h-11 min-h-11 sm:h-9 px-3 rounded-lg transition-all font-medium flex items-center justify-center cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
+        className={`h-11 min-h-11 sm:h-9 px-3 rounded-lg transition-colors duration-200 font-medium flex items-center justify-center cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
           filterTab === "all" ? "bg-card text-foreground font-semibold shadow-xs" : "text-muted-foreground hover:text-foreground"
         }`}
       >
@@ -51,7 +51,7 @@ function MyContractsPage() {
       <button
         type="button"
         onClick={() => setFilterTab("signed")}
-        className={`h-11 min-h-11 sm:h-9 px-3 rounded-lg transition-all font-medium flex items-center justify-center cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
+        className={`h-11 min-h-11 sm:h-9 px-3 rounded-lg transition-colors duration-200 font-medium flex items-center justify-center cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
           filterTab === "signed" ? "bg-card text-foreground font-semibold shadow-xs" : "text-muted-foreground hover:text-foreground"
         }`}
       >
@@ -60,7 +60,7 @@ function MyContractsPage() {
       <button
         type="button"
         onClick={() => setFilterTab("pending")}
-        className={`h-11 min-h-11 sm:h-9 px-3 rounded-lg transition-all font-medium flex items-center justify-center cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
+        className={`h-11 min-h-11 sm:h-9 px-3 rounded-lg transition-colors duration-200 font-medium flex items-center justify-center cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
           filterTab === "pending" ? "bg-card text-foreground font-semibold shadow-xs" : "text-muted-foreground hover:text-foreground"
         }`}
       >
@@ -179,7 +179,7 @@ function MyContractsPage() {
                       variant={isSigned ? "default" : "secondary"}
                       className={`text-xs font-semibold ${
                         isSigned
-                          ? "bg-emerald-600 hover:bg-emerald-600 text-white"
+                          ? "bg-emerald-600 hover:bg-emerald-600 text-foreground"
                           : "bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30"
                       }`}
                     >

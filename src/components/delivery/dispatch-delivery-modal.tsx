@@ -162,7 +162,7 @@ export function DispatchDeliveryModal({
                 <Button
                   size="sm"
                   onClick={handleShareWhatsApp}
-                  className="rounded-lg text-xs font-bold gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+                  className="rounded-lg text-xs font-bold gap-2 bg-emerald-600 hover:bg-emerald-700 text-foreground"
                 >
                   <Send className="size-3.5" />
                   <span>Enviar no WhatsApp</span>
@@ -241,7 +241,7 @@ export function DispatchDeliveryModal({
                 disabled={isSubmitting}
                 className="rounded-lg text-xs font-bold gap-2"
               >
-                {isSubmitting ? <Loader2 className="size-3.5 animate-spin" /> : <Bike className="size-3.5" />}
+                {isSubmitting ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : <Bike className="size-3.5" />}
                 <span>Gerar Link do Motoboy</span>
               </Button>
             </>

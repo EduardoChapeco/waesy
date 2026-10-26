@@ -114,20 +114,20 @@ function AirportDetailPage() {
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="space-y-3 max-w-3xl">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary text-primary-foreground font-mono font-black text-sm tracking-wide">
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary text-primary-foreground font-mono font-black text-sm tracking-wide">
                   <Plane className="size-4" />
                   {profile.iata_code}
                 </span>
                 {profile.icao_code && (
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-muted font-mono font-bold text-xs text-muted-foreground border border-border/60">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-muted font-mono font-bold text-xs text-muted-foreground border border-border/60">
                     ICAO: {profile.icao_code}
                   </span>
                 )}
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold text-xs border border-emerald-500/20">
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold text-xs border border-emerald-500/20">
                   <Clock className="size-3.5" />
                   {profile.operating_hours}
                 </span>
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-card text-foreground font-medium text-xs border border-border/60">
+                <span className="inline-flex items-center px-3 py-1 rounded-full bg-card text-foreground font-medium text-xs border border-border/60">
                   {profile.operator_name}
                 </span>
               </div>
@@ -137,14 +137,14 @@ function AirportDetailPage() {
               </h1>
 
               <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground font-medium">
-                <span className="inline-flex items-center gap-1.5">
+                <span className="inline-flex items-center gap-2">
                   <MapPin className="size-4 text-primary" />
                   {locationLabel}
                 </span>
                 {profile.phone_pabx && (
                   <a
                     href={`tel:${profile.phone_pabx.replace(/\D/g, "")}`}
-                    className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
+                    className="inline-flex items-center gap-2 hover:text-foreground transition-colors"
                   >
                     <Phone className="size-4 text-primary" />
                     {profile.phone_pabx}
@@ -155,7 +155,7 @@ function AirportDetailPage() {
                     href={profile.website_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
+                    className="inline-flex items-center gap-2 hover:text-foreground transition-colors"
                   >
                     <Globe className="size-4 text-primary" />
                     Site Oficial Concessionária
@@ -170,7 +170,7 @@ function AirportDetailPage() {
               <Button asChild className="h-11 min-h-11 px-5 font-semibold shadow-xs">
                 <Link to={"/classificados" as any}>
                   Ver Ofertas com Voo ({profile.iata_code})
-                  <ArrowRight className="size-4 ml-1.5" />
+                  <ArrowRight className="size-4 ml-2" />
                 </Link>
               </Button>
             </div>
@@ -189,7 +189,7 @@ function AirportDetailPage() {
                     n.severity === "info" && "bg-primary/10 border-primary/20 text-foreground",
                   )}
                 >
-                  <AlertTriangle className="size-5 shrink-0 mt-0.5" />
+                  <AlertTriangle className="size-5 shrink-0 mt-1" />
                   <div className="space-y-1">
                     <div className="font-bold">{n.title}</div>
                     <p className="text-xs leading-relaxed">{n.summary}</p>
@@ -276,13 +276,13 @@ function AirportDetailPage() {
                   <div key={idx} className="bg-card border border-border/70 rounded-lg p-5 space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-foreground text-base">{t.name}</span>
-                      <span className="px-2.5 py-0.5 rounded-full text-2xs font-bold uppercase bg-primary/10 text-primary border border-primary/20">
+                      <span className="px-3 py-1 rounded-full text-2xs font-bold uppercase bg-primary/10 text-primary border border-primary/20">
                         {t.focus === "both" ? "Nacional & Internacional" : t.focus === "domestic" ? "Doméstico" : "Internacional"}
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground leading-relaxed">{t.description}</p>
                     {t.gates_count && (
-                      <div className="text-xs font-medium text-foreground flex items-center gap-1.5 pt-1">
+                      <div className="text-xs font-medium text-foreground flex items-center gap-2 pt-1">
                         <CheckCircle2 className="size-4 text-emerald-500" />
                         {t.gates_count} Portões de Embarque com pontes móveis e acesso direto
                       </div>
@@ -298,7 +298,7 @@ function AirportDetailPage() {
         {activeTab === "orgaos" && (
           <div className="space-y-6">
             <div className="bg-muted/40 border border-border/60 rounded-lg p-4 text-xs text-muted-foreground leading-relaxed flex items-start gap-3">
-              <Info className="size-5 shrink-0 text-primary mt-0.5" />
+              <Info className="size-5 shrink-0 text-primary mt-1" />
               <div>
                 <strong className="text-foreground">Instituições de Controle e Atendimento:</strong> Encontre aqui
                 localizações e contatos diretos dos órgãos de fiscalização federal, estadual e auxílio ao passageiro
@@ -316,7 +316,7 @@ function AirportDetailPage() {
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-bold text-foreground text-sm">{s.name}</span>
                       {s.badge_label && (
-                        <span className="px-2 py-0.5 rounded-full text-2xs font-bold bg-muted text-muted-foreground border border-border/60 shrink-0">
+                        <span className="px-2 py-1 rounded-full text-2xs font-bold bg-muted text-muted-foreground border border-border/60 shrink-0">
                           {s.badge_label}
                         </span>
                       )}
@@ -372,7 +372,7 @@ function AirportDetailPage() {
                       <span className="font-bold text-foreground text-sm">{fee.title}</span>
                       <span
                         className={cn(
-                          "px-2.5 py-0.5 rounded-full text-2xs font-bold uppercase",
+                          "px-3 py-1 rounded-full text-2xs font-bold uppercase",
                           fee.mandatory
                             ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20"
                             : "bg-muted text-muted-foreground",
@@ -386,7 +386,7 @@ function AirportDetailPage() {
                     <p className="text-xs text-muted-foreground leading-relaxed">{fee.explanation}</p>
 
                     {fee.exemptions && (
-                      <div className="text-xs bg-muted/40 p-2.5 rounded-md border border-border/50 text-muted-foreground">
+                      <div className="text-xs bg-muted/40 p-3 rounded-md border border-border/50 text-muted-foreground">
                         <strong>Isenções:</strong> {fee.exemptions}
                       </div>
                     )}
@@ -407,7 +407,7 @@ function AirportDetailPage() {
                   <div key={idx} className="bg-card border border-border/70 rounded-lg p-5 space-y-2">
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-bold text-foreground text-sm">{item.name}</span>
-                      <span className="px-2 py-0.5 rounded-full text-2xs font-bold bg-muted text-muted-foreground border border-border/60">
+                      <span className="px-2 py-1 rounded-full text-2xs font-bold bg-muted text-muted-foreground border border-border/60">
                         {item.category === "vip_lounge"
                           ? "Sala VIP"
                           : item.category === "currency_exchange"
@@ -612,7 +612,7 @@ function AirportDetailPage() {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <ExternalLink className="size-4 mr-1.5" />
+                    <ExternalLink className="size-4 mr-2" />
                     Abrir no Google Maps
                   </a>
                 </Button>

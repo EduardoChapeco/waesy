@@ -566,7 +566,7 @@ function CommunityHomePage() {
             <Link
               key={card.slug}
               to={card.to as any}
-              className={`min-w-48 sm:min-w-56 md:min-w-60 max-w-64 shrink-0 snap-start group relative flex flex-col justify-end overflow-hidden rounded-lg bg-card aspect-video sm:aspect-video border border-border/60 hover:border-foreground/30 transition-all duration-300 active:active:scale-95 ${(card as any).showShadow ? " hover:shadow-xs" : "shadow-none"}`}
+              className={`min-w-48 sm:min-w-56 md:min-w-60 max-w-64 shrink-0 snap-start group relative flex flex-col justify-end overflow-hidden rounded-lg bg-card aspect-video sm:aspect-video border border-border/60 hover:border-foreground/30 transition-colors duration-200 duration-300 active:active:scale-95 ${(card as any).showShadow ? " hover:shadow-xs" : "shadow-none"}`}
             >
               {(card as any).coverUrl ? (
                 <img
@@ -599,14 +599,14 @@ function CommunityHomePage() {
                   {(card as any).isPlacesBadge ? (
                     <PlacesHighlightBadge
                       className={`text-xs font-bold drop- ${
-                        (card as any).textColor ? "" : (card as any).showOverlay ? "text-white" : "text-foreground"
+                        (card as any).textColor ? "" : (card as any).showOverlay ? "text-foreground" : "text-foreground"
                       }`}
                       style={(card as any).textColor ? { color: (card as any).textColor } : undefined}
                     />
                   ) : (
                     <h2
                       className={`text-xs font-bold leading-tight drop- truncate backdrop-blur-xs ${
-                        (card as any).textColor ? "" : (card as any).showOverlay ? "text-white" : "text-foreground"
+                        (card as any).textColor ? "" : (card as any).showOverlay ? "text-foreground" : "text-foreground"
                       }`}
                       style={(card as any).textColor ? { color: (card as any).textColor } : undefined}
                     >
@@ -676,7 +676,7 @@ function CommunityHomePage() {
                   return (
                     <div
                       key={item.id}
-                      className="min-w-72 sm:min-w-80 max-w-xs shrink-0 group flex flex-col justify-between rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all h-72"
+                      className="min-w-72 sm:min-w-80 max-w-xs shrink-0 group flex flex-col justify-between rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-colors duration-200 h-72"
                     >
                       <Link to="/diretorio/$id" params={{ id: item.id }} className="block">
                         <div className="relative aspect-video w-full overflow-hidden bg-muted/40">
@@ -801,7 +801,7 @@ function CommunityHomePage() {
                       key={item.id}
                       to="/classificados/$id"
                       params={{ id: item.id }}
-                      className="min-w-60 sm:min-w-68 max-w-72 shrink-0 group flex flex-col justify-between rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all h-80"
+                      className="min-w-60 sm:min-w-68 max-w-72 shrink-0 group flex flex-col justify-between rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-colors duration-200 h-80"
                     >
                       <div className="relative aspect-square w-full overflow-hidden bg-muted/30">
                         {coverImage ? (
@@ -856,7 +856,7 @@ function CommunityHomePage() {
                     <Link
                       key={post.id}
                       to="/feed"
-                      className="min-w-64 sm:min-w-72 max-w-xs shrink-0 p-4 rounded-lg border border-border/60 bg-card hover:border-foreground/30 hover: transition-all flex flex-col justify-between group space-y-3"
+                      className="min-w-64 sm:min-w-72 max-w-xs shrink-0 p-4 rounded-lg border border-border/60 bg-card hover:border-foreground/30 hover: transition-colors duration-200 flex flex-col justify-between group space-y-3"
                     >
                       <div className="flex items-center gap-3">
                         <div className="size-8 rounded-full bg-muted/60 overflow-hidden flex items-center justify-center text-muted-foreground shrink-0 border border-border/40">
@@ -944,7 +944,7 @@ function CommunityHomePage() {
                       key={job.id}
                       to="/empregos/$id"
                       params={{ id: job.id }}
-                      className="min-w-72 sm:min-w-80 max-w-xs shrink-0 p-4 rounded-lg border border-border/60 bg-card hover:border-foreground/30 hover: transition-all space-y-3 group flex flex-col justify-between"
+                      className="min-w-72 sm:min-w-80 max-w-xs shrink-0 p-4 rounded-lg border border-border/60 bg-card hover:border-foreground/30 hover: transition-colors duration-200 space-y-3 group flex flex-col justify-between"
                     >
                       <div className="flex items-start gap-3">
                         <div className="size-12 rounded-lg overflow-hidden bg-muted/40 border border-border/60 shrink-0 flex items-center justify-center">
@@ -1003,7 +1003,7 @@ function CommunityHomePage() {
                       key={ev.id}
                       to="/evento/$id"
                       params={{ id: ev.id }}
-                      className="min-w-72 sm:min-w-80 max-w-xs shrink-0 rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover: transition-all flex flex-col justify-between group"
+                      className="min-w-72 sm:min-w-80 max-w-xs shrink-0 rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover: transition-colors duration-200 flex flex-col justify-between group"
                     >
                       <div className="relative aspect-video w-full overflow-hidden bg-muted/40">
                         {coverImage ? (
@@ -1024,7 +1024,7 @@ function CommunityHomePage() {
                           </Badge>
                         </div>
                         <div className="absolute bottom-2.5 right-2.5">
-                          <span className="bg-black/75 text-white text-xs font-mono font-bold px-2 py-1 rounded-md">
+                          <span className="bg-foreground/75 text-foreground text-xs font-mono font-bold px-2 py-1 rounded-md">
                             {ev.date_display || "A Confirmar"}
                           </span>
                         </div>
@@ -1063,7 +1063,7 @@ function CommunityHomePage() {
                     <Link
                       key={`agenda-${ev.id}`}
                       to="/agenda"
-                      className="min-w-72 sm:min-w-80 max-w-xs shrink-0 rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover: transition-all flex flex-col justify-between group"
+                      className="min-w-72 sm:min-w-80 max-w-xs shrink-0 rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover: transition-colors duration-200 flex flex-col justify-between group"
                     >
                       <div className="relative aspect-video w-full overflow-hidden bg-muted/40">
                         {coverImage ? (
@@ -1084,7 +1084,7 @@ function CommunityHomePage() {
                           </Badge>
                         </div>
                         <div className="absolute bottom-2.5 right-2.5">
-                          <span className="bg-black/75 text-white text-xs font-mono font-bold px-2 py-1 rounded-md">
+                          <span className="bg-foreground/75 text-foreground text-xs font-mono font-bold px-2 py-1 rounded-md">
                             {ev.date_display || "Data confirmada"}
                           </span>
                         </div>
@@ -1116,7 +1116,7 @@ function CommunityHomePage() {
                 >
                   <Link
                     to={(middleBanners[0].link_url || "/afiliados") as any}
-                    className="group relative block w-full aspect-video sm:aspect-video rounded-lg overflow-hidden bg-card border border-border/60 hover:border-foreground/30 transition-all"
+                    className="group relative block w-full aspect-video sm:aspect-video rounded-lg overflow-hidden bg-card border border-border/60 hover:border-foreground/30 transition-colors duration-200"
                   >
                     {middleBanners[0].media_type === "video" ? (
                       <video
@@ -1137,15 +1137,15 @@ function CommunityHomePage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                     <div className="absolute bottom-4 left-4 right-4 text-left">
                       {middleBanners[0].badge_text && (
-                        <span className="inline-block px-3 py-1 rounded-md text-xs font-mono font-bold uppercase tracking-wider bg-white/20 text-white border border-white/20 mb-2">
+                        <span className="inline-block px-3 py-1 rounded-md text-xs font-mono font-bold uppercase tracking-wider bg-card/20 text-foreground border border-white/20 mb-2">
                           {middleBanners[0].badge_text}
                         </span>
                       )}
-                      <h3 className="text-base sm:text-lg font-bold text-white leading-tight drop-">
+                      <h3 className="text-base sm:text-lg font-bold text-foreground leading-tight drop-">
                         {middleBanners[0].title}
                       </h3>
                       {middleBanners[0].subtitle && (
-                        <p className="text-xs text-white/85 line-clamp-1 mt-1">
+                        <p className="text-xs text-foreground/85 line-clamp-1 mt-1">
                           {middleBanners[0].subtitle}
                         </p>
                       )}
@@ -1205,7 +1205,7 @@ function CommunityHomePage() {
               {unifiedItems.map((item) => (
                 <div
                   key={item.id}
-                  className="group rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover: transition-all flex flex-col justify-between"
+                  className="group rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover: transition-colors duration-200 flex flex-col justify-between"
                 >
                   <Link to={item.to as any} className="flex-1 flex flex-col cursor-pointer">
                     <div className="relative aspect-video w-full overflow-hidden bg-muted/40 shrink-0">
@@ -1295,7 +1295,7 @@ function CommunityHomePage() {
             unifiedItems.map((item) => (
               <div
                 key={item.id}
-                className="group flex flex-col sm:flex-row items-stretch justify-between rounded-lg border border-border/60 bg-card hover:border-foreground/30 hover: transition-all overflow-hidden p-0 w-full"
+                className="group flex flex-col sm:flex-row items-stretch justify-between rounded-lg border border-border/60 bg-card hover:border-foreground/30 hover: transition-colors duration-200 overflow-hidden p-0 w-full"
               >
                 <Link
                   to={item.to as any}
@@ -1364,7 +1364,7 @@ function CommunityHomePage() {
                       <Button
                         asChild
                         size="sm"
-                        className="h-10 sm:h-8 px-4 rounded-lg text-xs font-bold transition-all cursor-pointer"
+                        className="h-10 sm:h-8 px-4 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer"
                       >
                         <Link to={item.to as any}>
                           <span>Ver</span>
@@ -1389,7 +1389,7 @@ function CommunityHomePage() {
           >
             <Link
               to={(footerBanners[0].link_url || "/criar-negocio") as any}
-              className="group relative block w-full aspect-video sm:aspect-video rounded-lg overflow-hidden bg-card border border-border/60 hover:border-foreground/30 transition-all"
+              className="group relative block w-full aspect-video sm:aspect-video rounded-lg overflow-hidden bg-card border border-border/60 hover:border-foreground/30 transition-colors duration-200"
             >
               {footerBanners[0].media_type === "video" ? (
                 <video
@@ -1410,15 +1410,15 @@ function CommunityHomePage() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
               <div className="absolute bottom-5 left-5 right-5 text-left">
                 {footerBanners[0].badge_text && (
-                  <span className="inline-block px-3 py-1 rounded-md text-xs font-mono font-bold uppercase tracking-wider bg-white/20 text-white border border-white/20 mb-2">
+                  <span className="inline-block px-3 py-1 rounded-md text-xs font-mono font-bold uppercase tracking-wider bg-card/20 text-foreground border border-white/20 mb-2">
                     {footerBanners[0].badge_text}
                   </span>
                 )}
-                <h3 className="text-lg sm:text-xl font-bold text-white leading-tight drop-">
+                <h3 className="text-lg sm:text-xl font-bold text-foreground leading-tight drop-">
                   {footerBanners[0].title}
                 </h3>
                 {footerBanners[0].subtitle && (
-                  <p className="text-xs sm:text-sm text-white/85 line-clamp-1 mt-1">
+                  <p className="text-xs sm:text-sm text-foreground/85 line-clamp-1 mt-1">
                     {footerBanners[0].subtitle}
                   </p>
                 )}

@@ -49,14 +49,14 @@ export function FluidNoiseSurface({
  return (
  <div
  className={cn(
- "relative overflow-hidden rounded-lg bg-gradient-to-br transition-all duration-500",
+ "relative overflow-hidden rounded-lg bg-gradient-to-br transition-colors duration-200 duration-500",
  getGradientClasses(),
  className
  )}
  {...props}
  >
  {/* Background Liquid Light Orbs */}
- <div className="absolute -top-24 -left-24 size-72 rounded-full bg-white/40 dark:bg-white/5 blur-3xl pointer-events-none" />
+ <div className="absolute -top-24 -left-24 size-72 rounded-full bg-card/40 dark:bg-card/5 blur-3xl pointer-events-none" />
  <div className="absolute -bottom-24 -right-24 size-72 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
 
  {/* SVG Noise Overlay */}

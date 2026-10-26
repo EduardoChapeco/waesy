@@ -469,7 +469,7 @@ function AdminMasterIntegracoesPage() {
  </div>
 
  <div className="flex items-center gap-2">
- <Badge variant="outline" className="gap-2 px-3 py-1 font-mono text-[11px]">
+ <Badge variant="outline" className="gap-2 px-3 py-1 font-mono text-2xs">
  <ShieldCheck className="size-3.5 text-emerald-500" />
  <span>Vault Seguro Server-Side</span>
  </Badge>
@@ -481,7 +481,7 @@ function AdminMasterIntegracoesPage() {
  <button
  type="button"
  onClick={() => setActiveTab("pools")}
- className={`flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
+ className={`flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-colors duration-200 shrink-0 cursor-pointer ${
  activeTab === "pools"
  ? "bg-foreground text-background shadow-xs"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -494,7 +494,7 @@ function AdminMasterIntegracoesPage() {
  <button
  type="button"
  onClick={() => setActiveTab("prompts")}
- className={`flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
+ className={`flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-colors duration-200 shrink-0 cursor-pointer ${
  activeTab === "prompts"
  ? "bg-foreground text-background shadow-xs"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -507,7 +507,7 @@ function AdminMasterIntegracoesPage() {
  <button
  type="button"
  onClick={() => setActiveTab("maps")}
- className={`flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
+ className={`flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-colors duration-200 shrink-0 cursor-pointer ${
  activeTab === "maps"
  ? "bg-foreground text-background shadow-xs"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -520,7 +520,7 @@ function AdminMasterIntegracoesPage() {
  <button
  type="button"
  onClick={() => setActiveTab("payments")}
- className={`flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
+ className={`flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-colors duration-200 shrink-0 cursor-pointer ${
  activeTab === "payments"
  ? "bg-foreground text-background shadow-xs"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -533,7 +533,7 @@ function AdminMasterIntegracoesPage() {
  <button
  type="button"
  onClick={() => setActiveTab("comms")}
- className={`flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
+ className={`flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-colors duration-200 shrink-0 cursor-pointer ${
  activeTab === "comms"
  ? "bg-foreground text-background shadow-xs"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -546,7 +546,7 @@ function AdminMasterIntegracoesPage() {
  <button
  type="button"
  onClick={() => setActiveTab("webhooks")}
- className={`flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
+ className={`flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-colors duration-200 shrink-0 cursor-pointer ${
  activeTab === "webhooks"
  ? "bg-foreground text-background shadow-xs"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -559,7 +559,7 @@ function AdminMasterIntegracoesPage() {
   <button
     type="button"
     onClick={() => setActiveTab("linkedin")}
-    className={`flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
+    className={`flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-colors duration-200 shrink-0 cursor-pointer ${
       activeTab === "linkedin"
         ? "bg-foreground text-background shadow-xs"
         : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -567,13 +567,13 @@ function AdminMasterIntegracoesPage() {
   >
     <Linkedin className="size-4 text-primary" />
     <span>LinkedIn Omni-Bridge</span>
-    <Badge variant="outline" className="text-[9px] px-2 py-0 border-blue-500/40 text-blue-500 bg-blue-500/10">OAuth 2.0</Badge>
+    <Badge variant="outline" className="text-3xs px-2 py-0 border-blue-500/40 text-blue-500 bg-blue-500/10">OAuth 2.0</Badge>
   </button>
 
   <button
     type="button"
     onClick={() => setActiveTab("gmaps")}
-    className={`flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
+    className={`flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-colors duration-200 shrink-0 cursor-pointer ${
       activeTab === "gmaps"
         ? "bg-foreground text-background shadow-xs"
         : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -586,7 +586,7 @@ function AdminMasterIntegracoesPage() {
   <button
     type="button"
     onClick={() => setActiveTab("webagent")}
-    className={`flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
+    className={`flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-colors duration-200 shrink-0 cursor-pointer ${
       activeTab === "webagent"
         ? "bg-foreground text-background shadow-xs"
         : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -599,7 +599,7 @@ function AdminMasterIntegracoesPage() {
   <button
     type="button"
     onClick={() => setActiveTab("infotravel")}
-    className={`flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
+    className={`flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-colors duration-200 shrink-0 cursor-pointer ${
       activeTab === "infotravel"
         ? "bg-foreground text-background shadow-xs"
         : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -607,7 +607,7 @@ function AdminMasterIntegracoesPage() {
   >
     <Plane className="size-4" />
     <span>Infotravel e Operadoras</span>
-    <Badge variant="outline" className="text-[9px] px-2 py-0 border-sky-500/40 text-sky-500 bg-sky-500/10">Sync</Badge>
+    <Badge variant="outline" className="text-3xs px-2 py-0 border-sky-500/40 text-sky-500 bg-sky-500/10">Sync</Badge>
   </button>
  </div>
 
@@ -628,7 +628,7 @@ function AdminMasterIntegracoesPage() {
  disabled={isResettingCooldowns}
  className="rounded-lg font-bold text-xs h-11 min-h-11 gap-2"
  >
- <RefreshCw className={`size-3.5 ${isResettingCooldowns ? "animate-spin" : ""}`} />
+ <RefreshCw className={`size-3.5 ${isResettingCooldowns ? "animate-spin motion-reduce:animate-none" : ""}`} />
  <span>Limpar Cooldowns 429</span>
  </Button>
  <Button
@@ -658,7 +658,7 @@ function AdminMasterIntegracoesPage() {
  >
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
- <Badge className="font-mono uppercase text-[10px] font-bold">
+ <Badge className="font-mono uppercase text-2xs font-bold">
  {key.provider}
  </Badge>
  <span className="font-bold text-sm text-foreground">{key.label}</span>
@@ -669,10 +669,10 @@ function AdminMasterIntegracoesPage() {
                   size="sm"
                   disabled={testingKeyId === key.id}
                   onClick={() => handleTestPoolKey(key.id)}
-                  className="h-7 px-2 text-[11px] rounded-lg gap-1 border-border/80"
+                  className="h-7 px-2 text-2xs rounded-lg gap-1 border-border/80"
                 >
                   {testingKeyId === key.id ? (
-                    <RefreshCw className="size-3 animate-spin" />
+                    <RefreshCw className="size-3 animate-spin motion-reduce:animate-none" />
                   ) : (
                     <Zap className="size-3 text-amber-500" />
                   )}
@@ -695,14 +695,14 @@ function AdminMasterIntegracoesPage() {
 
             <div className="flex items-center justify-between text-xs font-mono bg-muted/40 p-3 rounded-lg">
               <span className="text-muted-foreground">{key.masked_key}</span>
-              <span className="text-[11px] text-foreground font-bold">
+              <span className="text-2xs text-foreground font-bold">
                 {key.daily_request_count} reqs hoje
               </span>
             </div>
 
             {testedKeyStatus[key.id] && (
               <div
-                className={`text-[11px] p-2 rounded-lg flex items-center justify-between ${
+                className={`text-2xs p-2 rounded-lg flex items-center justify-between ${
                   testedKeyStatus[key.id].success
                     ? "text-emerald-500 bg-emerald-500/10"
                     : "text-rose-500 bg-rose-500/10"
@@ -724,7 +724,7 @@ function AdminMasterIntegracoesPage() {
             )}
 
             {key.last_error_message && !testedKeyStatus[key.id] && (
-              <div className="text-[11px] text-rose-500 bg-rose-500/10 p-2 rounded-lg flex items-center gap-2">
+              <div className="text-2xs text-rose-500 bg-rose-500/10 p-2 rounded-lg flex items-center gap-2">
                 <AlertCircle className="size-3 shrink-0" />
                 <span className="truncate">{key.last_error_message}</span>
               </div>
@@ -765,7 +765,7 @@ function AdminMasterIntegracoesPage() {
  <div className="flex items-center gap-2">
  <span className="font-bold text-base text-foreground">{prompt.title}</span>
  {prompt.is_default && (
- <Badge className="bg-primary text-primary-foreground font-bold text-[10px]">
+ <Badge className="bg-primary text-primary-foreground font-bold text-2xs">
  Padrão da Plataforma
  </Badge>
  )}
@@ -784,7 +784,7 @@ function AdminMasterIntegracoesPage() {
  {prompt.description || "Sem descrição"}
  </p>
 
- <div className="p-3 bg-muted/40 rounded-lg font-mono text-[11px] space-y-1 text-muted-foreground">
+ <div className="p-3 bg-muted/40 rounded-lg font-mono text-2xs space-y-1 text-muted-foreground">
  <div className="font-bold text-foreground">Instrução de Sistema:</div>
  <div className="line-clamp-2">{prompt.system_instruction}</div>
  </div>
@@ -805,7 +805,7 @@ function AdminMasterIntegracoesPage() {
                   <h2 className="text-base font-bold text-foreground">
                     Serviços de Mapas
                   </h2>
-                  <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 gap-1 font-bold text-[11px]">
+                  <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 gap-1 font-bold text-2xs">
                     <CheckCircle2 className="size-3" /> MapLibre Ativo (Zero Key)
                   </Badge>
                 </div>
@@ -816,10 +816,10 @@ function AdminMasterIntegracoesPage() {
               </div>
 
               <div className="flex flex-wrap items-center gap-2 shrink-0">
-                <Badge variant="outline" className="text-[10px] font-mono text-muted-foreground gap-1">
+                <Badge variant="outline" className="text-2xs font-mono text-muted-foreground gap-1">
                   <Globe2 className="size-3 text-primary" /> Tiles Globais HTTPS
                 </Badge>
-                <Badge variant="outline" className="text-[10px] font-mono text-muted-foreground gap-1">
+                <Badge variant="outline" className="text-2xs font-mono text-muted-foreground gap-1">
                   <ShieldCheck className="size-3 text-emerald-500" /> RLS Protegido
                 </Badge>
               </div>
@@ -862,7 +862,7 @@ function AdminMasterIntegracoesPage() {
                           defaultMapProvider: style.id as any,
                         }))
                       }
-                      className={`p-4 rounded-lg border text-left transition-all cursor-pointer select-none space-y-2 ${
+                      className={`p-4 rounded-lg border text-left transition-colors duration-200 cursor-pointer select-none space-y-2 ${
                         isSelected
                           ? "bg-primary/5 border-primary ring-1 ring-primary shadow-2xs"
                           : "bg-muted/20 border-border/70 hover:border-foreground/30 hover:bg-muted/40"
@@ -872,11 +872,11 @@ function AdminMasterIntegracoesPage() {
                         <span className="text-xs font-bold text-foreground leading-tight">
                           {style.name}
                         </span>
-                        <Badge variant="secondary" className="text-[10px] font-semibold">
+                        <Badge variant="secondary" className="text-2xs font-semibold">
                           {style.badge}
                         </Badge>
                       </div>
-                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      <p className="text-2xs text-muted-foreground leading-relaxed">
                         {style.desc}
                       </p>
                     </button>
@@ -908,7 +908,7 @@ function AdminMasterIntegracoesPage() {
                     {visibleKeys["google_maps"] ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                   </button>
                 </div>
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-2xs text-muted-foreground">
                   Se preenchida, permite ativar serviços proprietários da Google como fallback secundário.
                 </span>
               </div>
@@ -934,7 +934,7 @@ function AdminMasterIntegracoesPage() {
                     {visibleKeys["mapbox"] ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                   </button>
                 </div>
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-2xs text-muted-foreground">
                   Opcional. Permite usar estilos vetoriais customizados do Mapbox Studio.
                 </span>
               </div>
@@ -958,7 +958,7 @@ function AdminMasterIntegracoesPage() {
                 disabled={isSavingGov}
                 className="rounded-lg font-bold text-xs h-9 gap-2"
               >
-                {isSavingGov ? <RefreshCw className="size-3.5 animate-spin" /> : <Save className="size-3.5" />}
+                {isSavingGov ? <RefreshCw className="size-3.5 animate-spin motion-reduce:animate-none" /> : <Save className="size-3.5" />}
                 <span>Salvar Governança</span>
               </Button>
             </div>
@@ -1033,7 +1033,7 @@ function AdminMasterIntegracoesPage() {
                     <span className="text-xs font-bold text-foreground block">
                       {item.title}
                     </span>
-                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    <p className="text-2xs text-muted-foreground leading-relaxed">
                       {item.desc}
                     </p>
                   </div>
@@ -1063,7 +1063,7 @@ function AdminMasterIntegracoesPage() {
                 disabled={isPinging}
                 className="rounded-lg font-bold text-xs h-9 gap-2 shrink-0"
               >
-                <RefreshCw className={`size-3.5 ${isPinging ? "animate-spin" : ""}`} />
+                <RefreshCw className={`size-3.5 ${isPinging ? "animate-spin motion-reduce:animate-none" : ""}`} />
                 <span>{isPinging ? "Testando Endpoints..." : "Testar Conectividade Agora"}</span>
               </Button>
             </div>
@@ -1072,7 +1072,7 @@ function AdminMasterIntegracoesPage() {
               <div className="p-6 text-center border border-dashed border-border rounded-lg bg-muted/10 space-y-2">
                 <Clock className="size-6 text-muted-foreground mx-auto" />
                 <p className="text-xs font-semibold text-foreground">Nenhum teste executado nesta sessão</p>
-                <p className="text-[11px] text-muted-foreground max-w-md mx-auto">
+                <p className="text-2xs text-muted-foreground max-w-md mx-auto">
                   Clique no botão acima para enviar requisições de teste em paralelo para a BrasilAPI, ViaCEP, Carto CDN e Nominatim.
                 </p>
               </div>
@@ -1088,7 +1088,7 @@ function AdminMasterIntegracoesPage() {
                         {ping.name}
                       </span>
                       <Badge
-                        className={`text-[10px] font-mono uppercase font-bold ${
+                        className={`text-2xs font-mono uppercase font-bold ${
                           ping.status === "online"
                             ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
                             : ping.status === "degraded"
@@ -1130,7 +1130,7 @@ function AdminMasterIntegracoesPage() {
                     Teste de Autopreenchimento de CEP
                   </span>
                   {cepResult && (
-                    <Badge variant="outline" className="text-[10px] font-mono">
+                    <Badge variant="outline" className="text-2xs font-mono">
                       {cepResult.provider}
                     </Badge>
                   )}
@@ -1151,7 +1151,7 @@ function AdminMasterIntegracoesPage() {
                     disabled={isSearchingCep}
                     className="h-9 rounded-lg font-bold text-xs shrink-0"
                   >
-                    {isSearchingCep ? <RefreshCw className="size-3.5 animate-spin" /> : <Search className="size-3.5" />}
+                    {isSearchingCep ? <RefreshCw className="size-3.5 animate-spin motion-reduce:animate-none" /> : <Search className="size-3.5" />}
                     <span>Consultar</span>
                   </Button>
                 </div>
@@ -1165,7 +1165,7 @@ function AdminMasterIntegracoesPage() {
                         {cepResult.city} - {cepResult.state}
                       </div>
                       {cepResult.latitude && cepResult.longitude && (
-                        <div className="text-primary text-[11px] pt-1">
+                        <div className="text-primary text-2xs pt-1">
                           📍 Coordenadas: {cepResult.latitude}, {cepResult.longitude}
                         </div>
                       )}
@@ -1200,7 +1200,7 @@ function AdminMasterIntegracoesPage() {
                     Teste de Consulta Oficial de CNPJ
                   </span>
                   {cnpjResult && (
-                    <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[10px] font-bold">
+                    <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-2xs font-bold">
                       {cnpjResult.registrationStatus}
                     </Badge>
                   )}
@@ -1221,7 +1221,7 @@ function AdminMasterIntegracoesPage() {
                     disabled={isSearchingCnpj}
                     className="h-9 rounded-lg font-bold text-xs shrink-0"
                   >
-                    {isSearchingCnpj ? <RefreshCw className="size-3.5 animate-spin" /> : <Search className="size-3.5" />}
+                    {isSearchingCnpj ? <RefreshCw className="size-3.5 animate-spin motion-reduce:animate-none" /> : <Search className="size-3.5" />}
                     <span>Consultar</span>
                   </Button>
                 </div>
@@ -1230,15 +1230,15 @@ function AdminMasterIntegracoesPage() {
                   <div className="p-3 bg-card rounded-lg border border-border/70 text-xs space-y-2 font-mono">
                     <div className="font-bold text-foreground">{cnpjResult.corporateName}</div>
                     {cnpjResult.tradeName && cnpjResult.tradeName !== cnpjResult.corporateName && (
-                      <div className="text-[11px] text-muted-foreground">Fantasia: {cnpjResult.tradeName}</div>
+                      <div className="text-2xs text-muted-foreground">Fantasia: {cnpjResult.tradeName}</div>
                     )}
-                    <div className="text-[11px] text-muted-foreground">
+                    <div className="text-2xs text-muted-foreground">
                       CNAE: {cnpjResult.mainCnae.code} — {cnpjResult.mainCnae.description}
                     </div>
-                    <div className="text-[11px] text-foreground pt-1 border-t border-border/40">
+                    <div className="text-2xs text-foreground pt-1 border-t border-border/40">
                       🏢 {cnpjResult.address.street}, {cnpjResult.address.number} - {cnpjResult.address.neighborhood}, {cnpjResult.address.city} - {cnpjResult.address.state}
                     </div>
-                    {cnpjResult.phone && <div className="text-[10px] text-muted-foreground">📞 {cnpjResult.phone}</div>}
+                    {cnpjResult.phone && <div className="text-2xs text-muted-foreground">📞 {cnpjResult.phone}</div>}
                   </div>
                 )}
               </div>
@@ -1265,7 +1265,7 @@ function AdminMasterIntegracoesPage() {
                   disabled={isParsingNlp}
                   className="h-9 rounded-lg font-bold text-xs shrink-0"
                 >
-                  {isParsingNlp ? <RefreshCw className="size-3.5 animate-spin" /> : <Cpu className="size-3.5" />}
+                  {isParsingNlp ? <RefreshCw className="size-3.5 animate-spin motion-reduce:animate-none" /> : <Cpu className="size-3.5" />}
                   <span>Decompor com Precisão</span>
                 </Button>
               </div>
@@ -1273,19 +1273,19 @@ function AdminMasterIntegracoesPage() {
               {nlpResult && (
                 <div className="p-3 bg-card rounded-lg border border-border/70 text-xs grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono">
                   <div>
-                    <span className="text-[10px] text-muted-foreground block">Rua:</span>
+                    <span className="text-2xs text-muted-foreground block">Rua:</span>
                     <span className="font-bold text-foreground truncate block">{nlpResult.street || "-"}</span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-muted-foreground block">Número:</span>
+                    <span className="text-2xs text-muted-foreground block">Número:</span>
                     <span className="font-bold text-foreground truncate block">{nlpResult.number || "S/N"}</span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-muted-foreground block">Cidade / UF:</span>
+                    <span className="text-2xs text-muted-foreground block">Cidade / UF:</span>
                     <span className="font-bold text-foreground truncate block">{nlpResult.city} - {nlpResult.state}</span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-muted-foreground block">CEP:</span>
+                    <span className="text-2xs text-muted-foreground block">CEP:</span>
                     <span className="font-bold text-foreground truncate block">{nlpResult.cep ? formatCep(nlpResult.cep) : "-"}</span>
                   </div>
                 </div>
@@ -1336,12 +1336,12 @@ function AdminMasterIntegracoesPage() {
    <div className="flex items-center justify-between">
      <Label htmlFor="abacatepay_api_key" className="text-xs font-bold flex items-center gap-2">
        <span>AbacatePay API Key</span>
-       <Badge variant="outline" className="text-[9px] font-bold uppercase tracking-wider border-green-500/40 text-green-700 dark:text-green-400 bg-green-500/10 px-2">PIX</Badge>
+       <Badge variant="outline" className="text-3xs font-bold uppercase tracking-wider border-green-500/40 text-green-700 dark:text-green-400 bg-green-500/10 px-2">PIX</Badge>
      </Label>
      {formData.abacatepay_api_key ? (
-       <Badge variant="outline" className="text-[9px] font-bold border-green-500/40 text-green-600 bg-green-500/10">✓ Ativo</Badge>
+       <Badge variant="outline" className="text-3xs font-bold border-green-500/40 text-green-600 bg-green-500/10">✓ Ativo</Badge>
      ) : (
-       <Badge variant="outline" className="text-[9px] font-bold border-muted-foreground/30 text-muted-foreground">Não Configurado</Badge>
+       <Badge variant="outline" className="text-3xs font-bold border-muted-foreground/30 text-muted-foreground">Não Configurado</Badge>
      )}
    </div>
    <div className="relative">
@@ -1361,7 +1361,7 @@ function AdminMasterIntegracoesPage() {
        {visibleKeys["abacatepay"] ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
      </button>
    </div>
-   <p className="text-[11px] text-muted-foreground">Gere sua chave em <span className="font-mono">app.abacatepay.com</span> → Integrações → API Keys.</p>
+   <p className="text-2xs text-muted-foreground">Gere sua chave em <span className="font-mono">app.abacatepay.com</span> → Integrações → API Keys.</p>
  </div>
 
  {/* Mercado Pago */}
@@ -1369,12 +1369,12 @@ function AdminMasterIntegracoesPage() {
    <div className="flex items-center justify-between">
      <Label htmlFor="mercadopago_access_token" className="text-xs font-bold flex items-center gap-2">
        <span>Mercado Pago Access Token</span>
-       <Badge variant="outline" className="text-[9px] font-bold uppercase tracking-wider border-blue-500/40 text-blue-700 dark:text-blue-400 bg-blue-500/10 px-2">PIX+Cartão</Badge>
+       <Badge variant="outline" className="text-3xs font-bold uppercase tracking-wider border-blue-500/40 text-blue-700 dark:text-blue-400 bg-blue-500/10 px-2">PIX+Cartão</Badge>
      </Label>
      {formData.mercadopago_access_token ? (
-       <Badge variant="outline" className="text-[9px] font-bold border-green-500/40 text-green-600 bg-green-500/10">✓ Ativo</Badge>
+       <Badge variant="outline" className="text-3xs font-bold border-green-500/40 text-green-600 bg-green-500/10">✓ Ativo</Badge>
      ) : (
-       <Badge variant="outline" className="text-[9px] font-bold border-muted-foreground/30 text-muted-foreground">Não Configurado</Badge>
+       <Badge variant="outline" className="text-3xs font-bold border-muted-foreground/30 text-muted-foreground">Não Configurado</Badge>
      )}
    </div>
    <div className="relative">
@@ -1394,7 +1394,7 @@ function AdminMasterIntegracoesPage() {
        {visibleKeys["mercadopago"] ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
      </button>
    </div>
-   <p className="text-[11px] text-muted-foreground">Access token de produção em <span className="font-mono">mercadopago.com.br</span> → Suas integrações → Credenciais.</p>
+   <p className="text-2xs text-muted-foreground">Access token de produção em <span className="font-mono">mercadopago.com.br</span> → Suas integrações → Credenciais.</p>
  </div>
  </div>
 
@@ -1492,7 +1492,7 @@ function AdminMasterIntegracoesPage() {
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-bold text-foreground">LinkedIn Omni-Bridge</h3>
-                <Badge variant="outline" className="text-[10px] font-bold border-blue-500/40 text-blue-600 bg-blue-500/10">
+                <Badge variant="outline" className="text-2xs font-bold border-blue-500/40 text-blue-600 bg-blue-500/10">
                   OAuth 2.0 Master
                 </Badge>
               </div>
@@ -1566,7 +1566,7 @@ function AdminMasterIntegracoesPage() {
                 <Label htmlFor="li_client_id" className="text-xs font-bold text-foreground">
                   LinkedIn Client ID
                 </Label>
-                <Badge variant="outline" className="text-[10px] font-mono">App Client ID</Badge>
+                <Badge variant="outline" className="text-2xs font-mono">App Client ID</Badge>
               </div>
               <Input
                 id="li_client_id"
@@ -1576,7 +1576,7 @@ function AdminMasterIntegracoesPage() {
                 className="h-10 text-xs font-mono rounded-lg bg-background"
                 required
               />
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-2xs text-muted-foreground">
                 Encontrado em LinkedIn Developers → Auth → Application credentials.
               </p>
             </div>
@@ -1587,7 +1587,7 @@ function AdminMasterIntegracoesPage() {
                 <Label htmlFor="li_client_secret" className="text-xs font-bold text-foreground">
                   LinkedIn Client Secret (AES-256-GCM)
                 </Label>
-                <Badge variant="outline" className="text-[10px] font-mono text-emerald-600 border-emerald-500/30">
+                <Badge variant="outline" className="text-2xs font-mono text-emerald-600 border-emerald-500/30">
                   Criptografado
                 </Badge>
               </div>
@@ -1608,7 +1608,7 @@ function AdminMasterIntegracoesPage() {
                   {visibleKeys["linkedin_secret"] ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
                 </button>
               </div>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-2xs text-muted-foreground">
                 Deixe com as bolinhas para manter o segredo atual ou insira a nova chave para atualizar.
               </p>
             </div>
@@ -1625,7 +1625,7 @@ function AdminMasterIntegracoesPage() {
                     navigator.clipboard.writeText(liRedirectUri);
                     toast.success("Redirect URI copiada para a área de transferência!");
                   }}
-                  className="text-[11px] font-semibold text-primary flex items-center gap-1 hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="text-2xs font-semibold text-primary flex items-center gap-1 hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <Copy className="size-3" />
                   <span>Copiar</span>
@@ -1639,7 +1639,7 @@ function AdminMasterIntegracoesPage() {
                 className="h-10 text-xs font-mono rounded-lg bg-background"
                 required
               />
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-2xs text-muted-foreground">
                 Cadastre exatamente este endereço no campo <span className="font-semibold">Authorized redirect URLs</span> no portal de desenvolvedores.
               </p>
             </div>
@@ -1650,7 +1650,7 @@ function AdminMasterIntegracoesPage() {
                 <Label htmlFor="li_company_id" className="text-xs font-bold text-foreground">
                   Default Organization URN / ID (Opcional)
                 </Label>
-                <Badge variant="outline" className="text-[10px]">Página Padrão</Badge>
+                <Badge variant="outline" className="text-2xs">Página Padrão</Badge>
               </div>
               <Input
                 id="li_company_id"
@@ -1659,7 +1659,7 @@ function AdminMasterIntegracoesPage() {
                 placeholder="Ex: 104523912 ou waesy-brasil"
                 className="h-10 text-xs font-mono rounded-lg bg-background"
               />
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-2xs text-muted-foreground">
                 ID da Company Page do Waesy para postagens institucionais de vagas sindicadas.
               </p>
             </div>
@@ -1691,7 +1691,7 @@ function AdminMasterIntegracoesPage() {
           <div className="flex items-center justify-between pt-4 border-t border-border/50">
             <div>
               <p className="text-xs font-bold text-foreground">Status do LinkedIn Omni-Bridge</p>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-2xs text-muted-foreground">
                 Quando ativado, os botões de importação e publicação no LinkedIn ficam disponíveis na plataforma.
               </p>
             </div>
@@ -1706,7 +1706,7 @@ function AdminMasterIntegracoesPage() {
             <Button
               type="submit"
               disabled={isSavingLinkedIn}
-              className="rounded-lg font-bold text-xs h-9 gap-2 bg-[#0A66C2] hover:bg-[#084e96] text-white"
+              className="rounded-lg font-bold text-xs h-9 gap-2 bg-[#0A66C2] hover:bg-[#084e96] text-foreground"
             >
               <Save className="size-3.5" />
               <span>{isSavingLinkedIn ? "Criptografando..." : "Salvar Credenciais no Cofre"}</span>

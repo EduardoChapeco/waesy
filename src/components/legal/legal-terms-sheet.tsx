@@ -118,7 +118,7 @@ export function LegalTermsSheet({
  setHasScrolledToBottom(false);
  if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0;
  }}
- className={`px-3 py-2 rounded-lg font-semibold transition-all whitespace-nowrap cursor-pointer text-xs h-11 min-h-11 inline-flex items-center justify-center focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring ${
+ className={`px-3 py-2 rounded-lg font-semibold transition-colors duration-200 whitespace-nowrap cursor-pointer text-xs h-11 min-h-11 inline-flex items-center justify-center focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring ${
  isSelected
  ? "bg-primary text-primary-foreground shadow-xs"
  : "bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -140,7 +140,7 @@ export function LegalTermsSheet({
  </div>
  <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
  <div
- className="h-full bg-primary transition-all duration-150"
+ className="h-full bg-primary transition-colors duration-200 duration-150"
  style={{ width: `${hasScrolledToBottom ? 100 : scrollProgress}%` }}
  />
  </div>
@@ -155,7 +155,7 @@ export function LegalTermsSheet({
  >
  {isLoading ? (
  <div className="py-16 text-center space-y-3">
- <div className="size-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+ <div className="size-8 border-2 border-primary border-t-transparent rounded-full animate-spin motion-reduce:animate-none mx-auto" />
  <p className="text-xs text-muted-foreground">Carregando termos oficiais da plataforma...</p>
  </div>
  ) : currentDoc ? (

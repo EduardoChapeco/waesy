@@ -2,7 +2,7 @@ import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
-const surfaceVariants = cva("relative overflow-hidden transition-all duration-200", {
+const surfaceVariants = cva("relative overflow-hidden transition-colors duration-200 duration-200", {
  variants: {
  variant: {
  default: "bg-background text-foreground border rounded-lg",

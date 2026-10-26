@@ -53,8 +53,8 @@ export function StoriesRing({ content }: StoriesRingProps) {
  <div className="w-full h-full bg-muted" />
  )}
  {isVideo && (
- <div className="absolute inset-0 flex items-center justify-center bg-black/20">
- <Play className="text-white w-6 h-6 fill-white" />
+ <div className="absolute inset-0 flex items-center justify-center bg-foreground/20">
+ <Play className="text-foreground w-6 h-6 fill-white" />
  </div>
  )}
  </div>
@@ -70,7 +70,7 @@ export function StoriesRing({ content }: StoriesRingProps) {
 
  {/* Fullscreen Story Viewer */}
  <Dialog open={!!activeStory} onOpenChange={(open) => !open && setActiveStory(null)}>
- <DialogContent className="sm:max-w-md sm:w-full sm:h-[90vh] h-full p-0 overflow-hidden bg-black border-none flex flex-col items-center justify-center">
+ <DialogContent className="sm:max-w-md sm:w-full sm:h-[90vh] h-full p-0 overflow-hidden bg-foreground border-none flex flex-col items-center justify-center">
  {activeStory &&
  (() => {
  const isVideo =

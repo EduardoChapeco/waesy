@@ -353,7 +353,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
                 variant={boardGrouping === "stage" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setBoardGrouping("stage")}
-                className="h-9 px-2.5 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring"
+                className="h-9 px-3 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Columns className="size-3.5 mr-1" />
                 Funil
@@ -362,7 +362,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
                 variant={boardGrouping === "month" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setBoardGrouping("month")}
-                className="h-9 px-2.5 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring"
+                className="h-9 px-3 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Calendar className="size-3.5 mr-1" />
                 Mês
@@ -371,7 +371,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
                 variant={boardGrouping === "destination" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setBoardGrouping("destination")}
-                className="h-9 px-2.5 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring"
+                className="h-9 px-3 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <MapPin className="size-3.5 mr-1" />
                 Destino
@@ -380,7 +380,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
                 variant={boardGrouping === "temperature" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setBoardGrouping("temperature")}
-                className="h-9 px-2.5 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring"
+                className="h-9 px-3 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <TrendingUp className="size-3.5 mr-1" />
                 Score
@@ -389,7 +389,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
                 variant={boardGrouping === "grid" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setBoardGrouping("grid")}
-                className="h-9 px-2.5 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring"
+                className="h-9 px-3 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <LayoutGrid className="size-3.5 mr-1" />
                 Grade
@@ -459,7 +459,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
                           <Icon className="size-4 text-primary shrink-0" />
                           <span className="font-semibold text-sm text-foreground truncate">{col.title}</span>
                         </div>
-                        <Badge variant="secondary" className="text-xs px-2 py-0.5 shrink-0 font-bold">
+                        <Badge variant="secondary" className="text-xs px-2 py-1 shrink-0 font-bold">
                           {col.matches.length}
                         </Badge>
                       </div>

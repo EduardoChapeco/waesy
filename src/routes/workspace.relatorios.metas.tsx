@@ -174,7 +174,7 @@ function RevenueGoalsPage() {
     switch (data.status) {
       case "achieved":
         return (
-          <Badge className="bg-emerald-600 text-white font-bold text-xs gap-2 px-3 py-1">
+          <Badge className="bg-emerald-600 text-foreground font-bold text-xs gap-2 px-3 py-1">
             <CheckCircle2 className="size-3.5" />
             Meta Mensal Atingida!
           </Badge>
@@ -269,7 +269,7 @@ function RevenueGoalsPage() {
 
           <div className="h-4 w-full bg-muted/60 rounded-full overflow-hidden p-1 border border-border/60">
             <div
-              className={`h-full rounded-full transition-all duration-500 ${
+              className={`h-full rounded-full transition-colors duration-200 duration-500 ${
                 data.percent_achieved >= 100
                   ? "bg-emerald-600"
                   : data.percent_achieved >= 70
@@ -381,7 +381,7 @@ function RevenueGoalsPage() {
           </div>
           <div className="h-2 w-full bg-muted/60 rounded-full overflow-hidden">
             <div
-              className="h-full bg-blue-600 rounded-full transition-all"
+              className="h-full bg-blue-600 rounded-full transition-colors duration-200"
               style={{
                 width: `${Math.min(100, data.orders_goal > 0 ? (data.orders_count / data.orders_goal) * 100 : 0)}%`,
               }}
@@ -418,7 +418,7 @@ function RevenueGoalsPage() {
           </div>
           <div className="h-2 w-full bg-muted/60 rounded-full overflow-hidden">
             <div
-              className="h-full bg-emerald-600 rounded-full transition-all"
+              className="h-full bg-emerald-600 rounded-full transition-colors duration-200"
               style={{
                 width: `${Math.min(100, data.average_ticket_goal_cents > 0 ? (data.average_ticket_cents / data.average_ticket_goal_cents) * 100 : 0)}%`,
               }}

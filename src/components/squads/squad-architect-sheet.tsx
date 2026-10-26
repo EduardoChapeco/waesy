@@ -237,7 +237,7 @@ export function SquadArchitectSheet({
                       </span>
                       <Badge
                         variant="outline"
-                        className="text-xs font-mono px-2 py-0.5"
+                        className="text-xs font-mono px-2 py-1"
                       >
                         {agent.role_label}
                       </Badge>
@@ -278,7 +278,7 @@ export function SquadArchitectSheet({
           >
             {isSaving ? (
               <>
-                <Loader2 className="size-4 animate-spin" />
+                <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                 Criando Squad...
               </>
             ) : (

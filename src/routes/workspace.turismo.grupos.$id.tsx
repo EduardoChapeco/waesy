@@ -157,7 +157,7 @@ function WorkspaceGroupTourDetailPage() {
  </Badge>
  {isSaving ? (
  <span className="flex items-center gap-1 text-xs text-muted-foreground font-mono">
- <Loader2 className="size-3 animate-spin text-primary" /> Salvando...
+ <Loader2 className="size-3 animate-spin motion-reduce:animate-none text-primary" /> Salvando...
  </span>
  ) : (
  <span className="flex items-center gap-1 text-xs text-emerald-600 font-mono">
@@ -321,7 +321,7 @@ function WorkspaceGroupTourDetailPage() {
 
  {/* â”€â”€ 3. VISUALIZADOR OCULTO PARA EXPORTAÃ‡ÃƒO DO MANIFESTO ANTT â”€â”€ */}
  <div className="hidden">
- <div id="manifesto-antt-view" className="p-10 bg-white text-slate-900 font-sans space-y-6">
+ <div id="manifesto-antt-view" className="p-10 bg-card text-slate-900 font-sans space-y-6">
  <div className="text-center pb-4 border-b-2 border-slate-900 space-y-1">
  <span className="text-xs font-mono font-bold uppercase tracking-widest text-slate-500">
  AgÃªncia Nacional de Transportes Terrestres (ANTT) / DER

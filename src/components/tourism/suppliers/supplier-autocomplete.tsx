@@ -76,13 +76,13 @@ export function SupplierAutocomplete({
  onChange(s);
  setIsOpen(false);
  }}
- className={'p-2 rounded-lg text-xs flex items-center justify-between cursor-pointer hover:bg-muted transition-all ' + (
+ className={'p-2 rounded-lg text-xs flex items-center justify-between cursor-pointer hover:bg-muted transition-colors duration-200 ' + (
  selectedSupplier?.id === s.id ? 'bg-primary/10 font-bold text-primary' : 'text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
  <div className="space-y-1 truncate">
  <p className="truncate">{s.name}</p>
- <span className="text-[10px] text-muted-foreground">{s.country} · {s.commission_rate}% comissão</span>
+ <span className="text-2xs text-muted-foreground">{s.country} · {s.commission_rate}% comissão</span>
  </div>
  {selectedSupplier?.id === s.id && <Check className="size-3.5 text-primary shrink-0" />}
  </div>

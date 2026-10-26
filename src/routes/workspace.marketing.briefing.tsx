@@ -369,7 +369,7 @@ export function BrandBriefingPage() {
                 className="h-9 px-4 rounded-lg text-xs font-medium gap-2"
               >
                 {isGenerating ? (
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
                 ) : (
                   <Wand2 className="w-3.5 h-3.5" />
                 )}
@@ -382,7 +382,7 @@ export function BrandBriefingPage() {
                 className="h-9 px-4 rounded-lg text-xs font-medium gap-2"
               >
                 {isSaving ? (
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
                 ) : (
                   <Save className="w-3.5 h-3.5" />
                 )}
@@ -395,7 +395,7 @@ export function BrandBriefingPage() {
           <div className="mt-3">
             <div className="h-1.5 bg-muted/50 rounded-full overflow-hidden">
               <div
-                className="h-full rounded-full transition-all duration-700"
+                className="h-full rounded-full transition-colors duration-200 duration-700"
                 style={{
                   width: `${score}%`,
                   background: `linear-gradient(to right, ${scoreColor}88, ${scoreColor})`,

@@ -448,7 +448,7 @@ export default function WorkspaceMarketingSocialPage() {
                     </p>
 
                     {/* Card de Link Prévia do WhatsApp */}
-                    <div className="bg-black/5 dark:bg-black/20 rounded-lg overflow-hidden border border-black/10 dark:border-white/10">
+                    <div className="bg-foreground/5 dark:bg-foreground/20 rounded-lg overflow-hidden border border-black/10 dark:border-white/10">
                       <div className="aspect-[1.91/1] w-full bg-muted overflow-hidden relative">
                         <img
                           src={previewProduct.image}
@@ -456,7 +456,7 @@ export default function WorkspaceMarketingSocialPage() {
                           className="w-full h-full object-cover"
                         />
                         <div className="absolute top-2 right-2">
-                          <Badge className="bg-black/70 text-white border-0 text-xs px-2 py-1">
+                          <Badge className="bg-foreground/70 text-foreground border-0 text-xs px-2 py-1">
                             {storeName}
                           </Badge>
                         </div>
@@ -493,7 +493,7 @@ export default function WorkspaceMarketingSocialPage() {
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute bottom-2 left-2">
-                    <Badge className="bg-black/80 text-white text-xs">
+                    <Badge className="bg-foreground/80 text-foreground text-xs">
                       usewaesy.com
                     </Badge>
                   </div>
