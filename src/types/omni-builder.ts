@@ -19,6 +19,7 @@ export const CANONICAL_BUILDER_BLOCK_IDS = [
   "infinite_marquee_ribbon",
   "interactive_comparison_slider",
   "interactive_lead_quiz_flow",
+  "news_promethee_portal",
 ] as const;
 
 export type CanonicalBuilderBlockId = (typeof CANONICAL_BUILDER_BLOCK_IDS)[number];
@@ -332,6 +333,79 @@ export const LeadQuizBlockDataSchema = z.object({
   successMessage: z.string().default("Diagnóstico enviado com sucesso! Nossa equipe entrará em contato."),
 });
 export type LeadQuizBlockData = z.infer<typeof LeadQuizBlockDataSchema>;
+
+// Prométhée Editorial News Portal Block
+export const PrometheeNewsArticleItemSchema = z.object({
+  id: z.string(),
+  title: z.string().min(1),
+  lead: z.string().default(""),
+  body: z.string().default(""),
+  category: z.string().default("Para você"),
+  city: z.string().default("Notícias do Vale"),
+  publishedAgo: z.string().default("15min"),
+  readingTime: z.string().default("4 min"),
+  author: z.string().default("Redação Regional"),
+  imageUrl: z.string().default(""),
+  imageAlt: z.string().default(""),
+  isBreaking: z.boolean().default(false),
+  likesCount: z.number().int().nonnegative().default(24),
+  commentsCount: z.number().int().nonnegative().default(6),
+});
+export type PrometheeNewsArticleItem = z.infer<typeof PrometheeNewsArticleItemSchema>;
+
+export const PrometheeNewsAdSlotSchema = z.object({
+  id: z.string(),
+  format: z.enum(["banner", "card", "inline"]).default("banner"),
+  sponsorName: z.string().default("Anunciante Regional"),
+  headline: z.string().default("Anuncie sua marca no portal líder de audiência qualificada"),
+  description: z.string().default("Formatos nativos, banners e patrocínio de editorias com alta taxa de leitura."),
+  ctaLabel: z.string().default("Anunciar Agora"),
+  ctaHref: z.string().default("#"),
+  imageUrl: z.string().default(""),
+});
+export type PrometheeNewsAdSlot = z.infer<typeof PrometheeNewsAdSlotSchema>;
+
+export const PrometheeNewsPortalBlockDataSchema = z.object({
+  mastheadTitle: z.string().default("Prométhée"),
+  mastheadSubtitle: z.string().default("Jornalismo Regional & Curadoria Editorial"),
+  logoStyle: z.enum(["promethee_dome", "editorial_serif", "custom_image"]).default("promethee_dome"),
+  logoUrl: z.string().default(""),
+  dataSource: z
+    .enum(["approved_mined_AND_custom", "approved_mined_only", "custom_editorial"])
+    .default("approved_mined_AND_custom"),
+  showCityFilter: z.boolean().default(true),
+  showSearch: z.boolean().default(true),
+  allowCitizenPosts: z.boolean().default(true),
+  showBreakingCarousel: z.boolean().default(true),
+  breakingSectionTitle: z.string().default("Plantão & Destaques em Tempo Real"),
+  showAds: z.boolean().default(true),
+  cities: z
+    .array(z.string())
+    .default([
+      "Notícias do Vale",
+      "São José dos Campos",
+      "Taubaté",
+      "Jacareí",
+      "Pindamonhangaba",
+      "Guaratinguetá",
+      "Caraguatatuba",
+      "Campos do Jordão",
+    ]),
+  categories: z
+    .array(z.string())
+    .default([
+      "Para você",
+      "Urgente",
+      "Segurança",
+      "Economia",
+      "Esportes",
+      "Tecnologia",
+      "Cultura",
+    ]),
+  articles: z.array(PrometheeNewsArticleItemSchema).default([]),
+  adSlots: z.array(PrometheeNewsAdSlotSchema).default([]),
+});
+export type PrometheeNewsPortalBlockData = z.infer<typeof PrometheeNewsPortalBlockDataSchema>;
 
 // ── 3. ESTRUTURA DA INSTÂNCIA DO BLOCO (STATE TREE NODE) ──
 

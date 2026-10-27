@@ -17,6 +17,7 @@ import { HotpagesRail } from "@/components/commerce/hotpages-rail";
 import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
 import { ContextualStoriesRail } from "@/components/stories/contextual-stories-rail";
 import { GroceryProductCard } from "@/components/commerce/grocery-product-card";
+import { SupermarketCatalogGrid } from "@/components/commerce/SupermarketCatalogGrid";
 import { listPublishedProducts, listPublishedCategories, listAvailableAttributes } from "@/services/catalog.functions";
 import { getMarketplaceFeed } from "@/services/marketplace.functions";
 import { getModularSurfaceFeed } from "@/services/surface-cms.functions";

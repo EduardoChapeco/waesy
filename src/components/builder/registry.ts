@@ -17,6 +17,7 @@ import { InteractiveQuoteCalculator } from "./blocks/InteractiveQuoteCalculator"
 import { InfiniteMarqueeRibbon } from "./blocks/InfiniteMarqueeRibbon";
 import { InteractiveComparisonSlider } from "./blocks/InteractiveComparisonSlider";
 import { InteractiveLeadQuizFlow } from "./blocks/InteractiveLeadQuizFlow";
+import { PrometheeNewsPortalBlock } from "./blocks/PrometheeNewsPortalBlock";
 
 import { createClassicOmniBlock } from "./ClassicBlockAdapter";
 
@@ -112,9 +113,97 @@ import type {
   InfiniteMarqueeBlockData,
   ComparisonSliderBlockData,
   LeadQuizBlockData,
+  PrometheeNewsPortalBlockData,
 } from "./types";
 
 export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
+  // ── 0. PORTAL DE NOTÍCIAS PROMÉTHÉE (EDITORIAL / JORNAL REGIONAL) ──
+  {
+    id: "news_promethee_portal",
+    name: "Portal de Notícias Prométhée",
+    category: "media",
+    description: "Portal jornalístico completo estilo Prométhée com masthead, filtro por cidades, abas editoriais, carrossel breaking news, feed vertical squircle, publicação cidadã (+) e espaços ADS.",
+    capabilities: ["responsive", "cms", "media"],
+    component: PrometheeNewsPortalBlock as any,
+    defaultProps: {
+      mastheadTitle: "Vale Agora",
+      mastheadSubtitle: "Jornalismo Regional & Curadoria Editorial",
+      logoStyle: "promethee_dome",
+      logoUrl: "",
+      dataSource: "approved_mined_AND_custom",
+      showCityFilter: true,
+      showSearch: true,
+      allowCitizenPosts: true,
+      showBreakingCarousel: true,
+      breakingSectionTitle: "Plantão & Destaques em Tempo Real",
+      showAds: true,
+      cities: [
+        "Notícias do Vale",
+        "São José dos Campos",
+        "Taubaté",
+        "Jacareí",
+        "Pindamonhangaba",
+        "Guaratinguetá",
+        "Caraguatatuba",
+        "Campos do Jordão",
+      ],
+      categories: [
+        "Para você",
+        "Urgente",
+        "Segurança",
+        "Economia",
+        "Esportes",
+        "Tecnologia",
+        "Cultura",
+      ],
+      articles: [
+        {
+          id: "prom_art_1",
+          title: "Corredor tecnológico de São José dos Campos recebe novo centro de engenharia aeroespacial",
+          lead: "Investimento consolida cadeia de fornecedores do Parque Tecnológico e abre vagas de alta qualificação para engenheiros e técnicos no Vale do Paraíba.",
+          body: "O Parque Tecnológico de São José dos Campos confirmou a expansão de sua ala de sistemas autônomos e propulsão limpa. Mais de 35 empresas fornecedoras da cadeia aeronáutica já assinaram protocolo de integração.",
+          category: "Economia",
+          city: "São José dos Campos",
+          publishedAgo: "15min",
+          readingTime: "4 min",
+          author: "Redação Regional",
+          imageUrl: "",
+          imageAlt: "Centro de engenharia no Parque Tecnológico",
+          isBreaking: true,
+          likesCount: 42,
+          commentsCount: 14,
+        },
+        {
+          id: "prom_art_2",
+          title: "Monitoramento inteligente reduz tempo de resposta viária entre Taubaté e Jacareí",
+          lead: "Integração de câmeras ópticas com central regional permite desvio preventivo de tráfego pesado e atendimento rápido em horários de pico.",
+          body: "O novo protocolo de integração entre os centros de controle operacional das prefeituras do Vale reduziu em 28% o tempo médio de liberação de faixas urbanas e rodoviárias.",
+          category: "Segurança",
+          city: "Taubaté",
+          publishedAgo: "32min",
+          readingTime: "3 min",
+          author: "Editoria Cidades",
+          imageUrl: "",
+          imageAlt: "Central de monitoramento viário regional",
+          isBreaking: true,
+          likesCount: 29,
+          commentsCount: 12,
+        },
+      ],
+      adSlots: [
+        {
+          id: "prom_ad_1",
+          format: "banner",
+          sponsorName: "Espaço Publicitário Regional · ADS",
+          headline: "Posicione sua marca em destaque no feed editorial de maior leitura da região",
+          description: "Formatos nativos Prométhée, banners horizontais e patrocínio de editorias por cidade.",
+          ctaLabel: "Anunciar no Portal",
+          ctaHref: "#anunciar",
+          imageUrl: "",
+        },
+      ],
+    } as PrometheeNewsPortalBlockData,
+  },
   // ── 1. APRESENTAÇÃO & HERO ──
   {
     id: "hero_minimal_split",
@@ -1448,6 +1537,8 @@ export const WIX_CATEGORY_CONFIG: { id: WixBlockCategory; label: string; icon: a
 
 export const BLOCK_TO_WIX_CATEGORY: Record<string, WixBlockCategory> = {
   // Hero
+  // Hero
+  news_promethee_portal: "hero",
   hero_minimal_split: "hero",
   hero_interactive_carousel: "hero",
   infinite_marquee_ribbon: "hero",

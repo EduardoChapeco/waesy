@@ -16,6 +16,7 @@ import { Route as SitemapNewsDotxmlRouteImport } from './routes/sitemap-news[.]x
 import { Route as SitemapProductsDotxmlRouteImport } from './routes/sitemap-products[.]xml'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as StatusRouteImport } from './routes/status'
+import { Route as ValeagoranewsRouteImport } from './routes/valeagoranews'
 import { Route as WorkspaceRouteImport } from './routes/workspace'
 import { Route as StoreIndexRouteImport } from './routes/_store.index'
 import { Route as StoreAcougueRouteImport } from './routes/_store.acougue'
@@ -463,6 +464,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const StatusRoute = StatusRouteImport.update({
   id: '/status',
   path: '/status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ValeagoranewsRoute = ValeagoranewsRouteImport.update({
+  id: '/valeagoranews',
+  path: '/valeagoranews',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WorkspaceRoute = WorkspaceRouteImport.update({
@@ -2680,6 +2686,7 @@ export interface FileRoutesByFullPath {
   '/sitemap-products.xml': typeof SitemapProductsDotxmlRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/status': typeof StatusRoute
+  '/valeagoranews': typeof ValeagoranewsRoute
   '/workspace': typeof WorkspaceRouteWithChildren
   '/acougue': typeof StoreAcougueRoute
   '/afiliados': typeof StoreAfiliadosRoute
@@ -3100,6 +3107,7 @@ export interface FileRoutesByTo {
   '/sitemap-products.xml': typeof SitemapProductsDotxmlRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/status': typeof StatusRoute
+  '/valeagoranews': typeof ValeagoranewsRoute
   '/acougue': typeof StoreAcougueRoute
   '/afiliados': typeof StoreAfiliadosRoute
   '/agenda': typeof StoreAgendaRoute
@@ -3516,6 +3524,7 @@ export interface FileRoutesById {
   '/sitemap-products.xml': typeof SitemapProductsDotxmlRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/status': typeof StatusRoute
+  '/valeagoranews': typeof ValeagoranewsRoute
   '/workspace': typeof WorkspaceRouteWithChildren
   '/_store/acougue': typeof StoreAcougueRoute
   '/_store/afiliados': typeof StoreAfiliadosRoute
@@ -3941,6 +3950,7 @@ export interface FileRouteTypes {
     | '/sitemap-products.xml'
     | '/sitemap.xml'
     | '/status'
+    | '/valeagoranews'
     | '/workspace'
     | '/acougue'
     | '/afiliados'
@@ -4361,6 +4371,7 @@ export interface FileRouteTypes {
     | '/sitemap-products.xml'
     | '/sitemap.xml'
     | '/status'
+    | '/valeagoranews'
     | '/acougue'
     | '/afiliados'
     | '/agenda'
@@ -4776,6 +4787,7 @@ export interface FileRouteTypes {
     | '/sitemap-products.xml'
     | '/sitemap.xml'
     | '/status'
+    | '/valeagoranews'
     | '/workspace'
     | '/_store/acougue'
     | '/_store/afiliados'
@@ -5200,6 +5212,7 @@ export interface RootRouteChildren {
   SitemapProductsDotxmlRoute: typeof SitemapProductsDotxmlRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StatusRoute: typeof StatusRoute
+  ValeagoranewsRoute: typeof ValeagoranewsRoute
   WorkspaceRoute: typeof WorkspaceRouteWithChildren
   ApiOpenapiDotjsonRoute: typeof ApiOpenapiDotjsonRoute
   ApiSecurityTelemetryRoute: typeof ApiSecurityTelemetryRoute
@@ -5290,6 +5303,13 @@ declare module '@tanstack/react-router' {
       path: '/status'
       fullPath: '/status'
       preLoaderRoute: typeof StatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/valeagoranews': {
+      id: '/valeagoranews'
+      path: '/valeagoranews'
+      fullPath: '/valeagoranews'
+      preLoaderRoute: typeof ValeagoranewsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/workspace': {
@@ -9158,6 +9178,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapProductsDotxmlRoute: SitemapProductsDotxmlRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StatusRoute: StatusRoute,
+  ValeagoranewsRoute: ValeagoranewsRoute,
   WorkspaceRoute: WorkspaceRouteWithChildren,
   ApiOpenapiDotjsonRoute: ApiOpenapiDotjsonRoute,
   ApiSecurityTelemetryRoute: ApiSecurityTelemetryRoute,

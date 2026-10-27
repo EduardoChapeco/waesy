@@ -83,6 +83,8 @@ export type { WixBlockCategory } from "./registry";
 
 const BLOCK_ICONS: Record<string, any> = {
   // Hero
+  // Hero
+  news_promethee_portal: LayoutTemplate,
   hero_minimal_split: LayoutTemplate,
   hero_interactive_carousel: Image,
   split_banner: LayoutTemplate,
@@ -163,6 +165,7 @@ const CATALOG_BOUND_BLOCK_TYPES = new Set([
   "travel_hotel_slider",
   "service_pricing_table",
   "event_rail",
+  "news_promethee_portal",
 ]);
 
 export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
@@ -1868,6 +1871,261 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
       )}
 
       {/* 15. Endereço Físico */}
+      {selectedBlock.type === "news_promethee_portal" && (
+        <div className="pt-3 border-t border-border/60 space-y-4">
+          <div className="rounded-xl border border-border/70 bg-muted/20 p-3 space-y-3">
+            <span className="text-xs font-bold text-foreground block">
+              Configuração do Portal Prométhée
+            </span>
+
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1">
+                Nome do Jornal (Masthead)
+              </label>
+              <Input
+                value={config.mastheadTitle || ""}
+                onChange={(e) => onUpdateConfig("mastheadTitle", e.target.value)}
+                placeholder="Ex: Vale Agora / Prométhée"
+                className="h-11 min-h-11 rounded-lg text-xs"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1">
+                Subtítulo Editorial
+              </label>
+              <Input
+                value={config.mastheadSubtitle || ""}
+                onChange={(e) => onUpdateConfig("mastheadSubtitle", e.target.value)}
+                placeholder="Jornalismo Regional & Curadoria"
+                className="h-11 min-h-11 rounded-lg text-xs"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1">
+                Fonte de Alimentação das Notícias
+              </label>
+              <select
+                value={config.dataSource || "approved_mined_AND_custom"}
+                onChange={(e) => onUpdateConfig("dataSource", e.target.value)}
+                className="w-full h-11 px-3 rounded-lg border border-border bg-background text-xs font-semibold text-foreground"
+              >
+                <option value="approved_mined_AND_custom">
+                  Notícias Mineradas Aprovadas + Pautas Editoriais
+                </option>
+                <option value="approved_mined_only">
+                  Somente Catálogo de Notícias Mineradas Aprovadas
+                </option>
+                <option value="custom_editorial">
+                  Somente Pautas Editoriais Manuais deste Bloco
+                </option>
+              </select>
+            </div>
+
+            <MediaUploader
+              label="Logo do Jornal (Opcional — Padrão: Domo Prométhée)"
+              value={config.logoUrl || ""}
+              onChange={(url) => onUpdateConfig("logoUrl", url)}
+            />
+
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <label className="flex items-center gap-2 text-xs font-medium text-foreground cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={config.showCityFilter !== false}
+                  onChange={(e) => onUpdateConfig("showCityFilter", e.target.checked)}
+                />
+                <span>Filtro Cidades</span>
+              </label>
+              <label className="flex items-center gap-2 text-xs font-medium text-foreground cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={config.allowCitizenPosts !== false}
+                  onChange={(e) => onUpdateConfig("allowCitizenPosts", e.target.checked)}
+                />
+                <span>Botão + Publicar</span>
+              </label>
+              <label className="flex items-center gap-2 text-xs font-medium text-foreground cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={config.showBreakingCarousel !== false}
+                  onChange={(e) => onUpdateConfig("showBreakingCarousel", e.target.checked)}
+                />
+                <span>Carrossel Breaking</span>
+              </label>
+              <label className="flex items-center gap-2 text-xs font-medium text-foreground cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={config.showAds !== false}
+                  onChange={(e) => onUpdateConfig("showAds", e.target.checked)}
+                />
+                <span>Espaços ADS</span>
+              </label>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1">
+                Cidades do Filtro (separadas por vírgula)
+              </label>
+              <Input
+                value={Array.isArray(config.cities) ? config.cities.join(", ") : ""}
+                onChange={(e) =>
+                  onUpdateConfig(
+                    "cities",
+                    e.target.value
+                      .split(",")
+                      .map((s) => s.trim())
+                      .filter(Boolean),
+                  )
+                }
+                placeholder="Notícias do Vale, São José dos Campos, Taubaté..."
+                className="h-11 min-h-11 rounded-lg text-xs"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1">
+                Abas Editoriais (separadas por vírgula)
+              </label>
+              <Input
+                value={Array.isArray(config.categories) ? config.categories.join(", ") : ""}
+                onChange={(e) =>
+                  onUpdateConfig(
+                    "categories",
+                    e.target.value
+                      .split(",")
+                      .map((s) => s.trim())
+                      .filter(Boolean),
+                  )
+                }
+                placeholder="Para você, Urgente, Segurança, Economia..."
+                className="h-11 min-h-11 rounded-lg text-xs"
+              />
+            </div>
+          </div>
+
+          {/* Lista Editável de Notícias / Pautas */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-foreground">
+                Matérias & Destaques ({(config.articles || []).length})
+              </span>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  const next = [
+                    ...(config.articles || []),
+                    {
+                      id: `art_${Date.now()}`,
+                      title: "Nova matéria editorial da região",
+                      lead: "Resumo jornalístico direto com os principais fatos apurados pela redação.",
+                      body: "Texto integral da reportagem com parágrafos estruturados.",
+                      category: "Urgente",
+                      city: "São José dos Campos",
+                      publishedAgo: "Agora",
+                      readingTime: "3 min",
+                      author: "Redação",
+                      imageUrl: "",
+                      imageAlt: "",
+                      isBreaking: true,
+                      likesCount: 12,
+                      commentsCount: 3,
+                    },
+                  ];
+                  onUpdateConfig("articles", next);
+                }}
+                className="h-8 px-2.5 text-xs rounded-lg"
+              >
+                <Plus className="size-3.5 mr-1" />
+                Nova Matéria
+              </Button>
+            </div>
+
+            {(config.articles || []).map((art: any, idx: number) => (
+              <div
+                key={art.id || idx}
+                className="p-3 rounded-xl border border-border/70 bg-card space-y-2"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-muted-foreground">
+                    Matéria #{idx + 1}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = (config.articles || []).filter((_: any, i: number) => i !== idx);
+                      onUpdateConfig("articles", next);
+                    }}
+                    className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    title="Remover matéria"
+                  >
+                    <Trash2 className="size-3.5" />
+                  </button>
+                </div>
+
+                <Input
+                  value={art.title || ""}
+                  onChange={(e) => {
+                    const next = [...(config.articles || [])];
+                    next[idx] = { ...art, title: e.target.value };
+                    onUpdateConfig("articles", next);
+                  }}
+                  placeholder="Título da reportagem"
+                  className="h-11 min-h-11 rounded-lg text-xs"
+                />
+
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    value={art.city || ""}
+                    onChange={(e) => {
+                      const next = [...(config.articles || [])];
+                      next[idx] = { ...art, city: e.target.value };
+                      onUpdateConfig("articles", next);
+                    }}
+                    placeholder="Cidade"
+                    className="h-11 min-h-11 rounded-lg text-xs"
+                  />
+                  <Input
+                    value={art.category || ""}
+                    onChange={(e) => {
+                      const next = [...(config.articles || [])];
+                      next[idx] = { ...art, category: e.target.value };
+                      onUpdateConfig("articles", next);
+                    }}
+                    placeholder="Editoria"
+                    className="h-11 min-h-11 rounded-lg text-xs"
+                  />
+                </div>
+
+                <Textarea
+                  value={art.lead || ""}
+                  onChange={(e) => {
+                    const next = [...(config.articles || [])];
+                    next[idx] = { ...art, lead: e.target.value };
+                    onUpdateConfig("articles", next);
+                  }}
+                  placeholder="Lead / Resumo da notícia"
+                  rows={2}
+                  className="text-xs resize-none rounded-lg"
+                />
+
+                <MediaUploader
+                  label="Foto de Capa da Matéria"
+                  value={art.imageUrl || ""}
+                  onChange={(url) => {
+                    const next = [...(config.articles || [])];
+                    next[idx] = { ...art, imageUrl: url };
+                    onUpdateConfig("articles", next);
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       {(config.address !== undefined || config.addressText !== undefined) && (
         <div className="pt-2 border-t border-border/40 space-y-2">
           <label className="block text-xs font-semibold text-foreground">

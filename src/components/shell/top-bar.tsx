@@ -3,7 +3,8 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { DEFAULT_BRAND_NAME } from "@/lib/brand";
 import { LocationMasterPill } from "@/components/location/location-master-pill";
 import { UtilityCluster } from "@/components/shell/utility-cluster";
-import { MagnifyingGlass } from "@phosphor-icons/react";
+import { MagnifyingGlass, List } from "@phosphor-icons/react";
+import { drawerStore } from "@/lib/drawer-store";
 import { BetaExplanationModal } from "@/components/shell/beta-explanation-modal";
 
 export interface TopBarProps {
@@ -37,6 +38,16 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
       <div className="px-3 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 h-14 sm:h-16 w-full">
         {/* Lado Esquerdo: Logo + Selo Beta Silencioso + Localização */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0">
+          {/* Botão Hambúrguer SuperApp Mobile (iFood / Noor / 99Pay Parity) */}
+          <button
+            type="button"
+            onClick={() => drawerStore.openSuperApp()}
+            aria-label="Abrir catálogo do SuperApp"
+            title="Catálogo Waesy"
+            className="md:hidden size-11 min-h-11 min-w-11 -ml-1 rounded-lg flex items-center justify-center text-foreground hover:bg-muted/50 active:bg-muted/80 active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <List className="size-6" weight="bold" />
+          </button>
           <Link
             to="/"
             className="flex items-center gap-2 hover:opacity-90 transition-opacity shrink-0"
