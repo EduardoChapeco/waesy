@@ -32,6 +32,7 @@ import { getPublicEvents } from "@/services/events.functions";
 import { listPublicArticles } from "@/services/news.functions";
 import { getMuralFeed, type MuralFeedResponse } from "@/services/social.functions";
 import { getAllPublicConcursos, type RaffleDTO } from "@/services/invite.functions";
+import { getUserSession } from "@/services/auth.functions";
 import { HomeMobileNativeApp } from "@/components/home/HomeMobileNativeApp";
 import { HomeDesktopWebApp } from "@/components/home/HomeDesktopWebApp";
 import { useWindowSizeClass } from "@/hooks/use-mobile";
@@ -89,6 +90,7 @@ export const Route = createFileRoute("/_store/")({
         workspaceListings,
         homeSections,
         showcasePosts,
+        session,
       ] = await Promise.all([
         listActiveBanners({ data: { placement: "home", city: filteredCity } }).catch(() => []),
         listActiveBanners({ data: { placement: "home_middle", city: filteredCity } }).catch(() => []),
@@ -105,6 +107,7 @@ export const Route = createFileRoute("/_store/")({
         listUnifiedListings({ data: { origin: "workspace", limit: 36 } }).catch(() => []),
         listPublicHomePageSections({ data: { city: filteredCity } }).catch(() => []),
         getUnifiedShowcasePosts({ data: { limit: 12, city: filteredCity } }).catch(() => []),
+        getUserSession().catch(() => null),
       ]);
 
       const directWorkspaceProducts = (workspaceListings || []).map((item: UnifiedListing) => {
@@ -151,6 +154,7 @@ export const Route = createFileRoute("/_store/")({
         concursos: concursos || [],
         homeSections: homeSections || [],
         showcasePosts: showcasePosts || [],
+        session: session || null,
         activeCity: filteredCity,
       };
     } catch (err) {
@@ -540,17 +544,14 @@ function CommunityMarketplaceView({ data }: { data: any }) {
     filteredEvents,
     unifiedItems,
     formatMoney,
+    session: data.session,
   };
 
   const { isCompact } = useWindowSizeClass();
 
-  return (
-    <div className="w-full">
-      {isCompact ? (
-        <HomeMobileNativeApp {...sharedViewProps} />
-      ) : (
-        <HomeDesktopWebApp {...sharedViewProps} />
-      )}
-    </div>
-  );
+  if (isCompact) {
+    return <HomeMobileNativeApp {...sharedViewProps} />;
+  }
+
+  return <HomeDesktopWebApp {...sharedViewProps} />;
 }

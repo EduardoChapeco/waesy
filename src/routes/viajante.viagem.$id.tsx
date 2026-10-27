@@ -211,7 +211,7 @@ export default function TripPortalPage() {
         title: `Reserva #${tripContext.reservationCode} (${tripContext.operatorName})`,
         code: tripContext.reservationCode,
         fileName: `confirmacao-${tripContext.reservationCode}.pdf`,
-        fileUrl: vouchers?.[0]?.public_token ? `/_store/voucher/${vouchers[0].public_token}` : null,
+        fileUrl: vouchers?.[0]?.public_token ? `/voucher/${vouchers[0].public_token}` : null,
       },
     ];
   }, [officialDocuments, vouchers, tripContext]);

@@ -1,431 +1,224 @@
 import { resolveActiveCity } from "@/lib/city-helper";
-import { Tag } from "lucide-react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useState, useMemo } from "react";
-import { Flame, Storefront, ForkKnife, Coffee, Heartbeat, Clock, ShieldCheck, Truck, ArrowRight, Package, Broom, CheckCircle, CalendarCheck, ShoppingBag, MagnifyingGlass, SlidersHorizontal, MapPin, Leaf, Grains, Drop, Buildings } from "@phosphor-icons/react";
+import {
+  Storefront,
+  ShoppingBag,
+  Flame,
+  Leaf,
+  Grains,
+  Drop,
+  Broom,
+  BeerBottle,
+} from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import { EmptyState } from "@/components/state/states";
 import { PageSkeleton } from "@/components/state/loading";
-import { HorizontalRail } from "@/components/commerce/horizontal-rail";
-import { OfferCard } from "@/components/commerce/offer-card";
-import { StoreCard } from "@/components/commerce/store-card";
-import { HotpagesRail } from "@/components/commerce/hotpages-rail";
-import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
-import { ContextualStoriesRail } from "@/components/stories/contextual-stories-rail";
-import { GroceryProductCard } from "@/components/commerce/grocery-product-card";
-import { SupermarketCatalogGrid } from "@/components/commerce/SupermarketCatalogGrid";
-import { listPublishedProducts, listPublishedCategories, listAvailableAttributes } from "@/services/catalog.functions";
-import { getMarketplaceFeed } from "@/services/marketplace.functions";
 import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
-import { ModularSurfaceFeed } from "@/components/commerce/modular-surface-feed";
 import { listActiveBanners } from "@/services/banner.functions";
 import { listHotpages } from "@/services/hotpage.functions";
-import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
-import { PromotionalFlyersRail } from "@/components/commerce/flyers/promotional-flyers-rail";
-import { listActiveStoreFlyers } from "@/services/store-flyers.functions";
-import type { ProductCardDTO } from "@/types/catalog";
-import { formatMoney } from "@/lib/money";
-import { resolveNicheDepartments } from "@/lib/niche-helpers";
+import { listPublishedProducts } from "@/services/catalog.functions";
 
-// ─── Search Schema & View Modes ───────────────────────────────────────────────
+import { CommercialShowcaseTemplate } from "@/components/commerce/ifood/CommercialShowcaseTemplate";
+import type { SubcategoryItem } from "@/components/commerce/ifood/IFoodSubcategoryPillRail";
+import type { FeatureMiniBannerItem } from "@/components/commerce/ifood/IFoodFeatureMiniBannersRail";
+import type { RecentStoreItem } from "@/components/commerce/ifood/IFoodRecentStoresRail";
+import type { IFoodStoreCardData } from "@/components/commerce/ifood/IFoodStoreFeedCard";
+
+import type { ProductCardDTO } from "@/types/catalog";
+
 const SearchSchema = z.object({
- q: z.string().optional(),
- view: z.enum(["feed", "grid", "list"]).default("grid").optional(),
- sort: z.enum(["newest", "price_asc", "price_desc", "in_stock"]).default("newest").optional(),
- niche: z.string().optional(),
- categoria: z.string().optional(),
- loja: z.string().optional(),
- dieta: z.string().optional(),
- minCents: z.number().int().min(0).optional(),
- maxCents: z.number().int().min(0).optional(),
- atributos: z.record(z.string()).optional(),
+  q: z.string().optional(),
+  view: z.enum(["feed", "grid", "list"]).default("feed").optional(),
+  sort: z.enum(["newest", "price_asc", "price_desc", "in_stock"]).default("newest").optional(),
+  categoria: z.string().optional(),
 });
 
-type CatalogSearch = z.infer<typeof SearchSchema>;
+type MercadoSearch = z.infer<typeof SearchSchema>;
 
-// ─── Departamentos e Corredores do Supermercado (Clean Apple HIG) ─────────────
-const SUPERMARKET_DEPARTMENTS: FilterChipOption[] = [
- { id: "todos", label: "Tudo" },
- { id: "tabloide", label: "Tabloide da Semana", badge: "Ofertas" },
- { id: "hortifruti", label: "Hortifrúti" },
- { id: "carnes", label: "Açougue" },
- { id: "padaria", label: "Padaria e Frios" },
- { id: "laticinios", label: "Laticínios" },
- { id: "bebidas", label: "Bebidas" },
- { id: "mercearia", label: "Mercearia" },
- { id: "limpeza", label: "Limpeza" },
- { id: "higiene", label: "Higiene Pessoal" },
- { id: "congelados", label: "Congelados" },
- { id: "pet", label: "Pet Shop" },
-];
-
-const DIETARY_FILTERS = [
- { id: "todos", label: "Todos" },
- { id: "organico", label: "Orgânicos" },
- { id: "sem_gluten", label: "Sem Glúten" },
- { id: "sem_lactose", label: "Sem Lactose" },
- { id: "oferta_relampago", label: "Ofertas Relâmpago" },
+const MERCADO_SUBCATEGORIES: SubcategoryItem[] = [
+  { id: "todos", label: "Tudo", icon: Storefront },
+  { id: "hortifruti", label: "Hortifrúti", icon: Leaf, badge: "Fresco" },
+  { id: "carnes", label: "Carnes & Aves", icon: Flame },
+  { id: "padaria", label: "Padaria & Frios", icon: Grains },
+  { id: "laticinios", label: "Laticínios", icon: Drop },
+  { id: "bebidas", label: "Bebidas", icon: BeerBottle },
+  { id: "mercearia", label: "Mercearia", icon: ShoppingBag },
+  { id: "limpeza", label: "Limpeza", icon: Broom },
 ];
 
 export const Route = createFileRoute("/_store/mercado")({
- head: () => ({
- meta: [
- { title: "Mercado — Supermercados e Mercearias da Região | Waesy" },
- {
- name: "description",
- content:
- "Feed completo e unificado de todos os supermercados, atacados, açougues e hortifrútis da região. Compare ofertas e faça compras online com entrega agendada ou retirada express.",
- },
- ],
- }),
- validateSearch: (search: Record<string, unknown>): CatalogSearch => SearchSchema.parse(search),
- loaderDeps: ({ search }) => search,
- loader: async ({ location }) => {
-   try {
- const search = location.search as CatalogSearch;
- const activeCity = (search as any)?.city || (search as any)?.cidade || undefined;
- const [productsRes, categoriesRes, attributesRes, feedRes, bannersRes, hotpagesRes, flyersRes] = await Promise.all([
- listPublishedProducts({
- data: {
- categorySlug: search.categoria,
- niche: search.niche === "tabloide" || search.niche === "todos" ? undefined : search.niche,
- sort: search.sort ?? "newest",
- minCents: search.minCents,
- maxCents: search.maxCents,
- attributes: search.atributos,
- limit: 60,
- },
- }).catch(() => ({ status: "ok" as const, data: [] as ProductCardDTO[] })),
- listPublishedCategories().catch(() => []),
- listAvailableAttributes().catch(() => []),
- getModularSurfaceFeed({ data: { surfaceSlug: search.niche || "mercado", city: activeCity } }).catch(() => ({ sections: [], allProducts: [] })),
- listActiveBanners({ data: { placement: "mercado", city: activeCity } }).catch(() => []),
- listHotpages({ data: { module: "mercado" } }).catch(() => []),
- listActiveStoreFlyers({ data: {} }).catch(() => []),
- ]);
+  head: () => ({
+    meta: [
+      { title: "Mercados e Supermercados Online | Waesy" },
+      {
+        name: "description",
+        content:
+          "Faça compras de supermercado, feira, açougue, padaria e bebidas com entrega rápida em Chapecó e região.",
+      },
+    ],
+  }),
+  validateSearch: (search: Record<string, unknown>): MercadoSearch =>
+    SearchSchema.parse(search),
+  loaderDeps: ({ search }) => search,
+  loader: async ({ location, deps: search }) => {
+    const activeCity = resolveActiveCity(location?.search);
+    try {
+      const [banners, hotpages, marketplaceFeed, productsRes] = await Promise.all([
+        listActiveBanners({ data: { placement: "mercado", city: activeCity } }).catch(() => []),
+        listHotpages({ data: { module: "mercado" } }).catch(() => []),
+        getModularSurfaceFeed({ data: { surfaceSlug: "mercado", city: activeCity } }).catch(() => ({
+          sections: [],
+          allProducts: [],
+        })),
+        listPublishedProducts({
+          data: { niche: "mercado", limit: 40, sort: search.sort ?? "newest" },
+        }).catch(() => ({ status: "empty" as const, data: [] as ProductCardDTO[] })),
+      ]);
 
       return {
-        products: productsRes || { status: "ok", data: [] },
-        categories: categoriesRes || [],
-        availableAttributes: attributesRes || [],
-        feed: feedRes || { sections: [], allProducts: [] },
-        banners: bannersRes || [],
-        hotpages: hotpagesRes || [],
-        flyers: flyersRes || [],
+        banners,
+        hotpages,
+        marketplaceFeed,
+        catalogProducts: productsRes.status === "ok" ? (productsRes as any).data ?? [] : [],
       };
     } catch (err) {
       console.error("[loader:_store.mercado] Unhandled error:", err);
-      return {
-        products: { status: "ok", data: [] },
-        categories: [],
-        availableAttributes: [],
-        feed: { sections: [], allProducts: [] },
-        banners: [],
-        hotpages: [],
-        flyers: [],
-      };
+      return { banners: null, hotpages: null, marketplaceFeed: null, catalogProducts: null };
     }
   },
- pendingComponent: PageSkeleton,
- component: SupermarketMasterPage,
+  errorComponent: MercadoErrorComponent,
+  component: MercadoVerticalPage,
+  pendingComponent: PageSkeleton,
 });
 
-function SupermarketMasterPage() {
-  const loaderData = (Route.useLoaderData() as any) || {};
-  const result = loaderData.products || { status: "ok", data: [] };
-  const categories = loaderData.categories || [];
-  const availableAttributes = loaderData.availableAttributes || [];
-  const feed = loaderData.feed || { sections: [], allProducts: [] };
-  const banners = loaderData.banners || [];
-  const hotpages = loaderData.hotpages || [];
-  const flyers = loaderData.flyers || [];
-  const search = Route.useSearch();
- const navigate = useNavigate();
-
- const currentView = (search.view || "grid") as ViewModeType;
- const [localSearch, setLocalSearch] = useState(search.q || "");
- const [selectedDietary, setSelectedDietary] = useState(search.dieta || "todos");
- const [selectedStore, setSelectedStore] = useState<string>(search.loja || "todos");
-
- const handleSearchSubmit = (val: string) => {
- setLocalSearch(val);
- navigate({
- to: Route.fullPath,
- search: (s: Record<string, any>) => ({
- ...s,
- q: val || undefined,
- }),
- });
- };
-
- const handleSelectDepartment = (deptId: string) => {
- navigate({
- to: Route.fullPath,
- search: (s: Record<string, any>) => ({
- ...s,
- niche: deptId === "todos" ? undefined : deptId,
- categoria: undefined,
- }),
- });
- };
-
- const handleViewModeChange = (mode: ViewModeType) => {
- navigate({
- to: Route.fullPath,
- search: (s: Record<string, any>) => ({ ...s, view: mode }),
- });
- };
-
- const allProducts: ProductCardDTO[] =
- result.status === "ok" && result.data.length > 0
- ? result.data
- : (feed.allProducts || []).map((p: any) => ({
- id: p.id,
- slug: p.slug,
- title: p.title,
- brand: p.store_name,
- priceCents: p.price_cents,
- compareAtCents: p.original_price_cents,
- coverUrl: p.cover_image,
- coverAlt: p.title,
- isOutOfStock: false,
- attributes: {},
- }));
-
- // Lista dinâmica de todos os supermercados parceiros presentes no catálogo
- const availableStores = useMemo(() => {
- const storesSet = new Set<string>();
- allProducts.forEach((p: any) => {
- const name = p.store_name || p.storeName || p.brand;
- if (name) storesSet.add(name);
- });
- return Array.from(storesSet);
- }, [allProducts]);
-
- // Filtragem multi-loja e preferências
- const displayedProducts = useMemo(() => {
- return allProducts.filter((prod: any) => {
- // Filtro por supermercado / empório parceiro
- if (selectedStore !== "todos") {
- const storeName = prod.store_name || prod.storeName || prod.brand;
- if (storeName !== selectedStore) return false;
- }
-
- // Filtro de busca textual
- if (localSearch.trim()) {
- const q = localSearch.toLowerCase().trim();
- const matchesTitle = prod.title?.toLowerCase().includes(q);
- const matchesBrand = prod.brand?.toLowerCase().includes(q);
- const matchesStore = prod.store_name?.toLowerCase().includes(q);
- if (!matchesTitle && !matchesBrand && !matchesStore) return false;
- }
-
- // Filtro de ofertas da semana
- if (selectedDietary === "oferta_relampago") {
- return prod.compareAtCents && prod.compareAtCents > prod.priceCents;
- }
-
- return true;
- });
- }, [allProducts, localSearch, selectedDietary, selectedStore]);
-
- return (
- <div className="w-full space-y-6 pb-20">
- {/* ── 1. Top Banners do Mercado ── */}
- {banners && banners.length > 0 && (
- <BannerHeroCarousel banners={banners} className="w-full" />
- )}
-
- {/* ── 1.5. Encartes & Tabloides da Semana (Grandinhos, Retrô Mercadista ou Clean) ── */}
- {flyers && flyers.length > 0 && (
- <PromotionalFlyersRail
- flyers={flyers}
- title="Encartes"
- subtitle="Folhetos das redes e atacados locais com ofertas válidas por tempo limitado"
- />
- )}
-
- {/* ── 2. Stories Rápidos & Ofertas em Vídeo dos Mercados Parceiros ── */}
- <ContextualStoriesRail niche="mercado" className="py-1" />
-
- {/* ── 3. Seletor de Supermercados Parceiros (Multi-Store Filter - Padrão Botão Grande) ── */}
- {availableStores.length > 0 && (
- <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto sm:overflow-visible sm:flex-wrap no-scrollbar py-1">
- <button
- type="button"
- onClick={() => setSelectedStore("todos")}
- className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-colors duration-200 cursor-pointer select-none active:scale-98",
- selectedStore === "todos"
- ? "bg-foreground text-background border-foreground font-bold"
- : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
- )}
- >
- Todos os Mercados
- </button>
-
- {availableStores.map((store) => (
- <button
- key={store}
- type="button"
- onClick={() => setSelectedStore(store)}
- className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-colors duration-200 cursor-pointer select-none active:scale-98 shadow-2xs",
- selectedStore === store
- ? "bg-foreground text-background border-foreground font-bold shadow-xs"
- : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
- )}
- >
- {store}
- </button>
- ))}
- </div>
- )}
-
- {/* ── 4. Hotpages Promocionais Contextuais ── */}
- {hotpages && hotpages.length > 0 && (
- <section aria-label="Categorias em Destaque">
- <HotpagesRail hotpages={hotpages} activeSlug={search.niche} />
- </section>
- )}
-
- {/* ── 5. Barra de Controle de Descoberta (Busca + Corredores + Modos) ── */}
- <DiscoveryControlBar
- search={localSearch}
- onSearchChange={handleSearchSubmit}
- searchPlaceholder="Buscar carnes, hortifrúti, arroz, laticínios, limpeza..."
- categories={SUPERMARKET_DEPARTMENTS}
- activeCategory={search.niche || "todos"}
- onSelectCategory={handleSelectDepartment}
- viewMode={currentView}
- onViewModeChange={handleViewModeChange}
- allowedViewModes={["feed", "grid", "list"]}
- />
-
- {/* ── 6. Filtros Especiais de Dieta & Estilo de Vida (Padrão Botão Grande) ── */}
- <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto sm:overflow-visible sm:flex-wrap no-scrollbar py-1">
- {DIETARY_FILTERS.map((f) => {
- const isSelected = selectedDietary === f.id;
- return (
- <button
- key={f.id}
- type="button"
- onClick={() => setSelectedDietary(f.id)}
- className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-colors duration-200 cursor-pointer select-none active:scale-98 shadow-2xs",
- isSelected
- ? "bg-foreground text-background border-foreground font-bold shadow-xs"
- : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
- )}
- >
- <span>{f.label}</span>
- </button>
- );
- })}
- </div>
-
- {/* ── 7. Renderização Conforme o Modo de Visualização ── */}
-
- {/* MODE 1: FEED DE CORREDORES VIRTUAIS & ENCARTE DIGITAL */}
- {currentView === "feed" && (
- <div className="space-y-10">
- {/* Seções Modulares do CMS (Ofertas, Lojas, Grids, Bento) */}
- {feed.sections && feed.sections.length > 0 && (
- <ModularSurfaceFeed sections={feed.sections} />
- )}
-
-      {/* Corredores e Gôndolas com Trilhos Horizontais de Produtos */}
-      <div className="space-y-6 pt-2">
-        {displayedProducts.length > 0 ? (
-          <div className="space-y-8">
-            {(() => {
-              const grouped = displayedProducts.reduce((acc: Record<string, typeof displayedProducts>, prod) => {
-                const key = (prod as any).category_name || (prod as any).category || (prod as any).store_name || "Destaques do Mercado";
-                if (!acc[key]) acc[key] = [];
-                acc[key].push(prod);
-                return acc;
-              }, {});
-
-              return Object.entries(grouped).map(([groupName, prods]) => (
-                <HorizontalRail
-                  key={groupName}
-                  title={groupName}
-                  hideHeader={false}
-                  actionLabel="Ver grade"
-                  onAction={() => {
-                    handleViewModeChange("grid");
-                  }}
-                >
-                  {prods.map((prod) => (
-                    <div key={prod.id} className="w-56 sm:w-64 shrink-0">
-                      <GroceryProductCard product={prod} viewMode="grid" />
-                    </div>
-                  ))}
-                </HorizontalRail>
-              ));
-            })()}
-          </div>
-        ) : (
-          <div className="py-16 text-center space-y-3 bg-muted/10 rounded-lg border-0 p-8">
-            <EmptyState title="Nenhum produto encontrado neste corredor ou supermercado." />
-            <div className="pt-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  setLocalSearch("");
-                  setSelectedDietary("todos");
-                  setSelectedStore("todos");
-                  handleSelectDepartment("todos");
-                }}
-                className="rounded-lg font-bold text-xs"
-              >
-                Ver todos os supermercados
-              </Button>
-            </div>
-          </div>
-        )}
+function MercadoErrorComponent({ error, reset }: { error: any; reset: () => void }) {
+  return (
+    <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
+      <div className="inline-flex size-16 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-2">
+        <Storefront size={32} />
       </div>
- </div>
- )}
+      <h2 className="text-2xl font-bold text-foreground">Instabilidade ao carregar mercados</h2>
+      <p className="text-sm text-muted-foreground max-w-md mx-auto">
+        {error?.message || "Não foi possível carregar os supermercados e produtos no momento."}
+      </p>
+      <Button onClick={reset} className="rounded-lg font-bold">
+        Tentar Novamente
+      </Button>
+    </div>
+  );
+}
 
- {/* MODE 2: GRADE DENSA MULTI-SUPERMERCADOS */}
- {currentView === "grid" && (
- <div>
- {displayedProducts.length === 0 ? (
- <div className="py-24 text-center space-y-3 bg-muted/10 rounded-lg p-8">
- <EmptyState title="Nenhum item encontrado nos supermercados" />
- </div>
- ) : (
- <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
- {displayedProducts.map((prod) => (
- <GroceryProductCard key={prod.id} product={prod} viewMode="grid" />
- ))}
- </div>
- )}
- </div>
- )}
+function MercadoVerticalPage() {
+  const { banners, marketplaceFeed, catalogProducts } = ((Route.useLoaderData?.() as any) || {});
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
 
- {/* MODE 3: LISTA ESTILO CONFERÊNCIA DE COMPRAS (LARGURA MÁXIMA) */}
- {currentView === "list" && (
- <div className="space-y-3 w-full">
- {displayedProducts.length === 0 ? (
- <div className="py-24 text-center space-y-3 bg-muted/10 rounded-lg p-8">
- <EmptyState title="Nenhum item encontrado nos supermercados" />
- </div>
- ) : (
- <div className="flex flex-col gap-3 w-full">
- {displayedProducts.map((prod) => (
- <GroceryProductCard key={prod.id} product={prod} viewMode="list" />
- ))}
- </div>
- )}
- </div>
- )}
- </div>
- );
+  const [activeDepartment, setActiveDepartment] = useState(search.categoria || "todos");
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
+
+  const handleDepartmentChange = (depId: string) => {
+    setActiveDepartment(depId);
+    navigate({
+      search: (prev: any) => ({
+        ...prev,
+        categoria: depId === "todos" ? undefined : depId,
+      }),
+    });
+  };
+
+  const handleToggleFilter = (filterId: string) => {
+    setActiveFilters((prev) =>
+      prev.includes(filterId) ? prev.filter((id) => id !== filterId) : [...prev, filterId],
+    );
+  };
+
+  // Mercados reais do feed Surface CMS
+  const rawStores = useMemo(() => {
+    const storeSection = marketplaceFeed?.sections?.find((s: any) => s.type === "store_rail");
+    return storeSection?.items || [];
+  }, [marketplaceFeed]);
+
+  const featureMiniBanners: FeatureMiniBannerItem[] = useMemo(() => {
+    const bannerSection = marketplaceFeed?.sections?.find(
+      (s: any) => s.type === "mini_banners" || s.type === "feature_banners",
+    );
+    if (bannerSection?.items?.length) {
+      return bannerSection.items.map((b: any, idx: number) => ({
+        id: b.id || `mini-${idx}`,
+        title: b.title || "",
+        subtitle: b.subtitle || null,
+        targetUrl: b.targetUrl || b.link || "/mercado",
+        badgeText: b.badgeText || b.tag || null,
+        actionText: b.actionText || null,
+        imageUrl: b.imageUrl || b.image_url || null,
+      }));
+    }
+    return [];
+  }, [marketplaceFeed]);
+
+  // Mapeamento canônico para cartões iFood (Zero Mocks / Invariante B.33)
+  const stores: IFoodStoreCardData[] = useMemo(() => {
+    if (rawStores.length > 0) {
+      return rawStores.map((st: any, idx: number) => ({
+        id: st.id || `mk-${idx}`,
+        name: st.name || st.title || "Supermercado Parceiro",
+        slug: st.slug || st.id || "",
+        logoUrl: st.logo_url || st.imageUrl || null,
+        coverUrl: st.cover_url || st.banner_url || null,
+        isAd: Boolean(st.is_featured || st.is_ad),
+        rating: typeof st.rating === "number" && st.rating > 0 ? st.rating : undefined,
+        reviewCount: typeof st.review_count === "number" && st.review_count > 0 ? st.review_count : undefined,
+        deliveryTime: st.delivery_time || undefined,
+        deliveryFee:
+          typeof st.delivery_fee === "number"
+            ? st.delivery_fee === 0
+              ? "Grátis"
+              : `R$ ${st.delivery_fee.toFixed(2)}`
+            : typeof st.delivery_fee === "string"
+              ? st.delivery_fee
+              : undefined,
+        couponBadge: st.coupon_badge || undefined,
+        secondaryBadges: Array.isArray(st.badges) ? st.badges : undefined,
+        hasHighlightCrown: Boolean(st.has_highlight_crown),
+      }));
+    }
+
+    return [];
+  }, [rawStores]);
+
+  // Mapeamento de Últimas Lojas
+  const recentStores: RecentStoreItem[] = useMemo(() => {
+    return stores.slice(0, 5).map((s) => ({
+      id: s.id,
+      name: s.name,
+      slug: s.slug,
+      logoUrl: s.logoUrl,
+      badge: s.deliveryFee === "Grátis" ? "Grátis" : (s.couponBadge || undefined),
+    }));
+  }, [stores]);
+
+  // Lojas com Cupom (Spotlight)
+  const spotlightStores = useMemo(() => {
+    return stores.filter((s) => Boolean(s.couponBadge));
+  }, [stores]);
+
+  return (
+    <CommercialShowcaseTemplate
+      nicheId="mercado"
+      nicheTitle="Mercados"
+      subcategories={MERCADO_SUBCATEGORIES}
+      activeSubcategoryId={activeDepartment}
+      onSelectSubcategory={handleDepartmentChange}
+      banners={banners || []}
+      featureMiniBanners={featureMiniBanners}
+      recentStores={recentStores}
+      stores={stores}
+      spotlightStores={spotlightStores}
+      products={catalogProducts || []}
+      activeFilters={activeFilters}
+      onToggleFilter={handleToggleFilter}
+    />
+  );
 }

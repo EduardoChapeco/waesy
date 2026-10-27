@@ -33,6 +33,8 @@ function WorkspaceNovaMateriaPage() {
  const [kicker, setKicker] = useState("");
  const [subtitle, setSubtitle] = useState("");
  const [category, setCategory] = useState("cidade");
+ const [editorialStage, setEditorialStage] = useState<"em_apuracao" | "apurado" | "publicado" | "oculto">("publicado");
+ const [isMembersOnly, setIsMembersOnly] = useState<boolean>(false);
  const [coverMediaUrl, setCoverMediaUrl] = useState("");
  const [coverMediaType, setCoverMediaType] = useState<"image" | "video" | "gif">("image");
  const [readingTime, setReadingTime] = useState(3);
@@ -138,6 +140,8 @@ function WorkspaceNovaMateriaPage() {
  category,
  reading_time_minutes: readingTime,
  status,
+ editorial_stage: editorialStage,
+ is_members_only: isMembersOnly,
  },
  });
 

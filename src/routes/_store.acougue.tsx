@@ -1,271 +1,195 @@
 import { resolveActiveCity } from "@/lib/city-helper";
-import { Tag } from "lucide-react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useState, useMemo } from "react";
-import { Flame, Knife, Storefront, Clock, MapPin, ArrowRight, ShoppingBag, ShieldCheck, CheckCircle } from "@phosphor-icons/react";
+import {
+  Flame,
+  Knife,
+} from "@phosphor-icons/react";
 
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { EmptyState } from "@/components/state/states";
 import { PageSkeleton } from "@/components/state/loading";
-import { HorizontalRail } from "@/components/commerce/horizontal-rail";
-import { StoreCard } from "@/components/commerce/store-card";
-import { HotpagesRail } from "@/components/commerce/hotpages-rail";
-import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
-import { GroceryProductCard } from "@/components/commerce/grocery-product-card";
 import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
-import { ModularSurfaceFeed } from "@/components/commerce/modular-surface-feed";
 import { listActiveBanners } from "@/services/banner.functions";
 import { listHotpages } from "@/services/hotpage.functions";
-import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { listPublishedProducts } from "@/services/catalog.functions";
+
+import { CommercialShowcaseTemplate } from "@/components/commerce/ifood/CommercialShowcaseTemplate";
+import type { SubcategoryItem } from "@/components/commerce/ifood/IFoodSubcategoryPillRail";
+import type { FeatureMiniBannerItem } from "@/components/commerce/ifood/IFoodFeatureMiniBannersRail";
+import type { RecentStoreItem } from "@/components/commerce/ifood/IFoodRecentStoresRail";
+import type { IFoodStoreCardData } from "@/components/commerce/ifood/IFoodStoreFeedCard";
+
 import type { ProductCardDTO } from "@/types/catalog";
-import { resolveNicheDepartments } from "@/lib/niche-helpers";
 
 const SearchSchema = z.object({
- q: z.string().optional(),
- view: z.enum(["feed", "grid", "list"]).default("feed").optional(),
- sort: z.enum(["newest", "price_asc", "price_desc", "in_stock"]).default("newest").optional(),
- categoria: z.string().optional(),
+  q: z.string().optional(),
+  view: z.enum(["feed", "grid", "list"]).default("feed").optional(),
+  sort: z.enum(["newest", "price_asc", "price_desc", "in_stock"]).default("newest").optional(),
+  categoria: z.string().optional(),
 });
 
 type AcougueSearch = z.infer<typeof SearchSchema>;
 
-const ACOUQUE_DEPARTMENTS: FilterChipOption[] = [
- { id: "todos", label: "Tudo", icon: Tag },
- { id: "cortes_nobres", label: "Cortes Nobres e Angus", icon: Flame },
- { id: "kits_churrasco", label: "Kits Churrasco", icon: Flame },
- { id: "dia_a_dia", label: "Carnes do Dia a Dia", icon: Knife },
- { id: "linguicas", label: "Linguiças e Defumados", icon: Flame },
- { id: "aves", label: "Frangos e Aves", icon: Knife },
- { id: "suinos", label: "Suínos e Costelinhas", icon: Knife },
+const ACOUQUE_SUBCATEGORIES: SubcategoryItem[] = [
+  { id: "todos", label: "Tudo", icon: Flame },
+  { id: "cortes_nobres", label: "Cortes Nobres", icon: Flame, badge: "Angus" },
+  { id: "kits_churrasco", label: "Kits Churrasco", icon: Flame },
+  { id: "dia_a_dia", label: "Dia a Dia", icon: Knife },
+  { id: "linguicas", label: "Linguiças & Defumados", icon: Flame },
+  { id: "aves", label: "Frangos & Aves", icon: Knife },
+  { id: "suinos", label: "Costelinhas & Suínos", icon: Knife },
 ];
 
 export const Route = createFileRoute("/_store/acougue")({
- head: () => ({
- meta: [
- { title: "Boutiques de Carnes, Açougues e Churrasco | Waesy" },
- {
- name: "description",
- content:
- "Cortes nobres, picanha angus, kits para churrasco e carnes frescas preparadas pelas melhores boutiques e casas de carnes da cidade.",
- },
- ],
- }),
- validateSearch: (search: Record<string, unknown>): AcougueSearch =>
- SearchSchema.parse(search),
- loaderDeps: ({ search }) => search,
- loader: async ({ location }) => {
+  head: () => ({
+    meta: [
+      { title: "Boutiques de Carnes, Açougues e Churrasco | Waesy" },
+      {
+        name: "description",
+        content:
+          "Cortes nobres, picanha angus, kits para churrasco e carnes frescas preparadas pelas melhores boutiques e casas de carnes da cidade.",
+      },
+    ],
+  }),
+  validateSearch: (search: Record<string, unknown>): AcougueSearch =>
+    SearchSchema.parse(search),
+  loaderDeps: ({ search }) => search,
+  loader: async ({ location }) => {
     const activeCity = resolveActiveCity(location?.search);
-   try {
- const [banners, hotpages, marketplaceFeed, productsRes] = await Promise.all([
- listActiveBanners({ data: { placement: "acougue", city: activeCity } }).catch(() => []),
- listHotpages({ data: { module: "acougue" } }).catch(() => []),
- getModularSurfaceFeed({ data: { surfaceSlug: "acougue", city: activeCity } }).catch(() => ({ sections: [], allProducts: [] })),
- listPublishedProducts({ data: { niche: "acougue", limit: 40 } }).catch(() => ({ status: "empty" as const, data: [] as ProductCardDTO[] })),
- ]);
- return {
- banners,
- hotpages,
- marketplaceFeed,
- catalogProducts: (productsRes as any).data ?? [],
- };
-   } catch (err) {
-     console.error("[loader:_store.acougue] Unhandled error:", err);
-     return { banners: null, hotpages: null, marketplaceFeed: null, catalogProducts: null };
-   }
- },
- component: AcougueVerticalPage,
- pendingComponent: PageSkeleton,
+    try {
+      const [banners, hotpages, marketplaceFeed, productsRes] = await Promise.all([
+        listActiveBanners({ data: { placement: "acougue", city: activeCity } }).catch(() => []),
+        listHotpages({ data: { module: "acougue" } }).catch(() => []),
+        getModularSurfaceFeed({ data: { surfaceSlug: "acougue", city: activeCity } }).catch(() => ({
+          sections: [],
+          allProducts: [],
+        })),
+        listPublishedProducts({ data: { niche: "acougue", limit: 40 } }).catch(() => ({
+          status: "empty" as const,
+          data: [] as ProductCardDTO[],
+        })),
+      ]);
+
+      return {
+        banners,
+        hotpages,
+        marketplaceFeed,
+        catalogProducts: productsRes.status === "ok" ? (productsRes as any).data ?? [] : [],
+      };
+    } catch (err) {
+      console.error("[loader:_store.acougue] Unhandled error:", err);
+      return { banners: null, hotpages: null, marketplaceFeed: null, catalogProducts: null };
+    }
+  },
+  pendingComponent: PageSkeleton,
+  component: AcougueMasterPage,
 });
 
-function AcougueVerticalPage() {
- const { banners, hotpages, marketplaceFeed } = ((Route.useLoaderData?.() as any) || {});
- const search = Route.useSearch();
- const navigate = useNavigate({ from: Route.fullPath });
+function AcougueMasterPage() {
+  const { banners, marketplaceFeed, catalogProducts } = ((Route.useLoaderData?.() as any) || {});
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
 
- const [activeDepartment, setActiveDepartment] = useState(search.categoria || "todos");
- const [viewMode, setViewMode] = useState<ViewModeType>(search.view || "feed");
+  const [activeDepartment, setActiveDepartment] = useState(search.categoria || "todos");
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
- const handleDepartmentChange = (depId: string) => {
- setActiveDepartment(depId);
- navigate({
- search: (prev: any) => ({
- ...prev,
- categoria: depId === "todos" ? undefined : depId,
- }),
- });
- };
+  const handleDepartmentChange = (depId: string) => {
+    setActiveDepartment(depId);
+    navigate({
+      search: (prev: any) => ({
+        ...prev,
+        categoria: depId === "todos" ? undefined : depId,
+      }),
+    });
+  };
 
- const handleViewModeChange = (mode: ViewModeType) => {
- setViewMode(mode);
- navigate({
- search: (prev: any) => ({
- ...prev,
- view: mode === "feed" ? undefined : mode,
- }),
- });
- };
+  const handleToggleFilter = (filterId: string) => {
+    setActiveFilters((prev) =>
+      prev.includes(filterId) ? prev.filter((id) => id !== filterId) : [...prev, filterId],
+    );
+  };
 
- // Filtragem de carnes e produtos de açougue
- const filteredProducts = useMemo(() => {
- const allProducts = marketplaceFeed?.allProducts || [];
- return allProducts.filter((p: any) => {
- const titleLower = p.title.toLowerCase();
- const descLower = (p.description || "").toLowerCase();
- const tags = (p.tags || []).map((t: string) => t.toLowerCase());
+  const rawStores = useMemo(() => {
+    const storeSection = marketplaceFeed?.sections?.find((s: any) => s.type === "store_rail");
+    return storeSection?.items || [];
+  }, [marketplaceFeed]);
 
- const isMeatItem =
- titleLower.includes("picanha") ||
- titleLower.includes("costela") ||
- titleLower.includes("carne") ||
- titleLower.includes("alcatra") ||
- titleLower.includes("fraldinha") ||
- titleLower.includes("linguiça") ||
- titleLower.includes("ancho") ||
- titleLower.includes("chorizo") ||
- titleLower.includes("churrasco") ||
- titleLower.includes("patinho") ||
- titleLower.includes("maminha") ||
- titleLower.includes("bife") ||
- titleLower.includes("frango") ||
- titleLower.includes("suíno") ||
- tags.some((t: string) =>
- ["açougue", "carnes", "churrasco", "boutique de carnes", "angus"].includes(t),
- );
+  const featureMiniBanners: FeatureMiniBannerItem[] = useMemo(() => {
+    const bannerSection = marketplaceFeed?.sections?.find(
+      (s: any) => s.type === "mini_banners" || s.type === "feature_banners",
+    );
+    if (bannerSection?.items?.length) {
+      return bannerSection.items.map((b: any, idx: number) => ({
+        id: b.id || `mini-${idx}`,
+        title: b.title || "",
+        subtitle: b.subtitle || null,
+        targetUrl: b.targetUrl || b.link || "/acougue",
+        badgeText: b.badgeText || b.tag || null,
+        actionText: b.actionText || null,
+        imageUrl: b.imageUrl || b.image_url || null,
+      }));
+    }
+    return [];
+  }, [marketplaceFeed]);
 
- if (activeDepartment === "todos") return isMeatItem || allProducts.length <= 10;
- if (activeDepartment === "cortes_nobres")
- return titleLower.includes("picanha") || titleLower.includes("ancho") || titleLower.includes("chorizo") || titleLower.includes("angus");
- if (activeDepartment === "kits_churrasco")
- return titleLower.includes("kit") || titleLower.includes("churrasco") || titleLower.includes("combo");
- if (activeDepartment === "dia_a_dia")
- return titleLower.includes("alcatra") || titleLower.includes("patinho") || titleLower.includes("moída");
- if (activeDepartment === "linguicas")
- return titleLower.includes("linguiça") || titleLower.includes("defumado");
- if (activeDepartment === "aves")
- return titleLower.includes("frango") || titleLower.includes("asa") || titleLower.includes("coxa");
- if (activeDepartment === "suinos")
- return titleLower.includes("suíno") || titleLower.includes("porco") || titleLower.includes("costelinha");
- return true;
- });
- }, [marketplaceFeed, activeDepartment]);
+  const stores: IFoodStoreCardData[] = useMemo(() => {
+    if (rawStores.length > 0) {
+      return rawStores.map((st: any, idx: number) => ({
+        id: st.id || `acougue-${idx}`,
+        name: st.name || st.title || "Casa de Carnes Parceira",
+        slug: st.slug || st.id || "",
+        logoUrl: st.logo_url || st.imageUrl || null,
+        coverUrl: st.cover_url || st.banner_url || null,
+        isAd: Boolean(st.is_featured || st.is_ad),
+        rating: typeof st.rating === "number" && st.rating > 0 ? st.rating : undefined,
+        reviewCount: typeof st.review_count === "number" && st.review_count > 0 ? st.review_count : undefined,
+        deliveryTime: st.delivery_time || undefined,
+        deliveryFee:
+          typeof st.delivery_fee === "number"
+            ? st.delivery_fee === 0
+              ? "Grátis"
+              : `R$ ${st.delivery_fee.toFixed(2)}`
+            : typeof st.delivery_fee === "string"
+              ? st.delivery_fee
+              : undefined,
+        couponBadge: st.coupon_badge || undefined,
+        secondaryBadges: Array.isArray(st.badges) ? st.badges : undefined,
+        hasHighlightCrown: Boolean(st.has_highlight_crown),
+      }));
+    }
 
- // Boutiques de carnes parceiras
- const meatStores = useMemo(() => {
- const storeSection = marketplaceFeed?.sections?.find((s: any) => s.type === "store_rail");
- const stores = storeSection?.items || [];
- return stores.filter((s: any) => {
- const type = (s.type || "").toLowerCase();
- const name = (s.name || "").toLowerCase();
- return (
- type.includes("açougue") ||
- type.includes("carne") ||
- type.includes("boutique") ||
- name.includes("açougue") ||
- name.includes("carnes") ||
- name.includes("boutique") ||
- name.includes("steakhouse")
- );
- });
- }, [marketplaceFeed]);
+    return [];
+  }, [rawStores]);
+
+  const recentStores: RecentStoreItem[] = useMemo(() => {
+    return stores.slice(0, 5).map((s) => ({
+      id: s.id,
+      name: s.name,
+      slug: s.slug,
+      logoUrl: s.logoUrl,
+      badge: s.deliveryFee === "Grátis" ? "Grátis" : (s.couponBadge || undefined),
+    }));
+  }, [stores]);
+
+  const spotlightStores = useMemo(() => {
+    return stores.filter((s) => Boolean(s.couponBadge));
+  }, [stores]);
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 space-y-6 pb-24">
- {/* ── 1. Banners de Açougue & Churrasco ── */}
- {banners && banners.length > 0 && (
- <section aria-label="Banners de Açougue">
- <BannerHeroCarousel banners={banners} />
- </section>
- )}
-
- {/* ── 2. Hotpages / Campanhas ── */}
- {hotpages && hotpages.length > 0 && (
- <section aria-label="Coleções de Açougue">
- <HotpagesRail hotpages={hotpages} />
- </section>
- )}
-
- {/* ── 3. Discovery Control Bar ── */}
- <DiscoveryControlBar
- search={search.q || ""}
- onSearchChange={(q) => navigate({ search: (prev: any) => ({ ...prev, q }) })}
- searchPlaceholder="Buscar picanha, costela, frango, linguiça, espetinhos..."
- categories={ACOUQUE_DEPARTMENTS}
- activeCategory={activeDepartment}
- onSelectCategory={handleDepartmentChange}
- viewMode={viewMode}
- onViewModeChange={handleViewModeChange}
- />
-
-      {/* ── 4. Renderização do Feed Modular ou Grade Filtrada ── */}
-      {viewMode === "feed" ? (
-        <div className="space-y-8">
-          {marketplaceFeed?.sections && marketplaceFeed.sections.length > 0 && (
-            <ModularSurfaceFeed sections={marketplaceFeed.sections} />
-          )}
-
-          {filteredProducts.length > 0 ? (
-            <div className="space-y-8">
-              {(() => {
-                const grouped = filteredProducts.reduce((acc: Record<string, typeof filteredProducts>, prod: any) => {
-                  const key = prod.category_name || prod.category || prod.store_name || "Cortes Especiais";
-                  if (!acc[key]) acc[key] = [];
-                  acc[key].push(prod);
-                  return acc;
-                }, {});
-
-                return Object.entries(grouped).map(([groupName, prods]: [string, any]) => (
-                  <HorizontalRail
-                    key={groupName}
-                    title={groupName}
-                    hideHeader={false}
-                    actionLabel="Ver grade"
-                    onAction={() => handleViewModeChange("grid")}
-                  >
-                    {prods.map((prod: any) => (
-                      <div key={prod.id} className="w-56 sm:w-64 shrink-0">
-                        <GroceryProductCard product={prod} viewMode="grid" />
-                      </div>
-                    ))}
-                  </HorizontalRail>
-                ));
-              })()}
-            </div>
-          ) : (
-            <div className="py-12 text-center bg-card rounded-lg p-6">
-              <EmptyState
-                title="Nenhum corte encontrado"
-                description="Tente selecionar outro departamento ou busque por tipos de cortes."
-              />
-            </div>
-          )}
-        </div>
- ) : (
- <section aria-label="Vitrine de Cortes & Produtos">
- {filteredProducts.length === 0 ? (
- <div className="py-12 text-center bg-card rounded-lg p-6">
- <EmptyState
- title="Nenhum corte encontrado"
- description="Tente selecionar outro departamento ou busque por tipos de cortes."
- />
- </div>
- ) : viewMode === "list" ? (
- <div className="flex flex-col gap-3">
- {filteredProducts.map((product: any) => (
- <GroceryProductCard key={product.id} product={product} viewMode="list" />
- ))}
- </div>
- ) : (
- <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4 sm:gap-5">
- {filteredProducts.map((product: any) => (
- <GroceryProductCard key={product.id} product={product} viewMode="grid" />
- ))}
- </div>
- )}
- </section>
- )}
- </div>
- );
+    <CommercialShowcaseTemplate
+      nicheId="acougue"
+      nicheTitle="Açougue & Carnes"
+      subcategories={ACOUQUE_SUBCATEGORIES}
+      activeSubcategoryId={activeDepartment}
+      onSelectSubcategory={handleDepartmentChange}
+      banners={banners || []}
+      featureMiniBanners={featureMiniBanners}
+      recentStores={recentStores}
+      stores={stores}
+      spotlightStores={spotlightStores}
+      products={catalogProducts || []}
+      activeFilters={activeFilters}
+      onToggleFilter={handleToggleFilter}
+    />
+  );
 }

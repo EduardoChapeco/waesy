@@ -21,8 +21,11 @@
 }
 
 .waesy-tab-strip {
+  display: flex;
+  flex-wrap: nowrap;
   overflow-x: auto;
   scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 .waesy-tab-strip::-webkit-scrollbar {
@@ -1057,6 +1060,43 @@
 @utility min-w-18 {
   min-width: 4.5rem;
 }
+/* ── Menu Lateral Mobile & Push Canvas (iFood / Threads Parity) ─────────── */
+@utility lateral-sheet-width {
+  width: 85vw;
+  max-width: 24rem;
+}
+
+@utility lateral-sheet-transition {
+  transition-property: transform;
+  transition-duration: 300ms;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@utility canvas-pushed {
+  transform: translateX(85vw) scale(0.96);
+  transform-origin: left center;
+}
+
+@utility canvas-push-transition {
+  transition-property: transform, border-radius;
+  transition-duration: 300ms;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@utility squircle-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@utility triple-pill-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@utility active-press {
+  transform: scale(0.98);
+}
+
 
 /* ── Tipografia canônica ─────────────────────────────────────────────────── */
 @utility eyebrow {

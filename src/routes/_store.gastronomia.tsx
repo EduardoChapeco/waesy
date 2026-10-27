@@ -1,93 +1,95 @@
 import { resolveActiveCity } from "@/lib/city-helper";
 import { Tag } from "lucide-react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useState, useMemo } from "react";
-import { ForkKnife, Pizza, Hamburger, Coffee, Fish, Cookie, Flame, Clock, MapPin, Storefront, ArrowRight, ShoppingBag } from "@phosphor-icons/react";
+import {
+  ForkKnife,
+  Pizza,
+  Hamburger,
+  Coffee,
+  Fish,
+  Flame,
+} from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { EmptyState } from "@/components/state/states";
 import { PageSkeleton } from "@/components/state/loading";
-import { HorizontalRail } from "@/components/commerce/horizontal-rail";
-import { ContextualStoriesRail } from "@/components/stories/contextual-stories-rail";
-import { StoreCard } from "@/components/commerce/store-card";
-import { HotpagesRail } from "@/components/commerce/hotpages-rail";
-import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
-import { GroceryProductCard } from "@/components/commerce/grocery-product-card";
 import { ProductOptionDrawer, type CustomizableProduct } from "@/components/commerce/ProductOptionDrawer";
 import { addToCart } from "@/services/cart.functions";
 import { toast } from "sonner";
 import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
-import { ModularSurfaceFeed } from "@/components/commerce/modular-surface-feed";
 import { listActiveBanners } from "@/services/banner.functions";
 import { listHotpages } from "@/services/hotpage.functions";
-import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { listPublishedProducts } from "@/services/catalog.functions";
 
+import { CommercialShowcaseTemplate } from "@/components/commerce/ifood/CommercialShowcaseTemplate";
+import type { SubcategoryItem } from "@/components/commerce/ifood/IFoodSubcategoryPillRail";
+import type { FeatureMiniBannerItem } from "@/components/commerce/ifood/IFoodFeatureMiniBannersRail";
+import type { RecentStoreItem } from "@/components/commerce/ifood/IFoodRecentStoresRail";
+import type { IFoodStoreCardData } from "@/components/commerce/ifood/IFoodStoreFeedCard";
+
 import type { ProductCardDTO } from "@/types/catalog";
-import { resolveNicheDepartments } from "@/lib/niche-helpers";
 import { useCart } from "@/lib/cart-context";
-import { formatMoney } from "@/lib/money";
-import { cn } from "@/lib/utils";
 
 const SearchSchema = z.object({
- q: z.string().optional(),
- view: z.enum(["feed", "grid", "list"]).default("feed").optional(),
- sort: z.enum(["newest", "price_asc", "price_desc", "in_stock"]).default("newest").optional(),
- categoria: z.string().optional(),
+  q: z.string().optional(),
+  view: z.enum(["feed", "grid", "list"]).default("feed").optional(),
+  sort: z.enum(["newest", "price_asc", "price_desc", "in_stock"]).default("newest").optional(),
+  categoria: z.string().optional(),
 });
 
 type GastronomiaSearch = z.infer<typeof SearchSchema>;
 
-const GASTRONOMIA_DEPARTMENTS: FilterChipOption[] = [
- { id: "todos", label: "Tudo", emoji: "🍽️", icon: Tag },
- { id: "burgers", label: "Burgers e Sandubas", emoji: "🍔", icon: Hamburger },
- { id: "pizzas", label: "Pizzas e Massas", emoji: "🍕", icon: Pizza },
- { id: "oriental", label: "Sushi e Oriental", emoji: "🍣", icon: Fish },
- { id: "marmitas", label: "Marmitas e Almoço", emoji: "🍱", icon: ForkKnife },
- { id: "churrasco", label: "Carnes e Grelhados", emoji: "🥩", icon: Flame },
- { id: "doces", label: "Cafés e Sobremesas", emoji: "🍰", icon: Coffee },
+const GASTRONOMIA_SUBCATEGORIES: SubcategoryItem[] = [
+  { id: "todos", label: "Tudo", icon: ForkKnife },
+  { id: "burgers", label: "Lanches", icon: Hamburger, badge: "Oferta" },
+  { id: "pizzas", label: "Pizzas", icon: Pizza },
+  { id: "oriental", label: "Japonesa", icon: Fish },
+  { id: "marmitas", label: "Marmitas", icon: ForkKnife },
+  { id: "churrasco", label: "Churrasco", icon: Flame },
+  { id: "doces", label: "Doces e Cafés", icon: Coffee },
 ];
 
 export const Route = createFileRoute("/_store/gastronomia")({
- head: () => ({
- meta: [
- { title: "Gastronomia e Delivery de Restaurantes | Waesy" },
- {
- name: "description",
- content:
- "Peça burgers artesanais, pizzas, sushi, marmitas e pratos executivos dos melhores restaurantes e chefs da cidade.",
- },
- ],
- }),
- validateSearch: (search: Record<string, unknown>): GastronomiaSearch =>
- SearchSchema.parse(search),
- loaderDeps: ({ search }) => search,
- loader: async ({ location, deps: search }) => {
+  head: () => ({
+    meta: [
+      { title: "Gastronomia e Delivery de Restaurantes | Waesy" },
+      {
+        name: "description",
+        content:
+          "Peça burgers artesanais, pizzas, sushi, marmitas e pratos executivos dos melhores restaurantes e chefs da cidade.",
+      },
+    ],
+  }),
+  validateSearch: (search: Record<string, unknown>): GastronomiaSearch =>
+    SearchSchema.parse(search),
+  loaderDeps: ({ search }) => search,
+  loader: async ({ location, deps: search }) => {
     const activeCity = resolveActiveCity(location?.search);
-   try {
- const [banners, hotpages, marketplaceFeed, productsRes] = await Promise.all([
- listActiveBanners({ data: { placement: "gastronomia", city: activeCity } }).catch(() => []),
- listHotpages({ data: { module: "gastronomia" } }).catch(() => []),
- getModularSurfaceFeed({ data: { surfaceSlug: "gastronomia", city: activeCity } }).catch(() => ({ sections: [], allProducts: [] })),
- // Fallback robusto: produtos do catálogo filtrados por niche real
- listPublishedProducts({
- data: { niche: "gastronomia", limit: 40, sort: search.sort ?? "newest" },
- }).catch(() => ({ status: "empty" as const, data: [] as ProductCardDTO[] })),
- ]);
+    try {
+      const [banners, hotpages, marketplaceFeed, productsRes] = await Promise.all([
+        listActiveBanners({ data: { placement: "gastronomia", city: activeCity } }).catch(() => []),
+        listHotpages({ data: { module: "gastronomia" } }).catch(() => []),
+        getModularSurfaceFeed({ data: { surfaceSlug: "gastronomia", city: activeCity } }).catch(() => ({
+          sections: [],
+          allProducts: [],
+        })),
+        listPublishedProducts({
+          data: { niche: "gastronomia", limit: 40, sort: search.sort ?? "newest" },
+        }).catch(() => ({ status: "empty" as const, data: [] as ProductCardDTO[] })),
+      ]);
 
- return {
- banners,
- hotpages,
- marketplaceFeed,
- catalogProducts: productsRes.status === "ok" ? (productsRes as any).data ?? [] : (productsRes as any).data ?? [],
- };
-   } catch (err) {
-     console.error("[loader:_store.gastronomia] Unhandled error:", err);
-     return { banners: null, hotpages: null, marketplaceFeed: null, catalogProducts: null };
-   }
- },
+      return {
+        banners,
+        hotpages,
+        marketplaceFeed,
+        catalogProducts: productsRes.status === "ok" ? (productsRes as any).data ?? [] : [],
+      };
+    } catch (err) {
+      console.error("[loader:_store.gastronomia] Unhandled error:", err);
+      return { banners: null, hotpages: null, marketplaceFeed: null, catalogProducts: null };
+    }
+  },
   errorComponent: GastronomiaErrorComponent,
   component: GastronomiaVerticalPage,
   pendingComponent: PageSkeleton,
@@ -111,228 +113,126 @@ function GastronomiaErrorComponent({ error, reset }: { error: any; reset: () => 
 }
 
 function GastronomiaVerticalPage() {
- const { banners, hotpages, marketplaceFeed, catalogProducts } = ((Route.useLoaderData?.() as any) || {});
- const search = Route.useSearch();
- const navigate = useNavigate({ from: Route.fullPath });
- const { cart, setIsCartOpen } = useCart();
+  const { banners, marketplaceFeed, catalogProducts } = ((Route.useLoaderData?.() as any) || {});
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const { refreshCart, setIsCartOpen } = useCart();
 
- const cartItemsCount = cart?.itemCount ?? cart?.items?.reduce((acc, item) => acc + (item.qty || 1), 0) ?? 0;
- const cartTotalCents = cart?.subtotalCents || cart?.totalCents || 0;
-
- const [activeDepartment, setActiveDepartment] = useState(search.categoria || "todos");
- const [viewMode, setViewMode] = useState<ViewModeType>(search.view || "feed");
+  const [activeDepartment, setActiveDepartment] = useState(search.categoria || "todos");
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [selectedProductForOptions, setSelectedProductForOptions] = useState<CustomizableProduct | null>(null);
-  const { refreshCart } = useCart();
 
- const handleDepartmentChange = (depId: string) => {
- setActiveDepartment(depId);
- navigate({
- search: (prev: any) => ({
- ...prev,
- categoria: depId === "todos" ? undefined : depId,
- }),
- });
- };
+  const handleDepartmentChange = (depId: string) => {
+    setActiveDepartment(depId);
+    navigate({
+      search: (prev: any) => ({
+        ...prev,
+        categoria: depId === "todos" ? undefined : depId,
+      }),
+    });
+  };
 
- const handleViewModeChange = (mode: ViewModeType) => {
- setViewMode(mode);
- navigate({
- search: (prev: any) => ({
- ...prev,
- view: mode === "feed" ? undefined : mode,
- }),
- });
- };
+  const handleToggleFilter = (filterId: string) => {
+    setActiveFilters((prev) =>
+      prev.includes(filterId) ? prev.filter((id) => id !== filterId) : [...prev, filterId],
+    );
+  };
 
- // Combina produtos do Surface CMS + catálogo direto (sem heurística de título)
- const allProducts: ProductCardDTO[] = useMemo(() => {
- const surfaceProducts = (marketplaceFeed?.allProducts || []) as ProductCardDTO[];
- const catalogArr = (catalogProducts || []) as ProductCardDTO[];
- // Prioriza Surface CMS; usa catálogo direto como fallback
- const base = surfaceProducts.length > 0 ? surfaceProducts : catalogArr;
+  // Restaurantes reais vindos do Surface CMS
+  const rawStores = useMemo(() => {
+    const storeSection = marketplaceFeed?.sections?.find((s: any) => s.type === "store_rail");
+    return storeSection?.items || [];
+  }, [marketplaceFeed]);
 
- if (activeDepartment === "todos") return base;
+  // Mini-banners vindos do Surface CMS
+  const featureMiniBanners: FeatureMiniBannerItem[] = useMemo(() => {
+    const bannerSection = marketplaceFeed?.sections?.find(
+      (s: any) => s.type === "mini_banners" || s.type === "feature_banners",
+    );
+    if (bannerSection?.items?.length) {
+      return bannerSection.items.map((b: any, idx: number) => ({
+        id: b.id || `mini-${idx}`,
+        title: b.title || "",
+        subtitle: b.subtitle || null,
+        targetUrl: b.targetUrl || b.link || "/gastronomia",
+        badgeText: b.badgeText || b.tag || null,
+        actionText: b.actionText || null,
+        imageUrl: b.imageUrl || b.image_url || null,
+      }));
+    }
+    return [];
+  }, [marketplaceFeed]);
 
- // Filtragem por departamento usando tags e atributos do banco (não título)
- return base.filter((p: any) => {
- const tags = (p.tags || []).map((t: string) => t.toLowerCase());
- const categoria = (p.attributes?.categoria || p.attributes?.tipo || "").toLowerCase();
- if (activeDepartment === "burgers") return tags.some((t: string) => ["burger","hamburguer","lanche","sanduiche"].includes(t)) || categoria.includes("burger");
- if (activeDepartment === "pizzas") return tags.some((t: string) => ["pizza","massa","calzone"].includes(t)) || categoria.includes("pizza");
- if (activeDepartment === "oriental") return tags.some((t: string) => ["sushi","temaki","oriental","japones"].includes(t)) || categoria.includes("oriental");
- if (activeDepartment === "marmitas") return tags.some((t: string) => ["marmita","executivo","almoco"].includes(t)) || categoria.includes("marmita");
- if (activeDepartment === "churrasco") return tags.some((t: string) => ["churrasco","grelhado","carne","picanha"].includes(t)) || categoria.includes("churrasco");
- if (activeDepartment === "doces") return tags.some((t: string) => ["cafe","doce","sobremesa","torta","bolo"].includes(t)) || categoria.includes("sobremesa");
- return true;
- });
- }, [marketplaceFeed, catalogProducts, activeDepartment]);
+  // Mapeamento canônico para cartões iFood (Zero Mocks / Invariante B.33)
+  const stores: IFoodStoreCardData[] = useMemo(() => {
+    if (rawStores.length > 0) {
+      return rawStores.map((st: any, idx: number) => ({
+        id: st.id || `st-${idx}`,
+        name: st.name || st.title || "Restaurante Parceiro",
+        slug: st.slug || st.id || "",
+        logoUrl: st.logo_url || st.imageUrl || null,
+        coverUrl: st.cover_url || st.banner_url || null,
+        isAd: Boolean(st.is_featured || st.is_ad),
+        rating: typeof st.rating === "number" && st.rating > 0 ? st.rating : undefined,
+        reviewCount: typeof st.review_count === "number" && st.review_count > 0 ? st.review_count : undefined,
+        deliveryTime: st.delivery_time || undefined,
+        deliveryFee:
+          typeof st.delivery_fee === "number"
+            ? st.delivery_fee === 0
+              ? "Grátis"
+              : `R$ ${st.delivery_fee.toFixed(2)}`
+            : typeof st.delivery_fee === "string"
+              ? st.delivery_fee
+              : undefined,
+        couponBadge: st.coupon_badge || undefined,
+        secondaryBadges: Array.isArray(st.badges) ? st.badges : undefined,
+        hasHighlightCrown: Boolean(st.has_highlight_crown),
+      }));
+    }
 
- const filteredProducts = allProducts;
+    return [];
+  }, [rawStores]);
 
- // Restaurantes: vem do Surface CMS store_rail
- const restaurantStores = useMemo(() => {
- const storeSection = marketplaceFeed?.sections?.find((s: any) => s.type === "store_rail");
- return storeSection?.items || [];
- }, [marketplaceFeed]);
+  // Mapeamento de Últimas Lojas
+  const recentStores: RecentStoreItem[] = useMemo(() => {
+    return stores.slice(0, 5).map((s) => ({
+      id: s.id,
+      name: s.name,
+      slug: s.slug,
+      logoUrl: s.logoUrl,
+      badge: s.deliveryFee === "Grátis" ? "Grátis" : (s.couponBadge || undefined),
+    }));
+  }, [stores]);
 
- return (
- <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 space-y-6 pb-24">
- {/* ── 1. Banners de Gastronomia ── */}
- {banners && banners.length > 0 && (
- <section aria-label="Banners de Gastronomia">
- <BannerHeroCarousel banners={banners} />
- </section>
- )}
+  // Lojas com Cupom (Spotlight)
+  const spotlightStores = useMemo(() => {
+    return stores.filter((s) => Boolean(s.couponBadge));
+  }, [stores]);
 
- {/* ── 1.5. Stories de Gastronomia & Delivery ── */}
- <ContextualStoriesRail niche="gastronomia" className="py-1" />
-
-      {/* ── 2. Hotpages por Turno / Almoço / Jantar ── */}
-      {hotpages && hotpages.length > 0 && (
-        <section aria-label="Coleções de Gastronomia">
-          <HotpagesRail hotpages={hotpages} />
-        </section>
-      )}
-
-      
-      {/* ── Subniche Squircle Carousel (iFood / Noor Ergonomics - Apple HIG) ── */}
-      <section aria-label="Categorias de Gastronomia" className="w-full">
-        <div className="tab-list flex items-center gap-3 overflow-x-auto no-scrollbar py-1 snap-x snap-mandatory [mask-image:linear-gradient(to_right,black_90%,transparent_100%)]">
-          {GASTRONOMIA_DEPARTMENTS.map((dept) => {
-            const isActive = activeDepartment === dept.id;
-            const Icon = dept.icon;
-            return (
-              <button
-                key={dept.id}
-                type="button"
-                onClick={() => handleDepartmentChange(dept.id)}
-                className={cn(
-                  "h-16 min-h-11 min-w-24 sm:min-w-28 px-3 py-2 rounded-lg border flex flex-col items-center justify-center gap-1 shrink-0 snap-start transition-colors cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                  isActive
-                    ? "bg-foreground text-background border-foreground shadow-xs font-bold"
-                    : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
-                )}
-              >
-                <div className={cn("size-7 rounded-lg flex items-center justify-center shrink-0", isActive ? "bg-background/20 text-background" : "bg-primary/10 text-primary")}>
-                  {Icon ? <Icon size={18} weight="bold" /> : <ForkKnife size={18} weight="bold" />}
-                </div>
-                <span className="text-2xs font-semibold tracking-tight text-center truncate max-w-20 block">
-                  {dept.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* ── 3. Discovery Control Bar ── */}
-      <DiscoveryControlBar
-        search={search.q || ""}
-        onSearchChange={(q) => navigate({ search: (prev: any) => ({ ...prev, q }) })}
-        searchPlaceholder="Buscar pratos, pizzas, burgers, sobremesas..."
-        categories={GASTRONOMIA_DEPARTMENTS}
-        activeCategory={activeDepartment}
-        onSelectCategory={handleDepartmentChange}
-        viewMode={viewMode}
-        onViewModeChange={handleViewModeChange}
+  return (
+    <>
+      <CommercialShowcaseTemplate
+        nicheId="gastronomia"
+        nicheTitle="Restaurantes"
+        subcategories={GASTRONOMIA_SUBCATEGORIES}
+        activeSubcategoryId={activeDepartment}
+        onSelectSubcategory={handleDepartmentChange}
+        banners={banners || []}
+        featureMiniBanners={featureMiniBanners}
+        recentStores={recentStores}
+        stores={stores}
+        spotlightStores={spotlightStores}
+        products={catalogProducts || []}
+        activeFilters={activeFilters}
+        onToggleFilter={handleToggleFilter}
       />
 
-      {/* ── 4. Renderização do Feed Modular ou Grade Filtrada ── */}
-      {viewMode === "feed" ? (
-        <div className="space-y-6 sm:space-y-8">
-          {marketplaceFeed?.sections && marketplaceFeed.sections.length > 0 && (
-            <ModularSurfaceFeed sections={marketplaceFeed.sections} />
-          )}
-
-          {allProducts.length > 0 ? (
-            <div className="space-y-8">
-              {(() => {
-                const grouped = allProducts.reduce((acc: Record<string, typeof allProducts>, prod: any) => {
-                  const key = prod.category_name || prod.category || prod.store_name || "Cardápio em Destaque";
-                  if (!acc[key]) acc[key] = [];
-                  acc[key].push(prod);
-                  return acc;
-                }, {});
-
-                return Object.entries(grouped).map(([groupName, prods]: [string, any]) => (
-                  <HorizontalRail
-                    key={groupName}
-                    title={groupName}
-                    hideHeader={false}
-                    actionLabel="Ver grade"
-                    onAction={() => handleViewModeChange("grid")}
-                  >
-                    {prods.map((product: any) => (
-                      <div key={product.id} className="w-56 sm:w-64 shrink-0">
-                        <GroceryProductCard product={product} viewMode="grid" />
-                      </div>
-                    ))}
-                  </HorizontalRail>
-                ));
-              })()}
-            </div>
-          ) : (
-            <div className="py-12 text-center text-xs text-muted-foreground">
-              Nenhum restaurante ou prato disponível no momento.
-            </div>
-          )}
-        </div>
-      ) : (
-        <section aria-label="Pratos & Lanches em Destaque" className="w-full">
-          {allProducts.length === 0 ? (
-            <EmptyState
-              title="Nenhum prato encontrado"
-              description="Tente escolher outro tipo de culinária ou busque por restaurantes específicos."
-            />
-          ) : viewMode === "list" ? (
-            <div className="w-full divide-y divide-border/40 rounded-none sm:rounded-lg border-y sm:border border-border/60 bg-card overflow-hidden">
-              {allProducts.map((product: any) => (
-                <GroceryProductCard key={product.id} product={product} viewMode="list" />
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-              {allProducts.map((product: any) => (
-                <GroceryProductCard key={product.id} product={product} viewMode="grid" />
-              ))}
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* ── BARRA FLUTUANTE DA SACOLA (3 TOQUES - APPLE HIG THUMB ZONE) ── */}
-      {cartItemsCount > 0 && (
-        <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 z-30 p-3 rounded-lg bg-foreground text-background shadow-xs flex items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-4 border border-background/20">
-          <div className="flex items-center gap-3">
-            <div className="size-10 rounded-lg bg-primary/20 text-primary flex items-center justify-center shrink-0">
-              <ShoppingBag className="size-5" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-2xs text-background/70 font-mono uppercase tracking-wider">
-                {cartItemsCount} {cartItemsCount === 1 ? "item adicionado" : "itens adicionados"}
-              </span>
-              <span className="text-sm font-black font-mono">
-                {formatMoney(cartTotalCents)}
-              </span>
-            </div>
-          </div>
-
-          <Button
-            size="sm"
-            onClick={() => setIsCartOpen(true)}
-            className="h-11 min-h-11 px-4 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-xs gap-2 shadow-xs cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <span>Ver Sacola</span>
-            <ArrowRight className="size-3.5" />
-          </Button>
-        </div>
-      )}
-      {/* ── Drawer 100dvh para Customização de Lanches/Pratos ── */}
+      {/* Drawer para Customização de Produtos */}
       <ProductOptionDrawer
         isOpen={!!selectedProductForOptions}
         onClose={() => setSelectedProductForOptions(null)}
         product={selectedProductForOptions}
-        onConfirmAdd={async ({ product, quantity, selectedOptions, specialInstructions, totalCents }) => {
+        onConfirmAdd={async ({ product, quantity, selectedOptions }) => {
           try {
             await addToCart({
               data: {
@@ -350,6 +250,6 @@ function GastronomiaVerticalPage() {
           }
         }}
       />
-    </div>
+    </>
   );
 }

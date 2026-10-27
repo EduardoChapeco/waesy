@@ -1,8 +1,8 @@
 {
-  "timestamp": "2026-10-23T01:13:29.273Z",
-  "totalFiles": 2323,
-  "totalImported": 1816,
-  "discoveredUnreferencedCount": 67,
+  "timestamp": "2026-10-27T12:31:41.890Z",
+  "totalFiles": 2410,
+  "totalImported": 1872,
+  "discoveredUnreferencedCount": 73,
   "intentionalUnreferencedCount": 67,
   "intentionalUnreferencedFiles": [
     "src/components/ad-engine/public/listing-empty-state.tsx",
@@ -75,8 +75,15 @@
   ],
   "allowlistUnknownCount": 0,
   "allowlistUnknownFiles": [],
-  "unreferencedCount": 0,
-  "unreferencedFiles": [],
+  "unreferencedCount": 6,
+  "unreferencedFiles": [
+    "src/components/finance/PaymentReviewDrawer.tsx",
+    "src/design-system/vitrine/vitrine-banners.tsx",
+    "src/design-system/vitrine/vitrine-carousels.tsx",
+    "src/design-system/vitrine/vitrine-navigation.tsx",
+    "src/lib/financial-receipt-canvas.ts",
+    "src/lib/news/news-studio-templates.ts"
+  ],
   "duplicateComponentsCount": 0,
   "duplicateComponents": [],
   "nameCollisionCount": 23,
@@ -267,5 +274,5 @@
       ]
     }
   ],
-  "status": "PASS"
+  "status": "FAIL"
 }

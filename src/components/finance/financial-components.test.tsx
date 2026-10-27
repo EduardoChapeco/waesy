@@ -5,6 +5,7 @@ import { FinancialHeroCard } from "./FinancialHeroCard";
 import { FinancialActionGrid } from "./FinancialActionGrid";
 import { InAppNumericKeypad } from "./InAppNumericKeypad";
 import { PaymentSuccessReceipt } from "./PaymentSuccessReceipt";
+import { CreditCardHomeWidget } from "./CreditCardHomeWidget";
 
 describe("Waesy Bank Financial Components (99Pay Parity)", () => {
   describe("FinancialHeroCard", () => {
@@ -78,6 +79,25 @@ describe("Waesy Bank Financial Components (99Pay Parity)", () => {
       expect(html).toContain("Para João Pedro Gonçalves");
       expect(html).toContain("PICPAY");
       expect(html).toContain("TX-99887766");
+    });
+  });
+
+  describe("CreditCardHomeWidget", () => {
+    it("renders credit card metaphor widget with limit and due date", () => {
+      const html = renderToStaticMarkup(
+        <CreditCardHomeWidget
+          usedLimitCents={245800}
+          totalLimitCents={1000000}
+          dueDateText="15 out"
+        />
+      );
+
+      expect(html).toContain("Cartão de crédito");
+      expect(html).toContain("Fatura atual");
+      expect(html).toContain("15 out");
+      expect(html).toContain("Limite disponível");
+      expect(html).toContain("Utilizado");
+      expect(html).toContain("Limite total");
     });
   });
 });

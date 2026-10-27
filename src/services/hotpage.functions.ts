@@ -625,14 +625,35 @@ export const updateHotpage = createServerFn({ method: "POST" })
   });
 
 export const deleteHotpage = createServerFn({ method: "POST" })
- .validator(z.object({ id: z.string().uuid() }))
- .handler(async ({ data: { id } }) => {
- await requireAdmin();
- const supabase = getServerClient();
- const { error } = await supabase.from("hotpages").delete().eq("id", id);
- if (error) throw new Error(error.message);
- return { success: true };
- });
+  .validator(z.object({ id: z.string().uuid(), soft: z.boolean().optional() }))
+  .handler(async ({ data: { id, soft = true } }) => {
+    await requireAdmin();
+    const supabase = getServerClient();
+    if (soft) {
+      const { error } = await supabase
+        .from("hotpages")
+        .update({ is_active: false, updated_at: new Date().toISOString() })
+        .eq("id", id);
+      if (error) throw new Error(error.message);
+      return { success: true, deactivated: true };
+    }
+    const { error } = await supabase.from("hotpages").delete().eq("id", id);
+    if (error) throw new Error(error.message);
+    return { success: true };
+  });
+
+export const toggleHotpageActive = createServerFn({ method: "POST" })
+  .validator(z.object({ id: z.string().uuid(), is_active: z.boolean() }))
+  .handler(async ({ data: { id, is_active } }) => {
+    await requireAdmin();
+    const supabase = getServerClient();
+    const { error } = await supabase
+      .from("hotpages")
+      .update({ is_active, updated_at: new Date().toISOString() })
+      .eq("id", id);
+    if (error) throw new Error(error.message);
+    return { success: true, is_active };
+  });
 
 export const saveHotpage = createServerFn({ method: "POST" })
  .validator(
@@ -692,47 +713,9 @@ export const saveHotpage = createServerFn({ method: "POST" })
  }
  });
 
-// ── 4. BOTÕES CANÔNICOS DO SUPERAPP DRAWER (SCREENSHOT REFERENCE / HIG) ──
+// ── 4. BOTÕES CANÔNICOS DO SUPERAPP DRAWER (PARIDADE IFOOD & HIG) ──
 export const CANONICAL_DRAWER_MODULES = [
-  {
-    slug: "drawer-mercado",
-    title: "Mercado",
-    target_route: "/mercado",
-    template_type: "drawer_module" as const,
-    module: "mercado" as const,
-    icon_name: "ShoppingCart",
-    bg_color: "#ECFDF5",
-    text_color: "#065F46",
-    sort_order: 1,
-    show_title: true,
-    filter_rules: { text_position: "bottom", is_full_width: false },
-  },
-  {
-    slug: "drawer-farmacia",
-    title: "Farmácia",
-    target_route: "/farmacia",
-    template_type: "drawer_module" as const,
-    module: "farmacia" as const,
-    icon_name: "Cross",
-    bg_color: "#EFF6FF",
-    text_color: "#1E40AF",
-    sort_order: 2,
-    show_title: true,
-    filter_rules: { text_position: "bottom", is_full_width: false },
-  },
-  {
-    slug: "drawer-roupas",
-    title: "Roupas e Moda",
-    target_route: "/moda",
-    template_type: "drawer_module" as const,
-    module: "moda" as const,
-    icon_name: "Shirt",
-    bg_color: "#FDF2F8",
-    text_color: "#9D174D",
-    sort_order: 3,
-    show_title: true,
-    filter_rules: { text_position: "bottom", is_full_width: false },
-  },
+  // ── SEÇÃO 1: CATEGORIAS (Cards Amplos 2 Colunas) ──
   {
     slug: "drawer-restaurantes",
     title: "Restaurantes",
@@ -742,22 +725,114 @@ export const CANONICAL_DRAWER_MODULES = [
     icon_name: "Utensils",
     bg_color: "#FFF7ED",
     text_color: "#9A3412",
-    sort_order: 4,
+    sort_order: 1,
     show_title: true,
-    filter_rules: { text_position: "bottom", is_full_width: false },
+    filter_rules: {
+      section_key: "categorias",
+      section_title: "Categorias",
+      card_variant: "wide",
+      text_position: "side",
+      is_full_width: false,
+    },
+  },
+  {
+    slug: "drawer-mercado",
+    title: "Mercados",
+    target_route: "/mercado",
+    template_type: "drawer_module" as const,
+    module: "mercado" as const,
+    icon_name: "ShoppingCart",
+    bg_color: "#ECFDF5",
+    text_color: "#065F46",
+    sort_order: 2,
+    show_title: true,
+    filter_rules: {
+      section_key: "categorias",
+      section_title: "Categorias",
+      card_variant: "wide",
+      text_position: "side",
+      is_full_width: false,
+    },
+  },
+  {
+    slug: "drawer-farmacia",
+    title: "Farmácias",
+    target_route: "/farmacia",
+    template_type: "drawer_module" as const,
+    module: "farmacia" as const,
+    icon_name: "Cross",
+    bg_color: "#EFF6FF",
+    text_color: "#1E40AF",
+    sort_order: 3,
+    show_title: true,
+    filter_rules: {
+      section_key: "categorias",
+      section_title: "Categorias",
+      card_variant: "wide",
+      text_position: "side",
+      is_full_width: false,
+    },
   },
   {
     slug: "drawer-conveniencia",
-    title: "Conveniência & Bar",
-    target_route: "/gastronomia?sub=conveniencia",
+    title: "Bebidas & Bar",
+    target_route: "/bebidas",
     template_type: "drawer_module" as const,
     module: "bebidas" as const,
     icon_name: "Wine",
     bg_color: "#FEFCE8",
     text_color: "#854D0E",
+    sort_order: 4,
+    show_title: true,
+    filter_rules: {
+      section_key: "categorias",
+      section_title: "Categorias",
+      card_variant: "wide",
+      text_position: "side",
+      is_full_width: false,
+    },
+  },
+
+  // ── SEÇÃO 2: DESTAQUES PARA EXPLORAR (Squircles 4 Colunas) ──
+  {
+    slug: "drawer-corrida",
+    title: "Corridas",
+    badge_label: "Novo",
+    target_route: "/mobilidade?mode=ride",
+    template_type: "drawer_module" as const,
+    module: "mobilidade" as const,
+    icon_name: "Car",
+    bg_color: "#FEF2F2",
+    text_color: "#991B1B",
     sort_order: 5,
     show_title: true,
-    filter_rules: { text_position: "bottom", is_full_width: false },
+    filter_rules: {
+      section_key: "explorar",
+      section_title: "Destaques para Explorar",
+      card_variant: "squircle",
+      badge_color: "#DC2626",
+      text_position: "bottom",
+      is_full_width: false,
+    },
+  },
+  {
+    slug: "drawer-bolao",
+    title: "Bolão",
+    target_route: "/concursos",
+    template_type: "drawer_module" as const,
+    module: "eventos" as const,
+    icon_name: "SoccerBall",
+    bg_color: "#F8FAFC",
+    text_color: "#0F172A",
+    sort_order: 6,
+    show_title: true,
+    filter_rules: {
+      section_key: "explorar",
+      section_title: "Destaques para Explorar",
+      card_variant: "squircle",
+      text_position: "bottom",
+      is_full_width: false,
+    },
   },
   {
     slug: "drawer-viagens",
@@ -768,114 +843,199 @@ export const CANONICAL_DRAWER_MODULES = [
     icon_name: "Plane",
     bg_color: "#F0FDF4",
     text_color: "#166534",
-    sort_order: 6,
+    sort_order: 7,
     show_title: true,
-    filter_rules: { text_position: "bottom", is_full_width: false },
+    filter_rules: {
+      section_key: "explorar",
+      section_title: "Destaques para Explorar",
+      card_variant: "squircle",
+      text_position: "bottom",
+      is_full_width: false,
+    },
   },
   {
     slug: "drawer-eventos",
     title: "Eventos",
+    badge_label: "Novo",
     target_route: "/eventos",
     template_type: "drawer_module" as const,
     module: "eventos" as const,
     icon_name: "Ticket",
     bg_color: "#FAF5FF",
     text_color: "#6B21A8",
-    sort_order: 7,
-    show_title: true,
-    filter_rules: { text_position: "bottom", is_full_width: false },
-  },
-  {
-    slug: "drawer-noticias",
-    title: "Notícias",
-    target_route: "/noticias",
-    template_type: "drawer_module" as const,
-    module: "noticias" as const,
-    icon_name: "Newspaper",
-    bg_color: "#F8FAFC",
-    text_color: "#334155",
     sort_order: 8,
     show_title: true,
-    filter_rules: { text_position: "bottom", is_full_width: false },
+    filter_rules: {
+      section_key: "explorar",
+      section_title: "Destaques para Explorar",
+      card_variant: "squircle",
+      badge_color: "#DC2626",
+      text_position: "bottom",
+      is_full_width: false,
+    },
   },
+
+  // ── SEÇÃO 3: DESTAQUES DO WAESY (Squircles 4 Colunas) ──
   {
-    slug: "drawer-corrida",
-    title: "Corrida",
-    target_route: "/mobilidade?mode=ride",
+    slug: "drawer-promocoes",
+    title: "Promoções",
+    badge_label: "Novo",
+    target_route: "/gastronomia",
     template_type: "drawer_module" as const,
-    module: "mobilidade" as const,
-    icon_name: "Car",
+    module: "gastronomia" as const,
+    icon_name: "Tag",
     bg_color: "#FEF2F2",
-    text_color: "#991B1B",
+    text_color: "#B91C1C",
     sort_order: 9,
     show_title: true,
-    filter_rules: { text_position: "bottom", is_full_width: false },
+    filter_rules: {
+      section_key: "destaques_waesy",
+      section_title: "Destaques do Waesy",
+      card_variant: "squircle",
+      badge_color: "#DC2626",
+      text_position: "bottom",
+      is_full_width: false,
+    },
   },
   {
-    slug: "drawer-entrega",
-    title: "Entrega",
+    slug: "drawer-comunidade",
+    title: "Comunidade",
+    target_route: "/mural",
+    template_type: "drawer_module" as const,
+    module: "social" as const,
+    icon_name: "Users",
+    bg_color: "#FEFCE8",
+    text_color: "#A16207",
+    sort_order: 10,
+    show_title: true,
+    filter_rules: {
+      section_key: "destaques_waesy",
+      section_title: "Destaques do Waesy",
+      card_variant: "squircle",
+      text_position: "bottom",
+      is_full_width: false,
+    },
+  },
+  {
+    slug: "drawer-turbo",
+    title: "Turbo",
+    badge_label: "Novo",
     target_route: "/mobilidade?mode=delivery",
     template_type: "drawer_module" as const,
     module: "mobilidade" as const,
-    icon_name: "Package",
+    icon_name: "Zap",
     bg_color: "#FFFBEB",
-    text_color: "#92400E",
-    sort_order: 10,
-    show_title: true,
-    filter_rules: { text_position: "bottom", is_full_width: false },
-  },
-  {
-    slug: "drawer-carona",
-    title: "Carona",
-    target_route: "/mobilidade?mode=carpool",
-    template_type: "drawer_module" as const,
-    module: "mobilidade" as const,
-    icon_name: "Users",
-    bg_color: "#F0FDFA",
-    text_color: "#115E59",
+    text_color: "#D97706",
     sort_order: 11,
     show_title: true,
-    filter_rules: { text_position: "bottom", is_full_width: false },
+    filter_rules: {
+      section_key: "destaques_waesy",
+      section_title: "Destaques do Waesy",
+      card_variant: "squircle",
+      badge_color: "#DC2626",
+      text_position: "bottom",
+      is_full_width: false,
+    },
   },
   {
-    slug: "drawer-mudanca",
-    title: "Mudança",
-    target_route: "/mobilidade?mode=moving",
+    slug: "drawer-doacoes",
+    title: "Doações",
+    target_route: "/doacoes",
     template_type: "drawer_module" as const,
-    module: "mobilidade" as const,
-    icon_name: "Truck",
-    bg_color: "#F1F5F9",
-    text_color: "#475569",
+    module: "social" as const,
+    icon_name: "Heart",
+    bg_color: "#FFF1F2",
+    text_color: "#E11D48",
     sort_order: 12,
     show_title: true,
-    filter_rules: { text_position: "bottom", is_full_width: false },
+    filter_rules: {
+      section_key: "destaques_waesy",
+      section_title: "Destaques do Waesy",
+      card_variant: "squircle",
+      text_position: "bottom",
+      is_full_width: false,
+    },
   },
   {
-    slug: "drawer-criar",
-    title: "Criar Evento",
-    target_route: "/eventos",
+    slug: "drawer-clube",
+    title: "Clube",
+    target_route: "/conta/creditos",
     template_type: "drawer_module" as const,
-    module: "eventos" as const,
-    icon_name: "PlusCircle",
-    bg_color: "#EDE9FE",
-    text_color: "#5B21B6",
+    module: "recompensas" as const,
+    icon_name: "Sparkles",
+    bg_color: "#F3E8FF",
+    text_color: "#7E22CE",
     sort_order: 13,
     show_title: true,
-    filter_rules: { text_position: "bottom", is_full_width: false },
+    filter_rules: {
+      section_key: "destaques_waesy",
+      section_title: "Destaques do Waesy",
+      card_variant: "squircle",
+      text_position: "bottom",
+      is_full_width: false,
+    },
   },
+
+  // ── SEÇÃO 4: SELEÇÃO ESPECIAL ──
   {
-    slug: "drawer-anunciar",
-    title: "Anunciar Desapego",
-    target_route: "/classificados",
+    slug: "drawer-gourmet",
+    title: "Gourmet",
+    target_route: "/gastronomia?sub=gourmet",
     template_type: "drawer_module" as const,
-    module: "classificados" as const,
-    icon_name: "Tag",
-    bg_color: "#FEF3C7",
-    text_color: "#78350F",
+    module: "gastronomia" as const,
+    icon_name: "CookingPot",
+    bg_color: "#18181B",
+    text_color: "#FFFFFF",
     sort_order: 14,
     show_title: true,
-    filter_rules: { text_position: "bottom", is_full_width: false },
+    filter_rules: {
+      section_key: "selecao_restaurantes",
+      section_title: "Seleção em Restaurantes",
+      card_variant: "squircle",
+      text_position: "bottom",
+      is_full_width: false,
+    },
   },
+  {
+    slug: "drawer-super",
+    title: "Super",
+    target_route: "/gastronomia?sub=super",
+    template_type: "drawer_module" as const,
+    module: "gastronomia" as const,
+    icon_name: "ShieldCheck",
+    bg_color: "#EF4444",
+    text_color: "#FFFFFF",
+    sort_order: 15,
+    show_title: true,
+    filter_rules: {
+      section_key: "selecao_restaurantes",
+      section_title: "Seleção em Restaurantes",
+      card_variant: "squircle",
+      text_position: "bottom",
+      is_full_width: false,
+    },
+  },
+  {
+    slug: "drawer-favoritos",
+    title: "Favoritos",
+    target_route: "/conta/salvos",
+    template_type: "drawer_module" as const,
+    module: "social" as const,
+    icon_name: "Heart",
+    bg_color: "#FEE2E2",
+    text_color: "#DC2626",
+    sort_order: 16,
+    show_title: true,
+    filter_rules: {
+      section_key: "selecao_restaurantes",
+      section_title: "Seleção em Restaurantes",
+      card_variant: "squircle",
+      text_position: "bottom",
+      is_full_width: false,
+    },
+  },
+
+  // ── CLASSIFICADOS GERAIS (Full Width Banner) ──
   {
     slug: "drawer-classificados",
     title: "Classificados Gerais",
@@ -885,48 +1045,15 @@ export const CANONICAL_DRAWER_MODULES = [
     icon_name: "LayoutGrid",
     bg_color: "#EEF2FF",
     text_color: "#3730A3",
-    sort_order: 15,
-    show_title: true,
-    filter_rules: { text_position: "side", is_full_width: true },
-  },
-  {
-    slug: "drawer-empregos",
-    title: "Empregos",
-    target_route: "/empregos",
-    template_type: "drawer_module" as const,
-    module: "empregos" as const,
-    icon_name: "Briefcase",
-    bg_color: "#F0FDF4",
-    text_color: "#065F46",
-    sort_order: 16,
-    show_title: true,
-    filter_rules: { text_position: "bottom", is_full_width: false },
-  },
-  {
-    slug: "drawer-freelas",
-    title: "Freelas",
-    target_route: "/empregos",
-    template_type: "drawer_module" as const,
-    module: "empregos" as const,
-    icon_name: "Zap",
-    bg_color: "#FFFBEB",
-    text_color: "#854D0E",
     sort_order: 17,
     show_title: true,
-    filter_rules: { text_position: "bottom", is_full_width: false },
-  },
-  {
-    slug: "drawer-processos",
-    title: "Meus Processos",
-    target_route: "/conta/processos",
-    template_type: "drawer_module" as const,
-    module: "servicos" as const,
-    icon_name: "FileText",
-    bg_color: "#F8FAFC",
-    text_color: "#1E293B",
-    sort_order: 18,
-    show_title: true,
-    filter_rules: { text_position: "bottom", is_full_width: false },
+    filter_rules: {
+      section_key: "classificados",
+      section_title: "Classificados & Negócios",
+      card_variant: "full_width",
+      text_position: "side",
+      is_full_width: true,
+    },
   },
 ];
 

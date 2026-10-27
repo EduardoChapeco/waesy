@@ -18,7 +18,6 @@ import { Home, Search, Plus, MessageCircle, Menu, ShoppingCart, ArrowRight, User
 import { useSuperAppDrawer, useAccountSwitcherDrawer } from "@/lib/drawer-store";
 import { AccountSwitcherDrawer } from "@/components/shell/AccountSwitcherDrawer";
 import { QuickCreateModal } from "@/components/commerce/quick-create-modal";
-import { SuperAppModuleDrawer } from "@/components/shell/SuperAppModuleDrawer";
 import { useCartContext } from "@/lib/cart-context";
 import { listCustomerOrders } from "@/services/order.functions";
 import { formatCents } from "@/lib/utils";
@@ -279,13 +278,7 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
         </div>
       </div>
 
-      {/* ── 3. MODAIS / BOTTOM SHEETS GLOBAIS DO SUPERAPP & CONTA ── */}
-      <SuperAppModuleDrawer
-        open={isSuperAppOpen}
-        onOpenChange={setIsSuperAppOpen}
-        session={session}
-        userRole={userRole}
-      />
+      {/* ── 3. MODAL / BOTTOM SHEET DE CONTA ── */}
       <AccountSwitcherDrawer
         session={session}
         userRole={userRole}

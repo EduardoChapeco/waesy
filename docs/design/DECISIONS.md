@@ -1,5 +1,267 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-348: Instituição da Regra Pétrea de Mutação Cirúrgica e Economia Extrema de Tokens
+- **Data:** 2026-10-27
+- **Contexto:**
+  1. A prática de reescrever arquivos completos (`write_file` com `Overwrite=true`) para aplicar correções pontuais e refinamentos ocasionava desperdício de tokens, risco de perda de imports/regras adjacentes e regressões por alucinação.
+  2. Estabelecido como mandato pétreo e irrevogável a proibição de reescrita total de arquivos existentes em manutenções e melhorias incrementais, exigindo a codificação oficial dessa metodologia na governança do repositório.
+- **Decisão:**
+  1. Instituída a **Regra Pétrea de Mutação Cirúrgica** nas seções B.7, B.8 e B.46 de `AGENTS.md` e `.agents/AGENTS.md`: é terminantemente proibido o uso de `write_file(Overwrite=true)` em arquivos existentes para manutenção, correção de bug ou refinamento de UI.
+  2. Toda alteração incremental DEVE utilizar estritamente `edit_file` com `Target` e `Replacement` delimitados ao menor bloco contíguo indispensável.
+  3. O uso de `write_file` fica restrito exclusivamente a arquivos virgens genuínos (novas rotas, novos componentes modulares, novas migrations SQL e novas specs).
+  4. Atualizada a skill canônica `.agents/skills/token-economy/SKILL.md` formalizando a Metodologia Cirúrgica em 4 Etapas: Localização por Slice Estrito (<=60 linhas), Delimitação Unívoca de Target, Mutação Focada e Validação Focalizada.
+- **Fundamentação:** AGENTS.md Regras B.1, B.5, B.6, B.7, B.8, B.46; token-economy/SKILL.md.
+- **Consequências:** Fim imediato do desperdício de tokens e créditos, eliminação de regressões colaterais em regras adjacentes e preservação integral da integridade da base de código.
+
+## DEC-347: Renomeação Canônica Waesynews, Desacoplamento da Proposta Comercial e Estúdio Social Instagram Ultra-HD
+- **Data:** 2026-10-27
+- **Contexto:**
+  1. O protótipo de portal editorial de demonstração referenciava a nomenclatura legada "Vale Agora News" / `/valeagoranews` e continha precificação monetária explícita ("R$ 2.000,00", "R$ 99,90/mês", parcelamentos e chave PIX), incompatível com o posicionamento de ecossistema técnico.
+  2. O modal de estúdio social (`PrometheeNewsStudioModal`) sofria distorção no mobile pela compressão da viewport e faltavam ferramentas de proporção fotográfica fixa (Feed 4:5, Stories 9:16, Quadrado 1:1), geração aleatória de layouts e lâmina de encerramento padronizada.
+  3. A renderização do estúdio em canvas exportava em resolução padrão de 72 DPI sem supersampling.
+  4. O painel editorial de notícias no Workspace não dispunha de esteira de apuração (`editorial_stage`), controle de paywall de assinantes (`is_members_only`), nem fila de agendamento e automação de Stories para o Instagram.
+- **Decisão:**
+  1. Criada a rota canônica `/waesynews` (`src/routes/waesynews.tsx`) e convertida a rota `/valeagoranews` em redirecionamento permanente TanStack Router (`src/routes/valeagoranews.tsx`).
+  2. Expurgadas todas as menções de preços, mensalidades e parcelamento do modal de proposta de `vale-news-portal.tsx`, substituídas por trilha técnica de capacitação e governança editorial em 3 fases (Domínio & Identidade, Display & Monetização, Redes & Operação).
+  3. No estúdio de postagens (`promethee-news-studio-modal.tsx`), aplicadas proporções travadas sem classes com colchetes (`style={{ aspectRatio }}`), alternador de abas mobile ("Ver Arte" vs "Personalizar") para eliminar compressão, botão "Aleatorizar" de layouts e suporte à lâmina final fixa institucional.
+  4. Atualizado o motor de canvas (`news-studio-templates.ts`) com supersampling 2x para exportação ultranítida a 300 DPI.
+  5. Criada migração idempotente `20270307000000_editorial_social_automation_and_paywall.sql` adicionando colunas em `news_articles` e tabelas `editorial_social_schedules` e `editorial_social_settings` com isolamento multi-tenant RLS.
+  6. Expandidos o BFF (`news.functions.ts`) e o Workspace (`workspace.noticias.index.tsx` e `workspace.noticias.novo.tsx`) com 4 métricas editoriais, abas de apuração/paywall e fila/automação das 08h do Instagram.
+  7. Auditada a conformidade de 0 violações P0/P1 pelo design lint e 100% de sucesso nos testes unitários e de integração (44/44 testes aprovados).
+- **Fundamentação:** AGENTS.md Regras B.1, B.2, B.5, B.8, B.9, B.14, B.22, B.25, B.30, B.33; apple-design/SKILL.md.
+- **Consequências:** Identidade visual canônica Waesynews sem menções legadas, estúdio social com proporções exatas e exportação a 300 DPI sem compressão mobile, automação completa de pautas e agendamentos no Workspace com zero violações de design lint.
+
+## DEC-346: Correção End-to-End de Resolução de Páginas, Navegação e Isolamento Defensivo de Blocos
+- **Data:** 2026-10-27
+- **Contexto:**
+  1. Usuários reportaram páginas quebradas ao navegar e tentar visitar páginas criadas no CMS/Builder (`_store.paginas.$slug`).
+  2. `_store.paginas.$slug.tsx` impunha `document_type: "storefront"` fixo no loader, impedindo o carregamento de páginas do tipo `campaign`, `landing_page` e `custom` criadas pelo CMS.
+  3. `getPublicExperienceDocumentBySlug` lia exclusivamente `settings.omni_page`, ignorando snapshots em `omni_page_published` e `omni_page_draft` gerados pela RPC Postgres `persist_omni_document_snapshot` e pela criação de templates.
+  4. O componente público `OmniPageRenderer.tsx` não encapsulava os blocos em `BlockErrorBoundary`, permitindo que exceções pontuais de componentes colapsassem a página inteira em tela de erro.
+  5. `getPublicStoreProfile` não consultava `directory_listings`, gerando falso estado de "Empresa Não Encontrada" para cadastros válidos do guia local.
+  6. Links para rotas de vitrine utilizavam o prefixo `/_store/`, que é rota de layout pathless, quebrando o roteamento com erro 404.
+  7. Erro de sintaxe em `travel-product-detail.tsx` impedia o build e a compilação de rotas turísticas.
+- **Decisão:**
+  1. Corrigida a sintaxe em `travel-product-detail.tsx` saneando os nós de array órfãos.
+  2. Tornado opcional o parâmetro `document_type` em `getPublicExperienceDocumentBySlug`, permitindo a resolução de qualquer documento ativo por slug.
+  3. Expandida a resolução de snapshots em `getPublicExperienceDocumentBySlug` e `_store.paginas.$slug.tsx` para cobrir `omni_page_published`, `omni_page`, `omni_page_draft` e versões gravadas no banco.
+  4. Integrado `BlockErrorBoundary` em cada iteração de bloco do `OmniPageRenderer.tsx`, garantindo tolerância a falhas e eliminando telas brancas.
+  5. Adicionado fallback de duas vias em `getPublicStoreProfile` para buscar em `directory_listings` caso o ID/slug não conste na tabela `stores`.
+  6. Normalizados links de vitrine removendo o prefixo `/_store/` em `_store.c.$slug.tsx` e `viajante.viagem.$id.tsx`.
+  7. Criada a suíte de testes `src/routes/__tests__/pages-resolution-resilience.test.ts` com 100% de aprovação (5/5 testes).
+- **Fundamentação:** AGENTS.md B.5, B.8, B.9, B.10, B.20, B.33, B.36; guard-install/SKILL.md (Barreiras S1 a S7).
+- **Consequências:** Resolução íntegra de páginas públicas, navegação fluida sem telas brancas ou falsos 404s, e isolamento defensivo robusto de blocos em toda a plataforma.
+
+## DEC-345: Erradicação Holística de Dados Falsos, Mocks Sintéticos e Fallbacks Artificiais em Todas as Vitrines Comerciais
+- **Data:** 2026-10-27
+- **Contexto:**
+  1. As 6 rotas verticais comerciais (`_store.gastronomia`, `_store.acougue`, `_store.bebidas`, `_store.farmacia`, `_store.mercado`, `_store.pet`) continham arrays de fallback com estabelecimentos simulados e notas hardcoded (`rating: 4.8`, `4.9`), taxas de entrega artificiais ("Grátis", "R$ 7,50") e mini-banners estáticos com cores hexadecimais literais, violando diretamente as regras B.8 e B.33 de Honestidade Editorial Estrita.
+  2. Componentes de detalhes turísticos (`travel-product-detail.tsx`) continham props default com notas e contagens de avaliações sintéticas (`reviewScore = 8.0, reviewCount = 243`).
+  3. `workspace.turismo.hoteis.tsx` inicializava novos estabelecimentos com `internal_rating: 4.8` em vez de neutro/zero.
+  4. `chat.functions.ts` utilizava métricas arbitrárias (`avg_rating: 4.8, sla_first_response_min: 3.5`).
+- **Decisão:**
+  1. Removidos todos os arrays e objetos de lojas mock em todas as 6 rotas de vitrine comercial. Quando a consulta municipal ao banco de dados retornar vazia (`rawStores.length === 0`), a vitrine retorna `[]`, renderizando o `EmptyState` honesto e canônico em `CommercialShowcaseTemplate`.
+  2. Mini-banners verticais de destaques comerciais são carregados dinamicamente do Surface CMS (`marketplaceFeed`); seções sem banners cadastrados são omitidas silenciosamente sem lacunas visuais ou quebras de layout.
+  3. Protegida a renderização de notas e contadores de reviews com guardas estritas (`typeof rating === "number" && rating > 0 && reviewCount > 0`); itens sem avaliações reais registradas omitem estrelas e numerais.
+  4. Saneado `travel-product-detail.tsx` eliminando default props sintéticas e condicionando o bloco de score à existência de dados reais no banco.
+  5. Ajustado `workspace.turismo.hoteis.tsx` para inicializar novos registros com `internal_rating: 0`, exibindo selo honesto "Novo".
+  6. Refatorado `chat.functions.ts` para calcular `avg_rating` real a partir de `satisfaction_rating` das threads existentes, retornando `null` quando não houver avaliações.
+  7. Criada a suíte de testes de integridade `src/routes/__tests__/vertical-showcases-integrity.test.ts` com 35 testes automatizados aprovados (100% de sucesso).
+- **Fundamentação:** AGENTS.md Regras B.8 (Proibições Absolutas de Dados Sintéticos), B.33 (Invariante Anti-Fake Estrita & Omissão de Estados Vazios) e B.20 (Bilateralidade do CMS de Vitrines).
+- **Consequências:** Fim absoluto de dados fictícios, avaliações fantasmas e cards sintéticos em toda a camada pública e de workspace do produto.
+
+## DEC-344: Unificação Canônica do Cabeçalho Mobile e Desacoplamento Bidirecional Estrito (Mobile First Native App vs Desktop System App)
+- **Data:** 2026-10-27
+- **Contexto:**
+  1. A rota inicial da vitrine (`/_store`) apresentava sobreposição de 2 cabeçalhos no mobile: `NativeMobileHeader` (injetado pelo `AppShell` por ausência da rota raiz em `exactCustomRoutes`) e `IFoodHeader` (renderizado no corpo da página).
+  2. A home utilizava um componente responsivo fluido híbrido (`IFoodHomeView`), comprimindo elementos móveis no desktop e violando a regra arquitetural de bifurcação estrita bidirecional (Mobile Native App com proporções fixas vs Desktop System App com palco widescreen e TetrisGrid).
+  3. `IFoodHeader` continha fallbacks sintéticos estáticos ("Eduardo", "R. La Salle, 1917") e componentes secundários redundantes (`TopGreetingSearchBar` com saudação e sino duplicados).
+- **Decisão:**
+  1. Registrada a rota raiz `"/"` e as vitrines comerciais (`/gastronomia`, `/mercado`, `/farmacia`, `/bebidas`, `/acougue`, `/pet`) em `exactCustomRoutes` no `AppShell` (`checkHasCustomPageMobileHeader`), eliminando a renderização duplicada de `NativeMobileHeader`.
+  2. Refatorado e elevado `IFoodHeader` para cabeçalho canônico principal móvel da plataforma:
+     - Integração com `getStoredLocation()` e resolução da cidade ativa (localização real da sessão sem fallbacks artificiais).
+     - Saudação dinâmica por período ("Bom dia", "Boa tarde", "Boa noite") e nome real do usuário autenticado via `session` (ou "Visitante").
+     - Barra de busca integrada com altura canônica de 44px (`h-11 min-h-11`), ícone de lupa, botão de limpar e atalhos táteis de 44px para o SuperApp drawer (`<List>`), clube de vantagens (`<Diamond>`) e notificações (`<Bell>`).
+  3. Erradicado o componente duplicado `TopGreetingSearchBar` de `HomeMobileNativeApp.tsx`.
+  4. Realizada a bifurcação bidirecional estrita em `_store.index.tsx` via `useWindowSizeClass()`:
+     - `isCompact`: renderiza exclusivamente `HomeMobileNativeApp` (proporções móveis nativas congeladas, thumb zone inferior, safe-area `pb-32 pb-safe`, zero nós desktop no DOM).
+     - `!isCompact`: renderiza exclusivamente `HomeDesktopWebApp` (palco hero widescreen 16:9, grid de categorias widescreen, TetrisGrid/BentoGrid denso sem buracos, DiscoveryControlBar com ⌘K, zero nós móveis no DOM).
+  5. Criada a suíte de testes `src/components/home/__tests__/home-bidirectional-structure.test.tsx` com 100% de aprovação (3/3 testes).
+- **Fundamentação:** AGENTS.md B.1 a B.45, B.4, B.8, B.14, B.22, B.26, B.33, B.34; `apple-design/SKILL.md` (Princípio 2: Bifurcação Nativa Congelada e Zero Duplicação no DOM).
+- **Consequências:** Fim da duplicação de cabeçalhos na home e rotas comerciais; experiência nativa pura e congelada para mobile (<600px) e sistema operacional widescreen completo para desktop (>=840px).
+
+## DEC-343: Integração Completa da Rede de Display Editorial e Efeito Marca-Texto nos Blocos Modulares do Omni Builder
+- **Data:** 2026-10-27
+- **Contexto:**
+  1. Necessidade de sincronizar as inovações visuais e editoriais (efeito marca-texto em tópicos em alta estilo Threads, modal de exploração com busca sob demanda estilo Twitter/X e Ad Server Editorial multi-zona auditável) aos blocos modulares avulsos do Omni Builder (`PrometheeNewsFeedBlock`, `PrometheeNewsArticleReaderBlock`, `PrometheeNewsHeaderBlock`, `PrometheeNewsNavBlock`).
+  2. Garantir que os slots publicitários operem com o componente `EditorialAdSlot` em conformidade com as diretrizes do CONAR (badge "ADS"), telemetria de visualização IAB (viewable impression e dwell time) e isolamento multi-tenant estrito (`store_id`), sem fallbacks hardcoded ou colchetes arbitrários.
+- **Decisão:**
+  1. Injetado `PrometheeTrendingMarkerStrip` no fluxo do feed em `PrometheeNewsFeedBlock` e `vale-news-portal.tsx`, exibindo tópicos em alta com visual marca-texto translúcido e interação direta com a barra de busca e abas.
+  2. Conectado `EditorialAdSlot` em todas as zonas canônicas (`feed_in_stream`, `article_inline_mid`, `article_footer_cta` e `sidebar_sticky`) no portal e nos blocos do Omni Builder, com selo de transparência "ADS" conforme a grade modular estrita de 4px (`px-2 py-1`).
+  3. Suíte de testes vitest aprovada com 44/44 testes passando (100%), contratos BFF com 0 tabelas locais ausentes e conformidade estrita de 0 violações no Design Lint em todos os 11 arquivos do escopo.
+- **Fundamentação:** AGENTS.md B.1 a B.45, B.4, B.8, B.14, B.20, B.22, B.30, B.33, B.38, B.39.
+- **Consequências:** Paridade plena entre o portal demonstrativo e os blocos modulares customizáveis do Omni Builder, garantindo monetização editorial transparente e design minimalista em todos os formatos.
+
+## DEC-342: Resolução da Régua Horizontal de Abas em Linha Única e Carrossel Snap do Plantão Regional no Waesy News & Omni Builder
+- **Data:** 2026-10-27
+- **Contexto:**
+  1. A régua de navegação por editorias no cabeçalho do portal de notícias sofria quebra de linha em 3 fileiras no mobile e desktop, gerando poluição visual e violando a Invariante B.39.
+  2. A classe `.waesy-tab-strip` em `styles.css` continha apenas `overflow-x: auto; scrollbar-width: none;`, sem `display: flex; flex-wrap: nowrap;`. Consequentemente, contêineres filhos operavam com layout de bloco padrão, quebrando botões e cards verticalmente.
+  3. A seção "Plantão Regional" (Breaking News) renderizava cards verticais em largura cheia empilhados no topo da página em vez de operar como carrossel horizontal contínuo com física tátil e snap scroll.
+- **Decisão:**
+  1. Atualizada a regra `.waesy-tab-strip` em `src/styles.css` adicionando `display: flex; flex-wrap: nowrap; -webkit-overflow-scrolling: touch;`.
+  2. Implementada a régua de abas em linha única horizontal em `src/components/news/vale-news-portal.tsx` e `PrometheeNewsNavBlock.tsx` com `min-w-0 flex-1 flex flex-nowrap items-center scroll-smooth`, isolamento tátil do botão `(+)` via divisor semântico e touch targets de 44px.
+  3. Reestruturado o "Plantão Regional" em `vale-news-portal.tsx`, `PrometheeNewsBreakingBlock.tsx` e `PrometheeNewsFeedBlock.tsx` para carrossel horizontal snap (`snap-x snap-mandatory flex flex-nowrap items-stretch gap-3 pb-2 pt-1`), cards proporcionais com `w-72 sm:w-80 shrink-0 snap-start`, proporção de aspecto `aspect-video` e limitador de manchete em 2 linhas (`line-clamp-2`).
+  4. Testes aprovados com 100% de sucesso e zero novas violações P0/P1 no Design Lint.
+- **Fundamentação:** AGENTS.md B.1 a B.45, B.4, B.8, B.14, B.22, B.38, B.39 (Invariante de Régua de Abas em Linha Única Horizontal Contínua).
+- **Consequências:** Navegação contínua suave e responsiva padrão Instagram/Threads e destaque visual em carrossel sem duplicidade ou empilhamento vertical na viewport inicial.
+
+## DEC-341: Arquitetura Push-Canvas do Menu Lateral Mobile (Paridade Threads + Sidebar iFood) e Omni Builder Bilateral
+- **Data:** 2026-10-27
+- **Contexto:**
+  1. O usuário requisitou a refatoração do drawer mobile para um sheet lateral que empurra o conteúdo da página para o lado (efeito push idêntico ao Threads no iOS), com sidebar e botões no estilo iFood (cards amplos em 2 colunas, squircles em 4 colunas com badges no topo esquerdo do ícone, banners full width e alternador grade/lista).
+  2. Requisito estrito de governança: todos os botões e seções devem ser 100% editáveis no Admin Master (admin-master.botoes.tsx), proibida a exclusão física de registros preexistentes (apenas desativação lógica is_active: false).
+  3. Requisito de modularidade: o menu lateral deve estar disponível como bloco de primeira classe no Omni Builder (vitrine_lateral_drawer), permitindo que qualquer empresa configure e personalize seu menu lateral em seu app.
+- **Decisão:**
+  1. **Primitivo Canônico (VitrineLateralMenuSheet em src/design-system/vitrine/vitrine-lateral-sheet.tsx):**
+     - Alternador de visualização Grade e Lista com persistência de estado.
+     - Trifurcação de layouts em grade: cards amplos em 2 colunas, squircles 4 colunas com badges "Novo" diretamente na ponta do contêiner do ícone e banners full width.
+     - Card de identidade com switcher de contexto civil/loja/entregador (piso 44px).
+     - Rolagem interna suave independente com safe area inferior e tokens semânticos 100% livres de cores literais ou colchetes arbitrários.
+  2. **Shell com Push Canvas (AppShell em src/components/shell/app-shell.tsx):**
+     - Contêiner #app-push-canvas com transição tátil canvas-push-transition e efeito max-md:canvas-pushed (escala 0.96 e translação 85vw) ao abrir o menu lateral.
+     - Montagem do drawer lateral fora da árvore do #app-push-canvas para evitar translação recursiva.
+  3. **Omni Builder Bilateral (src/types/omni-builder.ts, vitrine-app-blocks.tsx, vitrine-block-inspector.tsx, registry.ts):**
+     - Bloco vitrine_lateral_drawer registrado na categoria vitrine_app.
+     - Inspetor completo de seções e botões (título da seção, formato, badge, ícone, rota e chave ativo/inativo).
+  4. **Governança no Admin Master (admin-master.botoes.tsx & hotpage.functions.ts):**
+     - 4ª Aba dedicada "Menu Lateral Mobile (iFood / Threads)" exibindo todos os módulos do drawer com preview de formato e status.
+     - Exclusão física substituída por desativação suave (toggleHotpageActive / deleteHotpage com is_active: false).
+- **Fundamentação:** AGENTS.md B.1 a B.45, B.20 (Bilateralidade CMS), B.22 (CTAs Táteis min 44px), B.32 (Layouts Híbridos), B.34 (Safe Areas), WCAG 2.2 AA.
+- **Consequências:** Paridade visual de ponta com Threads e iFood, zero regressões visuais no design-lint e controle completo concedido aos administradores e lojistas.
+
+## DEC-340: Redesign da Vitrine Turismo & Viagens: Paridade iFood/Decolar + CVC + Hub Corporativo VOLL
+- **Data:** 2026-10-27
+- **Contexto:**
+  1. O usuário requisitou a refatoração completa da vitrine de Turismo/Viagens (`_store.turismo.index.tsx`) com base nas referências visuais do iFood/Decolar (Capa hero de alta definição, programa de benefícios/fidelidade com switch de ativação de desconto), menu de canais CVC (squircles com ícones em duas cores) e Hub Corporativo B2B inspirado no app VOLL.
+  2. Requisitou que a capa da vitrine permita upload no painel Admin Master (`admin-master.banners.tsx` / `admin-master.vitrines.tsx`), que o menu seja 100% editável e personalizável via Admin Master, que abaixo existam opções dinâmicas de busca integradas ao GDS InfoTravel (Excelência Tour / Global) e Wooba para viagens corporativas, com associação de empresa para acesso ao painel corporativo.
+- **Decisão:**
+  1. **Hero Capa iFood/Decolar (`TourismHeroBanner.tsx`):**
+     - Consumo dinâmico da capa de banner veiculada no Admin Master (`placement: "turismo"`), com fallback para gradiente cósmico índigo com animação vetorial de avião e estrelas.
+     - Widget flutuante de Benefícios & Pontos Fidelidade ("1.000 pts · R$ 24,00 de desconto na Excelência Tour") com switch tátil "Ativar desconto", identificação do viajante e botão CTA primário de 250 pontos grátis.
+  2. **Menu Canônico CVC (`CvcNavigationDock.tsx`):**
+     - Squircles de alto contraste em 9 canais: Pacotes, Passagens, Hotéis, Cruzeiros, Aluguel, Seguros, Passeios, Ônibus e Corporativo.
+     - Suporte nativo a personalização pelo Admin Master via seções CMS (`custom_buttons_rail`) ou fallback canônico.
+  3. **Motor de Busca Dinâmica (`TourismDynamicSearchPanel.tsx`):**
+     - Painel com sub-abas interativas (Pacotes, Passagens, Hotéis, Ônibus, Cruzeiros, Corporativo).
+     - Integração direta a `publicTourismAutoServiceSearchFn` executando consultas ao GDS InfoTravel e catálogo no banco de dados com feedback de disponibilidade em tempo real e abertura de cotação com consultores.
+  4. **Hub Corporativo VOLL (`CorporateVollConciergeView.tsx`):**
+     - Bifurcação automática: empresas associadas têm acesso imediato à grade de serviços VOLL (VOLL Pay, Voos, Hotéis na política, Aluguel, Ônibus, Embarque Rápido, KM Refund e Despesas), linha do tempo de viagens emitidas e concierge interativo no WhatsApp/IA, além de link direto para `/workspace/empresa/viagens`.
+     - Empresas não vinculadas recebem card de onboarding com vantagens (faturamento B2B quinzenal/mensal, política de teto de diárias) e modal de solicitação de associação.
+  5. **Ideias para o Fim de Semana (`WeekendIdeasRail.tsx`):**
+     - Trilho horizontal de hotéis, pousadas e resorts com fotos em `aspect-4/3`, notas de avaliação (★ 9.2), selo "a partir de R$ 237,00" e CTA de reserva imediata (piso 44px).
+  6. **Admin Master Bilateral (`admin-master.vitrines.tsx` & `surface-cms.functions.ts`):**
+     - Superfície `turismo` auto-provisionada em `listAllSurfaces` e `getModularSurfaceFeed`.
+     - Adicionado editor visual de botões de atalho/menu para seções do tipo `custom_buttons_rail`.
+- **Fundamentação:** AGENTS.md B.1 a B.45, B.20 (Invariante de Bilateralidade do CMS de Vitrines), B.22 (CTAs Táteis), B.32 (Layouts Híbridos), B.33 (Zero Fallbacks Sintéticos), B.38 (Anti-Truncate) e WCAG 2.2 AA.
+- **Consequências:** Paridade estética e funcional com os líderes do mercado (iFood, Decolar, CVC e VOLL), mantendo integridade com as APIs corporativas e GDS do ecossistema.
+
+## DEC-339: Trilho Visual Spotlight iFood ("Restaurantes com Cupom"), Cards Amplos de Fotos Gastronômicas e Integração Omni Builder
+- **Data:** 2026-10-27
+- **Contexto:**
+  1. O usuário requisitou paridade estrita com a seção de cards grandes visuais de comida e pratos exibida no aplicativo do iFood (imagem de referência: "Restaurantes com Cupom" com foto farta de comida, nota com estrela, coroa dourada, botão de coração, avatar da loja, tempo de entrega, taxa grátis e tag de cupom verde).
+  2. Na Home (`IFoodHomeView.tsx`), os estabelecimentos eram apresentados unicamente como pequenas bolhas em "Últimas lojas" e depois na lista vertical compacta, sem a seção de destaque com os cards visuais grandes.
+  3. Nas subvitrines comerciais (`_store.gastronomia.tsx`, `_store.mercado.tsx`, etc.), `spotlightStores` carecia de encapsulamento canônico reutilizável e parametrização uniforme de cabeçalho ("Ad" + "Ver mais").
+- **Decisão:**
+  1. **Componente Canônico `IFoodVisualSpotlightRail`:** Criado em `src/components/commerce/ifood/IFoodVisualSpotlightRail.tsx` com cabeçalho iFood (`title`, badge `Ad`, link `Ver mais`), container horizontal de rolagem contínua com snap physics e renderização dos cards `variant="spotlight"`.
+  2. **Refinamento do Card Visual Spotlight (`IFoodStoreFeedCard.tsx`):**
+     - Proporção visual ampla com foto do prato/estabelecimento em `aspect-4/3` e `rounded-2xl`.
+     - Badge superior flutuante escuro translúcido com nota `⭐ 4.6` e coroa de Super Restaurante `<Crown size={13} className="text-amber-300" />`.
+     - Botão tátil de favoritar com `<Heart size={16} />` em círculo translúcido.
+     - Linha de identificação com avatar redondo da loja + nome da empresa em `font-semibold`.
+     - Linha de telemetria com tempo de entrega (`35 min`) e taxa destacada (`Grátis` em verde esmeralda).
+     - Tag de cupom em pílula verde suave `bg-emerald-500/10 text-emerald-700 font-bold px-2 py-0.5 rounded-md`.
+  3. **Injeção Dupla na Home (`IFoodHomeView.tsx`):**
+     - Seção 1: "Restaurantes com Cupom" posicionada imediatamente após os mini-banners verticais.
+     - Seção 2: "Farmácias & Mercados Famosos" com os estabelecimentos do setor essencial.
+  4. **Padronização nas Subvitrines:** `CommercialShowcaseTemplate.tsx` atualizado para consumir `IFoodVisualSpotlightRail` com título contextualizado (`{nicheTitle} com Cupom`).
+  5. **Disponibilização Omni Builder:** Criado `VitrineVisualSpotlightRailBlock` e registrado no catálogo central (`registry.ts`) sob categoria `vitrine_app` para uso irrestrito em vitrines customizadas de lojistas.
+- **Fundamentação:** AGENTS.md B.1 a B.45, B.8, B.14, B.20, B.22, B.26, B.28, B.33, B.38, .agents/skills/apple-design/SKILL.md.
+- **Consequências:** Paridade visual de alto impacto com cards de alta apetência gastronômica e comercial, elevando a conversão e o engajamento visual tanto na Home quanto nas subvitrines.
+
+
+
+## DEC-338: Home All-in-One City Explorer iFood, Eliminação de Duplicação de Header, Desbloqueio RLS de Produtos e Deploy Direto em Produção Cloudflare Pages
+- **Data:** 2026-10-27
+- **Contexto:**
+  1. A Home (`_store.index.tsx` e `HomeMobileNativeApp.tsx`) exibia duplo cabeçalho no mobile (`TopBar` legado empilhado sobre `IFoodHeader`), quebrando a ergonomia e duplicando ícones de busca e menu.
+  2. Imagens de lojas e empresas recorriam excessivamente a ícones genéricos de storefront em vez de resolver dinamicamente os avatares, logos e capas reais das entidades no Supabase.
+  3. Produtos de catálogo (`OfferCard`) e classificados sofriam bloqueio silencioso por falha de permissão (`42501`) nas funções RLS `auth_user_store_ids` e `is_platform_admin`, resultando em trilhos vazios na Home e subvitrines.
+  4. Deploys do Cloudflare Pages executados sem `--branch main` eram retidos em ambiente Preview isolado sem promover para os domínios canônicos de produção (`waesy.com.br` e `usewaesy.pages.dev`).
+- **Decisão:**
+  1. **Eliminação de Duplicação:** Atualizado `AppShell.tsx` com supressão de `TopBar` nas rotas customizadas mobile (`exactCustomRoutes`), restringindo `IFoodHeader` estritamente a dispositivos móveis (`md:hidden`) e garantindo header único em desktop e mobile.
+  2. **Resolvedor Universal de Mídia (`store-visuals.ts`):** Criados `resolveStoreLogo` e `resolveStoreCover` inspecionando defensivamente `avatar_url`, `logo_url`, `settings.logoUrl`, `banner_url`, `cover_image` e `media_urls`, com fallback para monograma vetorial de inicial da marca.
+  3. **Home All-in-One Explorer (`IFoodHomeView.tsx`):** Reestruturação integral da Home preservando todas as seções dinâmicas e nichos:
+     - Header iFood com drawer, localização e carrinho;
+     - Grade 5x2 de botões squircle com navegação tátil;
+     - Banner rotativo e carrossel de mini-banners "No Waesy Também Tem";
+     - Trilho dinâmico de lojas recentes com logomarcas reais;
+     - Trilho de Produtos "Mais Vendidos & Ofertas" (`OfferCard`) e trilho dedicado nas subvitrines;
+     - Seções dinâmicas e CMS do Admin Master (Bento Grid, Noor Dock, Tetris Grid);
+     - Trilhos de Classificados da Região e Vagas de Emprego com selos de nicho;
+     - Barra de chips de filtros rápidos e feed completo de lojas e empresas.
+  4. **Desbloqueio RLS no Supabase:** Executado `GRANT EXECUTE ON FUNCTION public.is_platform_admin() TO anon, authenticated, public;` e `GRANT EXECUTE ON FUNCTION public.auth_user_store_ids() TO anon, authenticated, public;`.
+  5. **Deploy Oficial na Main:** Deploy executado diretamente com `--branch main --commit-dirty=true --no-bundle`, ativado com sucesso em `https://waesy.com.br` e `https://usewaesy.pages.dev`.
+- **Fundamentação:** AGENTS.md B.1 a B.45, B.8, B.14, B.20, B.22, B.26, B.28, B.33, B.38.
+- **Consequências:** Fim da duplicação de cabeçalhos, restauração integral do catálogo de produtos e exibição de dados reais com design de alto padrão sem quebras de layout.
+
+
+
+## DEC-337: Editorial Ad Server Nativo, Rede de Display Multi-Zona, Exclusividade por Matéria e Telemetria IAB Viewability no Waesy News & Omni Builder
+- **Data:** 2026-10-27
+- **Contexto:**
+  1. A gestão de patrocinadores no módulo de notícias operava de forma plana, sem segmentação por zonas de veiculação, geotargeting por município, vigência temporal, quotas de entrega ou priorização por peso/tier.
+  2. Invariante estrita de segurança e multi-tenancy: Anunciantes cadastrados por um jornal/portal regional JAMAIS podem vazar ou veicular no marketplace geral do Waesy ou em lojas/portais terceiros (`WHERE store_id = :portalStoreId` inviolável).
+  3. Necessidade de prover motor de decisão em cascata (Waterfall Ad Decision Engine) padrão Google Ad Manager:
+     - `ads_disabled` (Brand Safety): matérias de tragédias ou polícia com supressão imediata de mídia.
+     - `exclusive_lock`: bloqueio editorial onde apenas marcas designadas veiculam na matéria.
+     - `placement_overrides`: fixação de anunciante específico em slot determinado (ex: Apresentador da Matéria).
+     - `inherit_network`: rotação ponderada por prioridade, validando vigência, quotas, filtros geográficos por município e editorias.
+     - Fallback House Ad ("Anuncie no Portal") quando nenhuma marca preencher os critérios.
+  4. Neutralização e renomeação do showcase `/valeagoranews` para `Waesynews`, destacando-o como mockup demonstrativo de Omni Builder.
+- **Decisão:**
+  1. Criada a migração idempotente `supabase/migrations/20270306000000_editorial_ad_server_network.sql` evoluindo `public.sponsors`, `public.news_articles` e criando `public.sponsor_ad_events` com telemetria IAB e RPC atômica `record_editorial_ad_telemetry`.
+  2. Implementado o motor Ad Server em `src/services/news.functions.ts` com as 8 zonas canônicas (`portal_top_billboard`, `breaking_rail_card`, `feed_in_stream`, `sidebar_sticky`, `article_hero_sponsor`, `article_inline_mid`, `article_footer_cta`, `builder_custom_slot`), `resolveEditorialAdPlacementsFn`, `updateArticleAdConfigFn`, `recordEditorialAdEventFn` e `getEditorialAdNetworkAnalyticsFn`.
+  3. Criado o componente de telemetria IAB `<EditorialAdSlot />` em `src/components/news/editorial-ad-slot.tsx` com `IntersectionObserver` (50% de visibilidade por >= 1000ms), rastreamento de dwell time, injeção de parâmetros UTM e zero CLS.
+  4. Criado o modal/drawer de governança publicitária na matéria `<ArticleAdConfigModal />` em `src/components/news/article-ad-config-modal.tsx` (100dvh mobile, touch targets >= 44px e zero violações de Design Lint).
+  5. Atualizado o showcase `/valeagoranews` para a marca `Waesynews` com selo de demonstração editorial e isolamento de vitrine.
+  6. Aprovada suíte de testes com 44/44 testes passando com sucesso.
+- **Fundamentação:** AGENTS.md B.1 a B.45, B.8, B.14, B.20, B.25, B.26, B.31, B.33, B.37, B.38.
+- **Consequências:** Portais de notícias ganham plataforma AdTech completa de monetização local e métricas auditáveis B2B com governança multi-tenant estrita e conformidade WCAG 2.2 AA.
+
+## DEC-336: Reengenharia Canônica e Paridade Estrita das Vitrines Comerciais iFood, Módulos Compartilhados no Design System e Integração Omni Builder
+- **Data:** 2026-10-27
+- **Contexto:**
+  1. As vitrines comerciais de subnichos (`_store.gastronomia`, `_store.farmacia`, `_store.bebidas`, `_store.acougue`, `_store.pet`) operavam com visual legado de abas simples e botões retangulares, desalinhadas do design dinâmico do iFood apresentado nas 4 imagens de referência.
+  2. Necessidade de prover paridade estética e funcional completa:
+     - Cabeçalho canônico iFood (`IFoodHeader`) com botão hambúrguer sem fundo para drawer, seletor de endereço, botão do Clube de fidelidade e sino de notificações com badge.
+     - Dock superior compacto (`MultiVitrineDock`) para alternar instantaneamente entre nichos comerciais (Restaurantes, Mercados, Farmácias, Bebidas, etc.) sem retornar à home.
+     - Trilho de subcategorias visuais (`IFoodSubcategoryPillRail`) com fotos/ícones destacados, badges de destaque e suporte a posicionamento customizável do texto (`below` | `right` | `none`).
+     - Carrossel de Mini-Banners verticais coloridos (`IFoodFeatureMiniBannersRail`) para cupons, clube e ofertas especiais ("No iFood também tem").
+     - Trilho de lojas recentes (`IFoodRecentStoresRail`) com badges de benefício em verde ("R$ 5 off" / "Grátis").
+     - Chips de filtros horizontais (`IFoodFilterChipsBar`) com ordenação rápida.
+     - Cards de estabelecimentos (`IFoodStoreFeedCard`) nos modos lista horizontal e spotlight vertical com foto grande do prato e nota de avaliação.
+     - Barra flutuante de sacola/carrinho (`IFoodFloatingCartBar`) com cálculo em tempo real e botão vermelho de conversão na thumb zone.
+  3. Preservação estrita das rotas de empregos, eventos e turismo conforme mandato do usuário.
+  4. Disponibilização dos novos blocos e template pré-configurado (`template_ifood_delivery_showcase`) no Omni Builder para que lojistas e restaurantes customizem suas vitrines privadas.
+- **Decisão:**
+  1. Criada a suíte de componentes do Design System em `src/components/commerce/ifood/` com piso tátil $\ge 44$px, acessibilidade WCAG 2.2 AA e foco teclado.
+  2. Criado o shell unificado `CommercialShowcaseTemplate.tsx` e aplicado diretamente nas rotas comerciais (`gastronomia`, `farmacia`, `bebidas`, `acougue`, `pet`).
+  3. Injetados `IFoodHeader` e `IFoodFloatingCartBar` na Home mobile (`HomeMobileNativeApp.tsx`).
+  4. Registrados os novos blocos canônicos (`ifood_feature_cards_rail`, `ifood_recent_stores_shelf`, `ifood_category_grid_custom`, `ifood_showcase_store_rail`) e template `template_ifood_delivery_showcase` no Omni Builder.
+- **Fundamentação:** AGENTS.md B.1 a B.45, B.8, B.14, B.20, B.22, B.26, B.28, B.33, B.38, .agents/skills/apple-design/SKILL.md.
+- **Consequências:** Paridade visual de alto padrão em todas as vitrines comerciais de delivery e serviços sem quebra de compatibilidade com os demais módulos verticais do ecossistema.
+
 
 ## DEC-333: Descompressão da Hierarquia Tipográfica de Eventos, Blindagem Heurística Anti-Notícia com Quarentena Editorial e Segmentação Multinicada em Meus Anúncios
 - **Data:** 2026-10-26
@@ -5681,7 +5943,8 @@
   1. **Especificação & Auditoria Canônica:** Documentação integral em 8 relatórios EARS em docs/audits/: TRAVEL_COMMERCIAL_INTELLIGENCE_CURRENT_STATE.md, COMMERCIAL_INTELLIGENCE_DB_MAP.md, COMMERCIAL_INTELLIGENCE_CONTRACT_MAP.md, COMMERCIAL_IDENTITY_MODEL.md, TRAVEL_INTEREST_MODEL.md, OPPORTUNITY_LIFECYCLE.md, OFFER_MATCHING_ENGINE.md, MATCH_SCORE_MODEL.md.
   2. **Banco de Dados & RLS (Zero-Pollution):** Criada migration idempotente supabase/migrations/20261022000003_travel_commercial_intelligence_backlog.sql com as tabelas 	ravel_commercial_contacts, 	ravel_interests e 	ravel_opportunity_matches, isoladas por store_id via RLS com bloqueio absoluto de acesso anônimo e índices GIN em arrays de destinos/inclusões.
   3. **Camada BFF / Server Functions:** Criado src/services/travel-commercial-intelligence.functions.ts com validação Zod, desestruturação completa de parâmetros e suporte integral a matching determinístico e promoção consciente ao CRM.
-  4. **Frontend & Cockpit Operacional:** Implementada rota completa src/routes/workspace.turismo.oportunidades.tsx conectada ao TanStack Router (outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com proporções canônicas, sheets de decomposição de score e de cadastro de novo interesse.
+  4. **Frontend & Cockpit Operacional:** Implementada rota completa src/routes/workspace.turismo.oportunidades.tsx conectada ao TanStack Router (
+outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com proporções canônicas, sheets de decomposição de score e de cadastro de novo interesse.
   5. **Integração Cruzada:** Conectado à Central de Cotações (workspace.turismo.cotacoes.tsx) e ao catálogo geral de ferramentas (workspace-all-tools-dialog.tsx).
   6. **Qualidade & Gates de CI:** 45/45 testes automatizados aprovados no Vitest, TypeScript Typecheck aprovado com Exit Code 0 em 2.265 arquivos e Catraca do Design Lint com zero violações e redução de 240 débitos.
 - **Fundamentação Teórica:** AGENTS.md B.1 a B.41, B.25 (Integridade de Parâmetros BFF), B.33 (Zero Fallbacks Sintéticos), B.38 (Anti-Truncate) e WCAG 2.2 AA.
@@ -5947,3 +6210,50 @@
   6. Homologação formal com zero erros: `node --max-old-space-size=6144 ./node_modules/typescript/bin/tsc --noEmit` aprovado com Exit Code 0; catraca de design lint (`scripts/design-lint.mjs --ratchet`) aprovada com 0 violações P0 e baseline reduzido para 5.610 violações.
 - **Fundamentacao Teorica:** AGENTS.md Regras B.8, B.14, B.22, B.26, B.33, B.34, Apple HIG.
 - **Consequencias:** Módulos verticais completamente integrados às rotas públicas, com affordance tátil nativa, isolamento comercial estrito e total conformidade com os portões de compilação e qualidade visual.
+
+## DEC-334: Reengenharia Modular do Ecossistema Editorial Prométhée & Portal Vale Agora News (Notícias 100% Reais, Estúdio PNG e Omni Builder)
+
+- **Data:** 2026-10-27
+- **ID da Decisao:** DEC-334
+- **Contexto:** Solicitação de elevação do portal `/valeagoranews`, integração de notícias reais mineradas com fotos autênticas, eliminação de mocks sintéticos/Unsplash, refinamento editorial Prométhée/Threads com botões móveis apenas ícone de 44x44px, decomposição dos blocos modulares no Omni Builder, Estúdio de Posts PNG em alta definição (post único e carrossel de 4 lâminas) e Proposta Comercial em tela cheia (100dvh) com fluxo editorial e cópia de vendas.
+- **Decisao Adotada:**
+  1. Criação da suíte de 7 blocos modulares individuais no Omni Builder (`news_promethee_header`, `news_promethee_nav`, `news_promethee_breaking`, `news_promethee_feed`, `news_promethee_ad_slot`, `news_promethee_article_reader`, `news_promethee_footer`) preservando `news_promethee_portal`.
+  2. Implementação do Estúdio de Posts PNG (`PrometheeNewsStudioModal`) com 4 temas visuais canônicos, suporte a proporções 4:5, 9:16 e 1:1, e proxy de imagem BFF (`fetchNewsImageDataUrlFn`) para downloads CORS-safe.
+  3. Reconstrução de `/valeagoranews` com feeds reais do Supabase (`public.news_articles`), fotos autênticas (sem fallbacks Unsplash/Pexels), filtro por GPS real integrado ao sistema de cidades canônicas do Waesy, régua de abas em linha única contínua com botão `+` fixo e modal de Proposta Comercial fullscreen 100dvh com botão `X` discreto e cópia comercial objetiva.
+  4. Suíte de páginas prontas estilo Wix (`NEWS_WIX_APP_PAGES`) instaláveis em 1 clique via CMS do Workspace (`/workspace/cms/paginas`), além de template de Notícia adicionado ao Estúdio de Marketing (`/workspace/marketing/studio`).
+  5. Aprovação estrita em 100% dos testes unitários e de integração (`src/components/news/__tests__/vale-news-portal.test.tsx`, `omni-builder.test.ts`, `studio-template-audit.test.ts`), 0 violações de design lint no módulo e build de produção Cloudflare Pages (`npm run build`) aprovado com Exit Code 0.
+- **Fundamentacao Teorica:** AGENTS.md Regras B.8 (Proibições Absolutas / Zero Imagens de Estoque), B.20 (CMS Soberano), B.26 (Piso 44px), B.33 (Zero Fallbacks Sintéticos e Honestidade Editorial), B.34 (Deconflito z-index / Overlays), B.38 (Anti-Truncate) e B.39 (Régua de Abas em Linha Única).
+- **Consequencias:** O portal `/valeagoranews` e o ecossistema Prométhée tornam-se 100% funcionais, conectados à mineração real do Supabase, personalizáveis bloco a bloco no Omni Builder e prontos para demonstração e comercialização direta.
+
+
+## DEC-335: Entrada Corporativa Dedicada (painel.waesy.com.br / /painel) & Encadeamento Imediato de Onboarding
+
+- **Data:** 2026-10-27
+- **ID da Decisao:** DEC-335
+- **Contexto:** Necessidade de prover um canal de acesso direto para empresas, lojistas e operadores gerenciarem seus workspaces sem fricção com o login civil (`/entrar`), com suporte nativo a subdomínio (`painel.waesy.com.br`), rota canônica de aplicação (`/painel`), compartilhamento de cookies entre subdomínios e fluxo de auto-cadastro corporativo com redirecionamento compulsório para abertura de negócio (`/criar-negocio`).
+- **Decisao Adotada:**
+  1. Criação da rota canônica `src/routes/painel.tsx`, provendo interface executiva B2B com alternador de abas ("Acessar Workspace" vs "Criar Conta Empresarial"), alvos de toque mínimos de 44px (`h-11 min-h-11`), anéis de foco `:focus-visible:ring-2` e conformidade WCAG 2.2 AA com zero violações de design lint.
+  2. Implementação do middleware de host em `src/server.ts`, detectando o cabeçalho `Host` iniciado em `painel.` (ex: `painel.waesy.com.br` ou `painel.localhost:3000`) e roteando chamadas na raiz (`/`) para a rota `/painel`.
+  3. Atualização de `src/lib/supabase-ssr.server.ts` para aplicar `domain: ".waesy.com.br"` (e `.usewaesy.com`) aos cookies de autenticação em produção, viabilizando Single Sign-On (SSO) transparente entre domínios e subdomínios.
+  4. Encadeamento atômico de onboarding: cadastros efetuados pela aba empresarial autenticam a sessão e encaminham imediatamente o usuário para `/criar-negocio`, onde a empresa é provisionada via `provisionBusiness` e o usuário promovido a proprietário (`owner`), liberando acesso direto ao `/workspace`.
+  5. Registro e execução de suíte de testes de regressão automatizada `src/routes/__tests__/painel-auth-flow.test.ts` com 100% de sucesso (8 testes aprovados).
+- **Fundamentacao Teorica:** AGENTS.md Regras B.1 (Missão e Escopo Multi-tenant), B.4 (Gates de Design DL-01 a DL-30), B.5 (Fluxo EARS / DoD), B.8 (Piso 44px, zero emojis, zero cores hex) e SPEC-PAINEL-EMPRESAS-DIRECT-AUTH.
+- **Consequencias:** Estabelecimentos contam com um portal corporativo direto e profissional, sem poluição de vitrine civil, com onboarding contínuo e arquitetura escalável e segura.
+
+
+## DEC-336: Reengenharia Integral da Vitrine de Eventos Mobile & Desktop no Padrão iFood + Sympla (Zero Dados Fake, Subvitrines e Bilateralidade CMS)
+
+- **Data:** 2026-10-27
+- **ID da Decisao:** DEC-336
+- **Contexto:** Solicitação de reconstrução integral da vitrine de eventos (`/_store/eventos`), com reprodução pixel a pixel do design dos apps de referência iFood e Sympla, integração de capa imersiva temática com botão voltar circular de 44px (`size-11 min-h-11`), pílula flutuante de localização sobreposta (`translate-y-1/2`), grade squircle 2x4 com gaveta "Ver mais", formatos duplos de cards (horizontal compacto e vertical de destaque), mini-banners promocionais, trilho de produtoras reais (estilo lojas do iFood), subvitrines especializadas para subnichos com retorno fluido e erradicação irrestrita de dados fake/simulados (Regras B.8 e B.33).
+- **Decisao Adotada:**
+  1. Criação do componente `EventTopHeroCover.tsx` com suporte a upload de imagem via Admin Master CMS, gradiente temático, botão voltar circular em vidro fosco (`size-11 min-w-11 min-h-11 rounded-full bg-black/40 backdrop-blur-md`), co-branding oficial e pílula flutuante de localização sobreposta (`LocationMasterPill`).
+  2. Implementação do `EventCategoryButtonsGrid.tsx` com grade 2x4 de 8 botões squircles arredondados (`rounded-2xl`) com ícones temáticos e 8º botão "Ver mais" abrindo folha inferior (`Sheet`) com todas as categorias do catálogo.
+  3. Decomposição dos dois formatos de cards de eventos: `EventHorizontalCard.tsx` (card compacto horizontal com thumbnail 4:3 à esquerda, título, data em mono e pin de local) e `EventSpotlightCard.tsx` (card vertical de destaque com banner 16:10, metadados e botão tátil "Garantir").
+  4. Criação do `EventFeatureMiniBannersRail.tsx` e `EventProducersRail.tsx` orientados a dados 100% reais: eliminação de constantes estáticas mockadas; caso não haja banners ou produtoras cadastradas no banco, as seções são omitidas honestamente sem poluição visual nem estrelas fake.
+  5. Criação do `getPublicEventOrganizers` em `src/services/events.functions.ts` consultando estabelecimentos reais de entretenimento em `directory_listings` e organizadores ativos na tabela `events`, sem avaliações artificiais.
+  6. Implementação da arquitetura de Subvitrines em `EventSubvitrineView.tsx`, provendo cabeçalho temático com botão "Voltar para Todos os Eventos", subfiltros específicos (ex: para shows: Rock, Sertanejo, Pagode, Eletrônica), alternador de visualização (grade vs lista) e empty states honestos.
+  7. Bifurcação adaptativa estrita em `_store.eventos.tsx` entre `EventsShowcaseMobileView.tsx` (<840px) e `EventsShowcaseDesktopView.tsx` (>=840px com carrosséis estilo Instagram de scroll contínuo com controles de seta e grid expansivo).
+  8. Homologação com 100% de sucesso em testes automatizados (`src/components/events/__tests__/events-showcase-complete.test.tsx` com 8 testes aprovados) e conformidade plena de design lint (0 novas violações nos arquivos do módulo).
+- **Fundamentacao Teorica:** AGENTS.md Regras B.8 (Proibições Absolutas / Zero Fallbacks Fake), B.20 (Bilateralidade do CMS Master), B.22 (CTAs Táteis 44px), B.26 (Piso 44px), B.33 (Honestidade Estrita em Lojas / Zero Estrelas Falsas) e B.39 (Régua de Abas em Linha Única).
+- **Consequencias:** A vitrine de eventos passa a operar com fidelidade estética absoluta ao padrão nativo do iFood e Sympla, totalmente dinâmica, sem dados simulados, bifurcada perfeitamente entre mobile e desktop e 100% controlável pelo Admin Master CMS.

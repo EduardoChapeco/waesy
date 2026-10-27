@@ -59,8 +59,24 @@ export default {
       if (typeof globalThis !== "undefined") {
         (globalThis as any).__env__ = env;
       }
+
+      // Resolução de subdomínio corporativo (ex: painel.waesy.com.br ou painel.localhost)
+      let effectiveRequest = request;
+      try {
+        const url = new URL(request.url);
+        const host = (request.headers.get("host") || url.host || "").toLowerCase();
+        const isPainelSubdomain = host.startsWith("painel.") || host.startsWith("painel-");
+        if (isPainelSubdomain && (url.pathname === "/" || url.pathname === "")) {
+          const rewrittenUrl = new URL(request.url);
+          rewrittenUrl.pathname = "/painel";
+          effectiveRequest = new Request(rewrittenUrl.toString(), request);
+        }
+      } catch {
+        effectiveRequest = request;
+      }
+
       const handler = await getServerEntry();
-      const response = await handler.fetch(request, env, ctx);
+      const response = await handler.fetch(effectiveRequest, env, ctx);
       return await normalizeCatastrophicSsrResponse(response, traceId);
     } catch (error) {
       recordCorrelatedError(traceId, error, { source: "worker" });

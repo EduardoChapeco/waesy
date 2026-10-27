@@ -8,7 +8,9 @@ import React from "react";
 import { OmniPageDocument } from "./types";
 import { getSiteBlockByIdStrict } from "./registry";
 import { BuilderAssetCredits } from "./BuilderAssetCredits";
+import { BlockErrorBoundary } from "./BlockErrorBoundary";
 import { submitOmniPageLeadFn } from "@/services/builder.functions";
+import { PrometheePortalProvider } from "@/components/news/promethee-portal-store";
 
 export interface OmniPageRendererProps {
   document: OmniPageDocument;
@@ -17,6 +19,17 @@ export interface OmniPageRendererProps {
   categories?: any[];
   collections?: any[];
   storeData?: any;
+  classifieds?: any[];
+  posts?: any[];
+  flyers?: any[];
+  events?: any[];
+  jobs?: any[];
+  stores?: any[];
+  banners?: any[];
+  hotpages?: any[];
+  newsArticles?: any[];
+  sponsors?: any[];
+  onAddToCart?: (productId: string) => void;
 }
 
 export const OmniPageRenderer: React.FC<OmniPageRendererProps> = ({
@@ -26,6 +39,17 @@ export const OmniPageRenderer: React.FC<OmniPageRendererProps> = ({
   categories = [],
   collections = [],
   storeData = null,
+  classifieds = [],
+  posts = [],
+  flyers = [],
+  events = [],
+  jobs = [],
+  stores = [],
+  banners = [],
+  hotpages = [],
+  newsArticles = [],
+  sponsors = [],
+  onAddToCart,
 }) => {
   if (!document || !document.blocks || !Array.isArray(document.blocks) || document.blocks.length === 0) {
     return null;
@@ -52,7 +76,11 @@ export const OmniPageRenderer: React.FC<OmniPageRendererProps> = ({
     }
   };
 
-  return (
+  const hasModularPrometheeBlocks = document.blocks.some(
+    (b) => !b.isHidden && b.type.startsWith("news_promethee_") && b.type !== "news_promethee_portal",
+  );
+
+  const renderedContent = (
     <div
       style={pageThemeStyle}
       className={`min-h-dvh w-full flex flex-col overflow-x-hidden bg-background text-foreground ${className}`}
@@ -101,22 +129,47 @@ export const OmniPageRenderer: React.FC<OmniPageRendererProps> = ({
             id={block.sectionAnchorId}
             className={animClass ? `w-full ${animClass}` : "w-full"}
           >
-            <Component
-              id={block.id}
-              data={block.config}
-              styling={block.styling}
-              products={products}
-              categories={categories}
-              collections={collections}
-              storeData={storeData}
-              pageSlug={document.slug}
-              onLeadSubmit={handleBlockLeadSubmit}
-            />
+            <BlockErrorBoundary
+              blockId={block.id}
+              blockType={block.type}
+            >
+              <Component
+                id={block.id}
+                data={block.config}
+                styling={block.styling}
+                products={products}
+                categories={categories}
+                collections={collections}
+                storeData={storeData}
+                classifieds={classifieds}
+                posts={posts}
+                flyers={flyers}
+                events={events}
+                jobs={jobs}
+                stores={stores}
+                banners={banners}
+                hotpages={hotpages}
+                newsArticles={newsArticles}
+                sponsors={sponsors}
+                onAddToCart={onAddToCart}
+                pageSlug={document.slug}
+                onLeadSubmit={handleBlockLeadSubmit}
+              />
+            </BlockErrorBoundary>
             <BuilderAssetCredits assets={block.assetRefs} />
           </div>
         );
       })}
     </div>
   );
-};
 
+  if (hasModularPrometheeBlocks) {
+    return (
+      <PrometheePortalProvider initialCity="Todas as Cidades">
+        {renderedContent}
+      </PrometheePortalProvider>
+    );
+  }
+
+  return renderedContent;
+};

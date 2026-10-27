@@ -62,12 +62,27 @@ export function getSSRClient() {
       },
       setAll(cookiesToSet) {
         try {
+          let host = "";
+          try {
+            host = (getRequestHeader("host") || "").toLowerCase();
+          } catch {
+            host = "";
+          }
+
+          let cookieDomain: string | undefined = undefined;
+          if (host.includes("waesy.com.br")) {
+            cookieDomain = ".waesy.com.br";
+          } else if (host.includes("usewaesy.com")) {
+            cookieDomain = ".usewaesy.com";
+          }
+
           cookiesToSet.forEach(({ name, value, options }) => {
             setCookie(name, value, {
               ...options,
               sameSite: options?.sameSite === "none" ? "none" : "lax",
               secure: process.env.NODE_ENV === "production",
               path: "/",
+              ...(cookieDomain ? { domain: cookieDomain } : {}),
             });
           });
         } catch {

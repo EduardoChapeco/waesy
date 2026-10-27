@@ -81,7 +81,7 @@ export function HomeDesktopWebApp({
   };
 
   return (
-    <div className="hidden md:block w-full space-y-6 pb-14" data-testid="home-desktop-web-app">
+    <div className="w-full space-y-6 pb-16" data-testid="home-desktop-web-app">
       {/* ── 1. PALCO HERO WIDESCREEN COMPLETO (Proporção 16:9 Intacta em 100% da Largura) ── */}
       {(() => {
         const validHeroItems = (heroSection?.items || []).filter(

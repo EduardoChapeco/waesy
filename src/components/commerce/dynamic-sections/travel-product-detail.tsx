@@ -53,31 +53,19 @@ export interface TravelProductDetailProps {
 }
 
 export const TravelProductDetail: React.FC<TravelProductDetailProps> = ({
-  hotelName = "Rede Andrade Porto Mar",
-  destinationCity = "Maceió, Brasil",
-  starsCount = 3,
-  reviewScore = 8.0,
-  reviewCount = 243,
+  hotelName = "",
+  destinationCity = "",
+  starsCount,
+  reviewScore,
+  reviewCount,
   mainPhotoUrl = "",
   galleryPhotos = [],
-  nightsCount = 7,
-  departureFlightText = "GRU 22:30 -> MCZ 01:25 (Direto)",
-  returnFlightText = "MCZ 03:50 -> GRU 06:55 (Direto)",
-  amenities = [
-    "Wi-Fi grátis nas áreas comuns",
-    "Café da manhã incluso",
-    "Recepção 24h",
-    "Proibido fumar em todos os ambientes",
-    "Piscina ao ar livre",
-    "Ar-condicionado",
-  ],
-  description = "Localizado em Maceió, a poucos minutos da Praia de Pajuçara e de Ponta Verde, este hotel oferece comodidade, piscina, café da manhã regional e atendimento hospitaleiro para sua família.",
-  neighborhoodPoints = [
-    { name: "Praia de Jatiúca", distance: "1,10 km" },
-    { name: "Restaurantes e Bares Locais", distance: "570 m" },
-    { name: "Farol da Ponta Verde", distance: "3,20 km" },
-    { name: "Maceió Shopping", distance: "1,07 km" },
-  ],
+  nightsCount,
+  departureFlightText,
+  returnFlightText,
+  amenities = [],
+  description = "",
+  neighborhoodPoints = [],
   pricePerPersonCents = 165900,
   totalPriceCents = 331800,
   savedAmountCents = 37800,
@@ -217,11 +205,13 @@ export const TravelProductDetail: React.FC<TravelProductDetailProps> = ({
           <div className="lg:col-span-8 space-y-6">
             {/* Header com Nome, Estrelas e Mapa */}
             <div className="space-y-2">
-              <div className="flex items-center gap-1 text-amber-500">
-                {Array.from({ length: starsCount }).map((_, i) => (
-                  <Star key={i} className="size-4 fill-amber-500" />
-                ))}
-              </div>
+              {typeof starsCount === "number" && starsCount > 0 ? (
+                <div className="flex items-center gap-1 text-amber-500">
+                  {Array.from({ length: starsCount }).map((_, i) => (
+                    <Star key={i} className="size-4 fill-amber-500" />
+                  ))}
+                </div>
+              ) : null}
               <h1 className="text-xl sm:text-3xl font-black text-foreground tracking-tight">
                 {hotelName}
               </h1>
@@ -238,18 +228,23 @@ export const TravelProductDetail: React.FC<TravelProductDetailProps> = ({
               </div>
             </div>
 
-            {/* Score de Avaliação */}
-            <div className="p-4 rounded-lg border border-border/70 bg-card flex items-center gap-4">
-              <div className="size-12 rounded-lg bg-primary text-primary-foreground font-black text-lg flex items-center justify-center shrink-0">
-                {reviewScore.toFixed(1)}
+            {/* Score de Avaliação Real (Omitido se não houver reviews reais — Invariante B.33) */}
+            {typeof reviewScore === "number" &&
+            reviewScore > 0 &&
+            typeof reviewCount === "number" &&
+            reviewCount > 0 ? (
+              <div className="p-4 rounded-lg border border-border/70 bg-card flex items-center gap-4">
+                <div className="size-12 rounded-lg bg-primary text-primary-foreground font-black text-lg flex items-center justify-center shrink-0">
+                  {reviewScore.toFixed(1)}
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-sm font-bold text-foreground">Avaliações Verificadas</h4>
+                  <p className="text-xs text-muted-foreground">
+                    Com base em {reviewCount} avaliações reais de viajantes
+                  </p>
+                </div>
               </div>
-              <div className="space-y-1">
-                <h4 className="text-sm font-bold text-foreground">Muito bom</h4>
-                <p className="text-xs text-muted-foreground">
-                  Com base em {reviewCount} avaliações verificadas de viajantes
-                </p>
-              </div>
-            </div>
+            ) : null}
 
             {/* A Hospedagem Oferece (Comodidades) */}
             <div className="space-y-3 pt-2">

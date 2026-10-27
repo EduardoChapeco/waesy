@@ -26,6 +26,16 @@ export interface SiteBuilderBlockDefinition<T = any> {
     categories?: any[];
     collections?: any[];
     storeData?: any;
+    newsArticles?: any[];
+    sponsors?: any[];
+    classifieds?: any[];
+    posts?: any[];
+    flyers?: any[];
+    events?: any[];
+    jobs?: any[];
+    stores?: any[];
+    banners?: any[];
+    hotpages?: any[];
   }>;
   defaultProps: T;
   defaultStyling?: OmniBlockStyling;
