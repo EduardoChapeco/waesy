@@ -68,7 +68,7 @@ try {
   const { buildSync } = await import("esbuild");
   console.log("Compiling and minifying single-file Cloudflare Pages _worker.js with esbuild...");
   const bundledFile = path.join(process.cwd(), "dist/_worker.bundle.js");
-  buildSync({
+  const bundleResult = buildSync({
     entryPoints: [file],
     outfile: bundledFile,
     bundle: true,
@@ -78,7 +78,11 @@ try {
     target: "es2022",
     format: "esm",
     external: ["node:*", "cloudflare:*"],
+    metafile: Boolean(process.env.WORKER_METAFILE),
   });
+  if (process.env.WORKER_METAFILE && bundleResult.metafile) {
+    fs.writeFileSync(process.env.WORKER_METAFILE, JSON.stringify(bundleResult.metafile));
+  }
 
   // Injetar variáveis de ambiente do Supabase no topo do worker bundle
   const envHeader = `const __fallbackEnv__ = ${JSON.stringify(fallbackEnv)};
