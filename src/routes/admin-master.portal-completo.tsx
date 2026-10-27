@@ -100,7 +100,7 @@ function AdminMasterPortalCompletoPage() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold text-foreground">Portal Completo</h1>
-            <Badge variant="outline" className="text-[10px] font-mono">
+            <Badge variant="outline" className="text-2xs font-mono">
               BETA MANAGEMENT
             </Badge>
           </div>
@@ -124,22 +124,22 @@ function AdminMasterPortalCompletoPage() {
         <button
           type="button"
           onClick={() => setActiveTab("waitlist")}
-          className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+          className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors duration-200 ${
             activeTab === "waitlist"
               ? "bg-primary text-primary-foreground shadow-2xs"
               : "text-muted-foreground hover:bg-muted/50"
-          }`}
+          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
         >
           Fila de Espera & Migração ({waitlist.length})
         </button>
         <button
           type="button"
           onClick={() => setActiveTab("content")}
-          className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+          className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors duration-200 ${
             activeTab === "content"
               ? "bg-primary text-primary-foreground shadow-2xs"
               : "text-muted-foreground hover:bg-muted/50"
-          }`}
+          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
         >
           Editor da Landing Page (CMS)
         </button>
@@ -160,7 +160,7 @@ function AdminMasterPortalCompletoPage() {
             <div className="bg-card rounded-lg border border-border/60 overflow-hidden shadow-2xs">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-muted/40 text-muted-foreground font-semibold uppercase tracking-wider text-[10px] border-b border-border/60">
+                  <thead className="bg-muted/40 text-muted-foreground font-semibold uppercase tracking-wider text-2xs border-b border-border/60">
                     <tr>
                       <th className="p-4">Empresa</th>
                       <th className="p-4">Contato / WhatsApp</th>
@@ -178,7 +178,7 @@ function AdminMasterPortalCompletoPage() {
                           <td className="p-4">
                             <p className="font-bold text-foreground">{item.company_name}</p>
                             {item.notes && (
-                              <p className="text-[11px] text-muted-foreground line-clamp-1 mt-1">
+                              <p className="text-2xs text-muted-foreground line-clamp-1 mt-1">
                                 "{item.notes}"
                               </p>
                             )}
@@ -186,11 +186,11 @@ function AdminMasterPortalCompletoPage() {
                           <td className="p-4">
                             <p className="font-mono">{item.contact_whatsapp}</p>
                             {item.contact_email && (
-                              <p className="text-[11px] text-muted-foreground">{item.contact_email}</p>
+                              <p className="text-2xs text-muted-foreground">{item.contact_email}</p>
                             )}
                           </td>
                           <td className="p-4">
-                            <Badge variant="outline" className="text-[10px]">
+                            <Badge variant="outline" className="text-2xs">
                               {item.niche}
                             </Badge>
                           </td>
@@ -199,7 +199,7 @@ function AdminMasterPortalCompletoPage() {
                           </td>
                           <td className="p-4">
                             <Badge
-                              className={`text-[10px] font-bold ${
+                              className={`text-2xs font-bold ${
                                 isMigrated
                                   ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
                                   : "bg-amber-500/10 text-amber-600 border border-amber-500/20"
@@ -217,14 +217,14 @@ function AdminMasterPortalCompletoPage() {
                                 className="h-8 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground shadow-2xs"
                               >
                                 {migratingId === item.id ? (
-                                  <Loader2 className="size-3.5 animate-spin" />
+                                  <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
                                 ) : (
                                   <Zap className="size-3.5 text-amber-300" />
                                 )}
                                 <span>Migrar em 1-Clique</span>
                               </Button>
                             ) : (
-                              <span className="text-[11px] text-muted-foreground font-medium flex items-center justify-end gap-1">
+                              <span className="text-2xs text-muted-foreground font-medium flex items-center justify-end gap-1">
                                 <CheckCircle2 className="size-3.5 text-emerald-600" />
                                 Ativo no Workspace
                               </span>
@@ -283,7 +283,7 @@ function AdminMasterPortalCompletoPage() {
                 className="pl-8 h-11 rounded-lg text-xs bg-background"
               />
             </div>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               Embed de demonstração dos painéis avançados do PDV, Estoque e Turismo.
             </p>
           </div>
@@ -296,7 +296,7 @@ function AdminMasterPortalCompletoPage() {
             >
               {isSavingContent ? (
                 <>
-                  <Loader2 className="size-4 animate-spin" />
+                  <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                   <span>Salvando...</span>
                 </>
               ) : (

@@ -127,7 +127,7 @@ export function QuickModuleConfigDrawer({
                   onClick={() => handleToggleEmergencyPause(null)}
                   disabled={isSaving}
                 >
-                  {isSaving ? <Loader2 className="size-4 animate-spin mr-2" /> : <Power className="size-4 mr-2" />}
+                  {isSaving ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none mr-2" /> : <Power className="size-4 mr-2" />}
                   Reabrir Agora
                 </Button>
               ) : (
@@ -172,7 +172,7 @@ export function QuickModuleConfigDrawer({
                     <Label htmlFor="toggle-delivery" className="text-sm font-semibold cursor-pointer">
                       Delivery e Entrega
                     </Label>
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-2xs text-muted-foreground">
                       Receber pedidos para entrega em domicílio
                     </p>
                   </div>
@@ -193,7 +193,7 @@ export function QuickModuleConfigDrawer({
                     <Label htmlFor="toggle-takeout" className="text-sm font-semibold cursor-pointer">
                       Retirada no Balcão
                     </Label>
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-2xs text-muted-foreground">
                       Cliente faz o pedido e retira no local
                     </p>
                   </div>
@@ -214,7 +214,7 @@ export function QuickModuleConfigDrawer({
                     <Label htmlFor="toggle-dine-in" className="text-sm font-semibold cursor-pointer">
                       Consumo no Local / Mesas
                     </Label>
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-2xs text-muted-foreground">
                       Atendimento presencial e comandas
                     </p>
                   </div>
@@ -270,7 +270,7 @@ export function QuickModuleConfigDrawer({
             onClick={handleSaveOperationalRules}
             disabled={isSaving}
           >
-            {isSaving ? <Loader2 className="size-4 animate-spin mr-2" /> : null}
+            {isSaving ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none mr-2" /> : null}
             Salvar Ajustes
           </Button>
         </SheetFooter>

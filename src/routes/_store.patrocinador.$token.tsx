@@ -127,7 +127,7 @@ function PublicSponsorReportPage() {
             <img
               src={sponsor.logo_url}
               alt={sponsor.name}
-              className="size-10 rounded-lg object-contain bg-white p-1 border"
+              className="size-10 rounded-lg object-contain bg-card p-1 border"
             />
           )}
           <div>
@@ -152,7 +152,7 @@ function PublicSponsorReportPage() {
           <p className="text-xl sm:text-2xl lg:text-3xl font-black text-foreground font-mono tracking-tight truncate">
             {metrics.totalImpressions.toLocaleString("pt-BR")}
           </p>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             No viewport real por mais de 1s
           </p>
         </div>
@@ -166,7 +166,7 @@ function PublicSponsorReportPage() {
           <p className="text-xl sm:text-2xl lg:text-3xl font-black text-foreground font-mono tracking-tight truncate">
             {metrics.totalClicks.toLocaleString("pt-BR")}
           </p>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Acessos ao seu site ou perfil
           </p>
         </div>
@@ -180,7 +180,7 @@ function PublicSponsorReportPage() {
           <p className="text-xl sm:text-2xl lg:text-3xl font-black text-foreground font-mono tracking-tight truncate">
             {metrics.ctrPercent}%
           </p>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Eficiência média da campanha
           </p>
         </div>
@@ -194,7 +194,7 @@ function PublicSponsorReportPage() {
           <p className="text-xl sm:text-2xl lg:text-3xl font-black text-foreground font-mono tracking-tight truncate">
             {formatDuration(metrics.totalDurationSeconds)}
           </p>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Exposição ativa na tela dos leitores
           </p>
         </div>
@@ -225,7 +225,7 @@ function PublicSponsorReportPage() {
 
         <div className="space-y-3">
           {sponsor.video_url ? (
-            <div className="rounded-lg overflow-hidden border bg-black aspect-16/9 max-w-xl mx-auto">
+            <div className="rounded-lg overflow-hidden border bg-foreground aspect-16/9 max-w-xl mx-auto">
               <video
                 src={sponsor.video_url}
                 autoPlay
@@ -294,7 +294,7 @@ function PublicSponsorReportPage() {
       )}
 
       {/* ── Rodapé de Auditoria e Transparência ── */}
-      <div className="p-4 rounded-lg bg-muted/30 border text-center text-[11px] text-muted-foreground space-y-1">
+      <div className="p-4 rounded-lg bg-muted/30 border text-center text-2xs text-muted-foreground space-y-1">
         <p className="font-medium text-foreground">
           Relatório protegido por Token Criptográfico Exclusivo • Waesy Display Network
         </p>

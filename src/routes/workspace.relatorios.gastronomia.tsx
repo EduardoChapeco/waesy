@@ -87,7 +87,7 @@ function PeakHoursHeatmap({ peakHoursMap }: { peakHoursMap: Record<string, numbe
  <div
  key={hour}
  className={cn(
- "flex flex-col items-center justify-center rounded-lg px-2 py-2 min-w-12 transition-all",
+ "flex flex-col items-center justify-center rounded-lg px-2 py-2 min-w-12 transition-colors duration-200",
  getIntensity(count),
  )}
  title={`${hour}h — ${count} pedidos`}
@@ -159,7 +159,7 @@ function ProductBar({
  <div className="h-1.5 bg-muted/40 rounded-full overflow-hidden">
  <div
  className={cn(
- "h-full rounded-full transition-all",
+ "h-full rounded-full transition-colors duration-200",
  isTop3 ? "bg-primary" : "bg-muted-foreground/40",
  )}
  style={{ width: `${pct}%` }}
@@ -218,7 +218,7 @@ function GastronomyReportsPage() {
  return (
  <div className="flex-1 flex items-center justify-center p-24 text-muted-foreground">
  <div className="text-center space-y-2">
- <BarChart3 className="size-10 mx-auto text-muted-foreground/30 animate-pulse" />
+ <BarChart3 className="size-10 mx-auto text-muted-foreground/30 animate-pulse motion-reduce:animate-none" />
  <p className="text-sm font-bold">Carregando relatórios...</p>
  </div>
  </div>

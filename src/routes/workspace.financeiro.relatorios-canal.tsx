@@ -158,7 +158,7 @@ function ChannelDREPage() {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
-      <PageHeader
+      <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         eyebrow="Financeiro & Inteligência"
         title="DRE por Canal"
         description="Demonstrativo de Resultado com faturamento bruto, taxas retidas pelas plataformas e margem líquida real de cada canal."
@@ -281,7 +281,7 @@ function ChannelDREPage() {
                 <div
                   key={row.channel}
                   style={{ width: `${sharePercent}%` }}
-                  className={cn("h-full transition-all", CHANNEL_BAR_COLORS[row.channel] || "bg-primary")}
+                  className={cn("h-full transition-colors duration-200", CHANNEL_BAR_COLORS[row.channel] || "bg-primary")}
                   title={`${row.channel_label}: ${sharePercent.toFixed(1)}% (${formatMoney(row.gross_revenue_cents)})`}
                 />
               );

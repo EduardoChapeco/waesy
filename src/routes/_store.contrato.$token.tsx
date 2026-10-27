@@ -116,16 +116,16 @@ function PublicTravelContractSignaturePage() {
  {contract.contract_title}
  </span>
  {isAlreadySigned ? (
- <Badge className="bg-emerald-600 text-white text-[10px] font-bold">
+ <Badge className="bg-emerald-600 text-foreground text-2xs font-bold">
  ✓ Assinado Eletronicamente
  </Badge>
  ) : (
- <Badge variant="outline" className="text-[10px] font-mono font-bold">
+ <Badge variant="outline" className="text-2xs font-mono font-bold">
  Pendente de Assinatura
  </Badge>
  )}
  </div>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Agência: <span className="font-bold text-foreground">{contract.agency_name}</span> • Destino: {contract.destination}
  </p>
  </div>
@@ -148,11 +148,11 @@ function PublicTravelContractSignaturePage() {
  {/* ── 2. CORPO DO CONTRATO EDITORIAL ── */}
  <div
  id="contract-document-view"
- className="p-6 sm:p-10 rounded-lg bg-white text-slate-900 border border-slate-200 shadow-sm space-y-8"
+ className="p-6 sm:p-10 rounded-lg bg-card text-slate-900 border border-slate-200 shadow-sm space-y-8"
  >
  {/* Cabeçalho do Instrumento Particular */}
  <div className="text-center space-y-2 pb-6 border-b border-slate-200">
- <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500 block">
+ <span className="text-2xs font-mono font-bold uppercase tracking-widest text-slate-500 block">
  Instrumento Particular de Intermediação de Serviços Turísticos
  </span>
  <h1 className="text-xl sm:text-2xl font-black text-slate-900">
@@ -165,7 +165,7 @@ function PublicTravelContractSignaturePage() {
 
  {/* Qualificação das Partes */}
  <div className="space-y-3 text-xs leading-relaxed text-slate-800">
- <h3 className="font-black text-slate-900 uppercase tracking-wider text-[11px]">
+ <h3 className="font-black text-slate-900 uppercase tracking-wider text-2xs">
  1. QUALIFICAÇÃO DAS PARTES
  </h3>
  <p>
@@ -182,13 +182,13 @@ function PublicTravelContractSignaturePage() {
 
  {/* Resumo dos Serviços & Passageiros */}
  <div className="space-y-3 p-4 rounded-lg bg-slate-50 border border-slate-200 text-xs">
- <h3 className="font-black text-slate-900 uppercase tracking-wider text-[11px]">
+ <h3 className="font-black text-slate-900 uppercase tracking-wider text-2xs">
  2. ESPECIFICAÇÃO DOS SERVIÇOS
  </h3>
  <p className="font-medium text-slate-800 whitespace-pre-line">
  {contract.package_summary}
  </p>
- <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200/80 text-[11px]">
+ <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200/80 text-2xs">
  <div>
  <span className="text-slate-500 block">Destino:</span>
  <strong className="text-slate-900">{contract.destination}</strong>
@@ -203,28 +203,28 @@ function PublicTravelContractSignaturePage() {
  </div>
 
  {/* Resumo Financeiro & Condições de Pagamento */}
- <div className="space-y-2 p-4 rounded-lg bg-slate-900 text-white text-xs">
- <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block">
+ <div className="space-y-2 p-4 rounded-lg bg-slate-900 text-foreground text-xs">
+ <span className="text-2xs font-mono uppercase tracking-wider text-slate-400 block">
  3. PREÇO e CONDIÇÕES DE PAGAMENTO
  </span>
  <div className="text-2xl font-black font-mono">
  {formatMoney(contract.total_value_cents)}
  </div>
- <p className="text-slate-300 text-[11px] leading-relaxed">
+ <p className="text-slate-300 text-2xs leading-relaxed">
  {contract.payment_conditions}
  </p>
  </div>
 
  {/* Cláusulas Contratuais Canônicas */}
  <div className="space-y-4">
- <h3 className="font-black text-slate-900 uppercase tracking-wider text-[11px] pb-2 border-b border-slate-200">
+ <h3 className="font-black text-slate-900 uppercase tracking-wider text-2xs pb-2 border-b border-slate-200">
  4. CLÁUSULAS CONTRATUAIS GERAIS
  </h3>
 
  <div className="space-y-3 text-xs text-slate-700 leading-relaxed">
  {contract.clauses.map((cl: any) => (
  <div key={cl.number} className="space-y-1">
- <span className="font-black text-slate-900 block text-[11px]">
+ <span className="font-black text-slate-900 block text-2xs">
  CLÁUSULA {cl.number}ª — {cl.section}
  </span>
  <p>{cl.clause_text}</p>
@@ -240,7 +240,7 @@ function PublicTravelContractSignaturePage() {
  <ShieldCheck className="size-5 text-emerald-600" />
  <span>CERTIFICADO DIGITAL DE AUTENTICIDADE (MP 2.200-2/2001)</span>
  </div>
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-emerald-950 font-mono">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-2xs text-emerald-950 font-mono">
  <div>
  <span className="text-emerald-700/80 block">Signatário:</span>
  <strong>{contract.signatures[0]?.signer_name || signerName}</strong> (CPF: {contract.signatures[0]?.signer_document || signerDoc})
@@ -251,7 +251,7 @@ function PublicTravelContractSignaturePage() {
  </div>
  <div className="sm:col-span-2 pt-1 border-t border-emerald-200/60 break-all">
  <span className="text-emerald-700/80 block">Hash Criptográfico SHA-256:</span>
- <strong className="text-[10px]">{contract.content_hash || "HASH_VALIDATED"}</strong>
+ <strong className="text-2xs">{contract.content_hash || "HASH_VALIDATED"}</strong>
  </div>
  </div>
  </div>

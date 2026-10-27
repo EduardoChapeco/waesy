@@ -277,7 +277,7 @@ function ContractEditorPage() {
             <button
               type="button"
               onClick={() => setActiveStep(1)}
-              className={`px-4 py-2 min-h-11 inline-flex items-center rounded-lg transition-all font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
+              className={`px-4 py-2 min-h-11 inline-flex items-center rounded-lg transition-colors duration-200 font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
                 activeStep === 1 ? "bg-card text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -286,7 +286,7 @@ function ContractEditorPage() {
             <button
               type="button"
               onClick={() => setActiveStep(2)}
-              className={`px-4 py-2 min-h-11 inline-flex items-center rounded-lg transition-all font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
+              className={`px-4 py-2 min-h-11 inline-flex items-center rounded-lg transition-colors duration-200 font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
                 activeStep === 2 ? "bg-card text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -295,7 +295,7 @@ function ContractEditorPage() {
             <button
               type="button"
               onClick={() => setActiveStep(3)}
-              className={`px-4 py-2 min-h-11 inline-flex items-center rounded-lg transition-all font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
+              className={`px-4 py-2 min-h-11 inline-flex items-center rounded-lg transition-colors duration-200 font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
                 activeStep === 3 ? "bg-card text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -618,7 +618,7 @@ function ContractEditorPage() {
                   >
                     {isSealing ? (
                       <>
-                        <Loader2 className="size-4 animate-spin mr-2" />
+                        <Loader2 className="size-4 animate-spin motion-reduce:animate-none mr-2" />
                         Selando Criptograficamente...
                       </>
                     ) : (

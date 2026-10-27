@@ -90,11 +90,11 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  <div
  ref={ref}
  id="voucher-printable-area"
- className="w-full max-w-4xl mx-auto bg-white text-neutral-900 shadow-md border border-neutral-200 rounded-lg overflow-hidden print:border-none print:shadow-none print:rounded-none print:m-0 print:w-full print:max-w-none text-xs"
+ className="w-full max-w-4xl mx-auto bg-card text-neutral-900 shadow-md border border-neutral-200 rounded-lg overflow-hidden print:border-none print:shadow-none print:rounded-none print:m-0 print:w-full print:max-w-none text-xs"
  style={{ fontFamily: "Inter, -apple-system, BlinkMacSystemFont, sans-serif" }}
  >
  {/* ── HEADER DA AGÊNCIA & GUIA DE EMBARQUE ── */}
- <div className="bg-neutral-900 text-white p-4 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b-2 border-primary">
+ <div className="bg-neutral-900 text-foreground p-4 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b-2 border-primary">
  <div className="flex items-center gap-4">
  {agency.logo_url ? (
  <img
@@ -110,23 +110,23 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  </div>
  <div>
  <h1 className="text-base font-black tracking-tight uppercase">{agency.name}</h1>
- <span className="text-[10px] text-neutral-400 font-medium">Turismo e Experiências</span>
+ <span className="text-2xs text-neutral-400 font-medium">Turismo e Experiências</span>
  </div>
  </div>
  )}
  </div>
 
  <div className="text-left sm:text-right space-y-1">
- <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white font-mono text-[11px] font-bold">
+ <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-card/10 text-foreground font-mono text-2xs font-bold">
  <Ticket className="size-3 text-primary" />
  <span>{voucher.voucher_code}</span>
  </div>
  {tripNumber && (
- <p className="text-[10px] text-neutral-400 font-mono">
+ <p className="text-2xs text-neutral-400 font-mono">
  Reserva: <span className="font-semibold text-neutral-200">{tripNumber}</span>
  </p>
  )}
- <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white mt-1">
+ <h2 className="text-xl sm:text-2xl font-black tracking-tight text-foreground mt-1">
  {voucher.destination || "Voucher de Viagem"}
  </h2>
  </div>
@@ -195,15 +195,15 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm text-neutral-700 sm:text-right font-mono">
  {(flight.departure_time || flight.arrival_time) && (
  <div>
- <span className="text-[10px] text-neutral-400 block uppercase">Horários</span>
+ <span className="text-2xs text-neutral-400 block uppercase">Horários</span>
  <span className="font-bold text-neutral-900 text-sm">
  {flight.departure_time || "--:--"} ➔ {flight.arrival_time || "--:--"}
  </span>
  </div>
  )}
  {flight.locator && (
- <div className="bg-white px-3 py-2 rounded-lg border border-neutral-200 shadow-2xs">
- <span className="text-[10px] text-neutral-400 block uppercase font-sans">Localizador PNR</span>
+ <div className="bg-card px-3 py-2 rounded-lg border border-neutral-200 shadow-2xs">
+ <span className="text-2xs text-neutral-400 block uppercase font-sans">Localizador PNR</span>
  <span className="font-black text-neutral-900 text-sm tracking-wider">
  {flight.locator}
  </span>
@@ -249,7 +249,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
   </div>
   {hotel.confirmation && (
   <div className="text-right font-mono">
-  <span className="text-[10px] text-neutral-400 block uppercase">Reserva</span>
+  <span className="text-2xs text-neutral-400 block uppercase">Reserva</span>
   <span className="font-bold text-neutral-900 text-xs sm:text-sm">
   {hotel.confirmation}
   </span>
@@ -257,18 +257,18 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
   )}
   </div>
 
-  <div className="grid grid-cols-2 gap-3 text-xs bg-white p-3 rounded-lg border border-neutral-200">
+  <div className="grid grid-cols-2 gap-3 text-xs bg-card p-3 rounded-lg border border-neutral-200">
   <div>
-  <span className="text-[10px] text-neutral-400 block uppercase">Check-in</span>
+  <span className="text-2xs text-neutral-400 block uppercase">Check-in</span>
   <span className="font-bold text-neutral-800">{hotel.checkin || "—"}</span>
   </div>
   <div>
-  <span className="text-[10px] text-neutral-400 block uppercase">Check-out</span>
+  <span className="text-2xs text-neutral-400 block uppercase">Check-out</span>
   <span className="font-bold text-neutral-800">{hotel.checkout || "—"}</span>
   </div>
   {hotel.room_type && (
   <div>
-  <span className="text-[10px] text-neutral-400 block uppercase">Quarto</span>
+  <span className="text-2xs text-neutral-400 block uppercase">Quarto</span>
   <span className="font-semibold text-neutral-800 truncate block">
   {hotel.room_type}
   </span>
@@ -276,7 +276,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
   )}
   {hotel.meal_plan && (
   <div>
-  <span className="text-[10px] text-neutral-400 block uppercase">Regime</span>
+  <span className="text-2xs text-neutral-400 block uppercase">Regime</span>
   <span className="font-semibold text-neutral-800">{hotel.meal_plan}</span>
   </div>
   )}
@@ -311,7 +311,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
   </span>
   </div>
   {t.date && (
-  <span className="font-mono text-xs text-neutral-700 bg-white px-3 py-1 rounded border border-neutral-200 shadow-2xs font-semibold">
+  <span className="font-mono text-xs text-neutral-700 bg-card px-3 py-1 rounded border border-neutral-200 shadow-2xs font-semibold">
   {t.date}
   </span>
   )}
@@ -330,7 +330,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
   )}
   </div>
   {tour.date && (
-  <span className="font-mono text-xs text-neutral-700 bg-white px-3 py-1 rounded border border-neutral-200 shadow-2xs font-semibold">
+  <span className="font-mono text-xs text-neutral-700 bg-card px-3 py-1 rounded border border-neutral-200 shadow-2xs font-semibold">
   {tour.date}
   </span>
   )}
@@ -343,11 +343,11 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  {/* ── 5. SEGURO VIAGEM & ASSISTÊNCIA ── */}
  {voucher.insurance && voucher.insurance.policy_number && (
  <div className="p-4 rounded-lg border border-emerald-200 bg-emerald-50/40 space-y-2">
- <div className="flex items-center gap-2 text-emerald-800 font-bold text-[11px]">
+ <div className="flex items-center gap-2 text-emerald-800 font-bold text-2xs">
  <Shield className="size-3.5 text-emerald-600" />
  <span>Seguro Viagem e Assistência Médica 24h</span>
  </div>
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[10px] text-neutral-700">
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-2xs text-neutral-700">
  <div>
  <span className="text-neutral-500 block">Seguradora:</span>
   {voucher.insurance.provider && <span className="font-semibold">{voucher.insurance.provider}</span>}
@@ -368,8 +368,8 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
 
  {/* ── 6. ORIENTAÇÕES GERAIS & PLANTÃO ── */}
  {voucher.observations && (
- <div className="p-3 rounded-lg border border-neutral-200 bg-neutral-50 text-[10px] text-neutral-600 leading-relaxed">
- <span className="font-bold text-neutral-800 block mb-1 uppercase tracking-wider text-[9px]">
+ <div className="p-3 rounded-lg border border-neutral-200 bg-neutral-50 text-2xs text-neutral-600 leading-relaxed">
+ <span className="font-bold text-neutral-800 block mb-1 uppercase tracking-wider text-3xs">
  Orientações Importantes:
  </span>
  {voucher.observations}
@@ -379,15 +379,15 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  {/* ── 7. FOOTER COM QR CODE OFICIAL DE VALIDAÇÃO ── */}
  <div className="pt-4 border-t-2 border-neutral-200 flex flex-col sm:flex-row items-center justify-between gap-4">
  <div className="space-y-1 text-center sm:text-left">
- <div className="flex items-center justify-center sm:justify-start gap-2 text-[11px] font-bold text-neutral-900">
+ <div className="flex items-center justify-center sm:justify-start gap-2 text-2xs font-bold text-neutral-900">
  <FileCheck className="size-4 text-emerald-600" />
  <span>Documento Oficial de Viagem e Embarque</span>
  </div>
- <p className="text-[10px] text-neutral-500 max-w-md">
+ <p className="text-2xs text-neutral-500 max-w-md">
  Apresente este voucher impresso ou digital acompanhado de documento oficial com foto no balcão da companhia aérea e recepção do hotel.
  </p>
  {agency.whatsapp_phone && (
- <p className="text-[10px] text-neutral-600 font-mono">
+ <p className="text-2xs text-neutral-600 font-mono">
  Plantão 24h da Agência: <span className="font-bold">{agency.whatsapp_phone}</span>
  </p>
  )}
@@ -397,7 +397,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  <img
  src={qrUrl}
  alt="QR Code de Validação"
- className="size-16 rounded-lg object-contain bg-white p-1 border border-neutral-200"
+ className="size-16 rounded-lg object-contain bg-card p-1 border border-neutral-200"
  />
  <div className="text-2xs font-mono text-neutral-500 space-y-1">
  <span className="font-bold text-neutral-900 block uppercase">Autenticidade</span>

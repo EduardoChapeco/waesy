@@ -55,7 +55,7 @@ export function TravelHotelSlider({
                 onHotelClick?.(hotel);
               }
             }}
-            className="w-72 sm:w-80 shrink-0 bg-card rounded-lg overflow-hidden border border-border/70 hover:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none transition-all cursor-pointer group flex flex-col"
+            className="w-72 sm:w-80 shrink-0 bg-card rounded-lg overflow-hidden border border-border/70 hover:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none transition-colors duration-200 cursor-pointer group flex flex-col"
           >
             {/* Imagem de Capa */}
             <div className="relative aspect-[16/10] w-full bg-muted/40 overflow-hidden">

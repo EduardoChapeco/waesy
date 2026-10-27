@@ -23,8 +23,8 @@ export function ThemeSelector({ className }: { className?: string }) {
  key={opt.mode}
  type="button"
  onClick={() => setTheme(opt.mode)}
- className={cn(
- "flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg border text-xs font-medium transition-all",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg border text-xs font-medium transition-colors duration-200",
  isSelected
  ? "bg-primary text-primary-foreground border-primary shadow-xs font-semibold"
  : "bg-card hover:bg-muted/50 border-border/60 text-muted-foreground hover:text-foreground"
@@ -36,7 +36,7 @@ export function ThemeSelector({ className }: { className?: string }) {
  );
  })}
  </div>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Por padrão, o tema se adapta automaticamente à preferência do seu dispositivo ou sistema operacional.
  </p>
  </div>

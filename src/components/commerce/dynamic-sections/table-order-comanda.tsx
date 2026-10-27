@@ -40,7 +40,7 @@ export function TableOrderComandaSection({
  {/* Cartão Físico / Digital de Comanda */}
  <div className="p-6 rounded-lg border border-border/80 bg-card shadow-lg text-center space-y-5 relative overflow-hidden">
  <div className="space-y-1">
- <Badge variant="outline" className="text-[10px] font-mono border-border/80 text-muted-foreground uppercase">
+ <Badge variant="outline" className="text-2xs font-mono border-border/80 text-muted-foreground uppercase">
  Autoatendimento no Salão
  </Badge>
  <h2 className="text-base font-bold text-foreground">{activeStoreName}</h2>
@@ -48,7 +48,7 @@ export function TableOrderComandaSection({
 
  {/* Badge Gigante da Mesa / Comanda */}
  <div className="flex flex-col items-center justify-center py-2">
- <span className="text-[11px] font-mono text-muted-foreground uppercase tracking-widest block">
+ <span className="text-2xs font-mono text-muted-foreground uppercase tracking-widest block">
  Mesa / Comanda
  </span>
  <span className="text-5xl font-black text-foreground font-mono tracking-tighter">
@@ -57,13 +57,13 @@ export function TableOrderComandaSection({
  </div>
 
  {/* QR Code Imersivo para Escaneamento */}
- <div className="p-4 rounded-lg bg-white border border-border/70 flex flex-col items-center justify-center space-y-2 max-w-[220px] mx-auto shadow-2xs">
+ <div className="p-4 rounded-lg bg-card border border-border/70 flex flex-col items-center justify-center space-y-2 max-w-[220px] mx-auto shadow-2xs">
  <img
  src={activeQrCode}
  alt={`QR Code da Mesa ${tableNumber}`}
  className="size-40 object-contain"
  />
- <span className="text-[10px] font-mono text-neutral-600 font-bold">
+ <span className="text-2xs font-mono text-neutral-600 font-bold">
  Escaneie para fazer seu pedido
  </span>
  </div>

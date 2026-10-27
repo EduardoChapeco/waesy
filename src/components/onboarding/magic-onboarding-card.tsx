@@ -114,7 +114,7 @@ export function MagicOnboardingCard({ storeId, onSuccess }: MagicOnboardingCardP
             >
               {isProcessing ? (
                 <>
-                  <Loader2 className="size-3.5 animate-spin" />
+                  <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
                   <span>Processando...</span>
                 </>
               ) : (
@@ -130,11 +130,11 @@ export function MagicOnboardingCard({ storeId, onSuccess }: MagicOnboardingCardP
           {isProcessing && (
             <div className="p-4 rounded-lg bg-muted/40 border border-border/60 space-y-2">
               <div className="flex items-center gap-2 text-xs text-foreground font-medium">
-                <Loader2 className="size-3.5 animate-spin text-primary shrink-0" />
+                <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none text-primary shrink-0" />
                 <span>{currentStageText}</span>
               </div>
               <div className="h-1 bg-border/60 rounded-full overflow-hidden">
-                <div className="h-full bg-primary animate-pulse w-3/4 rounded-full" />
+                <div className="h-full bg-primary animate-pulse motion-reduce:animate-none w-3/4 rounded-full" />
               </div>
             </div>
           )}
@@ -149,7 +149,7 @@ export function MagicOnboardingCard({ storeId, onSuccess }: MagicOnboardingCardP
               <button
                 type="button"
                 onClick={handleStartMagic}
-                className="font-medium underline shrink-0 hover:opacity-80 flex items-center gap-1"
+                className="font-medium underline shrink-0 hover:opacity-80 flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <RefreshCw className="size-3" />
                 Tentar de novo

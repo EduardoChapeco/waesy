@@ -60,10 +60,10 @@ export function WorkspaceAccountSwitcher({
         <button
           type="button"
           disabled={isSwitching}
-          className="flex w-full items-center justify-between h-11 min-h-11 px-3 rounded-lg border border-border/60 bg-card hover:bg-muted/70 hover:border-foreground/20 transition-all text-left group cursor-pointer shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="flex w-full items-center justify-between h-11 min-h-11 px-3 rounded-lg border border-border/60 bg-card hover:bg-muted/70 hover:border-foreground/20 transition-colors duration-200 text-left group cursor-pointer shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           title={`Espaço de Trabalho: ${activeStore?.name || "Meu Negócio"}`}
         >
-          <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex items-center gap-3 min-w-0">
             {activeStore?.logo_url ? (
               <img
                 src={activeStore.logo_url}
@@ -79,13 +79,13 @@ export function WorkspaceAccountSwitcher({
               <h2 className="text-xs font-bold text-foreground truncate leading-tight group-hover:text-primary transition-colors">
                 {activeStore?.name || "Meu Negócio"}
               </h2>
-              <p className="text-2xs text-muted-foreground truncate leading-tight mt-0.5">
+              <p className="text-2xs text-muted-foreground truncate leading-tight mt-1">
                 {activeStore?.city ? `${activeStore.city} • ` : ""}
                 {activeStore?.segment || "Empresa"}
               </p>
             </div>
           </div>
-          <ChevronsUpDown className="size-3.5 text-muted-foreground shrink-0 ml-1.5 group-hover:text-foreground transition-colors" />
+          <ChevronsUpDown className="size-3.5 text-muted-foreground shrink-0 ml-2 group-hover:text-foreground transition-colors" />
         </button>
       </PopoverTrigger>
 
@@ -95,8 +95,8 @@ export function WorkspaceAccountSwitcher({
         className="w-80 sm:w-88 p-2 rounded-xl border border-border/80 bg-background/98 backdrop-blur-xl shadow-2xl overflow-hidden space-y-2"
       >
         {/* ── 1. Topo: Empresa Ativa em Destaque ── */}
-        <div className="p-2.5 rounded-lg bg-muted/40 border border-border/60 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2.5 min-w-0">
+        <div className="p-3 rounded-lg bg-muted/40 border border-border/60 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-3 min-w-0">
             {activeStore?.logo_url ? (
               <img
                 src={activeStore.logo_url}
@@ -109,18 +109,18 @@ export function WorkspaceAccountSwitcher({
               </div>
             )}
             <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <h3 className="text-xs font-bold text-foreground truncate">
                   {activeStore?.name || "Loja Ativa"}
                 </h3>
                 <Badge
                   variant="outline"
-                  className="text-[9px] font-mono font-bold uppercase px-1.5 py-0 h-4 bg-primary/10 text-primary border-primary/30 shrink-0"
+                  className="text-3xs font-mono font-bold uppercase px-2 py-0 h-4 bg-primary/10 text-primary border-primary/30 shrink-0"
                 >
                   Ativa
                 </Badge>
               </div>
-              <p className="text-2xs text-muted-foreground truncate mt-0.5">
+              <p className="text-2xs text-muted-foreground truncate mt-1">
                 {activeStore?.city ? `${activeStore.city} • ` : ""}
                 {activeStore?.segment || "Em Operação"}
               </p>
@@ -158,7 +158,7 @@ export function WorkspaceAccountSwitcher({
             <Link
               to="/workspace/lojas"
               onClick={() => setOpen(false)}
-              className="text-2xs font-bold text-primary hover:underline flex items-center gap-1"
+              className="text-2xs font-bold text-primary hover:underline flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <span>Gerenciar</span>
               <ExternalLink className="size-2.5" />
@@ -189,7 +189,7 @@ export function WorkspaceAccountSwitcher({
                       : "hover:bg-muted/60 text-muted-foreground hover:text-foreground border border-transparent"
                   )}
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="flex items-center gap-3 min-w-0">
                     {m.logo_url ? (
                       <img
                         src={m.logo_url}
@@ -232,7 +232,7 @@ export function WorkspaceAccountSwitcher({
             onClick={handlePersonalClick}
             className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-muted/60 transition-colors cursor-pointer text-left h-11 min-h-11 border border-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary group"
           >
-            <div className="flex items-center gap-2.5 min-w-0">
+            <div className="flex items-center gap-3 min-w-0">
               <div className="size-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0 border border-primary/20">
                 <User className="size-3.5" />
               </div>
@@ -260,7 +260,7 @@ export function WorkspaceAccountSwitcher({
             <Link
               to="/criar-negocio"
               onClick={() => setOpen(false)}
-              className="flex items-center justify-center gap-2 size-full"
+              className="flex items-center justify-center gap-2 size-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <Plus className="size-3.5" />
               <span>Cadastrar Novo Negócio</span>

@@ -300,7 +300,7 @@ export default function WorkspaceMarketingEncartesPage() {
         <div className="flex items-center gap-3">
           <Button
             onClick={handleOpenCreate}
-            className="h-10 px-4 rounded-lg font-bold text-xs gap-2 cursor-pointer shadow-sm bg-red-600 hover:bg-red-700 text-white"
+            className="h-10 px-4 rounded-lg font-bold text-xs gap-2 cursor-pointer shadow-sm bg-red-600 hover:bg-red-700 text-foreground"
           >
             <Plus className="size-4" />
             <span>Novo Encarte da Semana</span>
@@ -313,7 +313,7 @@ export default function WorkspaceMarketingEncartesPage() {
         <div className="p-4 rounded-lg bg-card border border-border/60 shadow-2xs space-y-1">
           <div className="flex items-center justify-between text-muted-foreground text-xs font-semibold">
             <span>Encartes Ativos</span>
-            <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="size-2 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none" />
           </div>
           <p className="text-2xl font-black text-foreground">{activeCount}</p>
           <p className="text-xs text-muted-foreground">Exibidos na vitrine agora</p>
@@ -398,7 +398,7 @@ export default function WorkspaceMarketingEncartesPage() {
                   <div
                     key={flyer.id}
                     className={cn(
-                      "rounded-lg border overflow-hidden flex flex-col justify-between transition-all bg-card shadow-xs",
+                      "rounded-lg border overflow-hidden flex flex-col justify-between transition-colors duration-200 bg-card shadow-xs",
                       isRetro ? "border-amber-400/80 bg-amber-50/20 dark:bg-amber-950/10" : "border-border/60"
                     )}
                   >
@@ -451,7 +451,7 @@ export default function WorkspaceMarketingEncartesPage() {
                         <button
                           type="button"
                           onClick={() => setPreviewFlyer(flyer)}
-                          className="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer"
+                          className="absolute inset-0 bg-foreground/50 text-foreground opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           title="Pré-visualizar na Vitrine"
                         >
                           <Eye className="size-5" />
@@ -584,10 +584,10 @@ export default function WorkspaceMarketingEncartesPage() {
                   Estilo Visual do Encarte
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                  <div
+                  <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                     onClick={() => setFormTheme("retro_mercado")}
-                    className={cn(
-                      "p-3 rounded-lg border-2 cursor-pointer transition-all flex items-start gap-3",
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                      "p-3 rounded-lg border-2 cursor-pointer transition-colors duration-200 flex items-start gap-3",
                       formTheme === "retro_mercado"
                         ? "border-red-600 bg-amber-100/60 dark:bg-amber-950/30 text-red-950 dark:text-amber-100"
                         : "border-border/60 hover:border-foreground/30"
@@ -606,10 +606,10 @@ export default function WorkspaceMarketingEncartesPage() {
                     </div>
                   </div>
 
-                  <div
+                  <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                     onClick={() => setFormTheme("clean")}
-                    className={cn(
-                      "p-3 rounded-lg border-2 cursor-pointer transition-all flex items-start gap-3",
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                      "p-3 rounded-lg border-2 cursor-pointer transition-colors duration-200 flex items-start gap-3",
                       formTheme === "clean"
                         ? "border-primary bg-primary/5 text-foreground"
                         : "border-border/60 hover:border-foreground/30"
@@ -724,14 +724,14 @@ export default function WorkspaceMarketingEncartesPage() {
                   </div>
 
                   {/* Canvas Interativo do Encarte */}
-                  <div className="relative inline-block mx-auto max-w-full overflow-hidden rounded-lg border border-border/80 bg-black/90 p-2 sm:p-4 select-none cursor-crosshair">
+                  <div className="relative inline-block mx-auto max-w-full overflow-hidden rounded-lg border border-border/80 bg-foreground/90 p-2 sm:p-4 select-none cursor-crosshair">
                     <div className="relative inline-block">
-                      <img
+                      <img role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                         ref={imageCanvasRef}
                         src={formImageUrl}
                         alt="Canvas de marcação de hotspots"
                         onClick={handleImageClick}
-                        className="max-h-[500px] w-auto object-contain rounded-lg select-none"
+                        className="max-h-[500px] w-auto object-contain rounded-lg select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       />
 
                       {/* Pins já posicionados */}
@@ -749,7 +749,7 @@ export default function WorkspaceMarketingEncartesPage() {
                           </div>
 
                           {/* Tooltip do produto no hover com botão de excluir */}
-                          <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 hidden group-hover:flex items-center gap-2 px-2 py-1 bg-black/90 text-white text-xs font-bold rounded shadow-xs whitespace-nowrap z-30">
+                          <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 hidden group-hover:flex items-center gap-2 px-2 py-1 bg-foreground/90 text-foreground text-xs font-bold rounded shadow-xs whitespace-nowrap z-30">
                             <span>{spot.custom_label || spot.product?.title || "Produto"}</span>
                             <button
                               type="button"
@@ -757,7 +757,7 @@ export default function WorkspaceMarketingEncartesPage() {
                                 e.stopPropagation();
                                 handleRemoveHotspot(spot.id);
                               }}
-                              className="text-red-400 hover:text-red-200 cursor-pointer ml-1"
+                              className="text-red-400 hover:text-red-200 cursor-pointer ml-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
                               <Trash2 className="size-3" />
                             </button>
@@ -780,7 +780,7 @@ export default function WorkspaceMarketingEncartesPage() {
                             className="flex items-center justify-between p-2 rounded-lg bg-muted/40 border border-border/60 text-xs"
                           >
                             <div className="flex items-center gap-2 min-w-0">
-                              <span className="size-5 rounded-full bg-red-600 text-white text-xs font-bold flex items-center justify-center shrink-0">
+                              <span className="size-5 rounded-full bg-red-600 text-foreground text-xs font-bold flex items-center justify-center shrink-0">
                                 {index + 1}
                               </span>
                               <div className="min-w-0">
@@ -825,7 +825,7 @@ export default function WorkspaceMarketingEncartesPage() {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="h-10 px-5 rounded-lg text-xs font-bold gap-2 cursor-pointer bg-red-600 hover:bg-red-700 text-white shadow-sm"
+                className="h-10 px-5 rounded-lg text-xs font-bold gap-2 cursor-pointer bg-red-600 hover:bg-red-700 text-foreground shadow-sm"
               >
                 {isSubmitting ? (
                   <span>Salvando...</span>
@@ -875,8 +875,16 @@ export default function WorkspaceMarketingEncartesPage() {
               filteredCatalog.map((prod: any) => (
                 <div
                   key={prod.id}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleSelectProductForPin(prod);
+                    }
+                  }}
                   onClick={() => handleSelectProductForPin(prod)}
-                  className="p-2 rounded-lg border border-border/60 hover:border-primary hover:bg-primary/5 cursor-pointer flex items-center justify-between gap-3 transition-colors"
+                  className="p-2 rounded-lg border border-border/60 hover:border-primary hover:bg-primary/5 cursor-pointer flex items-center justify-between gap-3 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     {Array.isArray(prod.images) && prod.images[0] ? (

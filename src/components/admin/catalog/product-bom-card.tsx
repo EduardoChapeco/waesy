@@ -133,7 +133,7 @@ export function ProductBomCard({
  <CardTitle className="text-base font-bold flex items-center gap-2">
  <Boxes className="size-4 text-primary" />
  <span>Ficha Técnica e Insumos</span>
- <Badge variant="outline" className="text-[10px] font-mono uppercase">
+ <Badge variant="outline" className="text-2xs font-mono uppercase">
  Estoque Composto
  </Badge>
  </CardTitle>
@@ -162,7 +162,7 @@ export function ProductBomCard({
  {/* ── Métricas de Custo & Margem ── */}
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-lg bg-muted/30 border border-border/50">
  <div className="space-y-1">
- <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+ <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
  Custo Total Composto
  </span>
  <p className="text-base font-extrabold font-mono text-foreground">
@@ -171,7 +171,7 @@ export function ProductBomCard({
  </div>
 
  <div className="space-y-1">
- <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+ <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
  Preço de Venda
  </span>
  <p className="text-base font-extrabold font-mono text-foreground">
@@ -180,7 +180,7 @@ export function ProductBomCard({
  </div>
 
  <div className="space-y-1">
- <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+ <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
  Lucro Bruto Unitário
  </span>
  <p className="text-base font-extrabold font-mono text-emerald-600 dark:text-emerald-400">
@@ -189,7 +189,7 @@ export function ProductBomCard({
  </div>
 
  <div className="space-y-1">
- <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+ <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
  Margem / Markup
  </span>
  <div className="flex items-center gap-1 text-sm font-bold text-foreground">
@@ -210,7 +210,7 @@ export function ProductBomCard({
  </span>
  <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
  <div className="sm:col-span-4 space-y-1">
- <Label className="text-[11px] font-bold">Nome do Insumo / Embalagem</Label>
+ <Label className="text-2xs font-bold">Nome do Insumo / Embalagem</Label>
  <Input
  value={newItemName}
  onChange={(e) => setNewItemName(e.target.value)}
@@ -220,7 +220,7 @@ export function ProductBomCard({
  </div>
 
  <div className="sm:col-span-2 space-y-1">
- <Label className="text-[11px] font-bold">Tipo</Label>
+ <Label className="text-2xs font-bold">Tipo</Label>
  <Select
  value={newItemType}
  onValueChange={(v: any) => setNewItemType(v)}
@@ -238,7 +238,7 @@ export function ProductBomCard({
  </div>
 
  <div className="sm:col-span-2 space-y-1">
- <Label className="text-[11px] font-bold">Quantidade</Label>
+ <Label className="text-2xs font-bold">Quantidade</Label>
  <Input
  type="number"
  step="0.01"
@@ -250,7 +250,7 @@ export function ProductBomCard({
  </div>
 
  <div className="sm:col-span-2 space-y-1">
- <Label className="text-[11px] font-bold">Custo Unit. (R$)</Label>
+ <Label className="text-2xs font-bold">Custo Unit. (R$)</Label>
  <Input
  type="number"
  step="0.01"
@@ -278,7 +278,7 @@ export function ProductBomCard({
  <div className="p-8 text-center border border-dashed border-border rounded-lg bg-muted/10 space-y-2">
  <Boxes className="size-7 text-muted-foreground mx-auto" />
  <p className="text-xs font-bold text-foreground">Nenhum insumo vinculado</p>
- <p className="text-[11px] text-muted-foreground max-w-sm mx-auto">
+ <p className="text-2xs text-muted-foreground max-w-sm mx-auto">
  Adicione os ingredientes, temperos e embalagens para ter controle de custo e baixa automática na retaguarda.
  </p>
  </div>
@@ -302,7 +302,7 @@ export function ProductBomCard({
  </div>
  <div className="min-w-0">
  <p className="font-bold text-foreground truncate">{item.name}</p>
- <span className="text-[10px] text-muted-foreground capitalize">
+ <span className="text-2xs text-muted-foreground capitalize">
  {item.type === "packaging" ? "Embalagem" : "Ingrediente"} • {item.quantity}{" "}
  {item.unit} x {formatMoney(item.unitCostCents)}
  </span>

@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CitySelect } from "@/components/ui/city-select";
+import { AddressField } from "@/components/ui/address-field";
 import { ThemeSelector } from "@/components/settings/theme-selector";
 import { BusinessHoursEditor } from "@/components/commerce/business-hours-editor";
 import { NeighborhoodsManager } from "@/components/commerce/neighborhoods-manager";
@@ -147,6 +148,8 @@ export default function WorkspaceConfiguracoesPage() {
   const [city, setCity] = useState(store?.city || "");
   const [state, setState] = useState(store?.state || "");
   const [zipCode, setZipCode] = useState(store?.zip_code || "");
+  const [latitude, setLatitude] = useState<number | null>(store?.latitude ?? store?.settings?.latitude ?? null);
+  const [longitude, setLongitude] = useState<number | null>(store?.longitude ?? store?.settings?.longitude ?? null);
 
   // Formas de Pagamento & Gateway
   const [pixKey, setPixKey] = useState(store?.pix_key || "");
@@ -391,6 +394,8 @@ export default function WorkspaceConfiguracoesPage() {
           city: city.trim() || undefined,
           state: state.trim().toUpperCase() || undefined,
           zipCode: zipCode.trim() || undefined,
+          latitude: latitude !== null && !isNaN(Number(latitude)) ? Number(latitude) : undefined,
+          longitude: longitude !== null && !isNaN(Number(longitude)) ? Number(longitude) : undefined,
           deliveryZones: neighborhoods,
           customCheckoutFields: customFields,
           checkout_config: {
@@ -481,30 +486,30 @@ export default function WorkspaceConfiguracoesPage() {
   const hasDeliveryModule = enabledModules.includes("delivery") && isPhysicalDeliveryNiche;
 
  return (
- <div className="space-y-6 animate-in fade-in duration-200 max-w-6xl mx-auto w-full px-0 sm:px-4 md:px-0 pb-20">
+ <div className="space-y-6 animate-in fade-in duration-200 motion-reduce:animate-none max-w-6xl mx-auto w-full px-0 sm:px-4 md:px-0 pb-20">
  {/* ── 1. Header Minimalista & Direto ── */}
- <PageHeader
+ <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  eyebrow={`Loja • ${currentNiche.name}`}
  title="Configurações"
  actions={
  <div className="flex items-center gap-2">
-            <Button asChild variant="outline" size="sm" className="rounded-lg text-xs font-semibold gap-2 h-9">
+            <Button asChild variant="outline" className="rounded-lg text-xs font-semibold gap-2 h-11 min-h-11">
               <Link to="/workspace/configuracoes/privacidade-loja">
-                <ShieldCheck className="size-3.5 text-primary" />
+                <ShieldCheck className="size-4 text-primary" />
                 <span>Privacidade</span>
               </Link>
             </Button>
 
-            <Button asChild variant="outline" size="sm" className="rounded-lg text-xs font-semibold gap-2 h-9">
+            <Button asChild variant="outline" className="rounded-lg text-xs font-semibold gap-2 h-11 min-h-11">
               <Link to="/workspace/configuracoes/sessoes">
-                <ShieldCheck className="size-3.5 text-primary" />
+                <ShieldCheck className="size-4 text-primary" />
                 <span>Sessões</span>
               </Link>
             </Button>
 
-            <Button asChild variant="outline" size="sm" className="rounded-lg text-xs font-semibold gap-2 h-9">
+            <Button asChild variant="outline" className="rounded-lg text-xs font-semibold gap-2 h-11 min-h-11">
               <Link to="/workspace/configuracoes/equipe">
-                <Building2 className="size-3.5" />
+                <Building2 className="size-4" />
                 <span>Equipe</span>
               </Link>
             </Button>
@@ -513,16 +518,16 @@ export default function WorkspaceConfiguracoesPage() {
  onClick={handleSaveAll}
  disabled={isSaving}
  size="sm"
- className="rounded-lg text-xs font-bold gap-2 bg-foreground text-background hover:bg-foreground/90 h-9 cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-2 bg-foreground text-background hover:bg-foreground/90 h-11 min-h-11 cursor-pointer"
  >
  {isSaving ? (
  <>
- <Loader2 className="size-3.5 animate-spin" />
+ <Loader2 className="size-4 animate-spin" />
  <span>Salvando...</span>
  </>
  ) : (
  <>
- <Save className="size-3.5" />
+ <Save className="size-4" />
  <span>Salvar</span>
  </>
  )}
@@ -533,28 +538,28 @@ export default function WorkspaceConfiguracoesPage() {
 
  {/* ── 2. Abas de Governança Nichadas ── */}
  <Tabs defaultValue="geral" className="w-full space-y-6">
- <TabsList className={cn("grid bg-muted/60 p-1 rounded-lg", hasDeliveryModule ? "grid-cols-2 sm:grid-cols-7" : "grid-cols-2 sm:grid-cols-6")}>
- <TabsTrigger value="geral" className="rounded-lg text-xs font-semibold">
+ <TabsList className="flex flex-nowrap overflow-x-auto no-scrollbar snap-x bg-muted/60 p-1 rounded-lg w-full gap-1">
+ <TabsTrigger value="geral" className="rounded-lg text-xs font-semibold px-4 py-2 shrink-0 snap-start whitespace-nowrap min-h-11 min-h-11 flex items-center justify-center cursor-pointer">
  Vitrine
  </TabsTrigger>
- <TabsTrigger value="nicho" className="rounded-lg text-xs font-semibold">
+ <TabsTrigger value="nicho" className="rounded-lg text-xs font-semibold px-4 py-2 shrink-0 snap-start whitespace-nowrap min-h-11 min-h-11 flex items-center justify-center cursor-pointer">
  Nicho
  </TabsTrigger>
- <TabsTrigger value="contato" className="rounded-lg text-xs font-semibold">
+ <TabsTrigger value="contato" className="rounded-lg text-xs font-semibold px-4 py-2 shrink-0 snap-start whitespace-nowrap min-h-11 min-h-11 flex items-center justify-center cursor-pointer">
  Contato
  </TabsTrigger>
  {hasDeliveryModule && (
- <TabsTrigger value="entrega" className="rounded-lg text-xs font-semibold">
+ <TabsTrigger value="entrega" className="rounded-lg text-xs font-semibold px-4 py-2 shrink-0 snap-start whitespace-nowrap min-h-11 min-h-11 flex items-center justify-center cursor-pointer">
  Entrega
  </TabsTrigger>
  )}
- <TabsTrigger value="horarios" className="rounded-lg text-xs font-semibold">
+ <TabsTrigger value="horarios" className="rounded-lg text-xs font-semibold px-4 py-2 shrink-0 snap-start whitespace-nowrap min-h-11 min-h-11 flex items-center justify-center cursor-pointer">
  Horários
  </TabsTrigger>
- <TabsTrigger value="politicas" className="rounded-lg text-xs font-semibold">
+ <TabsTrigger value="politicas" className="rounded-lg text-xs font-semibold px-4 py-2 shrink-0 snap-start whitespace-nowrap min-h-11 min-h-11 flex items-center justify-center cursor-pointer">
  Políticas
  </TabsTrigger>
- <TabsTrigger value="checkout" className="rounded-lg text-xs font-semibold">
+ <TabsTrigger value="checkout" className="rounded-lg text-xs font-semibold px-4 py-2 shrink-0 snap-start whitespace-nowrap min-h-11 min-h-11 flex items-center justify-center cursor-pointer">
  Checkout
  </TabsTrigger>
  </TabsList>
@@ -573,15 +578,15 @@ export default function WorkspaceConfiguracoesPage() {
  <div className="space-y-3 pb-4 border-b border-border/40">
  <div className="flex items-center justify-between">
  <Label className="text-xs font-bold text-foreground">Identidade do Perfil (1:1 Squircle + Capa 21:9)</Label>
- <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary">
+ <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary">
  Padrão Canônico
  </Badge>
  </div>
 
  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full">
  {/* Logotipo 1:1 Squircle */}
- <div className="w-full sm:w-auto shrink-0 space-y-1.5">
- <span className="text-[11px] font-medium text-muted-foreground block">Logotipo (1:1)</span>
+ <div className="w-full sm:w-auto shrink-0 space-y-2">
+ <span className="text-xs font-medium text-muted-foreground block">Logotipo (1:1)</span>
  <div className="size-24 sm:size-28">
  <ImageUpload
  value={logoUrl}
@@ -596,9 +601,9 @@ export default function WorkspaceConfiguracoesPage() {
  </div>
 
  {/* Capa Panorâmica 21:9 ao lado */}
- <div className="flex-1 min-w-0 w-full space-y-1.5">
- <span className="text-[11px] font-medium text-muted-foreground block">Capa Panorâmica (21:9)</span>
- <div className="w-full aspect-[21/9] rounded-lg overflow-hidden">
+ <div className="flex-1 min-w-0 w-full space-y-2">
+ <span className="text-xs font-medium text-muted-foreground block">Capa Panorâmica (21:9)</span>
+ <div className="w-full aspect-video rounded-lg overflow-hidden">
  <ImageUpload
  value={bannerUrl}
  onChange={(url) => setBannerUrl(url)}
@@ -930,8 +935,8 @@ export default function WorkspaceConfiguracoesPage() {
    setEnabledModules(getDefaultModulesForNiche(n.id));
    toast.success(`Nicho alterado para ${n.title}. Módulos recomendados foram ativados.`);
  }}
- className={cn(
- "flex flex-col text-left p-4 rounded-lg border transition-all cursor-pointer relative",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "flex flex-col text-left p-4 rounded-lg border transition-colors motion-reduce:transition-none cursor-pointer relative",
  isSelected
  ? "border-primary bg-primary/5 ring-1 ring-primary/40"
  : "border-border/60 bg-muted/20 hover:bg-muted/50 text-muted-foreground"
@@ -974,7 +979,7 @@ export default function WorkspaceConfiguracoesPage() {
    setEnabledModules(newDefaults);
    toast.success(`Módulos restaurados para o padrão ${semantics.name}.`);
  }}
- className="text-xs h-7 rounded-lg"
+ className="text-xs h-11 min-h-11 rounded-lg"
  >
  {semantics.nicheId === "tourism"
  ? "Padrão Turismo & Viagens"
@@ -1101,10 +1106,18 @@ export default function WorkspaceConfiguracoesPage() {
  const isEnabled = enabledModules.includes(mod.id);
  return (
  <div
- key={mod.id}
- onClick={() => handleToggleModule(mod.id)}
- className={cn(
- "flex items-start justify-between p-4 rounded-lg border transition-all cursor-pointer select-none",
+    key={mod.id}
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        handleToggleModule(mod.id);
+      }
+    }}
+    onClick={() => handleToggleModule(mod.id)}
+    className={cn(
+      "flex items-start justify-between p-4 rounded-lg border transition-colors motion-reduce:transition-none cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
  isEnabled
  ? "border-primary/40 bg-primary/5 dark:bg-primary/10"
  : "border-border/60 bg-muted/20 hover:bg-muted/40 opacity-70"
@@ -1153,7 +1166,7 @@ export default function WorkspaceConfiguracoesPage() {
  value={phone}
  onChange={(e) => setPhone(e.target.value)}
  placeholder="(49) 99999-9999"
- className="rounded-lg text-xs h-9"
+ className="rounded-lg text-xs h-11 min-h-11"
  />
  </div>
 
@@ -1167,7 +1180,7 @@ export default function WorkspaceConfiguracoesPage() {
  value={email}
  onChange={(e) => setEmail(e.target.value)}
  placeholder="contato@minhaloja.com.br"
- className="rounded-lg text-xs h-9"
+ className="rounded-lg text-xs h-11 min-h-11"
  />
  </div>
 
@@ -1177,7 +1190,7 @@ export default function WorkspaceConfiguracoesPage() {
  value={cnpj}
  onChange={(e) => setCnpj(e.target.value)}
  placeholder="00.000.000/0001-00"
- className="rounded-lg text-xs h-9"
+ className="rounded-lg text-xs h-11 min-h-11"
  />
  </div>
  </div>
@@ -1196,8 +1209,32 @@ export default function WorkspaceConfiguracoesPage() {
  value={address}
  onChange={(e) => setAddress(e.target.value)}
  placeholder="Rua, número, complemento e bairro"
- className="rounded-lg text-xs h-9"
- />
+ className="rounded-lg text-xs h-11 min-h-11"
+                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Latitude (GPS / Despacho)</Label>
+                    <Input
+                      type="number"
+                      step="any"
+                      value={latitude ?? ""}
+                      onChange={(e) => setLatitude(e.target.value ? parseFloat(e.target.value) : null)}
+                      placeholder="-26.723"
+                      className="rounded-lg text-xs h-11 min-h-11"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Longitude (GPS / Despacho)</Label>
+                    <Input
+                      type="number"
+                      step="any"
+                      value={longitude ?? ""}
+                      onChange={(e) => setLongitude(e.target.value ? parseFloat(e.target.value) : null)}
+                      placeholder="-53.518"
+                      className="rounded-lg text-xs h-11 min-h-11"
+                    />
+                  </div>
+                </div>
  </div>
  </div>
  </Card>
@@ -1439,11 +1476,12 @@ export default function WorkspaceConfiguracoesPage() {
               { id: "one_page", title: "One-Page Fluido", desc: "Todas as seções em página contínua de alta conversão (padrão Yampi/Shopify)." },
               { id: "multi_step", title: "Multi-Step Wizard", desc: "Etapas sequenciais com avanço guiado (1. Dados -> 2. Entrega -> 3. Pagamento)." },
             ].map((opt) => (
-              <div
+              <button
+                type="button"
                 key={opt.id}
                 onClick={() => setCheckoutLayoutMode(opt.id as any)}
                 className={cn(
-                  "p-4 rounded-lg border text-left cursor-pointer transition-all space-y-2",
+                  "p-4 rounded-lg border text-left cursor-pointer transition-colors motion-reduce:transition-none space-y-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   checkoutLayoutMode === opt.id
                     ? "border-primary bg-primary/5 ring-1 ring-primary"
                     : "border-border/60 hover:border-border"
@@ -1454,7 +1492,7 @@ export default function WorkspaceConfiguracoesPage() {
                   {checkoutLayoutMode === opt.id && <CheckCircle2 className="size-4 text-primary" />}
                 </div>
                 <p className="text-xs text-muted-foreground leading-snug">{opt.desc}</p>
-              </div>
+              </button>
             ))}
           </div>
         </Card>
@@ -1473,11 +1511,12 @@ export default function WorkspaceConfiguracoesPage() {
               { id: "direct_download", title: "Download Direto de Arquivo", desc: "Download instantâneo de PDF, ZIP, áudio ou software na confirmação." },
               { id: "license_key", title: "Chave Serial / Licença", desc: "Emissão de código de ativação individual para desbloqueio." },
             ].map((dOpt) => (
-              <div
+              <button
+                type="button"
                 key={dOpt.id}
                 onClick={() => setDigitalDeliveryType(dOpt.id as any)}
                 className={cn(
-                  "p-3 rounded-lg border cursor-pointer transition-all space-y-1",
+                  "p-3 rounded-lg border cursor-pointer transition-colors motion-reduce:transition-none space-y-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   digitalDeliveryType === dOpt.id
                     ? "border-primary bg-primary/5 ring-1 ring-primary"
                     : "border-border/60 hover:border-border"
@@ -1485,7 +1524,7 @@ export default function WorkspaceConfiguracoesPage() {
               >
                 <span className="text-xs font-bold text-foreground">{dOpt.title}</span>
                 <p className="text-xs text-muted-foreground leading-snug">{dOpt.desc}</p>
-              </div>
+              </button>
             ))}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
@@ -1523,11 +1562,12 @@ export default function WorkspaceConfiguracoesPage() {
               { id: "bands", title: "Faixas Fixas de Peso (100g em 100g)", desc: "Venda por faixas estimadas. O caixa físico ou PDV próprio absorve o acerto final." },
               { id: "scale_adjustment", title: "Separação com Ajuste de Balança", desc: "O separador digita o peso real medido no painel e o valor da nota/recibo é ajustado." },
             ].map((pOpt) => (
-              <div
+              <button
+                type="button"
                 key={pOpt.id}
                 onClick={() => setWeighablePricingMode(pOpt.id as any)}
                 className={cn(
-                  "p-4 rounded-lg border cursor-pointer transition-all space-y-2",
+                  "p-4 rounded-lg border cursor-pointer transition-colors motion-reduce:transition-none space-y-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   weighablePricingMode === pOpt.id
                     ? "border-primary bg-primary/5 ring-1 ring-primary"
                     : "border-border/60 hover:border-border"
@@ -1538,7 +1578,7 @@ export default function WorkspaceConfiguracoesPage() {
                   {weighablePricingMode === pOpt.id && <CheckCircle2 className="size-4 text-primary" />}
                 </div>
                 <p className="text-xs text-muted-foreground leading-snug">{pOpt.desc}</p>
-              </div>
+              </button>
             ))}
           </div>
         </Card>
@@ -1557,11 +1597,12 @@ export default function WorkspaceConfiguracoesPage() {
               { id: "deposit_and_balance", title: "Sinal Antecipado + Saldo Local", desc: "Cobrança de percentual antecipado para garantir a vaga, com saldo no local." },
               { id: "venue_pay", title: "Pagamento no Balcão", desc: "Apenas reserva de horário. Pagamento total presencial após o atendimento." },
             ].map((sOpt) => (
-              <div
+              <button
+                type="button"
                 key={sOpt.id}
                 onClick={() => setServicePaymentPolicy(sOpt.id as any)}
                 className={cn(
-                  "p-3 rounded-lg border cursor-pointer transition-all space-y-1",
+                  "p-3 rounded-lg border cursor-pointer transition-colors motion-reduce:transition-none space-y-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   servicePaymentPolicy === sOpt.id
                     ? "border-primary bg-primary/5 ring-1 ring-primary"
                     : "border-border/60 hover:border-border"
@@ -1569,7 +1610,7 @@ export default function WorkspaceConfiguracoesPage() {
               >
                 <span className="text-xs font-bold text-foreground">{sOpt.title}</span>
                 <p className="text-xs text-muted-foreground leading-snug">{sOpt.desc}</p>
-              </div>
+              </button>
             ))}
           </div>
           {servicePaymentPolicy === "deposit_and_balance" && (
@@ -1581,7 +1622,7 @@ export default function WorkspaceConfiguracoesPage() {
                 max={90}
                 value={serviceDepositPercentage}
                 onChange={(e) => setServiceDepositPercentage(parseInt(e.target.value, 10) || 30)}
-                className="w-24 h-9 text-xs rounded-lg"
+                className="w-24 h-11 min-h-11 text-xs rounded-lg"
               />
             </div>
           )}
@@ -1601,10 +1642,11 @@ export default function WorkspaceConfiguracoesPage() {
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
- <div
- onClick={() => setPaymentProcessingMode("platform_gateway")}
- className={cn(
- "rounded-lg border p-4 cursor-pointer transition-all space-y-2",
+ <button
+            type="button"
+            onClick={() => setPaymentProcessingMode("platform_gateway")}
+            className={cn(
+              "rounded-lg border p-4 cursor-pointer transition-colors motion-reduce:transition-none space-y-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
  paymentProcessingMode === "platform_gateway"
  ? "border-primary bg-primary/5 ring-1 ring-primary"
  : "border-border/70 hover:border-border"
@@ -1619,12 +1661,13 @@ export default function WorkspaceConfiguracoesPage() {
  <p className="text-xs text-muted-foreground leading-relaxed">
  Cartão de crédito online e Pix automático com split financeiro e conciliação instantânea.
  </p>
- </div>
+ </button>
 
- <div
- onClick={() => setPaymentProcessingMode("direct_store")}
- className={cn(
- "rounded-lg border p-4 cursor-pointer transition-all space-y-2",
+ <button
+            type="button"
+            onClick={() => setPaymentProcessingMode("direct_store")}
+            className={cn(
+              "rounded-lg border p-4 cursor-pointer transition-colors motion-reduce:transition-none space-y-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
  paymentProcessingMode === "direct_store"
  ? "border-primary bg-primary/5 ring-1 ring-primary"
  : "border-border/70 hover:border-border"
@@ -1639,7 +1682,7 @@ export default function WorkspaceConfiguracoesPage() {
  <p className="text-xs text-muted-foreground leading-relaxed">
  Chave Pix da sua empresa sem taxas intermediárias, ou pagamento na entrega/retirada no balcão.
  </p>
- </div>
+ </button>
  </div>
 
  {paymentProcessingMode === "direct_store" && (
@@ -1699,7 +1742,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-lg text-xs h-8"
+ className="rounded-lg text-xs h-11 min-h-11"
  onClick={() => {
  setNewMethodName("Maquininha de Cartão (Débito e Crédito)");
  setNewMethodInstructions("Levamos a maquininha até você. Aceitamos Visa, Master, Elo e Hipercard.");
@@ -1712,7 +1755,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-lg text-xs h-8"
+ className="rounded-lg text-xs h-11 min-h-11"
  onClick={() => {
  setNewMethodName("Dinheiro (Informar Troco)");
  setNewMethodInstructions("Pagamento em dinheiro no momento da entrega.");
@@ -1725,7 +1768,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-lg text-xs h-8"
+ className="rounded-lg text-xs h-11 min-h-11"
  onClick={() => {
  setNewMethodName("Pix no Balcão");
  setNewMethodInstructions("Pague via QR Code exibido diretamente no balcão da loja.");
@@ -1821,7 +1864,7 @@ export default function WorkspaceConfiguracoesPage() {
  variant="ghost"
  size="sm"
  onClick={() => handleDeleteManualMethod(method.id)}
- className="size-8 p-0 text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer"
+ className="size-11 min-h-11 min-w-11 p-0 text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer"
  >
  <Trash2 className="size-3.5" />
  </Button>
@@ -1877,7 +1920,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-lg text-xs h-8"
+ className="rounded-lg text-xs h-11 min-h-11"
  onClick={() => setCustomFields((p) => [...p, { id: `f_${Date.now()}`, label: "Documento / Passaporte do Titular", placeholder: "RG, CPF ou Passaporte", type: "text", required: true }])}
  >
  + Documento / Passaporte
@@ -1886,7 +1929,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-lg text-xs h-8"
+ className="rounded-lg text-xs h-11 min-h-11"
  onClick={() => setCustomFields((p) => [...p, { id: `f_${Date.now()}`, label: "Data de Nascimento dos Passageiros", placeholder: "Ex: Passageiro 1: 15/04/1990", type: "text", required: true }])}
  >
  + Data de Nascimento
@@ -1895,7 +1938,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-lg text-xs h-8"
+ className="rounded-lg text-xs h-11 min-h-11"
  onClick={() => setCustomFields((p) => [...p, { id: `f_${Date.now()}`, label: "Preferência de Assento / Acomodação", placeholder: "Ex: Janela, Quarto Casal", type: "text", required: false }])}
  >
  + Preferência de Assento
@@ -1907,7 +1950,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-lg text-xs h-8"
+ className="rounded-lg text-xs h-11 min-h-11"
  onClick={() => setCustomFields((p) => [...p, { id: `f_${Date.now()}`, label: "Observações / Alergias", placeholder: "Sem cebola, alergia a glúten...", type: "text", required: false }])}
  >
  + Observações / Alergias
@@ -1916,7 +1959,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-lg text-xs h-8"
+ className="rounded-lg text-xs h-11 min-h-11"
  onClick={() => setCustomFields((p) => [...p, { id: `f_${Date.now()}`, label: "Precisa de Troco?", placeholder: "Ex: Troco para R$ 50", type: "text", required: false }])}
  >
  + Troco em Dinheiro
@@ -1925,7 +1968,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-lg text-xs h-8"
+ className="rounded-lg text-xs h-11 min-h-11"
  onClick={() => setCustomFields((p) => [...p, { id: `f_${Date.now()}`, label: "Ponto de Referência", placeholder: "Próximo à praça central...", type: "text", required: false }])}
  >
  + Ponto de Referência
@@ -1937,7 +1980,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-lg text-xs h-8"
+ className="rounded-lg text-xs h-11 min-h-11"
  onClick={() => setCustomFields((p) => [...p, { id: `f_${Date.now()}`, label: "CPF na Nota Fiscal", placeholder: "000.000.000-00", type: "text", required: false }])}
  >
  + CPF na Nota
@@ -1946,7 +1989,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-lg text-xs h-8"
+ className="rounded-lg text-xs h-11 min-h-11"
  onClick={() => setCustomFields((p) => [...p, { id: `f_${Date.now()}`, label: "Instruções Especiais", placeholder: "Digite aqui suas orientações...", type: "textarea", required: false }])}
  >
  + Instruções Especiais
@@ -1984,7 +2027,7 @@ export default function WorkspaceConfiguracoesPage() {
  onClick={() => {
  setCustomFields((prev) => prev.filter((_, i) => i !== idx));
  }}
- className="size-7 text-rose-500 hover:bg-rose-500/10 rounded-lg"
+ className="size-11 min-h-11 min-w-11 text-rose-500 hover:bg-rose-500/10 rounded-lg"
  >
  <Trash2 className="size-3.5" />
  </Button>
@@ -2002,7 +2045,7 @@ export default function WorkspaceConfiguracoesPage() {
  );
  }}
  placeholder="ex: Placa do Veículo, Nome para Gravação, etc."
- className="rounded-lg text-xs h-9"
+ className="rounded-lg text-xs h-11 min-h-11"
  />
  </div>
 
@@ -2016,7 +2059,7 @@ export default function WorkspaceConfiguracoesPage() {
  prev.map((f, i) => (i === idx ? { ...f, type: val } : f)),
  );
  }}
- className="w-full h-9 px-3 rounded-lg bg-card text-xs font-semibold"
+ className="w-full h-11 min-h-11 px-3 rounded-lg bg-card text-xs font-semibold"
  >
  <option value="text">Texto Curto</option>
  <option value="textarea">Texto Longo (Mensagem)</option>
@@ -2038,7 +2081,7 @@ export default function WorkspaceConfiguracoesPage() {
  );
  }}
  placeholder="ex: ABC-1234 ou Maria & João"
- className="rounded-lg text-xs h-9"
+ className="rounded-lg text-xs h-11 min-h-11"
  />
  </div>
 

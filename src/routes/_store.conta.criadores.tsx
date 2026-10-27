@@ -139,7 +139,7 @@ function CreatorProfilesManagementPage() {
               asChild
               variant="ghost"
               size="icon"
-              className="size-11 rounded-full hover:bg-muted/80 active:scale-95 transition-all"
+              className="size-11 rounded-full hover:bg-muted/80 active:scale-95 transition-transform duration-200"
               aria-label="Voltar para Minha Conta"
             >
               <Link to="/conta">
@@ -203,7 +203,7 @@ function CreatorProfilesManagementPage() {
               return (
                 <div
                   key={cp.id || handle}
-                  className="p-5 sm:p-6 rounded-lg border border-border/60 bg-card shadow-xs space-y-5 transition-all hover:border-border"
+                  className="p-5 sm:p-6 rounded-lg border border-border/60 bg-card shadow-xs space-y-5 transition-colors duration-200 hover:border-border"
                 >
                   {/* Cabeçalho do Card */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -221,10 +221,10 @@ function CreatorProfilesManagementPage() {
                           <h3 className="text-sm font-bold text-foreground">
                             {cp.stage_name || cp.name || handle}
                           </h3>
-                          <Badge variant="outline" className="text-[11px] font-mono font-semibold">
+                          <Badge variant="outline" className="text-2xs font-mono font-semibold">
                             @{handle}
                           </Badge>
-                          <Badge variant="secondary" className="text-[10px] bg-muted/60">
+                          <Badge variant="secondary" className="text-2xs bg-muted/60">
                             {getCreatorNicheLabel(cp.category || cp.niche)}
                           </Badge>
                         </div>
@@ -306,7 +306,7 @@ function CreatorProfilesManagementPage() {
                   {/* Telemetria Compacta */}
                   <div className="grid grid-cols-3 gap-3 pt-1">
                     <div className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-1">
-                      <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">
+                      <span className="text-2xs text-muted-foreground uppercase tracking-wider font-medium">
                         Cliques
                       </span>
                       <p className="text-base font-bold text-foreground">
@@ -315,14 +315,14 @@ function CreatorProfilesManagementPage() {
                     </div>
 
                     <div className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-1">
-                      <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">
+                      <span className="text-2xs text-muted-foreground uppercase tracking-wider font-medium">
                         Pedidos
                       </span>
                       <p className="text-base font-bold text-foreground">{cp.total_orders || 0}</p>
                     </div>
 
                     <div className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-1">
-                      <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">
+                      <span className="text-2xs text-muted-foreground uppercase tracking-wider font-medium">
                         GMV Gerado
                       </span>
                       <p className="text-base font-bold text-foreground">

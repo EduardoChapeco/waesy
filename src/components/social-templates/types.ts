@@ -39,6 +39,18 @@ export interface SocialFlyerData {
   themeGradient?: string;
   niche?: SocialNiche;
   ctaLabel?: string;
+
+  // Excelência Tour StoryDocument & Liquid Glass Engine Extensions
+  priceBasisLabel?: string;
+  occupancySummaryLabel?: string;
+  glassMaterial?: Record<string, any>;
+  titleFontSizeOverride?: number;
+  titleOffsetX?: number;
+  titleOffsetY?: number;
+  priceCardOffsetX?: number;
+  priceCardOffsetY?: number;
+  priceCardScale?: number;
+  photoObjectPositionY?: number;
 }
 
 export interface SocialTemplateProps {

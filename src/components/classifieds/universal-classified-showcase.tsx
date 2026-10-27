@@ -4,6 +4,11 @@ import { ClassifiedDetailMobile } from "./classified-detail-mobile";
 import { ClassifiedDetailDesktop } from "./classified-detail-desktop";
 import { EditorialShowcaseView } from "./editorial-showcase-view";
 import { EventClassifiedShowcaseView } from "./event-classified-showcase-view";
+import { ConvenienceShowcaseView } from "./convenience-showcase-view";
+import {
+  normalizeClassifiedNicheId,
+  resolveCompatibleClassifiedTemplate,
+} from "@/lib/classifieds/canonical-taxonomy";
 
 import type { UniversalClassifiedShowcaseProps } from "@/types/unified-ad-engine";
 export type { UniversalClassifiedShowcaseProps };
@@ -11,14 +16,12 @@ export type { UniversalClassifiedShowcaseProps };
 /**
  * UniversalClassifiedShowcase — Native-First Bifurcation Wrapper
  *
+ * Resolve de forma determinística o nicho e o template canônico (`resolveCompatibleClassifiedTemplate`):
  * - Eventos, Shows, Congressos e Ingressos: <EventClassifiedShowcaseView />
- *   (Hero cinematográfico, timeline de horários, palestrantes, enquetes ao vivo,
- *   lotes de ingressos, captura real de leads e exportação CSV).
- * - Pacotes de Viagem, Turismo, Roteiros e Template Editorial: <EditorialShowcaseView />
- *   (Grid 7+5 colunas com galeria 16:10 + miniaturas, Abas Dinâmicas Infos do Pacote / Fotos / Roteiro / Condições,
- *   Malha Aérea Google Flights, Hospedagens com Galeria e Coluna Comercial Sticky).
- * - Demais Classificados Mobile (< 1024px): <ClassifiedDetailMobile />
- * - Demais Classificados Desktop (>= 1024px): <ClassifiedDetailDesktop />
+ * - Varejo / Conveniência / Delivery Rápido (`template_style === "conveniencia"`): <ConvenienceShowcaseView />
+ * - Pacotes de Viagem & Turismo no template Editorial (`niche === "viagem" && template === "editorial"`): <EditorialShowcaseView />
+ * - Demais Classificados Mobile (< 1024px ou `previewViewport === "mobile"`): <ClassifiedDetailMobile />
+ * - Demais Classificados Desktop (>= 1024px ou `previewViewport === "desktop"`): <ClassifiedDetailDesktop />
  */
 export function UniversalClassifiedShowcase(props: UniversalClassifiedShowcaseProps) {
   const isDesktop = useIsDesktop(1024);
@@ -32,68 +35,98 @@ export function UniversalClassifiedShowcase(props: UniversalClassifiedShowcasePr
   const classified = props.classified || {};
   const attrs = classified.attributes || {};
   const rawCat = String(
-    classified.category_slug ||
+    attrs.niche ||
+      classified.category_slug ||
       classified.category_name ||
       classified.category ||
-      attrs.niche ||
       attrs.vertical ||
       ""
   ).toLowerCase();
 
-  const isEvent = Boolean(
-    classified.template_style === "event" ||
-      attrs.template_style === "event" ||
-      rawCat === "event" ||
-      rawCat === "evento" ||
-      rawCat.includes("event") ||
-      attrs.niche === "evento" ||
-      attrs.event_date ||
-      (Array.isArray(attrs.schedule) && attrs.schedule.length > 0) ||
-      (Array.isArray(attrs.speakers) && attrs.speakers.length > 0) ||
-      (Array.isArray(attrs.ticket_tiers) && attrs.ticket_tiers.length > 0)
+  const normalizedNiche = normalizeClassifiedNicheId(
+    rawCat ||
+      (attrs.event_date || (Array.isArray(attrs.ticket_tiers) && attrs.ticket_tiers.length > 0)
+        ? "evento"
+        : attrs.destination_city || (Array.isArray(attrs.itinerary_days) && attrs.itinerary_days.length > 0)
+        ? "viagem"
+        : "desapego")
   );
 
-  if (isEvent) {
+  const requestedTemplate = String(
+    classified.template_style ||
+      attrs.template_style ||
+      attrs.template_id ||
+      classified.template ||
+      ""
+  ).toLowerCase();
+
+  const resolvedTemplate = resolveCompatibleClassifiedTemplate(
+    normalizedNiche,
+    requestedTemplate || undefined
+  );
+
+  const normalizedClassified = React.useMemo(
+    () => ({
+      ...classified,
+      template_style: resolvedTemplate,
+      attributes: {
+        ...attrs,
+        niche: attrs.niche || normalizedNiche,
+        template_style: resolvedTemplate,
+      },
+    }),
+    [classified, attrs, normalizedNiche, resolvedTemplate]
+  );
+
+  const isEventShowcase = normalizedNiche === "evento";
+
+  if (isEventShowcase) {
     return (
       <EventClassifiedShowcaseView
-        classified={classified}
+        classified={normalizedClassified}
         isOwner={props.isOwner}
         onEditClassified={props.onEdit}
+        previewViewport={props.previewViewport}
+        templateStyle={resolvedTemplate === "standard" ? "standard" : "editorial"}
+        displayMode={attrs.display_mode === "continuous_list" ? "continuous_list" : "tabs"}
       />
     );
   }
 
-  const isTravelOrEditorial = Boolean(
-    classified.template_style === "editorial" ||
-      attrs.template_style === "editorial" ||
-      rawCat.includes("viag") ||
-      rawCat.includes("turism") ||
-      rawCat.includes("tour") ||
-      rawCat.includes("roteir") ||
-      rawCat.includes("excurs") ||
-      attrs.destination_city ||
-      attrs.itinerary_days?.length ||
-      attrs.lodgings?.length ||
-      attrs.departure_options?.length ||
-      attrs.flight_details
-  );
+  if (resolvedTemplate === "conveniencia") {
+    return (
+      <ConvenienceShowcaseView
+        classified={normalizedClassified}
+        isOwner={props.isOwner}
+        onEdit={props.onEdit}
+        onOpenBookingModal={props.onOpenBookingModal}
+        onOpenProposalModal={props.onOpenProposalModal}
+        previewDevice={props.previewViewport === "auto" ? undefined : props.previewViewport}
+        compact={!effectiveIsDesktop}
+      />
+    );
+  }
 
-  if (isTravelOrEditorial) {
+  const isTravelEditorial =
+    normalizedNiche === "viagem" && resolvedTemplate === "editorial";
+
+  if (isTravelEditorial) {
     return (
       <EditorialShowcaseView
-        classified={classified}
+        classified={normalizedClassified}
         isOwner={props.isOwner}
         onOpenBookingModal={props.onOpenBookingModal as any}
         onOpenProposalModal={props.onOpenProposalModal}
         onEditClassified={props.onEdit}
         onOpenCompanionCard={props.onOpenCompanion}
+        previewViewport={props.previewViewport === "auto" ? undefined : props.previewViewport}
       />
     );
   }
 
   if (!effectiveIsDesktop) {
-    return <ClassifiedDetailMobile {...props} />;
+    return <ClassifiedDetailMobile {...props} classified={normalizedClassified} />;
   }
 
-  return <ClassifiedDetailDesktop {...props} />;
+  return <ClassifiedDetailDesktop {...props} classified={normalizedClassified} />;
 }

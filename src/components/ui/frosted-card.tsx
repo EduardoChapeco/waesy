@@ -35,7 +35,7 @@ const FrostedCard = React.forwardRef<HTMLDivElement, FrostedCardProps>(
       <div
         ref={ref}
         className={cn(
-          "rounded-lg text-card-foreground transition-all",
+          "rounded-lg text-card-foreground transition-colors duration-200",
           intensityMap[intensity],
           !borderless && "border border-border/70",
           className

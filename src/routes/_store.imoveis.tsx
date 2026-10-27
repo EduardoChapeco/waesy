@@ -317,7 +317,7 @@ function PropertyCard({ item }: { item: any }) {
   const isTemporada = item.deal_type === "temporada";
 
   return (
-    <div className="group rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover: transition-all flex flex-col justify-between h-full">
+    <div className="group rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover: transition-colors duration-200 flex flex-col justify-between h-full">
       <Link to="/classificados/$id" params={{ id: item.id }} className="block flex-1 flex flex-col">
         <div className="relative aspect-16/10 w-full overflow-hidden bg-muted/40 flex items-center justify-center">
           {img ? (
@@ -328,7 +328,7 @@ function PropertyCard({ item }: { item: any }) {
             </div>
           )}
           <div className="absolute top-2.5 left-2.5 flex items-center gap-2">
-            <Badge variant="secondary" className="bg-background/90 text-[10px] font-bold">
+            <Badge variant="secondary" className="bg-background/90 text-2xs font-bold">
               {isTemporada ? "Temporada" : isAluguel ? "Aluguel" : "Venda"}
             </Badge>
           </div>
@@ -338,7 +338,7 @@ function PropertyCard({ item }: { item: any }) {
           <div>
             <span className="text-lg font-black text-foreground font-mono block">
               {formatMoney(item.price_cents || 0)}
-              <span className="text-[11px] font-normal text-muted-foreground ml-1">
+              <span className="text-2xs font-normal text-muted-foreground ml-1">
                 {isAluguel ? "/mês" : isTemporada ? "/diária" : ""}
               </span>
             </span>
@@ -355,7 +355,7 @@ function PropertyCard({ item }: { item: any }) {
               <MapPin size={12} className="text-primary shrink-0" />
               <span className="truncate">{item.location_name || "Região"}</span>
             </span>
-            <span className="font-bold text-foreground text-[11px] flex items-center gap-1 hover:underline">
+            <span className="font-bold text-foreground text-2xs flex items-center gap-1 hover:underline">
               Detalhes <ArrowRight size={12} />
             </span>
           </div>
@@ -374,7 +374,7 @@ function PropertyListItem({ item }: { item: any }) {
     <Link
       to="/classificados/$id"
       params={{ id: item.id }}
-      className="group relative overflow-hidden rounded-lg border border-border/60 bg-card hover:border-foreground/30 transition-all min-h-[136px] pl-32 sm:pl-44 flex items-center justify-between pr-4 py-4 gap-3 cursor-pointer w-full"
+      className="group relative overflow-hidden rounded-lg border border-border/60 bg-card hover:border-foreground/30 transition-colors duration-200 min-h-[136px] pl-32 sm:pl-44 flex items-center justify-between pr-4 py-4 gap-3 cursor-pointer w-full"
     >
       <div className="absolute inset-y-0 left-0 w-32 sm:w-44 rounded-l-lg overflow-hidden bg-muted/60">
         {img ? (
@@ -384,7 +384,7 @@ function PropertyListItem({ item }: { item: any }) {
             <House size={24} className="text-muted-foreground/40" />
           </div>
         )}
-        <Badge variant="secondary" className="absolute top-2 left-2 text-[9px] px-2 py-1 font-bold bg-background/90 backdrop-blur-xs">
+        <Badge variant="secondary" className="absolute top-2 left-2 text-3xs px-2 py-1 font-bold bg-background/90 backdrop-blur-xs">
           {isTemporada ? "Temp." : isAluguel ? "Aluguel" : "Venda"}
         </Badge>
       </div>
@@ -406,7 +406,7 @@ function PropertyListItem({ item }: { item: any }) {
         <span className="text-sm sm:text-base font-black text-foreground font-mono block">
           {formatMoney(item.price_cents || 0)}
         </span>
-        <span className="text-[10px] sm:text-[11px] text-muted-foreground block">
+        <span className="text-2xs sm:text-2xs text-muted-foreground block">
           {isAluguel ? "/mês" : isTemporada ? "/diária" : "à vista"}
         </span>
       </div>

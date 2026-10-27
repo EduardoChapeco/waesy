@@ -154,7 +154,7 @@ function WorkspaceSessionsAndAuditPage() {
           disabled={isRefreshing}
           className="self-start sm:self-auto gap-2 rounded-lg text-xs cursor-pointer"
         >
-          <RefreshCw className={`size-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
+          <RefreshCw className={`size-3.5 ${isRefreshing ? "animate-spin motion-reduce:animate-none" : ""}`} />
           Sincronizar
         </Button>
       </div>
@@ -163,7 +163,7 @@ function WorkspaceSessionsAndAuditPage() {
       <div className="flex items-center gap-2 border-b border-border/40 pb-2">
         <button
           onClick={() => setActiveTab("store_audit")}
-          className={cn(
+          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
             "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer",
             activeTab === "store_audit"
               ? "bg-primary text-primary-foreground shadow-2xs"
@@ -185,7 +185,7 @@ function WorkspaceSessionsAndAuditPage() {
 
         <button
           onClick={() => setActiveTab("sessions")}
-          className={cn(
+          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
             "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer",
             activeTab === "sessions"
               ? "bg-primary text-primary-foreground shadow-2xs"
@@ -217,7 +217,7 @@ function WorkspaceSessionsAndAuditPage() {
               <span className="text-xs font-semibold text-muted-foreground mr-1">Entidade:</span>
               <button
                 onClick={() => setEntityFilter("all")}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "px-3 py-1 rounded-lg text-xs transition-colors cursor-pointer",
                   entityFilter === "all"
                     ? "bg-primary text-primary-foreground font-semibold"
@@ -230,7 +230,7 @@ function WorkspaceSessionsAndAuditPage() {
                 <button
                   key={ent}
                   onClick={() => setEntityFilter(ent)}
-                  className={cn(
+                  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                     "px-3 py-1 rounded-lg text-xs transition-colors cursor-pointer capitalize",
                     entityFilter === ent
                       ? "bg-primary text-primary-foreground font-semibold"
@@ -286,9 +286,9 @@ function WorkspaceSessionsAndAuditPage() {
                             className={cn(
                               "text-xs px-2 py-0 font-medium",
                               log.action.includes("delete") || log.action.includes("block")
-                                ? "bg-destructive/90 text-white"
+                                ? "bg-destructive/90 text-foreground"
                                 : log.action.includes("create")
-                                ? "bg-emerald-600/90 text-white"
+                                ? "bg-emerald-600/90 text-foreground"
                                 : "bg-muted text-foreground"
                             )}
                           >

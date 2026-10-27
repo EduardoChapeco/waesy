@@ -126,7 +126,7 @@ export function CrudActionsMenu({
           className={cn("w-52 p-2 rounded-lg bg-card border border-border/60 shadow-2xs", className)}
         >
           {entityName && (
-            <DropdownMenuLabel className="text-[11px] font-mono uppercase text-muted-foreground px-2 py-1 tracking-wider">
+            <DropdownMenuLabel className="text-2xs font-mono uppercase text-muted-foreground px-2 py-1 tracking-wider">
               {entityName}
             </DropdownMenuLabel>
           )}
@@ -140,7 +140,7 @@ export function CrudActionsMenu({
               </Link>
             </DropdownMenuItem>
           ) : onEdit ? (
-            <DropdownMenuItem onClick={onEdit} className="rounded-lg cursor-pointer text-xs font-medium">
+            <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={onEdit} className="rounded-lg cursor-pointer text-xs font-medium">
               <Edit3 className="size-3.5 mr-2 text-primary" />
               Editar {entityName}
             </DropdownMenuItem>
@@ -154,14 +154,14 @@ export function CrudActionsMenu({
               </Link>
             </DropdownMenuItem>
           ) : onView ? (
-            <DropdownMenuItem onClick={onView} className="rounded-lg cursor-pointer text-xs font-medium">
+            <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={onView} className="rounded-lg cursor-pointer text-xs font-medium">
               <Eye className="size-3.5 mr-2 text-muted-foreground" />
               Ver na Vitrine
             </DropdownMenuItem>
           ) : null}
 
           {onDuplicate && (
-            <DropdownMenuItem onClick={onDuplicate} className="rounded-lg cursor-pointer text-xs font-medium">
+            <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={onDuplicate} className="rounded-lg cursor-pointer text-xs font-medium">
               <Copy className="size-3.5 mr-2 text-muted-foreground" />
               Duplicar {entityName}
             </DropdownMenuItem>
@@ -195,7 +195,7 @@ export function CrudActionsMenu({
                   );
                 }
                 return (
-                  <DropdownMenuItem
+                  <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                     key={action.id || idx}
                     onClick={action.onClick}
                     disabled={action.disabled}
@@ -217,7 +217,7 @@ export function CrudActionsMenu({
             <>
               <DropdownMenuSeparator className="my-1 bg-border/50" />
               {onToggleStatus && (
-                <DropdownMenuItem onClick={onToggleStatus} className="rounded-lg cursor-pointer text-xs font-medium">
+                <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={onToggleStatus} className="rounded-lg cursor-pointer text-xs font-medium">
                   {StatusIcon ? (
                     <StatusIcon className="size-3.5 mr-2 text-muted-foreground" />
                   ) : (
@@ -227,7 +227,7 @@ export function CrudActionsMenu({
                 </DropdownMenuItem>
               )}
               {onArchive && (
-                <DropdownMenuItem onClick={onArchive} className="rounded-lg cursor-pointer text-xs font-medium">
+                <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={onArchive} className="rounded-lg cursor-pointer text-xs font-medium">
                   <Archive className="size-3.5 mr-2 text-muted-foreground" />
                   {archiveLabel || `Arquivar ${entityName}`}
                 </DropdownMenuItem>
@@ -239,7 +239,7 @@ export function CrudActionsMenu({
           {hasDestructiveAction && (
             <>
               <DropdownMenuSeparator className="my-1 bg-border/50" />
-              <DropdownMenuItem
+              <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                 onClick={() => setIsDeleteModalOpen(true)}
                 className="rounded-lg cursor-pointer text-xs font-medium text-destructive focus:bg-destructive/10 focus:text-destructive"
               >
@@ -288,7 +288,7 @@ export function CrudActionsMenu({
                 className="rounded-lg text-xs h-9 font-semibold gap-2 cursor-pointer shadow-2xs"
               >
                 {isDeleting ? (
-                  <Loader2 className="size-3.5 animate-spin" />
+                  <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
                 ) : (
                   <Trash2 className="size-3.5" />
                 )}

@@ -256,7 +256,7 @@ export const DynamicBookingHero: React.FC<DynamicBookingHeroProps> = ({
               type="button"
               onClick={() => setActiveTab("packages")}
               className={cn(
-                "h-11 min-h-11 px-4 rounded-lg flex items-center gap-2 text-xs font-bold transition-all shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "h-11 min-h-11 px-4 rounded-lg flex items-center gap-2 text-xs font-bold transition-colors duration-200 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 activeTab === "packages"
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -264,7 +264,7 @@ export const DynamicBookingHero: React.FC<DynamicBookingHeroProps> = ({
             >
               <Luggage className="size-4" />
               <span>Pacotes</span>
-              <span className="text-xs uppercase font-mono px-2 py-0.5 rounded-sm bg-primary-foreground/20 text-primary-foreground">
+              <span className="text-xs uppercase font-mono px-2 py-1 rounded-sm bg-primary-foreground/20 text-primary-foreground">
                 Completo
               </span>
             </button>
@@ -273,7 +273,7 @@ export const DynamicBookingHero: React.FC<DynamicBookingHeroProps> = ({
               type="button"
               onClick={() => setActiveTab("hotels")}
               className={cn(
-                "h-11 min-h-11 px-4 rounded-lg flex items-center gap-2 text-xs font-bold transition-all shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "h-11 min-h-11 px-4 rounded-lg flex items-center gap-2 text-xs font-bold transition-colors duration-200 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 activeTab === "hotels"
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -287,7 +287,7 @@ export const DynamicBookingHero: React.FC<DynamicBookingHeroProps> = ({
               type="button"
               onClick={() => setActiveTab("flights")}
               className={cn(
-                "h-11 min-h-11 px-4 rounded-lg flex items-center gap-2 text-xs font-bold transition-all shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "h-11 min-h-11 px-4 rounded-lg flex items-center gap-2 text-xs font-bold transition-colors duration-200 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 activeTab === "flights"
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -301,7 +301,7 @@ export const DynamicBookingHero: React.FC<DynamicBookingHeroProps> = ({
               type="button"
               onClick={() => setActiveTab("activities")}
               className={cn(
-                "h-11 min-h-11 px-4 rounded-lg flex items-center gap-2 text-xs font-bold transition-all shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "h-11 min-h-11 px-4 rounded-lg flex items-center gap-2 text-xs font-bold transition-colors duration-200 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 activeTab === "activities"
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -315,7 +315,7 @@ export const DynamicBookingHero: React.FC<DynamicBookingHeroProps> = ({
               type="button"
               onClick={() => setActiveTab("cars")}
               className={cn(
-                "h-11 min-h-11 px-4 rounded-lg flex items-center gap-2 text-xs font-bold transition-all shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "h-11 min-h-11 px-4 rounded-lg flex items-center gap-2 text-xs font-bold transition-colors duration-200 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 activeTab === "cars"
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -416,10 +416,10 @@ export const DynamicBookingHero: React.FC<DynamicBookingHeroProps> = ({
                   type="submit"
                   size="default"
                   disabled={isSearching}
-                  className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground hover:bg-primary/90 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                  className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   {isSearching ? (
-                    <Loader2 className="size-4 animate-spin shrink-0" />
+                    <Loader2 className="size-4 animate-spin motion-reduce:animate-none shrink-0" />
                   ) : (
                     <Search className="size-4 shrink-0" />
                   )}
@@ -567,7 +567,7 @@ export const DynamicBookingHero: React.FC<DynamicBookingHeroProps> = ({
                       <button
                         type="button"
                         onClick={() => setSelectedItemForQuote(null)}
-                        className="text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                        className="text-xs text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         Trocar opção
                       </button>
@@ -601,7 +601,7 @@ export const DynamicBookingHero: React.FC<DynamicBookingHeroProps> = ({
                       className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 cursor-pointer"
                     >
                       {isSubmittingQuote ? (
-                        <Loader2 className="size-4 animate-spin" />
+                        <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                       ) : (
                         <ArrowRight className="size-4" />
                       )}

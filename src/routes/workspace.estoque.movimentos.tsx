@@ -127,7 +127,7 @@ function MovementsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         title="Movimentações de Estoque"
         description="Histórico completo de entradas, saídas e ajustes manuais."
         actions={
@@ -143,7 +143,7 @@ function MovementsPage() {
       />
 
       {movements.length === 0 ? (
-        <EmptyState
+        <EmptyState /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
           title="Nenhum movimento registrado"
           description="Os movimentos de entrada, saída e ajuste de estoque aparecerão aqui."
           action={
@@ -313,7 +313,7 @@ function MovementsPage() {
               disabled={isSubmitting || !variantId}
               className="rounded-lg text-xs h-9 font-bold gap-2"
             >
-              {isSubmitting ? <Loader2 className="size-3.5 animate-spin" /> : <Plus className="size-3.5" />}
+              {isSubmitting ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : <Plus className="size-3.5" />}
               Registrar
             </Button>
           </DialogFooter>

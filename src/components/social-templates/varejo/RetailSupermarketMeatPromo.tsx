@@ -20,12 +20,12 @@ export function RetailSupermarketMeatPromo({ data, scale = 1, className = "" }: 
         transform: `scale(${scale})`,
         transformOrigin: "top left",
       }}
-      className={`relative bg-[#E62429] text-white overflow-hidden font-sans select-none flex flex-col justify-between p-10 ${className}`}
+      className={`relative bg-[#E62429] text-foreground overflow-hidden font-sans select-none flex flex-col justify-between p-10 ${className}`}
     >
       {/* ── 1. Topo: Identidade da Loja e Título OFERTAS ── */}
       <div className="flex items-center justify-between pt-6 px-4">
         <div>
-          <span className="text-3xl font-black italic tracking-tight text-white block">
+          <span className="text-3xl font-black italic tracking-tight text-foreground block">
             {data.storeName || "Supermercados & Carnes"}
           </span>
           <span className="text-sm uppercase tracking-widest text-amber-200 font-bold block mt-1">
@@ -34,7 +34,7 @@ export function RetailSupermarketMeatPromo({ data, scale = 1, className = "" }: 
         </div>
 
         <div className="text-right">
-          <span className="text-7xl sm:text-8xl font-black uppercase tracking-tighter text-white drop-shadow-[0_6px_0_#000000]">
+          <span className="text-7xl sm:text-8xl font-black uppercase tracking-tighter text-foreground drop-shadow-[0_6px_0_#000000]">
             {data.promoBadge || "OFERTAS"}
           </span>
         </div>
@@ -57,7 +57,7 @@ export function RetailSupermarketMeatPromo({ data, scale = 1, className = "" }: 
         {/* Imagem Central dos Cortes */}
         <div className="relative w-full flex-1 flex items-center justify-center my-4">
           {data.backgroundImageUrl ? (
-            <div className="w-[480px] h-[340px] rounded-2xl overflow-hidden shadow-2xl bg-white border-4 border-slate-950 flex items-center justify-center p-4">
+            <div className="w-[480px] h-[340px] rounded-2xl overflow-hidden shadow-2xl bg-card border-4 border-slate-950 flex items-center justify-center p-4">
               <img
                 src={data.backgroundImageUrl}
                 alt={data.title}
@@ -77,7 +77,7 @@ export function RetailSupermarketMeatPromo({ data, scale = 1, className = "" }: 
               <div className="relative flex items-center justify-center w-64 h-64">
                 {/* SVG Estrela Dentada / Carimbo */}
                 <svg
-                  className="absolute inset-0 w-full h-full text-white drop-shadow-xl"
+                  className="absolute inset-0 w-full h-full text-foreground drop-shadow-xl"
                   viewBox="0 0 100 100"
                   fill="currentColor"
                 >
@@ -104,17 +104,17 @@ export function RetailSupermarketMeatPromo({ data, scale = 1, className = "" }: 
               data.highlights.slice(0, 4).map((h, i) => (
                 <div
                   key={i}
-                  className="bg-white border-2 border-slate-950 px-4 py-2 rounded-lg text-lg font-black uppercase text-slate-950 shadow-sm"
+                  className="bg-card border-2 border-slate-950 px-4 py-2 rounded-lg text-lg font-black uppercase text-slate-950 shadow-sm"
                 >
                   • {h}
                 </div>
               ))
             ) : (
               <>
-                <div className="bg-white border-2 border-slate-950 px-4 py-2 rounded-lg text-lg font-black uppercase text-slate-950">
+                <div className="bg-card border-2 border-slate-950 px-4 py-2 rounded-lg text-lg font-black uppercase text-slate-950">
                   • 1kg Carne Selecionada
                 </div>
-                <div className="bg-white border-2 border-slate-950 px-4 py-2 rounded-lg text-lg font-black uppercase text-slate-950">
+                <div className="bg-card border-2 border-slate-950 px-4 py-2 rounded-lg text-lg font-black uppercase text-slate-950">
                   • Cortes Especiais Diários
                 </div>
               </>
@@ -124,9 +124,9 @@ export function RetailSupermarketMeatPromo({ data, scale = 1, className = "" }: 
       </div>
 
       {/* ── 3. Rodapé de Contato & Data de Vigência ── */}
-      <div className="px-4 pt-2 flex items-center justify-between text-white text-base font-bold">
+      <div className="px-4 pt-2 flex items-center justify-between text-foreground text-base font-bold">
         <span>{data.datesOrAvailability || "Promoção válida por tempo limitado"}</span>
-        <span className="bg-white text-slate-950 px-6 py-3 rounded-xl font-black text-lg uppercase shadow">
+        <span className="bg-card text-slate-950 px-6 py-3 rounded-xl font-black text-lg uppercase shadow">
           {data.ctaLabel || "Peça no Balcão ou Delivery"}
         </span>
       </div>

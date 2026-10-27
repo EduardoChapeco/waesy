@@ -192,7 +192,7 @@ function NewCollectionPage() {
  {/* 2. Tipo de Alimentação da Coleção */}
  <div className="bg-card rounded-lg border border-border/60 p-6 space-y-4">
  <div className="pb-3 border-b border-border/40">
- <h3 className="text-sm font-bold text-foreground">Tipo de Coleção e Regras de Inclusão</h3>
+ <h3 className="text-sm font-bold text-foreground">Regras da Coleção</h3>
  <p className="text-xs text-muted-foreground mt-1">
  Escolha se os itens são adicionados individualmente ou calculados automaticamente.
  </p>
@@ -202,11 +202,11 @@ function NewCollectionPage() {
  <button
  type="button"
  onClick={() => setCollectionType("manual")}
- className={`p-4 rounded-lg border text-left transition-all cursor-pointer ${
+ className={`p-4 rounded-lg border text-left transition-colors duration-200 cursor-pointer ${
  collectionType === "manual"
  ? "border-primary bg-primary/5 ring-1 ring-primary"
  : "border-border/60 bg-muted/20 hover:bg-muted/40"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <div className="flex items-center justify-between mb-2">
  <span className="text-xs font-bold text-foreground">Curadoria Manual</span>
@@ -220,11 +220,11 @@ function NewCollectionPage() {
  <button
  type="button"
  onClick={() => setCollectionType("automated")}
- className={`p-4 rounded-lg border text-left transition-all cursor-pointer ${
+ className={`p-4 rounded-lg border text-left transition-colors duration-200 cursor-pointer ${
  collectionType === "automated"
  ? "border-primary bg-primary/5 ring-1 ring-primary"
  : "border-border/60 bg-muted/20 hover:bg-muted/40"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <div className="flex items-center justify-between mb-2">
  <span className="text-xs font-bold text-foreground flex items-center gap-2">

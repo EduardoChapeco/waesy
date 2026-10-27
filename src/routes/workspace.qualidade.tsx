@@ -220,7 +220,7 @@ export default function WorkspaceQualidadePage() {
  Cancelar
  </Button>
  <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto text-xs h-9 font-semibold">
- {isSubmitting && <Loader2 className="size-3.5 animate-spin mr-2" />}
+ {isSubmitting && <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none mr-2" />}
  Enviar Relato
  </Button>
  </DialogFooter>

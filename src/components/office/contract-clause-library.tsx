@@ -136,10 +136,10 @@ export function ContractClauseLibrary({
  key={k}
  type="button"
  onClick={() => setSelectedCategory(k)}
- className={'px-3 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all ' + (
+ className={'px-3 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-colors duration-200 ' + (
  selectedCategory === k
  ? 'bg-primary text-primary-foreground shadow-sm'
- : 'bg-muted/40 text-muted-foreground hover:text-foreground'
+ : 'bg-muted/40 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
  {label}
@@ -156,7 +156,7 @@ export function ContractClauseLibrary({
  filteredClauses.map((clause) => (
  <div
  key={clause.id}
- className="p-4 rounded-lg bg-muted/20 border border-border/60 hover:border-border transition-all space-y-2"
+ className="p-4 rounded-lg bg-muted/20 border border-border/60 hover:border-border transition-colors duration-200 space-y-2"
  >
  <div className="flex items-center justify-between">
  <h4 className="text-xs font-bold text-foreground">{clause.title}</h4>
@@ -180,7 +180,7 @@ export function ContractClauseLibrary({
  type="button"
  size="sm"
  onClick={() => onInsertClause(clause)}
- className="h-8 px-3 rounded-lg text-[11px] font-semibold bg-primary/10 text-primary hover:bg-primary/20"
+ className="h-8 px-3 rounded-lg text-2xs font-semibold bg-primary/10 text-primary hover:bg-primary/20"
  >
  <Plus className="w-3 h-3 mr-1" />
  Inserir
@@ -198,7 +198,7 @@ export function ContractClauseLibrary({
  {clause.tags.map((t) => (
  <span
  key={t}
- className="px-2 py-1 rounded-md bg-muted text-[10px] text-muted-foreground flex items-center gap-1"
+ className="px-2 py-1 rounded-md bg-muted text-2xs text-muted-foreground flex items-center gap-1"
  >
  <Tag className="w-2.5 h-2.5" />
  {t}

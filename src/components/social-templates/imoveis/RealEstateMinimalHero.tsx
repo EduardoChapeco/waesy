@@ -39,7 +39,7 @@ export function RealEstateMinimalHero({ data, className = "" }: SocialTemplatePr
   const resolvedSpecs = highlights && highlights.length > 0 ? highlights.slice(0, 4) : defaultSpecs;
 
   return (
-    <div className={`relative w-full h-full overflow-hidden bg-[#070b12] text-white select-none ${className}`}>
+    <div className={`relative w-full h-full overflow-hidden bg-[#070b12] text-foreground select-none ${className}`}>
       {/* ── 1. Fotografia Full Bleed (100% da área) ── */}
       <div className="absolute inset-0 overflow-hidden">
         <img
@@ -62,12 +62,12 @@ export function RealEstateMinimalHero({ data, className = "" }: SocialTemplatePr
       >
         {/* Topo / Safe Zone Superior (Tags & Localização) */}
         <div className="pt-2 flex items-center justify-between gap-3">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-amber-300 font-bold uppercase tracking-wider text-xs sm:text-sm shadow-md">
-            <span className="size-2 rounded-full bg-amber-400 animate-pulse" />
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-foreground/60 backdrop-blur-md border border-white/20 text-amber-300 font-bold uppercase tracking-wider text-xs sm:text-sm shadow-md">
+            <span className="size-2 rounded-full bg-amber-400 animate-pulse motion-reduce:animate-none" />
             <span>{promoBadge || "IMÓVEL EXCLUSIVO"}</span>
           </div>
 
-          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-black/60 backdrop-blur-md border border-white/15 text-white/90 text-xs sm:text-sm font-medium">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-foreground/60 backdrop-blur-md border border-white/15 text-foreground/90 text-xs sm:text-sm font-medium">
             <MapPin className="size-4 text-amber-400 shrink-0" />
             <span className="truncate max-w-52">{destinationOrLocation || "Localização Nobre"}</span>
           </div>
@@ -78,13 +78,13 @@ export function RealEstateMinimalHero({ data, className = "" }: SocialTemplatePr
           {/* Título & Subtítulo */}
           <div className="space-y-2">
             <h1
-              className={`font-black uppercase tracking-tight text-white drop-shadow-md leading-[1.05] line-clamp-2 ${
+              className={`font-black uppercase tracking-tight text-foreground drop-shadow-md leading-[1.05] line-clamp-2 ${
                 aspectRatio === "1:1" ? "text-4xl md:text-5xl" : "text-6xl md:text-7xl"
               }`}
             >
               {title}
             </h1>
-            <p className="text-white/80 font-medium text-lg sm:text-xl line-clamp-1">
+            <p className="text-foreground/80 font-medium text-lg sm:text-xl line-clamp-1">
               {subtitle || datesOrAvailability || "Pronto para Morar ou Investir com Alto Retorno"}
             </p>
           </div>
@@ -94,7 +94,7 @@ export function RealEstateMinimalHero({ data, className = "" }: SocialTemplatePr
             {resolvedSpecs.map((spec, i) => (
               <div
                 key={i}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-black/70 backdrop-blur-md border border-white/20 text-white font-semibold text-xs sm:text-sm shadow-sm"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-foreground/70 backdrop-blur-md border border-white/20 text-foreground font-semibold text-xs sm:text-sm shadow-sm"
               >
                 <CheckCircle2 className="size-4 text-amber-400 shrink-0" />
                 <span>{spec}</span>
@@ -105,27 +105,27 @@ export function RealEstateMinimalHero({ data, className = "" }: SocialTemplatePr
           {/* Barra de Preço & Botão CTA de Alto Contraste */}
           <div className="pt-4 border-t border-white/20 flex items-end justify-between gap-4">
             <div className="space-y-1">
-              <span className="text-xs font-semibold text-white/70 uppercase tracking-wider block">
+              <span className="text-xs font-semibold text-foreground/70 uppercase tracking-wider block">
                 {pricingMode === "monthly" ? "Aluguel Mensal" : "Valor de Venda"}
               </span>
-              <div className="text-4xl sm:text-5xl font-black font-mono text-white tracking-tight">
+              <div className="text-4xl sm:text-5xl font-black font-mono text-foreground tracking-tight">
                 {formatMoney(priceCents)}
               </div>
               {maxInstallments > 1 && (
-                <p className="text-xs text-white/80 font-mono">
+                <p className="text-xs text-foreground/80 font-mono">
                   Entrada + parcelas de <span className="text-amber-400 font-bold">{formatMoney(effectiveInstallmentCents)}</span>
                 </p>
               )}
-              <p className="text-[11px] text-white/60">{paymentMethodsLabel}</p>
+              <p className="text-2xs text-foreground/60">{paymentMethodsLabel}</p>
             </div>
 
             {/* Botão CTA com Alto Contraste */}
             <div className="flex flex-col items-end gap-2 shrink-0">
-              <div className="h-12 px-6 rounded-lg bg-amber-400 text-slate-950 font-black text-sm uppercase tracking-wider flex items-center gap-2 shadow-xl shadow-amber-400/20 active:scale-95 transition-all">
+              <div className="h-12 px-6 rounded-lg bg-amber-400 text-slate-950 font-black text-sm uppercase tracking-wider flex items-center gap-2 shadow-xl shadow-amber-400/20 active:scale-95 transition-transform duration-200">
                 <span>{ctaLabel}</span>
                 <ArrowRight className="size-4 stroke-[3]" />
               </div>
-              <div className="flex items-center gap-2 text-[11px] text-white/70 font-medium">
+              <div className="flex items-center gap-2 text-2xs text-foreground/70 font-medium">
                 <ShieldCheck className="size-3.5 text-emerald-400 shrink-0" />
                 <span className="truncate max-w-40">{storeName}</span>
               </div>

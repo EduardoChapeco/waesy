@@ -68,12 +68,12 @@ export function PostCommentsDrawer({
  if (!isOpen) return null;
 
  return (
- <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+ <div className="fixed inset-0 z-50 flex flex-col justify-end bg-foreground/60 backdrop-blur-xs animate-in fade-in duration-200">
  {/* Backdrop click to close */}
- <div className="flex-1" onClick={onClose} />
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} className="flex-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" onClick={onClose} />
 
  {/* Drawer Container */}
- <div
+ <div /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */
  className="relative w-full max-w-lg mx-auto bg-background sm:rounded-t-lg rounded-t-lg border-t border-border flex flex-col h-[75vh] max-h-[600px] overflow-hidden animate-in slide-in-from-bottom duration-300"
  onClick={(e) => e.stopPropagation()}
  >
@@ -89,7 +89,7 @@ export function PostCommentsDrawer({
  </div>
  <button
  onClick={onClose}
- className="size-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+ className="size-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <X className="size-4" />
  </button>
@@ -98,14 +98,14 @@ export function PostCommentsDrawer({
  {/* Thumbnail da mídia selecionada (se for comentário de foto específica) */}
  {mediaUrl && (
  <div className="px-4 py-2 bg-muted/20 border-b border-border/30 flex items-center gap-3 shrink-0">
- <div className="size-10 rounded-lg overflow-hidden bg-black shrink-0">
+ <div className="size-10 rounded-lg overflow-hidden bg-foreground shrink-0">
  <img src={mediaUrl} alt="Mídia" className="size-full object-cover" />
  </div>
  <div className="min-w-0 flex-1">
  <p className="text-xs font-bold text-foreground truncate">
  Foto de {authorName || "Membro"}
  </p>
- <p className="text-[10px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Exibindo comentários exclusivos desta imagem
  </p>
  </div>
@@ -116,7 +116,7 @@ export function PostCommentsDrawer({
  <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4">
  {isLoading ? (
  <div className="flex flex-col items-center justify-center h-40 text-muted-foreground gap-2">
- <Loader2 className="size-6 animate-spin text-primary" />
+ <Loader2 className="size-6 animate-spin motion-reduce:animate-none text-primary" />
  <span className="text-xs">Carregando comentários...</span>
  </div>
  ) : comments.length === 0 ? (
@@ -144,7 +144,7 @@ export function PostCommentsDrawer({
  <span className="text-xs font-bold text-foreground truncate">
  {cmt.author.name}
  </span>
- <span className="text-[10px] text-muted-foreground font-mono">
+ <span className="text-2xs text-muted-foreground font-mono">
  {formatRelativeTime(cmt.created_at)}
  </span>
  </div>
@@ -159,7 +159,7 @@ export function PostCommentsDrawer({
  setReplyingTo(cmt);
  setCommentText(`@${cmt.author.username || cmt.author.name} `);
  }}
- className="text-[11px] font-semibold text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
+ className="text-2xs font-semibold text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <CornerDownRight className="size-3" />
  <span>Responder</span>
@@ -179,7 +179,7 @@ export function PostCommentsDrawer({
  </span>
  <button
  onClick={() => setReplyingTo(null)}
- className="text-xs font-bold text-destructive hover:underline"
+ className="text-xs font-bold text-destructive hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  Cancelar
  </button>
@@ -206,7 +206,7 @@ export function PostCommentsDrawer({
  className="h-10 px-4 rounded-lg font-bold text-xs bg-primary text-primary-foreground gap-2"
  >
  {addComment.isPending ? (
- <Loader2 className="size-4 animate-spin" />
+ <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
  ) : (
  <>
  <span>Enviar</span>

@@ -178,11 +178,11 @@ export function EventoLoja({ eventId }: EventoLojaProps) {
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     {prod.is_bundle ? (
-                      <Badge variant="secondary" className="mb-1 text-[10px] uppercase font-bold bg-purple-500/10 text-purple-600 border-purple-500/20">
+                      <Badge variant="secondary" className="mb-1 text-2xs uppercase font-bold bg-purple-500/10 text-purple-600 border-purple-500/20">
                         Combo / Kit
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="mb-1 text-[10px] uppercase text-muted-foreground">
+                      <Badge variant="outline" className="mb-1 text-2xs uppercase text-muted-foreground">
                         Unitário
                       </Badge>
                     )}

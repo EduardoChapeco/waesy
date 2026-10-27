@@ -151,7 +151,7 @@ export function SignaturePositionerCanvas({
           </div>
           <div>
             <h2 className="text-sm font-bold text-foreground">Posicionar Assinaturas e Rubricas</h2>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               {documentTitle || "Arraste ou clique nas marcações para posicionar no documento"}
             </p>
           </div>
@@ -201,11 +201,11 @@ export function SignaturePositionerCanvas({
                     key={idx}
                     type="button"
                     onClick={() => setActiveSignerIndex(idx)}
-                    className={`w-full text-left p-3 rounded-lg border transition-all text-xs sm:text-sm flex items-center justify-between min-h-11 cursor-pointer ${
+                    className={`w-full text-left p-3 rounded-lg border transition-colors duration-200 text-xs sm:text-sm flex items-center justify-between min-h-11 cursor-pointer ${
                       isSelected
                         ? "bg-card border-primary/50 shadow-xs ring-1 ring-primary/20 font-semibold"
                         : "bg-background/70 border-border/70 hover:border-border hover:bg-background"
-                    }`}
+                    } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <div
@@ -239,7 +239,7 @@ export function SignaturePositionerCanvas({
                     type="button"
                     disabled={readOnly}
                     onClick={() => handleAddTag(tag.type)}
-                    className="flex items-center gap-3 p-3 rounded-lg border border-border/80 bg-card hover:bg-muted/60 transition-all text-left text-xs sm:text-sm font-semibold text-foreground hover:border-primary/40 active:scale-[0.98] min-h-11 cursor-pointer shadow-2xs"
+                    className="flex items-center gap-3 p-3 rounded-lg border border-border/80 bg-card hover:bg-muted/60 transition-colors duration-200 text-left text-xs sm:text-sm font-semibold text-foreground hover:border-primary/40 active:scale-[0.98] min-h-11 cursor-pointer shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <Icon className="size-4 text-primary shrink-0" />
                     <span className="truncate">{tag.label}</span>
@@ -268,7 +268,7 @@ export function SignaturePositionerCanvas({
             className="relative w-full max-w-[700px] aspect-[1/1.414] bg-card text-card-foreground rounded-lg shadow-md border border-border/80 p-8 flex flex-col justify-between overflow-hidden"
           >
             {/* Header Simulado da Página */}
-            <div className="border-b border-border/40 pb-3 flex items-center justify-between text-[11px] text-muted-foreground">
+            <div className="border-b border-border/40 pb-3 flex items-center justify-between text-2xs text-muted-foreground">
               <span className="font-semibold uppercase tracking-wider">{documentTitle || "INSTRUMENTO PARTICULAR"}</span>
               <span>Página {currentPage}</span>
             </div>
@@ -295,16 +295,24 @@ export function SignaturePositionerCanvas({
 
               return (
                 <div
-                  key={field.id}
-                  onClick={() => setSelectedFieldId(field.id)}
-                  style={{
+    key={field.id}
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        setSelectedFieldId(field.id);
+      }
+    }}
+    onClick={() => setSelectedFieldId(field.id)}
+    style={{
                     left: `${field.x}%`,
                     top: `${field.y}%`,
                     width: `${field.width}%`,
                     height: `${field.height}%`,
                     borderColor: signer.colorCode || "#2563eb",
                   }}
-                  className={`absolute border-2 rounded-lg flex items-center justify-between px-2 cursor-move transition-all bg-card/95 shadow-xs ${
+                  className={`absolute border-2 rounded-lg flex items-center justify-between px-2 cursor-move transition-colors duration-200 bg-card/95 shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                     isSelected ? "ring-2 ring-primary/40 shadow-md" : "hover:border-primary"
                   }`}
                 >
@@ -313,7 +321,7 @@ export function SignaturePositionerCanvas({
                       className="size-2 rounded-full shrink-0"
                       style={{ backgroundColor: signer.colorCode }}
                     />
-                    <span className="text-[10px] font-bold truncate text-foreground">
+                    <span className="text-2xs font-bold truncate text-foreground">
                       {field.label || field.type}
                     </span>
                   </div>
@@ -325,7 +333,7 @@ export function SignaturePositionerCanvas({
                         e.stopPropagation();
                         handleDeleteField(field.id);
                       }}
-                      className="text-muted-foreground hover:text-destructive p-1"
+                      className="text-muted-foreground hover:text-destructive p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <Trash2 className="size-3" />
                     </button>
@@ -335,7 +343,7 @@ export function SignaturePositionerCanvas({
             })}
 
             {/* Rodapé Simulado com Autenticação Eletrônica */}
-            <div className="border-t border-border/40 pt-3 flex items-center justify-between text-[10px] text-muted-foreground">
+            <div className="border-t border-border/40 pt-3 flex items-center justify-between text-2xs text-muted-foreground">
               <span className="truncate">Autenticação Digital Waesy Platform · SHA-256</span>
               <span>Pág. {currentPage}/{pageCount}</span>
             </div>

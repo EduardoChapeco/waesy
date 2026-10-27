@@ -90,7 +90,7 @@ export function ProfessionSearchDialog({
             </div>
             <button
               onClick={() => onOpenChange(false)}
-              className="p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+              className="p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <X className="w-5 h-5" />
             </button>
@@ -115,7 +115,7 @@ export function ProfessionSearchDialog({
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -128,11 +128,11 @@ export function ProfessionSearchDialog({
               <button
                 key={tab.id}
                 onClick={() => setSelectedCategory(tab.id)}
-                className={`text-xs px-3 py-1 rounded-full whitespace-nowrap font-medium transition-all ${
+                className={`text-xs px-3 py-1 rounded-full whitespace-nowrap font-medium transition-colors duration-200 ${
                   selectedCategory === tab.id
                     ? "bg-primary text-primary-foreground shadow-sm"
                     : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 {tab.label}
               </button>
@@ -144,7 +144,7 @@ export function ProfessionSearchDialog({
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-3">
-              <Loader2 className="w-7 h-7 animate-spin text-primary" />
+              <Loader2 className="w-7 h-7 animate-spin motion-reduce:animate-none text-primary" />
               <p className="text-xs">Consultando catálogo de ocupações e remuneração...</p>
             </div>
           ) : professions.length === 0 ? (
@@ -158,10 +158,18 @@ export function ProfessionSearchDialog({
           ) : (
             professions.map((prof) => (
               <div
-                key={prof.id}
-                onClick={() => handleSelect(prof)}
-                className="group p-4 rounded-lg border border-border/40 hover:border-primary/50 bg-card/60 hover:bg-muted/20 transition-all cursor-pointer flex flex-col gap-3 shadow-sm"
-              >
+    key={prof.id}
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        handleSelect(prof);
+      }
+    }}
+    onClick={() => handleSelect(prof)}
+    className="group p-4 rounded-lg border border-border/40 hover:border-primary/50 bg-card/60 hover:bg-muted/20 transition-colors duration-200 cursor-pointer flex flex-col gap-3 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+  >
                 {/* TOPO: TÍTULO & CATEGORIA */}
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -169,10 +177,10 @@ export function ProfessionSearchDialog({
                       <h4 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
                         {prof.title}
                       </h4>
-                      <Badge variant="outline" className="text-[10px] px-2 py-0 h-4 border-border/60">
+                      <Badge variant="outline" className="text-2xs px-2 py-0 h-4 border-border/60">
                         {prof.sector}
                       </Badge>
-                      <Badge variant="secondary" className="text-[10px] px-2 py-0 h-4">
+                      <Badge variant="secondary" className="text-2xs px-2 py-0 h-4">
                         {prof.category}
                       </Badge>
                     </div>
@@ -188,34 +196,34 @@ export function ProfessionSearchDialog({
                       e.stopPropagation();
                       handleSelect(prof);
                     }}
-                    className="shrink-0 h-11 min-h-11 px-4 text-xs font-bold text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all cursor-pointer"
+                    className="shrink-0 h-11 min-h-11 px-4 text-xs font-bold text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-200 cursor-pointer"
                   >
                     Usar
                   </Button>
                 </div>
 
                 {/* MÉDIAS SALARIAIS */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 border-t border-border/30 text-[11px]">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 border-t border-border/30 text-2xs">
                   <div className="bg-muted/30 p-2 rounded-lg">
-                    <span className="text-muted-foreground block text-[10px]">Júnior</span>
+                    <span className="text-muted-foreground block text-2xs">Júnior</span>
                     <span className="font-semibold text-foreground">
                       {formatMoney(prof.average_salary_junior_cents)}
                     </span>
                   </div>
                   <div className="bg-muted/30 p-2 rounded-lg">
-                    <span className="text-muted-foreground block text-[10px]">Pleno</span>
+                    <span className="text-muted-foreground block text-2xs">Pleno</span>
                     <span className="font-semibold text-foreground">
                       {formatMoney(prof.average_salary_mid_cents)}
                     </span>
                   </div>
                   <div className="bg-muted/30 p-2 rounded-lg">
-                    <span className="text-muted-foreground block text-[10px]">Sênior</span>
+                    <span className="text-muted-foreground block text-2xs">Sênior</span>
                     <span className="font-semibold text-foreground">
                       {formatMoney(prof.average_salary_senior_cents)}
                     </span>
                   </div>
                   <div className="bg-emerald-500/10 p-2 rounded-lg border border-emerald-500/20">
-                    <span className="text-emerald-700 dark:text-emerald-400 block text-[10px]">Benchmark Hora</span>
+                    <span className="text-emerald-700 dark:text-emerald-400 block text-2xs">Benchmark Hora</span>
                     <span className="font-semibold text-emerald-700 dark:text-emerald-400">
                       {formatMoney(prof.hourly_rate_benchmark_cents)}/h
                     </span>
@@ -223,12 +231,12 @@ export function ProfessionSearchDialog({
                 </div>
 
                 {/* COMPETÊNCIAS & EDUCAÇÃO */}
-                <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1">
+                <div className="flex items-center justify-between text-2xs text-muted-foreground pt-1">
                   <div className="flex items-center gap-2 truncate">
                     <GraduationCap className="w-3.5 h-3.5 text-muted-foreground/70 shrink-0" />
                     <span className="truncate">{prof.required_education}</span>
                   </div>
-                  <div className="flex items-center gap-1 text-[10px]">
+                  <div className="flex items-center gap-1 text-2xs">
                     <Clock className="w-3 h-3" />
                     <span>{prof.standard_workload_hours_weekly}h/sem</span>
                   </div>
@@ -240,13 +248,13 @@ export function ProfessionSearchDialog({
                     {prof.essential_skills.slice(0, 4).map((skill, idx) => (
                       <span
                         key={idx}
-                        className="text-[10px] bg-background border border-border/40 text-muted-foreground px-2 py-1 rounded whitespace-nowrap"
+                        className="text-2xs bg-background border border-border/40 text-muted-foreground px-2 py-1 rounded whitespace-nowrap"
                       >
                         {skill}
                       </span>
                     ))}
                     {prof.essential_skills.length > 4 && (
-                      <span className="text-[9px] text-muted-foreground/80">
+                      <span className="text-3xs text-muted-foreground/80">
                         +{prof.essential_skills.length - 4}
                       </span>
                     )}

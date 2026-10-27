@@ -55,7 +55,7 @@ export function EventRail({ content, resolvedEvents, isEditing }: any) {
  elevation="md"
  padding="none"
  className={cn(
- "group flex flex-col h-full overflow-hidden transition-all duration-300 hover:scale-[1.02]",
+ "group flex flex-col h-full overflow-hidden transition-transform duration-200 duration-300 hover:scale-[1.02]",
  layout === "carousel" && "min-w-[300px] snap-center shrink-0",
  )}
  >

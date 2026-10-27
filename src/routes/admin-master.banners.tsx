@@ -13,6 +13,7 @@ import { listActiveBanners, createBanner, updateBanner, deleteBanner, type Banne
 import { CANONICAL_CITIES } from "@/lib/constants/cities";
 import { toast } from "sonner";
 import { MediaUploader } from "@/components/ui/media-uploader";
+import { BidirectionalMediaUploader } from "@/components/ui/bidirectional-media-uploader";
 import { DestinationPicker } from "@/components/ui/destination-picker";
 import { cn } from "@/lib/utils";
 
@@ -220,7 +221,8 @@ function AdminMasterBannersPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!mediaUrl.trim()) {
+    const effectiveMediaUrl = mediaUrl.trim() || mediaDesktopUrl.trim() || mediaMobileUrl.trim();
+    if (!effectiveMediaUrl) {
       toast.error("Informe a mídia do banner.");
       return;
     }
@@ -234,7 +236,7 @@ function AdminMasterBannersPage() {
             title: title || "Banner Oficial",
             subtitle: subtitle || null,
             media_type: mediaType,
-            media_url: mediaUrl,
+            media_url: effectiveMediaUrl,
             media_desktop_url: mediaDesktopUrl.trim() || null,
             media_mobile_url: mediaMobileUrl.trim() || null,
             target_type: targetType,
@@ -260,7 +262,7 @@ function AdminMasterBannersPage() {
             title: title || "Banner Oficial",
             subtitle: subtitle || undefined,
             media_type: mediaType,
-            media_url: mediaUrl,
+            media_url: effectiveMediaUrl,
             media_desktop_url: mediaDesktopUrl.trim() || undefined,
             media_mobile_url: mediaMobileUrl.trim() || undefined,
             target_type: targetType,
@@ -473,21 +475,21 @@ function AdminMasterBannersPage() {
 
                 {/* Placement & City Tags */}
                 <div className="absolute top-2 left-2 z-10 flex items-center gap-2 flex-wrap max-w-[85%]">
-                  <span className="bg-black/75 text-white backdrop-blur-md text-xs font-mono px-2 py-0.5 rounded-md border border-white/10">
+                  <span className="bg-foreground/75 text-foreground backdrop-blur-md text-xs font-mono px-2 py-1 rounded-md border border-white/10">
                     {banner.placement.toUpperCase()}
                   </span>
                   {banner.city_filter ? (
-                    <span className="bg-primary text-primary-foreground backdrop-blur-md text-xs font-semibold px-2 py-0.5 rounded-md flex items-center gap-1 shadow-xs">
+                    <span className="bg-primary text-primary-foreground backdrop-blur-md text-xs font-semibold px-2 py-1 rounded-md flex items-center gap-1 shadow-xs">
                       <MapPin className="size-2.5" />
                       {banner.city_filter}
                     </span>
                   ) : (
-                    <span className="bg-zinc-800/80 text-zinc-300 text-xs font-medium px-2 py-0.5 rounded-md border border-white/10">
+                    <span className="bg-zinc-800/80 text-zinc-300 text-xs font-medium px-2 py-1 rounded-md border border-white/10">
                       Global
                     </span>
                   )}
                   {banner.show_overlay && (
-                    <span className="bg-emerald-600/90 text-white text-xs font-medium px-2 py-0.5 rounded-md">
+                    <span className="bg-emerald-600/90 text-foreground text-xs font-medium px-2 py-1 rounded-md">
                       Texto Ativo
                     </span>
                   )}
@@ -599,63 +601,26 @@ function AdminMasterBannersPage() {
             </p>
           </div>
 
-          <div className="space-y-3 p-3 rounded-lg bg-muted/20 border border-border/50">
-            <div className="space-y-1">
-              <Label className="text-xs font-semibold">Mídia Principal / Padrão (Imagem / Vídeo)</Label>
-              <MediaUploader
-                value={mediaUrl ? [mediaUrl] : []}
-                onChange={(urls) => {
-                  const url = urls[0] || "";
-                  setMediaUrl(url);
-                  const isVideo = url.endsWith(".mp4") || url.endsWith(".webm");
-                  setMediaType(isVideo ? "video" : "image");
-                }}
-                bucket="banners"
-                folder="destaques"
-                aspect={21 / 9}
-                lockAspect={false}
-                maxFiles={1}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border/30">
-              <div className="space-y-1">
-                <Label className="text-2xs font-semibold text-foreground/90">
-                  Mídia Desktop (Widescreen Fino 28:9)
-                </Label>
-                <MediaUploader
-                  value={mediaDesktopUrl ? [mediaDesktopUrl] : []}
-                  onChange={(urls) => setMediaDesktopUrl(urls[0] || "")}
-                  bucket="banners"
-                  folder="destaques/desktop"
-                  aspect={28 / 9}
-                  lockAspect={false}
-                  maxFiles={1}
-                />
-                <p className="text-3xs text-muted-foreground">
-                  Proporção fina para monitores, sem cortes laterais.
-                </p>
-              </div>
-
-              <div className="space-y-1">
-                <Label className="text-2xs font-semibold text-foreground/90">
-                  Mídia Mobile (Nativa App 16:9)
-                </Label>
-                <MediaUploader
-                  value={mediaMobileUrl ? [mediaMobileUrl] : []}
-                  onChange={(urls) => setMediaMobileUrl(urls[0] || "")}
-                  bucket="banners"
-                  folder="destaques/mobile"
-                  aspect={16 / 9}
-                  lockAspect={false}
-                  maxFiles={1}
-                />
-                <p className="text-3xs text-muted-foreground">
-                  Exibido em celulares no formato clássico.
-                </p>
-              </div>
-            </div>
-          </div>
+          <BidirectionalMediaUploader
+            mobileUrl={mediaMobileUrl || mediaUrl}
+            desktopUrl={mediaDesktopUrl || mediaUrl}
+            onMobileChange={(url) => {
+              setMediaMobileUrl(url);
+              if (!mediaUrl) setMediaUrl(url);
+              const isVideo = url.endsWith(".mp4") || url.endsWith(".webm");
+              setMediaType(isVideo ? "video" : "image");
+            }}
+            onDesktopChange={(url) => {
+              setMediaDesktopUrl(url);
+              if (!mediaUrl) setMediaUrl(url);
+              const isVideo = url.endsWith(".mp4") || url.endsWith(".webm");
+              setMediaType(isVideo ? "video" : "image");
+            }}
+            bucket="banners"
+            folder="destaques"
+            mobileAspect={16 / 9}
+            desktopAspect={28 / 9}
+          />
 
           <div className="space-y-2">
             <Label className="text-xs font-semibold">Título Interno</Label>
@@ -776,7 +741,7 @@ function AdminMasterBannersPage() {
               className="rounded-lg text-xs font-semibold px-4 h-11 sm:h-9 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               {isSubmitting ? (
-                <Loader2 className="size-3.5 animate-spin" />
+                <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
               ) : editingId ? (
                 "Atualizar"
               ) : (

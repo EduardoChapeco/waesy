@@ -57,19 +57,19 @@ export function RealEstateEditorialGrid({ data, className = "" }: SocialTemplate
 
         {/* Tag Minimalista de Topo */}
         <div className="absolute top-5 left-5">
-          <span className="px-4 py-2 rounded-full bg-slate-950/85 backdrop-blur-md text-white font-mono uppercase tracking-widest text-xs font-bold shadow-md">
+          <span className="px-4 py-2 rounded-full bg-slate-950/85 backdrop-blur-md text-foreground font-mono uppercase tracking-widest text-xs font-bold shadow-md">
             {promoBadge || "EDIFÍCIO RESIDENCIAL"}
           </span>
         </div>
 
         {/* Localização em Pílula Flutuante */}
         <div className="absolute bottom-5 left-5 right-5 flex items-center justify-between">
-          <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-950/80 backdrop-blur-md text-white/90 text-xs sm:text-sm font-semibold">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-950/80 backdrop-blur-md text-foreground/90 text-xs sm:text-sm font-semibold">
             <MapPin className="size-4 text-amber-400 shrink-0" />
             <span className="truncate max-w-[260px]">{destinationOrLocation || "Localização Privilegiada"}</span>
           </div>
 
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/90 backdrop-blur-md text-slate-900 text-xs font-bold shadow-sm">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-card/90 backdrop-blur-md text-slate-900 text-xs font-bold shadow-sm">
             <ShieldCheck className="size-3.5 text-emerald-600 shrink-0" />
             <span className="truncate max-w-[120px]">{storeName}</span>
           </div>
@@ -93,9 +93,9 @@ export function RealEstateEditorialGrid({ data, className = "" }: SocialTemplate
           {resolvedSpecs.map((spec, i) => (
             <div
               key={i}
-              className="p-3 rounded-lg bg-white border border-slate-200 shadow-2xs flex flex-col justify-center"
+              className="p-3 rounded-lg bg-card border border-slate-200 shadow-2xs flex flex-col justify-center"
             >
-              <span className="text-[10px] font-mono uppercase text-slate-500 font-semibold truncate">
+              <span className="text-2xs font-mono uppercase text-slate-500 font-semibold truncate">
                 {spec.label}
               </span>
               <span className="text-sm sm:text-base font-black text-slate-900 truncate">
@@ -106,22 +106,22 @@ export function RealEstateEditorialGrid({ data, className = "" }: SocialTemplate
         </div>
 
         {/* Barra Integrada em Preto Carvão com Preço e CTA */}
-        <div className="w-full p-4 rounded-lg bg-slate-950 text-white flex items-center justify-between gap-3 shadow-lg shrink-0">
+        <div className="w-full p-4 rounded-lg bg-slate-950 text-foreground flex items-center justify-between gap-3 shadow-lg shrink-0">
           <div className="space-y-1">
-            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">
+            <span className="text-2xs font-mono text-slate-400 uppercase tracking-wider block">
               {pricingMode === "monthly" ? "Locação Mensal" : "Valor Total"}
             </span>
-            <div className="text-2xl sm:text-3xl font-black font-mono text-white tracking-tight">
+            <div className="text-2xl sm:text-3xl font-black font-mono text-foreground tracking-tight">
               {formatMoney(priceCents)}
             </div>
             {maxInstallments > 1 && (
-              <span className="text-[10px] text-amber-400 font-mono block">
+              <span className="text-2xs text-amber-400 font-mono block">
                 {maxInstallments}x de {formatMoney(effectiveInstallmentCents)}
               </span>
             )}
           </div>
 
-          <div className="h-11 px-5 rounded-lg bg-amber-400 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider flex items-center gap-2 shadow-md active:scale-95 transition-all shrink-0">
+          <div className="h-11 px-5 rounded-lg bg-amber-400 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider flex items-center gap-2 shadow-md active:scale-95 transition-transform duration-200 shrink-0">
             <span>{ctaLabel}</span>
             <ArrowRight className="size-4 stroke-[3]" />
           </div>

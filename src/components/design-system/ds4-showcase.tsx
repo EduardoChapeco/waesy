@@ -181,12 +181,12 @@ export function DS4Showcase() {
               Botões & Ações
             </h4>
             <div className="flex flex-wrap items-center gap-3">
-              <Button variant="default">Ação Primária</Button>
-              <Button variant="secondary">Ação Secundária</Button>
-              <Button variant="outline">Contorno</Button>
-              <Button variant="ghost">Fantasma</Button>
-              <Button variant="destructive">Excluir Item</Button>
-              <Button isLoading loadingText="Processando">Carregando</Button>
+              <Button variant="default" data-action-intent="preview-only" data-action-reason="Especime do catalogo de componentes">Ação Primária</Button>
+              <Button variant="secondary" data-action-intent="preview-only" data-action-reason="Especime do catalogo de componentes">Ação Secundária</Button>
+              <Button variant="outline" data-action-intent="preview-only" data-action-reason="Especime do catalogo de componentes">Contorno</Button>
+              <Button variant="ghost" data-action-intent="preview-only" data-action-reason="Especime do catalogo de componentes">Fantasma</Button>
+              <Button variant="destructive" data-action-intent="preview-only" data-action-reason="Especime do catalogo de componentes">Excluir Item</Button>
+              <Button isLoading loadingText="Processando" data-action-intent="preview-only" data-action-reason="Especime do catalogo de componentes">Carregando</Button>
               <IconButton icon={<Sparkles className="size-4" />} aria-label="Copilot IA" />
             </div>
           </div>
@@ -271,14 +271,15 @@ export function DS4Showcase() {
               title="Hotel Resort Fazenda do Lago"
               subtitle="Santa Catarina, Brasil • 4 estrelas"
               statusSlot={<StatusBadge status="active" label="Parceiro Ouro" />}
-              actionSlot={<Button variant="outline" size="sm">Ver Empresa</Button>}
+              actionSlot={<Button variant="outline" size="sm" data-action-intent="preview-only" data-action-reason="Especime do catalogo de componentes">Ver Empresa</Button>}
             />
             <ActionCard
-              title="Nova Cotação Aérea"
-              description="Inicie a parametrização de trechos nacionais ou internacionais com tarifas corporativas."
-              icon={<Plane className="size-5" />}
-              onClick={() => {}}
-            />
+    title="Nova Cotação Aérea"
+    description="Inicie a parametrização de trechos nacionais ou internacionais com tarifas corporativas."
+    icon={<Plane className="size-5" />}
+    onClick={() => {}}
+    className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+  />
           </div>
 
           {/* 4. OfferCard & 5. MediaCard */}
@@ -400,7 +401,7 @@ export function DS4Showcase() {
             description="Ergonomia móvel perfeita com suporte a swipe e fechamento por toque."
           >
             <div className="space-y-2 text-xs">
-              <Button className="w-full">Confirmar Seleção</Button>
+              <Button className="w-full" data-action-intent="preview-only" data-action-reason="Especime do catalogo de componentes">Confirmar Seleção</Button>
             </div>
           </BottomSheet>
 

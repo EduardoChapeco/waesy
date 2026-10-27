@@ -17,7 +17,7 @@ const DrawerOverlay = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Overlay>
 >(({ className, ...props }, ref) => (
-  <DrawerPrimitive.Overlay ref={ref} className={cn("fixed inset-0 z-50 bg-black/60 backdrop-blur-sm", className)} {...props} />
+  <DrawerPrimitive.Overlay ref={ref} className={cn("fixed inset-0 z-50 bg-foreground/60 backdrop-blur-sm", className)} {...props} />
 ));
 DrawerOverlay.displayName = "DrawerOverlay";
 
@@ -107,7 +107,7 @@ function CityPickerPanel({
           <button
             type="button"
             onClick={() => setSearchQuery("")}
-            className="absolute right-7 top-1/2 -translate-y-1/2 size-7 flex items-center justify-center text-muted-foreground hover:text-foreground rounded-full transition-colors"
+            className="absolute right-7 top-1/2 -translate-y-1/2 size-7 flex items-center justify-center text-muted-foreground hover:text-foreground rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <X className="size-4" />
           </button>
@@ -122,8 +122,8 @@ function CityPickerPanel({
               key={city.id}
               type="button"
               onClick={() => { onSelect(city); onClose(); }}
-              className={cn(
-                "shrink-0 h-8 px-3 rounded-lg text-xs font-semibold border transition-all cursor-pointer",
+              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                "shrink-0 h-8 px-3 rounded-lg text-xs font-semibold border transition-colors duration-200 cursor-pointer",
                 selectedCity?.id === city.id
                   ? "bg-primary text-primary-foreground border-primary"
                   : "bg-card text-foreground border-border/70 hover:border-primary/50 hover:bg-primary/5"
@@ -145,7 +145,7 @@ function CityPickerPanel({
                 key={city.id}
                 type="button"
                 onClick={() => { onSelect(city); onClose(); }}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "w-full flex items-center justify-between gap-3 px-3 py-3 rounded-lg text-left cursor-pointer transition-colors",
                   isSelected
                     ? "bg-primary/10 text-primary"
@@ -270,7 +270,7 @@ export function CityCombobox({
       type="button"
       onClick={onClick}
       className={cn(
-        "w-full h-11 px-3 rounded-lg flex items-center justify-between gap-2 text-sm font-medium transition-all cursor-pointer",
+        "w-full h-11 px-3 rounded-lg flex items-center justify-between gap-2 text-sm font-medium transition-colors duration-200 cursor-pointer",
         "border border-border/80 bg-background hover:border-primary/50 hover:bg-muted/30",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
         !selectedCity && "text-muted-foreground"
@@ -297,7 +297,7 @@ export function CityCombobox({
           <button
             type="button"
             onClick={handleAutoFill}
-            className="flex-shrink-0 text-[11px] text-primary hover:underline font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+            className="flex-shrink-0 text-2xs text-primary hover:underline font-semibold flex items-center gap-1 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Crosshair className="size-3" />
             <span>Usar {masterLoc.city}</span>
@@ -373,8 +373,8 @@ export function CityCombobox({
                         key={id}
                         type="button"
                         onClick={() => { handleSelectCity(city); setDesktopOpen(false); }}
-                        className={cn(
-                          "shrink-0 h-7 px-3 rounded-lg text-[11px] font-semibold border transition-all cursor-pointer",
+                        className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                          "shrink-0 h-7 px-3 rounded-lg text-2xs font-semibold border transition-colors duration-200 cursor-pointer",
                           selectedCity?.id === id
                             ? "bg-primary text-primary-foreground border-primary"
                             : "bg-muted text-foreground border-border hover:border-primary/50"
@@ -396,7 +396,7 @@ export function CityCombobox({
                       key={city.id}
                       type="button"
                       onClick={() => { handleSelectCity(city); setDesktopOpen(false); }}
-                      className={cn(
+                      className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                         "w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-xs cursor-pointer transition-colors text-left",
                         isSelected
                           ? "bg-primary/10 text-primary font-bold"
@@ -405,7 +405,7 @@ export function CityCombobox({
                     >
                       <div className="flex flex-col min-w-0">
                         <span className="truncate">{city.name}</span>
-                        <span className="text-[10px] text-muted-foreground font-normal">{city.state} • {city.region}</span>
+                        <span className="text-2xs text-muted-foreground font-normal">{city.state} • {city.region}</span>
                       </div>
                       {isSelected && <Check className="size-3.5 text-primary shrink-0" />}
                     </button>
@@ -418,7 +418,7 @@ export function CityCombobox({
       </div>
 
       {helperText && (
-        <p className="text-[10px] text-muted-foreground leading-relaxed">{helperText}</p>
+        <p className="text-2xs text-muted-foreground leading-relaxed">{helperText}</p>
       )}
     </div>
   );

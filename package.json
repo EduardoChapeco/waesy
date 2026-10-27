@@ -22,7 +22,7 @@
     "audit:studio-templates": "node scripts/audit/audit-studio-templates.mjs",
     "audit:buttons": "node scripts/audit/audit-interactive-buttons.mjs",
     "audit:buttons:test": "node scripts/audit/audit-interactive-buttons.test.mjs",
-    "audit:dependencies": "npm audit --omit=dev --audit-level=high",
+    "audit:dependencies": "node scripts/audit/audit-dependencies.mjs",
     "audit:secrets": "node scripts/audit/scan-secrets.mjs",
     "check:candidate-baseline": "node scripts/audit/validate-candidate-baseline.mjs",
     "check:release-ledger": "node scripts/audit/validate-release-ledger.mjs",

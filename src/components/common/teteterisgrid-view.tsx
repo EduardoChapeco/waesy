@@ -19,6 +19,7 @@ export interface TeteterisSlotMeta {
 export interface TeteterisGridViewProps<T = any> {
   items: TeteterisItemInput<T>[];
   maxCols?: 4 | 6;
+  compact?: boolean;
   className?: string;
   slotClassName?: string;
   renderCard: (item: T, meta: TeteterisSlotMeta) => React.ReactNode;
@@ -32,6 +33,7 @@ export interface TeteterisGridViewProps<T = any> {
 export function TeteterisGridView<T = any>({
   items,
   maxCols = 4,
+  compact = false,
   className,
   slotClassName,
   renderCard,
@@ -47,29 +49,39 @@ export function TeteterisGridView<T = any>({
     <div
       role="region"
       aria-label="Grade Dinâmica Teteterisgrid"
+      data-compact-grid={compact ? "true" : "false"}
       className={cn(
         "grid gap-3 sm:gap-4 auto-rows-fr",
-        maxCols === 4 ? "grid-cols-2 sm:grid-cols-2 xl:grid-cols-4" : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6",
+        compact
+          ? "grid-cols-2"
+          : maxCols === 4
+          ? "grid-cols-2 sm:grid-cols-2 xl:grid-cols-4"
+          : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6",
         className
       )}
     >
       {slots.map((slot) => {
-        const colSpanClass =
-          slot.colSpan === 6
-            ? "col-span-2 sm:col-span-3 lg:col-span-6"
-            : slot.colSpan === 4
-            ? "col-span-2 xl:col-span-4"
-            : slot.colSpan === 3
-            ? "col-span-2 xl:col-span-3"
-            : slot.colSpan === 2
+        const colSpanClass = compact
+          ? slot.colSpan >= 2
             ? "col-span-2"
-            : "col-span-1";
+            : "col-span-1"
+          : slot.colSpan === 6
+          ? "col-span-2 sm:col-span-3 lg:col-span-6"
+          : slot.colSpan === 4
+          ? "col-span-2 xl:col-span-4"
+          : slot.colSpan === 3
+          ? "col-span-2 xl:col-span-3"
+          : slot.colSpan === 2
+          ? "col-span-2"
+          : "col-span-1";
 
         const rowSpanClass = slot.rowSpan === 2 ? "row-span-2" : "row-span-1";
 
         return (
           <div
             key={slot.id}
+            data-col-span={slot.colSpan}
+            data-row-span={slot.rowSpan}
             className={cn(
               colSpanClass,
               rowSpanClass,

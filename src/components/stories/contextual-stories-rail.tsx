@@ -50,7 +50,7 @@ export function ContextualStoriesRail({
  {showCreateButton && (
  <button
  onClick={onCreateStory}
- className="flex flex-col items-center gap-2 shrink-0 group focus:outline-none"
+ className="flex flex-col items-center gap-2 shrink-0 group focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  aria-label="Criar novo story"
  >
  <div className="relative size-16 sm:size-18 rounded-full p-1 border-2 border-dashed border-border group-hover:border-primary transition-colors flex items-center justify-center bg-card">
@@ -87,11 +87,11 @@ export function ContextualStoriesRail({
  <button
  key={group.groupId}
  onClick={() => setSelectedGroupIndex(idx)}
- className="flex flex-col items-center gap-2 shrink-0 group focus:outline-none cursor-pointer select-none transition-transform duration-200 active:scale-95"
+ className="flex flex-col items-center gap-2 shrink-0 group focus:outline-none cursor-pointer select-none transition-transform duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  aria-label={`Ver stories de ${group.entityName}`}
  >
  <div
- className={`relative size-16 sm:size-18 rounded-full overflow-hidden flex items-center justify-center transition-all ${ringClasses}`}
+ className={`relative size-16 sm:size-18 rounded-full overflow-hidden flex items-center justify-center transition-colors duration-200 ${ringClasses}`}
  >
  <div className="size-full rounded-full overflow-hidden bg-zinc-900 border-2 border-background">
  {group.entityAvatarUrl ? (
@@ -113,14 +113,14 @@ export function ContextualStoriesRail({
 
  {/* Badge de Criador Embaixador */}
  {isAmbassador && (
- <div className="absolute -top-0.5 -right-0.5 size-5 rounded-full bg-purple-600 text-white flex items-center justify-center shadow-xs border-2 border-background">
+ <div className="absolute -top-0.5 -right-0.5 size-5 rounded-full bg-purple-600 text-foreground flex items-center justify-center shadow-xs border-2 border-background">
  <CheckFat size={10} weight="fill" />
  </div>
  )}
 
  {/* Badge de Patrocinado */}
  {isSponsored && (
- <div className="absolute bottom-0 inset-x-1 bg-amber-500 text-black text-2xs font-black uppercase text-center rounded-xs py-0.5 shadow-xs">
+ <div className="absolute bottom-0 inset-x-1 bg-amber-500 text-foreground text-2xs font-black uppercase text-center rounded-xs py-1 shadow-xs">
  Ads
  </div>
  )}

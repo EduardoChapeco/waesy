@@ -65,7 +65,7 @@ export function TourismDestinationsCarouselSection({
  <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
  <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
  <div className="space-y-2">
- <Badge variant="outline" className="text-[11px] font-mono text-muted-foreground border-border/80">
+ <Badge variant="outline" className="text-2xs font-mono text-muted-foreground border-border/80">
  Roteiros Curados
  </Badge>
  <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">{title}</h2>
@@ -77,7 +77,7 @@ export function TourismDestinationsCarouselSection({
  {effectiveDestinations.map((dest) => (
  <div
  key={dest.id}
- className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-2xs group hover:border-primary/40 transition-all flex flex-col justify-between"
+ className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-2xs group hover:border-primary/40 transition-colors duration-200 flex flex-col justify-between"
  >
  <div className="aspect-4/3 overflow-hidden bg-muted relative">
  {dest.imageUrl && (
@@ -89,7 +89,7 @@ export function TourismDestinationsCarouselSection({
  )}
  {dest.badge && (
  <div className="absolute top-2.5 left-2.5">
- <Badge className="bg-primary text-primary-foreground text-[10px] font-bold shadow-md">
+ <Badge className="bg-primary text-primary-foreground text-2xs font-bold shadow-md">
  {dest.badge}
  </Badge>
  </div>
@@ -98,7 +98,7 @@ export function TourismDestinationsCarouselSection({
 
  <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
  <div className="space-y-1">
- <div className="flex items-center gap-2 text-[11px] text-muted-foreground font-semibold">
+ <div className="flex items-center gap-2 text-2xs text-muted-foreground font-semibold">
  <MapPin className="size-3 text-primary" />
  <span>{dest.country}</span>
  </div>
@@ -106,7 +106,7 @@ export function TourismDestinationsCarouselSection({
  {dest.name}
  </h3>
  {dest.durationDays && (
- <span className="text-[11px] text-muted-foreground block">
+ <span className="text-2xs text-muted-foreground block">
  Duração: {dest.durationDays} dias / noites
  </span>
  )}
@@ -114,7 +114,7 @@ export function TourismDestinationsCarouselSection({
 
  <div className="pt-2 border-t border-border/60 flex items-center justify-between">
  <div>
- <span className="text-[10px] text-muted-foreground block">A partir de</span>
+ <span className="text-2xs text-muted-foreground block">A partir de</span>
  <span className="text-sm font-bold text-foreground font-mono">
  {formatPrice(dest.priceFromCents)}
  </span>
@@ -125,7 +125,7 @@ export function TourismDestinationsCarouselSection({
  size="sm"
  variant="outline"
  onClick={() => onSelectDestination?.(dest)}
- className="h-8 rounded-lg text-[11px] font-bold border-border/80 bg-background hover:bg-muted"
+ className="h-8 rounded-lg text-2xs font-bold border-border/80 bg-background hover:bg-muted"
  >
  Cotar
  </Button>

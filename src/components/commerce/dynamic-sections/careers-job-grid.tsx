@@ -58,17 +58,17 @@ export function CareersJobGrid({ content, design_tokens }: CareersJobGridProps) 
  {jobs.map((job) => (
  <div
  key={job.id}
- className="p-6 rounded-lg border border-border/70 bg-card hover:border-primary/50 transition-all duration-200 shadow-sm flex flex-col justify-between gap-5 group"
+ className="p-6 rounded-lg border border-border/70 bg-card hover:border-primary/50 transition-colors duration-200 duration-200 shadow-sm flex flex-col justify-between gap-5 group"
  >
  <div className="space-y-3">
  <div className="flex items-center gap-2 flex-wrap">
- <Badge variant="secondary" className="text-[11px] font-normal">
+ <Badge variant="secondary" className="text-2xs font-normal">
  {job.department}
  </Badge>
- <Badge variant="outline" className="text-[11px] font-normal border-primary/30 text-primary">
+ <Badge variant="outline" className="text-2xs font-normal border-primary/30 text-primary">
  {job.work_model === "remote" ? "Remoto" : job.work_model === "hybrid" ? "Híbrido" : "Presencial"}
  </Badge>
- <Badge variant="outline" className="text-[11px] font-normal">
+ <Badge variant="outline" className="text-2xs font-normal">
  {job.employment_type.toUpperCase()}
  </Badge>
  </div>

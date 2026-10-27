@@ -99,6 +99,8 @@ export const PUBLIC_SPEC_ALLOWLIST = new Set([
   "potencia",
   "niche",
   "segment",
+  "template_id",
+  "template_style",
   "is_featured",
   "highlights",
   "amenities",
@@ -143,6 +145,12 @@ export function mapDatabaseRowToUnifiedListing(
     item_type:
       row.item_type || rawAttrs.item_type || (nicheId === "turismo" ? "package" : "product"),
     niche_id: nicheId,
+    template:
+      rawAttrs.template_id ||
+      rawAttrs.template_style ||
+      row.template ||
+      row.template_style ||
+      undefined,
     category_id: row.category_id || row.category || "geral",
     sub_category_id: row.sub_category_id,
 

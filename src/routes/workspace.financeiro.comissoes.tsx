@@ -209,7 +209,7 @@ function CommissionsPage() {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
-      <PageHeader
+      <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         eyebrow="Financeiro"
         title="Comissões de Vendas"
         description="Acompanhe repasses por pedido, defina regras percentuais e realize quitações individuais ou em lote."
@@ -315,7 +315,7 @@ function CommissionsPage() {
                   statusFilter === "all"
                     ? "bg-background text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
-                }`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 Todas ({commissions.length})
               </button>
@@ -326,7 +326,7 @@ function CommissionsPage() {
                   statusFilter === "pending"
                     ? "bg-background text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
-                }`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 Pendentes ({commissions.filter((c) => c.status === "pending").length})
               </button>
@@ -337,7 +337,7 @@ function CommissionsPage() {
                   statusFilter === "paid"
                     ? "bg-background text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
-                }`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 Pagas ({commissions.filter((c) => c.status === "paid").length})
               </button>
@@ -348,7 +348,7 @@ function CommissionsPage() {
                   statusFilter === "refunds"
                     ? "bg-background text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
-                }`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 Estornos ({commissions.filter((c) => c.amountCents < 0).length})
               </button>

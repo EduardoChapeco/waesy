@@ -16,6 +16,7 @@ import { listCustomers } from '@/services/crm.functions';
 import { listTravelSuppliers } from '@/services/travel-suppliers.functions';
 import type { TravelFlightItinerary, FlightCabin, FlightItineraryType } from '@/types/travel-flights';
 import { GLOBAL_AIRPORTS_CATALOG } from '@/lib/data/airports-catalog';
+import { AirportCombobox } from '@/components/ui/airport-combobox';
 import { formatMoney } from '@/lib/money';
 
 const CONSOLIDATOR_PRESETS = [
@@ -84,7 +85,8 @@ export default function FlightsPage() {
     setOriginIata(clean);
     const airport = GLOBAL_AIRPORTS_CATALOG.find((a) => a.iata_code === clean);
     if (airport) {
-      setOriginCity(`${airport.city} (${airport.state_province})`);
+      const loc = airport.country_code === "BR" ? (airport.state_province || "BR") : airport.country;
+      setOriginCity(`${airport.city} (${loc})`);
     }
   };
 
@@ -93,7 +95,8 @@ export default function FlightsPage() {
     setDestinationIata(clean);
     const airport = GLOBAL_AIRPORTS_CATALOG.find((a) => a.iata_code === clean);
     if (airport) {
-      setDestinationCity(`${airport.city} (${airport.state_province})`);
+      const loc = airport.country_code === "BR" ? (airport.state_province || "BR") : airport.country;
+      setDestinationCity(`${airport.city} (${loc})`);
     }
   };
 
@@ -451,115 +454,33 @@ export default function FlightsPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="space-y-2 md:col-span-2">
-                  <Label className="text-xs font-semibold">Cia Aérea (IATA + Nome)</Label>
-                  <div className="grid grid-cols-3 gap-2">
-                    <Input
-                      placeholder="LA"
-                      value={airlineCode}
-                      onChange={(e) => setAirlineCode(e.target.value)}
-                      className="h-11 uppercase font-bold text-center rounded-lg"
-                      maxLength={3}
-                    />
-                    <Input
-                      placeholder="LATAM Airlines"
-                      value={airlineName}
-                      onChange={(e) => setAirlineName(e.target.value)}
-                      className="h-11 col-span-2 rounded-lg"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2 md:col-span-2">
-                  <Label className="text-xs font-semibold">Número do Voo</Label>
-                  <Input
-                    placeholder="Ex: 3214"
-                    value={flightNumber}
-                    onChange={(e) => setFlightNumber(e.target.value)}
-                    className="h-11 uppercase font-mono font-bold rounded-lg"
+                  <AirportCombobox
+                    label="Origem do Voo (IATA / Cidade)"
+                    value={originIata}
+                    onChange={(iata, airport) => {
+                      setOriginIata(iata);
+                      if (airport) {
+                        const loc = airport.country_code === 'BR' ? (airport.state_province || 'BR') : airport.country;
+                        setOriginCity(`${airport.city} (${loc})`);
+                      }
+                    }}
+                    showAirportLink
                   />
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs font-semibold">Origem (IATA + Cidade)</Label>
-                    <span className="text-xs text-muted-foreground font-mono">Malha Central</span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <Input
-                      placeholder="GRU"
-                      value={originIata}
-                      onChange={(e) => handleSelectOrigin(e.target.value)}
-                      list="airports-catalog-list"
-                      className="h-11 uppercase font-bold text-center rounded-lg"
-                      maxLength={3}
-                    />
-                    <Input
-                      placeholder="São Paulo / Guarulhos"
-                      value={originCity}
-                      onChange={(e) => setOriginCity(e.target.value)}
-                      className="h-11 col-span-2 rounded-lg"
-                    />
-                  </div>
-                  <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pt-1">
-                    {["GRU", "CGH", "BSB", "SDU", "GIG", "CNF", "SSA", "REC", "XAP", "POA", "CWB", "FLN"].map((hub) => (
-                      <button
-                        key={hub}
-                        type="button"
-                        onClick={() => handleSelectOrigin(hub)}
-                        className={`text-xs font-mono px-2 py-1 rounded-md border transition-colors cursor-pointer ${
-                          originIata === hub ? "bg-primary text-primary-foreground border-primary" : "bg-muted/40 text-muted-foreground hover:bg-muted border-border/60"
-                        }`}
-                      >
-                        {hub}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-2 md:col-span-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs font-semibold">Destino (IATA + Cidade)</Label>
-                    <span className="text-xs text-muted-foreground font-mono">Malha Central</span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <Input
-                      placeholder="MIA"
-                      value={destinationIata}
-                      onChange={(e) => handleSelectDestination(e.target.value)}
-                      list="airports-catalog-list"
-                      className="h-11 uppercase font-bold text-center rounded-lg"
-                      maxLength={3}
-                    />
-                    <Input
-                      placeholder="Miami"
-                      value={destinationCity}
-                      onChange={(e) => setDestinationCity(e.target.value)}
-                      className="h-11 col-span-2 rounded-lg"
-                    />
-                  </div>
-                  <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pt-1">
-                    {["MIA", "MCO", "JFK", "LIS", "MAD", "CDG", "LHR", "DXB", "EZE", "SCL", "CUN", "PUJ"].map((hub) => (
-                      <button
-                        key={hub}
-                        type="button"
-                        onClick={() => handleSelectDestination(hub)}
-                        className={`text-xs font-mono px-2 py-1 rounded-md border transition-colors cursor-pointer ${
-                          destinationIata === hub ? "bg-primary text-primary-foreground border-primary" : "bg-muted/40 text-muted-foreground hover:bg-muted border-border/60"
-                        }`}
-                      >
-                        {hub}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Datalist nativo para autocomplete de 100+ aeroportos comerciais */}
-                  <datalist id="airports-catalog-list">
-                    {GLOBAL_AIRPORTS_CATALOG.map((a) => (
-                      <option key={a.iata_code} value={a.iata_code}>
-                        {a.iata_code} - {a.city} ({a.name})
-                      </option>
-                    ))}
-                  </datalist>
+                  <AirportCombobox
+                    label="Destino do Voo (IATA / Cidade)"
+                    value={destinationIata}
+                    onChange={(iata, airport) => {
+                      setDestinationIata(iata);
+                      if (airport) {
+                        const loc = airport.country_code === 'BR' ? (airport.state_province || 'BR') : airport.country;
+                        setDestinationCity(`${airport.city} (${loc})`);
+                      }
+                    }}
+                    showAirportLink
+                  />
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
@@ -693,7 +614,7 @@ export default function FlightsPage() {
 
       {/* Listagem Canônica de Bilhetes & Emissões */}
       {isLoading ? (
-        <div className="p-12 text-center text-sm text-muted-foreground animate-pulse">
+        <div className="p-12 text-center text-sm text-muted-foreground animate-pulse motion-reduce:animate-none">
           Carregando bilhetes e localizadores do GDS...
         </div>
       ) : filteredItineraries.length === 0 ? (
@@ -717,7 +638,7 @@ export default function FlightsPage() {
             return (
               <div
                 key={it.id}
-                className="p-5 rounded-lg border border-border bg-card shadow-xs hover:border-primary/40 transition-all flex flex-col gap-4"
+                className="p-5 rounded-lg border border-border bg-card shadow-xs hover:border-primary/40 transition-colors duration-200 flex flex-col gap-4"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/50 pb-3">
                   <div className="flex items-center gap-3">
@@ -748,7 +669,7 @@ export default function FlightsPage() {
                       <button
                         type="button"
                         onClick={() => copyToClipboard(primarySeg.record_locator!, 'Localizador PNR')}
-                        className="inline-flex items-center gap-2 px-3 py-2 min-h-11 sm:min-h-9 sm:min-h-9 sm:min-h-8 rounded-lg text-xs font-mono font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-2 px-3 py-2 min-h-11 sm:min-h-9 sm:min-h-9 sm:min-h-8 rounded-lg text-xs font-mono font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         title="Clique para copiar localizador"
                       >
                         <Hash className="size-3.5" />

@@ -2,8 +2,13 @@ import React, { useState, useCallback, Suspense, lazy } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import getCroppedImg from "@/lib/crop-image";
-import { Crop, ZoomIn, ZoomOut, RotateCw, Check, Maximize, Minimize, Info } from "lucide-react";
+import getCroppedImg, {
+  getCroppedCanvasBlob,
+  getCanonicalDimensions,
+  type TargetPlatform,
+  type CanonicalDimensions,
+} from "@/lib/crop-image";
+import { Crop, ZoomIn, ZoomOut, RotateCw, Check, Maximize, Minimize, Info, Sparkles } from "lucide-react";
 
 const Cropper = lazy(() => import("react-easy-crop"));
 
@@ -15,6 +20,7 @@ export interface ImageCropperDialogProps {
   aspectRatio?: number;
   cropShape?: "rect" | "round";
   lockAspect?: boolean;
+  targetPlatform?: TargetPlatform;
   title?: string;
   description?: string;
   onCropCompleteAction?: (croppedBase64: string) => void;
@@ -25,7 +31,7 @@ const ASPECT_PRESETS: Array<{ label: string; value: number | undefined }> = [
   { label: "28:9 (Desktop Fino)", value: 28 / 9 },
   { label: "21:9 (iFood/Banner)", value: 21 / 9 },
   { label: "16:9 (Widescreen)", value: 16 / 9 },
-  { label: "3:1 (Bio Link Discreto)", value: 3 / 1 },
+  { label: "3:1 (Capa Loja/Perfil)", value: 3 / 1 },
   { label: "4:5 (Post Threads)", value: 4 / 5 },
   { label: "9:16 (Story/Reels)", value: 9 / 16 },
   { label: "1:1 (Quadrado)", value: 1 },
@@ -41,6 +47,7 @@ export function ImageCropperDialog({
   aspectRatio,
   cropShape = "rect",
   lockAspect = false,
+  targetPlatform = "universal",
   title = "Enquadrar Imagem",
   onCropCompleteAction,
   onCropComplete: onCropCompleteProp,
@@ -51,7 +58,7 @@ export function ImageCropperDialog({
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [objectFit, setObjectFit] = useState<"contain" | "cover" | "horizontal-cover" | "vertical-cover">("cover");
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
   React.useEffect(() => {
@@ -93,34 +100,44 @@ export function ImageCropperDialog({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [open]);
 
-  const onCropComplete = useCallback((_croppedArea: any, croppedAreaPixels: any) => {
-    setCroppedAreaPixels(croppedAreaPixels);
+  const onCropComplete = useCallback((_croppedArea: any, croppedPixels: any) => {
+    setCroppedAreaPixels(croppedPixels);
   }, []);
+
+  const canonicalDims = React.useMemo(() => {
+    return getCanonicalDimensions(selectedAspect, targetPlatform);
+  }, [selectedAspect, targetPlatform]);
 
   const handleConfirm = async () => {
     if (!imageSrc || !croppedAreaPixels) return;
     setIsProcessing(true);
     try {
-      const croppedImage = await getCroppedImg(
+      // 1. Renderiza e grava fisicamente no Canvas com as dimensões canônicas exatas (Zero-Drift)
+      const croppedBlob = await getCroppedCanvasBlob(
         imageSrc,
         croppedAreaPixels,
         rotation,
         { horizontal: false, vertical: false },
         "image/png",
-        cropShape === "round" ? 400 : 0,
+        canonicalDims
       );
 
+      // 2. Notifica callbacks: Blob físico e Base64
       if (onCropCompleteProp) {
-        const res = await fetch(croppedImage);
-        const blob = await res.blob();
-        await onCropCompleteProp(blob);
+        await onCropCompleteProp(croppedBlob);
       }
       if (onCropCompleteAction) {
-        onCropCompleteAction(croppedImage);
+        const base64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(croppedBlob);
+        });
+        onCropCompleteAction(base64);
       }
       onOpenChange(false);
     } catch (e) {
-      console.error("Erro ao recortar imagem:", e);
+      console.error("Erro ao recortar imagem no Canvas:", e);
     } finally {
       setIsProcessing(false);
     }
@@ -143,13 +160,12 @@ export function ImageCropperDialog({
     if (Math.abs(val - 4 / 5) < 0.05) return "4:5 (Post Threads / Retrato)";
     if (Math.abs(val - 1) < 0.05) return "1:1 (Produtos & Logos)";
     if (Math.abs(val - 9 / 16) < 0.05) return "9:16 (Story / Reels / Guia)";
-    if (Math.abs(val - 4) < 0.05) return "4:1 (Faixa Panorâmica)";
     return `${val.toFixed(2)}:1`;
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl p-0 overflow-hidden bg-card border-border sm:rounded-lg shadow-2xl select-none max-h-[92vh] flex flex-col">
+      <DialogContent className="sm:max-w-2xl p-0 overflow-hidden bg-card border-border sm:rounded-2xl shadow-2xl select-none max-h-[92vh] flex flex-col z-50">
         <DialogHeader className="p-4 px-5 pb-3 border-b border-border/40 flex flex-row items-center justify-between shrink-0">
           <DialogTitle className="flex items-center gap-2 text-sm font-bold text-foreground">
             <Crop className="size-4 text-foreground" />
@@ -160,8 +176,8 @@ export function ImageCropperDialog({
               type="button"
               variant="outline"
               size="sm"
+              className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary h-8 px-3 rounded-lg text-xs gap-1 cursor-pointer"
               onClick={handleRotate}
-              className="h-8 px-3 rounded-lg text-xs gap-1 cursor-pointer"
               title="Girar 90 graus"
             >
               <RotateCw className="size-3.5" />
@@ -171,8 +187,8 @@ export function ImageCropperDialog({
               type="button"
               variant="outline"
               size="sm"
+              className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary h-8 px-3 rounded-lg text-xs gap-1 cursor-pointer"
               onClick={() => setObjectFit((prev) => (prev === "contain" ? "cover" : "contain"))}
-              className="h-8 px-3 rounded-lg text-xs gap-1 cursor-pointer"
               title={objectFit === "contain" ? "Preencher enquadramento" : "Ajustar à tela"}
             >
               {objectFit === "contain" ? <Maximize className="size-3.5" /> : <Minimize className="size-3.5" />}
@@ -183,19 +199,21 @@ export function ImageCropperDialog({
 
         {imageSrc ? (
           <div className="p-4 sm:p-5 space-y-4 overflow-y-auto flex-1">
-            {/* Indicador de Máscara Canônica Fiel ao Frame de Renderização */}
-            {lockAspect && (
-              <div className="flex items-center justify-between px-1">
-                <span className="text-xs font-semibold text-muted-foreground">
-                  Máscara Canônica do Frame:
-                </span>
-                <span className="text-xs font-bold text-foreground bg-muted/70 px-2 py-1 rounded-md border border-border/50 font-mono">
+            {/* Indicador de Máscara Canônica e Resolução Física de Saída (Zero-Drift) */}
+            <div className="flex items-center justify-between px-1 flex-wrap gap-2">
+              <span className="text-xs font-semibold text-muted-foreground flex items-center gap-2">
+                <Sparkles className="size-3.5 text-primary" />
+                Máscara Canônica:
+                <strong className="text-foreground ml-1 font-mono">
                   {getAspectLabel(selectedAspect, isRound)}
-                </span>
-              </div>
-            )}
+                </strong>
+              </span>
+              <span className="text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full border border-primary/20 font-mono">
+                {canonicalDims.width}×{canonicalDims.height}px ({targetPlatform === "mobile" ? "Mobile" : targetPlatform === "desktop" ? "Desktop" : "HD"})
+              </span>
+            </div>
 
-            {/* Seletor de Proporções Rápidas (apenas quando o aspecto for livre) */}
+            {/* Seletor de Proporções Rápidas (quando o aspecto for livre) */}
             {!isRound && !lockAspect && (
               <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
                 <span className="text-xs font-mono uppercase text-muted-foreground mr-1 shrink-0">
@@ -207,12 +225,12 @@ export function ImageCropperDialog({
                     <button
                       key={idx}
                       type="button"
-                      onClick={() => setSelectedAspect(preset.value)}
-                      className={`px-3 py-1 rounded-lg text-xs font-mono font-medium transition-colors shrink-0 cursor-pointer ${
+                      className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary px-3 py-1 rounded-lg text-xs font-mono font-medium transition-colors shrink-0 cursor-pointer ${
                         isActive
                           ? "bg-foreground text-background font-bold shadow-xs"
                           : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/40"
                       }`}
+                      onClick={() => setSelectedAspect(preset.value)}
                     >
                       {preset.label}
                     </button>
@@ -222,7 +240,7 @@ export function ImageCropperDialog({
             )}
 
             {/* Viewport Amplo do Cropper com Máscara e Puxa/Arrasta Livre */}
-            <div className="relative w-full h-[320px] sm:h-[400px] overflow-hidden rounded-lg bg-[#09090b] select-none border border-border/40">
+            <div className="relative w-full h-[300px] sm:h-[380px] overflow-hidden rounded-xl bg-[#09090b] select-none border border-border/40">
               <Suspense
                 fallback={
                   <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground font-mono">
@@ -259,14 +277,14 @@ export function ImageCropperDialog({
               </Suspense>
             </div>
 
-            {/* Controles de Zoom: Slider com Botões de Passo + e - */}
-            <div className="flex items-center gap-2 px-1 pt-1 bg-muted/20 p-2 rounded-lg border border-border/30">
+            {/* Controles de Zoom */}
+            <div className="flex items-center gap-2 px-1 pt-1 bg-muted/20 p-2 rounded-xl border border-border/30">
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
+                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary size-8 rounded-lg cursor-pointer shrink-0"
                 onClick={handleZoomOut}
-                className="size-8 rounded-lg cursor-pointer shrink-0"
                 title="Diminuir Zoom"
               >
                 <ZoomOut className="size-4 text-muted-foreground" />
@@ -280,14 +298,16 @@ export function ImageCropperDialog({
                 onValueChange={(vals) => setZoom(vals[0])}
                 className="cursor-pointer flex-1"
                 aria-label="Ajuste de zoom"
-              />
+              >
+                <div focus-visible:ring-2="" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sr-only" />
+              </Slider>
 
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
+                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary size-8 rounded-lg cursor-pointer shrink-0"
                 onClick={handleZoomIn}
-                className="size-8 rounded-lg cursor-pointer shrink-0"
                 title="Aumentar Zoom"
               >
                 <ZoomIn className="size-4 text-muted-foreground" />
@@ -298,10 +318,9 @@ export function ImageCropperDialog({
               </span>
             </div>
 
-            {/* Dica de Ergonomia de Enquadramento */}
             <p className="text-xs text-muted-foreground text-center pt-1 flex items-center justify-center gap-1">
               <Info className="size-3.5 shrink-0" />
-              <span>Arraste para posicionar e use o slider ou a roda do mouse para ajustar o zoom.</span>
+              <span>Arraste para posicionar. O corte final será renderizado pixel-a-pixel no Canvas.</span>
             </p>
           </div>
         ) : (
@@ -315,8 +334,8 @@ export function ImageCropperDialog({
             type="button"
             variant="ghost"
             size="sm"
+            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary h-9 px-4 rounded-xl text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer"
             onClick={() => onOpenChange(false)}
-            className="h-9 px-4 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer"
           >
             Cancelar
           </Button>
@@ -325,15 +344,15 @@ export function ImageCropperDialog({
             type="button"
             size="sm"
             disabled={isProcessing || !imageSrc}
+            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary h-9 px-5 rounded-xl text-xs font-bold bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer"
             onClick={handleConfirm}
-            className="h-9 px-5 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer"
           >
             {isProcessing ? (
-              <span className="size-3.5 border-2 border-background border-t-transparent rounded-full animate-spin" />
+              <span className="size-3.5 border-2 border-background border-t-transparent rounded-full animate-spin motion-reduce:animate-none" />
             ) : (
               <Check className="size-3.5" />
             )}
-            <span>{isProcessing ? "Salvando..." : "Salvar Enquadramento"}</span>
+            <span>{isProcessing ? "Renderizando Canvas..." : "Salvar Enquadramento"}</span>
           </Button>
         </DialogFooter>
       </DialogContent>

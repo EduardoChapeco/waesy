@@ -194,7 +194,7 @@ function CustomerSupportPage() {
                     onClick={() => setSelectedTicketId(t.id)}
                     className={`w-full text-left p-4 hover:bg-muted/40 active:bg-muted/60 transition-colors cursor-pointer ${
                       selectedTicketId === t.id ? "bg-muted/60 border-l-2 border-l-primary" : "border-l-2 border-l-transparent"
-                    }`}
+                    } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                   >
                     <div className="flex justify-between items-start mb-1">
                       <span className="font-semibold text-xs text-foreground truncate pr-2">{t.subject}</span>
@@ -258,7 +258,7 @@ function CustomerSupportPage() {
                     <ChevronLeft className="size-5" />
                   </Button>
                   {loadingThread ? (
-                    <div className="animate-pulse h-4 bg-muted rounded w-40"></div>
+                    <div className="animate-pulse motion-reduce:animate-none h-4 bg-muted rounded w-40"></div>
                   ) : (
                     <div>
                       <h3 className="font-semibold text-xs sm:text-sm text-foreground truncate">
@@ -329,7 +329,7 @@ function CustomerSupportPage() {
                     onKeyDown={(e) => {
                       if (e.key === "Enter") handleSend();
                     }}
-                    className="flex-1 h-11 min-h-11 rounded-lg bg-muted/50 px-4 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/20 transition-all border border-border/40"
+                    className="flex-1 h-11 min-h-11 rounded-lg bg-muted/50 px-4 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/20 transition-colors duration-200 border border-border/40"
                   />
                   <button
                     type="button"

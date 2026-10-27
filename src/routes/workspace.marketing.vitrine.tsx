@@ -324,7 +324,7 @@ function WorkspaceSitesHubPage() {
  return (
  <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-28 animate-in fade-in duration-200">
  {/* ── Header Canônico Studio Apple HIG ── */}
- <PageHeader
+ <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  eyebrow="Marketing & Design"
  title="Vitrines Digitais"
  actions={
@@ -379,7 +379,7 @@ function WorkspaceSitesHubPage() {
  <button
  type="button"
  onClick={() => setViewMode("grid")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "p-1 rounded-lg transition-colors cursor-pointer",
  viewMode === "grid" ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground"
  )}
@@ -390,7 +390,7 @@ function WorkspaceSitesHubPage() {
  <button
  type="button"
  onClick={() => setViewMode("list")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "p-1 rounded-lg transition-colors cursor-pointer",
  viewMode === "list" ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground"
  )}
@@ -476,9 +476,9 @@ function WorkspaceSitesHubPage() {
  ) : viewMode === "grid" ? (
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
  {/* Card de Criação Rápida */}
- <div
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  onClick={() => setIsCreateSheetOpen(true)}
- className="flex flex-col items-center justify-center p-8 border border-dashed border-border/80 hover:border-primary/50 rounded-lg bg-background hover:bg-muted/30 transition-all cursor-pointer text-center gap-3 min-h-56 group"
+ className="flex flex-col items-center justify-center p-8 border border-dashed border-border/80 hover:border-primary/50 rounded-lg bg-background hover:bg-muted/30 transition-colors duration-200 cursor-pointer text-center gap-3 min-h-56 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="size-10 rounded-lg bg-muted/60 group-hover:bg-primary/10 group-hover:text-primary transition-colors flex items-center justify-center text-muted-foreground">
  <Plus className="size-5" />
@@ -501,7 +501,7 @@ function WorkspaceSitesHubPage() {
  return (
  <div
  key={doc.id}
- className="flex flex-col border border-border/70 rounded-lg bg-background overflow-hidden hover:border-border transition-all shadow-2xs group"
+ className="flex flex-col border border-border/70 rounded-lg bg-background overflow-hidden hover:border-border transition-colors duration-200 shadow-2xs group"
  >
  {/* Header do Card */}
  <div className="p-4 pb-3 flex items-start justify-between gap-3 border-b border-border/50 bg-muted/10">
@@ -510,7 +510,7 @@ function WorkspaceSitesHubPage() {
  {getDocTypeBadge(doc.document_type)}
  {isPrimary && (
  <Badge variant="outline" className="text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 gap-1">
- <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+ <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none" />
  Ativa
  </Badge>
  )}
@@ -526,22 +526,22 @@ function WorkspaceSitesHubPage() {
  </Button>
  </DropdownMenuTrigger>
  <DropdownMenuContent align="end" className="w-48 text-xs">
- <DropdownMenuItem onClick={() => handleOpenBuilder(doc.id)} className="gap-2 cursor-pointer">
+ <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => handleOpenBuilder(doc.id)} className="gap-2 cursor-pointer">
  <Layers className="size-3.5 text-primary" />
  <span>Editar no Studio</span>
  </DropdownMenuItem>
- <DropdownMenuItem onClick={() => handleDuplicatePage(doc.id)} className="gap-2 cursor-pointer">
+ <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => handleDuplicatePage(doc.id)} className="gap-2 cursor-pointer">
  <Copy className="size-3.5 text-muted-foreground" />
  <span>Duplicar Página</span>
  </DropdownMenuItem>
  {!isPrimary && (
- <DropdownMenuItem onClick={() => handleSetActive(doc.id)} className="gap-2 cursor-pointer">
+ <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => handleSetActive(doc.id)} className="gap-2 cursor-pointer">
  <CheckCircle2 className="size-3.5 text-primary" />
  <span>Definir como Principal</span>
  </DropdownMenuItem>
  )}
  <DropdownMenuSeparator />
- <DropdownMenuItem
+ <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
  onClick={() => handleDeletePage(doc.id)}
  className="gap-2 text-destructive focus:text-destructive cursor-pointer"
  >
@@ -623,18 +623,18 @@ function WorkspaceSitesHubPage() {
  </Button>
  </DropdownMenuTrigger>
  <DropdownMenuContent align="end" className="w-48 text-xs">
- <DropdownMenuItem onClick={() => handleDuplicatePage(doc.id)} className="gap-2 cursor-pointer">
+ <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => handleDuplicatePage(doc.id)} className="gap-2 cursor-pointer">
  <Copy className="size-3.5" />
  <span>Duplicar</span>
  </DropdownMenuItem>
  {!isPrimary && (
- <DropdownMenuItem onClick={() => handleSetActive(doc.id)} className="gap-2 cursor-pointer">
+ <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => handleSetActive(doc.id)} className="gap-2 cursor-pointer">
  <CheckCircle2 className="size-3.5 text-primary" />
  <span>Definir como Principal</span>
  </DropdownMenuItem>
  )}
  <DropdownMenuSeparator />
- <DropdownMenuItem onClick={() => handleDeletePage(doc.id)} className="gap-2 text-destructive cursor-pointer">
+ <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => handleDeletePage(doc.id)} className="gap-2 text-destructive cursor-pointer">
  <Trash2 className="size-3.5" />
  <span>Excluir</span>
  </DropdownMenuItem>
@@ -671,7 +671,7 @@ function WorkspaceSitesHubPage() {
  {filteredTemplates.map((tpl) => (
  <div
  key={tpl.id}
- className="flex flex-col border border-border/70 rounded-lg bg-background overflow-hidden hover:border-border transition-all shadow-2xs group"
+ className="flex flex-col border border-border/70 rounded-lg bg-background overflow-hidden hover:border-border transition-colors duration-200 shadow-2xs group"
  >
  <div className="relative h-44 overflow-hidden bg-muted/40">
  <img

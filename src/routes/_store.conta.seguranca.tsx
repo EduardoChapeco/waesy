@@ -219,7 +219,7 @@ function SecurityAndDevicesPage() {
       disabled={isRefreshing}
       className="rounded-lg text-xs font-semibold h-11 min-h-11 px-4 gap-2 cursor-pointer border-border/70 bg-card hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-primary"
     >
-      <RefreshCw className={`size-4 ${isRefreshing ? "animate-spin" : ""}`} />
+      <RefreshCw className={`size-4 ${isRefreshing ? "animate-spin motion-reduce:animate-none" : ""}`} />
       <span>Atualizar Telemetria</span>
     </Button>
   );
@@ -260,8 +260,8 @@ function SecurityAndDevicesPage() {
             <ShieldCheck className="size-4 text-primary" />
             <span>Dispositivo Atual (Esta Sessão)</span>
           </h2>
-          <span className="inline-flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
-            <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="inline-flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
+            <span className="size-2 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none" />
             <span>Sessão Ativa Agora</span>
           </span>
         </div>
@@ -285,7 +285,7 @@ function SecurityAndDevicesPage() {
                     Confiável
                   </Badge>
                 </div>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-xs text-muted-foreground mt-1">
                   Identificado via telemetria direta do navegador e borda de rede
                 </p>
               </div>
@@ -294,7 +294,7 @@ function SecurityAndDevicesPage() {
             {/* Código Único do Dispositivo */}
             <div className="flex items-center gap-2 bg-muted/50 p-2 rounded-lg border border-border/60">
               <div className="text-left">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
                   Código Único do Dispositivo
                 </span>
                 <span className="text-xs font-mono font-bold text-foreground">
@@ -317,10 +317,10 @@ function SecurityAndDevicesPage() {
           {/* Grade de Telemetria Auditada */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+              <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
                 Localização Auditada
               </span>
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+              <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
                 <MapPin className="size-3.5 text-primary shrink-0" />
                 <span className="truncate">
                   {activeDevice.city && !/desconhecida/i.test(activeDevice.city)
@@ -331,10 +331,10 @@ function SecurityAndDevicesPage() {
             </div>
 
             <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+              <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
                 Endereço IP Real
               </span>
-              <div className="flex items-center gap-1.5 text-xs font-mono font-semibold text-foreground">
+              <div className="flex items-center gap-2 text-xs font-mono font-semibold text-foreground">
                 <Globe className="size-3.5 text-primary shrink-0" />
                 <span className="truncate">
                   {activeDevice.ip_address && activeDevice.ip_address !== "127.0.0.1"
@@ -345,20 +345,20 @@ function SecurityAndDevicesPage() {
             </div>
 
             <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+              <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
                 Nível de Risco
               </span>
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+              <div className="flex items-center gap-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
                 <ShieldCheck className="size-3.5 shrink-0" />
                 <span>0% (Sem Ameaças)</span>
               </div>
             </div>
 
             <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+              <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
                 Última Atividade
               </span>
-              <div className="flex items-center gap-1.5 text-xs font-medium text-foreground">
+              <div className="flex items-center gap-2 text-xs font-medium text-foreground">
                 <Clock className="size-3.5 text-muted-foreground shrink-0" />
                 <span className="truncate">{formatRelativeTime(activeDevice.last_seen_at)}</span>
               </div>
@@ -420,7 +420,7 @@ function SecurityAndDevicesPage() {
                         )}
                       </div>
 
-                      <p className="text-xs font-mono text-muted-foreground mt-0.5">
+                      <p className="text-xs font-mono text-muted-foreground mt-1">
                         {devCode}
                       </p>
 
@@ -428,7 +428,7 @@ function SecurityAndDevicesPage() {
                         {locationText} • {relativeTime}
                       </p>
 
-                      <p className="text-xs font-mono text-muted-foreground/60 mt-0.5 truncate">
+                      <p className="text-xs font-mono text-muted-foreground/60 mt-1 truncate">
                         IP: {ipText}
                       </p>
                     </div>
@@ -530,7 +530,7 @@ function SecurityAndDevicesPage() {
                               : log.event_type}
                           </p>
 
-                          <span className="text-[10px] font-mono font-medium text-muted-foreground px-1.5 py-0.5 rounded bg-muted/60 border border-border/50">
+                          <span className="text-2xs font-mono font-medium text-muted-foreground px-2 py-1 rounded bg-muted/60 border border-border/50">
                             {devCode}
                           </span>
                         </div>
@@ -572,7 +572,7 @@ function SecurityAndDevicesPage() {
               disabled={loadingDeviceId === deviceToRevoke?.id}
               className="h-11 min-h-11 rounded-lg text-xs font-semibold focus-visible:ring-2 focus-visible:ring-destructive cursor-pointer"
             >
-              {loadingDeviceId === deviceToRevoke?.id ? <Loader2 className="size-3.5 animate-spin mr-2" /> : null}
+              {loadingDeviceId === deviceToRevoke?.id ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none mr-2" /> : null}
               Desconectar
             </Button>
           </DialogFooter>

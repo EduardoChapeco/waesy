@@ -224,7 +224,7 @@ export function SimLabQuickTestSheet({
             >
               {isRunning ? (
                 <>
-                  <Loader2 className="size-4 animate-spin" /> Simulando Coorte ({municipality})...
+                  <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> Simulando Coorte ({municipality})...
                 </>
               ) : (
                 <>

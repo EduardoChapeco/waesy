@@ -30,15 +30,15 @@ export function PriceBlock({
   return (
     <div className={cn("space-y-1", className)}>
       {originalPrice && (
-        <span className="text-2xs line-through text-muted-foreground font-mono tabular-nums block">
+        <span className="text-2xs line-through text-muted-foreground font-mono tabular-nums whitespace-nowrap block">
           {originalPrice}
         </span>
       )}
-      <div className={cn("font-bold text-foreground font-mono tabular-nums", sizeClasses)}>
+      <div className={cn("font-bold text-foreground font-mono tabular-nums whitespace-nowrap", sizeClasses)}>
         {price}
       </div>
       {installments && (
-        <span className="text-3xs text-muted-foreground block font-mono">
+        <span className="text-3xs text-muted-foreground block font-mono whitespace-nowrap">
           {installments}
         </span>
       )}
@@ -189,7 +189,7 @@ export function CompactProductCard({
         <button
           type="button"
           onClick={onRemove}
-          className="text-2xs text-muted-foreground hover:text-destructive cursor-pointer p-1"
+          className="text-2xs text-muted-foreground hover:text-destructive cursor-pointer p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           Remover
         </button>

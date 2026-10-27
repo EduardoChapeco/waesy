@@ -113,7 +113,7 @@ export function SignatureCanvasPad({ onSave, className }: SignatureCanvasPadProp
  size="sm"
  onClick={handleClear}
  disabled={!hasDrawn}
- className="h-7 px-2 text-[11px] font-semibold text-muted-foreground hover:text-rose-600 gap-1 cursor-pointer"
+ className="h-7 px-2 text-2xs font-semibold text-muted-foreground hover:text-rose-600 gap-1 cursor-pointer"
  >
  <Eraser className="size-3" /> Limpar
  </Button>
@@ -133,7 +133,7 @@ export function SignatureCanvasPad({ onSave, className }: SignatureCanvasPadProp
  />
 
  {/* Linha guia de assinatura */}
- <div className="absolute left-6 right-6 bottom-7 border-b border-muted-foreground/30 pointer-events-none flex items-center justify-between text-[10px] font-mono text-muted-foreground/50">
+ <div className="absolute left-6 right-6 bottom-7 border-b border-muted-foreground/30 pointer-events-none flex items-center justify-between text-2xs font-mono text-muted-foreground/50">
  <span>X __________________________________________</span>
  <span>Assinatura Digital</span>
  </div>

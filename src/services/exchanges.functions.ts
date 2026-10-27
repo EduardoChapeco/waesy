@@ -229,6 +229,36 @@ export const updateExchangeStatus = createServerFn({ method: "POST" })
         throw new Error("Erro ao processar transação de troca: " + rpcError.message);
       }
 
+      // Registro operacional em payment_refunds (Cluster 6)
+      if (resolutionType === "refund") {
+        try {
+          const refundValue = refundCents ?? exchange.total_value_cents ?? 0;
+          if (refundValue > 0) {
+            const { data: ord } = await supabase
+              .from("orders")
+              .select("customer_id")
+              .eq("id", exchange.original_order_id)
+              .maybeSingle();
+
+            if (ord?.customer_id) {
+              await supabase.from("payment_refunds").insert({
+                customer_id: ord.customer_id,
+                amount_cents: refundValue,
+                reason: exchange.reason || "Reembolso operacional por troca/devolução",
+                status: "completed",
+                metadata: {
+                  exchange_id: exchangeId,
+                  order_id: exchange.original_order_id,
+                  processed_by: identity.id,
+                },
+              });
+            }
+          }
+        } catch (refundErr) {
+          console.warn("[updateExchangeStatus] Falha não impeditiva ao registrar payment_refunds:", refundErr);
+        }
+      }
+
       return { status: "success", rpcResult };
     }
 
@@ -303,3 +333,47 @@ export const listCustomerExchanges = createServerFn({ method: "GET" }).handler(a
     throw new Error((e instanceof Error ? e.message : String(e)) || "Erro ao buscar trocas.");
   }
 });
+
+
+// ---------------------------------------------------------------------------
+// Reembolsos Operacionais (payment_refunds - Cluster 6)
+// ---------------------------------------------------------------------------
+export const listPaymentRefunds = createServerFn({ method: "GET" }).handler(async () => {
+  const supabase = getServerClient();
+  const identity = await getServerIdentity();
+  assertStoreAccess(identity, ["owner", "admin", "manager", "finance"]);
+
+  const { data, error } = await supabase
+    .from("payment_refunds")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(50);
+
+  if (error) {
+    console.warn("[listPaymentRefunds] Falha ao consultar refunds:", error.message);
+    return [];
+  }
+  return data || [];
+});
+
+// ---------------------------------------------------------------------------
+// UNIFICAÇÃO BIDIRECIONAL DE PÓS-VENDA, RMA E TROCAS (CLUSTER 7 - SEÇÃO H)
+// ---------------------------------------------------------------------------
+export {
+  CreateCustomerAfterSalesSchema,
+  CancelCustomerAfterSalesSchema,
+  listCustomerAfterSales,
+  createCustomerAfterSalesRequest,
+  cancelCustomerAfterSalesRequest,
+  updateAfterSalesStatus,
+  resolveAfterSalesWithCredit,
+  listCustomerRmas,
+  requestCustomerRma,
+  requestOrderReturn,
+  updateRmaStatus,
+  resolveRmaWithCredit,
+  analyzePhotoForensics,
+  parseRmaForensics,
+  getCommercialStatusInfo,
+} from "./rma.functions";
+export type { CustomerAfterSalesRequestDTO } from "./rma.functions";

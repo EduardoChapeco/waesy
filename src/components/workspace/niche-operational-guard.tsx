@@ -139,7 +139,7 @@ export function NicheOperationalGuard({
  <Card className="p-6 sm:p-8 rounded-lg border border-border/80 bg-card shadow-xs space-y-6">
  <div className="space-y-2 text-left">
  <div className="flex items-center gap-2">
- <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary uppercase">
+ <Badge variant="outline" className="text-2xs font-mono border-primary/30 text-primary uppercase">
  Orientação de Nicho • {semantics.name}
  </Badge>
  </div>
@@ -164,7 +164,7 @@ export function NicheOperationalGuard({
  <Link
  key={idx}
  to={item.path as any}
- className="p-4 rounded-lg border border-border/70 bg-muted/20 hover:bg-muted/40 hover:border-primary/40 transition-all flex flex-col justify-between group space-y-3"
+ className="p-4 rounded-lg border border-border/70 bg-muted/20 hover:bg-muted/40 hover:border-primary/40 transition-colors duration-200 flex flex-col justify-between group space-y-3"
  >
  <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
  <Icon className="size-4" />
@@ -174,7 +174,7 @@ export function NicheOperationalGuard({
  <span>{item.title}</span>
  <ChevronRight className="size-3 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
  </h3>
- <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
+ <p className="text-2xs text-muted-foreground mt-1 leading-snug">
  {item.desc}
  </p>
  </div>

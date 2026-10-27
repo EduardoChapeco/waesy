@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { User, Save, MapPin, ShieldCheck, FileText, Mail, Phone, AlertTriangle, Gift, HeartPulse, Calendar, CreditCard, History, Tag, TrendingUp, Plane, Users2, Smartphone, ExternalLink, Copy, Award, Luggage, QrCode, CheckCircle2, ChevronRight, Share2, Compass, Armchair, Utensils } from "lucide-react";
+import { User, Save, MapPin, ShieldCheck, FileText, Mail, Phone, AlertTriangle, Gift, HeartPulse, Calendar, CreditCard, History, Tag, TrendingUp, Plane, Users2, Smartphone, ExternalLink, Copy, Award, Luggage, QrCode, CheckCircle2, ChevronRight, Share2, Compass, Armchair, Utensils, Receipt } from "lucide-react";
+import { CommercialBudgetPadSheet } from "@/components/documents/CommercialBudgetPadSheet";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,9 +12,11 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { EmptyState } from "@/components/state/states";
-import { getCustomer360, updateCustomerCrm, addCustomerClinicalRecord, grantCustomerStoreCredit, saveTravelerPreferences } from "@/services/crm.functions";
+import { getCustomer360, updateCustomer, updateCustomerCrm, addCustomerClinicalRecord, grantCustomerStoreCredit, saveTravelerPreferences } from "@/services/crm.functions";
 import { DocumentsPanel } from "@/components/crm/DocumentsPanel";
 import { formatMoney } from "@/lib/money";
+import { exportElementAsPdf } from "@/lib/pdf-export";
+import { Customer360PrintableDossier } from "@/components/dossier/customer-360-printable-dossier";
 
 export const Route = createFileRoute("/workspace/clientes/$id")({
   head: () => ({ meta: [{ title: "Ficha 360° do Cliente | Workspace" }] }),
@@ -34,6 +37,7 @@ function CustomerDetailPage() {
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState("timeline");
+  const [isBudgetPadOpen, setIsBudgetPadOpen] = useState(false);
 
   // CRM State
   const [notes, setNotes] = useState(data?.crm?.notes || "");
@@ -45,6 +49,20 @@ function CustomerDetailPage() {
   const [creditAmount, setCreditAmount] = useState("");
   const [creditDescription, setCreditDescription] = useState("");
   const [isSavingCredit, setIsSavingCredit] = useState(false);
+  const [isExportingDossier, setIsExportingDossier] = useState(false);
+
+  const handleExportDossierPdf = async () => {
+    setIsExportingDossier(true);
+    try {
+      const cleanName = (data?.profile?.name || "cliente").replace(/\s+/g, "_");
+      await exportElementAsPdf("customer-360-dossier", `Dossie_360_${cleanName}.pdf`);
+      toast.success("Dossiê 360° em PDF baixado com sucesso!");
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao gerar Dossiê 360° em PDF.");
+    } finally {
+      setIsExportingDossier(false);
+    }
+  };
 
   // Modal de Prontuário / Anamnese
   const [isClinicalModalOpen, setIsClinicalModalOpen] = useState(false);
@@ -228,20 +246,47 @@ function CustomerDetailPage() {
     }
   };
 
-  // Agrega todos os pax de todos os leads vinculados
+  // Agrega todos os pax de leads vinculados + co-viajantes de viagens confirmadas
   const allPax: any[] = [];
   (data.commercialLeads || []).forEach((lead: any) => {
     if (Array.isArray(lead.pax_list)) {
       lead.pax_list.forEach((pax: any) =>
-        allPax.push({ ...pax, _leadTitle: lead.title || "Oportunidade" })
+        allPax.push({ ...pax, _leadTitle: lead.title || lead.destination || "Oportunidade Comercial" })
       );
     }
   });
+  (data.coTravelers || []).forEach((coPx: any) => {
+    const alreadyInList = allPax.some(
+      (p) => p.full_name?.toLowerCase() === coPx.full_name?.toLowerCase()
+    );
+    if (!alreadyInList) {
+      allPax.push({
+        full_name: coPx.full_name,
+        document: coPx.document,
+        birth_date: coPx.birth_date,
+        phone: coPx.phone,
+        relationship: coPx.is_lead_passenger ? "Titular da Viagem" : "Co-Viajante",
+        _leadTitle: `Viagem: ${coPx.trip_title || "Confirmada"}`,
+      });
+    }
+  });
+
+  const isCustomerBlocked = data.profile.status === "blocked";
+  const handleToggleBlockCustomer = async () => {
+    const nextStatus = isCustomerBlocked ? "active" : "blocked";
+    try {
+      await updateCustomer({ data: { id: data.profile.id, status: nextStatus } });
+      toast.success(nextStatus === "blocked" ? "Cliente bloqueado na carteira!" : "Cliente desbloqueado com sucesso!");
+      router.invalidate();
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao alterar status do cliente.");
+    }
+  };
 
   return (
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-12 overflow-x-hidden">
       {/* ── Header ── */}
-      <PageHeader
+      <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         title={data.profile.name}
         actions={
           <div className="flex items-center gap-2">
@@ -286,6 +331,16 @@ function CustomerDetailPage() {
             <Button
               variant="outline"
               size="sm"
+              onClick={handleExportDossierPdf}
+              disabled={isExportingDossier}
+              className="gap-2 font-bold text-xs min-h-11 cursor-pointer"
+            >
+              <FileText className="size-3.5 text-primary" />
+              {isExportingDossier ? "Gerando..." : "Exportar Dossiê 360°"}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setIsCreditModalOpen(true)}
               className="gap-2 font-bold text-xs min-h-11"
             >
@@ -293,9 +348,38 @@ function CustomerDetailPage() {
               Conceder Crédito
             </Button>
             <Button
+              variant="outline"
+              onClick={() => {
+                navigator.clipboard.writeText(window.location.href);
+                toast.success("Link da Ficha 360° copiado!");
+              }}
+              className="gap-2 font-bold text-xs min-h-11 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <Copy className="size-3.5" />
+              Copiar Link
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleToggleBlockCustomer}
+              className={`gap-2 font-bold text-xs min-h-11 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring ${isCustomerBlocked ? "text-emerald-600 border-emerald-500/30" : "text-destructive border-destructive/30"}`}
+            >
+              <AlertTriangle className="size-3.5" />
+              {isCustomerBlocked ? "Desbloquear" : "Bloquear Cliente"}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsBudgetPadOpen(true)}
+              className="gap-2 font-bold text-xs min-h-11 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <Receipt className="size-3.5 text-primary" />
+              Novo Orçamento / Fatura
+            </Button>
+            <Button
               size="sm"
               onClick={() => setIsClinicalModalOpen(true)}
-              className="gap-2 font-bold text-xs min-h-11"
+              className="gap-2 font-bold text-xs min-h-11 focus-visible:ring-2 focus-visible:ring-ring"
             >
               <HeartPulse className="size-3.5" />
               Novo Atendimento
@@ -303,6 +387,60 @@ function CustomerDetailPage() {
           </div>
         }
       />
+      <div className="waesy-offscreen-render">
+        <Customer360PrintableDossier
+          customer={{
+            id: data?.profile?.id || id,
+            fullName: data?.profile?.name || "Cliente",
+            taxId: data?.profile?.taxId,
+            email: data?.profile?.email,
+            phone: data?.profile?.phone,
+            city: data?.profile?.city,
+            state: data?.profile?.state,
+            birthDate: data?.profile?.birthDate,
+            avatarUrl: data?.profile?.avatarUrl,
+            isConsentLgpd: data?.profile?.isConsentLgpd,
+            createdAt: data?.profile?.createdAt,
+          }}
+          metrics={{
+            ltvCents: data?.kpis?.ltvCents,
+            ordersCount: data?.kpis?.ordersCount,
+            pendingDebtCents: data?.kpis?.pendingDebtCents,
+          }}
+          history={(data?.timeline || []).map((t: any) => ({
+            id: t.id || String(Math.random()),
+            date: t.date || "Recente",
+            title: t.title || "Atendimento",
+            type: t.type || "Geral",
+            amountCents: t.amountCents,
+            status: t.status || "Concluído",
+          }))}
+          storeName="Waesy CRM"
+        />
+      </div>
+
+      {/* ── Alerta Interno / Status de Bloqueio ── */}
+      {(isCustomerBlocked || (data.crm?.notes && data.crm.notes.trim().length > 0)) && (
+        <div className={`p-4 rounded-lg border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs ${isCustomerBlocked ? "bg-destructive/10 border-destructive/30 text-destructive" : "bg-amber-500/10 border-amber-500/30 text-foreground"}`}>
+          <div className="flex items-start gap-3">
+            <AlertTriangle className={`size-4 shrink-0 mt-1 ${isCustomerBlocked ? "text-destructive" : "text-amber-600"}`} />
+            <div className="space-y-1">
+              <span className="font-bold uppercase tracking-wider block">
+                {isCustomerBlocked ? "Cliente Bloqueado para Novas Transações" : "Sinalização Interna da Agência"}
+              </span>
+              {data.crm?.notes && <p className="text-muted-foreground leading-relaxed">{data.crm.notes}</p>}
+            </div>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setActiveTab("crm")}
+            className="h-11 min-h-11 px-3 text-xs font-bold shrink-0 focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            Editar Sinalização
+          </Button>
+        </div>
+      )}
 
       {/* ── 1. Topo da Ficha: Perfil & KPIs 360° ── */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
@@ -347,9 +485,24 @@ function CustomerDetailPage() {
               </div>
             )}
             {data.profile.birthDate && (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Calendar className="size-3.5 shrink-0" />
-                <span>Aniversário: {new Date(data.profile.birthDate).toLocaleDateString("pt-BR")}</span>
+              <div className="flex items-center justify-between gap-2 text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <Calendar className="size-3.5 shrink-0 text-amber-500" />
+                  <span>Aniversário: {new Date(data.profile.birthDate).toLocaleDateString("pt-BR")}</span>
+                </div>
+                {data.profile.phone && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const clean = data.profile.phone.replace(/\D/g, "");
+                      const msg = encodeURIComponent(`Olá ${data.profile.name}! Passando para desejar um feliz aniversário e muitas viagens incríveis! Preparamos um mimo especial para sua próxima reserva conosco.`);
+                      window.open(`https://wa.me/55${clean}?text=${msg}`, "_blank");
+                    }}
+                    className="h-11 min-h-11 px-2 text-xs font-bold text-emerald-600 hover:underline cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    Parabenizar
+                  </button>
+                )}
               </div>
             )}
             {data.profile.emergencyContactName && (
@@ -419,7 +572,7 @@ function CustomerDetailPage() {
             <FileText className="size-3.5 text-primary" />
             <span>Docs ({data.documents?.length || 0})</span>
             {data.documents?.some((d: any) => d.expiryStatus === "expired") && (
-              <span className="size-2 rounded-full bg-rose-500 animate-pulse" />
+              <span className="size-2 rounded-full bg-rose-500 animate-pulse motion-reduce:animate-none" />
             )}
           </TabsTrigger>
           <TabsTrigger value="addresses" className="text-xs font-semibold gap-2 shrink-0 px-3 py-2 rounded-lg min-h-9 whitespace-nowrap cursor-pointer">
@@ -464,6 +617,8 @@ function CustomerDetailPage() {
                         <FileText className="size-5 text-primary" />
                       ) : event.type === "contract" ? (
                         <ShieldCheck className="size-5 text-emerald-500" />
+                      ) : event.type === "commercial_invoice" ? (
+                        <Receipt className="size-5 text-sky-500" />
                       ) : event.type === "quote" ? (
                         <Plane className="size-5 text-amber-500" />
                       ) : event.type === "commercial_lead" ? (
@@ -499,6 +654,82 @@ function CustomerDetailPage() {
             />
           ) : (
             <div className="space-y-5">
+
+              {/* Faturas e Orçamentos do Bloco Comercial */}
+              {(data.commercialInvoices || []).length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between pt-2">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                      <Receipt className="size-3.5 text-primary" />
+                      Faturas e Orçamentos Comerciais ({data.commercialInvoices.length})
+                    </h3>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsBudgetPadOpen(true)}
+                      className="h-11 min-h-11 px-3 text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <Receipt className="size-3.5 text-primary" />
+                      <span>Emitir no Bloco</span>
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {data.commercialInvoices.map((inv: any) => (
+                      <div
+                        key={inv.id}
+                        className="p-4 rounded-lg bg-card border border-border/60 hover:border-border transition-colors flex flex-col justify-between gap-3"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <div className="size-10 rounded-lg bg-sky-500/10 text-sky-600 flex items-center justify-center shrink-0">
+                              <Receipt className="size-5" />
+                            </div>
+                            <div className="min-w-0">
+                              <h4 className="font-bold text-sm text-foreground truncate">
+                                {inv.document_type === "budget" ? "Orçamento" : "Fatura"} {inv.invoice_code}
+                              </h4>
+                              <p className="text-xs text-muted-foreground font-mono">
+                                Emitido em {new Date(inv.created_at).toLocaleDateString("pt-BR")}
+                              </p>
+                            </div>
+                          </div>
+                          <Badge variant={inv.status === "paid" ? "default" : "outline"} className="text-xs uppercase font-bold shrink-0">
+                            {inv.status}
+                          </Badge>
+                        </div>
+
+                        <div className="bg-muted/30 p-3 rounded-lg flex items-center justify-between text-xs">
+                          <span className="text-muted-foreground text-xs">Valor Total</span>
+                          <span className="font-mono font-bold text-foreground">
+                            {formatMoney(inv.total_cents || 0)}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center justify-end gap-2 pt-1">
+                          {inv.public_token && (
+                            <Button asChild variant="ghost" className="text-xs gap-1 h-11 min-h-11 font-semibold">
+                              <a href={`/fatura/${inv.public_token}`} target="_blank" rel="noopener noreferrer">
+                                <span>Ver Fatura A4</span>
+                                <ExternalLink className="size-3" />
+                              </a>
+                            </Button>
+                          )}
+                          {inv.contract_id && (
+                            <Button asChild variant="outline" className="text-xs gap-2 h-11 min-h-11 font-semibold">
+                              <Link to="/workspace/contratos">
+                                <span>Ver Contrato</span>
+                                <ChevronRight className="size-3.5" />
+                              </Link>
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Viagens Confirmadas em Operação */}
               {(data.confirmedTrips?.length || 0) > 0 && (
                 <div className="space-y-3">
@@ -555,8 +786,21 @@ function CustomerDetailPage() {
                           )}
                         </div>
 
-                        <div className="flex items-center justify-end gap-2 pt-1">
-                          <Button asChild size="sm" variant="outline" className="text-xs gap-2 h-8 font-semibold">
+                        <div className="flex flex-wrap items-center justify-end gap-2 pt-1">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => {
+                              const tripPortalUrl = `${window.location.origin}/viajante/viagem/${trip.id}`;
+                              navigator.clipboard.writeText(tripPortalUrl);
+                              toast.success("Link do Portal da Viagem copiado para enviar ao passageiro!");
+                            }}
+                            className="text-xs gap-1 h-11 min-h-11 font-semibold text-primary focus-visible:ring-2 focus-visible:ring-ring"
+                          >
+                            <Share2 className="size-3.5" />
+                            <span>Copiar Portal da Viagem</span>
+                          </Button>
+                          <Button asChild variant="outline" className="text-xs gap-2 h-11 min-h-11 font-semibold focus-visible:ring-2 focus-visible:ring-ring">
                             <Link to="/workspace/turismo/viagens/$id" params={{ id: trip.id }}>
                               <span>Abrir Roteiro Completo</span>
                               <ChevronRight className="size-3.5" />
@@ -614,14 +858,14 @@ function CustomerDetailPage() {
 
                           <div className="flex items-center justify-end gap-2 pt-1">
                             {prop.public_token && (
-                              <Button asChild size="sm" variant="ghost" className="text-xs gap-1 h-8 font-semibold">
+                              <Button asChild variant="ghost" className="text-xs gap-1 h-11 min-h-11 font-semibold">
                                 <a href={`/proposta/${prop.public_token}`} target="_blank" rel="noopener noreferrer">
                                   <span>Visualizar</span>
                                   <ExternalLink className="size-3" />
                                 </a>
                               </Button>
                             )}
-                            <Button asChild size="sm" variant="outline" className="text-xs gap-2 h-8 font-semibold">
+                            <Button asChild variant="outline" className="text-xs gap-2 h-11 min-h-11 font-semibold">
                               <Link to="/workspace/turismo/propostas/$id" params={{ id: prop.id }}>
                                 <span>Gerenciar</span>
                                 <ChevronRight className="size-3.5" />
@@ -680,14 +924,14 @@ function CustomerDetailPage() {
 
                           <div className="flex items-center justify-end gap-2 pt-1">
                             {contract.verification_code && (
-                              <Button asChild size="sm" variant="ghost" className="text-xs gap-1 h-8 font-semibold">
+                              <Button asChild variant="ghost" className="text-xs gap-1 h-11 min-h-11 font-semibold">
                                 <a href={`/contrato/${contract.verification_code}`} target="_blank" rel="noopener noreferrer">
                                   <span>Via Digital</span>
                                   <ExternalLink className="size-3" />
                                 </a>
                               </Button>
                             )}
-                            <Button asChild size="sm" variant="outline" className="text-xs gap-2 h-8 font-semibold">
+                            <Button asChild variant="outline" className="text-xs gap-2 h-11 min-h-11 font-semibold">
                               <Link to="/workspace/turismo/contratos">
                                 <span>Painel</span>
                                 <ChevronRight className="size-3.5" />
@@ -757,12 +1001,7 @@ function CustomerDetailPage() {
               <h3 className="text-sm font-bold text-foreground">Ficha de Preferências do Viajante</h3>
               <p className="text-xs text-muted-foreground">Assentos, refeições, milhagem e assistência especial para emissão ágil.</p>
             </div>
-            <Button
-              onClick={() => setIsTravelerModalOpen(true)}
-              variant="outline"
-              size="sm"
-              className="text-xs gap-2 min-h-9 font-semibold"
-            >
+            <Button onClick={() => setIsTravelerModalOpen(true)} variant="outline" className="text-xs gap-2 h-11 min-h-11 font-semibold">
               <Compass className="size-3.5 text-primary" />
               Editar Preferências
             </Button>
@@ -1367,6 +1606,23 @@ function CustomerDetailPage() {
           </SheetFooter>
         </SheetContent>
       </Sheet>
+
+      <CommercialBudgetPadSheet
+        open={isBudgetPadOpen}
+        onOpenChange={(open) => {
+          setIsBudgetPadOpen(open);
+          if (!open) router.invalidate();
+        }}
+        initialCustomerId={id}
+        initialClientData={{
+          name: data.profile.name,
+          cpfOrCnpj: data.profile.taxId || "",
+          phone: data.profile.phone || "",
+          email: data.profile.email || "",
+          address: data.profile.addressLine || "",
+          cityState: data.profile.city && data.profile.state ? `${data.profile.city} - ${data.profile.state}` : "",
+        }}
+      />
     </div>
   );
 }

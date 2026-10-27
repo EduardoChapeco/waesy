@@ -84,7 +84,7 @@ export function EventoLineup({ eventId }: EventoLineupProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12 text-muted-foreground text-sm gap-2">
-        <Layers className="size-4 animate-spin" />
+        <Layers className="size-4 animate-spin motion-reduce:animate-none" />
         <span>Carregando lineup e cronograma de shows...</span>
       </div>
     );
@@ -186,7 +186,7 @@ export function EventoLineup({ eventId }: EventoLineupProps) {
         <Card className="rounded-lg border border-dashed border-border/80 p-8 text-center bg-card/40">
           <Music className="size-8 text-muted-foreground mx-auto mb-2 opacity-50" />
           <p className="text-xs font-bold text-foreground">Nenhuma atração cadastrada</p>
-          <p className="text-[11px] text-muted-foreground mt-1">
+          <p className="text-2xs text-muted-foreground mt-1">
             Cadastre os artistas para publicar a programação na vitrine pública do evento.
           </p>
         </Card>
@@ -195,7 +195,7 @@ export function EventoLineup({ eventId }: EventoLineupProps) {
           {lineup.map((art, idx) => (
             <Card
               key={art.id}
-              className="rounded-lg border border-border/80 bg-card p-4 shadow-xs flex items-center justify-between hover:border-primary/40 transition-all"
+              className="rounded-lg border border-border/80 bg-card p-4 shadow-xs flex items-center justify-between hover:border-primary/40 transition-colors duration-200"
             >
               <div className="flex items-center gap-4">
                 <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
@@ -204,7 +204,7 @@ export function EventoLineup({ eventId }: EventoLineupProps) {
                 <div>
                   <div className="flex items-center gap-2">
                     <h4 className="text-sm font-bold text-foreground">{art.nome_artista}</h4>
-                    <Badge variant="secondary" className="text-[10px]">
+                    <Badge variant="secondary" className="text-2xs">
                       {art.palco}
                     </Badge>
                   </div>
@@ -214,7 +214,7 @@ export function EventoLineup({ eventId }: EventoLineupProps) {
                     </p>
                   )}
                   {(art.horario_inicio || art.horario_fim) && (
-                    <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-1">
+                    <div className="flex items-center gap-2 text-2xs text-muted-foreground mt-1">
                       <Clock className="size-3" />
                       <span>
                         {art.horario_inicio ? new Date(art.horario_inicio).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "--:--"}
@@ -229,7 +229,7 @@ export function EventoLineup({ eventId }: EventoLineupProps) {
               <button
                 type="button"
                 onClick={() => handleDelete(art.id)}
-                className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-muted transition-colors"
+                className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 title="Excluir atração"
               >
                 <Trash2 className="size-4" />

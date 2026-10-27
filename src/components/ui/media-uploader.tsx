@@ -9,6 +9,7 @@ import { compressImage } from "@/lib/image-compression";
 import { extractMediaFromClipboard } from "@/lib/clipboard-media";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { resolveStorageMediaUrl } from "@/lib/classifieds/storage-media";
 
 export interface MediaData {
  id: string;
@@ -35,6 +36,7 @@ export interface MediaUploaderProps {
  lockAspect?: boolean;
  enableCrop?: boolean;
   showExternalUrlOption?: boolean;
+  targetPlatform?: "mobile" | "desktop" | "universal";
 }
 
 export const MediaUploader: React.FC<MediaUploaderProps> = ({
@@ -47,7 +49,8 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  bucket = "post-media",
  folder = "classifieds",
  showExternalUrlOption = true,
- className,
+  targetPlatform = "universal",
+  className,
  label,
  accept = "all",
  aspect,
@@ -68,8 +71,12 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
 
  // Compute smart aspect based on bucket/folder if not explicitly provided (1:1 com a renderização)
  const computedAspect =
-   aspect !== undefined
-     ? aspect
+    aspect !== undefined
+      ? aspect
+      : targetPlatform === "desktop"
+      ? 28 / 9
+      : targetPlatform === "mobile"
+      ? 16 / 9
       : folder?.includes("desktop")
       ? 28 / 9
       : folder?.includes("mobile")
@@ -101,12 +108,17 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  ? value
  : [];
 
+ const resolveMediaUrl = (raw: string) => {
+   return resolveStorageMediaUrl(raw, bucket);
+ };
+
  const mediaList: MediaData[] = normalizedRawValue.map((item, idx) => {
  if (typeof item === "string") {
  const isVid = item.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i);
+ const resolvedUrl = resolveMediaUrl(item);
  return {
  id: `media-${idx}-${item.slice(-10)}`,
- url: item,
+ url: resolvedUrl,
  path: item,
  type: isVid ? "video" : "image",
  };
@@ -129,6 +141,16 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
    toast.error("Insira uma URL válida iniciando com http:// ou https://");
    return;
   }
+
+    // Se o recorte físico estiver habilitado e for imagem, abre o modal de corte imediatamente
+    if (enableCrop && !rawUrl.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i)) {
+      setCurrentImageSrc(rawUrl);
+      setEditingMediaIndex(null);
+      setCropModalOpen(true);
+      setShowUrlInput(false);
+      setExternalUrl("");
+      return;
+    }
 
   if (mediaList.length >= maxFiles && maxFiles > 1) {
    toast.error(`Você pode adicionar no máximo ${maxFiles} itens.`);
@@ -417,7 +439,7 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  <div
  onPaste={handlePaste}
  tabIndex={0}
- className={cn("space-y-3 outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 rounded-lg", className)}
+ className={cn("media-uploader-root space-y-3 outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 rounded-lg", className)}
  >
  {/* Cabeçalho com label e toggle de URL */}
  <div className="flex items-center justify-between">
@@ -613,7 +635,15 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
                   </div>
                 </div>
               ) : (
-                <img src={item.url} alt={`Mídia ${idx + 1}`} className="size-full object-cover" />
+                <img
+                  src={item.url}
+                  alt={`Mídia ${idx + 1}`}
+                  className="size-full object-cover"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src =
+                      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%23888888' stroke-width='1.5'%3E%3Crect width='18' height='18' x='3' y='3' rx='2' ry='2'/%3E%3Ccircle cx='9' cy='9' r='2'/%3E%3Cpath d='m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21'/%3E%3C/svg%3E";
+                  }}
+                />
               )}
 
               {/* Botões de Ação sobrepostos acessíveis (>= 44px) */}
@@ -660,14 +690,15 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
       )}
 
       <ImageCropperDialog
- open={cropModalOpen}
- onOpenChange={setCropModalOpen}
- imageSrc={currentImageSrc}
- aspect={computedAspect}
- cropShape={cropShape}
- lockAspect={lockAspect}
- onCropCompleteAction={handleCropComplete}
- />
+        open={cropModalOpen}
+        onOpenChange={setCropModalOpen}
+        imageSrc={currentImageSrc}
+        aspect={computedAspect}
+        cropShape={cropShape}
+        lockAspect={lockAspect}
+        targetPlatform={targetPlatform}
+        onCropCompleteAction={handleCropComplete}
+      />
  </div>
  );
 };

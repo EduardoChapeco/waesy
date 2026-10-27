@@ -80,7 +80,7 @@ export function EventoCustos({ eventId }: EventoCustosProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12 text-muted-foreground text-sm gap-2">
-        <Layers className="size-4 animate-spin" />
+        <Layers className="size-4 animate-spin motion-reduce:animate-none" />
         <span>Calculando demonstrativo de resultados do evento...</span>
       </div>
     );
@@ -125,7 +125,7 @@ export function EventoCustos({ eventId }: EventoCustosProps) {
           <p className="text-2xl font-bold text-foreground mt-2">
             {summary.totalReceitas.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
           </p>
-          <p className="text-[11px] text-muted-foreground mt-1">Bilheteria + patrocínios + consumo</p>
+          <p className="text-2xs text-muted-foreground mt-1">Bilheteria + patrocínios + consumo</p>
         </Card>
 
         <Card className="rounded-lg border border-border/80 bg-card p-4 shadow-xs">
@@ -136,7 +136,7 @@ export function EventoCustos({ eventId }: EventoCustosProps) {
           <p className="text-2xl font-bold text-rose-600 dark:text-rose-400 mt-2">
             {summary.totalDespesas.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
           </p>
-          <p className="text-[11px] text-muted-foreground mt-1">Fornecedores, equipe, estrutura e taxas</p>
+          <p className="text-2xs text-muted-foreground mt-1">Fornecedores, equipe, estrutura e taxas</p>
         </Card>
 
         <Card className="rounded-lg border border-border/80 bg-card p-4 shadow-xs">
@@ -151,7 +151,7 @@ export function EventoCustos({ eventId }: EventoCustosProps) {
           >
             {summary.margemLucro.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
           </p>
-          <p className="text-[11px] text-muted-foreground mt-1">
+          <p className="text-2xs text-muted-foreground mt-1">
             Margem líquida de {summary.margemPercentual}% sobre o faturamento
           </p>
         </Card>
@@ -183,7 +183,7 @@ export function EventoCustos({ eventId }: EventoCustosProps) {
                     <span className="font-mono text-muted-foreground">
                       {item.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                     </span>
-                    <Badge variant="secondary" className="text-[10px] font-mono py-0 px-2">
+                    <Badge variant="secondary" className="text-2xs font-mono py-0 px-2">
                       {item.percentual}%
                     </Badge>
                   </div>

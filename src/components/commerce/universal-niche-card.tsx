@@ -15,6 +15,10 @@ import {
   Truck,
   CreditCard,
   Tag,
+  Tractor,
+  HeartPulse,
+  Briefcase,
+  UserCheck,
 } from "lucide-react";
 import { Bed, WhatsappLogo } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
@@ -199,6 +203,94 @@ export function resolveNicheFeaturePills(item: any, nicheId: string): [FeaturePi
       return [pill1, pill2];
     }
 
+    case "agri":
+    case "agro": {
+      // 1. Horímetro / Área em ha / Ano
+      const hours = attrs.hours_meter || attrs.horimetro;
+      const area = attrs.area_hectares || attrs.area_ha;
+      const year = attrs.model_year || attrs.ano_fabricacao;
+      const pill1: FeaturePill = {
+        icon: Clock,
+        label: hours ? "Uso" : area ? "Área" : "Ano",
+        value: hours ? `${hours} horas` : area ? `${area} ha` : year ? `Ano ${year}` : "Pronto p/ campo",
+      };
+
+      // 2. Tração / Potência / Implemento
+      const traction = attrs.traction || attrs.tracao;
+      const power = attrs.power_hp || attrs.potencia_cv;
+      const sub = attrs.subniche || attrs.implement_type || "Máquina Agrícola";
+      const pill2: FeaturePill = {
+        icon: Tractor,
+        label: "Especificação",
+        value: traction ? `Tração ${traction}${power ? ` • ${power} CV` : ""}` : power ? `${power} CV` : String(sub),
+      };
+      return [pill1, pill2];
+    }
+
+    case "pharmacy":
+    case "farmacia":
+    case "saude": {
+      // 1. Princípio Ativo / Dosagem
+      const active = attrs.active_ingredient || attrs.dosage || attrs.subniche;
+      const pill1: FeaturePill = {
+        icon: HeartPulse,
+        label: "Fórmula / Tipo",
+        value: active ? String(active) : "Cuidados e Saúde",
+      };
+
+      // 2. Receita / Registro
+      const reqPrescription = Boolean(attrs.requires_prescription || attrs.retem_receita);
+      const mfr = attrs.manufacturer || attrs.laboratorio;
+      const pill2: FeaturePill = {
+        icon: ShieldCheck,
+        label: "Disponibilidade",
+        value: reqPrescription ? "Receita Retida" : mfr ? String(mfr) : "Venda Livre",
+      };
+      return [pill1, pill2];
+    }
+
+    case "business":
+    case "negocios": {
+      // 1. Faturamento Mensal
+      const revenue = attrs.monthly_revenue_cents;
+      const pill1: FeaturePill = {
+        icon: Briefcase,
+        label: "Faturamento",
+        value: revenue ? `Fat. ${formatMoney(revenue)}/mês` : attrs.business_type || "Operação Ativa",
+      };
+
+      // 2. Ponto / Confidencialidade
+      const requiresNda = Boolean(attrs.requires_nda || attrs.is_confidential);
+      const point = attrs.commercial_point_type || "Ponto Consolidado";
+      const pill2: FeaturePill = {
+        icon: ShieldCheck,
+        label: "Segurança / Ponto",
+        value: requiresNda ? "Sigilo (NDA)" : String(point),
+      };
+      return [pill1, pill2];
+    }
+
+    case "jobs":
+    case "job":
+    case "vagas": {
+      // 1. Regime de Contratação
+      const regime = attrs.contract_regime || attrs.regime || "CLT";
+      const pill1: FeaturePill = {
+        icon: Briefcase,
+        label: "Regime",
+        value: String(regime),
+      };
+
+      // 2. Modelo de Trabalho
+      const model = attrs.workplace_model || attrs.modality || "Presencial";
+      const pill2: FeaturePill = {
+        icon: UserCheck,
+        label: "Modelo",
+        value: String(model),
+      };
+      return [pill1, pill2];
+    }
+
     default: {
       // Varejo / Produtos em Geral
       // 1. Pagamento / Parcelamento
@@ -296,6 +388,14 @@ export function UniversalNicheCard({
       ? "Ver Imóvel"
       : activeNicheId === "vehicles" || activeNicheId === "veiculos"
       ? "Ver Veículo"
+      : activeNicheId === "agri" || activeNicheId === "agro"
+      ? "Ver Máquina"
+      : activeNicheId === "pharmacy" || activeNicheId === "farmacia"
+      ? "Ver Produto"
+      : activeNicheId === "business" || activeNicheId === "negocios"
+      ? "Ver Negócio"
+      : activeNicheId === "jobs" || activeNicheId === "job" || activeNicheId === "vagas"
+      ? "Ver Vaga"
       : "Ver Detalhes";
 
   const resolvedActionLabel = actionLabel || defaultActionText;
@@ -421,10 +521,10 @@ export function UniversalNicheCard({
                 <pill1.icon className="size-4 text-muted-foreground" />
               </div>
               <div className="min-w-0 flex-1">
-                <span className="text-xs text-muted-foreground leading-none block truncate">
+                <span className="text-xs text-muted-foreground leading-none block break-words text-wrap">
                   {pill1.label}
                 </span>
-                <span className="text-xs sm:text-sm font-semibold text-foreground leading-tight block truncate mt-1">
+                <span className="text-xs sm:text-sm font-semibold text-foreground leading-tight block break-words text-wrap mt-1">
                   {pill1.value}
                 </span>
               </div>
@@ -436,10 +536,10 @@ export function UniversalNicheCard({
                 <pill2.icon className="size-4 text-muted-foreground" />
               </div>
               <div className="min-w-0 flex-1">
-                <span className="text-xs text-muted-foreground leading-none block truncate">
+                <span className="text-xs text-muted-foreground leading-none block break-words text-wrap">
                   {pill2.label}
                 </span>
-                <span className="text-xs sm:text-sm font-semibold text-foreground leading-tight block truncate mt-1">
+                <span className="text-xs sm:text-sm font-semibold text-foreground leading-tight block break-words text-wrap mt-1">
                   {pill2.value}
                 </span>
               </div>

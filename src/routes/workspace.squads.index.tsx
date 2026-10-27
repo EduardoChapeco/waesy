@@ -234,7 +234,7 @@ export function SquadsWorkspacePage() {
       <div>
         {loading ? (
           <div className="h-96 flex flex-col items-center justify-center text-muted-foreground">
-            <RefreshCw className="w-8 h-8 animate-spin mb-3 text-primary" />
+            <RefreshCw className="w-8 h-8 animate-spin motion-reduce:animate-none mb-3 text-primary" />
             <p className="text-sm font-medium">Conectando aos escritórios virtuais dos squads...</p>
           </div>
         ) : (
@@ -268,7 +268,7 @@ export function SquadsWorkspacePage() {
                       </div>
 
                       <span className="inline-flex items-center gap-2 text-xs font-medium px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none" />
                         Operacional
                       </span>
                     </div>
@@ -294,10 +294,10 @@ export function SquadsWorkspacePage() {
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {squad.agents.map((agent) => (
-                          <div
+                          <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                             key={agent.agent_id}
                             onClick={() => setSelectedAgent(agent)}
-                            className="p-3 rounded-lg bg-muted/10 border border-border/40 hover:bg-muted/30 hover:border-border transition-all cursor-pointer flex items-center justify-between group"
+                            className="p-3 rounded-lg bg-muted/10 border border-border/40 hover:bg-muted/30 hover:border-border transition-colors duration-200 cursor-pointer flex items-center justify-between group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             <div className="truncate pr-2">
                               <span className="text-xs font-semibold text-foreground block truncate group-hover:text-primary transition-colors">
@@ -335,7 +335,7 @@ export function SquadsWorkspacePage() {
                           <button
                             type="button"
                             onClick={() => setSelectedRunArtifacts({ squadName: squad.custom_name, run: squad.latest_run })}
-                            className="h-11 px-3 inline-flex items-center gap-2 rounded-lg text-xs font-medium border border-border/60 bg-background hover:bg-muted/40 transition-colors shrink-0 min-h-11"
+                            className="h-11 px-3 inline-flex items-center gap-2 rounded-lg text-xs font-medium border border-border/60 bg-background hover:bg-muted/40 transition-colors shrink-0 min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             <FileCheck className="w-3.5 h-3.5 text-foreground/80" />
                             Inspecionar Parecer
@@ -345,7 +345,7 @@ export function SquadsWorkspacePage() {
                             type="button"
                             onClick={() => handleApproveRun(squad.latest_run!.id)}
                             disabled={actionLoading === `approve-${squad.latest_run.id}`}
-                            className="h-11 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-500 transition-colors shrink-0 min-h-11"
+                            className="h-11 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-semibold bg-emerald-600 text-foreground hover:bg-emerald-500 transition-colors shrink-0 min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             <CheckCircle2 className="w-3.5 h-3.5" />
                             {actionLoading === `approve-${squad.latest_run.id}`
@@ -370,7 +370,7 @@ export function SquadsWorkspacePage() {
                           <button
                             type="button"
                             onClick={() => setSelectedRunArtifacts({ squadName: squad.custom_name, run: squad.latest_run })}
-                            className="text-xs font-semibold text-primary hover:underline cursor-pointer"
+                            className="text-xs font-semibold text-primary hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             Ver Parecer Completo
                           </button>
@@ -381,11 +381,11 @@ export function SquadsWorkspacePage() {
                         type="button"
                         onClick={() => handleTriggerRun(squad.id)}
                         disabled={actionLoading === `trigger-${squad.id}`}
-                        className="h-11 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-medium bg-foreground text-background hover:opacity-90 transition-opacity min-h-11"
+                        className="h-11 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-medium bg-foreground text-background hover:opacity-90 transition-opacity min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <Play
                           className={`w-3.5 h-3.5 ${
-                            actionLoading === `trigger-${squad.id}` ? "animate-spin" : ""
+                            actionLoading === `trigger-${squad.id}` ? "animate-spin motion-reduce:animate-none" : ""
                           }`}
                         />
                         {actionLoading === `trigger-${squad.id}`
@@ -622,7 +622,7 @@ export function SquadsWorkspacePage() {
                   setSelectedRunArtifacts(null);
                 }}
                 disabled={actionLoading === `approve-${selectedRunArtifacts.run.id}`}
-                className="w-full sm:flex-1 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white"
+                className="w-full sm:flex-1 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-foreground"
               >
                 <CheckCircle2 className="w-3.5 h-3.5 mr-2" />
                 {actionLoading === `approve-${selectedRunArtifacts.run.id}` ? "Aprovando..." : "Aprovar Diretriz"}

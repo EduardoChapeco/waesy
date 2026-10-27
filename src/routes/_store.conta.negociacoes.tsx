@@ -98,16 +98,16 @@ function DealTimeline({ status }: { status: string }) {
               <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
                 <div
                   className={cn(
-                    "h-full rounded-full transition-all duration-500",
+                    "h-full rounded-full transition-colors duration-200 duration-500",
                     isReached ? "w-full bg-primary" : "w-0 bg-transparent",
-                    isCurrent && "animate-pulse"
+                    isCurrent && "animate-pulse motion-reduce:animate-none"
                   )}
                 />
               </div>
               <div className="flex items-center justify-between">
                 <span
                   className={cn(
-                    "text-[11px] font-semibold tracking-tight truncate",
+                    "text-xs font-semibold tracking-tight truncate",
                     isReached ? "text-foreground font-bold" : "text-muted-foreground/60"
                   )}
                 >
@@ -247,8 +247,8 @@ function NegociacoesPage() {
         <button
           type="button"
           onClick={() => setActiveTab("all")}
-          className={cn(
-            "snap-start h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
+          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+            "snap-start h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-transform duration-200 select-none active:scale-98",
             activeTab === "all"
               ? "bg-foreground text-background border-foreground font-bold shadow-xs"
               : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
@@ -259,8 +259,8 @@ function NegociacoesPage() {
         <button
           type="button"
           onClick={() => setActiveTab("purchases")}
-          className={cn(
-            "snap-start h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
+          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+            "snap-start h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-transform duration-200 select-none active:scale-98",
             activeTab === "purchases"
               ? "bg-foreground text-background border-foreground font-bold shadow-xs"
               : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
@@ -271,8 +271,8 @@ function NegociacoesPage() {
         <button
           type="button"
           onClick={() => setActiveTab("sales")}
-          className={cn(
-            "snap-start h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
+          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+            "snap-start h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-transform duration-200 select-none active:scale-98",
             activeTab === "sales"
               ? "bg-foreground text-background border-foreground font-bold shadow-xs"
               : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
@@ -283,8 +283,8 @@ function NegociacoesPage() {
         <button
           type="button"
           onClick={() => setActiveTab("bookings")}
-          className={cn(
-            "snap-start h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
+          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+            "snap-start h-11 px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-transform duration-200 select-none active:scale-98",
             activeTab === "bookings"
               ? "bg-foreground text-background border-foreground font-bold shadow-xs"
               : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
@@ -297,7 +297,7 @@ function NegociacoesPage() {
       {/* ── 3. Lista de Negociações com <FrostedCard> (Valor Acordado, Condições e Ações) ── */}
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-2">
-          <Loader2 className="size-5 animate-spin" />
+          <Loader2 className="size-5 animate-spin motion-reduce:animate-none" />
           <p className="text-xs">Carregando negociações...</p>
         </div>
       ) : isError ? (
@@ -323,18 +323,18 @@ function NegociacoesPage() {
                 className="rounded-lg p-4 sm:p-5 space-y-4 border border-border/60 bg-card shadow-2xs"
               >
                 {/* BLOCO 1 (<FrostedCard>): VALOR ACORDADO & TIMELINE */}
-                <FrostedCard intensity="standard" className="p-4 space-y-3">
+                <div className="space-y-3">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <Badge
                           variant={status.variant}
-                          className="text-[10px] font-bold uppercase tracking-wider"
+                          className="text-xs font-bold uppercase tracking-wider"
                         >
                           {status.label}
                         </Badge>
                         {deal.is_direct_booking && (
-                          <Badge variant="outline" className="text-[10px] uppercase font-bold text-primary border-primary/30">
+                          <Badge variant="outline" className="text-xs uppercase font-bold text-primary border-primary/30">
                             Reserva Direta
                           </Badge>
                         )}
@@ -349,7 +349,7 @@ function NegociacoesPage() {
                     </div>
 
                     <div className="sm:text-right">
-                      <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">
+                      <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider block">
                         {isRental ? "Total da Estadia" : "Valor Acordado"}
                       </span>
                       <span className="text-xl font-black text-primary font-mono">
@@ -361,24 +361,24 @@ function NegociacoesPage() {
                   {["negotiating", "accepted", "confirmed", "completed"].includes(deal.status) && (
                     <DealTimeline status={deal.status} />
                   )}
-                </FrostedCard>
+                </div>
 
                 {/* BLOCO 2 (<FrostedCard>): CONDIÇÕES E PARTICIPANTES */}
-                <FrostedCard intensity="subtle" className="p-4 space-y-3">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                <div className="pt-3 border-t border-border/40 space-y-3">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
                     Condições Acordadas
                   </span>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                     <div>
-                      <span className="text-muted-foreground block text-[10px]">Comprador / Hóspede</span>
+                      <span className="text-muted-foreground block text-xs">Comprador / Hóspede</span>
                       <span className="font-semibold text-foreground">{deal.buyer?.full_name || "Membro"}</span>
                     </div>
                     <div>
-                      <span className="text-muted-foreground block text-[10px]">Anunciante / Anfitrião</span>
+                      <span className="text-muted-foreground block text-xs">Anunciante / Anfitrião</span>
                       <span className="font-semibold text-foreground">{deal.seller?.full_name || "Membro"}</span>
                     </div>
                     <div>
-                      <span className="text-muted-foreground block text-[10px]">
+                      <span className="text-muted-foreground block text-xs">
                         {isRental ? "Período e Diárias" : "Modalidade"}
                       </span>
                       <span className="font-semibold text-foreground">
@@ -396,11 +396,11 @@ function NegociacoesPage() {
                       <strong className="text-foreground">Termos:</strong> {deal.terms}
                     </p>
                   )}
-                </FrostedCard>
+                </div>
 
                 {/* BLOCO 3 (<FrostedCard>): AÇÕES DE NEGOCIAÇÃO */}
                 {isNegotiating && !isCountering && (
-                  <FrostedCard intensity="subtle" className="p-4 flex flex-wrap items-center gap-2">
+                  <div className="pt-3 border-t border-border/40 flex flex-wrap items-center gap-2">
                     {deal.seller_id === profile?.id ? (
                       <>
                         <Button
@@ -472,7 +472,7 @@ function NegociacoesPage() {
                         <span>Abrir Chat</span>
                       </Link>
                     </Button>
-                  </FrostedCard>
+                  </div>
                 )}
 
                 {/* Form de Contraproposta */}
@@ -484,7 +484,7 @@ function NegociacoesPage() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <label className="text-[11px] font-medium text-foreground">
+                        <label className="text-xs font-medium text-foreground">
                           Novo Valor (R$)
                         </label>
                         <CurrencyField
@@ -496,7 +496,7 @@ function NegociacoesPage() {
                       </div>
 
                       <div className="space-y-1">
-                        <label className="text-[11px] font-medium text-foreground">
+                        <label className="text-xs font-medium text-foreground">
                           Mensagem / Justificativa
                         </label>
                         <Input
@@ -516,7 +516,7 @@ function NegociacoesPage() {
                         className="rounded-lg text-xs font-bold gap-2"
                       >
                         {respondMutation.isPending ? (
-                          <Loader2 className="size-3.5 animate-spin" />
+                          <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
                         ) : (
                           <ArrowRight className="size-3.5" />
                         )}
@@ -547,7 +547,7 @@ function NegociacoesPage() {
                         <p className="text-xs font-bold text-foreground">
                           {isRental ? "Reserva Ativa & Confirmada!" : "Negociação Concluída com Sucesso!"}
                         </p>
-                        <p className="text-[11px] text-muted-foreground">
+                        <p className="text-xs text-muted-foreground">
                           {isRental
                             ? "Os dados do imóvel e as datas estão registrados na sua agenda."
                             : "O acordo foi formalizado entre as partes na plataforma Waesy."}
@@ -577,7 +577,7 @@ function NegociacoesPage() {
                           className="rounded-lg text-xs font-bold shrink-0 border-indigo-500/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 cursor-pointer shadow-2xs gap-2"
                         >
                           {generatingContractId === deal.id ? (
-                            <Loader2 className="size-3.5 animate-spin" />
+                            <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
                           ) : (
                             <FileSignature className="size-3.5" />
                           )}

@@ -138,7 +138,7 @@ export interface TravelerProfileDTO {
   updated_at: string;
 }
 
-export type DocumentType =
+export type TravelerDocumentType =
   | "passport"
   | "rg"
   | "cnh"
@@ -153,7 +153,7 @@ export type DocumentStatus = "valid" | "expiring_soon" | "expired" | "review_nee
 export interface TravelerDocumentDTO {
   id: string;
   traveler_id: string;
-  doc_type: DocumentType;
+  doc_type: TravelerDocumentType;
   title: string;
   file_url: string;
   doc_number?: string | null;
@@ -193,8 +193,8 @@ export interface TravelProjectDTO {
   trips_count?: number;
 }
 
-export type TaskStatus = "todo" | "in_progress" | "done";
-export type TaskPriority = "low" | "medium" | "high" | "urgent";
+export type CorporateTaskStatus = "todo" | "in_progress" | "done";
+export type CorporateTaskPriority = "low" | "medium" | "high" | "urgent";
 
 export interface TravelProjectTaskDTO {
   id: string;
@@ -204,8 +204,8 @@ export interface TravelProjectTaskDTO {
   description?: string | null;
   assignee_profile_id?: string | null;
   due_date?: string | null;
-  status: TaskStatus;
-  priority: TaskPriority;
+  status: CorporateTaskStatus;
+  priority: CorporateTaskPriority;
   checklist: Array<{ id: string; label: string; checked: boolean }>;
   created_at: string;
 }

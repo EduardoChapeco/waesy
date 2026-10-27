@@ -287,8 +287,8 @@ export function TaskDetailSheet({
               <button
                 type="button"
                 onClick={() => handleStatusChange(isDone ? "todo" : "done")}
-                className={cn(
-                  "size-8 rounded-lg border flex items-center justify-center transition-all cursor-pointer shrink-0",
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                  "size-8 rounded-lg border flex items-center justify-center transition-colors duration-200 cursor-pointer shrink-0",
                   isDone
                     ? "bg-primary border-primary text-primary-foreground"
                     : "border-border/80 bg-background hover:border-primary text-transparent hover:text-primary/40"
@@ -305,7 +305,7 @@ export function TaskDetailSheet({
                   <button
                     type="button"
                     onClick={handleCopyCode}
-                    className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted text-[11px] font-mono font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer shrink-0"
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted text-2xs font-mono font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     title="Copiar código"
                   >
                     <Copy className="size-3" />
@@ -321,7 +321,7 @@ export function TaskDetailSheet({
                 type="button"
                 onClick={handleMyDayToggle}
                 title={currentTask?.is_my_day ? "Remover de Meu Dia" : "Adicionar a Meu Dia"}
-                className={cn(
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "size-9 flex items-center justify-center rounded-lg transition-colors cursor-pointer",
                   currentTask?.is_my_day
                     ? "text-amber-500 hover:bg-amber-500/10"
@@ -336,7 +336,7 @@ export function TaskDetailSheet({
                 type="button"
                 onClick={() => setArchiveDialogOpen(true)}
                 title="Arquivar atividade"
-                className="size-9 flex items-center justify-center rounded-lg text-muted-foreground/60 hover:text-amber-600 hover:bg-amber-500/10 transition-colors cursor-pointer"
+                className="size-9 flex items-center justify-center rounded-lg text-muted-foreground/60 hover:text-amber-600 hover:bg-amber-500/10 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Archive className="size-4" />
               </button>
@@ -364,7 +364,7 @@ export function TaskDetailSheet({
             {/* Status + Prioridade — ambos editáveis */}
             <div className="grid grid-cols-2 gap-3 p-4 rounded-lg bg-muted/20 border border-border/60">
               <div className="space-y-1">
-                <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">
+                <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider block">
                   Status
                 </span>
                 <select
@@ -379,7 +379,7 @@ export function TaskDetailSheet({
               </div>
 
               <div className="space-y-1">
-                <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">
+                <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider block">
                   Prioridade
                 </span>
                 <select
@@ -399,12 +399,12 @@ export function TaskDetailSheet({
               <div className="flex items-center gap-3 w-full sm:w-auto">
                 <div className={cn(
                   "size-10 rounded-lg flex items-center justify-center transition-colors shrink-0",
-                  isTimerRunning ? "bg-emerald-500/20 text-emerald-600 animate-pulse" : "bg-muted text-muted-foreground"
+                  isTimerRunning ? "bg-emerald-500/20 text-emerald-600 animate-pulse motion-reduce:animate-none" : "bg-muted text-muted-foreground"
                 )}>
                   <Clock className="size-5" />
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">
+                  <span className="text-2xs uppercase font-bold text-muted-foreground tracking-wider block">
                     {isTimerRunning ? "Em execução" : "Tempo rastreado"}
                   </span>
                   <div className="flex items-baseline gap-2">
@@ -520,7 +520,7 @@ export function TaskDetailSheet({
               {checklists.length > 0 && (
                 <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
                   <div
-                    className="h-full bg-primary transition-all duration-300 rounded-full"
+                    className="h-full bg-primary transition-colors duration-200 duration-300 rounded-full"
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
@@ -528,13 +528,13 @@ export function TaskDetailSheet({
 
               <div className="space-y-2">
                 {checklists.map((item) => (
-                  <div
+                  <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                     key={item.id}
                     onClick={() => handleToggleChecklist(item)}
-                    className="flex items-center gap-3 p-3 rounded-lg border border-border/60 bg-card hover:bg-muted/10 transition-colors cursor-pointer"
+                    className="flex items-center gap-3 p-3 rounded-lg border border-border/60 bg-card hover:bg-muted/10 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <div className={cn(
-                      "size-5 rounded border flex items-center justify-center transition-all shrink-0",
+                      "size-5 rounded border flex items-center justify-center transition-colors duration-200 shrink-0",
                       item.is_completed
                         ? "bg-primary border-primary text-primary-foreground"
                         : "border-border/80 bg-background"
@@ -598,7 +598,7 @@ export function TaskDetailSheet({
 
               <div className="space-y-2">
                 {comments.length === 0 && (
-                  <p className="text-[11px] text-muted-foreground text-center py-3">
+                  <p className="text-2xs text-muted-foreground text-center py-3">
                     Nenhum comentário ainda
                   </p>
                 )}
@@ -607,7 +607,7 @@ export function TaskDetailSheet({
                     key={comment.id}
                     className="p-3 rounded-lg bg-muted/20 border border-border/50 space-y-1 text-xs"
                   >
-                    <div className="flex items-center justify-between text-[10px] text-muted-foreground font-mono">
+                    <div className="flex items-center justify-between text-2xs text-muted-foreground font-mono">
                       <span>{(comment as any).author_name || "Operador"}</span>
                       <span>
                         {new Date(comment.created_at).toLocaleDateString("pt-BR", {
@@ -643,9 +643,9 @@ export function TaskDetailSheet({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
+            <AlertDialogAction /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
               onClick={handleArchiveTask}
-              className="bg-amber-600 hover:bg-amber-700 text-white"
+              className="bg-amber-600 hover:bg-amber-700 text-foreground"
             >
               Arquivar
             </AlertDialogAction>
@@ -667,7 +667,7 @@ export function TaskDetailSheet({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmResetTimer}>
+            <AlertDialogAction /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={handleConfirmResetTimer}>
               Zerar
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -135,11 +135,11 @@ export function DataTable<T>({
     return (
       <div className="rounded-lg border border-border/70 bg-card overflow-hidden">
         <div className="h-11 border-b border-border/50 bg-muted/30 flex items-center px-4">
-          <div className="h-3 w-32 rounded bg-muted animate-pulse" />
+          <div className="h-3 w-32 rounded bg-muted animate-pulse motion-reduce:animate-none" />
         </div>
         <div className="p-4 space-y-3">
           {[1, 2, 3, 4, 5].map((idx) => (
-            <div key={idx} className="h-10 w-full rounded-md bg-muted/40 animate-pulse" />
+            <div key={idx} className="h-10 w-full rounded-md bg-muted/40 animate-pulse motion-reduce:animate-none" />
           ))}
         </div>
       </div>
@@ -246,12 +246,12 @@ export function DataTable<T>({
               {columns.map((col) => {
                 const isSorted = sortColumnId === col.id;
                 return (
-                  <th
+                  <th role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                     key={col.id}
                     scope="col"
                     style={{ width: col.width }}
                     onClick={() => col.isSortable && handleSort(col.id)}
-                    className={cn(
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "px-4 py-3 font-semibold tracking-tight",
                       col.align === "right" && "text-right",
                       col.align === "center" && "text-center",
@@ -294,14 +294,22 @@ export function DataTable<T>({
 
               return (
                 <tr
-                  key={rowId}
-                  onClick={() => onRowClick?.(item)}
-                  className={cn(
-                    "transition-colors duration-100",
-                    isSelected && "bg-primary/5",
-                    onRowClick && "cursor-pointer hover:bg-muted/40"
-                  )}
-                >
+    key={rowId}
+    tabIndex={onRowClick ? 0 : undefined}
+    role={onRowClick ? "row" : undefined}
+    onKeyDown={(e) => {
+      if (onRowClick && (e.key === "Enter" || e.key === " ")) {
+        e.preventDefault();
+        onRowClick(item);
+      }
+    }}
+    onClick={() => onRowClick?.(item)}
+    className={cn(
+      "transition-colors duration-100",
+      isSelected && "bg-primary/5",
+      onRowClick && "cursor-pointer hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    )}
+  >
                   {isSelectable && (
                     <td className="w-11 px-3 py-3 text-center">
                       <input

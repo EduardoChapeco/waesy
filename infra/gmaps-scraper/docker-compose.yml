@@ -1,0 +1,28 @@
+services:
+  scraper:
+    image: gosom/google-maps-scraper:latest
+    restart: unless-stopped
+    command: ["-web", "-data-folder", "/gmapsdata", "-c", "2"]
+    volumes:
+      - ./gmapsdata:/gmapsdata
+    expose:
+      - "8080"
+    shm_size: "1gb"
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+      SCRAPER_TOKEN: ${SCRAPER_TOKEN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    depends_on:
+      - scraper
+
+volumes:
+  caddy_data:

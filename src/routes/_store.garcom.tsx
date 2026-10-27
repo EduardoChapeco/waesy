@@ -154,13 +154,13 @@ function GarcomTerminalPage() {
  <button
  key={table.id}
  onClick={() => setSelectedTable(table)}
- className={`p-4 rounded-lg border text-left transition-all min-h-28 flex flex-col justify-between ${
+ className={`p-4 rounded-lg border text-left transition-colors duration-200 min-h-28 flex flex-col justify-between ${
  isOccupied 
  ? "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400" 
  : isBilling 
  ? "bg-purple-500/10 border-purple-500/30 text-purple-600 dark:text-purple-400"
  : "bg-card border-border hover:border-primary/50 text-foreground"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <div className="flex items-center justify-between">
  <span className="font-black text-lg">Mesa {table.table_number}</span>

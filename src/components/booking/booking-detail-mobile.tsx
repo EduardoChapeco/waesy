@@ -49,7 +49,7 @@ export function BookingDetailMobile({
         {/* Botão Circular Flutuante "Voltar" (44px Apple HIG) */}
         <Link
           to="/agendar"
-          className="absolute top-3 left-3 size-11 rounded-full bg-black/50  text-white flex items-center justify-center border border-white/20 active:scale-95 transition-transform z-20 "
+          className="absolute top-3 left-3 size-11 rounded-full bg-foreground/50  text-foreground flex items-center justify-center border border-white/20 active:scale-95 transition-transform z-20 "
           aria-label="Voltar para Serviços"
         >
           <ArrowLeft size={20} weight="bold" />
@@ -57,7 +57,7 @@ export function BookingDetailMobile({
 
         {/* Ações Flutuantes Superior Direito (44px Apple HIG) */}
         <div className="absolute top-3 right-3 flex items-center gap-2 z-20">
-          <div className="size-11 rounded-full bg-black/50  text-white flex items-center justify-center border border-white/20 ">
+          <div className="size-11 rounded-full bg-foreground/50  text-foreground flex items-center justify-center border border-white/20 ">
             <ContentActionsMenu
               entityType="product"
               entityId={service.id}
@@ -72,11 +72,11 @@ export function BookingDetailMobile({
 
         {/* Badges Flutuantes sobre a foto */}
         <div className="absolute bottom-3 left-3 flex flex-wrap items-center gap-2 z-20">
-          <Badge className="bg-background text-foreground text-[10px] font-bold border border-border/50 ">
+          <Badge className="bg-background text-foreground text-2xs font-bold border border-border/50 ">
             {categoryLabel}
           </Badge>
           {service.duration_minutes && (
-            <Badge variant="secondary" className=" text-[10px] font-mono font-bold px-2 py-1 flex items-center gap-1 bg-card text-foreground border border-border">
+            <Badge variant="secondary" className=" text-2xs font-mono font-bold px-2 py-1 flex items-center gap-1 bg-card text-foreground border border-border">
               <Clock size={11} weight="bold" />
               <span>{service.duration_minutes} min</span>
             </Badge>
@@ -88,15 +88,15 @@ export function BookingDetailMobile({
       <div className="p-4 space-y-5">
         {/* Badges Rápidos de Garantia */}
         <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-muted/40 border border-border/40 text-[10px] font-semibold text-muted-foreground">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-muted/40 border border-border/40 text-2xs font-semibold text-muted-foreground">
             <ShieldCheck size={12} weight="bold" className="text-emerald-600 dark:text-emerald-400" />
             Profissional Certificado
           </span>
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-muted/40 border border-border/40 text-[10px] font-semibold text-muted-foreground">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-muted/40 border border-border/40 text-2xs font-semibold text-muted-foreground">
             <Star size={12} weight="bold" className="text-amber-500" />
             Biossegurança 100%
           </span>
-          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-muted/40 border border-border/40 text-[10px] font-semibold text-muted-foreground">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-muted/40 border border-border/40 text-2xs font-semibold text-muted-foreground">
             <CalendarDots size={12} weight="bold" className="text-primary" />
             Reagendamento Grátis
           </span>
@@ -109,7 +109,7 @@ export function BookingDetailMobile({
           </h1>
 
           <div className="p-4 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-between">
-            <span className="text-[11px] font-mono text-muted-foreground uppercase font-bold tracking-wider">
+            <span className="text-2xs font-mono text-muted-foreground uppercase font-bold tracking-wider">
               Valor da Sessão
             </span>
             <span className="text-xl font-black text-primary font-mono">
@@ -123,11 +123,11 @@ export function BookingDetailMobile({
           <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Especificações do Serviço</h2>
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div className="p-3 rounded-lg bg-muted/30 border border-border/40">
-              <span className="text-[10px] text-muted-foreground block font-medium">Duração Estimada</span>
+              <span className="text-2xs text-muted-foreground block font-medium">Duração Estimada</span>
               <span className="font-bold text-foreground">{service.duration_minutes || 60} minutos</span>
             </div>
             <div className="p-3 rounded-lg bg-muted/30 border border-border/40">
-              <span className="text-[10px] text-muted-foreground block font-medium">Público-Alvo</span>
+              <span className="text-2xs text-muted-foreground block font-medium">Público-Alvo</span>
               <span className="font-bold text-foreground">{targetGenderLabel}</span>
             </div>
           </div>
@@ -184,7 +184,7 @@ export function BookingDetailMobile({
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
                   Local de Atendimento
                 </span>
                 <h3 className="font-bold text-sm text-foreground truncate">{store.name}</h3>
@@ -212,7 +212,7 @@ export function BookingDetailMobile({
       {/* ── 7. Sticky Bottom Action Bar (Thumb Zone & Safe-Area) ── */}
       <div className="fixed bottom-0 left-0 right-0 z-40 bg-background  border-t border-border/60 p-3 pb-[calc(0.65rem+env(safe-area-inset-bottom))] mobile-nav-hide-on-keyboard flex items-center justify-between gap-3 shadow-lg">
         <div className="min-w-0 flex-1">
-          <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">
+          <span className="text-2xs text-muted-foreground uppercase font-bold tracking-wider block">
             Valor da Sessão
           </span>
           <span className="text-base font-black text-foreground font-mono">

@@ -162,8 +162,8 @@ export default function WorkspaceMarketingStoriesPage() {
           <button
             type="button"
             onClick={() => setFormat("story_9_16")}
-            className={cn(
-              "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all",
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+              "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-colors duration-200",
               format === "story_9_16"
                 ? "bg-background text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground",
@@ -175,8 +175,8 @@ export default function WorkspaceMarketingStoriesPage() {
           <button
             type="button"
             onClick={() => setFormat("feed_1_1")}
-            className={cn(
-              "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all",
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+              "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-colors duration-200",
               format === "feed_1_1"
                 ? "bg-background text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground",
@@ -188,8 +188,8 @@ export default function WorkspaceMarketingStoriesPage() {
           <button
             type="button"
             onClick={() => setFormat("banner_16_9")}
-            className={cn(
-              "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all",
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+              "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-colors duration-200",
               format === "banner_16_9"
                 ? "bg-background text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground",
@@ -305,7 +305,7 @@ export default function WorkspaceMarketingStoriesPage() {
                     <button
                       type="button"
                       onClick={() => setTheme("dark")}
-                      className={cn(
+                      className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                         "h-11 rounded-lg border text-xs font-bold transition-colors cursor-pointer",
                         theme === "dark"
                           ? "border-primary bg-primary/10 text-primary"
@@ -317,7 +317,7 @@ export default function WorkspaceMarketingStoriesPage() {
                     <button
                       type="button"
                       onClick={() => setTheme("light")}
-                      className={cn(
+                      className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                         "h-11 rounded-lg border text-xs font-bold transition-colors cursor-pointer",
                         theme === "light"
                           ? "border-primary bg-primary/10 text-primary"
@@ -329,7 +329,7 @@ export default function WorkspaceMarketingStoriesPage() {
                     <button
                       type="button"
                       onClick={() => setTheme("swiss")}
-                      className={cn(
+                      className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                         "h-11 rounded-lg border text-xs font-bold transition-colors cursor-pointer",
                         theme === "swiss"
                           ? "border-primary bg-primary/10 text-primary"
@@ -341,7 +341,7 @@ export default function WorkspaceMarketingStoriesPage() {
                     <button
                       type="button"
                       onClick={() => setTheme("cyber")}
-                      className={cn(
+                      className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                         "h-11 rounded-lg border text-xs font-bold transition-colors cursor-pointer",
                         theme === "cyber"
                           ? "border-primary bg-primary/10 text-primary"
@@ -353,7 +353,7 @@ export default function WorkspaceMarketingStoriesPage() {
                     <button
                       type="button"
                       onClick={() => setTheme("gourmet")}
-                      className={cn(
+                      className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                         "h-11 rounded-lg border text-xs font-bold transition-colors cursor-pointer",
                         theme === "gourmet"
                           ? "border-primary bg-primary/10 text-primary"
@@ -400,7 +400,7 @@ export default function WorkspaceMarketingStoriesPage() {
               className="w-full h-11 rounded-lg font-bold gap-2 text-xs"
             >
               {isGenerating ? (
-                <RefreshCw className="size-4 animate-spin" />
+                <RefreshCw className="size-4 animate-spin motion-reduce:animate-none" />
               ) : (
                 <Star className="size-4" />
               )}
@@ -428,7 +428,7 @@ export default function WorkspaceMarketingStoriesPage() {
               {generatedCard?.svgMarkup ? (
                 <div
                   className={cn(
-                    "overflow-hidden rounded-lg shadow-xs border border-border/60 bg-black flex items-center justify-center transition-all",
+                    "overflow-hidden rounded-lg shadow-xs border border-border/60 bg-foreground flex items-center justify-center transition-colors duration-200",
                     format === "story_9_16"
                       ? "w-[270px] h-[480px]"
                       : format === "feed_1_1"
@@ -440,7 +440,7 @@ export default function WorkspaceMarketingStoriesPage() {
               ) : (
                 <div
                   className={cn(
-                    "flex flex-col items-center justify-center rounded-lg border border-dashed border-border/80 bg-muted/20 text-center p-6 transition-all",
+                    "flex flex-col items-center justify-center rounded-lg border border-dashed border-border/80 bg-muted/20 text-center p-6 transition-colors duration-200",
                     format === "story_9_16"
                       ? "w-[270px] h-[480px]"
                       : format === "feed_1_1"
@@ -486,7 +486,7 @@ export default function WorkspaceMarketingStoriesPage() {
                     type="button"
                     variant="default"
                     onClick={handleShareWhatsApp}
-                    className="h-11 rounded-lg text-xs font-bold gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-black"
+                    className="h-11 rounded-lg text-xs font-bold gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-foreground"
                   >
                     <WhatsappLogo className="size-4" weight="bold" />
                     <span>WhatsApp</span>

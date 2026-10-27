@@ -203,7 +203,7 @@ function WorkspacePromotionsPage() {
   return (
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── PageHeader Canônico ── */}
-      <PageHeader
+      <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         eyebrow="Marketing"
         title="Promoções"
         actions={
@@ -233,7 +233,7 @@ function WorkspacePromotionsPage() {
             activeTab === "promotions"
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
-          }`}
+          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
         >
           <Flame className="size-3.5" />
           <span>Ofertas e Promoções</span>
@@ -249,7 +249,7 @@ function WorkspacePromotionsPage() {
             activeTab === "coupons"
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
-          }`}
+          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
         >
           <Ticket className="size-3.5" />
           <span>Cupons de Desconto</span>
@@ -317,7 +317,7 @@ function WorkspacePromotionsPage() {
               promos.map((promo) => (
                 <div
                   key={promo.id}
-                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-lg bg-card border border-border/70 gap-4 hover:border-border transition-all shadow-2xs"
+                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-lg bg-card border border-border/70 gap-4 hover:border-border transition-colors duration-200 shadow-2xs"
                 >
                   <div className="flex items-center gap-4 min-w-0">
                     <div
@@ -434,7 +434,7 @@ function WorkspacePromotionsPage() {
               couponsList.map((coupon) => (
                 <div
                   key={coupon.id}
-                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-lg bg-card border border-border/70 gap-4 hover:border-border transition-all shadow-2xs"
+                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-lg bg-card border border-border/70 gap-4 hover:border-border transition-colors duration-200 shadow-2xs"
                 >
                   <div className="flex items-center gap-4 min-w-0">
                     <div className="size-10 rounded-lg flex items-center justify-center shrink-0 bg-primary/10 text-primary border border-primary/20">
@@ -498,7 +498,7 @@ function WorkspacePromotionsPage() {
       )}
 
       {/* ── SHEET: NOVA OFERTA ──────────────────────────────────────────────── */}
-      <SheetPage
+      <SheetPage /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         open={isPromoOpen}
         onOpenChange={setIsPromoOpen}
         title="Nova Promoção ou Oferta"
@@ -520,7 +520,7 @@ function WorkspacePromotionsPage() {
             >
               {isPromoSubmitting ? (
                 <>
-                  <Loader2 className="size-3.5 animate-spin" />
+                  <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
                   <span>Criando...</span>
                 </>
               ) : (
@@ -636,7 +636,7 @@ function WorkspacePromotionsPage() {
       </SheetPage>
 
       {/* ── SHEET: NOVO CUPOM DE DESCONTO ───────────────────────────────────── */}
-      <SheetPage
+      <SheetPage /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         open={isCouponOpen}
         onOpenChange={setIsCouponOpen}
         title="Novo Cupom de Desconto"
@@ -658,7 +658,7 @@ function WorkspacePromotionsPage() {
             >
               {isCouponSubmitting ? (
                 <>
-                  <Loader2 className="size-3.5 animate-spin" />
+                  <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
                   <span>Salvando...</span>
                 </>
               ) : (

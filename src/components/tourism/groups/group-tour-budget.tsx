@@ -140,7 +140,7 @@ export function GroupTourBudgetManager({
  <p className="text-xl sm:text-2xl font-extrabold text-foreground font-mono">
  {formatMoney(totalFixedCosts)}
  </p>
- <p className="text-[11px] text-muted-foreground">Ônibus, guias e despesas fixas</p>
+ <p className="text-2xs text-muted-foreground">Ônibus, guias e despesas fixas</p>
  </div>
 
  {/* Custo Variável por Passageiro */}
@@ -152,7 +152,7 @@ export function GroupTourBudgetManager({
  <p className="text-xl sm:text-2xl font-extrabold text-foreground font-mono">
  {formatMoney(variablePerPax)}
  </p>
- <p className="text-[11px] text-muted-foreground">Ingressos, kit e seguro individual</p>
+ <p className="text-2xs text-muted-foreground">Ingressos, kit e seguro individual</p>
  </div>
 
  {/* Ponto de Equilíbrio (Break-Even) */}
@@ -164,7 +164,7 @@ export function GroupTourBudgetManager({
  <p className="text-xl sm:text-2xl font-extrabold text-foreground font-mono text-amber-600">
  {summary?.breakEvenPax ?? 0} passageiros
  </p>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Mínimo para zerar os custos da viagem
  </p>
  </div>
@@ -184,7 +184,7 @@ export function GroupTourBudgetManager({
  >
  {formatMoney(netProfitCurrent)}
  </p>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Potencial total: {formatMoney(netProfitCapacity)}
  </p>
  </div>
@@ -219,7 +219,7 @@ export function GroupTourBudgetManager({
  className="flex items-center justify-between p-3 rounded-lg border border-border/60 bg-muted/15 hover:bg-muted/30 transition-colors"
  >
  <div className="flex items-center gap-3 min-w-0 flex-1">
- <Badge variant="outline" className={`text-[10px] px-2 py-1 border ${cat.className}`}>
+ <Badge variant="outline" className={`text-2xs px-2 py-1 border ${cat.className}`}>
  {cat.label}
  </Badge>
 
@@ -227,7 +227,7 @@ export function GroupTourBudgetManager({
  <p className="text-xs font-semibold text-foreground truncate">
  {item.description}
  </p>
- <p className="text-[10px] text-muted-foreground font-mono">
+ <p className="text-2xs text-muted-foreground font-mono">
  {item.is_fixed ? "Custo Fixo do Grupo" : "Custo Variável (Por Passageiro)"}
  </p>
  </div>
@@ -312,7 +312,7 @@ export function GroupTourBudgetManager({
  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20 border border-border/60">
  <div className="space-y-1">
  <p className="text-xs font-semibold text-foreground">Tipo de Custo</p>
- <p className="text-[10px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  {isFixed
  ? "Fixo: pago integralmente independentemente do nº de passageiros"
  : "Variável: multiplicado pelo número de passageiros que viajarem"}

@@ -103,9 +103,9 @@ export function FounderSmartphoneMockup({
         </div>
 
         {/* Barra de Status — Apenas Desktop/Tablet */}
-        <div className="hidden sm:flex pt-2 px-6 pb-2 items-center justify-between text-[11px] font-bold text-muted-foreground z-20 relative bg-background/80 ">
+        <div className="hidden sm:flex pt-2 px-6 pb-2 items-center justify-between text-2xs font-bold text-muted-foreground z-20 relative bg-background/80 ">
           <span>09:41</span>
-          <div className="flex items-center gap-2 text-[10px]">
+          <div className="flex items-center gap-2 text-2xs">
             <span>5G</span>
             <span>100%</span>
           </div>
@@ -125,11 +125,11 @@ export function FounderSmartphoneMockup({
                 </h3>
                 <CheckCircle2 className="size-3.5 text-primary shrink-0 fill-primary/20" />
               </div>
-              <p className="text-[11px] text-muted-foreground truncate flex items-center gap-1">
+              <p className="text-2xs text-muted-foreground truncate flex items-center gap-1">
                 <MapPin className="size-3 text-muted-foreground/70 shrink-0" />
                 <span>{displayCity}</span>
               </p>
-              <div className="flex items-center gap-2 text-[10px] font-medium text-muted-foreground">
+              <div className="flex items-center gap-2 text-2xs font-medium text-muted-foreground">
                 <span className="flex items-center gap-1 text-amber-500 font-bold">
                   <Star className="size-3 fill-amber-400 text-amber-400" /> 5.0
                 </span>
@@ -144,15 +144,15 @@ export function FounderSmartphoneMockup({
           {/* Badge Oficial de Membro Fundador */}
           <div className="rounded-lg bg-card border border-border/80 p-3 space-y-1">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-foreground flex items-center gap-2">
+              <span className="text-2xs font-bold text-foreground flex items-center gap-2">
                 <Star className="size-3 text-primary" />
                 Membro Fundador 2027
               </span>
-              <Badge variant="outline" className="border-border text-foreground text-[9px] font-mono font-bold">
+              <Badge variant="outline" className="border-border text-foreground text-3xs font-mono font-bold">
                 OFICIAL
               </Badge>
             </div>
-            <p className="text-[10px] text-muted-foreground leading-relaxed">
+            <p className="text-2xs text-muted-foreground leading-relaxed">
               Empresa credenciada no Circuito Internacional Waesy Chapecó e SMO.
             </p>
           </div>
@@ -160,17 +160,17 @@ export function FounderSmartphoneMockup({
           {/* Cartão de Sorteio de Viagens (Número da Sorte) */}
           <div className="rounded-lg bg-primary/10 border border-primary/20 p-3 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-primary flex items-center gap-1">
+              <span className="text-2xs font-bold uppercase tracking-wider text-primary flex items-center gap-1">
                 <Ticket className="size-3.5" />
                 Sorteio de Viagens 2027
               </span>
-              <span className="text-[10px] text-primary/80 font-medium">Chances 2x</span>
+              <span className="text-2xs text-primary/80 font-medium">Chances 2x</span>
             </div>
             <div className="flex items-center justify-between bg-card/80 rounded-lg px-3 py-2 border border-border/80">
               <span className="text-xs font-mono font-bold text-foreground">
                 {ticketNumber}
               </span>
-              <span className="text-[9px] font-semibold text-emerald-600 bg-emerald-500/10 px-2 py-1 rounded-md">
+              <span className="text-3xs font-semibold text-emerald-600 bg-emerald-500/10 px-2 py-1 rounded-md">
                 Ativo
               </span>
             </div>
@@ -210,15 +210,15 @@ export function FounderSmartphoneMockup({
                 <ShoppingBag className="size-3.5 text-primary" />
                 Vitrine Digital da Loja
               </span>
-              <span className="text-[10px] text-muted-foreground">3 itens ativos</span>
+              <span className="text-2xs text-muted-foreground">3 itens ativos</span>
             </div>
 
             <div className="grid grid-cols-3 gap-2">
               {cnaeCategoryCatalog.map((p, idx) => (
-                <div
+                <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                   key={idx}
                   onClick={() => toast.info(`Demonstração: ${p.name}`, { description: `Valor anunciado: ${p.price}. No app Waesy, seus clientes compram em até 3 toques com Pix instantâneo.` })}
-                  className="rounded-lg border border-border/80 bg-muted/20 hover:bg-muted/50 overflow-hidden space-y-1 p-1 text-center cursor-pointer transition-all active:scale-95"
+                  className="rounded-lg border border-border/80 bg-muted/20 hover:bg-muted/50 overflow-hidden space-y-1 p-1 text-center cursor-pointer transition-transform duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <img
                     src={p.image}
@@ -226,10 +226,10 @@ export function FounderSmartphoneMockup({
                     className="w-full aspect-square object-cover rounded-lg"
                     loading="lazy"
                   />
-                  <p className="text-[9px] font-semibold text-foreground truncate px-1">
+                  <p className="text-3xs font-semibold text-foreground truncate px-1">
                     {p.name}
                   </p>
-                  <p className="text-[10px] font-bold text-primary font-mono">
+                  <p className="text-2xs font-bold text-primary font-mono">
                     {p.price}
                   </p>
                 </div>
@@ -239,7 +239,7 @@ export function FounderSmartphoneMockup({
 
           {/* Informações Oficiais de Enriquecimento (se houver CNPJ) */}
           {companyDetails && (
-            <div className="pt-2 border-t border-border/60 text-[10px] text-muted-foreground space-y-1">
+            <div className="pt-2 border-t border-border/60 text-2xs text-muted-foreground space-y-1">
               <p className="truncate">
                 <strong className="text-foreground">Razão Social:</strong> {companyDetails.corporateName}
               </p>
@@ -264,7 +264,7 @@ export function FounderSmartphoneMockup({
           <button
             type="button"
             onClick={onReset}
-            className="text-xs text-muted-foreground hover:text-foreground font-medium underline underline-offset-4 cursor-pointer"
+            className="text-xs text-muted-foreground hover:text-foreground font-medium underline underline-offset-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             Cadastrar outra empresa na lista
           </button>

@@ -23,7 +23,7 @@ export function Chip({
       type="button"
       className={cn(
         "inline-flex items-center gap-2 px-3 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-colors cursor-pointer select-none",
-        "min-h-9 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+        "h-11 min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
         isSelected
           ? "bg-primary text-primary-foreground font-semibold"
           : "bg-muted/70 text-foreground hover:bg-muted border border-border/50",
@@ -48,11 +48,19 @@ export function Chip({
         <span
           role="button"
           tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              e.stopPropagation();
+              onRemove();
+            }
+          }}
           onClick={(e) => {
             e.stopPropagation();
             onRemove();
           }}
-          className="hover:bg-foreground/10 dark:hover:bg-background/10 rounded-full p-1"
+          /* design-lint-ignore DL-14 reason:"Gatilho de descarte compacto embutido em chip de filtro" expiry:"2027-12-31" */
+          className="size-7 inline-flex items-center justify-center hover:bg-foreground/10 dark:hover:bg-background/10 rounded-full p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           aria-label="Remover filtro"
         >
           <X className="size-3" />

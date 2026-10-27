@@ -77,7 +77,7 @@ export function ContractEditorSheet({
  onChange={(e) => setTitle(e.target.value)}
  className="h-8 font-bold text-sm bg-transparent border-none shadow-none px-0 focus-visible:ring-0 text-foreground"
  />
- <p className="text-[11px] text-muted-foreground">Waesy Office Suite · Editor de Contratos Inteligentes</p>
+ <p className="text-2xs text-muted-foreground">Waesy Office Suite · Editor de Contratos Inteligentes</p>
  </div>
  </div>
 
@@ -86,8 +86,8 @@ export function ContractEditorSheet({
  <button
  type="button"
  onClick={() => setActiveTab('editor')}
- className={'px-3 py-2 rounded-lg text-xs font-semibold transition-all ' + (
- activeTab === 'editor' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
+ className={'px-3 py-2 rounded-lg text-xs font-semibold transition-colors duration-200 ' + (
+ activeTab === 'editor' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
  <Edit3 className="w-3.5 h-3.5 inline mr-1" />
@@ -96,8 +96,8 @@ export function ContractEditorSheet({
  <button
  type="button"
  onClick={() => setActiveTab('library')}
- className={'px-3 py-2 rounded-lg text-xs font-semibold transition-all ' + (
- activeTab === 'library' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
+ className={'px-3 py-2 rounded-lg text-xs font-semibold transition-colors duration-200 ' + (
+ activeTab === 'library' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
  <BookOpen className="w-3.5 h-3.5 inline mr-1" />
@@ -106,8 +106,8 @@ export function ContractEditorSheet({
  <button
  type="button"
  onClick={() => setActiveTab('preview')}
- className={'px-3 py-2 rounded-lg text-xs font-semibold transition-all ' + (
- activeTab === 'preview' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
+ className={'px-3 py-2 rounded-lg text-xs font-semibold transition-colors duration-200 ' + (
+ activeTab === 'preview' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
  <Eye className="w-3.5 h-3.5 inline mr-1" />
@@ -116,8 +116,8 @@ export function ContractEditorSheet({
  <button
  type="button"
  onClick={() => setActiveTab('sign')}
- className={'px-3 py-2 rounded-lg text-xs font-semibold transition-all ' + (
- activeTab === 'sign' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
+ className={'px-3 py-2 rounded-lg text-xs font-semibold transition-colors duration-200 ' + (
+ activeTab === 'sign' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
  <Shield className="w-3.5 h-3.5 inline mr-1" />
@@ -148,7 +148,7 @@ export function ContractEditorSheet({
 
  {/* Dynamic Variable Bar */}
  <div className="px-6 py-3 bg-muted/40 border-b border-border/60 flex flex-wrap items-center gap-3 text-xs">
- <span className="font-semibold text-muted-foreground uppercase text-[10px] tracking-wider">Variáveis Dinâmicas:</span>
+ <span className="font-semibold text-muted-foreground uppercase text-2xs tracking-wider">Variáveis Dinâmicas:</span>
  <div className="flex items-center gap-2">
  <span className="text-muted-foreground">Cliente:</span>
  <Input
@@ -193,7 +193,7 @@ export function ContractEditorSheet({
  placeholder="Insira as cláusulas do contrato..."
  className="flex-1 min-h-[400px] font-mono text-xs leading-relaxed p-4 rounded-lg bg-card border-border shadow-inner resize-none focus-visible:ring-1"
  />
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Dica: Use tags como <code className="bg-muted px-2 py-1 rounded text-foreground">{'{{cliente.nome}}'}</code>, <code className="bg-muted px-2 py-1 rounded text-foreground">{'{{valor_total}}'}</code> para substituição automática.
  </p>
  </div>
@@ -227,13 +227,13 @@ export function ContractEditorSheet({
  alt="Assinatura"
  className="h-12 w-auto max-w-52 aspect-[4/1] object-contain filter invert dark:invert-0" width={192} height={48} loading="lazy"
  />
- <div className="text-[11px] font-medium text-foreground">
+ <div className="text-2xs font-medium text-foreground">
  {sig.signerName} ({sig.signerCpf})
  </div>
- <div className="text-[10px] text-muted-foreground font-mono truncate">
+ <div className="text-2xs text-muted-foreground font-mono truncate">
  SHA-256: {sig.sha256Hash}
  </div>
- <div className="text-[10px] text-emerald-600 dark:text-emerald-400">
+ <div className="text-2xs text-emerald-600 dark:text-emerald-400">
  Assinado em {new Date(sig.signedAt).toLocaleString('pt-BR')} (IP: {sig.ipAddress})
  </div>
  </div>

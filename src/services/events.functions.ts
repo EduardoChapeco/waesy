@@ -22,36 +22,50 @@ async function _listAdminEvents() {
   // Check if they are at least staff
   assertStoreAccess(identity, ["owner", "admin", "manager", "content", "seller"]);
 
-  const { data: events, error } = await supabase
-    .from("events")
-    .select("*")
-    .eq("store_id", identity.store_id)
-    .order("created_at", { ascending: false });
-
-  if (error) throw new Error(error.message);
-  if (!events || events.length === 0) return [];
-
-  const eventIds = events.map((e: any) => e.id);
-
-  // Agrega lotes/ingressos, pedidos de subpainéis e pontos operacionais para o Cockpit Master da Produtora
-  const [{ data: lots }, { data: subpanelOrders }, { data: subpanels }] = await Promise.all([
+  const [{ data: events, error }, { data: classifiedEvents }] = await Promise.all([
     supabase
-      .from("ticket_lots")
-      .select("event_id, price_cents, sold_count")
-      .in("event_id", eventIds)
-      .then((r) => r, () => ({ data: [] as any[] })),
+      .from("events")
+      .select("*")
+      .eq("store_id", identity.store_id)
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false }),
     supabase
-      .from("event_subpanel_orders")
-      .select("event_id, total_cents, concession_fee_cents, status")
-      .in("event_id", eventIds)
-      .neq("status", "cancelled")
-      .then((r) => r, () => ({ data: [] as any[] })),
-    supabase
-      .from("event_subpanels")
-      .select("id, event_id, is_active")
-      .in("event_id", eventIds)
+      .from("classifieds")
+      .select("*")
+      .eq("store_id", identity.store_id)
+      .eq("category", "event")
+      .neq("status", "deleted")
+      .order("created_at", { ascending: false })
       .then((r) => r, () => ({ data: [] as any[] })),
   ]);
+
+  if (error) throw new Error(error.message);
+
+  const nativeEvents = events || [];
+  const eventIds = nativeEvents.map((e: any) => e.id);
+
+  // Agrega lotes/ingressos, pedidos de subpainéis e pontos operacionais para o Cockpit Master da Produtora
+  const [{ data: lots }, { data: subpanelOrders }, { data: subpanels }] =
+    eventIds.length > 0
+      ? await Promise.all([
+          supabase
+            .from("ticket_lots")
+            .select("event_id, price_cents, sold_count")
+            .in("event_id", eventIds)
+            .then((r) => r, () => ({ data: [] as any[] })),
+          supabase
+            .from("event_subpanel_orders")
+            .select("event_id, total_cents, concession_fee_cents, status")
+            .in("event_id", eventIds)
+            .neq("status", "cancelled")
+            .then((r) => r, () => ({ data: [] as any[] })),
+          supabase
+            .from("event_subpanels")
+            .select("id, event_id, is_active")
+            .in("event_id", eventIds)
+            .then((r) => r, () => ({ data: [] as any[] })),
+        ])
+      : [{ data: [] as any[] }, { data: [] as any[] }, { data: [] as any[] }];
 
   const lotsByEvent = new Map<string, { sold: number; revCents: number }>();
   for (const l of lots || []) {
@@ -78,13 +92,14 @@ async function _listAdminEvents() {
     }
   }
 
-  return events.map((ev: any) => {
+  const mappedNativeEvents = nativeEvents.map((ev: any) => {
     const lotStat = lotsByEvent.get(ev.id) || { sold: 0, revCents: 0 };
     const ordStat = ordersByEvent.get(ev.id) || { grossCents: 0, feeCents: 0, count: 0 };
     const spCount = subpanelsByEvent.get(ev.id) || 0;
 
     return {
       ...ev,
+      source_type: "workspace_event",
       tickets_sold: lotStat.sold,
       ticket_revenue_cents: lotStat.revCents,
       concession_gross_cents: ordStat.grossCents,
@@ -95,6 +110,55 @@ async function _listAdminEvents() {
       producer_net_revenue_cents: lotStat.revCents + ordStat.feeCents,
     };
   });
+
+  const mappedClassifiedEvents = (classifiedEvents || []).map((row: any) => {
+    const attrs = (row.attributes || {}) as Record<string, any>;
+    const tiers = Array.isArray(attrs.ticket_tiers) ? attrs.ticket_tiers : [];
+    const totalCapacity = tiers.reduce(
+      (acc: number, t: any) => acc + Number(t.capacity ?? t.quantity ?? 0),
+      0
+    );
+    const totalSold = tiers.reduce(
+      (acc: number, t: any) => acc + Number(t.sold_count ?? 0),
+      0
+    );
+    const totalRevCents = tiers.reduce((acc: number, t: any) => {
+      const priceCents =
+        typeof t.price_cents === "number" && (t.price_cents > 0 || !t.price)
+          ? t.price_cents
+          : Math.round(Number(t.price || 0) * 100);
+      return acc + Number(t.sold_count ?? 0) * priceCents;
+    }, 0);
+
+    return {
+      id: row.id,
+      store_id: row.store_id,
+      source_type: "classified",
+      title: row.title,
+      description: row.content || "",
+      event_date: attrs.event_date || row.created_at,
+      end_date: attrs.end_date || null,
+      location: attrs.venue_name || row.location_name || attrs.city || "",
+      city: attrs.city || "",
+      state: attrs.state || "",
+      cover_image:
+        attrs.banner_image_url || (Array.isArray(row.images) && row.images[0]) || null,
+      category: attrs.event_category || "shows",
+      status: row.status === "active" ? "published" : row.status || "draft",
+      capacity: totalCapacity || 100,
+      tickets_sold: totalSold,
+      ticket_revenue_cents: totalRevCents,
+      concession_gross_cents: 0,
+      concession_fee_cents: 0,
+      concession_orders_count: 0,
+      subpanels_count: 0,
+      total_ecosystem_revenue_cents: totalRevCents,
+      producer_net_revenue_cents: totalRevCents,
+      created_at: row.created_at,
+    };
+  });
+
+  return [...mappedNativeEvents, ...mappedClassifiedEvents];
 }
 
 export const listAdminEvents = createServerFn({ method: "GET" }).handler(_listAdminEvents);
@@ -131,6 +195,10 @@ async function _upsertEvent(data: any) {
  store_id: identity.store_id,
  category: safeData.category || "shows",
  status: safeData.status || "published",
+ visibility: safeData.visibility || "public",
+ story_media_url: safeData.story_media_url || null,
+ story_media_type: safeData.story_media_type || "image",
+ story_auto_open: safeData.story_auto_open ?? true,
  updated_at: new Date().toISOString(),
  };
 
@@ -189,9 +257,642 @@ export const upsertEvent = createServerFn({ method: "POST" })
   age_rating: z.string().optional().nullable(),
   tags: z.array(z.string()).optional().nullable(),
   featured_until: z.string().optional().nullable(),
+  visibility: z.enum(["public", "link_only", "private"]).default("public"),
+  story_media_url: z.string().optional().nullable(),
+  story_media_type: z.enum(["image", "video"]).default("image"),
+  story_auto_open: z.boolean().default(true),
   })
   )
   .handler(async ({ data }) => _upsertEvent(data));
+
+// --- CRUD REAL: SOFT DELETE, ARQUIVAMENTO E DUPLICAÇÃO (AGENTS.md B.1-B.45 | GAP-01) ---
+
+async function _softDeleteEvent(eventId: string) {
+  const supabase = getServerClient();
+  const identity = await getServerIdentity();
+  assertStoreAccess(identity, ["owner", "admin", "manager"]);
+
+  const now = new Date().toISOString();
+
+  // Tenta atualizar tabela events
+  const { data: event, error } = await supabase
+    .from("events")
+    .update({ deleted_at: now, status: "cancelled", updated_at: now })
+    .eq("id", eventId)
+    .eq("store_id", identity.store_id)
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    console.error("[events.functions] Erro ao excluir evento:", error);
+    throw new Error("Falha ao excluir evento: " + error.message);
+  }
+
+  if (!event) {
+    // Tenta em classifieds caso seja um evento classificado
+    const { data: classified, error: classErr } = await supabase
+      .from("classifieds")
+      .update({ status: "deleted", updated_at: now })
+      .eq("id", eventId)
+      .eq("store_id", identity.store_id)
+      .select()
+      .maybeSingle();
+
+    if (classErr) {
+      console.error("[events.functions] Erro ao excluir classified event:", classErr);
+      throw new Error("Falha ao excluir evento: " + classErr.message);
+    }
+    if (!classified) {
+      throw new Error("Evento não encontrado ou permissão negada.");
+    }
+
+    await logAuditAction(identity, "DELETE", "classifieds", eventId, classified);
+    return { success: true, id: eventId, source: "classified" };
+  }
+
+  await logAuditAction(identity, "DELETE", "events", eventId, event);
+  return { success: true, id: eventId, source: "events" };
+}
+
+export const softDeleteEvent = createServerFn({ method: "POST" })
+  .validator(z.object({ eventId: z.string().uuid() }))
+  .handler(async ({ data }) => _softDeleteEvent(data.eventId));
+
+async function _archiveEvent(eventId: string, archive = true) {
+  const supabase = getServerClient();
+  const identity = await getServerIdentity();
+  assertStoreAccess(identity, ["owner", "admin", "manager"]);
+
+  const now = new Date().toISOString();
+  const archivedAt = archive ? now : null;
+
+  const { data: event, error } = await supabase
+    .from("events")
+    .update({ archived_at: archivedAt, updated_at: now })
+    .eq("id", eventId)
+    .eq("store_id", identity.store_id)
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    console.error("[events.functions] Erro ao arquivar evento:", error);
+    throw new Error("Falha ao alterar arquivamento do evento: " + error.message);
+  }
+
+  if (!event) {
+    const { data: classified, error: classErr } = await supabase
+      .from("classifieds")
+      .update({ status: archive ? "archived" : "active", updated_at: now })
+      .eq("id", eventId)
+      .eq("store_id", identity.store_id)
+      .select()
+      .maybeSingle();
+
+    if (classErr || !classified) {
+      throw new Error("Evento não encontrado para arquivamento.");
+    }
+    await logAuditAction(identity, "UPDATE", "classifieds", eventId, { archived: archive });
+    return { success: true, id: eventId, archived: archive };
+  }
+
+  await logAuditAction(identity, "UPDATE", "events", eventId, { archived: archive });
+  return { success: true, id: eventId, archived: archive };
+}
+
+export const archiveEvent = createServerFn({ method: "POST" })
+  .validator(z.object({ eventId: z.string().uuid(), archive: z.boolean().default(true) }))
+  .handler(async ({ data }) => _archiveEvent(data.eventId, data.archive));
+
+async function _duplicateEvent(eventId: string) {
+  const supabase = getServerClient();
+  const identity = await getServerIdentity();
+  assertStoreAccess(identity, ["owner", "admin", "manager"]);
+
+  // 1. Busca evento original
+  const { data: original, error: fetchErr } = await supabase
+    .from("events")
+    .select("*")
+    .eq("id", eventId)
+    .eq("store_id", identity.store_id)
+    .maybeSingle();
+
+  if (fetchErr) throw new Error(fetchErr.message);
+
+  if (!original) {
+    const { data: origClassified } = await supabase
+      .from("classifieds")
+      .select("*")
+      .eq("id", eventId)
+      .eq("store_id", identity.store_id)
+      .maybeSingle();
+
+    if (!origClassified) throw new Error("Evento original não encontrado.");
+
+    const { id: _cId, created_at: _cca, updated_at: _cua, ...safeClass } = origClassified;
+    const cloneClassPayload = {
+      ...safeClass,
+      title: `${origClassified.title} (Cópia)`,
+      status: "draft",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    const { data: clonedClass, error: cloneClassErr } = await supabase
+      .from("classifieds")
+      .insert(cloneClassPayload)
+      .select()
+      .single();
+
+    if (cloneClassErr) throw new Error("Falha ao duplicar evento classificado: " + cloneClassErr.message);
+    await logAuditAction(identity, "INSERT", "classifieds", clonedClass.id, clonedClass);
+    return clonedClass;
+  }
+
+  const { id: _oldId, created_at: _ca, updated_at: _ua, deleted_at: _da, archived_at: _aa, ...safeEvent } = original;
+  const clonePayload = {
+    ...safeEvent,
+    title: `${original.title} (Cópia)`,
+    status: "draft",
+    deleted_at: null,
+    archived_at: null,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+
+  const { data: clonedEvent, error: cloneErr } = await supabase
+    .from("events")
+    .insert(clonePayload)
+    .select()
+    .single();
+
+  if (cloneErr) {
+    throw new Error("Falha ao duplicar evento: " + cloneErr.message);
+  }
+
+  // Clona os lotes de ingressos vinculados
+  const { data: lots } = await supabase
+    .from("ticket_lots")
+    .select("*")
+    .eq("event_id", eventId);
+
+  if (lots && lots.length > 0) {
+    const clonedLots = lots.map((l: any) => {
+      const { id: _lId, created_at: _lca, updated_at: _lua, ...safeLot } = l;
+      return {
+        ...safeLot,
+        event_id: clonedEvent.id,
+        sold_count: 0,
+      };
+    });
+    await supabase.from("ticket_lots").insert(clonedLots);
+  }
+
+  await logAuditAction(identity, "INSERT", "events", clonedEvent.id, clonedEvent);
+  return clonedEvent;
+}
+
+export const duplicateEvent = createServerFn({ method: "POST" })
+  .validator(z.object({ eventId: z.string().uuid() }))
+  .handler(async ({ data }) => _duplicateEvent(data.eventId));
+
+// ===========================================================================
+// PORTAL CIVIL DE EVENTOS & BILHETERIA PESSOA FÍSICA (AGENTS.md B.1-B.45 | GAP-02)
+// ===========================================================================
+
+export const civilianEventSchema = z.object({
+  id: z.string().uuid().optional(),
+  title: z.string().min(1, "O título é obrigatório"),
+  description: z.string().optional().nullable(),
+  event_date: z.string().min(1, "Data do evento é obrigatória"),
+  end_date: z.string().optional().nullable(),
+  location: z.string().optional().nullable(),
+  address: z.string().optional().nullable(),
+  city: z.string().optional().nullable(),
+  state: z.string().optional().nullable(),
+  cover_image: z.string().optional().nullable(),
+  category: z.string().default("shows"),
+  status: z.enum(["draft", "published", "cancelled"]).default("published"),
+  visibility: z.enum(["public", "link_only", "private"]).default("public"),
+  is_free: z.boolean().default(false),
+  price_cents: z.number().int().min(0).default(0),
+  is_external_ticket: z.boolean().default(false),
+  external_ticket_url: z.string().url().optional().nullable(),
+  capacity: z.number().int().min(0).optional().nullable(),
+  organizer_name: z.string().optional().nullable(),
+  organizer_phone: z.string().optional().nullable(),
+  age_rating: z.string().optional().nullable(),
+  tags: z.array(z.string()).optional().nullable(),
+  story_media_url: z.string().optional().nullable(),
+  story_media_type: z.enum(["image", "video"]).default("image"),
+  story_auto_open: z.boolean().default(true),
+});
+
+async function _listCivilianEvents() {
+  const supabase = getServerClient();
+  const identity = await getServerIdentity();
+
+  if (!identity.id) {
+    throw new Error("Usuário não autenticado.");
+  }
+
+  const { data: events, error } = await supabase
+    .from("events")
+    .select("*")
+    .eq("author_profile_id", identity.id)
+    .is("deleted_at", null)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("[events.functions] Erro ao listar eventos civis:", error);
+    throw new Error(error.message);
+  }
+
+  const nativeEvents = events || [];
+  const eventIds = nativeEvents.map((e: any) => e.id);
+
+  const { data: lots } =
+    eventIds.length > 0
+      ? await supabase
+          .from("ticket_lots")
+          .select("event_id, price_cents, capacity, sold_count")
+          .in("event_id", eventIds)
+      : { data: [] as any[] };
+
+  const lotsByEvent = new Map<string, { sold: number; revCents: number; capacity: number }>();
+  for (const l of lots || []) {
+    const cur = lotsByEvent.get(l.event_id) || { sold: 0, revCents: 0, capacity: 0 };
+    const sold = Number(l.sold_count || 0);
+    cur.sold += sold;
+    cur.capacity += Number(l.capacity || 0);
+    cur.revCents += sold * Number(l.price_cents || 0);
+    lotsByEvent.set(l.event_id, cur);
+  }
+
+  return nativeEvents.map((ev: any) => {
+    const lotStat = lotsByEvent.get(ev.id) || { sold: 0, revCents: 0, capacity: 0 };
+    return {
+      ...ev,
+      source_type: "civilian_event",
+      tickets_sold: lotStat.sold,
+      ticket_capacity: lotStat.capacity || ev.capacity || 100,
+      ticket_revenue_cents: lotStat.revCents,
+      is_archived: !!ev.archived_at,
+    };
+  });
+}
+
+export const listCivilianEvents = createServerFn({ method: "GET" }).handler(_listCivilianEvents);
+
+async function _getCivilianEventById(eventId: string) {
+  const supabase = getServerClient();
+  const identity = await getServerIdentity();
+
+  if (!identity.id) throw new Error("Usuário não autenticado.");
+
+  const { data: event, error } = await supabase
+    .from("events")
+    .select("*")
+    .eq("id", eventId)
+    .eq("author_profile_id", identity.id)
+    .is("deleted_at", null)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  if (!event) throw new Error("Evento não encontrado ou acesso não autorizado.");
+
+  const { data: lots } = await supabase
+    .from("ticket_lots")
+    .select("*")
+    .eq("event_id", eventId)
+    .order("price_cents", { ascending: true });
+
+  return { event, lots: lots || [] };
+}
+
+export const getCivilianEventById = createServerFn({ method: "GET" })
+  .validator(z.string().uuid())
+  .handler(async ({ data: eventId }) => _getCivilianEventById(eventId));
+
+async function _upsertCivilianEvent(data: z.infer<typeof civilianEventSchema>) {
+  const supabase = getServerClient();
+  const identity = await getServerIdentity();
+
+  if (!identity.id) {
+    throw new Error("Autenticação necessária para gerenciar eventos.");
+  }
+
+  const { search_vector: _sv, price_cents, ...safeData } = (data || {}) as any;
+
+  if (safeData.id) {
+    const { data: existing, error: checkErr } = await supabase
+      .from("events")
+      .select("id, author_profile_id")
+      .eq("id", safeData.id)
+      .maybeSingle();
+
+    if (checkErr || !existing) {
+      throw new Error("Evento não encontrado.");
+    }
+    if (existing.author_profile_id !== identity.id && identity.role !== "platform_admin") {
+      throw new Error("Você não possui permissão para editar este evento.");
+    }
+  }
+
+  const payload: any = {
+    ...safeData,
+    author_profile_id: identity.id,
+    store_id: null,
+    category: safeData.category || "shows",
+    status: safeData.status || "published",
+    visibility: safeData.visibility || "public",
+    story_media_url: safeData.story_media_url || null,
+    story_media_type: safeData.story_media_type || "image",
+    story_auto_open: safeData.story_auto_open ?? true,
+    updated_at: new Date().toISOString(),
+  };
+
+  if (!payload.id) {
+    payload.created_at = new Date().toISOString();
+  }
+
+  const { data: event, error } = await supabase
+    .from("events")
+    .upsert(payload)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("[events.functions] Erro ao salvar evento civil:", error);
+    throw new Error("Falha ao salvar evento: " + error.message);
+  }
+
+  if (!data.id) {
+    try {
+      await supabase.from("ticket_lots").insert({
+        event_id: event.id,
+        name: "1º Lote Geral",
+        price_cents: safeData.is_free ? 0 : (price_cents || 0),
+        capacity: safeData.capacity || 100,
+        status: "active",
+      });
+    } catch (lotErr) {
+      console.warn("[events.functions] Aviso ao criar lote inicial civil:", lotErr);
+    }
+  }
+
+  await logAuditAction(identity, data.id ? "UPDATE" : "INSERT", "events", event.id, event);
+  return event;
+}
+
+export const upsertCivilianEvent = createServerFn({ method: "POST" })
+  .validator(civilianEventSchema)
+  .handler(async ({ data }) => _upsertCivilianEvent(data));
+
+async function _softDeleteCivilianEvent(eventId: string) {
+  const supabase = getServerClient();
+  const identity = await getServerIdentity();
+
+  if (!identity.id) throw new Error("Usuário não autenticado.");
+
+  const now = new Date().toISOString();
+
+  const { data: event, error } = await supabase
+    .from("events")
+    .update({ deleted_at: now, status: "cancelled", updated_at: now })
+    .eq("id", eventId)
+    .eq("author_profile_id", identity.id)
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    console.error("[events.functions] Erro ao excluir evento civil:", error);
+    throw new Error("Falha ao excluir evento: " + error.message);
+  }
+
+  if (!event) {
+    throw new Error("Evento não encontrado ou permissão negada.");
+  }
+
+  await logAuditAction(identity, "DELETE", "events", eventId, event);
+  return { success: true, id: eventId, source: "civilian_events" };
+}
+
+export const softDeleteCivilianEvent = createServerFn({ method: "POST" })
+  .validator(z.object({ eventId: z.string().uuid() }))
+  .handler(async ({ data }) => _softDeleteCivilianEvent(data.eventId));
+
+async function _archiveCivilianEvent(eventId: string, archive = true) {
+  const supabase = getServerClient();
+  const identity = await getServerIdentity();
+
+  if (!identity.id) throw new Error("Usuário não autenticado.");
+
+  const now = new Date().toISOString();
+  const archivedAt = archive ? now : null;
+
+  const { data: event, error } = await supabase
+    .from("events")
+    .update({ archived_at: archivedAt, updated_at: now })
+    .eq("id", eventId)
+    .eq("author_profile_id", identity.id)
+    .select()
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  if (!event) throw new Error("Evento não encontrado para arquivamento.");
+
+  await logAuditAction(identity, "UPDATE", "events", eventId, { archived: archive });
+  return { success: true, id: eventId, archived: archive };
+}
+
+export const archiveCivilianEvent = createServerFn({ method: "POST" })
+  .validator(z.object({ eventId: z.string().uuid(), archive: z.boolean().default(true) }))
+  .handler(async ({ data }) => _archiveCivilianEvent(data.eventId, data.archive));
+
+async function _duplicateCivilianEvent(eventId: string) {
+  const supabase = getServerClient();
+  const identity = await getServerIdentity();
+
+  if (!identity.id) throw new Error("Usuário não autenticado.");
+
+  const { data: original, error: fetchErr } = await supabase
+    .from("events")
+    .select("*")
+    .eq("id", eventId)
+    .eq("author_profile_id", identity.id)
+    .maybeSingle();
+
+  if (fetchErr) throw new Error(fetchErr.message);
+  if (!original) throw new Error("Evento original não encontrado.");
+
+  const { id: _oldId, created_at: _ca, updated_at: _ua, deleted_at: _da, archived_at: _aa, ...safeEvent } = original;
+  const clonePayload = {
+    ...safeEvent,
+    title: `${original.title} (Cópia)`,
+    status: "draft",
+    deleted_at: null,
+    archived_at: null,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+
+  const { data: clonedEvent, error: cloneErr } = await supabase
+    .from("events")
+    .insert(clonePayload)
+    .select()
+    .single();
+
+  if (cloneErr) throw new Error("Falha ao duplicar evento: " + cloneErr.message);
+
+  const { data: lots } = await supabase
+    .from("ticket_lots")
+    .select("*")
+    .eq("event_id", eventId);
+
+  if (lots && lots.length > 0) {
+    const clonedLots = lots.map((l: any) => {
+      const { id: _lId, created_at: _lca, updated_at: _lua, ...safeLot } = l;
+      return {
+        ...safeLot,
+        event_id: clonedEvent.id,
+        sold_count: 0,
+        reserved_count: 0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+    });
+    await supabase.from("ticket_lots").insert(clonedLots);
+  }
+
+  await logAuditAction(identity, "INSERT", "events", clonedEvent.id, clonedEvent);
+  return clonedEvent;
+}
+
+export const duplicateCivilianEvent = createServerFn({ method: "POST" })
+  .validator(z.object({ eventId: z.string().uuid() }))
+  .handler(async ({ data }) => _duplicateCivilianEvent(data.eventId));
+
+// --- FAST LEAD RSVP TICKET ISSUANCE (AGENTS.md B.1-B.45 | GAP-05) ---
+
+export const fastLeadRsvpSchema = z.object({
+  eventId: z.string().uuid("ID do evento inválido"),
+  lotId: z.string().uuid().optional().nullable(),
+  attendeeName: z.string().min(2, "Nome deve ter ao menos 2 caracteres"),
+  attendeeEmail: z.string().email("E-mail inválido").optional().nullable(),
+  attendeePhone: z.string().optional().nullable(),
+});
+
+async function _issueFastLeadRsvpTicket(input: z.infer<typeof fastLeadRsvpSchema>) {
+  const supabase = getServerClient();
+  const identity = await getServerIdentity().catch(() => null);
+
+  const { data: event, error: evErr } = await supabase
+    .from("events")
+    .select("id, title, store_id, location, event_date, is_free")
+    .eq("id", input.eventId)
+    .single();
+
+  if (evErr || !event) throw new Error("Evento não encontrado.");
+
+  let lot: any = null;
+  if (input.lotId) {
+    const { data: foundLot } = await supabase
+      .from("ticket_lots")
+      .select("id, event_id, name, price_cents, capacity, sold_count, status")
+      .eq("id", input.lotId)
+      .eq("event_id", event.id)
+      .single();
+    lot = foundLot;
+  }
+
+  if (!lot) {
+    const { data: defaultLot } = await supabase
+      .from("ticket_lots")
+      .select("id, event_id, name, price_cents, capacity, sold_count, status")
+      .eq("event_id", event.id)
+      .eq("status", "active")
+      .order("price_cents", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    lot = defaultLot;
+  }
+
+  if (!lot) {
+    const { data: newLot } = await supabase
+      .from("ticket_lots")
+      .insert({
+        event_id: event.id,
+        name: "Entrada Gratuita / RSVP",
+        price_cents: 0,
+        capacity: 500,
+        status: "active",
+      })
+      .select()
+      .single();
+    lot = newLot;
+  }
+
+  if ((lot.price_cents || 0) > 0) {
+    throw new Error("Este lote exige pagamento e não pode ser emitido via RSVP rápido gratuito.");
+  }
+
+  const ticketId = crypto.randomUUID();
+  const ownerId = identity?.id || null;
+
+  const signed = signTicketPayload({
+    ticketId,
+    eventId: event.id,
+    lotId: lot.id,
+    ownerProfileId: ownerId || `guest_${ticketId}`,
+  });
+
+  const { data: ticket, error: tktErr } = await supabase
+    .from("tickets")
+    .insert({
+      id: ticketId,
+      event_id: event.id,
+      lot_id: lot.id,
+      owner_profile_id: ownerId,
+      status: "valid",
+      qr_hash: signed.qrPayload,
+      human_code: signed.humanCode,
+      hmac_signature: signed.signature,
+      issued_at_epoch: signed.issuedAt,
+      recipient_name: input.attendeeName.trim(),
+      recipient_email: input.attendeeEmail?.trim() || null,
+      metadata: {
+        attendee_phone: input.attendeePhone?.trim() || null,
+        fast_lead: true,
+      },
+    })
+    .select()
+    .single();
+
+  if (tktErr) {
+    console.error("[events.functions] Erro ao emitir ticket rápido:", tktErr);
+    throw new Error("Falha ao emitir ingresso: " + tktErr.message);
+  }
+
+  await supabase
+    .from("ticket_lots")
+    .update({ sold_count: (lot.sold_count || 0) + 1 })
+    .eq("id", lot.id);
+
+  return {
+    ticketId: ticket.id,
+    humanCode: signed.humanCode,
+    qrPayload: signed.qrPayload,
+    eventTitle: event.title,
+    eventDate: event.event_date,
+    eventLocation: event.location,
+    lotName: lot.name,
+    recipientName: input.attendeeName.trim(),
+  };
+}
+
+export const issueFastLeadRsvpTicket = createServerFn({ method: "POST" })
+  .validator(fastLeadRsvpSchema)
+  .handler(async ({ data }) => _issueFastLeadRsvpTicket(data));
+
 
 // ---------------------------------------------------------------------------
 // TICKET LOTS
@@ -200,16 +901,18 @@ export const upsertEvent = createServerFn({ method: "POST" })
 async function _listEventLots(eventId: string) {
  const supabase = getServerClient();
  const identity = await getServerIdentity();
- assertStoreAccess(identity, ["owner", "admin", "manager", "content", "seller"]);
-
- // Double check that event belongs to the store
  const { data: evt } = await supabase
  .from("events")
- .select("id")
+ .select("id, store_id, author_profile_id")
  .eq("id", eventId)
- .eq("store_id", identity.store_id)
- .single();
- if (!evt) throw new Error("Acesso negado");
+ .maybeSingle();
+
+ const isStoreAuth = identity.store_id && evt?.store_id === identity.store_id;
+ const isCivilianAuth = identity.id && evt?.author_profile_id === identity.id;
+ const isPlatformAdmin = identity.role === "platform_admin";
+ if (!evt || (!isStoreAuth && !isCivilianAuth && !isPlatformAdmin)) {
+ throw new Error("Acesso negado");
+ }
 
  const { data: lots, error } = await supabase
  .from("ticket_lots")
@@ -228,18 +931,18 @@ export const listEventLots = createServerFn({ method: "GET" })
 async function _upsertEventLot(data: Partial<z.infer<typeof ticketLotSchema>>) {
  const supabase = getServerClient();
  const identity = await getServerIdentity();
- assertStoreAccess(identity, ["owner", "admin", "manager"]);
-
- if (!data.event_id) throw new Error("ID do evento obrigatório");
-
- // Ensure event ownership
  const { data: evt } = await supabase
  .from("events")
- .select("id")
+ .select("id, store_id, author_profile_id")
  .eq("id", data.event_id)
- .eq("store_id", identity.store_id)
- .single();
- if (!evt) throw new Error("Acesso negado");
+ .maybeSingle();
+
+ const isStoreAuth = identity.store_id && evt?.store_id === identity.store_id;
+ const isCivilianAuth = identity.id && evt?.author_profile_id === identity.id;
+ const isPlatformAdmin = identity.role === "platform_admin";
+ if (!evt || (!isStoreAuth && !isCivilianAuth && !isPlatformAdmin)) {
+ throw new Error("Acesso negado");
+ }
 
  // We DO NOT let frontend send `sold_count` or `reserved_count` during updates.
  // We only allow setting capacity.
@@ -840,6 +1543,7 @@ async function _getPublicEvents(opts: {
         "id, store_id, title, description, event_date, end_date, location, venue, city, state, cover_image, status, category, is_free, is_external, external_source, is_external_ticket, external_ticket_url, organizer_name, price_min_cents, price_max_cents, rsvp_going_count, rsvp_interested_count, rsvp_not_going_count, created_at",
       )
       .eq("status", "published")
+      .is("deleted_at", null)
       .gte("event_date", new Date().toISOString()) // só eventos futuros
       .order("event_date", { ascending: true })
       .limit(limit);
@@ -2837,4 +3541,134 @@ export const getSurveyAnalytics = createServerFn({ method: "GET" })
       verifiedLocationCount,
       fieldSummaries,
     };
+  });
+
+
+// ============================================================
+// LOTES DE INGRESSOS E AFILIADOS (Cluster 3: event_ticket_batches & event_ticket_affiliates)
+// ============================================================
+
+export const listEventTicketBatches = createServerFn({ method: "GET" })
+  .validator(z.object({ eventId: z.string().uuid() }))
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const { data: rows, error } = await supabase
+      .from("event_ticket_batches")
+      .select("*")
+      .eq("event_id", data.eventId)
+      .order("created_at", { ascending: true });
+
+    if (error) {
+      console.warn("[listEventTicketBatches] Erro:", error.message);
+      return [];
+    }
+    return rows || [];
+  });
+
+export const saveEventTicketBatch = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string().uuid().optional(),
+      eventId: z.string().uuid(),
+      batchName: z.string().min(1),
+      priceCents: z.number().int().min(0),
+      quantityAvailable: z.number().int().min(0),
+      quantitySold: z.number().int().min(0).default(0),
+      startDate: z.string().optional().nullable(),
+      endDate: z.string().optional().nullable(),
+      isActive: z.boolean().default(true),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const payload = {
+      event_id: data.eventId,
+      batch_name: data.batchName,
+      price_cents: data.priceCents,
+      quantity_available: data.quantityAvailable,
+      quantity_sold: data.quantitySold,
+      start_date: data.startDate,
+      end_date: data.endDate,
+      is_active: data.isActive,
+    };
+
+    if (data.id) {
+      const { data: updated, error } = await supabase
+        .from("event_ticket_batches")
+        .update(payload)
+        .eq("id", data.id)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao atualizar lote de ingressos: " + error.message);
+      return updated;
+    } else {
+      const { data: inserted, error } = await supabase
+        .from("event_ticket_batches")
+        .insert(payload)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao criar lote de ingressos: " + error.message);
+      return inserted;
+    }
+  });
+
+export const listEventTicketAffiliates = createServerFn({ method: "GET" })
+  .validator(z.object({ eventId: z.string().uuid() }))
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const { data: rows, error } = await supabase
+      .from("event_ticket_affiliates")
+      .select("*")
+      .eq("event_id", data.eventId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.warn("[listEventTicketAffiliates] Erro:", error.message);
+      return [];
+    }
+    return rows || [];
+  });
+
+export const saveEventTicketAffiliate = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string().uuid().optional(),
+      eventId: z.string().uuid(),
+      promoterProfileId: z.string().uuid(),
+      code: z.string().min(2).max(50),
+      commissionPercent: z.number().min(0).max(100).default(5.0),
+      commissionFixedCents: z.number().int().min(0).default(0),
+      isActive: z.boolean().default(true),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const payload = {
+      event_id: data.eventId,
+      promoter_profile_id: data.promoterProfileId,
+      code: data.code.trim().toUpperCase(),
+      commission_percent: data.commissionPercent,
+      commission_fixed_cents: data.commissionFixedCents,
+      is_active: data.isActive,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (data.id) {
+      const { data: updated, error } = await supabase
+        .from("event_ticket_affiliates")
+        .update(payload)
+        .eq("id", data.id)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao atualizar afiliado: " + error.message);
+      return updated;
+    } else {
+      const { data: inserted, error } = await supabase
+        .from("event_ticket_affiliates")
+        .insert(payload)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao cadastrar afiliado: " + error.message);
+      return inserted;
+    }
   });

@@ -37,7 +37,7 @@ export function SizeGuideTableSection({
  <section className="py-12 bg-muted/20 w-full">
  <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-6">
  <div className="text-center max-w-xl mx-auto space-y-2">
- <Badge variant="outline" className="text-[11px] font-mono text-muted-foreground border-border/80">
+ <Badge variant="outline" className="text-2xs font-mono text-muted-foreground border-border/80">
  Tabela de Caimento
  </Badge>
  <h2 className="text-2xl font-bold text-foreground tracking-tight">{title}</h2>
@@ -47,7 +47,7 @@ export function SizeGuideTableSection({
  <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-2xs">
  <div className="overflow-x-auto no-scrollbar ">
  <table className="w-full text-left text-xs">
- <thead className="bg-muted/50 border-b border-border/70 text-muted-foreground uppercase font-mono text-[10px]">
+ <thead className="bg-muted/50 border-b border-border/70 text-muted-foreground uppercase font-mono text-2xs">
  <tr>
  <th className="px-5 py-4 font-bold">Tamanho</th>
  <th className="px-5 py-4 font-bold">Busto (cm)</th>

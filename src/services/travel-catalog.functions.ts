@@ -7,6 +7,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity } from "@/lib/server-access";
+import { searchHotelsCatalog, getHotelByNameOrSlug, normalizeHotelName, type HotelRecord } from "@/lib/data/hotels-resorts-catalog";
+import { CANONICAL_DESTINATIONS } from "@/lib/destinations-catalog";
 
 // ─── DTOs Canônicos de Destinos & Hotelaria ─────────────────────────────────
 
@@ -865,4 +867,316 @@ export const saveHotelAmenities = createServerFn({ method: "POST" })
 
     if (insErr) throw new Error(`Erro ao salvar comodidades: ${insErr.message}`);
     return (inserted || []) as HotelAmenityDTO[];
+  });
+
+
+// ─── 4. DEDUPLICAÇÃO, PRÉ-VOO & PÁGINAS PÚBLICAS CANÔNICAS ─────────────────────
+
+export interface HotelPreflightMatchDTO {
+  hasDuplicate: boolean;
+  matchType: "exact" | "alias" | "similar" | "none";
+  matchedHotel?: {
+    id: string;
+    name: string;
+    city: string;
+    state?: string | null;
+    country: string;
+    is_canonical: boolean;
+  };
+  recommendation: string;
+}
+
+export const checkHotelPreflightMatch = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      name: z.string().trim().min(2).max(120),
+      city: z.string().trim().max(120).optional(),
+      state: z.string().trim().max(80).optional(),
+    })
+  )
+  .handler(async ({ data }): Promise<HotelPreflightMatchDTO> => {
+    const db = getServerClient();
+    const normalizedInput = normalizeHotelName(data.name);
+
+    const literalPattern = (value: string) => value.replace(/[\\%_]/g, "\\$&");
+    let globalQuery = db
+      .from("global_hotels")
+      .select("id, name, city, state, country, verified_by_master")
+      .eq("verified_by_master", true)
+      .eq("normalized_name", normalizedInput);
+    if (data.city) globalQuery = globalQuery.ilike("city", literalPattern(data.city));
+    if (data.state) globalQuery = globalQuery.ilike("state", literalPattern(data.state));
+    const { data: globalMatches, error: globalError } = await globalQuery.limit(1);
+    if (globalError) throw new Error(`Falha ao verificar hotel: ${globalError.message}`);
+
+    if (globalMatches && globalMatches.length > 0) {
+      const match = globalMatches[0];
+      return {
+        hasDuplicate: true,
+        matchType: "exact",
+        matchedHotel: {
+          id: match.id,
+          name: match.name,
+          city: match.city,
+          state: match.state,
+          country: match.country,
+          is_canonical: true,
+        },
+        recommendation: "O hotel \"" + match.name + "\" (" + match.city + ") já existe no Catálogo Central Verificado. Selecione-o para vincular automaticamente.",
+      };
+    }
+
+    // 2. Busca em hotel_aliases
+    let aliasQuery = db
+      .from("hotel_aliases")
+      .select("global_hotel_id, alias, global_hotels!inner(id, name, city, state, country)")
+      .eq("normalized_alias", normalizedInput)
+      .eq("global_hotels.verified_by_master", true);
+    if (data.city) aliasQuery = aliasQuery.ilike("global_hotels.city", literalPattern(data.city));
+    if (data.state) aliasQuery = aliasQuery.ilike("global_hotels.state", literalPattern(data.state));
+    const { data: aliasMatches, error: aliasError } = await aliasQuery.limit(1);
+    if (aliasError) throw new Error(`Falha ao verificar apelidos do hotel: ${aliasError.message}`);
+
+    if (aliasMatches && aliasMatches.length > 0) {
+      const alias = aliasMatches[0] as any;
+      const gh = alias.global_hotels;
+      return {
+        hasDuplicate: true,
+        matchType: "alias",
+        matchedHotel: {
+          id: gh?.id || alias.global_hotel_id,
+          name: gh?.name || alias.alias,
+          city: gh?.city || "",
+          state: gh?.state || "",
+          country: gh?.country || "Brasil",
+          is_canonical: true,
+        },
+        recommendation: "A denominação \"" + data.name + "\" é um sinônimo canônico de \"" + (gh?.name || alias.alias) + "\". Recomendamos utilizar o registro oficial.",
+      };
+    }
+
+    return {
+      hasDuplicate: false,
+      matchType: "none",
+      recommendation: "Nenhum hotel correspondente encontrado no banco central. O cadastro será salvo em sua agência e disponibilizado para revisão canônica.",
+    };
+  });
+
+export interface PublicHotelViewDTO extends HotelBankDTO {
+  destination?: DestinationDTO | null;
+  media_items?: HotelMediaDTO[];
+  amenities_list?: HotelAmenityDTO[];
+  related_packages?: any[];
+  is_verified_canonical: boolean;
+}
+
+export const getPublicHotelBySlug = createServerFn({ method: "GET" })
+  .validator(z.object({ slug: z.string().min(1) }))
+  .handler(async ({ data: { slug } }): Promise<PublicHotelViewDTO> => {
+    const db = getServerClient();
+    const cleanSlug = slug.trim().toLowerCase();
+
+    // 1. Busca em hotels_bank
+    let hotel: any = null;
+    const { data: dbHotel } = await db
+      .from("hotels_bank")
+      .select("*, destinations(*)")
+      .or("id.eq." + (cleanSlug.length === 36 ? cleanSlug : "00000000-0000-0000-0000-000000000000") + ",name.ilike.%" + cleanSlug.replace(/-/g, " ") + "%")
+      .limit(1)
+      .maybeSingle();
+
+    if (dbHotel) {
+      hotel = dbHotel;
+    }
+
+    // 2. Busca em global_hotels se não achar
+    if (!hotel) {
+      const { data: gh } = await db
+        .from("global_hotels")
+        .select("*")
+        .or("canonical_slug.eq." + cleanSlug + ",id.eq." + (cleanSlug.length === 36 ? cleanSlug : "00000000-0000-0000-0000-000000000000"))
+        .limit(1)
+        .maybeSingle();
+
+      if (gh) {
+        hotel = {
+          id: gh.id,
+          name: gh.name,
+          city: gh.city,
+          state: gh.state,
+          country: gh.country,
+          stars: gh.stars || 4,
+          regime_options: ["All Inclusive"],
+          description: "Resort de excelência cadastrado no catálogo central canônico.",
+          internal_rating: 4.9,
+          is_active: true,
+          cover_photo_url: null,
+          photos: [],
+          badges: ["Verificado Oficial", "Resort Canônico"],
+          bio_bullets: [],
+          room_categories: [],
+          policies: {},
+          structure: {},
+        };
+      }
+    }
+
+    // 3. Fallback no catálogo estático SSOT
+    if (!hotel) {
+      const staticHotel = getHotelByNameOrSlug(cleanSlug.replace(/-/g, " "));
+      if (staticHotel) {
+        hotel = {
+          id: "canonical-" + normalizeHotelName(staticHotel.name),
+          name: staticHotel.name,
+          city: staticHotel.city,
+          state: staticHotel.state,
+          country: staticHotel.country,
+          stars: staticHotel.stars,
+          regime_options: staticHotel.regime_options,
+          description: staticHotel.description,
+          bio_bullets: staticHotel.bio_bullets,
+          badges: staticHotel.badges,
+          cover_photo_url: staticHotel.cover_photo_url,
+          photos: staticHotel.photos,
+          website: staticHotel.website,
+          phone: staticHotel.phone,
+          internal_rating: staticHotel.internal_rating,
+          room_categories: staticHotel.room_categories,
+          policies: {
+            check_in_time: staticHotel.policies.check_in,
+            check_out_time: staticHotel.policies.check_out,
+            children_policy: staticHotel.policies.children_policy,
+            pet_friendly: staticHotel.policies.pet_friendly,
+            cancellation_policy: staticHotel.policies.cancellation,
+            voltage: staticHotel.policies.voltage,
+          },
+          structure: {
+            beach_setup: staticHotel.structure.beachfront ? "Pé na areia à beira-mar" : "Próximo à praia",
+            kids_club: staticHotel.structure.kids_club,
+            spa: staticHotel.structure.spa,
+            gym: staticHotel.structure.gym,
+            pools_count: staticHotel.structure.water_park ? 3 : 1,
+          },
+          is_active: true,
+        };
+      }
+    }
+
+    if (!hotel) {
+      throw new Error("Hotel não encontrado para o identificador \"" + slug + "\".");
+    }
+
+    // Mídias adicionais
+    let mediaItems: HotelMediaDTO[] = [];
+    if (hotel.id && hotel.id.length === 36) {
+      const { data: media } = await db
+        .from("hotel_media")
+        .select("*")
+        .eq("hotel_id", hotel.id)
+        .order("display_order", { ascending: true });
+      if (media) mediaItems = media as HotelMediaDTO[];
+    }
+
+    // Pacotes ativos da plataforma relacionados
+    let relatedPackages: any[] = [];
+    const hotelNamePattern = "%" + hotel.name.split(" ")[0] + "%";
+    const { data: pkgs } = await db
+      .from("products")
+      .select("id, title, slug, price_cents, images, metadata, store_id, stores(name, logo_url, slug)")
+      .or("title.ilike." + hotelNamePattern + ",description.ilike." + hotelNamePattern)
+      .limit(6);
+
+    if (pkgs) {
+      relatedPackages = pkgs.map((p) => ({
+        id: p.id,
+        title: p.title,
+        slug: p.slug,
+        price_cents: p.price_cents,
+        cover_image: p.images?.[0] || hotel.cover_photo_url || null,
+        agency_name: (p.stores as any)?.name || "Agência Parceira",
+        agency_slug: (p.stores as any)?.slug || "",
+      }));
+    }
+
+    return {
+      ...hotel,
+      destination: hotel.destinations || null,
+      media_items: mediaItems,
+      related_packages: relatedPackages,
+      is_verified_canonical: Boolean(hotel.global_hotel_id || hotel.badges?.includes("Verificado Oficial")),
+    } as PublicHotelViewDTO;
+  });
+
+export interface PublicDestinationViewDTO extends DestinationDTO {
+  hotels?: HotelBankDTO[];
+  related_packages?: any[];
+}
+
+export const getPublicDestinationBySlug = createServerFn({ method: "GET" })
+  .validator(z.object({ slug: z.string().min(1) }))
+  .handler(async ({ data: { slug } }): Promise<PublicDestinationViewDTO> => {
+    const db = getServerClient();
+    const cleanSlug = slug.trim().toLowerCase();
+
+    // 1. Busca em destinations
+    let destination: any = null;
+    const { data: dbDest } = await db
+      .from("destinations")
+      .select("*")
+      .or("slug.eq." + cleanSlug + ",name.ilike.%" + cleanSlug.replace(/-/g, " ") + "%")
+      .limit(1)
+      .maybeSingle();
+
+    if (dbDest) {
+      destination = dbDest;
+    }
+
+    // 2. Fallback em CANONICAL_DESTINATIONS
+    if (!destination) {
+      const staticDest = CANONICAL_DESTINATIONS.find(
+        (d) =>
+          d.id === cleanSlug ||
+          d.name.toLowerCase().includes(cleanSlug.replace(/-/g, " ")) ||
+          d.city.toLowerCase().includes(cleanSlug.replace(/-/g, " "))
+      );
+      if (staticDest) {
+        destination = {
+          id: staticDest.id,
+          name: staticDest.name,
+          city: staticDest.city,
+          state: staticDest.state,
+          country: staticDest.country,
+          iata_gateway: staticDest.iata,
+          best_season: staticDest.bestSeason,
+          description: staticDest.description,
+          cover_image_url: staticDest.coverImage,
+          gallery_urls: staticDest.gallery || [],
+          tags: staticDest.tags || [],
+          highlights: staticDest.highlights || [],
+          gastronomy_tip: staticDest.gastronomyTip,
+          travel_tip: staticDest.travelTip,
+          sections: staticDest.sections || [],
+          attractions: staticDest.attractions || [],
+          reviews: staticDest.reviews || [],
+          is_active: true,
+        };
+      }
+    }
+
+    if (!destination) {
+      throw new Error("Destino não encontrado para o identificador \"" + slug + "\".");
+    }
+
+    // Hotéis no destino
+    const { data: hotelsInDest } = await db
+      .from("hotels_bank")
+      .select("*")
+      .or("destination_id.eq." + (destination.id.length === 36 ? destination.id : "00000000-0000-0000-0000-000000000000") + ",city.ilike.%" + (destination.city || destination.name) + "%")
+      .limit(12);
+
+    return {
+      ...destination,
+      hotels: hotelsInDest || [],
+      related_packages: [],
+    } as PublicDestinationViewDTO;
   });

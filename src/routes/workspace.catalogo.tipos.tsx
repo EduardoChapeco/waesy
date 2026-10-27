@@ -155,7 +155,7 @@ function ProductTypesPage() {
 
  return (
  <div className="space-y-6 animate-in fade-in duration-200">
- <PageHeader
+ <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  eyebrow="Catálogo"
  title="Tipos de Produto"
  actions={

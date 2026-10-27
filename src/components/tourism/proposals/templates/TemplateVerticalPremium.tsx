@@ -24,7 +24,7 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
       }}
     >
       {/* 5.1 SEÇÃO HERO / CAPA */}
-      <div className="w-full bg-white relative px-4 sm:px-8 lg:px-14 py-8 sm:py-12 lg:py-16">
+      <div className="w-full bg-card relative px-4 sm:px-8 lg:px-14 py-8 sm:py-12 lg:py-16">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
           {/* Coluna Esquerda (~50% no Desktop) */}
           <div className="lg:col-span-6 flex flex-col justify-center pr-0 lg:pr-3">
@@ -104,8 +104,8 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
 
             {/* Medalhão da Logo */}
             {vm.agency.logo_url && (
-              <div className="absolute left-4 lg:-left-6 top-4 lg:top-[40%] bg-white p-2 sm:p-3 rounded-full shadow-md">
-                <div className="w-14 sm:w-20 h-14 sm:h-20 rounded-full overflow-hidden flex items-center justify-center bg-white border border-slate-100">
+              <div className="absolute left-4 lg:-left-6 top-4 lg:top-[40%] bg-card p-2 sm:p-3 rounded-full shadow-md">
+                <div className="w-14 sm:w-20 h-14 sm:h-20 rounded-full overflow-hidden flex items-center justify-center bg-card border border-slate-100">
                   <img
                     src={vm.agency.logo_url}
                     alt={vm.agency.name}
@@ -150,11 +150,11 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
               return (
                 <div
                   key={day.id || idx}
-                  className="bg-white rounded-lg sm:rounded-lg border border-blue-100 p-4 sm:p-6 lg:p-8 shadow-sm overflow-visible"
+                  className="bg-card rounded-lg sm:rounded-lg border border-blue-100 p-4 sm:p-6 lg:p-8 shadow-sm overflow-visible"
                 >
                   <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
                     <div
-                      className="w-10 sm:w-12 h-10 sm:h-12 rounded-full flex items-center justify-center text-base sm:text-xl font-bold text-white shrink-0"
+                      className="w-10 sm:w-12 h-10 sm:h-12 rounded-full flex items-center justify-center text-base sm:text-xl font-bold text-foreground shrink-0"
                       style={{ backgroundColor: brand }}
                     >
                       {idx + 1}
@@ -236,7 +236,7 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
           <div className="mt-8 sm:mt-14 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
             {vm.hasIncludes && (
               <div
-                className={`${vm.hasExcludes ? "lg:col-span-6" : "col-span-12"} bg-white rounded-lg sm:rounded-lg p-6 sm:p-8 border border-blue-100 shadow-sm`}
+                className={`${vm.hasExcludes ? "lg:col-span-6" : "col-span-12"} bg-card rounded-lg sm:rounded-lg p-6 sm:p-8 border border-blue-100 shadow-sm`}
               >
                 <h2
                   className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6"
@@ -306,7 +306,7 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
                   {p.hotels!.map((h, i) => (
                     <div
                       key={i}
-                      className="bg-white rounded-lg p-4 sm:p-6 border border-blue-100"
+                      className="bg-card rounded-lg p-4 sm:p-6 border border-blue-100"
                     >
                       <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1">{h.name}</h3>
                       <div className="text-xs sm:text-sm text-slate-600 flex items-center gap-2 mb-3">
@@ -349,7 +349,7 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
           >
             Investimento
           </h2>
-          <div className="flex flex-col lg:flex-row bg-white rounded-lg sm:rounded-lg overflow-hidden shadow-sm border border-blue-100">
+          <div className="flex flex-col lg:flex-row bg-card rounded-lg sm:rounded-lg overflow-hidden shadow-sm border border-blue-100">
             {/* Lado Esquerdo - Destaque */}
             <div
               className="w-full lg:w-1/2 p-6 sm:p-8 lg:p-12 flex flex-col justify-center"
@@ -367,7 +367,7 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
             </div>
 
             {/* Lado Direito - Pagamento */}
-            <div className="w-full lg:w-1/2 p-6 sm:p-8 lg:p-12 flex flex-col justify-center bg-white">
+            <div className="w-full lg:w-1/2 p-6 sm:p-8 lg:p-12 flex flex-col justify-center bg-card">
               <div className="text-xs sm:text-sm uppercase tracking-wider font-bold text-slate-400 mb-1 sm:mb-2">
                 Opções de Pagamento
               </div>
@@ -400,7 +400,7 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
               className="w-12 sm:w-16 h-12 sm:h-16 rounded-full object-cover border-2 sm:border-4 border-white/30"
             />
           ) : (
-            <div className="w-12 sm:w-16 h-12 sm:h-16 rounded-full bg-white/20 flex items-center justify-center text-lg sm:text-2xl font-bold text-white border-2 border-white/30">
+            <div className="w-12 sm:w-16 h-12 sm:h-16 rounded-full bg-card/20 flex items-center justify-center text-lg sm:text-2xl font-bold text-foreground border-2 border-white/30">
               {p.agent_name?.charAt(0) || vm.agency.name?.charAt(0)}
             </div>
           )}

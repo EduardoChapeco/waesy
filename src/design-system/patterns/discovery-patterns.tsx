@@ -135,7 +135,7 @@ export function HorizontalProductShelf({
           <button
             type="button"
             onClick={onViewAll}
-            className="inline-flex items-center gap-1 text-2xs font-semibold text-primary hover:underline cursor-pointer shrink-0"
+            className="inline-flex items-center gap-1 text-2xs font-semibold text-primary hover:underline cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <span>{viewAllLabel}</span>
             <ChevronRight className="size-3.5" />

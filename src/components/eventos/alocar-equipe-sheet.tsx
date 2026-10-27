@@ -220,7 +220,7 @@ export function AlocarEquipeSheet({
               <span className="text-xs font-bold text-foreground">
                 Equipe Alocada ({allocations.length})
               </span>
-              <span className="text-[11px] font-mono text-muted-foreground">
+              <span className="text-2xs font-mono text-muted-foreground">
                 Total Cachês: {formatMoney(allocations.reduce((acc, a) => acc + (a.remuneration_cents || 0), 0))}
               </span>
             </div>
@@ -237,10 +237,10 @@ export function AlocarEquipeSheet({
                   <Card key={item.id} className="p-3 bg-card border border-border/60 rounded-lg space-y-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-[10px] uppercase font-bold">
+                        <Badge variant="outline" className="text-2xs uppercase font-bold">
                           {item.role_title}
                         </Badge>
-                        <Badge variant="secondary" className="text-[10px] capitalize">
+                        <Badge variant="secondary" className="text-2xs capitalize">
                           {item.shift_name}
                         </Badge>
                       </div>
@@ -249,7 +249,7 @@ export function AlocarEquipeSheet({
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1">
+                    <div className="flex items-center justify-between text-2xs text-muted-foreground pt-1">
                       <span>
                         {item.contractor?.name || item.employee?.full_name || "Colaborador Avulso"}
                       </span>
@@ -259,7 +259,7 @@ export function AlocarEquipeSheet({
                     </div>
 
                     {item.notes && (
-                      <p className="text-[10px] text-muted-foreground bg-muted/30 p-2 rounded">
+                      <p className="text-2xs text-muted-foreground bg-muted/30 p-2 rounded">
                         {item.notes}
                       </p>
                     )}

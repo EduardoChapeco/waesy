@@ -369,7 +369,7 @@ export function BrandBriefingPage() {
                 className="h-9 px-4 rounded-lg text-xs font-medium gap-2"
               >
                 {isGenerating ? (
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
                 ) : (
                   <Wand2 className="w-3.5 h-3.5" />
                 )}
@@ -382,7 +382,7 @@ export function BrandBriefingPage() {
                 className="h-9 px-4 rounded-lg text-xs font-medium gap-2"
               >
                 {isSaving ? (
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
                 ) : (
                   <Save className="w-3.5 h-3.5" />
                 )}
@@ -395,7 +395,7 @@ export function BrandBriefingPage() {
           <div className="mt-3">
             <div className="h-1.5 bg-muted/50 rounded-full overflow-hidden">
               <div
-                className="h-full rounded-full transition-all duration-700"
+                className="h-full rounded-full transition-colors duration-200 duration-700"
                 style={{
                   width: `${score}%`,
                   background: `linear-gradient(to right, ${scoreColor}88, ${scoreColor})`,
@@ -517,7 +517,7 @@ export function BrandBriefingPage() {
                   <button
                     type="button"
                     onClick={() => removePillar(i)}
-                    className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors flex-shrink-0"
+                    className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -527,7 +527,7 @@ export function BrandBriefingPage() {
             <button
               type="button"
               onClick={addPillar}
-              className="w-full h-10 border border-dashed border-border/60 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:border-border flex items-center justify-center gap-2 transition-colors"
+              className="w-full h-10 border border-dashed border-border/60 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:border-border flex items-center justify-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <Plus className="w-3.5 h-3.5" />
               Adicionar Pilar de Conteúdo
@@ -554,7 +554,7 @@ export function BrandBriefingPage() {
                   <button
                     type="button"
                     onClick={() => removeKeyword(i)}
-                    className="text-muted-foreground hover:text-destructive transition-colors flex-shrink-0"
+                    className="text-muted-foreground hover:text-destructive transition-colors flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <Trash2 className="w-3 h-3" />
                   </button>
@@ -564,7 +564,7 @@ export function BrandBriefingPage() {
             <button
               type="button"
               onClick={addKeyword}
-              className="h-9 px-4 border border-dashed border-border/60 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:border-border flex items-center gap-2 transition-colors"
+              className="h-9 px-4 border border-dashed border-border/60 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:border-border flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <Plus className="w-3.5 h-3.5" />
               Adicionar Keyword

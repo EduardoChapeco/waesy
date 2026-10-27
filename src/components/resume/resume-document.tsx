@@ -103,26 +103,26 @@ export const ResumeDocument = React.forwardRef<HTMLDivElement, ResumeDocumentPro
           ref={ref}
           id="resume-paper"
           className={cn(
-            "resume-document-paper w-full max-w-3xl min-h-screen bg-white text-slate-900 border border-slate-200 transition-colors select-text overflow-hidden flex flex-col justify-between",
+            "resume-document-paper w-full max-w-3xl min-h-screen bg-card text-slate-900 border border-slate-200 transition-colors select-text overflow-hidden flex flex-col justify-between",
             fontClass,
             className
           )}
         >
           {/* Header Superior Moderno */}
-          <div className={cn("p-8 sm:p-10 flex items-center justify-between gap-6 text-white", accentHeaderBg)}>
+          <div className={cn("p-8 sm:p-10 flex items-center justify-between gap-6 text-foreground", accentHeaderBg)}>
             <div className="space-y-1 min-w-0 flex-1">
-              <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-white break-words">
+              <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-foreground break-words">
                 {fullName || "Nome do Profissional"}
               </h1>
               {headline && (
-                <p className="text-xs sm:text-sm font-semibold tracking-wide text-white/90 uppercase break-words">
+                <p className="text-xs sm:text-sm font-semibold tracking-wide text-foreground/90 uppercase break-words">
                   {headline}
                 </p>
               )}
             </div>
 
             {avatarUrl && showPhoto && (
-              <div className="size-20 rounded-lg overflow-hidden border-2 border-white/40 shrink-0 bg-white/20">
+              <div className="size-20 rounded-lg overflow-hidden border-2 border-white/40 shrink-0 bg-card/20">
                 <img src={avatarUrl} alt={fullName} className="size-full object-cover" />
               </div>
             )}
@@ -162,7 +162,7 @@ export const ResumeDocument = React.forwardRef<HTMLDivElement, ResumeDocumentPro
                     {skills.map((s) => (
                       <span
                         key={s}
-                        className="px-2 py-1 rounded bg-white border border-slate-200 text-slate-800 text-xs font-medium"
+                        className="px-2 py-1 rounded bg-card border border-slate-200 text-slate-800 text-xs font-medium"
                       >
                         {s}
                       </span>
@@ -288,7 +288,7 @@ export const ResumeDocument = React.forwardRef<HTMLDivElement, ResumeDocumentPro
           ref={ref}
           id="resume-paper"
           className={cn(
-            "resume-document-paper w-full max-w-3xl min-h-screen bg-white text-slate-900 border border-slate-200 transition-colors select-text overflow-hidden flex flex-col justify-between p-10 sm:p-12 space-y-6 font-sans",
+            "resume-document-paper w-full max-w-3xl min-h-screen bg-card text-slate-900 border border-slate-200 transition-colors select-text overflow-hidden flex flex-col justify-between p-10 sm:p-12 space-y-6 font-sans",
             className
           )}
         >
@@ -414,7 +414,7 @@ export const ResumeDocument = React.forwardRef<HTMLDivElement, ResumeDocumentPro
         ref={ref}
         id="resume-paper"
         className={cn(
-          "resume-document-paper w-full max-w-3xl min-h-screen bg-white text-slate-900 border border-slate-200 transition-colors select-text overflow-hidden flex flex-col justify-between",
+          "resume-document-paper w-full max-w-3xl min-h-screen bg-card text-slate-900 border border-slate-200 transition-colors select-text overflow-hidden flex flex-col justify-between",
           fontClass,
           densityPadding,
           className

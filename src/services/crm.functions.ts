@@ -327,6 +327,27 @@ export const getCustomer360 = createServerFn({ method: "GET" })
     console.warn("[crm] falha ao buscar tourism_trips vinculadas:", err);
   }
 
+  // 6b-2. Busca Passageiros Vinculados (Co-Viajantes nas mesmas viagens confirmadas)
+  let coTravelers: any[] = [];
+  if (confirmedTrips.length > 0) {
+    try {
+      const tripIds = confirmedTrips.map((t: any) => t.id);
+      const { data: paxRows } = await supabase
+        .from("trip_passengers")
+        .select("id, trip_id, full_name, document_type, document, birth_date, phone, email, seat_number, is_lead_passenger")
+        .in("trip_id", tripIds);
+      if (paxRows) {
+        const tripTitleMap = new Map(confirmedTrips.map((t: any) => [t.id, t.title || t.destination_city || t.trip_number]));
+        coTravelers = paxRows.map((px: any) => ({
+          ...px,
+          trip_title: tripTitleMap.get(px.trip_id) || "Viagem Confirmada",
+        }));
+      }
+    } catch (coErr) {
+      console.warn("[crm] notice fetching trip_passengers coTravelers:", coErr);
+    }
+  }
+
   // 6c. Busca Passes da Carteira Digital (Apple Wallet Passes)
   let walletPasses: any[] = [];
   try {
@@ -408,6 +429,32 @@ export const getCustomer360 = createServerFn({ method: "GET" })
     console.warn("[crm] falha ao buscar contracts:", err);
   }
 
+  // 6g. Busca Faturas e Orçamentos Comerciais (commercial_invoices)
+  let customerInvoices: any[] = [];
+  try {
+    const cleanDoc = customer.document ? customer.document.replace(/\D/g, "") : "";
+    const cleanPhone = customer.phone ? customer.phone.replace(/\D/g, "").slice(-8) : "";
+    let invQuery = supabase
+      .from("commercial_invoices")
+      .select("id, invoice_code, document_type, status, total_cents, public_token, customer_snapshot, contract_id, created_at")
+      .eq("store_id", identity.store_id);
+
+    const invOr: string[] = [];
+    if (customerId) invOr.push(`customer_id.eq.${customerId}`);
+    if (cleanDoc) invOr.push(`customer_snapshot->>cpfOrCnpj.ilike.%${cleanDoc}%`);
+    if (customer.email) invOr.push(`customer_snapshot->>email.eq.${customer.email}`);
+    if (cleanPhone) invOr.push(`customer_snapshot->>phone.ilike.%${cleanPhone}%`);
+    if (customer.full_name && customer.full_name.length > 2) invOr.push(`customer_snapshot->>name.ilike.%${customer.full_name}%`);
+
+    if (invOr.length > 0) {
+      invQuery = invQuery.or(invOr.join(","));
+    }
+    const { data: invRows } = await invQuery.order("created_at", { ascending: false });
+    customerInvoices = invRows || [];
+  } catch (err) {
+    console.warn("[crm] notice fetching commercial_invoices:", err);
+  }
+
   // 7. Monta Timeline 360 Unificada
  const timeline: any[] = [];
  (orders || []).forEach((o: any) => {
@@ -480,6 +527,18 @@ export const getCustomer360 = createServerFn({ method: "GET" })
       status: p.status,
       timestamp: p.created_at,
       metadata: { proposal_id: p.id, public_token: p.public_token, price_cents: priceCents },
+    });
+  });
+
+  (customerInvoices || []).forEach((inv: any) => {
+    timeline.push({
+      id: `invoice_${inv.id}`,
+      type: "commercial_invoice",
+      title: `${inv.document_type === "budget" ? "Orçamento" : "Fatura"} ${inv.invoice_code}`,
+      description: `Status: ${inv.status} • Total: R$ ${((inv.total_cents || 0) / 100).toFixed(2)}`,
+      status: inv.status,
+      timestamp: inv.created_at,
+      metadata: { invoice_id: inv.id, public_token: inv.public_token, total_cents: inv.total_cents, contract_id: inv.contract_id },
     });
   });
 
@@ -583,10 +642,12 @@ export const getCustomer360 = createServerFn({ method: "GET" })
   credits: customerCredits || [],
   clinicalRecords,
   confirmedTrips,
+  coTravelers,
   walletPasses,
   travelerPreferences,
     proposals: customerProposals,
     contracts: customerContracts,
+    commercialInvoices: customerInvoices,
   timeline,
   // métricas — nomes com aliases completos para compatibilidade
   ltvCents,

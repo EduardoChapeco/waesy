@@ -468,7 +468,7 @@ export function AdminShell({
  <li key={mod.path}>
  <Link
  to={mod.path}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground",
  isCurrent && "bg-sidebar-accent/50 text-sidebar-foreground",
  collapsed && "justify-center",
@@ -612,7 +612,7 @@ export function AdminShell({
  <li key={mod.path}>
  <Link
  to={mod.path}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground",
  isCurrent && "bg-sidebar-accent/50 text-sidebar-foreground",
  )}

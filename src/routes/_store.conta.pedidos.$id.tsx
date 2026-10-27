@@ -30,6 +30,7 @@ import { EmptyState } from "@/components/state/states";
 import { formatMoney } from "@/lib/money";
 import { formatHumanOrderId } from "@/lib/order-id";
 import { formatDate } from "@/lib/datetime";
+import { formatCanonicalAddress } from "@/lib/format-address";
 import {
   getCustomerOrder,
   getOrderPaymentInstructions,
@@ -161,6 +162,17 @@ function CustomerOrderDetailPage() {
   const payment = order.payments?.[0];
   const items = order.order_items || [];
   const address = order.shipping_address || {};
+  const formattedAddress = useMemo(() => {
+    return formatCanonicalAddress({
+      street: address.street,
+      number: address.number,
+      complement: address.complement,
+      neighborhood: address.neighborhood,
+      city: address.city,
+      state: address.state,
+      zipcode: address.zipcode || address.postal_code,
+    });
+  }, [address]);
   const canCancel = ["draft", "awaiting_payment", "paid", "processing"].includes(order.status);
 
   const handleCopyPix = () => {
@@ -431,13 +443,13 @@ function CustomerOrderDetailPage() {
                         <p className="font-semibold text-sm text-foreground flex items-center gap-2 flex-wrap">
                           {item.product_title}
                           {isBackorderItem && (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 rounded-md">
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 rounded-md">
                               ⏱ Sob Encomenda
                             </span>
                           )}
                         </p>
                         {item.variant_sku && (
-                          <p className="text-[11px] text-muted-foreground font-mono">
+                          <p className="text-xs text-muted-foreground font-mono">
                             SKU: {item.variant_sku}
                           </p>
                         )}
@@ -454,7 +466,7 @@ function CustomerOrderDetailPage() {
                               return (
                                 <span
                                   key={oIdx}
-                                  className="text-[10px] font-bold bg-muted/60 text-foreground/80 border border-border/60 px-2 py-1 rounded-md"
+                                  className="text-xs font-bold bg-muted/60 text-foreground/80 border border-border/60 px-2 py-1 rounded-md"
                                 >
                                   + {label}
                                 </span>
@@ -463,12 +475,12 @@ function CustomerOrderDetailPage() {
                           </div>
                         )}
                         {item.notes && (
-                          <p className="text-[11px] font-medium text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded-md inline-block mt-1">
+                          <p className="text-xs font-medium text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded-md inline-block mt-1">
                             Observação: {item.notes}
                           </p>
                         )}
                         {isBackorderItem && (
-                          <p className="text-[11px] text-amber-700 dark:text-amber-400">
+                          <p className="text-xs text-amber-700 dark:text-amber-400">
                             Este item será produzido sob encomenda.
                           </p>
                         )}
@@ -478,7 +490,7 @@ function CustomerOrderDetailPage() {
                       <p className="font-bold text-sm font-mono text-foreground">
                         {formatMoney(item.total_cents)}
                       </p>
-                      <p className="text-[11px] text-muted-foreground mt-1 font-mono">
+                      <p className="text-xs text-muted-foreground mt-1 font-mono">
                         {item.qty}x {formatMoney(item.unit_price_cents)}
                       </p>
                       {order.status === "delivered" && (
@@ -520,7 +532,7 @@ function CustomerOrderDetailPage() {
                   </p>
                 )}
                 {address.zipcode && (
-                  <p className="font-mono text-[11px] text-muted-foreground">
+                  <p className="font-mono text-xs text-muted-foreground">
                     CEP: {address.zipcode}
                   </p>
                 )}
@@ -557,7 +569,7 @@ function CustomerOrderDetailPage() {
                           className="w-full aspect-video object-cover rounded-lg hover:opacity-90 transition-opacity"
                         />
                       </a>
-                      <div className="text-[10px] text-muted-foreground flex items-center justify-between">
+                      <div className="text-xs text-muted-foreground flex items-center justify-between">
                         <span>Foto capturada pelo entregador</span>
                         {pr.latitude && pr.longitude && (
                           <a
@@ -623,7 +635,7 @@ function CustomerOrderDetailPage() {
               onClick={handleReorder}
               disabled={reordering}
             >
-              <RefreshCw className={`size-4 ${reordering ? "animate-spin" : ""}`} />
+              <RefreshCw className={`size-4 ${reordering ? "animate-spin motion-reduce:animate-none" : ""}`} />
               <span>{reordering ? "Revalidando Itens..." : "Pedir Novamente"}</span>
             </Button>
 

@@ -173,7 +173,7 @@ function ShiftsPage() {
         </Link>
       </div>
 
-      <PageHeader
+      <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         eyebrow="Financeiro"
         title="Histórico de Turnos"
         description="Auditoria fiscal de caixas, conciliação cega de gaveta, quebras e conferência de suprimentos e sangrias."
@@ -272,7 +272,7 @@ function ShiftsPage() {
               statusFilter === "all"
                 ? "bg-background text-foreground shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             Todos ({shifts.length})
           </button>
@@ -283,7 +283,7 @@ function ShiftsPage() {
               statusFilter === "open"
                 ? "bg-background text-foreground shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             Abertos ({shifts.filter((s) => s.status === "open").length})
           </button>
@@ -294,7 +294,7 @@ function ShiftsPage() {
               statusFilter === "closed"
                 ? "bg-background text-foreground shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             Fechados ({shifts.filter((s) => s.status === "closed").length})
           </button>
@@ -305,7 +305,7 @@ function ShiftsPage() {
               statusFilter === "discrepancy"
                 ? "bg-background text-foreground shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             Com Diferença ({shifts.filter((s) => s.status === "discrepancy").length})
           </button>
@@ -346,7 +346,10 @@ function ShiftsPage() {
                   return (
                     <TableRow
                       key={s.id}
-                      className="border-border/40 hover:bg-muted/30 transition-colors cursor-pointer"
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleOpenAudit(s.id); } }}
+                      className="border-border/40 hover:bg-muted/30 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       onClick={() => handleOpenAudit(s.id)}
                     >
                       <TableCell className="text-xs font-mono">
@@ -390,7 +393,7 @@ function ShiftsPage() {
                           : "-"}
                       </TableCell>
                       <TableCell className="text-center">{getStatusBadge(s.status)}</TableCell>
-                      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                      <TableCell className="text-right" onClick={(e) => e.stopPropagation()} /* design-lint-ignore DL-15 reason:"StopPropagation wrapper on table cell" expiry:"2027-12-31" */>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -419,7 +422,7 @@ function ShiftsPage() {
       >
         {isLoadingDetails ? (
           <div className="py-20 flex flex-col items-center justify-center gap-3 text-muted-foreground">
-            <Loader2 className="size-8 animate-spin text-primary" />
+            <Loader2 className="size-8 animate-spin motion-reduce:animate-none text-primary" />
             <span className="text-xs font-mono">Carregando movimentações do turno...</span>
           </div>
         ) : shiftDetails ? (

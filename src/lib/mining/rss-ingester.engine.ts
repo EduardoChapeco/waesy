@@ -4,6 +4,7 @@
  */
 
 import { fetchWithRetry, normalizeUrl, extractDomain, cleanHtmlText } from './scraper-utils';
+import { isCommercialAffiliateContent } from '../../services/mining/integrity-gate';
 
 export interface RssFeedItem {
   guid?: string;
@@ -129,24 +130,48 @@ export async function parseFeed(feedUrl: string): Promise<ParsedFeedResult> {
 
     if (!title || !link) continue;
 
+    // Descarte precoce de links patrocinados / reviews de afiliados / spam comercial
+    if (isCommercialAffiliateContent(title, link)) {
+      continue;
+    }
+
     // Descrição e Conteúdo
     const descM = block.match(/<description[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/description>/i);
     const contentM = block.match(/<content:encoded[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/content:encoded>/i);
     const description = descM ? cleanHtmlText(descM[1]).trim() : undefined;
     const contentEncoded = contentM ? cleanHtmlText(contentM[1]).trim() : undefined;
 
-    // Data de publicação
+    // Data de publicação segura (anti-crash RangeError Invalid time value)
+    let publishedAt: string | undefined = undefined;
     const dateM = block.match(/<(?:pubDate|published|updated)>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/(?:pubDate|published|updated)>/i);
-    const publishedAt = dateM ? new Date(dateM[1].trim()).toISOString() : undefined;
+    if (dateM && dateM[1]) {
+      try {
+        const parsedD = new Date(dateM[1].trim());
+        if (!isNaN(parsedD.getTime())) {
+          publishedAt = parsedD.toISOString();
+        }
+      } catch {}
+    }
 
-    // Imagem (enclosure ou media:content ou tag <img> dentro da description)
+    // Autor
+    const authorM = block.match(/<(?:dc:creator|author)[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/(?:dc:creator|author)>/i);
+    const author = authorM ? cleanHtmlText(authorM[1]).trim() : undefined;
+
+    // Categorias
+    const categoryMatches = Array.from(block.matchAll(/<category[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/category>/gi));
+    const categories = categoryMatches.map((m) => cleanHtmlText(m[1]).trim()).filter(Boolean);
+
+    // Imagem (enclosure, media:content, media:thumbnail ou tag <img> dentro da description)
     let imageUrl: string | undefined;
     const enclosureM = block.match(/<enclosure[^>]+url=["']([^"']+)["'][^>]*type=["']image\/[^"']+["']/i);
     const mediaM = block.match(/<media:content[^>]+url=["']([^"']+)["']/i);
+    const thumbM = block.match(/<media:thumbnail[^>]+url=["']([^"']+)["']/i);
     if (enclosureM && enclosureM[1]) {
       imageUrl = enclosureM[1];
     } else if (mediaM && mediaM[1]) {
       imageUrl = mediaM[1];
+    } else if (thumbM && thumbM[1]) {
+      imageUrl = thumbM[1];
     } else if (descM && descM[1]) {
       const imgInDesc = descM[1].match(/<img[^>]+src=["']([^"']+)["']/i);
       if (imgInDesc && imgInDesc[1]) {
@@ -166,6 +191,8 @@ export async function parseFeed(feedUrl: string): Promise<ParsedFeedResult> {
       contentEncoded,
       publishedAt,
       imageUrl,
+      author,
+      categories: categories.length > 0 ? categories : undefined,
     });
   }
 

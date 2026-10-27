@@ -240,11 +240,11 @@ function SignContractPage() {
           <div className="rounded-lg p-4 bg-muted/20 border border-border/70 flex items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2 min-w-0">
               <Hash className="size-4 text-primary shrink-0" />
-              <span className="font-mono text-muted-foreground text-[11px] truncate">
+              <span className="font-mono text-muted-foreground text-2xs truncate">
                 Hash SHA-256: {version.hash_sha256}
               </span>
             </div>
-            <Badge variant="outline" className="text-[10px] font-mono shrink-0">
+            <Badge variant="outline" className="text-2xs font-mono shrink-0">
               Imutável
             </Badge>
           </div>
@@ -325,13 +325,13 @@ function SignContractPage() {
               </p>
 
               {isCameraOpen && (
-                <div className="relative rounded-lg overflow-hidden border border-border/60 bg-black">
+                <div className="relative rounded-lg overflow-hidden border border-border/60 bg-foreground">
                   <video ref={videoRef} autoPlay muted playsInline className="w-full max-h-60 object-cover" />
                   <div className="absolute inset-0 border-4 border-primary/30 rounded-lg pointer-events-none" />
                   <button
                     type="button"
                     onClick={captureSelfie}
-                    className="absolute bottom-3 left-1/2 -translate-x-1/2 h-11 px-6 rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-xs hover:opacity-90 transition-opacity"
+                    className="absolute bottom-3 left-1/2 -translate-x-1/2 h-11 px-6 rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-xs hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     Tirar Foto
                   </button>
@@ -347,7 +347,7 @@ function SignContractPage() {
                         type="button"
                         onClick={uploadSelfie}
                         disabled={isUploadingSelfie}
-                        className="h-8 px-3 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50"
+                        className="h-8 px-3 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         {isUploadingSelfie ? "Confirmando..." : "Confirmar"}
                       </button>
@@ -355,7 +355,7 @@ function SignContractPage() {
                     <button
                       type="button"
                       onClick={retakeSelfie}
-                      className="h-8 px-3 rounded-lg text-xs font-semibold bg-muted text-foreground hover:bg-muted/80"
+                      className="h-8 px-3 rounded-lg text-xs font-semibold bg-muted text-foreground hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <RefreshCcw className="size-3 inline mr-1" />
                       Refazer
@@ -368,7 +368,7 @@ function SignContractPage() {
                 <button
                   type="button"
                   onClick={openCamera}
-                  className="w-full h-11 rounded-lg border border-dashed border-border/80 flex items-center justify-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+                  className="w-full h-11 rounded-lg border border-dashed border-border/80 flex items-center justify-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <Camera className="size-4" />
                   Abrir câmera e capturar selfie
@@ -390,7 +390,7 @@ function SignContractPage() {
                           <ShieldCheck className="size-4 text-blue-600 dark:text-blue-400" />
                           Assinatura com Conta GOV.BR
                         </span>
-                        <Badge variant="outline" className="text-[10px] font-semibold border-blue-500/30 text-blue-600 dark:text-blue-400 bg-blue-500/10">
+                        <Badge variant="outline" className="text-2xs font-semibold border-blue-500/30 text-blue-600 dark:text-blue-400 bg-blue-500/10">
                           Nível Prata / Ouro
                         </Badge>
                       </div>
@@ -433,7 +433,7 @@ function SignContractPage() {
                       <FileSignature className="size-3.5 text-primary" />
                       Assinatura Salva no seu Perfil
                     </div>
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-2xs text-muted-foreground">
                       Você possui uma assinatura digital registrada. Utilize-a com 1 toque sem desenhar novamente.
                     </p>
                   </div>
@@ -505,7 +505,7 @@ function SignContractPage() {
                 >
                   {signMutation.isPending ? (
                     <>
-                      <Loader2 className="size-4 animate-spin" />
+                      <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                       <span>Gravando Assinatura...</span>
                     </>
                   ) : (

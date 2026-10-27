@@ -43,7 +43,7 @@ function ContaConcursosPage() {
       {/* â”€â”€ Top Header Clean â”€â”€ */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
         <div>
-          <span className="text-[11px] font-mono text-muted-foreground uppercase tracking-wider block">
+          <span className="text-2xs font-mono text-muted-foreground uppercase tracking-wider block">
             Minha Conta â€¢ PrÃªmios
           </span>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
@@ -65,14 +65,14 @@ function ContaConcursosPage() {
       {/* â”€â”€ MÃ©tricas do Participante â”€â”€ */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <div className="rounded-lg border border-border/70 bg-card p-4 space-y-1">
-          <span className="text-[11px] font-mono text-muted-foreground uppercase block">
+          <span className="text-2xs font-mono text-muted-foreground uppercase block">
             Cupons Ativos
           </span>
           <span className="text-2xl font-black font-mono text-foreground">{totalTickets}</span>
         </div>
 
         <div className="rounded-lg border border-border/70 bg-card p-4 space-y-1">
-          <span className="text-[11px] font-mono text-muted-foreground uppercase block">
+          <span className="text-2xs font-mono text-muted-foreground uppercase block">
             Saldo de Pontos
           </span>
           <span className="text-2xl font-black font-mono text-amber-500">
@@ -81,7 +81,7 @@ function ContaConcursosPage() {
         </div>
 
         <div className="col-span-2 sm:col-span-1 rounded-lg border border-border/70 bg-card p-4 space-y-1">
-          <span className="text-[11px] font-mono text-muted-foreground uppercase block">
+          <span className="text-2xs font-mono text-muted-foreground uppercase block">
             PrÃªmios Conquistados
           </span>
           <span className="text-2xl font-black font-mono text-emerald-500">
@@ -142,7 +142,7 @@ function ContaConcursosPage() {
             return (
               <div
                 key={raffle.id}
-                className={`rounded-lg border p-5 sm:p-6 space-y-4 transition-all ${
+                className={`rounded-lg border p-5 sm:p-6 space-y-4 transition-colors duration-200 ${
                   isWinner
                     ? "border-amber-500/60 bg-amber-500/5 shadow-sm"
                     : "border-border/70 bg-card"
@@ -154,16 +154,16 @@ function ContaConcursosPage() {
                       <Badge
                         className={
                           isWinner
-                            ? "bg-amber-500 text-amber-950 font-bold font-mono text-[10px] uppercase"
+                            ? "bg-amber-500 text-amber-950 font-bold font-mono text-2xs uppercase"
                             : isCompleted
-                            ? "bg-muted text-muted-foreground text-[10px]"
-                            : "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold"
+                            ? "bg-muted text-muted-foreground text-2xs"
+                            : "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-2xs font-bold"
                         }
                       >
                         {isWinner ? "ðŸ† Premiado!" : isCompleted ? "ConcluÃ­do" : "Em Andamento"}
                       </Badge>
 
-                      <Badge variant="outline" className="text-[10px] font-medium gap-1">
+                      <Badge variant="outline" className="text-2xs font-medium gap-1">
                         <Store className="size-3" />
                         <span>{raffle.storeName}</span>
                       </Badge>
@@ -234,7 +234,7 @@ function ContaConcursosPage() {
                     ) : (
                       <div className="rounded-lg bg-muted/30 p-3 text-xs text-muted-foreground flex items-center justify-between">
                         <span>Cupom vencedor: <strong>#{raffle.winnerTicketNumber}</strong></span>
-                        <span className="font-mono text-[11px]">Sorteio finalizado</span>
+                        <span className="font-mono text-2xs">Sorteio finalizado</span>
                       </div>
                     )}
                   </div>

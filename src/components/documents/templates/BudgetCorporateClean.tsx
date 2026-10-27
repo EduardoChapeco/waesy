@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { CommercialDocumentTemplateProps } from "../types";
-import { QrCode, ShieldCheck, CheckCircle2, Building2, Phone, Mail, Calendar, FileText } from "lucide-react";
+import { ShieldCheck, CheckCircle2 } from "lucide-react";
+import { generateQrCodeDataUri } from "@/lib/qr-code";
 
 export const BudgetCorporateClean: React.FC<CommercialDocumentTemplateProps> = ({
   data,
@@ -15,13 +16,19 @@ export const BudgetCorporateClean: React.FC<CommercialDocumentTemplateProps> = (
     }).format(cents / 100);
   };
 
+  const qrDataUri = useMemo(() => {
+    const payload = data.issuer.pixKey || data.code || data.issuer.companyName;
+    return generateQrCodeDataUri(payload, { border: 1 });
+  }, [data.issuer.pixKey, data.code, data.issuer.companyName]);
+
   return (
+    // design-lint-ignore DL-05 reason:"Escala dinamica de zoom do preview de documento" expiry:"2030-01-01"
     <div
       style={{
         transform: `scale(${scale})`,
         transformOrigin: "top center",
       }}
-      className={`w-full max-w-4xl mx-auto bg-white text-slate-900 font-sans p-8 sm:p-12 border border-slate-200/80 shadow-lg rounded-lg print:shadow-none print:border-none print:p-0 ${className}`}
+      className={`a4-page w-full max-w-4xl mx-auto bg-card text-slate-900 font-sans p-8 sm:p-12 border border-slate-200/80 rounded-lg print:border-none print:p-0 ${className}`}
     >
       {/* ── 1. Topo / Header Institucional ── */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 pb-8 border-b border-slate-200">
@@ -34,7 +41,7 @@ export const BudgetCorporateClean: React.FC<CommercialDocumentTemplateProps> = (
             />
           ) : (
             <div className="flex items-center gap-2 mb-3">
-              <div className="size-9 rounded-lg bg-slate-900 text-white flex items-center justify-center font-black text-lg">
+              <div className="size-9 rounded-lg bg-slate-900 text-neutral-100 flex items-center justify-center font-black text-lg">
                 W
               </div>
               <span className="font-bold text-xl tracking-tight text-slate-950">
@@ -46,7 +53,9 @@ export const BudgetCorporateClean: React.FC<CommercialDocumentTemplateProps> = (
           <div className="text-xs text-slate-500 space-y-1 font-medium">
             <p className="font-semibold text-slate-700">{data.issuer.companyName}</p>
             <p>CNPJ/CPF: {data.issuer.cnpjOrCpf}</p>
-            <p>{data.issuer.address} • {data.issuer.cityState}</p>
+            <p>
+              {data.issuer.address} • {data.issuer.cityState}
+            </p>
             <p className="flex items-center gap-2 pt-1">
               <span>{data.issuer.phoneOrWhatsapp}</span>
               <span>•</span>
@@ -70,7 +79,7 @@ export const BudgetCorporateClean: React.FC<CommercialDocumentTemplateProps> = (
             <p>
               <strong className="text-slate-700">Validade:</strong> {data.validUntilDate}
             </p>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200/80 mt-1">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200/80 mt-1">
               <ShieldCheck className="size-3.5" />
               <span>Proposta Ativa</span>
             </div>
@@ -80,14 +89,12 @@ export const BudgetCorporateClean: React.FC<CommercialDocumentTemplateProps> = (
 
       {/* ── 2. Bloco do Cliente / Destinatário ── */}
       <div className="my-8 bg-slate-50/80 border border-slate-200/80 rounded-lg p-5">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-2">
+        <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-2">
           DADOS DO CLIENTE / CONTRATANTE
         </span>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
           <div>
-            <p className="font-bold text-sm text-slate-900 mb-1">
-              {data.client.name}
-            </p>
+            <p className="font-bold text-sm text-slate-900 mb-1">{data.client.name}</p>
             {data.client.companyName && (
               <p className="text-slate-600 font-medium">{data.client.companyName}</p>
             )}
@@ -102,10 +109,10 @@ export const BudgetCorporateClean: React.FC<CommercialDocumentTemplateProps> = (
       </div>
 
       {/* ── 3. Tabela Matricial de Itens ── */}
-      <div className="my-8 overflow-x-auto">
+      <div className="my-8 overflow-x-auto carousel">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b-2 border-slate-900 text-[11px] uppercase tracking-wider font-bold text-slate-500">
+            <tr className="border-b-2 border-slate-900 text-xs uppercase tracking-wider font-bold text-slate-500">
               <th className="py-3 pr-4">Item / Serviço</th>
               <th className="py-3 px-3 text-center">Qtd</th>
               <th className="py-3 px-3 text-right">Valor Unit.</th>
@@ -116,16 +123,14 @@ export const BudgetCorporateClean: React.FC<CommercialDocumentTemplateProps> = (
             {data.items.map((item, idx) => (
               <tr key={item.id || idx} className="hover:bg-slate-50/50">
                 <td className="py-4 pr-4 align-top">
-                  <div className="font-bold text-slate-900 text-sm">
-                    {item.title}
-                  </div>
+                  <div className="font-bold text-slate-900 text-sm break-words">{item.title}</div>
                   {item.description && (
-                    <p className="text-slate-500 text-xs mt-1 leading-relaxed">
+                    <p className="text-slate-500 text-xs mt-1 leading-relaxed break-words">
                       {item.description}
                     </p>
                   )}
                   {item.sku && (
-                    <span className="font-mono text-[10px] text-slate-400 mt-1 block">
+                    <span className="font-mono text-xs text-slate-400 mt-1 block">
                       SKU: {item.sku}
                     </span>
                   )}
@@ -158,46 +163,46 @@ export const BudgetCorporateClean: React.FC<CommercialDocumentTemplateProps> = (
               <span className="font-mono">- {formatMoney(data.discountCents)}</span>
             </div>
           )}
-          <div className="flex items-center justify-between p-4 rounded-lg bg-slate-950 text-white mt-3">
+          <div className="flex items-center justify-between p-4 rounded-lg bg-slate-950 text-neutral-100 mt-3">
             <span className="font-bold text-xs uppercase tracking-wider">TOTAL LÍQUIDO</span>
-            <span className="font-mono font-black text-xl">
-              {formatMoney(data.totalCents)}
-            </span>
+            <span className="font-mono font-black text-xl">{formatMoney(data.totalCents)}</span>
           </div>
         </div>
       </div>
 
-      {/* ── 5. Pagamento, PIX & QR Code ── */}
+      {/* ── 5. Pagamento, PIX & QR Code Soberano ── */}
       <div className="my-8 p-6 rounded-lg bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-6">
         <div className="flex-1 space-y-2 text-xs">
           <span className="font-bold uppercase tracking-wider text-slate-400 block mb-1">
-            CONDIÇÕES DE PAGAMENTO e LIQUIDAÇÃO
+            CONDIÇÕES DE PAGAMENTO E LIQUIDAÇÃO
           </span>
           <p className="font-semibold text-slate-900">
-            Método: {data.paymentTerms.method.toUpperCase()}
-            {data.paymentTerms.installmentsCount && ` (em até ${data.paymentTerms.installmentsCount}x)`}
+            Método: {data.paymentTerms.methodLabel || data.paymentTerms.method.toUpperCase()}
+            {data.paymentTerms.installmentsCount && data.paymentTerms.installmentsCount > 1 &&
+              ` (em até ${data.paymentTerms.installmentsCount}x)`}
           </p>
-          {data.issuer.pixKey && (
+          {(data.paymentTerms.pixKey || data.issuer.pixKey) && (
             <div className="pt-2">
-              <span className="text-[11px] text-slate-500 block">Chave PIX Oficial:</span>
-              <span className="font-mono font-bold text-slate-800 bg-white border border-slate-200 px-2 py-1 rounded select-all inline-block mt-1">
-                {data.issuer.pixKey}
+              <span className="text-xs text-slate-500 block">Chave PIX Oficial da Empresa:</span>
+              <span className="font-mono font-bold text-slate-800 bg-card border border-slate-200 px-2 py-1 rounded select-all inline-block mt-1">
+                {data.paymentTerms.pixKey || data.issuer.pixKey}
               </span>
             </div>
           )}
           {data.paymentTerms.notes && (
-            <p className="text-slate-500 pt-1 leading-relaxed">
-              {data.paymentTerms.notes}
+            <p className="text-slate-500 pt-1 leading-relaxed">{data.paymentTerms.notes}</p>
+          )}
+          {data.paymentTerms.paymentInstructions && (
+            <p className="text-slate-600 pt-1 leading-relaxed text-xs italic">
+              Instruções: {data.paymentTerms.paymentInstructions}
             </p>
           )}
         </div>
 
-        {/* QR Code de Pagamento */}
-        <div className="shrink-0 flex flex-col items-center bg-white p-3 rounded-lg border border-slate-200 shadow-xs">
-          <QrCode className="size-20 text-slate-900" />
-          <span className="text-[10px] font-mono text-slate-500 uppercase mt-1">
-            Pague via PIX
-          </span>
+        {/* QR Code Real Escaneável */}
+        <div className="shrink-0 flex flex-col items-center bg-card p-3 rounded-lg border border-slate-200">
+          <img src={qrDataUri} alt="QR Code PIX" className="size-20 object-contain" />
+          <span className="text-xs font-mono text-slate-500 uppercase mt-1">Pague via PIX</span>
         </div>
       </div>
 
@@ -205,7 +210,9 @@ export const BudgetCorporateClean: React.FC<CommercialDocumentTemplateProps> = (
       <div className="pt-8 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-8 text-center text-xs">
         <div>
           <div className="h-14 border-b border-slate-300 mb-2 flex items-end justify-center pb-1">
-            <span className="font-serif italic text-slate-600 text-sm">{data.issuer.tradingName || data.issuer.companyName}</span>
+            <span className="font-serif italic text-slate-600 text-sm">
+              {data.issuer.tradingName || data.issuer.companyName}
+            </span>
           </div>
           <p className="font-bold text-slate-800">{data.issuer.companyName}</p>
           <p className="text-slate-500">Emitente Autorizado</p>
@@ -215,13 +222,14 @@ export const BudgetCorporateClean: React.FC<CommercialDocumentTemplateProps> = (
           <div className="h-14 border-b border-slate-300 mb-2 flex items-end justify-center pb-1">
             {data.signatories?.clientSigned ? (
               <span className="text-emerald-600 font-bold text-xs flex items-center gap-1">
-                <CheckCircle2 className="size-4" /> Aceito Digitalmente ({data.signatories.clientSignedAt})
+                <CheckCircle2 className="size-4" /> Aceito Digitalmente (
+                {data.signatories.clientSignedAt})
               </span>
             ) : onAcceptProposal ? (
               <button
                 type="button"
                 onClick={onAcceptProposal}
-                className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors shadow-xs"
+                className="h-11 min-h-11 px-4 py-2 rounded-lg bg-emerald-600 text-neutral-100 text-xs font-bold hover:bg-emerald-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600"
               >
                 Aprovar e Assinar Proposta
               </button>
@@ -236,9 +244,7 @@ export const BudgetCorporateClean: React.FC<CommercialDocumentTemplateProps> = (
 
       {/* Nota Legal Rodapé */}
       {data.legalNotes && (
-        <p className="mt-8 text-[10px] text-slate-400 text-center leading-relaxed">
-          {data.legalNotes}
-        </p>
+        <p className="mt-8 text-xs text-slate-400 text-center leading-relaxed">{data.legalNotes}</p>
       )}
     </div>
   );

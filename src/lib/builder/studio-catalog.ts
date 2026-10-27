@@ -71,6 +71,12 @@ const CATALOG_METADATA: Record<string, {
     copyFramework: "catalog-discovery",
     assetSlots: ["food_hero", "product_gallery", "logo"],
   },
+  template_editorial_news: {
+    goal: "content",
+    tags: ["jornal", "noticias", "portal", "promethee", "editorial"],
+    copyFramework: "editorial",
+    assetSlots: ["logo", "cover", "gallery"],
+  },
 };
 
 function inferFunnelStage(goal: StudioTemplateGoal): StudioTemplateManifest["funnelStage"] {

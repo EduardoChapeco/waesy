@@ -17,7 +17,9 @@ import { initiatePaymentTransaction, getPublicPaymentMethods, getGatewayStatus }
 import { calculateShipping } from "@/services/shipping.functions";
 import { getPublicStoreProfile } from "@/services/catalog.functions";
 import { getProfile } from "@/services/auth.functions";
-import { getUserAddresses, validateDeliveryLocationGPS, saveUserAddress } from "@/services/addresses.functions";
+import { getUserAddresses, validateDeliveryLocationGPS, saveUserAddress, setDefaultUserAddress, type UserAddressDTO } from "@/services/addresses.functions";
+import { CanonicalAddressForm } from "@/components/address/canonical-address-form";
+import { AddressCardHub } from "@/components/address/address-card-hub";
 import { DeliveryLocationPolicySheet } from "@/components/commerce/delivery-location-policy-sheet";
 import { GpsMismatchModal } from "@/components/commerce/gps-mismatch-modal";
 import { Check, CheckCircle2, Ticket, User, Truck, CreditCard, ShoppingBag, AlertCircle, MapPin, Loader2, Gift, QrCode, Clock, Store, ChevronRight, ArrowLeft, Navigation, Layers, Plus, ShieldCheck, Building2, ShieldAlert, Plane, Users, Calendar, Zap, FileText, Trash2, Package } from 'lucide-react';
@@ -330,6 +332,8 @@ export function CheckoutPage() {
   const [isLocatingGPS, setIsLocatingGPS] = useState(false);
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
   const [saveAddressToBook, setSaveAddressToBook] = useState(true);
+  const [editingAddressForCheckout, setEditingAddressForCheckout] = useState<UserAddressDTO | null>(null);
+  const [addressesList, setAddressesList] = useState<UserAddressDTO[]>(userAddresses || []);
 
   // ── V139: Omni-Checkout, Waesy Go & Trust/Safety States ──
   const [isEditingContact, setIsEditingContact] = useState(false);
@@ -401,6 +405,8 @@ export function CheckoutPage() {
  neighborhood: "",
  city: "",
  state: "",
+ latitude: undefined as number | undefined,
+ longitude: undefined as number | undefined,
  },
  });
 
@@ -457,6 +463,9 @@ export function CheckoutPage() {
 
  // Pre-fill default saved address if available
  useEffect(() => {
+    if (userAddresses) {
+      setAddressesList(userAddresses);
+    }
  if (userAddresses && userAddresses.length > 0) {
  const defaultAddr = userAddresses.find((a: any) => a.is_default) || userAddresses[0];
  if (defaultAddr && defaultAddr.zipcode) {
@@ -473,6 +482,8 @@ export function CheckoutPage() {
  neighborhood: defaultAddr.neighborhood || defaultAddr.bairro || "",
  city: defaultAddr.city || "",
  state: defaultAddr.state || "",
+            latitude: defaultAddr.latitude,
+            longitude: defaultAddr.longitude,
  },
  };
  });
@@ -1851,240 +1862,187 @@ export function CheckoutPage() {
  {/* Opção 1: Entrega no Endereço */}
  {formData.shippingMethod !== "pickup" ? (
  <div className="space-y-4 pt-1">
- {/* Endereços Salvos do Usuário */}
- {userAddresses && userAddresses.length > 0 && !showNewAddressForm && (
- <div className="space-y-3">
- <div className="flex items-center justify-between">
- <Label className="text-xs font-bold text-foreground flex items-center gap-2">
- <MapPin size={13} className="text-primary" /> Meus Endereços Salvos
- </Label>
- <button
- type="button"
- onClick={() => setShowNewAddressForm(true)}
- className="text-xs text-primary font-bold hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary flex items-center gap-1"
- >
- <Plus size={12} /> Outro Endereço
- </button>
- </div>
+            {/* Endereços Salvos do Usuário (Paridade Mercado Livre Image 2) */}
+            {!showNewAddressForm && addressesList && addressesList.length > 0 && (
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-sm font-bold text-foreground">
+                    Escolha onde você quer receber sua compra
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Selecione um endereço salvo ou utilize sua localização atual
+                  </p>
+                </div>
 
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- {userAddresses.map((addr: any) => {
- const cleanZip = (addr.zipcode || "").replace(/\D/g, "");
- const isSelected =
- formData.shippingAddress.zipcode === cleanZip &&
- formData.shippingAddress.number === addr.number;
+                {/* Opção Rápida de GPS (Mercado Livre Image 2) */}
+                <button
+                  type="button"
+                  onClick={handleGPSLocation}
+                  disabled={isLocatingGPS}
+                  className="w-full p-4 rounded-lg border border-border/80 bg-card hover:bg-muted/30 text-left flex items-center justify-between gap-3 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="size-5 rounded-full border-2 border-muted-foreground/40 flex items-center justify-center shrink-0">
+                      {isLocatingGPS ? (
+                        <Loader2 className="size-3 animate-spin text-primary" />
+                      ) : (
+                        <div className="size-2 rounded-full bg-transparent" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-foreground">Usar minha localização atual</span>
+                        <Badge
+                          variant="outline"
+                          className="text-xs px-2 py-0 h-4 font-bold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10"
+                        >
+                          Recomendado
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground truncate mt-1">
+                        Detectar via GPS e calcular frete para onde você está agora
+                      </p>
+                    </div>
+                  </div>
+                  <Navigation className="size-4 text-primary shrink-0" />
+                </button>
 
- return (
- <button
- key={addr.id}
- type="button"
- onClick={() => {
- setFormData((prev) => ({
- ...prev,
- shippingAddress: {
- zipcode: cleanZip,
- street: addr.street || addr.address_line1 || "",
- number: addr.number || "",
- complement: addr.complement || "",
- neighborhood: addr.neighborhood || addr.bairro || "",
- city: addr.city || "",
- state: addr.state || "",
- },
- }));
- handleCepChange(cleanZip, true);
- }}
- className={cn(
- "p-3 rounded-lg border text-left text-xs transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary space-y-1",
- isSelected
- ? "border-primary bg-primary/5 ring-1 ring-primary font-medium"
- : "bg-card border-border/80 hover:bg-muted/40"
- )}
- >
- <div className="flex items-center justify-between">
- <span className="font-bold text-foreground truncate">
- {addr.street || "Rua"}, {addr.number}
- </span>
- {addr.is_default && (
- <Badge variant="secondary" className="text-xs font-bold px-2 py-0">
- Padrão
- </Badge>
- )}
- </div>
- <p className="text-xs text-muted-foreground truncate">
- {addr.neighborhood} - {addr.city}/{addr.state}
- </p>
- <p className="font-mono text-xs text-muted-foreground/75 text-muted-foreground">{addr.zipcode}</p>
- </button>
- );
- })}
- </div>
- </div>
- )}
+                {/* Lista de Endereços com AddressCardHub (Image 2 Parity) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {addressesList.map((addr) => {
+                    const cleanZip = (addr.zipcode || "").replace(/\D/g, "");
+                    const isSelected = 
+                      formData.shippingAddress.zipcode === cleanZip &&
+                      (formData.shippingAddress.number === addr.number || (!addr.number && formData.shippingAddress.number === "S/N"));
 
- {/* Formulário de Endereço (Novo ou Editável) */}
- {(showNewAddressForm || !userAddresses || userAddresses.length === 0) && (
- <div className="p-4 rounded-lg bg-muted/20 space-y-4">
- <div className="flex items-center justify-between">
- <Label className="text-xs font-bold text-foreground">Endereço de Entrega</Label>
- <div className="flex items-center gap-2">
- <Button
- type="button"
- variant="outline"
- size="sm"
- onClick={handleGPSLocation}
- disabled={isLocatingGPS}
- className="rounded-lg h-11 min-h-11 px-4 text-xs font-bold gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
- >
- {isLocatingGPS ? (
- <Loader2 size={12} className="animate-spin motion-reduce:animate-none text-primary" />
- ) : (
- <Navigation size={12} className="text-primary" />
- )}
- <span>Puxar via GPS</span>
- </Button>
- {userAddresses && userAddresses.length > 0 && (
- <button
- type="button"
- onClick={() => setShowNewAddressForm(false)}
- className="text-xs text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
- >
- Cancelar
- </button>
- )}
- </div>
- </div>
+                    return (
+                      <AddressCardHub
+                        key={addr.id}
+                        address={addr}
+                        isSelected={isSelected}
+                        mode="checkout"
+                        onSelect={() => {
+                          setFormData((prev) => ({
+                            ...prev,
+                            shippingAddress: {
+                              zipcode: cleanZip,
+                              street: addr.street || "",
+                              number: addr.number || "S/N",
+                              complement: addr.complement || "",
+                              neighborhood: addr.neighborhood || "",
+                              city: addr.city || "",
+                              state: addr.state || "",
+                              latitude: (addr as any).latitude ? Number((addr as any).latitude) : undefined,
+                              longitude: (addr as any).longitude ? Number((addr as any).longitude) : undefined,
+                            },
+                          }));
+                          handleCepChange(cleanZip, true);
+                        }}
+                        onEdit={(targetAddr) => {
+                          setEditingAddressForCheckout(targetAddr);
+                          setShowNewAddressForm(true);
+                        }}
+                        onSetDefault={async (targetAddr) => {
+                          try {
+                            await setDefaultUserAddress({ data: { id: targetAddr.id } });
+                            setAddressesList((prev) =>
+                              prev.map((a) => ({ ...a, is_default: a.id === targetAddr.id }))
+                            );
+                            toast.success("Endereço predefinido atualizado!");
+                          } catch {
+                            toast.error("Erro ao definir endereço padrão.");
+                          }
+                        }}
+                        onUpdated={(updated) => {
+                          setAddressesList((prev) =>
+                            prev.map((a) => (a.id === updated.id ? updated : a))
+                          );
+                        }}
+                      />
+                    );
+                  })}
+                </div>
 
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
- <div className="space-y-1">
- <Label className="text-xs font-bold text-muted-foreground">CEP *</Label>
- <CepField
- value={formData.shippingAddress.zipcode}
- onChange={(masked, clean) => {
- handleCepChange(clean);
- }}
- onAddressFound={(addr) => {
- setFormData((prev) => ({
- ...prev,
- shippingAddress: {
- ...prev.shippingAddress,
- street: addr.street || prev.shippingAddress.street,
- neighborhood: addr.neighborhood || prev.shippingAddress.neighborhood,
- city: addr.city || prev.shippingAddress.city,
- state: addr.state || prev.shippingAddress.state,
- },
- }));
- }}
- className="h-11 rounded-lg text-base sm:text-sm"
- />
- </div>
-
- <div className="space-y-1 sm:col-span-2">
- <Label className="text-xs font-bold text-muted-foreground">Rua / Avenida *</Label>
- <Input
- placeholder="Nome da rua"
- value={formData.shippingAddress.street}
- onChange={(e) =>
- setFormData({
- ...formData,
- shippingAddress: { ...formData.shippingAddress, street: e.target.value },
- })
- }
- className="h-11 rounded-lg text-base sm:text-sm"
- />
- </div>
-
- <div className="space-y-1">
- <Label className="text-xs font-bold text-muted-foreground">Número *</Label>
- <Input
- placeholder="123"
- value={formData.shippingAddress.number}
- onChange={(e) =>
- setFormData({
- ...formData,
- shippingAddress: { ...formData.shippingAddress, number: e.target.value },
- })
- }
- className="h-11 rounded-lg text-base sm:text-sm"
- />
- </div>
-
- <div className="space-y-1 sm:col-span-2">
- <Label className="text-xs font-bold text-muted-foreground">Complemento</Label>
- <Input
- placeholder="Apto, bloco, etc."
- value={formData.shippingAddress.complement}
- onChange={(e) =>
- setFormData({
- ...formData,
- shippingAddress: { ...formData.shippingAddress, complement: e.target.value },
- })
- }
- className="h-11 rounded-lg text-base sm:text-sm"
- />
- </div>
-
- <div className="space-y-1">
- <Label className="text-xs font-bold text-muted-foreground">Bairro *</Label>
- <Input
- placeholder="Bairro"
- value={formData.shippingAddress.neighborhood}
- onChange={(e) =>
- setFormData({
- ...formData,
- shippingAddress: { ...formData.shippingAddress, neighborhood: e.target.value },
- })
- }
- className="h-11 rounded-lg text-base sm:text-sm"
- />
- </div>
-
- <div className="space-y-1">
- <Label className="text-xs font-bold text-muted-foreground">Cidade *</Label>
- <Input
- placeholder="Cidade"
- value={formData.shippingAddress.city}
- onChange={(e) =>
- setFormData({
- ...formData,
- shippingAddress: { ...formData.shippingAddress, city: e.target.value },
- })
- }
- className="h-11 rounded-lg text-base sm:text-sm"
- />
- </div>
-
- <div className="space-y-1">
- <Label className="text-xs font-bold text-muted-foreground">UF *</Label>
- <Input
- placeholder="SC"
- maxLength={2}
- value={formData.shippingAddress.state}
- onChange={(e) =>
- setFormData({
- ...formData,
- shippingAddress: { ...formData.shippingAddress, state: e.target.value.toUpperCase() },
- })
- }
- className="h-11 rounded-lg text-base sm:text-sm uppercase"
-                />
+                {/* Botão Secundário: Adicionar novo endereço (Mercado Livre Image 2) */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setEditingAddressForCheckout(null);
+                    setShowNewAddressForm(true);
+                  }}
+                  className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2 border-border/80 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <Plus className="size-4" />
+                  <span>Adicionar novo endereço</span>
+                </Button>
               </div>
-            </div>
+            )}
 
-            <div className="pt-2">
-              <label className="flex items-center gap-2 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={saveAddressToBook}
-                  onChange={(e) => setSaveAddressToBook(e.target.checked)}
-                  className="size-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
-                />
-                <span className="text-xs text-foreground font-medium">
-                  Salvar este endereço em Meus Endereços para compras futuras
-                </span>
-              </label>
-            </div>
-          </div>
-        )}
+            {/* Formulário Canônico de Cadastro / Edição de Endereço (Image 1 Parity) */}
+            {(showNewAddressForm || !addressesList || addressesList.length === 0) && (
+              <CanonicalAddressForm
+                initialData={editingAddressForCheckout}
+                defaultRecipientName={formData.customerName || userProfile?.name || ""}
+                defaultRecipientPhone={formData.customerPhone || userProfile?.phone || ""}
+                isFirstAddress={addressesList.length === 0}
+                onSave={async (savedData) => {
+                  try {
+                    const res = await saveUserAddress({
+                      data: savedData,
+                    });
+
+                    if (res.success && res.address) {
+                      toast.success(
+                        editingAddressForCheckout
+                          ? "Endereço atualizado com sucesso!"
+                          : "Endereço adicionado com sucesso!"
+                      );
+
+                      setAddressesList((prev) => {
+                        const exists = prev.some((a) => a.id === res.address.id);
+                        if (exists) {
+                          return prev.map((a) => (a.id === res.address.id ? res.address : a));
+                        }
+                        return [res.address, ...prev];
+                      });
+
+                      const cleanZip = (res.address.zipcode || "").replace(/\D/g, "");
+                      setFormData((prev) => ({
+                        ...prev,
+                        shippingAddress: {
+                          zipcode: cleanZip,
+                          street: res.address.street || "",
+                          number: res.address.number || "S/N",
+                          complement: res.address.complement || "",
+                          neighborhood: res.address.neighborhood || "",
+                          city: res.address.city || "",
+                          state: res.address.state || "",
+                          latitude: (res.address as any).latitude ? Number((res.address as any).latitude) : undefined,
+                          longitude: (res.address as any).longitude ? Number((res.address as any).longitude) : undefined,
+                        },
+                      }));
+
+                      setShowNewAddressForm(false);
+                      setEditingAddressForCheckout(null);
+
+                      if (cleanZip.length === 8) {
+                        handleCepChange(cleanZip, true);
+                      }
+                    }
+                  } catch (err: unknown) {
+                    const msg = err instanceof Error ? err.message : "Erro ao salvar endereço.";
+                    toast.error(msg);
+                  }
+                }}
+                onCancel={() => {
+                  if (addressesList && addressesList.length > 0) {
+                    setShowNewAddressForm(false);
+                    setEditingAddressForCheckout(null);
+                  }
+                }}
+              />
+            )}
 
  {/* Seleção de Taxas e Opções de Frete */}
  <div className="space-y-2 pt-2">

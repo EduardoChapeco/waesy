@@ -217,14 +217,14 @@ export default function WorkspaceMarketingSocialPage() {
                   <button
                     type="button"
                     onClick={() => insertVariable("{item_title}", "title")}
-                    className="text-xs px-2 py-1 rounded-md bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                    className="text-xs px-2 py-1 rounded-md bg-muted text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     + item_title
                   </button>
                   <button
                     type="button"
                     onClick={() => insertVariable("{store_name}", "title")}
-                    className="text-xs px-2 py-1 rounded-md bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                    className="text-xs px-2 py-1 rounded-md bg-muted text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     + store_name
                   </button>
@@ -251,14 +251,14 @@ export default function WorkspaceMarketingSocialPage() {
                   <button
                     type="button"
                     onClick={() => insertVariable("{item_title}", "description")}
-                    className="text-xs px-2 py-1 rounded-md bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                    className="text-xs px-2 py-1 rounded-md bg-muted text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     + item_title
                   </button>
                   <button
                     type="button"
                     onClick={() => insertVariable("{item_description}", "description")}
-                    className="text-xs px-2 py-1 rounded-md bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                    className="text-xs px-2 py-1 rounded-md bg-muted text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     + item_description
                   </button>
@@ -317,21 +317,21 @@ export default function WorkspaceMarketingSocialPage() {
                   <button
                     type="button"
                     onClick={() => insertVariable("{item_title}", "whatsapp")}
-                    className="text-xs px-2 py-1 rounded-md bg-muted text-muted-foreground hover:text-foreground"
+                    className="text-xs px-2 py-1 rounded-md bg-muted text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     + item_title
                   </button>
                   <button
                     type="button"
                     onClick={() => insertVariable("{item_price}", "whatsapp")}
-                    className="text-xs px-2 py-1 rounded-md bg-muted text-muted-foreground hover:text-foreground"
+                    className="text-xs px-2 py-1 rounded-md bg-muted text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     + item_price
                   </button>
                   <button
                     type="button"
                     onClick={() => insertVariable("{item_url}", "whatsapp")}
-                    className="text-xs px-2 py-1 rounded-md bg-muted text-muted-foreground hover:text-foreground"
+                    className="text-xs px-2 py-1 rounded-md bg-muted text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     + item_url
                   </button>
@@ -379,7 +379,7 @@ export default function WorkspaceMarketingSocialPage() {
                     previewScenario === "product"
                       ? "bg-background text-foreground shadow-2xs"
                       : "text-muted-foreground"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   Produto
                 </button>
@@ -390,7 +390,7 @@ export default function WorkspaceMarketingSocialPage() {
                     previewScenario === "store"
                       ? "bg-background text-foreground shadow-2xs"
                       : "text-muted-foreground"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   Vitrine
                 </button>
@@ -406,7 +406,7 @@ export default function WorkspaceMarketingSocialPage() {
                   previewPlatform === "whatsapp"
                     ? "bg-background text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
-                }`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 <MessageCircle className="w-3.5 h-3.5 text-emerald-500" />
                 <span>WhatsApp</span>
@@ -418,7 +418,7 @@ export default function WorkspaceMarketingSocialPage() {
                   previewPlatform === "twitter"
                     ? "bg-background text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
-                }`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 <Twitter className="w-3.5 h-3.5 text-sky-500" />
                 <span>X / Twitter</span>
@@ -430,7 +430,7 @@ export default function WorkspaceMarketingSocialPage() {
                   previewPlatform === "facebook"
                     ? "bg-background text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
-                }`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 <Facebook className="w-3.5 h-3.5 text-blue-600" />
                 <span>Facebook</span>
@@ -448,7 +448,7 @@ export default function WorkspaceMarketingSocialPage() {
                     </p>
 
                     {/* Card de Link Prévia do WhatsApp */}
-                    <div className="bg-black/5 dark:bg-black/20 rounded-lg overflow-hidden border border-black/10 dark:border-white/10">
+                    <div className="bg-foreground/5 dark:bg-foreground/20 rounded-lg overflow-hidden border border-black/10 dark:border-white/10">
                       <div className="aspect-[1.91/1] w-full bg-muted overflow-hidden relative">
                         <img
                           src={previewProduct.image}
@@ -456,7 +456,7 @@ export default function WorkspaceMarketingSocialPage() {
                           className="w-full h-full object-cover"
                         />
                         <div className="absolute top-2 right-2">
-                          <Badge className="bg-black/70 text-white border-0 text-xs px-2 py-1">
+                          <Badge className="bg-foreground/70 text-foreground border-0 text-xs px-2 py-1">
                             {storeName}
                           </Badge>
                         </div>
@@ -493,7 +493,7 @@ export default function WorkspaceMarketingSocialPage() {
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute bottom-2 left-2">
-                    <Badge className="bg-black/80 text-white text-xs">
+                    <Badge className="bg-foreground/80 text-foreground text-xs">
                       usewaesy.com
                     </Badge>
                   </div>

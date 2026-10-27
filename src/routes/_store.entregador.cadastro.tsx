@@ -201,10 +201,10 @@ function CourierOnboardingPage() {
                   </p>
 
                   <div className="p-3 rounded-lg bg-background/80 border border-border/40 text-xs space-y-1 font-mono">
-                    <span className="font-bold text-muted-foreground block text-[11px] uppercase">
+                    <span className="font-bold text-muted-foreground block text-2xs uppercase">
                       Protocolo de Segurança:
                     </span>
-                    <p className="text-foreground text-[11px]">
+                    <p className="text-foreground text-2xs">
                       Aviso legal: O aluguel de contas, adulteração de CNH ou tentativa de falsidade ideológica é estritamente vedado e passível de comunicação às autoridades policiais competentes conforme os Termos de Parceria.
                     </p>
                   </div>
@@ -263,7 +263,7 @@ function CourierOnboardingPage() {
             onClick={() => setStep(1)}
             className={`text-left text-xs font-mono transition-colors ${
               step === 1 ? "text-primary font-bold" : "text-muted-foreground"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             1. Veículo e CNH
           </button>
@@ -274,7 +274,7 @@ function CourierOnboardingPage() {
             }}
             className={`text-left text-xs font-mono transition-colors ${
               step === 2 ? "text-primary font-bold" : "text-muted-foreground"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             2. Biometria e Prova de Vida
           </button>
@@ -285,7 +285,7 @@ function CourierOnboardingPage() {
             }}
             className={`text-left text-xs font-mono transition-colors ${
               step === 3 ? "text-primary font-bold" : "text-muted-foreground"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             3. Autonomia e Termos
           </button>
@@ -319,11 +319,11 @@ function CourierOnboardingPage() {
                       key={m.id}
                       type="button"
                       onClick={() => update("vehicleType", m.id)}
-                      className={`flex flex-col items-center justify-center p-3 rounded-lg border text-xs transition-all cursor-pointer ${
+                      className={`flex flex-col items-center justify-center p-3 rounded-lg border text-xs transition-colors duration-200 cursor-pointer ${
                         form.vehicleType === m.id
                           ? "border-primary bg-primary/10 text-primary font-bold shadow-xs"
                           : "border-border/60 bg-muted/20 text-muted-foreground hover:text-foreground"
-                      }`}
+                      } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                     >
                       <m.icon size={22} weight="bold" className="mb-1" />
                       <span>{m.label}</span>
@@ -532,7 +532,7 @@ function CourierOnboardingPage() {
               </div>
 
               {/* Checkbox de Aceite */}
-              <label className="flex items-start gap-3 p-3 rounded-lg border border-border/60 bg-muted/10 cursor-pointer hover:bg-muted/20 transition-all">
+              <label className="flex items-start gap-3 p-3 rounded-lg border border-border/60 bg-muted/10 cursor-pointer hover:bg-muted/20 transition-colors duration-200">
                 <input
                   type="checkbox"
                   checked={form.termsAccepted}

@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Users, Search, Plus, Phone, Mail, ArrowUpRight, TrendingUp, MessageCircle, ExternalLink, ChevronRight, Filter, DollarSign, Kanban, CheckCircle2, Clock, UserCheck, Building2, Tag, ShieldCheck, MoreHorizontal, SlidersHorizontal, X, ChevronDown, ChevronUp, Globe, Share2, Brain } from "lucide-react";
+import { Users, Headphones, Search, Plus, Phone, Mail, ArrowUpRight, TrendingUp, MessageCircle, ExternalLink, ChevronRight, Filter, DollarSign, Kanban, CheckCircle2, Clock, UserCheck, Building2, Tag, ShieldCheck, MoreHorizontal, SlidersHorizontal, X, ChevronDown, ChevronUp, Globe, Share2, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -154,14 +154,14 @@ export default function WorkspaceCrmPage() {
 
         {/* Ações no Desktop */}
         <div className="hidden sm:flex items-center gap-2 shrink-0">
-          <Button asChild variant="outline" size="sm" className="rounded-lg text-xs font-semibold gap-2 h-10 px-4">
+          <Button asChild variant="outline" size="sm" className="rounded-lg text-xs font-semibold gap-2 h-11 min-h-11 px-4">
             <Link to="/workspace/comercial">
               <Kanban className="size-3.5 text-primary" />
               <span>Funil Comercial</span>
             </Link>
           </Button>
 
-          <Button asChild variant="outline" size="sm" className="rounded-lg text-xs font-semibold gap-2 h-10 px-4">
+          <Button asChild variant="outline" size="sm" className="rounded-lg text-xs font-semibold gap-2 h-11 min-h-11 px-4">
             <Link to="/workspace/clientes">
               <Users className="size-3.5" />
               <span>Base Completa</span>
@@ -176,7 +176,7 @@ export default function WorkspaceCrmPage() {
             variant="ghost"
             size="sm"
             onClick={() => setShowMetricsMobile((prev) => !prev)}
-            className="h-9 px-2 text-xs text-muted-foreground font-medium gap-1 rounded-lg"
+            className="h-11 min-h-11 px-3 text-xs text-muted-foreground font-medium gap-1 rounded-lg"
             title="Alternar resumo de métricas"
           >
             <span>Métricas</span>
@@ -188,13 +188,13 @@ export default function WorkspaceCrmPage() {
               <Button
                 variant="outline"
                 size="sm"
-                className="h-9 w-9 p-0 rounded-lg border-border/70 text-muted-foreground"
+                className="size-11 min-h-11 min-w-11 p-0 rounded-lg border-border/70 text-muted-foreground"
                 title="Mais opções"
               >
                 <MoreHorizontal className="size-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="rounded-lg min-w-[170px]">
+            <DropdownMenuContent align="end" className="rounded-lg min-w-44">
               <DropdownMenuItem asChild className="text-xs gap-2 font-medium">
                 <Link to="/workspace/comercial">
                   <Kanban className="size-3.5 text-primary" />
@@ -213,11 +213,11 @@ export default function WorkspaceCrmPage() {
       </div>
 
       {/* ── Sub-Navegação Silenciosa: Clientes vs Funil vs Personas vs WhatsApp ── */}
-      <div className="flex items-center gap-1 border-b border-border/40 pb-2 overflow-x-auto no-scrollbar">
+      <div className="flex items-center gap-1 border-b border-border/40 pb-2 overflow-x-auto scroll-area no-scrollbar">
         <button
           type="button"
           onClick={() => setActiveTab("clientes")}
-          className={`h-9 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
+          className={`h-11 min-h-11 px-3 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-2 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
             activeTab === "clientes"
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -230,7 +230,7 @@ export default function WorkspaceCrmPage() {
         <button
           type="button"
           onClick={() => setActiveTab("funil")}
-          className={`h-9 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
+          className={`h-11 min-h-11 px-3 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-2 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
             activeTab === "funil"
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -243,7 +243,7 @@ export default function WorkspaceCrmPage() {
         <button
           type="button"
           onClick={() => setActiveTab("personas")}
-          className={`h-9 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
+          className={`h-11 min-h-11 px-3 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-2 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
             activeTab === "personas"
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -256,7 +256,7 @@ export default function WorkspaceCrmPage() {
         <button
           type="button"
           onClick={() => setActiveTab("whatsapp")}
-          className={`min-h-9 px-3 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-2 shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-hidden ${
+          className={`h-11 min-h-11 px-3 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-2 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
             activeTab === "whatsapp"
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -341,7 +341,7 @@ export default function WorkspaceCrmPage() {
       </div>
 
       {/* ── 3. Barra de Busca + Filtro + CTA Primário (Linha 2 Única Cravada em h-10) ── */}
-      <div className="grid grid-cols-[1fr_auto_auto] gap-2 items-center w-full">
+      <div className="grid flex items-center gap-2 w-full gap-2 items-center w-full">
         {/* Input de Busca Fluido */}
         <div className="relative min-w-0">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
@@ -349,13 +349,13 @@ export default function WorkspaceCrmPage() {
             placeholder="Buscar por nome, telefone, email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 pr-8 h-10 rounded-lg text-xs bg-card border-border/60 w-full placeholder:text-muted-foreground/60 shadow-none focus-visible:ring-1 focus-visible:ring-primary/40"
+            className="pl-9 pr-8 h-11 min-h-11 rounded-lg text-xs bg-card border-border/60 w-full placeholder:text-muted-foreground/60 shadow-none focus-visible:ring-1 focus-visible:ring-primary/40"
           />
           {search && (
             <button
               type="button"
               onClick={() => setSearch("")}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               title="Limpar busca"
             >
               <X className="size-3.5" />
@@ -367,13 +367,13 @@ export default function WorkspaceCrmPage() {
         <FilterTriggerButton
           onClick={() => setIsFilterSheetOpen(true)}
           activeCount={activeFiltersCount}
-          className="h-10 px-3 rounded-lg border-border/60 shrink-0 shadow-none text-xs"
+          className="h-11 min-h-11 px-3 rounded-lg border-border/60 shrink-0 shadow-none text-xs"
         />
 
         {/* Botão Primário "+ Novo Cliente" Cravado em h-10 */}
         <Button
           asChild
-          className="h-10 px-3 sm:px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 gap-2 shrink-0 shadow-none cursor-pointer"
+          className="h-11 min-h-11 px-3 sm:px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 gap-2 shrink-0 shadow-none cursor-pointer"
         >
           <Link to="/workspace/clientes" search={{ novo: true } as any}>
             <Plus className="size-4 shrink-0" />
@@ -506,7 +506,7 @@ export default function WorkspaceCrmPage() {
           </div>
 
           {/* Visualização Desktop: Tabela de Alta Densidade (>= 640px) */}
-          <div className="hidden sm:block overflow-x-auto">
+          <div className="hidden sm:block overflow-x-auto scroll-area">
             <table className="w-full text-left text-xs">
               <thead className="bg-muted/30 border-b border-border/40 text-xs uppercase tracking-wider text-muted-foreground font-mono">
                 <tr>
@@ -551,7 +551,7 @@ export default function WorkspaceCrmPage() {
                             <p className="text-xs font-mono text-foreground">{customer.phone}</p>
                           )}
                           {customer.email && (
-                            <p className="text-xs text-muted-foreground truncate max-w-[180px]">
+                            <p className="text-xs text-muted-foreground truncate max-w-44">
                               {customer.email}
                             </p>
                           )}
@@ -595,10 +595,25 @@ export default function WorkspaceCrmPage() {
                                   `Olá, ${customer.full_name || ""}! Como posso ajudar você hoje?`
                                 )
                               }
-                              className="size-8 p-0 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 cursor-pointer"
+                              className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 cursor-pointer"
                               title="Conversar no WhatsApp"
                             >
                               <MessageCircle className="size-4" />
+                            </Button>
+                          )}
+
+                          
+                          {phoneDigits && (
+                            <Button
+                              asChild
+                              variant="ghost"
+                              size="sm"
+                              className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-primary hover:text-primary hover:bg-primary/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              title="Atender no SAC"
+                            >
+                              <Link to="/workspace/atendimento" search={{ search: customer.phone || customer.full_name || undefined, threadId: undefined }}>
+                                <Headphones className="size-4" />
+                              </Link>
                             </Button>
                           )}
 
@@ -606,7 +621,7 @@ export default function WorkspaceCrmPage() {
                             asChild
                             variant="outline"
                             size="sm"
-                            className="h-8 px-3 rounded-lg text-xs font-semibold gap-1 cursor-pointer"
+                            className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-1 cursor-pointer"
                           >
                             <Link to="/workspace/clientes/$id" params={{ id: customer.id }}>
                               <span>Ficha</span>
@@ -634,7 +649,7 @@ export default function WorkspaceCrmPage() {
               <SheetTitle className="text-base font-bold text-foreground">
                 {selectedEntity?.name}
               </SheetTitle>
-              <Badge variant="outline" className="text-[11px] font-semibold">
+              <Badge variant="outline" className="text-xs font-semibold">
                 {selectedEntity?.type === "lead" ? "Oportunidade" : "Cliente"}
               </Badge>
             </div>
@@ -673,7 +688,7 @@ export default function WorkspaceCrmPage() {
                 <Button
                   size="sm"
                   variant="default"
-                  className="flex-1 text-xs h-9 gap-2"
+                  className="flex-1 text-xs h-11 min-h-11 gap-2"
                   asChild
                 >
                   <Link
@@ -693,7 +708,7 @@ export default function WorkspaceCrmPage() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="text-xs h-9 gap-2"
+                  className="text-xs h-11 min-h-11 gap-2"
                   onClick={async () => {
                     try {
                       await promoteLeadToCustomer({ data: { leadId: selectedLead.id } });

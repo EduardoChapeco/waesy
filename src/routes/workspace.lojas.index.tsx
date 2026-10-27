@@ -42,13 +42,13 @@ export default function WorkspaceLojasPage() {
  if (typeof window !== "undefined") {
  window.document.cookie = `waesy_active_tenant=${storeId}; path=/; max-age=31536000; SameSite=Lax`;
  }
- const res = await setTenantContext({ data: { store_id: storeId } }).catch(() => null);
- toast.success(`Contexto alterado para ${res?.storeName || storeName}`);
- window.location.href = "/workspace";
- } catch {
- toast.error("Erro ao alternar loja.");
- setSwitchingId(null);
- }
+ const res = await setTenantContext({ data: { store_id: storeId } });
+      toast.success(`Contexto alterado para ${res?.storeName || storeName}`);
+      window.location.href = "/workspace";
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao alternar loja.");
+      setSwitchingId(null);
+    }
  };
 
  const handleOpenEditor = (st: any) => {
@@ -160,7 +160,7 @@ export default function WorkspaceLojasPage() {
  />
  </div>
 
- <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto no-scrollbar">
+ <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto no-scrollbar tab-list" role="tablist">
  <Button
  variant={selectedType === "all" ? "default" : "outline"}
  size="sm"
@@ -212,7 +212,7 @@ export default function WorkspaceLojasPage() {
  return (
  <Card
  key={st.id}
- className={`rounded-lg shadow-xs border transition-all flex flex-col justify-between overflow-hidden bg-card group ${
+ className={`rounded-lg shadow-xs border transition-colors flex flex-col justify-between overflow-hidden bg-card group ${
  isCurrentActive
  ? "border-primary/60 ring-2 ring-primary/20"
  : "border-border hover:border-foreground/20 hover:shadow-xs"
@@ -236,11 +236,11 @@ export default function WorkspaceLojasPage() {
  {/* Badges Flutuantes no Banner */}
  <div className="absolute top-3 right-3 flex items-center gap-2">
  {isCurrentActive ? (
- <Badge className="bg-emerald-500 text-white border-0 text-xs font-bold px-2 py-1 ">
+ <Badge className="bg-emerald-500 text-foreground border-0 text-xs font-bold px-2 py-1 ">
  ● Ativa no Painel
  </Badge>
  ) : (
- <Badge variant="secondary" className="bg-black/50 text-white backdrop-blur-md border-0 text-xs">
+ <Badge variant="secondary" className="bg-foreground/50 text-foreground backdrop-blur-md border-0 text-xs">
  {st.status === "maintenance" ? "Em Manutenção" : "Disponível"}
  </Badge>
  )}
@@ -352,10 +352,10 @@ export default function WorkspaceLojasPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-11 min-w-[44px] min-h-11 rounded-lg shrink-0"
+ className="size-11 min-w-11 min-h-11 rounded-lg shrink-0 cursor-pointer"
  title="Abrir Vitrine Pública da Loja"
  >
- <Link to={`/destaques/${st.slug}` as any} target="_blank">
+ <Link to={`/loja/${st.slug}` as any} target="_blank">
  <ExternalLink className="size-4 text-muted-foreground" />
  </Link>
  </Button>

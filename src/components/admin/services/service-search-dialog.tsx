@@ -88,7 +88,7 @@ export function ServiceSearchDialog({
             </div>
             <button
               onClick={() => onOpenChange(false)}
-              className="p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+              className="p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <X className="w-5 h-5" />
             </button>
@@ -113,7 +113,7 @@ export function ServiceSearchDialog({
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -126,11 +126,11 @@ export function ServiceSearchDialog({
               <button
                 key={tab.id}
                 onClick={() => setSelectedCategory(tab.id)}
-                className={`text-xs px-3 py-1 rounded-full whitespace-nowrap font-medium transition-all ${
+                className={`text-xs px-3 py-1 rounded-full whitespace-nowrap font-medium transition-colors duration-200 ${
                   selectedCategory === tab.id
                     ? "bg-primary text-primary-foreground shadow-sm"
                     : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 {tab.label}
               </button>
@@ -142,7 +142,7 @@ export function ServiceSearchDialog({
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-3">
-              <Loader2 className="w-7 h-7 animate-spin text-primary" />
+              <Loader2 className="w-7 h-7 animate-spin motion-reduce:animate-none text-primary" />
               <p className="text-xs">Consultando banco de serviços sob demanda...</p>
             </div>
           ) : services.length === 0 ? (
@@ -156,10 +156,18 @@ export function ServiceSearchDialog({
           ) : (
             services.map((srv) => (
               <div
-                key={srv.id}
-                onClick={() => handleSelect(srv)}
-                className="group p-4 rounded-lg border border-border/40 hover:border-primary/50 bg-card/60 hover:bg-muted/20 transition-all cursor-pointer flex flex-col gap-3 shadow-sm"
-              >
+    key={srv.id}
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        handleSelect(srv);
+      }
+    }}
+    onClick={() => handleSelect(srv)}
+    className="group p-4 rounded-lg border border-border/40 hover:border-primary/50 bg-card/60 hover:bg-muted/20 transition-colors duration-200 cursor-pointer flex flex-col gap-3 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+  >
                 {/* TOPO: TÍTULO & CATEGORIA */}
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -167,10 +175,10 @@ export function ServiceSearchDialog({
                       <h4 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
                         {srv.name}
                       </h4>
-                      <Badge variant="outline" className="text-[10px] px-2 py-0 h-4 border-border/60">
+                      <Badge variant="outline" className="text-2xs px-2 py-0 h-4 border-border/60">
                         Cobrado por {srv.pricing_unit}
                       </Badge>
-                      <Badge variant="secondary" className="text-[10px] px-2 py-0 h-4">
+                      <Badge variant="secondary" className="text-2xs px-2 py-0 h-4">
                         {srv.subcategory}
                       </Badge>
                     </div>
@@ -186,7 +194,7 @@ export function ServiceSearchDialog({
                       e.stopPropagation();
                       handleSelect(srv);
                     }}
-                    className="shrink-0 h-11 min-h-11 px-4 text-xs font-bold text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all cursor-pointer"
+                    className="shrink-0 h-11 min-h-11 px-4 text-xs font-bold text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-200 cursor-pointer"
                   >
                     Usar
                   </Button>
@@ -195,15 +203,15 @@ export function ServiceSearchDialog({
                 {/* FAIXA DE PREÇO & PRAZO */}
                 <div className="flex items-center justify-between pt-1 border-t border-border/30 text-xs">
                   <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground text-[11px]">Mercado médio:</span>
+                    <span className="text-muted-foreground text-2xs">Mercado médio:</span>
                     <span className="font-semibold text-foreground">
                       {formatMoney(srv.estimated_avg_price_cents)}
                     </span>
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-2xs text-muted-foreground">
                       ({formatMoney(srv.estimated_min_price_cents)} - {formatMoney(srv.estimated_max_price_cents)})
                     </span>
                   </div>
-                  <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                  <div className="flex items-center gap-1 text-2xs text-muted-foreground">
                     <Clock className="w-3 h-3" />
                     <span>Prazo médio: ~{srv.estimated_delivery_days} {srv.estimated_delivery_days === 1 ? 'dia' : 'dias'}</span>
                   </div>
@@ -215,7 +223,7 @@ export function ServiceSearchDialog({
                     {srv.suggested_tags.map((tag, idx) => (
                       <span
                         key={idx}
-                        className="text-[10px] bg-background border border-border/40 text-muted-foreground px-2 py-1 rounded whitespace-nowrap"
+                        className="text-2xs bg-background border border-border/40 text-muted-foreground px-2 py-1 rounded whitespace-nowrap"
                       >
                         #{tag}
                       </span>

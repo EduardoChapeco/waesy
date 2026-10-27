@@ -71,7 +71,7 @@ export function SimlabReviewPanel({ storeId, onRefresh }: SimlabReviewPanelProps
     <div className="rounded-lg border border-border/80 bg-card p-5 space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border/60 pb-4">
         <div className="space-y-2">
-          <Badge variant="outline" className="text-[10px]">SimLab · exploração qualitativa sintética</Badge>
+          <Badge variant="outline" className="text-2xs">SimLab · exploração qualitativa sintética</Badge>
           <h3 className="text-base font-bold text-foreground">Explorar uma hipótese comercial</h3>
           <p className="max-w-2xl text-xs leading-relaxed text-muted-foreground">
             A IA gera reações hipotéticas de perfis sintéticos curados. Isso não substitui entrevistas, survey ou teste randomizado e não calcula probabilidade de compra.
@@ -102,7 +102,7 @@ export function SimlabReviewPanel({ storeId, onRefresh }: SimlabReviewPanelProps
               <Input type="number" min="1" max="50" value={profileCount} onChange={(event) => setProfileCount(event.target.value)} required />
             </div>
             <Button type="submit" disabled={isRunning || !storeId} className="gap-2">
-              {isRunning ? <><Loader2 className="size-4 animate-spin" />Gerando respostas…</> : <><Play className="size-4" />Explorar qualitativamente</>}
+              {isRunning ? <><Loader2 className="size-4 animate-spin motion-reduce:animate-none" />Gerando respostas…</> : <><Play className="size-4" />Explorar qualitativamente</>}
             </Button>
           </div>
         </form>
@@ -112,7 +112,7 @@ export function SimlabReviewPanel({ storeId, onRefresh }: SimlabReviewPanelProps
             <div className="flex items-start gap-2"><Brain className="mt-1 size-4 text-primary" /><div>
               <h4 className="text-xs font-bold text-foreground">Resultado exploratório — sem previsão ou veredito comercial</h4>
               <p className="mt-1 text-xs text-muted-foreground">{synthesis.methodology}</p>
-              <p className="mt-1 text-[10px] text-muted-foreground">{String(synthesis.provenance?.provider || "Provedor não informado")} · modelo {String(synthesis.provenance?.model || "não informado")} · {responses.length} respostas sintéticas.</p>
+              <p className="mt-1 text-2xs text-muted-foreground">{String(synthesis.provenance?.provider || "Provedor não informado")} · modelo {String(synthesis.provenance?.model || "não informado")} · {responses.length} respostas sintéticas.</p>
             </div></div>
           </div>
 
@@ -133,15 +133,15 @@ export function SimlabReviewPanel({ storeId, onRefresh }: SimlabReviewPanelProps
               <article key={response.id} className="rounded-lg border border-border/70 bg-background p-3 space-y-2">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="text-xs font-bold">{response.archetype?.display_name || response.archetype_code || "Perfil sintético"}</span>
-                  <Badge variant="outline" className="text-[10px]">Sintético · não é respondente real</Badge>
+                  <Badge variant="outline" className="text-2xs">Sintético · não é respondente real</Badge>
                 </div>
                 <p className="text-xs leading-relaxed text-muted-foreground">{response.verbatim_reaction || "Resposta indisponível."}</p>
-                {response.provenance?.unknowns && Array.isArray(response.provenance.unknowns) && response.provenance.unknowns.length > 0 && <p className="text-[10px] text-muted-foreground">Desconhecidos: {(response.provenance.unknowns as string[]).join("; ")}</p>}
+                {response.provenance?.unknowns && Array.isArray(response.provenance.unknowns) && response.provenance.unknowns.length > 0 && <p className="text-2xs text-muted-foreground">Desconhecidos: {(response.provenance.unknowns as string[]).join("; ")}</p>}
               </article>
             ))}
           </div>
 
-          <div className="flex gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-[10px] text-amber-700 dark:text-amber-300">
+          <div className="flex gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-2xs text-amber-700 dark:text-amber-300">
             <AlertTriangle className="size-3.5 shrink-0" />
             <span>{synthesis.limitations?.join(" ") || "Perfis sintéticos não são amostra representativa; valide com participantes e resultados observados."}</span>
           </div>

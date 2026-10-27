@@ -66,7 +66,7 @@ export function MomentDetailDrawer({ moment, onClose }: MomentDetailDrawerProps)
  <button
  type="button"
  onClick={onClose}
- className="absolute top-3 right-3 size-8 rounded-full bg-black/60 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/80 transition-all cursor-pointer z-10"
+ className="absolute top-3 right-3 size-8 rounded-full bg-foreground/60 backdrop-blur-md text-foreground flex items-center justify-center hover:bg-foreground/80 transition-colors duration-200 cursor-pointer z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  aria-label="Fechar momento"
  >
  <X size={16} weight="bold" />
@@ -74,19 +74,19 @@ export function MomentDetailDrawer({ moment, onClose }: MomentDetailDrawerProps)
 
  {/* Badges de Ao Vivo & Tempo */}
  <div className="absolute top-3 left-3 flex items-center gap-2 z-10">
- <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-destructive/90 text-white backdrop-blur-md animate-pulse">
- <span className="size-1.5 rounded-full bg-white animate-ping" />
+ <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-2xs font-black uppercase tracking-wider bg-destructive/90 text-foreground backdrop-blur-md animate-pulse motion-reduce:animate-none">
+ <span className="size-1.5 rounded-full bg-card animate-ping motion-reduce:animate-none" />
  Ao Vivo
  </span>
 
- <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-black/60 backdrop-blur-md text-white border border-white/20">
+ <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-2xs font-mono font-bold bg-foreground/60 backdrop-blur-md text-foreground border border-white/20">
  <Clock size={12} />
  <span>{formatRelativeTime(moment.created_at || new Date().toISOString())}</span>
  </span>
  </div>
 
  {/* Autor do Momento sobreposto na foto */}
- <div className="absolute bottom-3 inset-x-3 flex items-center justify-between text-white z-10">
+ <div className="absolute bottom-3 inset-x-3 flex items-center justify-between text-foreground z-10">
  <div className="flex items-center gap-2 min-w-0">
  {moment.avatar_url ? (
  <img
@@ -104,7 +104,7 @@ export function MomentDetailDrawer({ moment, onClose }: MomentDetailDrawerProps)
  <span className="text-xs font-bold truncate block drop-">
  {moment.author_name || "Membro Comunitário"}
  </span>
- <span className="text-[10px] text-white/80 flex items-center gap-1 truncate drop-">
+ <span className="text-2xs text-foreground/80 flex items-center gap-1 truncate drop-">
  <MapPin size={10} weight="fill" className="text-primary" />
  <span>{moment.title || "Chapecó"}</span>
  </span>
@@ -128,10 +128,10 @@ export function MomentDetailDrawer({ moment, onClose }: MomentDetailDrawerProps)
  <BeerBottle size={16} weight="fill" />
  <span>Mesa Aberta para Dividir Conta!</span>
  </div>
- <p className="text-[11px] text-muted-foreground leading-snug">
+ <p className="text-2xs text-muted-foreground leading-snug">
  {moment.author_name} abriu a mesa para quem quiser chegar, socializar e rachar o consumo no local!
  </p>
- <div className="flex items-center gap-2 pt-1 text-[10px] font-bold text-foreground">
+ <div className="flex items-center gap-2 pt-1 text-2xs font-bold text-foreground">
  <span className="px-2 py-1 rounded-lg bg-card ">
  Capacidade: {moment.table_size || 6} pessoas
  </span>
@@ -152,13 +152,13 @@ export function MomentDetailDrawer({ moment, onClose }: MomentDetailDrawerProps)
  type="button"
  variant={isLiked ? "default" : "outline"}
  onClick={handleToggleLike}
- className={`h-9 px-3 rounded-lg text-xs font-bold gap-2 flex-1 transition-all cursor-pointer ${
+ className={`h-9 px-3 rounded-lg text-xs font-bold gap-2 flex-1 transition-colors duration-200 cursor-pointer ${
  isLiked
- ? "bg-rose-500 text-white hover:bg-rose-600 border-rose-500"
+ ? "bg-rose-500 text-foreground hover:bg-rose-600 border-rose-500"
  : "border-border hover:border-rose-500/50 hover:text-rose-500"
  }`}
  >
- <Heart size={16} weight={isLiked ? "fill" : "regular"} className={isLiked ? "animate-bounce" : ""} />
+ <Heart size={16} weight={isLiked ? "fill" : "regular"} className={isLiked ? "animate-bounce motion-reduce:animate-none" : ""} />
  <span>{likesCount} Curtidas</span>
  </Button>
 

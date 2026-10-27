@@ -261,7 +261,7 @@ function BookingIndexPage() {
       {/* ── ESTADOS DE CARREGAMENTO E VAZIO ── */}
       {isLoading ? (
         <div className="flex justify-center py-24">
-          <CircleNotch size={32} className="animate-spin text-muted-foreground" />
+          <CircleNotch size={32} className="animate-spin motion-reduce:animate-none text-muted-foreground" />
         </div>
       ) : services.length === 0 ? (
         <div className="py-24 text-center space-y-3 bg-card rounded-lg border border-border/40 p-8">
@@ -292,7 +292,7 @@ function BookingIndexPage() {
                   {items.map((service: any) => (
                     <div
                       key={service.id}
-                      className="min-w-72 sm:min-w-[310px] max-w-[330px] rounded-lg bg-card border border-border/60 overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between shrink-0 group select-none"
+                      className="min-w-72 sm:min-w-[310px] max-w-[330px] rounded-lg bg-card border border-border/60 overflow-hidden hover:border-foreground/30 transition-colors duration-200 flex flex-col justify-between shrink-0 group select-none"
                     >
                       <Link
                         to="/agendar/$id"
@@ -371,7 +371,7 @@ function BookingIndexPage() {
                   {services.map((service: any) => (
                     <div
                       key={service.id}
-                      className="rounded-lg bg-card border border-border/60 overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between group"
+                      className="rounded-lg bg-card border border-border/60 overflow-hidden hover:border-foreground/30 transition-colors duration-200 flex flex-col justify-between group"
                     >
                       <Link
                         to="/agendar/$id"
@@ -447,7 +447,7 @@ function BookingIndexPage() {
               {services.map((service: any) => (
                 <div
                   key={service.id}
-                  className="rounded-lg bg-card border border-border/60 overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between group shadow-xs"
+                  className="rounded-lg bg-card border border-border/60 overflow-hidden hover:border-foreground/30 transition-colors duration-200 flex flex-col justify-between group shadow-xs"
                 >
                   <Link
                     to="/agendar/$id"
@@ -527,7 +527,7 @@ function BookingIndexPage() {
               {services.map((service: any) => (
                 <div
                   key={service.id}
-                  className="group relative overflow-hidden rounded-lg border border-border/60 bg-card min-h-[136px] pl-32 sm:pl-44 p-4 sm:p-4 hover:border-foreground/30 transition-all flex items-center justify-between gap-4 sm:gap-4 w-full"
+                  className="group relative overflow-hidden rounded-lg border border-border/60 bg-card min-h-[136px] pl-32 sm:pl-44 p-4 sm:p-4 hover:border-foreground/30 transition-colors duration-200 flex items-center justify-between gap-4 sm:gap-4 w-full"
                 >
                   <Link
                     to="/agendar/$id"
@@ -656,8 +656,8 @@ function BookingIndexPage() {
                               setSelectedDate(day.iso);
                               setSelectedSlot(null);
                             }}
-                            className={cn(
-                              "p-2 rounded-lg text-center border transition-all cursor-pointer flex flex-col items-center justify-center",
+                            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                              "p-2 rounded-lg text-center border transition-colors duration-200 cursor-pointer flex flex-col items-center justify-center",
                               isSelected
                                 ? "bg-foreground text-background border-foreground font-bold shadow-sm"
                                 : "bg-muted/30 border-border/50 text-muted-foreground hover:bg-muted"
@@ -682,7 +682,7 @@ function BookingIndexPage() {
 
                     {isLoadingSlots ? (
                       <div className="flex items-center justify-center py-6">
-                        <CircleNotch size={24} className="animate-spin text-muted-foreground" />
+                        <CircleNotch size={24} className="animate-spin motion-reduce:animate-none text-muted-foreground" />
                       </div>
                     ) : slots.length === 0 ? (
                       <div className="p-4 rounded-lg bg-muted/40 text-center text-xs text-muted-foreground">
@@ -702,8 +702,8 @@ function BookingIndexPage() {
                               key={slotIso}
                               type="button"
                               onClick={() => setSelectedSlot(slotIso)}
-                              className={cn(
-                                "h-9 rounded-lg text-xs font-mono font-bold border transition-all cursor-pointer flex items-center justify-center",
+                              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                                "h-9 rounded-lg text-xs font-mono font-bold border transition-colors duration-200 cursor-pointer flex items-center justify-center",
                                 isSelected
                                 ? "bg-primary text-primary-foreground border-primary"
                                 : "bg-card border-border/60 hover:bg-muted text-foreground"
@@ -796,7 +796,7 @@ function BookingIndexPage() {
                 className="h-11 px-6 rounded-lg font-bold text-xs bg-primary text-primary-foreground cursor-pointer shadow-sm"
               >
                 {appointmentMutation.isPending ? (
-                  <CircleNotch size={16} className="animate-spin" />
+                  <CircleNotch size={16} className="animate-spin motion-reduce:animate-none" />
                 ) : (
                   "Confirmar Agendamento"
                 )}

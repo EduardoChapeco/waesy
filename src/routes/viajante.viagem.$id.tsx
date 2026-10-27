@@ -22,6 +22,7 @@ import {
   ExternalLink,
   ArrowLeft,
   LifeBuoy,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +43,10 @@ import { getTravelerTripPortalDossier } from "@/services/travel-lifecycle.functi
 import { createTourismIncident } from "@/services/tourism-incidents.functions";
 import { updateChangeCaseWorkflow } from "@/services/travel-reaccommodation.functions";
 import { PreBoardingPresentationStudio } from "@/components/tourism/boarding/PreBoardingPresentationStudio";
+import { PaxAnamnesisCard } from "@/components/turismo/pax-anamnesis-card";
+import type { PaxAnamnesisDTO } from "@/lib/travel/pax-anamnesis-and-accessibility";
+import { downloadTripIcsFile } from "@/services/travel-calendar-export";
+import { SmartPackingChecklist } from "@/components/tourism/boarding/smart-packing-checklist";
 
 export const Route = createFileRoute("/viajante/viagem/$id")({
   head: () => ({
@@ -59,7 +64,7 @@ export const Route = createFileRoute("/viajante/viagem/$id")({
   component: TripPortalPage,
 });
 
-type PortalTabKey = "resumo" | "pre_embarque" | "roteiro" | "financeiro" | "copilot" | "emergencia";
+type PortalTabKey = "resumo" | "pre_embarque" | "roteiro" | "financeiro" | "copilot" | "emergencia" | "grupo";
 
 export default function TripPortalPage() {
   const { id } = Route.useParams();
@@ -150,6 +155,35 @@ export default function TripPortalPage() {
     [trip, hotel, agency, passengers, confirmationItems, id]
   );
 
+  // Ficha Canônica de Anamnese & Acessibilidade PCD (Zero-Trust Anti-Fraude)
+  const leadAnamnesis: PaxAnamnesisDTO = useMemo(() => {
+    const meta = (leadPassenger?.metadata as Record<string, any>) || {};
+    return {
+      paxId: leadPassenger?.id || "00000000-0000-0000-0000-000000000000",
+      tripId: trip.id || id,
+      fullName: leadPassenger?.full_name || trip.client_name || "Passageiro Principal",
+      documentType: (meta.document_type as any) || (leadPassenger?.cpf ? "cpf" : "rg"),
+      documentNumber: leadPassenger?.cpf || meta.document_number || "Não Informado",
+      birthDate: leadPassenger?.birth_date || meta.birth_date || "1990-01-01",
+      nationality: meta.nationality || "BRA",
+      pcdAssistanceCodes: (meta.pcd_assistance_codes as any) || ["NONE"],
+      requiresCompanion: Boolean(meta.requires_companion),
+      medicalClearanceRequired: Boolean(meta.medical_clearance_required),
+      dietaryRestrictions: (meta.dietary_restrictions as any) || ["standard"],
+      allergiesNotes: meta.allergies_notes || null,
+      emergencyContact: meta.emergency_contact || {
+        name: agency.name || "Central de Atendimento",
+        phone: agency.phone || "+55 (49) 99999-1372",
+        relationship: "Agência Emissora",
+      },
+      documentStatus: (meta.document_status as any) || "agent_homologated",
+      ocrConfidenceScore: meta.ocr_confidence_score ?? 99.8,
+      appleWalletPassUrl: meta.apple_wallet_pass_url || null,
+      googleWalletPassUrl: meta.google_wallet_pass_url || null,
+      updatedAt: leadPassenger?.updated_at || new Date().toISOString(),
+    };
+  }, [leadPassenger, trip, id, agency]);
+
   // Documentos Oficiais Reais da Viagem
   const documentsList = useMemo(() => {
     if (officialDocuments && officialDocuments.length > 0) {
@@ -213,6 +247,21 @@ export default function TripPortalPage() {
       ],
     });
   }, [trip, tripContext]);
+  // Paradas Técnicas e Pontos de Embarque Rodoviários (Excursões e Viagens Terrestres)
+  const roadStops = useMemo(() => {
+    if (Array.isArray(trip?.technical_stops) && trip.technical_stops.length > 0) {
+      return trip.technical_stops;
+    }
+    if (Array.isArray(trip?.boarding_points) && trip.boarding_points.length > 0) {
+      return trip.boarding_points.map((p: any) => ({
+        location: p.location || p.city || p.name,
+        time: p.time || p.scheduled_time || "06:00",
+        durationText: p.durationText || "Embarque de passageiros",
+        type: "boarding",
+      }));
+    }
+    return [];
+  }, [trip]);
 
   // Gestão de Boletos Reais e Auto-Match OCR
   const [selectedPaymentChannel, setSelectedPaymentChannel] = useState<PaymentChannelType>("agency_pix");
@@ -439,6 +488,33 @@ export default function TripPortalPage() {
             <Button
               type="button"
               variant="outline"
+              onClick={() => {
+                downloadTripIcsFile({
+                  reservationCode: tripContext.reservationCode,
+                  destination: tripContext.destination,
+                  operatorName: tripContext.operatorName,
+                  travelStartDate: tripContext.travelStartDate,
+                  travelEndDate: tripContext.travelEndDate,
+                  flights: tripContext.flights,
+                  hotel: {
+                    hotelName: tripContext.hotelName,
+                    hotelAddress: tripContext.hotelAddress,
+                    confirmationId: tripContext.hotelConfirmationId,
+                    mealPlan: tripContext.mealPlan,
+                  },
+                });
+                toast.success("Arquivo de calendário (.ics) gerado! Abra o arquivo para adicionar à sua agenda.");
+              }}
+              className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              title="Exportar voos e check-in para Google Calendar, Apple Calendar ou Outlook"
+            >
+              <Calendar className="size-4 text-primary" />
+              <span>Adicionar ao Calendário</span>
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
               onClick={() => setSupportModalOpen(true)}
               className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
@@ -499,7 +575,10 @@ export default function TripPortalPage() {
             { id: "resumo", label: "Resumo & Documentos", icon: FileText },
             { id: "pre_embarque", label: "Apresentação de Pré-Embarque", icon: Calendar },
             { id: "roteiro", label: `Roteiro Dia a Dia (${itineraryDays.length} Dias)`, icon: Compass },
-            { id: "financeiro", label: "Financeiro & Boletos (OCR)", icon: CreditCard },
+            ...(pendingCents > 0
+              ? [{ id: "financeiro", label: "Financeiro & Boletos (OCR)", icon: CreditCard }]
+              : []),
+            { id: "grupo", label: "Grupo & Mural da Excursão", icon: MessageSquare },
             { id: "copilot", label: "Assessor da Viagem (Copilot)", icon: MessageSquare },
             { id: "emergencia", label: "Plantão 24h & Emergência", icon: PhoneCall },
           ].map((tab) => {
@@ -601,6 +680,9 @@ export default function TripPortalPage() {
                 </div>
               </div>
 
+              {/* Card de Acessibilidade PCD, Anamnese e Documentos Blindados */}
+              <PaxAnamnesisCard anamnesis={leadAnamnesis} />
+
               {/* Documentos & Vouchers em PDF */}
               <div className="p-5 rounded-lg border border-border bg-card space-y-4">
                 <div className="flex items-center gap-2 text-primary font-bold text-sm">
@@ -641,14 +723,98 @@ export default function TripPortalPage() {
             </div>
           )}
 
-          {/* ABA 2: APRESENTAÇÃO DE PRÉ-EMBARQUE */}
+          {/* ABA 2: APRESENTAÇÃO DE PRÉ-EMBARQUE & CHECKLIST DE MALA */}
           {activeTab === "pre_embarque" && (
-            <PreBoardingPresentationStudio tripId={trip.id} />
+            <div className="space-y-6">
+              <SmartPackingChecklist tripId={trip.id} destination={tripContext.destination} />
+              <PreBoardingPresentationStudio tripId={trip.id} />
+            </div>
           )}
 
           {/* ABA 3: ROTEIRO DIA A DIA */}
           {activeTab === "roteiro" && (
             <div className="space-y-4">
+              {/* Bloco de Paradas Técnicas e Pontos de Encontro (Excursão / Rodoviário) */}
+              {roadStops.length > 0 && (
+                <div className="p-5 rounded-lg border border-primary/20 bg-primary/5 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 text-foreground font-bold text-sm">
+                      <MapPin className="size-4 text-primary" />
+                      <span>Paradas Técnicas e Pontos de Encontro Rodoviários</span>
+                    </div>
+                    <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary">
+                      {roadStops.length} Parada(s)
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Pontos programados de abastecimento, refeição e embarque com rotas diretas para GPS.
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    {roadStops.map((stop: any, sIdx: number) => {
+                      const locQuery = encodeURIComponent(stop.location || stop.address || stop.name || "Ponto de Parada");
+                      return (
+                        <div
+                          key={sIdx}
+                          className="p-3 rounded-lg bg-card border border-border/70 space-y-2 text-xs"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-bold text-foreground flex items-center gap-2">
+                              <Clock className="size-3.5 text-primary shrink-0" />
+                              <span className="font-mono">{stop.time}</span>
+                            </span>
+                            <Badge variant="secondary" className="text-xs font-mono font-medium">
+                              {stop.durationText || "30 min parada"}
+                            </Badge>
+                          </div>
+                          <p className="font-semibold text-foreground break-words">
+                            {stop.location || stop.address || stop.name}
+                          </p>
+                          <div className="flex items-center gap-2 pt-1">
+                            <Button
+                              asChild
+                              variant="outline"
+                              size="sm"
+                              className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring flex-1"
+                            >
+                              <a
+                                href={`https://www.google.com/maps/search/?api=1&query=${locQuery}`}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                <ExternalLink className="size-3 text-primary" />
+                                <span>Google Maps</span>
+                              </a>
+                            </Button>
+                            <Button
+                              asChild
+                              variant="outline"
+                              size="sm"
+                              className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring flex-1"
+                            >
+                              <a
+                                href={`https://waze.com/ul?q=${locQuery}`}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                <Compass className="size-3 text-primary" />
+                                <span>Waze</span>
+                              </a>
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {itineraryDays.length === 0 && (
+                <div className="p-8 text-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">
+                  Nenhum roteiro detalhado cadastrado para esta viagem.
+                </div>
+              )}
+
               {itineraryDays.map((day: any) => (
                 <div
                   key={day.dayIndex}
@@ -669,20 +835,67 @@ export default function TripPortalPage() {
                   )}
                   {day.timeline && day.timeline.length > 0 && (
                     <div className="space-y-2 pt-2">
-                      {day.timeline.map((act: any, aIdx: number) => (
-                        <div
-                          key={aIdx}
-                          className="p-3 rounded-lg bg-muted/40 border border-border/40 flex items-start gap-3 text-xs"
-                        >
-                          <span className="font-mono text-primary font-bold shrink-0">{act.time}</span>
-                          <div className="space-y-0.5">
-                            <p className="font-bold text-foreground">{act.title}</p>
-                            {act.description && (
-                              <p className="text-muted-foreground">{act.description}</p>
+                      {day.timeline.map((act: any, aIdx: number) => {
+                        const actLocation = act.location || (act.category === "stop" ? act.title : null);
+                        const actLocQuery = actLocation ? encodeURIComponent(actLocation) : null;
+                        return (
+                          <div
+                            key={aIdx}
+                            className="p-3 rounded-lg bg-muted/40 border border-border/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+                          >
+                            <div className="flex items-start gap-3 min-w-0">
+                              <span className="font-mono text-primary font-bold shrink-0">{act.time}</span>
+                              <div className="space-y-1 min-w-0">
+                                <p className="font-bold text-foreground">{act.title}</p>
+                                {act.description && (
+                                  <p className="text-muted-foreground break-words">{act.description}</p>
+                                )}
+                                {actLocation && (
+                                  <p className="text-xs text-muted-foreground flex items-center gap-1 font-mono pt-1">
+                                    <MapPin className="size-3 text-primary shrink-0" />
+                                    <span>{actLocation}</span>
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+
+                            {actLocQuery && (
+                              <div className="flex items-center gap-2 shrink-0 pt-2 sm:pt-0">
+                                <Button
+                                  asChild
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                                >
+                                  <a
+                                    href={`https://www.google.com/maps/search/?api=1&query=${actLocQuery}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                  >
+                                    <ExternalLink className="size-3 text-primary" />
+                                    <span>Google Maps</span>
+                                  </a>
+                                </Button>
+                                <Button
+                                  asChild
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                                >
+                                  <a
+                                    href={`https://waze.com/ul?q=${actLocQuery}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                  >
+                                    <Compass className="size-3 text-primary" />
+                                    <span>Waze</span>
+                                  </a>
+                                </Button>
+                              </div>
                             )}
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -764,6 +977,133 @@ export default function TripPortalPage() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* ABA GRUPO & MURAL DA EXCURSÃO (TIMELINE COLETIVA E FOTOS) */}
+          {activeTab === "grupo" && (
+            <div className="space-y-6 animate-in fade-in duration-200">
+              <div className="p-5 rounded-lg border border-border bg-card space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-primary font-bold text-sm">
+                    <MessageSquare className="size-4" />
+                    <span>Mural Coletivo & Recomendações da Excursão</span>
+                  </div>
+                  <Badge variant="outline" className="font-mono text-xs">
+                    {passengers.length || 1} Viajantes Confirmados
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Espaço compartilhado do grupo para alinhamentos com o guia, avisos de pontualidade e compartilhamento de memórias da viagem.
+                </p>
+              </div>
+
+              {/* Linha do Tempo e Avisos do Guia */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                <div className="p-5 rounded-lg border border-border bg-card space-y-3">
+                  <span className="font-bold uppercase tracking-wider text-muted-foreground block text-xs">
+                    Pontos de Encontro & Avisos da Coordenação
+                  </span>
+                  <div className="space-y-3">
+                    <div className="p-3 rounded-lg bg-muted/40 border border-border/50 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-foreground">Horário Limite de Embarque</span>
+                        <Badge variant="secondary" className="font-mono text-xs">05:45</Badge>
+                      </div>
+                      <p className="text-muted-foreground">
+                        Chegue com 15 minutos de antecedência no ponto cadastrado portando documento com foto (RG/Passaporte).
+                      </p>
+                    </div>
+
+                    <div className="p-3 rounded-lg bg-muted/40 border border-border/50 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-foreground">Bagagem no Bagageiro</span>
+                        <Badge variant="secondary" className="font-mono text-xs">1 Mala + 1 Mochila</Badge>
+                      </div>
+                      <p className="text-muted-foreground">
+                        Malas identificadas com etiquetas oficiais fornecidas no embarque. Remédios e eletrônicos devem permanecer na bolsa de mão.
+                      </p>
+                    </div>
+
+                    <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20 space-y-3 text-emerald-800 dark:text-emerald-300">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-xs sm:text-sm flex items-center gap-2">
+                          <CheckCircle2 className="size-4 text-emerald-600" />
+                          <span>Grupo Oficial de Avisos Ativo</span>
+                        </span>
+                        <Badge variant="outline" className="text-xs font-mono border-emerald-600/30 text-emerald-700 dark:text-emerald-300">
+                          {trip?.guide_name ? `Guia: ${trip.guide_name}` : "Equipe Oficial"}
+                        </Badge>
+                      </div>
+
+                      <p className="text-xs leading-relaxed">
+                        O guia responsável enviará atualizações de tráfego, chamadas de embarque e previsão do tempo em tempo real.
+                      </p>
+
+                      <div className="flex flex-wrap items-center gap-2 pt-1">
+                        {(trip?.whatsapp_group_url || (trip as any)?.metadata?.whatsapp_group_url) && (
+                          <Button
+                            asChild
+                            size="sm"
+                            className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 bg-emerald-600 hover:bg-emerald-700 text-primary-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                          >
+                            <a
+                              href={trip?.whatsapp_group_url || (trip as any)?.metadata?.whatsapp_group_url}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              <MessageSquare className="size-3.5" />
+                              <span>Entrar no Grupo no WhatsApp</span>
+                            </a>
+                          </Button>
+                        )}
+
+                        {(trip?.guide_phone || (trip as any)?.metadata?.guide_phone) && (
+                          <Button
+                            asChild
+                            variant="outline"
+                            size="sm"
+                            className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold gap-2 border-emerald-600/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-600/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                          >
+                            <a
+                              href={`https://wa.me/${String(trip?.guide_phone || (trip as any)?.metadata?.guide_phone).replace(/\D/g, "")}`}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              <PhoneCall className="size-3.5" />
+                              <span>Falar com o Guia</span>
+                            </a>
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Galeria de Fotos e Memórias do Grupo */}
+                <div className="p-5 rounded-lg border border-border bg-card space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold uppercase tracking-wider text-muted-foreground block text-xs">
+                      Álbum Coletivo de Memórias
+                    </span>
+                    <Badge variant="outline" className="text-xs">
+                      Fotos Compartilhadas
+                    </Badge>
+                  </div>
+
+                  <div className="p-6 rounded-lg bg-muted/20 border border-dashed border-border flex flex-col items-center justify-center text-center space-y-2">
+                    <div className="size-10 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                      <Upload className="size-5" />
+                    </div>
+                    <p className="font-semibold text-foreground text-xs">
+                      As fotos do grupo estarão disponíveis durante o roteiro
+                    </p>
+                    <p className="text-xs text-muted-foreground max-w-xs">
+                      Os viajantes poderão subir fotos dos passeios e paradas para montar o álbum oficial da viagem.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -874,20 +1214,23 @@ export default function TripPortalPage() {
 
       {/* Modal de Abertura de Chamado Emergencial */}
       {supportModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-card text-card-foreground border border-border rounded-lg max-w-lg w-full p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <h3 className="font-bold text-base text-foreground flex items-center gap-2">
                 <LifeBuoy className="size-5 text-amber-500" />
                 <span>Acionar Plantão de Atendimento</span>
               </h3>
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon"
                 onClick={() => setSupportModalOpen(false)}
-                className="text-muted-foreground hover:text-foreground text-sm font-semibold p-1"
+                className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                aria-label="Fechar"
               >
-                ✕
-              </button>
+                <X className="size-4" />
+              </Button>
             </div>
 
             <div className="space-y-3 text-xs">

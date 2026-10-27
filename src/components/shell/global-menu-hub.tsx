@@ -9,7 +9,7 @@
 
 import React, { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ShoppingBag, ShoppingCart, MessageCircle, Tag, Bookmark, Handshake, Compass, Briefcase, CalendarDays, Ticket, MapPin, Coins, Gift, Store, LayoutDashboard, Shield, Settings, LogOut, ChevronRight, User, Bike, Star, Award } from "lucide-react";
+import { ShoppingBag, ShoppingCart, MessageCircle, Tag, Bookmark, Handshake, Compass, Briefcase, CalendarDays, Ticket, MapPin, Coins, Gift, Store, LayoutDashboard, Shield, Settings, LogOut, ChevronRight, User, Bike, Star, Award, Car, ArrowRightLeft, FileText, Wallet, Plane } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

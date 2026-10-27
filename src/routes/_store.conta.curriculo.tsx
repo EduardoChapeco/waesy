@@ -289,22 +289,199 @@ export default function MeuCurriculoPage() {
   };
 
   const handleDownloadPdf = async () => {
-    if (!previewRef.current || typeof window === "undefined") return;
+    if (typeof window === "undefined") return;
     try {
       setIsExporting(true);
-      const html2canvas = (await import("html2canvas")).default;
       const { jsPDF } = await import("jspdf");
-
-      const canvas = await html2canvas(previewRef.current, {
-        scale: 2.5,
-        useCORS: true,
-        // design-lint-ignore DL-01 reason:"HTML2Canvas print media requires pure white background" expiry:"2030-01-01"
-        backgroundColor: "#ffffff",
-      });
-
-      const imgData = canvas.toDataURL("image/jpeg", 0.98);
       const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      pdf.addImage(imgData, "JPEG", 0, 0, 210, 297);
+
+      const pageWidth = 210;
+      const margin = 16;
+      const contentWidth = pageWidth - margin * 2;
+      let currentY = 18;
+
+      const checkPageBreak = (neededSpace: number) => {
+        if (currentY + neededSpace > 280) {
+          pdf.addPage();
+          currentY = 18;
+        }
+      };
+
+      // Header: Nome
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(18);
+      pdf.setTextColor(20, 20, 20);
+      pdf.text(fullName || "Nome do Profissional", margin, currentY);
+      currentY += 6;
+
+      // Cargo
+      if (occupation) {
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(11);
+        pdf.setTextColor(70, 70, 70);
+        pdf.text(occupation, margin, currentY);
+        currentY += 5;
+      }
+
+      // Linha de Contato
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(9);
+      pdf.setTextColor(90, 90, 90);
+      const contactBits = [
+        phone,
+        profile?.email,
+        city && state ? `${city} - ${state}` : city || state,
+        website,
+      ].filter(Boolean);
+      if (contactBits.length > 0) {
+        pdf.text(contactBits.join("  |  "), margin, currentY);
+        currentY += 5;
+      }
+
+      // Linha divisória
+      pdf.setDrawColor(210, 215, 220);
+      pdf.setLineWidth(0.4);
+      pdf.line(margin, currentY, pageWidth - margin, currentY);
+      currentY += 7;
+
+      // Resumo Profissional
+      if (summary) {
+        checkPageBreak(25);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(10.5);
+        pdf.setTextColor(30, 30, 30);
+        pdf.text("RESUMO PROFISSIONAL", margin, currentY);
+        currentY += 4.5;
+
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(9);
+        pdf.setTextColor(60, 60, 60);
+        const splitSummary = pdf.splitTextToSize(summary, contentWidth);
+        pdf.text(splitSummary, margin, currentY);
+        currentY += splitSummary.length * 4.2 + 5;
+      }
+
+      // Experiências
+      if (experiences.length > 0) {
+        checkPageBreak(25);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(10.5);
+        pdf.setTextColor(30, 30, 30);
+        pdf.text("EXPERIÊNCIA PROFISSIONAL", margin, currentY);
+        currentY += 5;
+
+        for (const exp of experiences) {
+          checkPageBreak(20);
+          pdf.setFont("helvetica", "bold");
+          pdf.setFontSize(9.5);
+          pdf.setTextColor(35, 35, 35);
+          pdf.text(`${exp.role} — ${exp.company}`, margin, currentY);
+          currentY += 4;
+
+          pdf.setFont("helvetica", "italic");
+          pdf.setFontSize(8.5);
+          pdf.setTextColor(110, 110, 110);
+          const periodStr = `${exp.startDate || ""} - ${exp.endDate || "Atual"}`;
+          pdf.text(periodStr, margin, currentY);
+          currentY += 4;
+
+          if (exp.description) {
+            pdf.setFont("helvetica", "normal");
+            pdf.setFontSize(8.5);
+            pdf.setTextColor(60, 60, 60);
+            const splitDesc = pdf.splitTextToSize(exp.description, contentWidth);
+            checkPageBreak(splitDesc.length * 3.8);
+            pdf.text(splitDesc, margin, currentY);
+            currentY += splitDesc.length * 3.8;
+          }
+          currentY += 3.5;
+        }
+        currentY += 2;
+      }
+
+      // Formação Acadêmica
+      if (educations.length > 0) {
+        checkPageBreak(20);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(10.5);
+        pdf.setTextColor(30, 30, 30);
+        pdf.text("FORMAÇÃO ACADÊMICA", margin, currentY);
+        currentY += 5;
+
+        for (const ed of educations) {
+          checkPageBreak(15);
+          pdf.setFont("helvetica", "bold");
+          pdf.setFontSize(9.5);
+          pdf.setTextColor(35, 35, 35);
+          pdf.text(`${ed.degree} — ${ed.institution}`, margin, currentY);
+          currentY += 4;
+
+          if (ed.startDate || ed.endDate) {
+            pdf.setFont("helvetica", "italic");
+            pdf.setFontSize(8.5);
+            pdf.setTextColor(110, 110, 110);
+            pdf.text(`${ed.startDate || ""} - ${ed.endDate || ""}`, margin, currentY);
+            currentY += 4;
+          }
+          currentY += 2;
+        }
+        currentY += 2;
+      }
+
+      // Competências
+      if (skills.length > 0) {
+        checkPageBreak(18);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(10.5);
+        pdf.setTextColor(30, 30, 30);
+        pdf.text("COMPETÊNCIAS & HABILIDADES", margin, currentY);
+        currentY += 4.5;
+
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(9);
+        pdf.setTextColor(60, 60, 60);
+        const splitSkills = pdf.splitTextToSize(skills.join("  •  "), contentWidth);
+        pdf.text(splitSkills, margin, currentY);
+        currentY += splitSkills.length * 4.2 + 4;
+      }
+
+      // Idiomas
+      if (languages.length > 0) {
+        checkPageBreak(18);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(10.5);
+        pdf.setTextColor(30, 30, 30);
+        pdf.text("IDIOMAS", margin, currentY);
+        currentY += 4.5;
+
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(9);
+        pdf.setTextColor(60, 60, 60);
+        const langText = languages.map((l) => `${l.name} (${l.level})`).join("  •  ");
+        const splitLang = pdf.splitTextToSize(langText, contentWidth);
+        pdf.text(splitLang, margin, currentY);
+        currentY += splitLang.length * 4.2 + 4;
+      }
+
+      // Certificações
+      if (certifications.length > 0) {
+        checkPageBreak(18);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(10.5);
+        pdf.setTextColor(30, 30, 30);
+        pdf.text("CERTIFICAÇÕES", margin, currentY);
+        currentY += 4.5;
+
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(9);
+        pdf.setTextColor(60, 60, 60);
+        const certText = certifications
+          .map((c) => `${c.name} (${c.issuer}${c.issueDate ? ` - ${c.issueDate}` : ""})`)
+          .join("  •  ");
+        const splitCert = pdf.splitTextToSize(certText, contentWidth);
+        pdf.text(splitCert, margin, currentY);
+        currentY += splitCert.length * 4.2 + 4;
+      }
 
       const cleanName = (fullName || "curriculo")
         .toLowerCase()
@@ -312,11 +489,11 @@ export default function MeuCurriculoPage() {
         .replace(/[\u0300-\u036f]/g, "")
         .replace(/[^a-z0-9]+/g, "-");
 
-      pdf.save(`${cleanName}-waesy.pdf`);
-      toast.success("PDF gerado com sucesso!");
+      pdf.save(`${cleanName}-curriculo-ats.pdf`);
+      toast.success("Currículo em PDF estruturado (compatível com ATS) gerado com sucesso!");
     } catch (err) {
       console.error("[curriculo] Erro ao exportar PDF:", err);
-      toast.error("Não foi possível gerar o PDF. Recomendamos usar o botão Imprimir para salvar como PDF nativo.");
+      toast.error("Não foi possível gerar o PDF estruturado. Recomendamos usar o botão Imprimir para salvar como PDF nativo.");
     } finally {
       setIsExporting(false);
     }

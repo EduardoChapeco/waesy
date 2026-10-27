@@ -160,7 +160,7 @@ function AdminDenunciasPage() {
 
  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
  <div className="space-y-1">
- <span className="text-[11px] font-bold uppercase text-muted-foreground">
+ <span className="text-2xs font-bold uppercase text-muted-foreground">
  Motivo da Denúncia
  </span>
  <p className="text-sm font-semibold text-destructive capitalize">
@@ -174,7 +174,7 @@ function AdminDenunciasPage() {
  </div>
 
  <div className="space-y-1">
- <span className="text-[11px] font-bold uppercase text-muted-foreground">
+ <span className="text-2xs font-bold uppercase text-muted-foreground">
  Denunciante e Alvo
  </span>
  <p className="text-xs text-foreground">
@@ -194,7 +194,7 @@ function AdminDenunciasPage() {
 
  {r.evidence_urls && r.evidence_urls.length > 0 && (
  <div>
- <span className="text-[11px] font-bold uppercase text-muted-foreground block mb-1">
+ <span className="text-2xs font-bold uppercase text-muted-foreground block mb-1">
  Evidências Fotográficas
  </span>
  <div className="flex gap-2">
@@ -263,7 +263,7 @@ function AdminDenunciasPage() {
  )}
 
  {/* SheetPage de Julgamento & Parecer de Moderação */}
- <SheetPage
+ <SheetPage /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  open={!!selectedReport && !!actionType}
  onOpenChange={(open) => {
  if (!open) {
@@ -293,7 +293,7 @@ function AdminDenunciasPage() {
  >
  {isSubmitting ? (
  <>
- <Loader2 className="size-4 animate-spin mr-2" /> Executando...
+ <Loader2 className="size-4 animate-spin motion-reduce:animate-none mr-2" /> Executando...
  </>
  ) : (
  "Executar Decisão"

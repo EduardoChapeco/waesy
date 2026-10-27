@@ -52,7 +52,7 @@ export function SeasonalMarketingCalendarWidget({
 
   if (isLoading) {
     return (
-      <Card className="p-4 border-border/40 bg-card/60 rounded-lg animate-pulse space-y-3 shadow-none">
+      <Card className="p-4 border-border/40 bg-card/60 rounded-lg animate-pulse motion-reduce:animate-none space-y-3 shadow-none">
         <div className="h-4 bg-muted/40 rounded w-1/3" />
         <div className="h-16 bg-muted/20 rounded-lg" />
       </Card>

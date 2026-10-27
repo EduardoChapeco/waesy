@@ -97,6 +97,7 @@ Extraia e retorne EXCLUSIVAMENTE um JSON estruturado com as propriedades:
 - sections: array de seções canônicas de DigitalCompanionCard
 - rules: array de regras (bagagem, check-in, multas, cancelamento)
 - emergencyContacts: array de contatos de emergência
+- financials?: { totalCents?: number, paymentMethod?: string, installmentsCount?: number, pixKey?: string, dueDate?: string }
 - confidence: "high" | "medium" | "low"`;
 
 const FileItemSchema = z.object({
@@ -218,7 +219,16 @@ function parseOcrResponse(raw: any, defaultNiche: CompanionCardNiche): Universal
     rules: Array.isArray(parsed.rules) ? parsed.rules : [],
     emergencyContacts: Array.isArray(parsed.emergencyContacts) ? parsed.emergencyContacts : [],
     observations: parsed.observations || undefined,
-    financials: parsed.financials || undefined,
+    financials: parsed.financials || (parsed.financial ? {
+      totalCents: parsed.financial.totalAmountCents || parsed.financial.totalCents,
+      paymentMethod: parsed.financial.paymentMethod,
+      installmentsCount: parsed.financial.installments || parsed.financial.installmentsCount,
+    } : undefined),
+    financial: parsed.financial || (parsed.financials ? {
+      totalAmountCents: parsed.financials.totalCents,
+      paymentMethod: parsed.financials.paymentMethod,
+      installments: parsed.financials.installmentsCount,
+    } : undefined),
     clientName: parsed.clientName || (Array.isArray(parsed.participants) && parsed.participants[0]) || undefined,
     clientPhone: parsed.clientPhone || undefined,
     destinationCity: parsed.destinationCity || undefined,

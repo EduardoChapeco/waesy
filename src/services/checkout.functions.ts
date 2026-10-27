@@ -191,7 +191,7 @@ export const updateStoreCheckoutConfig = createServerFn({ method: "POST" })
     return { status: "success", checkoutConfig };
   });
 
-const CheckoutSchema = z
+export const CheckoutSchema = z
  .object({
  cartId: z.string().uuid(),
  customerName: z.string().min(3),
@@ -199,17 +199,26 @@ const CheckoutSchema = z
  customerDocument: z.string().optional(),
  customerPhone: z.string().optional(),
  shippingMethod: z.enum(["manual_table", "provider", "pickup", "manual_quote"]),
- shippingAddress: z
- .object({
- zipcode: z.string().min(8),
- street: z.string().min(2),
- number: z.string().min(1),
- complement: z.string().optional(),
- neighborhood: z.string().min(2),
- city: z.string().min(2),
- state: z.string().length(2),
- })
- .optional(),
+  shippingAddress: z
+    .object({
+      zipcode: z.string().min(8),
+      street: z.string().min(2),
+      number: z.string().default("S/N"),
+      has_no_number: z.boolean().optional(),
+      complement: z.string().optional().nullable(),
+      reference_point: z.string().optional().nullable(),
+      neighborhood: z.string().min(2),
+      city: z.string().min(2),
+      state: z.string().length(2),
+      latitude: z.number().optional().nullable(),
+      longitude: z.number().optional().nullable(),
+      recipient_name: z.string().optional().nullable(),
+      recipient_phone: z.string().optional().nullable(),
+      block_tower: z.string().optional().nullable(),
+      intercom_code: z.string().optional().nullable(),
+      instructions: z.string().optional().nullable(),
+    })
+    .optional(),
  paymentMethod: z.enum(["pix", "manual", "credit_card", "receipt"]),
  paymentMethodId: z.string().uuid().optional(),
  giftCardCode: z.string().optional(),
@@ -470,19 +479,39 @@ export const processCheckout = createServerFn({ method: "POST" })
         if (params.utensilsRequested !== undefined) {
           nicheMeta.utensils_requested = params.utensilsRequested;
         }
+
+        // Leitura inicial única de orders para cálculo cumulativo consistente (GAP-07)
+        const { data: curOrd } = await db
+          .from("orders")
+          .select("total_cents, shipping_cents, subtotal_cents")
+          .eq("id", result.orderId)
+          .maybeSingle();
+
+        let runningTotalCents = curOrd?.total_cents || 0;
+        let runningShippingCents = curOrd?.shipping_cents || 0;
+        let runningSubtotalCents = curOrd?.subtotal_cents || 0;
+
         if (params.deliveryToDoor !== undefined) {
           updatePayload.delivery_to_door = params.deliveryToDoor;
           updatePayload.door_delivery_fee_cents = params.doorDeliveryFeeCents || 0;
           updatePayload.delivery_location_type = params.deliveryLocationType || (params.deliveryToDoor ? "apartment_door" : "apartment_reception");
           if (params.doorDeliveryFeeCents && params.doorDeliveryFeeCents > 0) {
-            const { data: curOrd } = await db.from("orders").select("total_cents, shipping_cents").eq("id", result.orderId).maybeSingle();
-            if (curOrd) {
-              updatePayload.total_cents = (curOrd.total_cents || 0) + params.doorDeliveryFeeCents;
-              updatePayload.shipping_cents = (curOrd.shipping_cents || 0) + params.doorDeliveryFeeCents;
-            }
+            runningTotalCents += params.doorDeliveryFeeCents;
+            runningShippingCents += params.doorDeliveryFeeCents;
+            updatePayload.total_cents = runningTotalCents;
+            updatePayload.shipping_cents = runningShippingCents;
           }
         }
         updatePayload.checkout_niche_metadata = nicheMeta;
+
+        // Persistência defensiva de coordenadas de entrega (Telemetria & Despacho)
+        const shipAddr = params.shippingAddress as Record<string, any> | undefined;
+        if (shipAddr?.lat || shipAddr?.latitude) {
+          updatePayload.delivery_lat = Number(shipAddr.lat || shipAddr.latitude);
+        }
+        if (shipAddr?.lng || shipAddr?.longitude) {
+          updatePayload.delivery_lng = Number(shipAddr.lng || shipAddr.longitude);
+        }
 
         if (params.orderBump && params.orderBump.offerPriceCents > 0) {
           try {
@@ -495,11 +524,10 @@ export const processCheckout = createServerFn({ method: "POST" })
               unit_price_cents: params.orderBump.offerPriceCents,
               total_cents: params.orderBump.offerPriceCents,
             });
-            const { data: curOrd } = await db.from('orders').select('total_cents, subtotal_cents').eq('id', result.orderId).maybeSingle();
-            if (curOrd) {
-              updatePayload.total_cents = (curOrd.total_cents || 0) + params.orderBump.offerPriceCents;
-              updatePayload.subtotal_cents = (curOrd.subtotal_cents || 0) + params.orderBump.offerPriceCents;
-            }
+            runningTotalCents += params.orderBump.offerPriceCents;
+            runningSubtotalCents += params.orderBump.offerPriceCents;
+            updatePayload.total_cents = runningTotalCents;
+            updatePayload.subtotal_cents = runningSubtotalCents;
           } catch (bumpErr) {
             console.warn('[checkout.functions] Falha ao gravar order bump item:', bumpErr);
           }

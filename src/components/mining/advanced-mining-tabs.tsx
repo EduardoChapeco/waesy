@@ -45,10 +45,10 @@ export function TokenEconomyBanner() {
         <div className="space-y-2 max-w-2xl">
           <div className="flex items-center gap-2">
             <span className="flex h-2 w-2 rounded-full bg-primary" />
-            <Badge variant="outline" className="text-[10px] font-mono border-border/80 text-foreground bg-muted/40">
+            <Badge variant="outline" className="text-2xs font-mono border-border/80 text-foreground bg-muted/40">
               ALTA EFICIÊNCIA
             </Badge>
-            <span className="text-[11px] text-muted-foreground hidden sm:inline">
+            <span className="text-2xs text-muted-foreground hidden sm:inline">
               Processamento Estruturado Sem Custo Adicional
             </span>
           </div>
@@ -64,13 +64,13 @@ export function TokenEconomyBanner() {
         {/* Big KPI Numbers */}
         <div className="flex items-center gap-3 sm:gap-6 bg-muted/20 border border-border/50 p-3 rounded-lg shrink-0 self-stretch md:self-auto justify-between sm:justify-start">
           <div className="space-y-1">
-            <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+            <div className="text-2xs font-medium uppercase tracking-wider text-muted-foreground">
               Tokens Economizados
             </div>
             <div className="text-xl sm:text-2xl font-bold font-mono text-foreground">
               {isLoading ? "..." : `~${tokensSaved.toLocaleString("pt-BR")}`}
             </div>
-            <div className="text-[10px] text-muted-foreground font-medium flex items-center gap-1">
+            <div className="text-2xs text-muted-foreground font-medium flex items-center gap-1">
               <ShieldCheck className="w-3 h-3 text-primary" />
               Processamento Nativo
             </div>
@@ -79,13 +79,13 @@ export function TokenEconomyBanner() {
           <div className="h-10 w-px bg-border/40" />
 
           <div className="space-y-1">
-            <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+            <div className="text-2xs font-medium uppercase tracking-wider text-muted-foreground">
               Importações Diretas
             </div>
             <div className="text-xl sm:text-2xl font-bold font-mono text-foreground">
               {isLoading ? "..." : mechanicalTotal.toLocaleString("pt-BR")}
             </div>
-            <div className="text-[10px] text-muted-foreground">
+            <div className="text-2xs text-muted-foreground">
               itens estruturados
             </div>
           </div>
@@ -139,7 +139,7 @@ export function DataJudMiningPanel() {
               Consulte e indexe qualquer processo do Brasil via protocolo unificado do CNJ (TJSC, TJSP, TRF4, TRT12, etc.).
             </p>
           </div>
-          <Badge variant="outline" className="text-[11px] border-emerald-500/30 text-emerald-400 bg-emerald-500/10 w-fit">
+          <Badge variant="outline" className="text-2xs border-emerald-500/30 text-emerald-400 bg-emerald-500/10 w-fit">
             Zero IA • API CNJ Direta
           </Badge>
         </div>
@@ -159,7 +159,7 @@ export function DataJudMiningPanel() {
           >
             {isMining ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
                 Consultando CNJ...
               </>
             ) : (
@@ -171,12 +171,12 @@ export function DataJudMiningPanel() {
           </Button>
         </form>
 
-        <div className="text-[11px] text-muted-foreground flex items-center gap-2 flex-wrap">
+        <div className="text-2xs text-muted-foreground flex items-center gap-2 flex-wrap">
           <span className="font-medium">Exemplos para teste rápido:</span>
           <button
             type="button"
             onClick={() => setProcessNumber("0001234-56.2024.8.24.0018")}
-            className="underline hover:text-foreground text-primary font-mono"
+            className="underline hover:text-foreground text-primary font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             0001234-56.2024.8.24.0018 (TJSC Chapecó)
           </button>
@@ -184,7 +184,7 @@ export function DataJudMiningPanel() {
           <button
             type="button"
             onClick={() => setProcessNumber("1000123-45.2023.8.26.0100")}
-            className="underline hover:text-foreground text-primary font-mono"
+            className="underline hover:text-foreground text-primary font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             1000123-45.2023.8.26.0100 (TJSP Capital)
           </button>
@@ -197,7 +197,7 @@ export function DataJudMiningPanel() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/40 pb-3">
             <div>
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="font-mono text-[10px]">
+                <Badge variant="outline" className="font-mono text-2xs">
                   {result.court_code}
                 </Badge>
                 <span className="text-xs text-muted-foreground">{result.court_name}</span>
@@ -243,7 +243,7 @@ export function DataJudMiningPanel() {
 
           {/* Última Movimentação */}
           <div className="p-3 rounded-lg bg-background border border-border/40 space-y-1">
-            <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+            <div className="flex items-center justify-between text-2xs text-muted-foreground">
               <span className="font-medium text-foreground flex items-center gap-2">
                 <Clock className="w-3.5 h-3.5 text-primary" />
                 Última Movimentação Processual
@@ -308,7 +308,7 @@ export function PlacesMiningPanel() {
               Enriqueça o diretório urbano e pré-cadastre estabelecimentos comerciais da região sem custos de APIs do Google Cloud.
             </p>
           </div>
-          <Badge variant="outline" className="text-[11px] border-emerald-500/30 text-emerald-400 bg-emerald-500/10 w-fit">
+          <Badge variant="outline" className="text-2xs border-emerald-500/30 text-emerald-400 bg-emerald-500/10 w-fit">
             Zero IA • OpenStreetMap & Places
           </Badge>
         </div>
@@ -335,7 +335,7 @@ export function PlacesMiningPanel() {
           >
             {isMining ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
                 Minerando Locais...
               </>
             ) : (
@@ -347,14 +347,14 @@ export function PlacesMiningPanel() {
           </Button>
         </form>
 
-        <div className="text-[11px] text-muted-foreground flex items-center gap-2 flex-wrap">
+        <div className="text-2xs text-muted-foreground flex items-center gap-2 flex-wrap">
           <span className="font-medium">Nichos rápidos:</span>
           {["Gastronomia", "Hospedagem & Hotéis", "Academias & Fitness", "Serviços Jurídicos"].map((n) => (
             <button
               key={n}
               type="button"
               onClick={() => setQueryTerm(n)}
-              className="px-2 py-1 rounded-md bg-muted/50 hover:bg-muted text-foreground text-[10px]"
+              className="px-2 py-1 rounded-md bg-muted/50 hover:bg-muted text-foreground text-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {n}
             </button>
@@ -369,7 +369,7 @@ export function PlacesMiningPanel() {
             <span className="font-semibold text-foreground">
               {harvestResult.places.length} Empresas Encontradas em {city}
             </span>
-            <Badge variant="outline" className="text-[10px] text-emerald-400 border-emerald-500/30">
+            <Badge variant="outline" className="text-2xs text-emerald-400 border-emerald-500/30">
               {harvestResult.totalInserted} inseridas • {harvestResult.totalUpdated} atualizadas
             </Badge>
           </div>
@@ -380,27 +380,27 @@ export function PlacesMiningPanel() {
                 <div className="space-y-1">
                   <div className="font-medium text-foreground flex items-center gap-2">
                     <span>{place.businessName}</span>
-                    <Badge variant="secondary" className="text-[9px] uppercase px-2 py-0 font-mono">
+                    <Badge variant="secondary" className="text-3xs uppercase px-2 py-0 font-mono">
                       {place.category}
                     </Badge>
                   </div>
-                  <div className="text-muted-foreground text-[11px]">
+                  <div className="text-muted-foreground text-2xs">
                     {place.address} {place.neighborhood ? `• ${place.neighborhood}` : ""} • {place.city}/{place.state}
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3 shrink-0">
                   {place.contactPhone && (
-                    <span className="font-mono text-[11px] text-foreground">
+                    <span className="font-mono text-2xs text-foreground">
                       {place.contactPhone}
                     </span>
                   )}
                   {place.rating && (
-                    <Badge variant="outline" className="text-[10px] font-mono border-amber-500/30 text-amber-400">
+                    <Badge variant="outline" className="text-2xs font-mono border-amber-500/30 text-amber-400">
                       ★ {place.rating} ({place.reviewsCount})
                     </Badge>
                   )}
-                  <Badge variant="outline" className="text-[9px] text-muted-foreground">
+                  <Badge variant="outline" className="text-3xs text-muted-foreground">
                     Ghost Store
                   </Badge>
                 </div>
@@ -456,7 +456,7 @@ export function SpecializedUrlMiningPanel() {
               Insira qualquer URL de culinária, ingressos/eventos ou portais jornalísticos para extração determinística com Zero Tokens.
             </p>
           </div>
-          <Badge variant="outline" className="text-[11px] border-emerald-500/30 text-emerald-400 bg-emerald-500/10 w-fit">
+          <Badge variant="outline" className="text-2xs border-emerald-500/30 text-emerald-400 bg-emerald-500/10 w-fit">
             Zero IA • Schema.org JSON-LD
           </Badge>
         </div>
@@ -476,7 +476,7 @@ export function SpecializedUrlMiningPanel() {
           >
             {isMining ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
                 Extraindo Metadados...
               </>
             ) : (
@@ -495,10 +495,10 @@ export function SpecializedUrlMiningPanel() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/40 pb-3">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="font-mono text-[10px] uppercase">
+                <Badge variant="secondary" className="font-mono text-2xs uppercase">
                   {extractionResult.extraction?.contentType}
                 </Badge>
-                <Badge variant="outline" className="text-[10px] font-mono text-emerald-400 border-emerald-500/30">
+                <Badge variant="outline" className="text-2xs font-mono text-emerald-400 border-emerald-500/30">
                   {extractionResult.extraction?.method}
                 </Badge>
               </div>
@@ -511,7 +511,7 @@ export function SpecializedUrlMiningPanel() {
               <span className="text-xs font-mono font-bold text-emerald-400">
                 +{extractionResult.tokensSavedEstimate} tokens salvos
               </span>
-              <div className="text-[10px] text-muted-foreground">
+              <div className="text-2xs text-muted-foreground">
                 {extractionResult.extraction?.wordCount} palavras • 0 tokens IA gastos
               </div>
             </div>

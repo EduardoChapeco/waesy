@@ -516,7 +516,7 @@ export function BrandKitPage() {
                 className="h-9 px-4 rounded-lg text-xs font-medium gap-2"
               >
                 {isGenerating ? (
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
                 ) : (
                   <Wand2 className="w-3.5 h-3.5" />
                 )}
@@ -529,7 +529,7 @@ export function BrandKitPage() {
                 className="h-9 px-4 rounded-lg text-xs font-medium gap-2"
               >
                 {isSaving ? (
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
                 ) : (
                   <Save className="w-3.5 h-3.5" />
                 )}
@@ -556,7 +556,7 @@ export function BrandKitPage() {
                 className="h-9 px-4 text-xs gap-2"
               >
                 {isExtracting ? (
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
                 ) : (
                   <Globe className="w-3.5 h-3.5" />
                 )}
@@ -576,7 +576,7 @@ export function BrandKitPage() {
                   activeTab === id
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-                }`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 <Icon className="w-3.5 h-3.5" />
                 {label}
@@ -679,7 +679,7 @@ export function BrandKitPage() {
                       onClick={() => {
                         update({ custom_colors: form.custom_colors.filter((_, i) => i !== idx) });
                       }}
-                      className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors flex-shrink-0"
+                      className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -695,7 +695,7 @@ export function BrandKitPage() {
                       ],
                     })
                   }
-                  className="w-full h-10 border border-dashed border-border/60 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:border-border flex items-center justify-center gap-2 transition-colors"
+                  className="w-full h-10 border border-dashed border-border/60 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:border-border flex items-center justify-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   Adicionar Cor à Paleta
@@ -884,7 +884,7 @@ export function BrandKitPage() {
                       form.border_radius_scale === value
                         ? "border-primary/50 bg-primary/5 text-foreground"
                         : "border-border/40 hover:bg-muted/40 text-muted-foreground"
-                    }`}
+                    } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                   >
                     <span className="font-medium">{label}</span>
                     <span className="font-mono text-xs">{preview}</span>
@@ -911,7 +911,7 @@ export function BrandKitPage() {
                       form.shadow_style === value
                         ? "border-primary/50 bg-primary/5 text-foreground"
                         : "border-border/40 hover:bg-muted/40 text-muted-foreground"
-                    }`}
+                    } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                   >
                     {label}
                   </button>
@@ -937,7 +937,7 @@ export function BrandKitPage() {
                       form.animation_style === value
                         ? "border-primary/50 bg-primary/5 text-foreground"
                         : "border-border/40 hover:bg-muted/40 text-muted-foreground"
-                    }`}
+                    } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                   >
                     {label}
                   </button>
@@ -962,7 +962,7 @@ export function BrandKitPage() {
                       form.icon_set === value
                         ? "border-primary/50 bg-primary/5"
                         : "border-border/40 hover:bg-muted/40"
-                    }`}
+                    } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                   >
                     <span className="text-sm font-medium text-foreground">{label}</span>
                     <span className="text-xs text-muted-foreground">{desc}</span>
@@ -995,7 +995,7 @@ export function BrandKitPage() {
                         <img src={form.logo_url} alt="Logo" className="h-8 w-auto object-contain" />
                       ) : (
                         <div
-                          className="h-8 w-8 rounded-lg flex items-center justify-center text-white text-sm font-bold"
+                          className="h-8 w-8 rounded-lg flex items-center justify-center text-foreground text-sm font-bold"
                           style={{ backgroundColor: form.color_primary }}
                         >
                           J
@@ -1015,7 +1015,7 @@ export function BrandKitPage() {
                       <button
                         type="button"
                         onClick={() => setPreviewNotice("Prévia visual atualizada.")}
-                        className="bk-btn-primary px-4 py-2 text-sm font-semibold transition-opacity hover:opacity-90 cursor-pointer"
+                        className="bk-btn-primary px-4 py-2 text-sm font-semibold transition-opacity hover:opacity-90 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         style={{
                           backgroundColor: form.color_primary,
                           color: "white",

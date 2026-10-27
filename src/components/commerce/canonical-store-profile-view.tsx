@@ -42,6 +42,8 @@ import { PromotionalFlyersRail } from "@/components/commerce/flyers/promotional-
 import { listActiveStoreFlyers, type PromotionalFlyerDTO } from "@/services/store-flyers.functions";
 import { ClaimBusinessModal } from "@/components/commerce/claim-business-modal";
 import { ProductAiSdrChat } from "@/components/commerce/product-ai-sdr-chat";
+import { TetrisActionGrid } from "@/components/layout/tetris-action-grid";
+import { formatCanonicalAddress } from "@/lib/format-address";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -160,7 +162,7 @@ export function CanonicalStoreProfileView({
     settings.logoUrl ||
     settings.logo_url ||
     null;
-
+
   // Modal de Orçamento
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
   const [quoteName, setQuoteName] = useState("");
@@ -578,62 +580,11 @@ function cleanAddressSegment(text: string): string {
     );
     if (isHidden) return null;
 
-    let raw = store.address || store.settings?.address || store.location || "";
-    let street = "";
-    let neighborhood = (store.neighborhood || store.settings?.neighborhood || "").trim();
-
-    if (Array.isArray(raw)) {
-      raw = raw.filter(Boolean).join(", ");
-    } else if (typeof raw === "object" && raw !== null) {
-      neighborhood = (raw.neighborhood || neighborhood).trim();
-      raw = [raw.street, raw.number].filter(Boolean).join(", ");
-    }
-
-    if (typeof raw === "string") {
-      street = cleanAddressSegment(raw);
-    }
-
+    const raw = store.address || store.settings?.address || store.location || "";
     const city = (store.city || store.settings?.city || "").trim();
     const state = (store.state || store.settings?.state || "").trim();
 
-    // Elimina pontuações órfãs ou ", S/N" solto no início
-    street = street.replace(/^[,\s-]+/, "");
-
-    const segments: string[] = [];
-    if (street) {
-      segments.push(street);
-    }
-
-    if (neighborhood) {
-      const alreadyHasNeighborhood = segments.some((s) =>
-        s.toLowerCase().includes(neighborhood.toLowerCase())
-      );
-      if (!alreadyHasNeighborhood) {
-        segments.push(neighborhood);
-      }
-    }
-
-    const cityStateParts = [city, state].filter(Boolean);
-    if (cityStateParts.length > 0) {
-      const cityState = cityStateParts.join(" - ");
-      const alreadyHasCity = segments.some((s) =>
-        city && s.toLowerCase().includes(city.toLowerCase())
-      );
-      if (!alreadyHasCity) {
-        segments.push(cityState);
-      }
-    }
-
-    const cleanSegments = segments
-      .map(cleanAddressSegment)
-      .filter((s) => s.length > 0);
-
-    if (cleanSegments.length === 0) return null;
-
-    return {
-      display: cleanSegments.join(" • "),
-      mapsQuery: cleanSegments.join(", "),
-    };
+    return formatCanonicalAddress(raw, city, state);
   }, [store]);
 
     const hasSponsors = sponsors && sponsors.length > 0;
@@ -641,7 +592,7 @@ function cleanAddressSegment(text: string): string {
   return (
     <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-5 pb-20 md:pb-12 animate-in fade-in duration-200">
             {/* ── 1. NATIVE MOBILE HEADER CANÔNICO (Apple HIG / Safe Area) ── */}
-      <NativeMobileHeader
+      <NativeMobileHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         fallbackHref={backUrl}
         title={
           <div className="flex items-center gap-2 font-bold text-sm text-foreground">
@@ -653,7 +604,7 @@ function cleanAddressSegment(text: string): string {
           <Button
             size="sm"
             variant="ghost"
-            className="size-11 p-0 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/50 active:scale-95 transition-all cursor-pointer"
+            className="size-11 p-0 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/50 active:scale-95 transition-transform duration-200 cursor-pointer"
             onClick={handleShare}
             aria-label="Compartilhar Perfil"
           >
@@ -722,7 +673,7 @@ function cleanAddressSegment(text: string): string {
           <div
             tabIndex={0}
             aria-label="Galeria de banners da empresa"
-            className="size-full overflow-x-auto overflow-y-hidden no-scrollbar scroll-smooth flex items-center snap-x snap-mandatory"
+            className="tab-list size-full overflow-x-auto overflow-y-hidden no-scrollbar scroll-smooth flex items-center snap-x snap-mandatory"
           >
             {storeBannersList.length > 0 ? (
               storeBannersList.map((banner, idx) => (
@@ -863,7 +814,7 @@ function cleanAddressSegment(text: string): string {
                 <button
                   type="button"
                   onClick={() => setActiveTab("avaliacoes")}
-                  className="inline-flex items-center gap-1 font-bold text-foreground hover:text-primary transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1 font-bold text-foreground hover:text-primary transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <Star className="size-4 fill-amber-500 text-amber-500 shrink-0" />
                   <span>{realRatingAverage.toFixed(1)}</span>
@@ -915,7 +866,7 @@ function cleanAddressSegment(text: string): string {
                 <button
                   type="button"
                   onClick={() => setIsBioExpanded(!isBioExpanded)}
-                  className="text-xs font-bold text-primary hover:underline cursor-pointer inline-flex items-center gap-1"
+                  className="text-xs font-bold text-primary hover:underline cursor-pointer inline-flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {isBioExpanded ? "Ver menos" : "...mais"}
                 </button>
@@ -975,13 +926,13 @@ function cleanAddressSegment(text: string): string {
           </div>
 
           {/* ── BOTÕES DE AÇÃO ERGONÔMICOS (PADRÃO INSTAGRAM / APPLE HIG) — Imediatamente Abaixo da Bio ── */}
-          <div className="flex items-center gap-2 pt-2 w-full">
+          <TetrisActionGrid>
             {isOwner ? (
               <>
                 <Button
                   asChild
                   variant="outline"
-                  className="flex-1 h-9 sm:h-10 px-3 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-2 shadow-none"
+                  className="w-full h-11 min-h-11 px-3 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-2 shadow-none"
                 >
                   <Link to="/workspace" search={{ storeId: store.id }}>
                     <Store className="size-4" />
@@ -991,7 +942,7 @@ function cleanAddressSegment(text: string): string {
                 <Button
                   variant="outline"
                   onClick={() => setIsEditCompanyModalOpen(true)}
-                  className="flex-1 h-9 sm:h-10 px-3 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-2 shadow-none cursor-pointer"
+                  className="w-full h-11 min-h-11 px-3 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-2 shadow-none cursor-pointer"
                 >
                   <Edit3 className="size-4" />
                   <span>Editar</span>
@@ -999,7 +950,7 @@ function cleanAddressSegment(text: string): string {
                 <Button
                   variant="outline"
                   onClick={() => setIsSocialStudioOpen(true)}
-                  className="size-9 sm:size-10 p-0 sm:px-3 sm:w-auto rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center shrink-0 shadow-none cursor-pointer"
+                  className="w-full h-11 min-h-11 px-3 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center shrink-0 shadow-none cursor-pointer"
                   title="Social Studio"
                 >
                   <SlidersHorizontal className="size-4" />
@@ -1009,7 +960,7 @@ function cleanAddressSegment(text: string): string {
                   variant="outline"
                   onClick={handleShare}
                   aria-label="Compartilhar Perfil"
-                  className="size-9 sm:size-10 p-0 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center shrink-0 shadow-none cursor-pointer"
+                  className="w-full h-11 min-h-11 px-3 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-2 shadow-none cursor-pointer"
                 >
                   <Share2 className="size-4 text-muted-foreground" />
                 </Button>
@@ -1030,7 +981,7 @@ function cleanAddressSegment(text: string): string {
                         customMessage: `Olá! Vi o perfil oficial de ${store.name || store.business_name} no Waesy e gostaria de mais informações.`,
                       })
                     }
-                    className="flex-1 h-9 sm:h-10 px-2 sm:px-3 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-2 shadow-none cursor-pointer"
+                    className="w-full h-11 min-h-11 px-3 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-2 shadow-none cursor-pointer"
                   >
                     <WhatsappLogo size={15} weight="bold" className="text-emerald-600 dark:text-emerald-400 shrink-0" />
                     <span>WhatsApp</span>
@@ -1041,7 +992,7 @@ function cleanAddressSegment(text: string): string {
                   <Button
                     asChild
                     variant="outline"
-                    className="flex-1 h-9 sm:h-10 px-2 sm:px-3 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-2 shadow-none"
+                    className="w-full h-11 min-h-11 px-3 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-2 shadow-none"
                   >
                     <a href={`tel:${phoneCallNumber}`}>
                       <Phone size={14} className="text-primary shrink-0" />
@@ -1061,7 +1012,7 @@ function cleanAddressSegment(text: string): string {
                   <DialogTrigger asChild>
                     <Button
                       variant="outline"
-                      className="flex-1 h-9 sm:h-10 px-2 sm:px-3 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-2 shadow-none cursor-pointer"
+                      className="w-full h-11 min-h-11 px-3 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-2 shadow-none cursor-pointer"
                     >
                       <PaperPlaneTilt size={14} weight="bold" className="text-muted-foreground shrink-0" />
                       <span>Orçamento</span>
@@ -1165,26 +1116,27 @@ function cleanAddressSegment(text: string): string {
                   variant="outline"
                   onClick={handleShare}
                   aria-label="Compartilhar Perfil"
-                  className="size-9 sm:size-10 p-0 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center shrink-0 shadow-none cursor-pointer"
+                  className="w-full h-11 min-h-11 px-3 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-2 shadow-none cursor-pointer"
                 >
-                  <Share2 className="size-4 text-muted-foreground" />
+                  <Share2 className="size-4 text-muted-foreground shrink-0" />
+                  <span className="truncate">Compartilhar</span>
                 </Button>
               </>
             )}
-          </div>
+          </TetrisActionGrid>
         </div>
       </div>
 
 {/* ── 3. NAVEGAÇÃO POR ABAS SILENCIOSA COM FÍSICA DE SCROLL (Apple HIG) ── */}
       <div className="space-y-6 pt-2">
         <div className="relative w-full">
-          <div className="flex items-center gap-2 p-1 rounded-lg bg-muted/40 text-xs font-semibold overflow-x-auto snap-x snap-mandatory scrollbar-hide border border-border/40 scroll-smooth">
+          <div className="tab-list flex items-center gap-2 p-1 rounded-lg bg-muted/40 text-xs font-semibold overflow-x-auto snap-x snap-mandatory scrollbar-hide border border-border/40 scroll-smooth">
             {/* Aba 1: Vitrine / Início */}
             <button
               type="button"
               onClick={() => setActiveTab("vitrine")}
-              className={cn(
-                "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
+              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-colors duration-200 flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                 activeTab === "vitrine"
                   ? "bg-background text-foreground font-bold shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -1198,8 +1150,8 @@ function cleanAddressSegment(text: string): string {
             {catalog.length > 0 && <button
               type="button"
               onClick={() => setActiveTab("catalogo")}
-              className={cn(
-                "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
+              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-colors duration-200 flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                 activeTab === "catalogo"
                   ? "bg-background text-foreground font-bold shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -1218,8 +1170,8 @@ function cleanAddressSegment(text: string): string {
             {hasAboutData && <button
               type="button"
               onClick={() => setActiveTab("sobre")}
-              className={cn(
-                "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
+              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-colors duration-200 flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                 activeTab === "sobre"
                   ? "bg-background text-foreground font-bold shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -1233,8 +1185,8 @@ function cleanAddressSegment(text: string): string {
             {posts.length > 0 && <button
               type="button"
               onClick={() => setActiveTab("posts")}
-              className={cn(
-                "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
+              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-colors duration-200 flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                 activeTab === "posts"
                   ? "bg-background text-foreground font-bold shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -1253,8 +1205,8 @@ function cleanAddressSegment(text: string): string {
             {reviews.length > 0 && <button
               type="button"
               onClick={() => setActiveTab("avaliacoes")}
-              className={cn(
-                "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
+              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-colors duration-200 flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                 activeTab === "avaliacoes"
                   ? "bg-background text-foreground font-bold shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -1273,8 +1225,8 @@ function cleanAddressSegment(text: string): string {
             {jobs.length > 0 && <button
               type="button"
               onClick={() => setActiveTab("vagas")}
-              className={cn(
-                "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
+              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-colors duration-200 flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                 activeTab === "vagas"
                   ? "bg-background text-foreground font-bold shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -1294,8 +1246,8 @@ function cleanAddressSegment(text: string): string {
               <button
                 type="button"
                 onClick={() => setActiveTab("classificados")}
-                className={cn(
-                  "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                  "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-colors duration-200 flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                   activeTab === "classificados"
                     ? "bg-background text-foreground font-bold shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -1314,8 +1266,8 @@ function cleanAddressSegment(text: string): string {
               <button
                 type="button"
                 onClick={() => setActiveTab("concursos")}
-                className={cn(
-                  "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                  "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-colors duration-200 flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                   activeTab === "concursos"
                     ? "bg-background text-foreground font-bold shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -1419,7 +1371,7 @@ function cleanAddressSegment(text: string): string {
                             <button
                               type="button"
                               onClick={() => setIsSectionsEditorOpen(true)}
-                              className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                              className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
                               <Edit3 className="size-3" />
                               <span>Editar Cards</span>
@@ -1450,10 +1402,10 @@ function cleanAddressSegment(text: string): string {
                             };
 
                             return (
-                              <div
+                              <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                                 key={card.id}
                                 onClick={handleCardClick}
-                                className="group rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all cursor-pointer flex flex-col justify-between"
+                                className="group rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-colors duration-200 cursor-pointer flex flex-col justify-between focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                               >
                                 {card.imageUrl ? (
                                   <div className="aspect-[21/9] w-full overflow-hidden bg-muted/30 relative">
@@ -1513,13 +1465,13 @@ function cleanAddressSegment(text: string): string {
                           <button
                             type="button"
                             onClick={() => setActiveTab("catalogo")}
-                            className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                            className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             <span>Ver Catálogo Completo</span>
                             <ChevronRight className="size-3" />
                           </button>
                         </div>
-                        <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
+                        <div className="tab-list flex gap-4 overflow-x-auto no-scrollbar pb-2">
                           {topProducts.map((p: any) => {
                             const priceCents = p.price_cents || p.price || 0;
                             const imageUrl = p.images?.[0] || p.image_url || null;
@@ -1527,7 +1479,7 @@ function cleanAddressSegment(text: string): string {
                             return (
                               <div
                                 key={p.id}
-                                className="w-56 shrink-0 rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between group"
+                                className="w-56 shrink-0 rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-colors duration-200 flex flex-col justify-between group"
                               >
                                 <Link
                                   to="/produto/$slug"
@@ -1578,7 +1530,7 @@ function cleanAddressSegment(text: string): string {
                     if (!hotpages || hotpages.length === 0) return null;
                     return (
                       <div key={section.id} className="space-y-2">
-                        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1 pt-1">
+                        <div className="tab-list flex gap-3 overflow-x-auto no-scrollbar pb-1 pt-1">
                           {hotpages.map((h: any) => (
                             <div key={h.id} className="shrink-0">
                               <DynamicMediaChip
@@ -1639,8 +1591,8 @@ function cleanAddressSegment(text: string): string {
                   <button
                     type="button"
                     onClick={() => setPostViewMode("grid")}
-                    className={cn(
-                      "size-8 rounded-lg flex items-center justify-center transition-all cursor-pointer",
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                      "size-8 rounded-lg flex items-center justify-center transition-colors duration-200 cursor-pointer",
                       postViewMode === "grid"
                         ? "bg-background text-foreground "
                         : "text-muted-foreground hover:text-foreground"
@@ -1652,8 +1604,8 @@ function cleanAddressSegment(text: string): string {
                   <button
                     type="button"
                     onClick={() => setPostViewMode("feed")}
-                    className={cn(
-                      "size-8 rounded-lg flex items-center justify-center transition-all cursor-pointer",
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                      "size-8 rounded-lg flex items-center justify-center transition-colors duration-200 cursor-pointer",
                       postViewMode === "feed"
                         ? "bg-background text-foreground "
                         : "text-muted-foreground hover:text-foreground"
@@ -1753,12 +1705,12 @@ function cleanAddressSegment(text: string): string {
 
                   {/* Chips de Categorias */}
                   {categories.length > 0 && (
-                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+                    <div className="tab-list flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
                       <button
                         type="button"
                         onClick={() => setSelectedCategory("todas")}
-                        className={cn(
-                          "px-3 py-2 rounded-lg text-xs font-semibold transition-all shrink-0 cursor-pointer",
+                        className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                          "px-3 py-2 rounded-lg text-xs font-semibold transition-colors duration-200 shrink-0 cursor-pointer",
                           selectedCategory === "todas"
                             ? "bg-foreground text-background font-bold"
                             : "bg-muted/40 text-muted-foreground hover:text-foreground"
@@ -1771,8 +1723,8 @@ function cleanAddressSegment(text: string): string {
                           key={cat.id}
                           type="button"
                           onClick={() => setSelectedCategory(cat.id)}
-                          className={cn(
-                            "px-3 py-2 rounded-lg text-xs font-semibold transition-all shrink-0 cursor-pointer",
+                          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                            "px-3 py-2 rounded-lg text-xs font-semibold transition-colors duration-200 shrink-0 cursor-pointer",
                             selectedCategory === cat.id
                               ? "bg-foreground text-background font-bold"
                               : "bg-muted/40 text-muted-foreground hover:text-foreground"
@@ -1797,7 +1749,7 @@ function cleanAddressSegment(text: string): string {
 
                       return (
                         <div key={p.id} className="p-3 flex items-center justify-between gap-3">
-                          <div className="size-12 rounded-lg bg-muted/20 border border-border/40 overflow-hidden shrink-0 flex items-center justify-center">
+                          <div className="size-20 min-w-20 rounded-lg bg-muted/20 border border-border/40 overflow-hidden shrink-0 flex items-center justify-center shadow-2xs">
                             {imageUrl ? (
                               <img src={imageUrl} alt={p.title} className="size-full object-cover" loading="lazy" />
                             ) : (
@@ -1827,7 +1779,7 @@ function cleanAddressSegment(text: string): string {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleImportMinedProduct(p)}
-                                className="h-10 px-2 rounded-lg text-xs font-semibold gap-1 border-primary/30 text-primary cursor-pointer"
+                                className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 border-primary/30 text-primary cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                 title="Importar para o Catálogo Oficial"
                               >
                                 <Plus className="size-4" />
@@ -1837,7 +1789,7 @@ function cleanAddressSegment(text: string): string {
                             <Button
                               size="sm"
                               onClick={() => handleAddToCart(p)}
-                              className="h-10 px-3 rounded-lg font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-1 cursor-pointer"
+                              className="h-11 min-h-11 px-4 rounded-lg font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
                               <Plus className="size-4" />
                               <span>Adicionar</span>
@@ -1857,7 +1809,7 @@ function cleanAddressSegment(text: string): string {
                       return (
                         <div
                           key={p.id}
-                          className="flex flex-col justify-between rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all group"
+                          className="flex flex-col justify-between rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-colors duration-200 group"
                         >
                           <div className="flex items-start gap-3 p-4">
                             <div className="min-w-0 flex-1 space-y-1">
@@ -1912,7 +1864,7 @@ function cleanAddressSegment(text: string): string {
                             <Button
                               size="sm"
                               onClick={() => handleAddToCart(p)}
-                              className="rounded-lg h-10 px-4 font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer w-full sm:w-auto"
+                              className="rounded-lg h-11 min-h-11 px-4 font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer w-full sm:w-auto shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
                               <Plus className="size-4" />
                               <span>Adicionar</span>
@@ -2048,7 +2000,7 @@ function cleanAddressSegment(text: string): string {
                   {jobs.map((j: any) => (
                     <div
                       key={j.id}
-                      className="p-5 rounded-lg border border-border/60 bg-card space-y-3 hover:border-foreground/30 transition-all"
+                      className="p-5 rounded-lg border border-border/60 bg-card space-y-3 hover:border-foreground/30 transition-colors duration-200"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div>
@@ -2105,7 +2057,7 @@ function cleanAddressSegment(text: string): string {
                       key={ad.id}
                       to="/classificados/$id"
                       params={{ id: ad.id }}
-                      className="group flex flex-col rounded-lg bg-card border border-border/70 overflow-hidden hover:border-primary/50 transition-all cursor-pointer shadow-xs"
+                      className="group flex flex-col rounded-lg bg-card border border-border/70 overflow-hidden hover:border-primary/50 transition-colors duration-200 cursor-pointer shadow-xs"
                     >
                       <div className="aspect-[16/10] w-full bg-muted/40 relative overflow-hidden">
                         {firstImage ? (
@@ -2294,7 +2246,7 @@ function cleanAddressSegment(text: string): string {
                 {sponsors.map((sp: any) => (
                   <div
                     key={sp.id}
-                    className="p-5 rounded-lg border border-border/60 bg-card flex flex-col justify-between space-y-3 hover:border-foreground/30 transition-all"
+                    className="p-5 rounded-lg border border-border/60 bg-card flex flex-col justify-between space-y-3 hover:border-foreground/30 transition-colors duration-200"
                   >
                     <div className="space-y-2">
                       <div className="flex items-center justify-between gap-2">
@@ -2655,7 +2607,7 @@ function cleanAddressSegment(text: string): string {
                   return (
                     <div
                       key={c.id}
-                      className="p-5 sm:p-6 rounded-lg border border-border/70 bg-card space-y-3 flex flex-col justify-between hover:border-foreground/30 transition-all"
+                      className="p-5 sm:p-6 rounded-lg border border-border/70 bg-card space-y-3 flex flex-col justify-between hover:border-foreground/30 transition-colors duration-200"
                     >
                       <div className="space-y-3">
                         <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -2663,7 +2615,7 @@ function cleanAddressSegment(text: string): string {
                             className={
                               isCompleted
                                 ? "bg-muted text-muted-foreground font-mono text-xs"
-                                : "bg-emerald-600 text-white font-mono text-xs font-bold"
+                                : "bg-emerald-600 text-foreground font-mono text-xs font-bold"
                             }
                           >
                             {isCompleted ? "Sorteio Encerrado" : "Sorteio Aberto"}

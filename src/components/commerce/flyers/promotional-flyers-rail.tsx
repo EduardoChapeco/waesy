@@ -39,7 +39,7 @@ export function PromotionalFlyersRail({
                 <Flame className="size-4 text-red-500 fill-red-500 shrink-0" />
                 <span>{title}</span>
               </h2>
-              <span className="px-2 py-1 rounded-full bg-red-500/10 text-red-600 dark:text-red-400 font-bold text-[10px] tracking-wide uppercase">
+              <span className="px-2 py-1 rounded-full bg-red-500/10 text-red-600 dark:text-red-400 font-bold text-xs tracking-wide uppercase">
                 Ofertas Válidas
               </span>
             </div>
@@ -58,7 +58,7 @@ export function PromotionalFlyersRail({
 
       {/* ─── Trilho Horizontal com Scroll-Snap (Imagens Verticais Grandinhas) ─── */}
       <div className="relative w-full px-0">
-        <div className="flex gap-4 sm:gap-4 overflow-x-auto pb-3 pt-1 snap-x snap-mandatory scrollbar-none">
+        <div className="carousel flex gap-4 sm:gap-4 overflow-x-auto pb-3 pt-1 snap-x snap-mandatory scrollbar-none">
           {flyers.map((flyer, index) => {
             const isRetro = flyer.theme === "retro_mercado";
             const hotspotsCount = Array.isArray(flyer.hotspots) ? flyer.hotspots.length : 0;
@@ -76,15 +76,15 @@ export function PromotionalFlyersRail({
                   }
                 }}
                 className={cn(
-                  "snap-start shrink-0 relative flex flex-col justify-between overflow-hidden cursor-pointer transition-all duration-200 select-none group",
+                  "snap-start shrink-0 relative flex flex-col justify-between overflow-hidden cursor-pointer transition-colors duration-200 motion-reduce:transition-none select-none group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   // Dimensões verticais grandinhas (tipo mini-stories verticais 3:4, NÃO círculos)
                   "w-44 sm:w-52 h-68 sm:h-76",
                   // Estilo Visual 1: Retrô Mercadista (Cartazista de Supermercado Antigo)
                   isRetro &&
-                    "rounded-lg bg-amber-300 dark:bg-amber-400 border-3 border-red-600 shadow-[4px_4px_0px_0px_rgba(220,38,38,1)] hover:shadow-[6px_6px_0px_0px_rgba(220,38,38,1)] hover:-translate-y-1",
+                    "rounded-lg bg-amber-300 dark:bg-amber-400 border-3 border-red-600 hover:-translate-y-1",
                   // Estilo Visual 2: Clean & Apple HIG
                   !isRetro &&
-                    "rounded-lg bg-card border border-border/70 shadow-sm hover:shadow-md hover:border-foreground/30 hover:-translate-y-0.5"
+                    "rounded-lg bg-card border border-border/70 hover:border-foreground/30 hover:-translate-y-0.5"
                 )}
               >
                 {/* Imagem do Encarte (Com Zoom Suave no Hover) */}
@@ -92,21 +92,22 @@ export function PromotionalFlyersRail({
                   <img
                     src={flyer.image_url}
                     alt={flyer.title}
-                    className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
                     loading="lazy"
                   />
 
                   {/* Gradiente de Legibilidade Inferior */}
+                  {/* design-lint-ignore DL-08 reason:"Scrim fotográfico inferior para legibilidade de texto" expiry:"2027-12-31" */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
 
                   {/* Ribbon Superior de Destaque */}
                   <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-1">
                     {isRetro ? (
-                      <span className="px-2 py-1 rounded bg-red-600 text-amber-100 font-black text-[10px] uppercase tracking-tighter shadow-sm">
+                      <span className="px-2 py-1 rounded bg-red-600 text-amber-100 font-black text-xs uppercase tracking-tighter">
                         {flyer.badge_text || "OFERTAÇO"}
                       </span>
                     ) : (
-                      <span className="px-2 py-1 rounded-md bg-background/90 backdrop-blur-md font-bold text-[10px] text-foreground shadow-xs">
+                      <span className="px-2 py-1 rounded-md bg-background/90 backdrop-blur-md font-bold text-xs text-foreground shadow-xs">
                         {flyer.badge_text || "Encarte"}
                       </span>
                     )}
@@ -115,10 +116,10 @@ export function PromotionalFlyersRail({
                     {flyer.time_left_display && (
                       <span
                         className={cn(
-                          "px-2 py-1 rounded text-[10px] font-bold flex items-center gap-1 backdrop-blur-md shadow-xs",
+                          "px-2 py-1 rounded text-xs font-bold flex items-center gap-1 backdrop-blur-md shadow-xs",
                           isRetro
                             ? "bg-amber-400 text-red-950 font-black border border-amber-500"
-                            : "bg-black/70 text-amber-300 border border-white/10"
+                            : "bg-background/80 text-foreground border border-border/60"
                         )}
                       >
                         <Clock className="size-2.5" />
@@ -129,8 +130,8 @@ export function PromotionalFlyersRail({
 
                   {/* Tag Flutuante Central de Ofertas Interativas */}
                   {hotspotsCount > 0 && (
-                    <div className="absolute bottom-2.5 left-2.5 flex items-center gap-2 px-2 py-1 rounded-lg bg-black/70 backdrop-blur-md border border-white/15 text-white text-[10px] font-bold shadow-md">
-                      <div className="size-2 rounded-full bg-emerald-400 animate-ping" />
+                    <div className="absolute bottom-2.5 left-2.5 flex items-center gap-2 px-2 py-1 rounded-lg bg-background/80 backdrop-blur-md border border-border/60 text-foreground text-xs font-bold">
+                      <div className="size-2 rounded-full bg-emerald-400 animate-ping motion-reduce:animate-none" />
                       <span>{hotspotsCount} {hotspotsCount === 1 ? "oferta interativa" : "ofertas interativas"}</span>
                     </div>
                   )}
@@ -152,14 +153,14 @@ export function PromotionalFlyersRail({
                     >
                       {flyer.title}
                     </h3>
-                    <p className="text-[10px] text-muted-foreground truncate mt-1 font-medium">
+                    <p className="text-xs text-muted-foreground truncate mt-1 font-medium">
                       Toque para abrir e comprar
                     </p>
                   </div>
 
                   <div
                     className={cn(
-                      "size-7 rounded-full flex items-center justify-center shrink-0 transition-transform group-hover:scale-110",
+                      "size-7 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 motion-reduce:transition-none group-hover:scale-105",
                       isRetro ? "bg-red-600 text-amber-100" : "bg-primary text-primary-foreground"
                     )}
                   >

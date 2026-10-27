@@ -42,7 +42,7 @@ export function SegmentedControl({
             aria-selected={isSelected}
             onClick={() => onChange(opt.id)}
             className={cn(
-              "inline-flex items-center justify-center gap-2 px-3 rounded-lg text-xs font-medium transition-all cursor-pointer",
+              "inline-flex items-center justify-center gap-2 px-3 rounded-lg text-xs font-medium transition-colors duration-200 cursor-pointer",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               size === "sm" ? "py-1" : "py-2",
               isSelected

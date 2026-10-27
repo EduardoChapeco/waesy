@@ -1,9 +1,33 @@
-import React, { useState, useRef } from "react";
-import { Plane, Building2, Car, Shield, Phone, PhoneCall, MapPin, User, Ticket, Luggage, Clock, HelpCircle, ShieldCheck, CheckCircle2, Copy, Download, ExternalLink, MessageCircle, FileText, Info, Siren, Star, Wrench, Home, Receipt, HeartPulse, ImageIcon, Loader2, Share2 } from "lucide-react";
+import React, { useState, useRef, useMemo } from "react";
+import {
+  Plane,
+  Building2,
+  Car,
+  Shield,
+  PhoneCall,
+  MapPin,
+  User,
+  Ticket,
+  HelpCircle,
+  CheckCircle2,
+  Copy,
+  Download,
+  FileText,
+  Info,
+  Siren,
+  Star,
+  Wrench,
+  ImageIcon,
+  Loader2,
+  Share2,
+  QrCode,
+} from "lucide-react";
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { generateQrCodeDataUri } from "@/lib/qr-code";
+import { exportElementAsImage } from "@/lib/pdf-export";
 
 import type {
   CompanionCardNiche,
@@ -41,7 +65,6 @@ export interface DigitalCompanionCardProps {
 }
 
 export function DigitalCompanionCard({
-  niche,
   title,
   subtitle,
   code,
@@ -66,6 +89,12 @@ export function DigitalCompanionCard({
   const visualPagesRef = useRef<HTMLDivElement>(null);
   const rulesPagesRef = useRef<HTMLDivElement>(null);
   const emergencyPagesRef = useRef<HTMLDivElement>(null);
+
+  const qrPayload = publicUrl || code || title;
+  const qrDataUri = useMemo(() => {
+    if (!qrPayload) return "";
+    return generateQrCodeDataUri(qrPayload, { border: 1 });
+  }, [qrPayload]);
 
   // Safe chunking: máximo 2 seções por página para manter a proporção estrita 9:16 (400x711px)
   const chunkArray = <T,>(arr: T[], size: number): T[][] => {
@@ -96,11 +125,11 @@ export function DigitalCompanionCard({
     if (customWhatsAppText) return customWhatsAppText;
 
     let text = `Olá! Seguem as informações do seu documento digital (*${title}*):\n\n`;
-    if (code) text += `📌 *Código / Localizador:* ${code}\n`;
-    text += `🏢 *Emitente:* ${companyName}\n\n`;
+    if (code) text += `*Código / Localizador:* ${code}\n`;
+    text += `*Emitente:* ${companyName}\n\n`;
 
     if (sections.length > 0) {
-      text += `📋 *Resumo dos Serviços:*\n`;
+      text += `*Resumo dos Serviços:*\n`;
       sections.slice(0, 4).forEach((s) => {
         text += `• *${s.title}*${s.subtitle ? ` (${s.subtitle})` : ""}\n`;
       });
@@ -108,7 +137,7 @@ export function DigitalCompanionCard({
     }
 
     if (rules.length > 0) {
-      text += `💡 *Orientações Principais:*\n`;
+      text += `*Orientações Principais:*\n`;
       rules.slice(0, 3).forEach((r) => {
         text += `• *${r.title}:* ${r.description}\n`;
       });
@@ -116,7 +145,7 @@ export function DigitalCompanionCard({
     }
 
     if (emergencyContacts.length > 0) {
-      text += `🚨 *Contatos de Apoio & Plantão:*\n`;
+      text += `*Contatos de Apoio e Plantão:*\n`;
       emergencyContacts.slice(0, 2).forEach((c) => {
         text += `• ${c.category}: ${c.name} (${c.phone})\n`;
       });
@@ -124,7 +153,7 @@ export function DigitalCompanionCard({
     }
 
     if (publicUrl) {
-      text += `📲 *Acesse o cartão completo no celular (dispensa impressão):*\n${publicUrl}\n\n`;
+      text += `*Acesse o cartão completo no celular (dispensa impressão):*\n${publicUrl}\n\n`;
     }
 
     text += `Qualquer dúvida, estamos à inteira disposição!`;
@@ -146,21 +175,14 @@ export function DigitalCompanionCard({
     try {
       setIsExporting(true);
       setExportMessage("Gerando imagens em alta resolução...");
-      const html2canvas = (await import("html2canvas")).default;
       const pages = ref.current.querySelectorAll<HTMLElement>(".companion-story-page");
 
       for (let i = 0; i < pages.length; i++) {
-        const canvas = await html2canvas(pages[i], {
+        await exportElementAsImage(pages[i], {
+          filename: `${companyName.replace(/\s+/g, "_")}-${prefix}-Pagina${i + 1}.png`,
           scale: 3,
-          useCORS: true,
-          backgroundColor: null,
-          scrollY: -window.scrollY,
         });
-        const link = document.createElement("a");
-        link.download = `${companyName.replace(/\s+/g, "_")}-${prefix}-Pagina${i + 1}.png`;
-        link.href = canvas.toDataURL("image/png");
-        link.click();
-        await new Promise((resolve) => setTimeout(resolve, 300));
+        await new Promise((resolve) => setTimeout(resolve, 250));
       }
       toast.success("Imagens geradas com sucesso para envio!");
     } catch (err: any) {
@@ -201,7 +223,7 @@ export function DigitalCompanionCard({
       }
 
       if (pdf) {
-        pdf.save(`${fileName}.pdf`);
+        pdf.save(`${fileName.replace(/\s+/g, "_")}.pdf`);
         toast.success("PDF de bolso gerado com sucesso!");
       }
     } catch (err: any) {
@@ -223,14 +245,14 @@ export function DigitalCompanionCard({
   return (
     <div className={`w-full flex flex-col space-y-4 ${className}`}>
       {/* ── 1. Top Bar de Navegação das 4 Abas (Apple HIG Touch Targets) ── */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-2 bg-card border border-border/80 rounded-lg shadow-2xs">
-        <div className="flex items-center gap-2 p-1 bg-muted/60 rounded-lg w-full sm:w-auto overflow-x-auto text-xs font-semibold">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-2 bg-card border border-border/80 rounded-lg">
+        <div className="flex items-center gap-2 p-1 bg-muted/60 rounded-lg w-full sm:w-auto overflow-x-auto carousel no-scrollbar text-xs font-semibold">
           <button
             type="button"
             onClick={() => setActiveTab("visual")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all cursor-pointer shrink-0 min-h-10 ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors motion-reduce:transition-none cursor-pointer shrink-0 h-11 min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
               activeTab === "visual"
-                ? "bg-card text-foreground "
+                ? "bg-card text-foreground"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -241,9 +263,9 @@ export function DigitalCompanionCard({
           <button
             type="button"
             onClick={() => setActiveTab("rules")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all cursor-pointer shrink-0 min-h-10 ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors motion-reduce:transition-none cursor-pointer shrink-0 h-11 min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
               activeTab === "rules"
-                ? "bg-card text-foreground "
+                ? "bg-card text-foreground"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -254,9 +276,9 @@ export function DigitalCompanionCard({
           <button
             type="button"
             onClick={() => setActiveTab("emergency")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all cursor-pointer shrink-0 min-h-10 ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors motion-reduce:transition-none cursor-pointer shrink-0 h-11 min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
               activeTab === "emergency"
-                ? "bg-card text-foreground "
+                ? "bg-card text-foreground"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -267,7 +289,7 @@ export function DigitalCompanionCard({
           <button
             type="button"
             onClick={() => setActiveTab("whatsapp")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all cursor-pointer shrink-0 min-h-10 ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors motion-reduce:transition-none cursor-pointer shrink-0 h-11 min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
               activeTab === "whatsapp"
                 ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-bold border border-emerald-500/20"
                 : "text-muted-foreground hover:text-foreground"
@@ -296,7 +318,7 @@ export function DigitalCompanionCard({
                         : emergencyPagesRef;
                   exportImages(ref, activeTab);
                 }}
-                className="rounded-lg text-xs font-semibold h-11 sm:h-9 px-3"
+                className="rounded-lg text-xs font-semibold h-11 min-h-11 px-3"
                 title="Salvar Imagens 9:16"
               >
                 <ImageIcon className="size-4 mr-2" />
@@ -316,7 +338,7 @@ export function DigitalCompanionCard({
                         : emergencyPagesRef;
                   exportPDF(ref, `${companyName}-${title}`);
                 }}
-                className="rounded-lg text-xs font-semibold h-10 px-3 min-h-11 sm:min-h-9 bg-foreground text-background hover:bg-foreground/90"
+                className="rounded-lg text-xs font-semibold h-11 min-h-11 px-3 bg-foreground text-background hover:bg-foreground/90"
                 title="Baixar PDF de Bolso"
               >
                 {isExporting ? <Loader2 className="size-4 animate-spin mr-2" /> : <Download className="size-4 mr-2" />}
@@ -336,7 +358,7 @@ export function DigitalCompanionCard({
                   toast.success("Link público copiado com sucesso!");
                 }
               }}
-              className="rounded-lg text-xs font-semibold h-10 px-3 min-h-11 sm:min-h-9"
+              className="rounded-lg text-xs font-semibold h-11 min-h-11 px-3"
               title="Copiar Link de Acesso"
             >
               <Share2 className="size-4" />
@@ -359,69 +381,77 @@ export function DigitalCompanionCard({
           <div ref={visualPagesRef} className="flex flex-wrap justify-center gap-6 sm:gap-8 pb-12 w-full">
             {/* PÁGINA 1: CAPA CINEMATOGRÁFICA DE TELA DE BLOQUEIO */}
             <div
-              className="companion-story-page relative flex flex-col overflow-hidden bg-zinc-950 text-white shadow-xl rounded-lg border border-border/60"
-              style={{ width: "400px", height: "711px" }}
+              className="companion-story-page w-100 aspect-9/16 relative flex flex-col overflow-hidden bg-zinc-950 text-neutral-100 rounded-lg border border-border/60"
             >
               {coverImageUrl && (
                 <img
                   src={coverImageUrl}
                   alt={title}
-                  className="absolute inset-0 w-full h-full object-cover z-0 opacity-80"
+                  className="absolute inset-0 w-full h-full object-cover z-0 opacity-75"
                 />
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent z-10 pointer-events-none" />
+              <div className="absolute inset-0 bg-zinc-950/65 z-10 pointer-events-none" />
 
               <div className="relative z-20 flex flex-col justify-between h-full p-7">
-                {/* Header Logo */}
-                <div className="flex items-center gap-3">
-                  {companyLogoUrl ? (
-                    <img src={companyLogoUrl} alt={companyName} className="h-9 w-auto object-contain brightness-0 invert" />
-                  ) : (
-                    <div className="size-9 rounded-lg bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/30">
-                      <Star className="size-5" />
+                {/* Header Logo + QR Code */}
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    {companyLogoUrl ? (
+                      <img src={companyLogoUrl} alt={companyName} className="h-9 w-auto object-contain brightness-0 invert" />
+                    ) : (
+                      <div className="size-9 rounded-lg bg-zinc-900/80 backdrop-blur-md flex items-center justify-center text-neutral-100 border border-zinc-700 shrink-0">
+                        <Star className="size-5" />
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold tracking-tight text-neutral-100 break-words">{companyName}</p>
+                      <p className="text-xs text-neutral-300">Passe Oficial 9:16</p>
+                    </div>
+                  </div>
+
+                  {qrDataUri && (
+                    <div className="p-2 rounded-lg bg-neutral-100 border border-zinc-700 shrink-0">
+                      <img src={qrDataUri} alt="QR Code de Validação" className="size-12 object-contain" />
                     </div>
                   )}
-                  <div>
-                    <p className="text-xs font-bold tracking-tight text-white">{companyName}</p>
-                    <p className="text-[10px] text-white/70">Documento Oficial de Atendimento</p>
-                  </div>
                 </div>
 
                 {/* Bloco Central / Inferior */}
                 <div className="space-y-4">
                   {code && (
-                    <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md px-3 py-2 rounded-full border border-white/20">
-                      <Ticket className="size-3 text-white/80" />
-                      <span className="text-[10px] font-mono font-bold tracking-widest text-white">ID: {code}</span>
+                    <div className="inline-flex items-center gap-2 bg-zinc-900/80 backdrop-blur-md px-3 py-2 rounded-full border border-zinc-700">
+                      <Ticket className="size-3.5 text-emerald-400" />
+                      <span className="text-xs font-mono font-bold tracking-widest text-neutral-100">ID: {code}</span>
                     </div>
                   )}
 
                   <div>
-                    {subtitle && <p className="text-xs font-medium text-white/80">{subtitle}</p>}
-                    <h2 className="text-3xl sm:text-4xl font-black text-white leading-tight tracking-tight break-words">
+                    {subtitle && <p className="text-xs font-medium text-neutral-300">{subtitle}</p>}
+                    <h2 className="text-2xl sm:text-3xl font-black text-neutral-100 leading-tight tracking-tight break-words mt-1">
                       {title}
                     </h2>
                   </div>
 
                   {participants.length > 0 && (
-                    <div className="p-4 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 space-y-2">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-white/70">
+                    <div className="p-4 rounded-lg bg-zinc-900/80 backdrop-blur-md border border-zinc-700 space-y-2">
+                      <p className="text-xs font-bold uppercase tracking-wider text-neutral-300">
                         {participantsLabel}
                       </p>
                       <div className="space-y-2">
                         {participants.map((p, idx) => (
-                          <div key={idx} className="flex items-center gap-2 text-xs font-semibold text-white">
-                            <User className="size-3.5 text-white/70 shrink-0" />
-                            <span className="truncate">{p}</span>
+                          <div key={idx} className="flex items-center gap-2 text-xs font-semibold text-neutral-100">
+                            <User className="size-3.5 text-neutral-300 shrink-0" />
+                            <span className="break-words">{p}</span>
                           </div>
                         ))}
                       </div>
                     </div>
                   )}
 
-                  <p className="text-[10px] text-center text-white/50 pt-2">
-                    Apresentação 100% digital no celular · Dispensa impressão
-                  </p>
+                  <div className="flex items-center justify-center gap-2 text-xs text-neutral-300 pt-2">
+                    <QrCode className="size-3.5 text-emerald-400 shrink-0" />
+                    <span>Apresentação 100% digital no celular</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -430,15 +460,14 @@ export function DigitalCompanionCard({
             {sectionChunks.map((chunk, pageIndex) => (
               <div
                 key={`page-section-${pageIndex}`}
-                className="companion-story-page relative flex flex-col overflow-hidden bg-muted/40 text-foreground shadow-xl rounded-lg border border-border/70 p-6"
-                style={{ width: "400px", height: "711px" }}
+                className="companion-story-page w-100 aspect-9/16 relative flex flex-col overflow-hidden bg-muted/40 text-foreground rounded-lg border border-border/70 p-6"
               >
                 {/* Topo da Página */}
                 <div className="flex items-center justify-between pb-3 border-b border-border/60">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-foreground truncate">{companyName}</span>
+                    <span className="text-xs font-bold text-foreground break-words">{companyName}</span>
                   </div>
-                  <span className="text-[10px] font-mono text-muted-foreground font-bold">
+                  <span className="text-xs font-mono text-muted-foreground font-bold">
                     Pág {pageIndex + 1} de {sectionChunks.length}
                   </span>
                 </div>
@@ -448,7 +477,7 @@ export function DigitalCompanionCard({
                   {chunk.map((item, itemIdx) => (
                     <div
                       key={itemIdx}
-                      className="p-5 rounded-lg bg-card border border-border/80  space-y-3 shrink-0"
+                      className="p-5 rounded-lg bg-card border border-border/80 space-y-3 shrink-0"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2">
@@ -456,13 +485,13 @@ export function DigitalCompanionCard({
                             {getSectionIcon(item.type)}
                           </div>
                           <div>
-                            <p className="text-xs font-bold text-foreground leading-snug">{item.title}</p>
-                            {item.subtitle && <p className="text-[11px] text-muted-foreground">{item.subtitle}</p>}
+                            <p className="text-xs font-bold text-foreground leading-snug break-words">{item.title}</p>
+                            {item.subtitle && <p className="text-xs text-muted-foreground break-words">{item.subtitle}</p>}
                           </div>
                         </div>
 
                         {item.badge && (
-                          <Badge variant="outline" className="text-[10px] font-mono shrink-0">
+                          <Badge variant="outline" className="text-xs font-mono shrink-0">
                             {item.badge}
                           </Badge>
                         )}
@@ -477,10 +506,10 @@ export function DigitalCompanionCard({
                               d.highlight ? "bg-primary/5 text-primary" : "bg-muted/30"
                             }`}
                           >
-                            <p className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">
+                            <p className="text-xs uppercase tracking-wider font-bold text-muted-foreground">
                               {d.label}
                             </p>
-                            <p className="text-xs font-bold truncate mt-1">{d.value}</p>
+                            <p className="text-xs font-bold break-words mt-1">{d.value}</p>
                           </div>
                         ))}
                       </div>
@@ -490,7 +519,7 @@ export function DigitalCompanionCard({
 
                 {/* Rodapé da Página */}
                 <div className="pt-3 border-t border-border/60 text-center">
-                  <p className="text-[10px] text-muted-foreground font-medium">
+                  <p className="text-xs text-muted-foreground font-medium">
                     {title} · Código: {code || "OFICIAL"}
                   </p>
                 </div>
@@ -503,8 +532,7 @@ export function DigitalCompanionCard({
         {activeTab === "rules" && (
           <div ref={rulesPagesRef} className="flex flex-wrap justify-center gap-6 sm:gap-8 pb-12 w-full">
             <div
-              className="companion-story-page relative flex flex-col overflow-hidden bg-muted/40 text-foreground shadow-xl rounded-lg border border-border/70 p-6"
-              style={{ width: "400px", height: "711px" }}
+              className="companion-story-page w-100 aspect-9/16 relative flex flex-col overflow-hidden bg-muted/40 text-foreground rounded-lg border border-border/70 p-6"
             >
               <div className="flex items-center gap-3 pb-3 border-b border-border/60">
                 <div className="size-10 rounded-lg bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0">
@@ -512,7 +540,7 @@ export function DigitalCompanionCard({
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-foreground line-clamp-1">Orientações Importantes</h3>
-                  <p className="text-[11px] text-muted-foreground">Guia essencial de atendimento</p>
+                  <p className="text-xs text-muted-foreground">Guia essencial de atendimento</p>
                 </div>
               </div>
 
@@ -532,12 +560,12 @@ export function DigitalCompanionCard({
                         {rule.title}
                       </p>
                       {rule.badge && (
-                        <Badge variant="secondary" className="text-[9px] px-2 h-4">
+                        <Badge variant="secondary" className="text-xs px-2">
                           {rule.badge}
                         </Badge>
                       )}
                     </div>
-                    <p className="text-[11px] text-muted-foreground leading-relaxed pl-5">
+                    <p className="text-xs text-muted-foreground leading-relaxed pl-5">
                       {rule.description}
                     </p>
                   </div>
@@ -549,13 +577,13 @@ export function DigitalCompanionCard({
                       <HelpCircle className="size-3.5 text-amber-600" />
                       Observações:
                     </p>
-                    <p className="text-[11px] leading-relaxed whitespace-pre-line">{observations}</p>
+                    <p className="text-xs leading-relaxed whitespace-pre-line">{observations}</p>
                   </div>
                 )}
               </div>
 
               <div className="pt-3 border-t border-border/60 text-center">
-                <p className="text-[10px] text-muted-foreground font-medium">Equipe {companyName}</p>
+                <p className="text-xs text-muted-foreground font-medium">Equipe {companyName}</p>
               </div>
             </div>
           </div>
@@ -567,8 +595,7 @@ export function DigitalCompanionCard({
             {emergencyChunks.map((chunk, eIdx) => (
               <div
                 key={`page-emerg-${eIdx}`}
-                className="companion-story-page relative flex flex-col overflow-hidden bg-muted/40 text-foreground shadow-xl rounded-lg border border-border/70 p-6"
-                style={{ width: "400px", height: "711px" }}
+                className="companion-story-page w-100 aspect-9/16 relative flex flex-col overflow-hidden bg-muted/40 text-foreground rounded-lg border border-border/70 p-6"
               >
                 <div className="flex items-center gap-3 pb-3 border-b border-border/60">
                   <div className="size-10 rounded-lg bg-rose-500/10 text-rose-600 flex items-center justify-center shrink-0">
@@ -576,7 +603,7 @@ export function DigitalCompanionCard({
                   </div>
                   <div>
                     <h3 className="text-sm font-bold text-foreground line-clamp-1">Contatos de Emergência</h3>
-                    <p className="text-[11px] text-muted-foreground">Socorro e apoio imediato</p>
+                    <p className="text-xs text-muted-foreground">Socorro e apoio imediato</p>
                   </div>
                 </div>
 
@@ -584,10 +611,10 @@ export function DigitalCompanionCard({
                   {chunk.map((contact, cIdx) => (
                     <div
                       key={cIdx}
-                      className="p-4 rounded-lg bg-card border border-border/80  space-y-3"
+                      className="p-4 rounded-lg bg-card border border-border/80 space-y-3"
                     >
                       <div>
-                        <p className="text-[9px] uppercase tracking-wider font-bold text-blue-600 dark:text-blue-400">
+                        <p className="text-xs uppercase tracking-wider font-bold text-blue-600 dark:text-blue-400">
                           {contact.category}
                         </p>
                         <p className="text-sm font-bold text-foreground">{contact.name}</p>
@@ -597,15 +624,15 @@ export function DigitalCompanionCard({
                         <div className="flex items-center gap-2 min-w-0">
                           <PhoneCall className="size-4 text-rose-600 shrink-0" />
                           <div className="min-w-0">
-                            <p className="text-[9px] font-bold uppercase text-rose-600">Telefone / Plantão</p>
-                            <p className="text-xs font-mono font-bold text-foreground truncate">{contact.phone}</p>
+                            <p className="text-xs font-bold uppercase text-rose-600">Telefone / Plantão</p>
+                            <p className="text-xs font-mono font-bold text-foreground break-words">{contact.phone}</p>
                           </div>
                         </div>
 
                         <Button
                           asChild
                           size="sm"
-                          className="h-8 px-3 rounded-lg text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shrink-0"
+                          className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold bg-rose-600 hover:bg-rose-700 text-neutral-100 shrink-0"
                         >
                           <a href={`tel:${contact.phone.replace(/\D/g, "")}`}>Ligar</a>
                         </Button>
@@ -615,7 +642,7 @@ export function DigitalCompanionCard({
                 </div>
 
                 <div className="pt-3 border-t border-border/60 text-center">
-                  <p className="text-[10px] text-muted-foreground font-medium">Documento de Apoio · {companyName}</p>
+                  <p className="text-xs text-muted-foreground font-medium">Documento de Apoio · {companyName}</p>
                 </div>
               </div>
             ))}
@@ -624,7 +651,7 @@ export function DigitalCompanionCard({
 
         {/* ABA 4: TEXTO PRONTO PARA WHATSAPP */}
         {activeTab === "whatsapp" && (
-          <div className="w-full max-w-2xl bg-card rounded-lg p-6 sm:p-8 border border-border/80  space-y-4">
+          <div className="w-full max-w-2xl bg-card rounded-lg p-6 sm:p-8 border border-border/80 space-y-4">
             <div className="flex items-center justify-between border-b border-border/60 pb-4">
               <div className="flex items-center gap-2">
                 <WhatsappLogo className="size-5 text-emerald-600" weight="fill" />
@@ -635,7 +662,7 @@ export function DigitalCompanionCard({
                 type="button"
                 size="sm"
                 onClick={copyWhatsApp}
-                className="rounded-lg text-xs font-bold h-10 px-4 bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
+                className="rounded-lg text-xs font-bold h-11 min-h-11 px-4 bg-emerald-600 hover:bg-emerald-700 text-neutral-100 gap-2"
               >
                 {copied ? <CheckCircle2 className="size-4" /> : <Copy className="size-4" />}
                 <span>{copied ? "Copiado!" : "Copiar Texto"}</span>

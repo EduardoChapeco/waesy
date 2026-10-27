@@ -206,7 +206,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
       markerEl.className = "cursor-grab active:cursor-grabbing";
       markerEl.innerHTML = `
         <div class="relative flex items-center justify-center">
-          <div class="size-8 rounded-full bg-primary/20 animate-ping absolute inset-0"></div>
+          <div class="size-8 rounded-full bg-primary/20 animate-ping motion-reduce:animate-none absolute inset-0"></div>
           <div class="size-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg border-2 border-background">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
           </div>
@@ -455,7 +455,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
         // 1. Sincroniza cookies canônicos no cliente
         if (resolvedStoreId) {
           setClientContextCookies({ context: "store", storeId: resolvedStoreId });
-          await setTenantContext({ data: { store_id: resolvedStoreId } }).catch(() => null);
+          await setTenantContext({ data: { store_id: resolvedStoreId } });
         }
 
         // 2. Redirecionamento determinístico garantindo o tenant ativo
@@ -483,7 +483,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
       {/* Coluna Esquerda: Formulário de Entrada Ágil Estruturado (7 cols) */}
       <div className="lg:col-span-7 space-y-6">
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Badge variant="outline" className="text-xs font-bold gap-2 border-primary/30 text-primary bg-primary/5">
             <Zap className="size-3.5" />
             <span>Cadastro Rápido de Presença Comercial</span>
@@ -497,13 +497,13 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
         </div>
 
         {/* ── Bloco Assistente de Preenchimento com IA (Opcional & Recolhível) ── */}
-        <div className="rounded-lg bg-card border border-border/80 shadow-2xs overflow-hidden">
+        <div className="rounded-2xl sm:rounded-3xl bg-card border border-border/80 shadow-2xs overflow-hidden">
           <button
             type="button"
             onClick={() => setShowAiAssistant((prev) => !prev)}
-            className="w-full p-4 flex items-center justify-between text-left hover:bg-muted/30 transition-colors cursor-pointer"
+            className="w-full p-4 flex items-center justify-between text-left hover:bg-muted/30 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-3">
               <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                 <Zap className="size-4" />
               </div>
@@ -511,7 +511,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                 <span className="text-xs font-bold text-foreground block">
                   Preencher dados automaticamente com IA via link
                 </span>
-                <span className="text-[11px] text-muted-foreground block">
+                <span className="text-2xs text-muted-foreground block">
                   Cole o site ou Instagram da sua empresa para preencher nome, bio e contatos em 1 clique
                 </span>
               </div>
@@ -540,11 +540,11 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                   type="button"
                   onClick={() => handleStartAiExtraction()}
                   disabled={isExtractingAi || !aiUrlInput.trim()}
-                  className="w-full sm:w-auto h-11 min-h-11 px-5 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs shrink-0 cursor-pointer gap-1.5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="w-full sm:w-auto h-11 min-h-11 px-5 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs shrink-0 cursor-pointer gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   {isExtractingAi ? (
                     <>
-                      <Loader2 className="size-3.5 animate-spin" />
+                      <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
                       <span>Minerando...</span>
                     </>
                   ) : (
@@ -569,7 +569,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
           )}
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 rounded-lg bg-card border border-border/80 shadow-sm space-y-6">
+        <form onSubmit={handleSubmit} className="p-6 sm:p-8 rounded-2xl sm:rounded-3xl bg-card border border-border/80 shadow-sm space-y-6">
           {/* ── ETAPA 1: IDENTIFICAÇÃO COMERCIAL ── */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 border-b border-border/40 pb-2">
@@ -585,7 +585,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Ex: Prime Eventos, Serra Sol Turismo, Restaurante Central..."
-                className="h-11 min-h-11 rounded-lg text-xs sm:text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="h-11 min-h-11 rounded-lg text-base md:text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 required
               />
             </div>
@@ -594,14 +594,14 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
             <div className="space-y-2">
               <label className="text-xs font-bold text-foreground flex items-center justify-between">
                 <span>CNPJ (Opcional)</span>
-                <span className="text-[11px] font-normal text-muted-foreground">Preenchimento automático via Receita</span>
+                <span className="text-2xs font-normal text-muted-foreground">Preenchimento automático via Receita</span>
               </label>
               <div className="flex items-center gap-2">
                 <Input
                   value={cnpj}
                   onChange={(e) => setCnpj(formatCnpj(e.target.value))}
                   placeholder="00.000.000/0000-00"
-                  className="h-11 min-h-11 rounded-lg text-xs font-mono focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="h-11 min-h-11 rounded-lg text-base md:text-sm font-mono focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   maxLength={18}
                 />
                 <Button
@@ -609,10 +609,10 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                   variant="outline"
                   onClick={handleLookupCnpj}
                   disabled={isSearchingCnpj || cleanDocument(cnpj).length !== 14}
-                  className="h-11 min-h-11 px-4 text-xs font-bold shrink-0 gap-1.5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer"
+                  className="h-11 min-h-11 px-4 text-xs font-bold shrink-0 gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer"
                 >
                   {isSearchingCnpj ? (
-                    <Loader2 className="size-3.5 animate-spin" />
+                    <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
                   ) : (
                     <Search className="size-3.5" />
                   )}
@@ -635,7 +635,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
               Selecione o segmento principal para ativar o menu e as ferramentas correspondentes no Workspace:
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {QUICK_CATEGORIES.map((c) => {
                 const Icon = c.icon;
                 const isSelected = category === c.id;
@@ -644,8 +644,8 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                     key={c.id}
                     type="button"
                     onClick={() => setCategory(c.id)}
-                    className={cn(
-                      "p-3.5 rounded-lg border text-left transition-all flex items-start gap-3 cursor-pointer min-h-11",
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                      "p-4 rounded-xl border text-left transition-colors duration-200 flex items-start gap-3 cursor-pointer min-h-11",
                       isSelected
                         ? "border-primary bg-primary/5 text-foreground shadow-xs ring-1 ring-primary"
                         : "border-border/60 bg-background/50 hover:bg-muted/40 text-muted-foreground hover:text-foreground"
@@ -653,7 +653,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                   >
                     <div
                       className={cn(
-                        "size-9 rounded-lg flex items-center justify-center shrink-0 mt-0.5",
+                        "size-9 rounded-lg flex items-center justify-center shrink-0 mt-1",
                         isSelected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
                       )}
                     >
@@ -661,7 +661,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                     </div>
                     <div className="min-w-0">
                       <span className="text-xs font-bold block text-foreground truncate">{c.label}</span>
-                      <span className="text-[11px] text-muted-foreground line-clamp-1 leading-tight">
+                      <span className="text-2xs text-muted-foreground break-words text-wrap leading-tight">
                         {c.description}
                       </span>
                     </div>
@@ -682,7 +682,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
 
             {/* CEP com Busca Automática */}
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
-              <div className="sm:col-span-6 space-y-1.5">
+              <div className="sm:col-span-6 space-y-2">
                 <label className="text-xs font-bold text-foreground">CEP Comercial</label>
                 <div className="flex items-center gap-2">
                   <Input
@@ -695,7 +695,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                       }
                     }}
                     placeholder="00000-000"
-                    className="h-11 min-h-11 rounded-lg text-xs font-mono focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    className="h-11 min-h-11 rounded-lg text-base md:text-sm font-mono focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     maxLength={9}
                   />
                   <Button
@@ -703,16 +703,16 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                     variant="outline"
                     onClick={() => handleLookupCep()}
                     disabled={isSearchingCep || cep.replace(/\D/g, "").length !== 8}
-                    className="h-11 min-h-11 px-3 text-xs font-bold shrink-0 gap-1.5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer"
+                    className="h-11 min-h-11 px-3 text-xs font-bold shrink-0 gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer"
                   >
-                    {isSearchingCep ? <Loader2 className="size-3.5 animate-spin" /> : <Search className="size-3.5" />}
+                    {isSearchingCep ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : <Search className="size-3.5" />}
                     <span>Buscar CEP</span>
                   </Button>
                 </div>
               </div>
 
               {/* Cidade e Estado Canônicos */}
-              <div className="sm:col-span-6 space-y-1.5">
+              <div className="sm:col-span-6 space-y-2">
                 <label className="text-xs font-bold text-foreground">Cidade de Atuação *</label>
                 <CityCombobox
                   value={city && state ? `${city} - ${state}` : city}
@@ -725,45 +725,45 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
             </div>
 
             {/* Logradouro (Rua/Avenida) */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="text-xs font-bold text-foreground">Logradouro (Rua, Avenida, Praça)</label>
               <Input
                 value={street}
                 onChange={(e) => setStreet(e.target.value)}
                 placeholder="Ex: Av. Getúlio Vargas, Rua Marechal Deodoro..."
-                className="h-11 min-h-11 rounded-lg text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="h-11 min-h-11 rounded-lg text-base md:text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               />
             </div>
 
             {/* Número, Complemento e Bairro */}
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
-              <div className="sm:col-span-4 space-y-1.5">
+              <div className="sm:col-span-4 space-y-2">
                 <label className="text-xs font-bold text-foreground">Número *</label>
                 <Input
                   value={number}
                   onChange={(e) => setNumber(e.target.value)}
                   placeholder="Ex: 120 ou S/N"
-                  className="h-11 min-h-11 rounded-lg text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="h-11 min-h-11 rounded-lg text-base md:text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 />
               </div>
 
-              <div className="sm:col-span-4 space-y-1.5">
+              <div className="sm:col-span-4 space-y-2">
                 <label className="text-xs font-bold text-foreground">Complemento</label>
                 <Input
                   value={complement}
                   onChange={(e) => setComplement(e.target.value)}
                   placeholder="Ex: Sala 402, Bloco B"
-                  className="h-11 min-h-11 rounded-lg text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="h-11 min-h-11 rounded-lg text-base md:text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 />
               </div>
 
-              <div className="sm:col-span-4 space-y-1.5">
+              <div className="sm:col-span-4 space-y-2">
                 <label className="text-xs font-bold text-foreground">Bairro</label>
                 <Input
                   value={neighborhood}
                   onChange={(e) => setNeighborhood(e.target.value)}
                   placeholder="Ex: Centro, Jardim..."
-                  className="h-11 min-h-11 rounded-lg text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="h-11 min-h-11 rounded-lg text-base md:text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 />
               </div>
             </div>
@@ -771,12 +771,12 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
             {/* Mini Mapa Interativo com Marcador Arrastável */}
             <div className="space-y-2 pt-2">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <label className="text-xs font-bold text-foreground flex items-center gap-2">
                   <MapPin className="size-3.5 text-primary" />
                   <span>Ponto no Mapa (Arraste o marcador para ajuste fino)</span>
                 </label>
                 {latitude && longitude && (
-                  <span className="text-[10px] font-mono text-muted-foreground">
+                  <span className="text-2xs font-mono text-muted-foreground">
                     {latitude.toFixed(4)}, {longitude.toFixed(4)}
                   </span>
                 )}
@@ -796,8 +796,8 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
               </h3>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-foreground flex items-center gap-2">
                 <Phone className="size-3.5 text-primary" />
                 <span>WhatsApp Comercial de Atendimento *</span>
               </label>
@@ -805,15 +805,15 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="(49) 99999-9999"
-                className="h-11 min-h-11 rounded-lg text-xs sm:text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="h-11 min-h-11 rounded-lg text-base md:text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 required
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-bold text-foreground">Apresentação / Bio da Empresa</label>
-                <span className="text-[11px] text-muted-foreground font-mono">{bio.length}/600</span>
+                <span className="text-2xs text-muted-foreground font-mono">{bio.length}/600</span>
               </div>
               <Textarea
                 value={bio}
@@ -825,7 +825,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
                   <Globe className="size-3 text-muted-foreground" />
                   <span>Site Oficial</span>
@@ -834,11 +834,11 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
                   placeholder="https://suaempresa.com.br"
-                  className="h-11 min-h-11 rounded-lg text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="h-11 min-h-11 rounded-lg text-base md:text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
                   <Instagram className="size-3 text-muted-foreground" />
                   <span>Instagram</span>
@@ -847,7 +847,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                   value={instagram}
                   onChange={(e) => setInstagram(e.target.value)}
                   placeholder="@suaempresa"
-                  className="h-11 min-h-11 rounded-lg text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="h-11 min-h-11 rounded-lg text-base md:text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 />
               </div>
             </div>
@@ -863,8 +863,8 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-medium text-muted-foreground">Logotipo (1:1)</label>
+              <div className="space-y-2">
+                <label className="text-2xs font-medium text-muted-foreground">Logotipo (1:1)</label>
                 <ImageUpload
                   value={logoUrl}
                   onChange={setLogoUrl}
@@ -874,8 +874,8 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-medium text-muted-foreground">Capa do Perfil (21:9)</label>
+              <div className="space-y-2">
+                <label className="text-2xs font-medium text-muted-foreground">Capa do Perfil (21:9)</label>
                 <ImageUpload
                   value={bannerUrl}
                   onChange={setBannerUrl}
@@ -892,11 +892,11 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-12 min-h-12 rounded-lg text-xs sm:text-sm font-black gap-2 bg-foreground text-background hover:bg-foreground/90 shadow-md active:scale-[0.99] transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="w-full h-12 min-h-12 rounded-lg text-xs sm:text-sm font-black gap-2 bg-foreground text-background hover:bg-foreground/90 shadow-xs active:scale-[0.99] transition-transform duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="size-4 animate-spin" />
+                  <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                   <span>Ativando Empresa no Workspace...</span>
                 </>
               ) : (
@@ -917,7 +917,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
             <Store className="size-4 text-primary" />
             <span className="text-xs font-bold text-foreground">Prévia Real do Perfil Comercial</span>
           </div>
-          <Badge variant="outline" className="text-[10px] font-mono">
+          <Badge variant="outline" className="text-2xs font-mono">
             Ao Vivo
           </Badge>
         </div>
@@ -942,12 +942,12 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                 {bannerUrl ? (
                   <img src={bannerUrl} alt="Capa da empresa" className="size-full object-cover select-none" />
                 ) : (
-                  <div className="size-full bg-gradient-to-r from-primary/10 via-muted/40 to-primary/15 flex items-center justify-center p-2 text-center">
+                  <div className="size-full bg-muted/40 flex items-center justify-center p-2 text-center">
                     <Store className="size-6 text-primary/30" />
                   </div>
                 )}
                 <div className="absolute bottom-2 left-2">
-                  <Badge className="bg-black/75 backdrop-blur-md text-white border-white/20 text-[9px] font-bold gap-1">
+                  <Badge className="bg-foreground/75 backdrop-blur-md text-foreground border-white/20 text-3xs font-bold gap-1">
                     <CatIcon className="size-2.5" />
                     <span>{selectedCat.label}</span>
                   </Badge>
@@ -960,18 +960,18 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
           <div className="p-4 space-y-3">
             <div className="flex items-center justify-between gap-2">
               <div className="space-y-0.5 min-w-0">
-                <div className="flex items-center gap-1.5 flex-wrap">
+                <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="font-black text-base text-foreground tracking-tight truncate">
                     {name || "Nome da Sua Empresa"}
                   </h3>
                   <ShieldCheck className="size-3.5 text-primary" />
                 </div>
-                <span className="text-[11px] font-mono text-muted-foreground block truncate">
+                <span className="text-2xs font-mono text-muted-foreground block truncate">
                   @{cleanSlug}
                 </span>
               </div>
 
-              <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[10px] font-bold gap-1 shrink-0">
+              <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-2xs font-bold gap-1 shrink-0">
                 <ShieldCheck className="size-3" />
                 <span>Ativo</span>
               </Badge>
@@ -989,16 +989,16 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
 
             {/* Ações do Perfil */}
             <div className="pt-2 border-t border-border/40 flex items-center justify-between gap-2">
-              <span className="text-[11px] font-mono text-muted-foreground">
+              <span className="text-2xs font-mono text-muted-foreground">
                 {phone || "(49) 99999-9999"}
               </span>
-              <div className="px-3.5 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold shadow-xs">
+              <div className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold shadow-xs">
                 WhatsApp
               </div>
             </div>
 
             {/* Abas da Vitrine Canônica */}
-            <div className="pt-1 flex items-center gap-4 text-[11px] font-semibold text-muted-foreground border-t border-border/30">
+            <div className="pt-1 flex items-center gap-4 text-2xs font-semibold text-muted-foreground border-t border-border/30">
               <span className="text-foreground border-b-2 border-primary pb-1">Vitrine</span>
               <span className="pb-1">Sobre</span>
               <span className="pb-1">Posts</span>

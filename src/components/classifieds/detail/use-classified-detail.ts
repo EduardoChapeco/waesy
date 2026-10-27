@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/money";
 import { createDealProposal, getClassifiedBookedDates } from "@/services/deals.functions";
+import { createUnifiedListingTransaction } from "@/services/unified-listing-workflow.functions";
 import { getDigitalDownloadSignedUrl, trackClassifiedView } from "@/services/classifieds.functions";
 import { recordClassifiedTelemetry } from "@/services/classifieds-analytics.functions";
 import { resolveClassifiedNiche } from "@/lib/classifieds/semantics";
@@ -420,16 +421,28 @@ export function useClassifiedDetail({
     }
     setIsBuyingDirect(true);
     try {
-      await createDealProposal({
+      await createUnifiedListingTransaction({
         data: {
-          classifiedId: classified.id,
-          sellerId: classified.author_profile_id,
-          proposedPriceCents: classified.price_cents || 0,
-          totalPriceCents: classified.price_cents || 0,
-          dealType: classified.category === "real_estate" ? "rental" : "sale",
-          isDirectBooking: true,
-          terms: "Compra direta pelo valor integral anunciado.",
+          listingId: classified.id,
+          origin: "classified",
+          transactionType: "purchase",
+          quantity: 1,
+          paymentMethod: "pix",
+          notes: "Compra direta pelo valor integral anunciado.",
         },
+      }).catch(async (unifiedErr) => {
+        console.warn("[handleDirectBuy] Fallback para createDealProposal:", unifiedErr);
+        await createDealProposal({
+          data: {
+            classifiedId: classified.id,
+            sellerId: classified.author_profile_id,
+            proposedPriceCents: classified.price_cents || 0,
+            totalPriceCents: classified.price_cents || 0,
+            dealType: classified.category === "real_estate" ? "rental" : "sale",
+            isDirectBooking: true,
+            terms: "Compra direta pelo valor integral anunciado.",
+          },
+        });
       });
 
       toast.success("Compra iniciada! Acompanhe o pedido em Minhas Negociações.");
@@ -472,17 +485,22 @@ export function useClassifiedDetail({
     });
   };
 
+  const explicitTemplateStyle = String(
+    classified?.attributes?.template_style || classified?.template_style || ""
+  ).toLowerCase();
+
   const isConvenienceProduct = Boolean(
-    classified?.attributes?.template_style === "conveniencia" ||
-    classified?.category === "mercado" ||
-    classified?.attributes?.niche === "mercado" ||
-    classified?.attributes?.grocery_department ||
-    classified?.category === "food" ||
-    classified?.attributes?.niche === "gastronomia" ||
-    (classified?.title &&
-      /drink|whisky|cerveja|refrigerante|energético|vinho|vodka|gin|suco|água mineral|conveniência|fardo|picanha|filé|costela|alcatra|queijo|presunto/i.test(
-        classified.title
-      ))
+    explicitTemplateStyle === "conveniencia" ||
+    (!explicitTemplateStyle &&
+      (classified?.category === "mercado" ||
+        classified?.attributes?.niche === "mercado" ||
+        classified?.attributes?.grocery_department ||
+        classified?.category === "food" ||
+        classified?.attributes?.niche === "gastronomia" ||
+        (classified?.title &&
+          /drink|whisky|cerveja|refrigerante|energético|vinho|vodka|gin|suco|água mineral|conveniência|fardo|picanha|filé|costela|alcatra|queijo|presunto/i.test(
+            classified.title
+          ))))
   );
 
   return {

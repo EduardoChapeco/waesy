@@ -131,7 +131,7 @@ export function FoodMenuTabsSection({
  <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
  {/* Cabeçalho Limpo */}
  <div className="text-center max-w-2xl mx-auto space-y-2">
- <Badge variant="outline" className="text-[11px] font-mono border-border/80 text-muted-foreground">
+ <Badge variant="outline" className="text-2xs font-mono border-border/80 text-muted-foreground">
  Gastronomia
  </Badge>
  <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
@@ -149,8 +149,8 @@ export function FoodMenuTabsSection({
  key={cat.id}
  type="button"
  onClick={() => setActiveTab(cat.id)}
- className={cn(
- "px-4 py-2 rounded-lg text-xs font-semibold transition-all shrink-0 cursor-pointer",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "px-4 py-2 rounded-lg text-xs font-semibold transition-colors duration-200 shrink-0 cursor-pointer",
  isSelected
  ? "bg-primary text-primary-foreground shadow-2xs"
  : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -167,7 +167,7 @@ export function FoodMenuTabsSection({
  {currentCategory?.items.map((item) => (
  <div
  key={item.id}
- className="group p-4 rounded-lg border border-border/80 bg-card hover:border-primary/40 transition-all flex items-start gap-4 shadow-2xs"
+ className="group p-4 rounded-lg border border-border/80 bg-card hover:border-primary/40 transition-colors duration-200 flex items-start gap-4 shadow-2xs"
  >
  {item.imageUrl && (
  <div className="size-20 sm:size-24 rounded-lg overflow-hidden bg-muted shrink-0 border border-border/60">
@@ -195,12 +195,12 @@ export function FoodMenuTabsSection({
  <div className="flex items-center justify-between pt-1">
  <div className="flex items-center gap-2">
  {item.badge && (
- <Badge variant="secondary" className="text-[10px] px-2 py-0">
+ <Badge variant="secondary" className="text-2xs px-2 py-0">
  {item.badge}
  </Badge>
  )}
  {item.isVegetarian && (
- <Badge variant="outline" className="text-[10px] px-2 py-0 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
+ <Badge variant="outline" className="text-2xs px-2 py-0 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
  Vegetariano
  </Badge>
  )}
@@ -215,7 +215,7 @@ export function FoodMenuTabsSection({
  className="h-8 text-xs font-bold rounded-lg gap-2 border-border/80 hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer"
  >
  {addingItemId === item.id ? (
- <Loader2 className="size-3.5 animate-spin" />
+ <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
  ) : (
  <Plus className="size-3.5" />
  )}

@@ -78,7 +78,7 @@ function ContatoPage() {
  <button
  type="button"
  onClick={() => (window.history.length > 1 ? window.history.back() : window.location.assign("/"))}
- className="size-11 rounded-lg bg-card border border-border/40 flex items-center justify-center text-muted-foreground hover:text-foreground active:scale-95 transition-all"
+ className="size-11 rounded-lg bg-card border border-border/40 flex items-center justify-center text-muted-foreground hover:text-foreground active:scale-95 transition-transform duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  aria-label="Voltar"
  >
  <ArrowLeft className="size-5" />
@@ -165,7 +165,7 @@ function ContatoPage() {
  {brand?.support_hours || "Segunda a Sexta, das 08h às 18h"}
  </p>
  </div>
- <div className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-2 pt-2">
+ <div className="text-2xs font-mono font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-2 pt-2">
  <span className="size-2 rounded-full bg-emerald-500" />
  <span>Plantão Digital 24/7</span>
  </div>
@@ -182,7 +182,7 @@ function ContatoPage() {
  {[brand?.address, brand?.city, brand?.state].filter(Boolean).join(", ") || "Santa Catarina, Brasil"}
  </p>
  </div>
- <div className="text-[10px] font-bold text-muted-foreground flex items-center gap-1">
+ <div className="text-2xs font-bold text-muted-foreground flex items-center gap-1">
  <ShieldCheck className="size-3.5 text-primary" />
  <span>Ecossistema Verificado</span>
  </div>
@@ -200,7 +200,7 @@ function ContatoPage() {
 
  {isSent ? (
  <div className="p-6 rounded-lg bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-500/30 text-center space-y-3">
- <div className="size-12 rounded-full bg-emerald-500 text-white flex items-center justify-center mx-auto">
+ <div className="size-12 rounded-full bg-emerald-500 text-foreground flex items-center justify-center mx-auto">
  <CheckCircle2 className="size-6" />
  </div>
  <h3 className="font-bold text-foreground text-sm">Mensagem Recebida com Sucesso!</h3>

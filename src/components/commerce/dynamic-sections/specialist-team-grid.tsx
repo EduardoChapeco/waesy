@@ -43,7 +43,7 @@ export function SpecialistTeamGridSection({
  <section className="py-12 bg-muted/20 w-full">
  <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
  <div className="text-center max-w-xl mx-auto space-y-2">
- <Badge variant="outline" className="text-[11px] font-mono text-muted-foreground border-border/80">
+ <Badge variant="outline" className="text-2xs font-mono text-muted-foreground border-border/80">
  Equipe Médica
  </Badge>
  <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">{title}</h2>
@@ -54,7 +54,7 @@ export function SpecialistTeamGridSection({
  {displayMembers.map((member: SpecialistMember) => (
  <div
  key={member.id}
- className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-2xs flex flex-col justify-between group hover:border-primary/40 transition-all p-5 space-y-4"
+ className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-2xs flex flex-col justify-between group hover:border-primary/40 transition-colors duration-200 p-5 space-y-4"
  >
  <div className="space-y-3">
  <div className="aspect-square rounded-lg overflow-hidden bg-muted border border-border/60 relative">
@@ -72,7 +72,7 @@ export function SpecialistTeamGridSection({
 
  {member.registrationNumber && (
  <div className="absolute bottom-2 left-2">
- <Badge variant="secondary" className="text-[10px] font-mono bg-background/90 backdrop-blur-md shadow-2xs">
+ <Badge variant="secondary" className="text-2xs font-mono bg-background/90 backdrop-blur-md shadow-2xs">
  {member.registrationNumber}
  </Badge>
  </div>
@@ -92,7 +92,7 @@ export function SpecialistTeamGridSection({
  {member.specialties.map((spec: string, idx: number) => (
  <span
  key={idx}
- className="px-2 py-1 rounded-md bg-muted/60 text-[10px] text-muted-foreground font-medium"
+ className="px-2 py-1 rounded-md bg-muted/60 text-2xs text-muted-foreground font-medium"
  >
  {spec}
  </span>

@@ -52,6 +52,28 @@ export const ingestTravelDocument = createServerFn({ method: "POST" })
       `${data.fileMime || ""}|${data.fileName || ""}|${data.fileBase64 || data.rawText || ""}`,
     );
 
+    // PERSIST-F10: Deduplicacao idempotente por hash para evitar OCR duplicado e ingestao redundante
+    const { data: existingIngestion } = await supabase
+      .from("travel_document_ingestions")
+      .select("id, extraction_status, extraction, normalized_payload, operator_code")
+      .eq("store_id", identity.store_id)
+      .eq("content_sha256", contentSha256)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (existingIngestion && existingIngestion.extraction_status !== "failed") {
+      return {
+        success: true,
+        ingestionId: existingIngestion.id,
+        requiresReview: existingIngestion.extraction_status === "needs_review",
+        sourceKind: data.sourceKind,
+        data: existingIngestion.extraction,
+        canonical: existingIngestion.normalized_payload,
+        isDuplicate: true,
+      };
+    }
+
     const { data: ingestion, error: insertError } = await supabase
       .from("travel_document_ingestions")
       .insert({
@@ -118,6 +140,57 @@ export const ingestTravelDocument = createServerFn({ method: "POST" })
         .eq("store_id", identity.store_id);
 
       if (updateError) throw new Error(`OCR extraído, mas não persistido: ${updateError.message}`);
+
+      // Auto-catalogação deduplicada de Hotel/Resort no hotels_bank da agência
+      try {
+        const rawExt = (extraction.data || extraction.parsed || {}) as any;
+        const hotelCandidate =
+          rawExt?.hotel?.name ||
+          rawExt?.hotel?.hotel_name ||
+          rawExt?.hotel_name ||
+          (Array.isArray(rawExt?.hotels) && (rawExt.hotels[0]?.hotel_name || rawExt.hotels[0]?.name)) ||
+          null;
+        const cityCandidate =
+          rawExt?.hotel?.city ||
+          rawExt?.destination ||
+          rawExt?.destination_city ||
+          (Array.isArray(rawExt?.hotels) && rawExt.hotels[0]?.destination) ||
+          "Destino";
+
+        if (hotelCandidate && typeof hotelCandidate === "string" && hotelCandidate.trim().length >= 3) {
+          const cleanHotelName = hotelCandidate.trim();
+          const { data: existingHotel } = await supabase
+            .from("hotels_bank")
+            .select("id")
+            .eq("store_id", identity.store_id)
+            .ilike("name", cleanHotelName)
+            .limit(1)
+            .maybeSingle();
+
+          if (!existingHotel) {
+            const mealPlan =
+              rawExt?.hotel?.meal_plan ||
+              rawExt?.hotel?.board_basis ||
+              (Array.isArray(rawExt?.hotels) && rawExt.hotels[0]?.board_basis) ||
+              "Café da Manhã";
+            await supabase.from("hotels_bank").insert({
+              store_id: identity.store_id,
+              created_by_profile_id: identity.id,
+              name: cleanHotelName,
+              city: String(cityCandidate).split(",")[0].trim() || "Destino",
+              country: "Brasil",
+              stars: Number(rawExt?.hotel?.stars || 4),
+              regime_options: [String(mealPlan)],
+              address: rawExt?.hotel?.address || null,
+              description: "Hotel catalogado automaticamente via ingestão OCR de documento operacional.",
+              badges: ["Catalogado via OCR"],
+              is_active: true,
+            });
+          }
+        }
+      } catch (hotelBankErr) {
+        console.warn("[ingestTravelDocumentForReview] Auto-catalog hotel notice:", hotelBankErr);
+      }
 
       return {
         success: true,

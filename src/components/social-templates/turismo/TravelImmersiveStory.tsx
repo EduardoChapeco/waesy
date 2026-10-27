@@ -27,7 +27,7 @@ export const TravelImmersiveStory: React.FC<SocialTemplateProps> = ({ data, scal
         transform: `scale(${scale})`,
         transformOrigin: "top left",
       }}
-      className={`relative bg-black text-white overflow-hidden font-sans select-none flex flex-col justify-between ${className}`}
+      className={`relative bg-foreground text-foreground overflow-hidden font-sans select-none flex flex-col justify-between ${className}`}
     >
       {/* 100% Background Fotográfico Full-Bleed */}
       <img
@@ -43,7 +43,7 @@ export const TravelImmersiveStory: React.FC<SocialTemplateProps> = ({ data, scal
       {/* Safe Zone Superior: Identidade da Agência & Widget de Clima/Destino */}
       <div className="relative z-10 px-12 pt-16 flex items-center justify-between">
         {/* Pílula da Agência */}
-        <div className="flex items-center gap-3 bg-black/40 backdrop-blur-xl border border-white/20 px-5 py-3 rounded-full">
+        <div className="flex items-center gap-3 bg-foreground/40 backdrop-blur-xl border border-white/20 px-5 py-3 rounded-full">
           {data.logoUrl ? (
             <img
               src={data.logoUrl}
@@ -54,7 +54,7 @@ export const TravelImmersiveStory: React.FC<SocialTemplateProps> = ({ data, scal
           ) : (
             <Star className="w-5 h-5 text-amber-400" />
           )}
-          <span className="text-white text-lg font-bold tracking-wide">
+          <span className="text-foreground text-lg font-bold tracking-wide">
             {data.storeName || "Waesy Experience"}
           </span>
           {data.verifiedPartner && (
@@ -63,9 +63,9 @@ export const TravelImmersiveStory: React.FC<SocialTemplateProps> = ({ data, scal
         </div>
 
         {/* Pílula Climática / Destino */}
-        <div className="flex items-center gap-3 bg-black/40 backdrop-blur-xl border border-white/20 px-5 py-3 rounded-full text-amber-300">
+        <div className="flex items-center gap-3 bg-foreground/40 backdrop-blur-xl border border-white/20 px-5 py-3 rounded-full text-amber-300">
           <Sun className="w-5 h-5 text-amber-400" />
-          <span className="text-white text-base font-semibold">
+          <span className="text-foreground text-base font-semibold">
             {data.destinationOrLocation ? `Destino Solar • ${data.destinationOrLocation}` : "Melhor Época do Ano"}
           </span>
         </div>
@@ -76,7 +76,7 @@ export const TravelImmersiveStory: React.FC<SocialTemplateProps> = ({ data, scal
 
       {/* Safe Zone Inferior: Cartão Flutuante de Vidro Fosco Profundo */}
       <div className="relative z-10 px-10 pb-16">
-        <div className="bg-black/55 backdrop-blur-2xl border border-white/20 rounded-lg p-10 shadow-2xl">
+        <div className="bg-foreground/55 backdrop-blur-2xl border border-white/20 rounded-lg p-10 shadow-2xl">
           {/* Badge de Oferta & Local */}
           <div className="flex items-center justify-between mb-4">
             {data.destinationOrLocation && (
@@ -86,14 +86,14 @@ export const TravelImmersiveStory: React.FC<SocialTemplateProps> = ({ data, scal
               </div>
             )}
             {data.promoBadge && (
-              <span className="bg-amber-400 text-black px-4 py-1 rounded-full text-xs font-black uppercase tracking-wider">
+              <span className="bg-amber-400 text-foreground px-4 py-1 rounded-full text-xs font-black uppercase tracking-wider">
                 {data.promoBadge}
               </span>
             )}
           </div>
 
           {/* Título Principal */}
-          <h1 className="text-4xl lg:text-[44px] font-black text-white leading-tight tracking-tight mb-4 drop-shadow-sm">
+          <h1 className="text-4xl lg:text-[44px] font-black text-foreground leading-tight tracking-tight mb-4 drop-shadow-sm">
             {data.title}
           </h1>
 
@@ -103,7 +103,7 @@ export const TravelImmersiveStory: React.FC<SocialTemplateProps> = ({ data, scal
               {data.highlights.slice(0, 3).map((item, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center gap-2 bg-white/10 border border-white/15 px-4 py-2 rounded-lg text-white/90 text-sm font-medium"
+                  className="flex items-center gap-2 bg-card/10 border border-white/15 px-4 py-2 rounded-lg text-foreground/90 text-sm font-medium"
                 >
                   <Check className="w-4 h-4 text-emerald-400 shrink-0" />
                   <span>{item}</span>
@@ -115,10 +115,10 @@ export const TravelImmersiveStory: React.FC<SocialTemplateProps> = ({ data, scal
           {/* Divisão Financeira e Botão Primário */}
           <div className="flex items-end justify-between gap-6 pt-6 border-t border-white/15">
             <div>
-              <span className="text-xs uppercase tracking-widest text-white/60 font-semibold block mb-1">
+              <span className="text-xs uppercase tracking-widest text-foreground/60 font-semibold block mb-1">
                 {data.pricingMode === "per_person" ? "Pacote por Pessoa" : "Total do Pacote"}
               </span>
-              <div className="text-4xl lg:text-5xl font-black text-white tracking-tight">
+              <div className="text-4xl lg:text-5xl font-black text-foreground tracking-tight">
                 {priceFormatted || "Sob Consulta"}
               </div>
               {installmentFormatted && data.maxInstallments && data.maxInstallments > 1 && (
@@ -129,7 +129,7 @@ export const TravelImmersiveStory: React.FC<SocialTemplateProps> = ({ data, scal
             </div>
 
             {/* Botão de Ação com Alto Contraste */}
-            <div className="bg-white hover:bg-slate-100 text-slate-950 px-8 py-5 rounded-lg font-black text-xl flex items-center gap-3 shadow-2xl shrink-0 transition-transform active:scale-95">
+            <div className="bg-card hover:bg-slate-100 text-slate-950 px-8 py-5 rounded-lg font-black text-xl flex items-center gap-3 shadow-2xl shrink-0 transition-transform active:scale-95">
               <span>{data.ctaLabel || "Reservar Vaga"}</span>
               <ArrowRight className="w-6 h-6 text-slate-950" />
             </div>

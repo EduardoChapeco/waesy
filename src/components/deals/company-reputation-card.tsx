@@ -78,7 +78,7 @@ export function CompanyReputationCard({
                 <h3 className="font-extrabold text-base text-foreground tracking-tight">
                   Reputação do Estabelecimento
                 </h3>
-                <Badge variant="outline" className="text-[10px] font-bold gap-1 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">
+                <Badge variant="outline" className="text-2xs font-bold gap-1 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">
                   <ShieldCheck className="size-3" />
                   <span>100% Auditada via Deals</span>
                 </Badge>
@@ -102,14 +102,14 @@ export function CompanyReputationCard({
               const pct = total > 0 ? Math.round((bar.count / total) * 100) : 0;
               return (
                 <div key={idx} className="flex items-center gap-2 text-xs">
-                  <span className="text-muted-foreground w-20 text-[11px] shrink-0">{bar.label}</span>
+                  <span className="text-muted-foreground w-20 text-2xs shrink-0">{bar.label}</span>
                   <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
                     <div
-                      className="h-full bg-amber-400 rounded-full transition-all duration-500"
+                      className="h-full bg-amber-400 rounded-full transition-colors duration-200 duration-500"
                       style={{ width: `${pct}%` }}
                     />
                   </div>
-                  <span className="text-muted-foreground text-[10px] w-8 text-right shrink-0">{pct}%</span>
+                  <span className="text-muted-foreground text-2xs w-8 text-right shrink-0">{pct}%</span>
                 </div>
               );
             })}
@@ -126,7 +126,7 @@ export function CompanyReputationCard({
         {reviews.length === 0 ? (
           <div className="p-8 text-center rounded-lg bg-muted/20 border border-border/30 space-y-1">
             <p className="text-xs font-semibold text-foreground">Nenhuma avaliação registrada ainda</p>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               Assim que compradores iniciarem negociações ou fecharem pacotes, as avaliações auditadas aparecerão aqui.
             </p>
           </div>
@@ -159,11 +159,11 @@ export function CompanyReputationCard({
                           <span className="font-bold text-xs text-foreground">
                             {rev.reviewer?.full_name || "Comprador Verificado"}
                           </span>
-                          <Badge variant="outline" className="text-[9px] font-bold border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0">
+                          <Badge variant="outline" className="text-3xs font-bold border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0">
                             Negócio Auditado
                           </Badge>
                         </div>
-                        <span className="text-[10px] text-muted-foreground block">
+                        <span className="text-2xs text-muted-foreground block">
                           {new Date(rev.created_at).toLocaleDateString("pt-BR", {
                             day: "2-digit",
                             month: "short",
@@ -187,7 +187,7 @@ export function CompanyReputationCard({
                   </div>
 
                   {rev.classified && (
-                    <div className="text-[11px] text-muted-foreground px-3 py-1 rounded-lg bg-muted/40 inline-block">
+                    <div className="text-2xs text-muted-foreground px-3 py-1 rounded-lg bg-muted/40 inline-block">
                       Ref: <strong className="text-foreground">{rev.classified.title}</strong>
                     </div>
                   )}
@@ -202,7 +202,7 @@ export function CompanyReputationCard({
                   {rev.response_comment && (
                     <div className="ml-4 pl-3 border-l-2 border-primary/40 space-y-1 bg-muted/20 p-3 rounded-r-lg text-xs">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-bold text-[11px] text-foreground flex items-center gap-1">
+                        <span className="font-bold text-2xs text-foreground flex items-center gap-1">
                           <Reply className="size-3 text-primary" />
                           Resposta da Empresa
                         </span>

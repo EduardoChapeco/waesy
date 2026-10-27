@@ -19,10 +19,15 @@ interface TaskKanbanProps {
   onNewTaskClick: () => void;
 }
 
+/* design-lint-ignore DL-01 reason:"Cores canônicas de identificação visual de status de coluna Kanban" expiry:"2027-12-31" */
 const DEFAULT_COLUMNS: Array<{ id: TaskStatus; label: string; dotColor?: string; color?: string }> = [
+  /* design-lint-ignore DL-01 reason:"Cor canônica slate para coluna A Fazer" expiry:"2027-12-31" */
   { id: "todo", label: "A Fazer", color: "#94a3b8" },
+  /* design-lint-ignore DL-01 reason:"Cor canônica sky para coluna Em Andamento" expiry:"2027-12-31" */
   { id: "in_progress", label: "Em Andamento", color: "#0ea5e9" },
+  /* design-lint-ignore DL-01 reason:"Cor canônica amber para coluna Em Revisão" expiry:"2027-12-31" */
   { id: "review", label: "Em Revisão", color: "#f59e0b" },
+  /* design-lint-ignore DL-01 reason:"Cor canônica emerald para coluna Concluído" expiry:"2027-12-31" */
   { id: "done", label: "Concluído", color: "#10b981" },
 ];
 
@@ -57,7 +62,7 @@ export function TaskKanbanBoard({
         variant="ghost"
         size="icon"
         onClick={onNewTaskClick}
-        className="size-7 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+        className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
         title="Adicionar tarefa"
       >
         <Plus className="size-3.5" />
@@ -65,6 +70,7 @@ export function TaskKanbanBoard({
     ) : undefined,
     renderItem: (task: WorkspaceTask) => (
       <div className="relative group/card">
+        {/* design-lint-ignore DL-15 reason:"Componente de card que encapsula anel de foco interno" expiry:"2027-12-31" */}
         <TaskItemCard
           task={task}
           onToggleStatus={onToggleStatus}
@@ -83,7 +89,7 @@ export function TaskKanbanBoard({
                 if (prevCol) onMoveTaskStatus(task, prevCol.id);
               }}
               title="Voltar etapa"
-              className="size-6 flex items-center justify-center text-muted-foreground hover:text-foreground rounded cursor-pointer"
+              className="size-11 min-h-11 min-w-11 flex items-center justify-center text-muted-foreground hover:text-foreground rounded cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <ArrowLeft className="size-3" />
             </button>
@@ -98,7 +104,7 @@ export function TaskKanbanBoard({
                 if (nextCol) onMoveTaskStatus(task, nextCol.id);
               }}
               title="Avançar etapa"
-              className="size-6 flex items-center justify-center text-muted-foreground hover:text-foreground rounded cursor-pointer"
+              className="size-11 min-h-11 min-w-11 flex items-center justify-center text-muted-foreground hover:text-foreground rounded cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <ArrowRight className="size-3" />
             </button>
@@ -115,7 +121,7 @@ export function TaskKanbanBoard({
             variant="outline"
             size="sm"
             onClick={onNewTaskClick}
-            className="h-7 px-3 rounded-lg text-[11px] font-semibold gap-1 mt-1 cursor-pointer"
+            className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 mt-1 cursor-pointer"
           >
             <Plus className="size-3" />
             <span>Criar Tarefa</span>
@@ -128,6 +134,7 @@ export function TaskKanbanBoard({
   return (
     <FullViewportKanban
       columns={kanbanColumns}
+      /* design-lint-ignore DL-02 reason:"Cálculo de viewport dinâmico para preencher altura exata do Kanban" expiry:"2027-12-31" */
       className="h-[calc(100dvh-10.5rem)] sm:h-[calc(100dvh-9.5rem)] pb-2"
     />
   );

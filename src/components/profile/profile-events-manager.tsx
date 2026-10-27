@@ -145,7 +145,7 @@ export function ProfileEventsManager({
           <p className="text-xs font-semibold text-foreground">
             Nenhum evento adicionado ainda
           </p>
-          <p className="text-[11px] text-muted-foreground max-w-sm mx-auto">
+          <p className="text-2xs text-muted-foreground max-w-sm mx-auto">
             Compartilhe sua agenda de eventos presenciais ou online para que clientes e seguidores possam participar.
           </p>
           <Button
@@ -177,7 +177,7 @@ export function ProfileEventsManager({
               <div
                 key={ev.id}
                 className={cn(
-                  "rounded-lg border p-4 bg-card flex flex-col justify-between transition-all shadow-2xs group relative overflow-hidden",
+                  "rounded-lg border p-4 bg-card flex flex-col justify-between transition-colors duration-200 shadow-2xs group relative overflow-hidden",
                   ev.is_featured
                     ? "border-primary/50 ring-1 ring-primary/20"
                     : "border-border/70 hover:border-border"
@@ -194,7 +194,7 @@ export function ProfileEventsManager({
                       />
                       {ev.is_featured && (
                         <div className="absolute top-2 right-2">
-                          <Badge className="bg-primary text-primary-foreground text-[9px] font-bold shadow-md">
+                          <Badge className="bg-primary text-primary-foreground text-3xs font-bold shadow-md">
                             Destaque
                           </Badge>
                         </div>
@@ -208,7 +208,7 @@ export function ProfileEventsManager({
                         <Badge
                           variant="outline"
                           className={cn(
-                            "text-[9px] font-mono",
+                            "text-3xs font-mono",
                             isPast
                               ? "text-muted-foreground border-border"
                               : "text-primary border-primary/30 font-bold"
@@ -217,7 +217,7 @@ export function ProfileEventsManager({
                           {isPast ? "Encerrado" : "Confirmado"}
                         </Badge>
                         {ev.is_featured && !ev.cover_url && (
-                          <Badge className="bg-primary text-primary-foreground text-[9px] font-bold">
+                          <Badge className="bg-primary text-primary-foreground text-3xs font-bold">
                             Destaque
                           </Badge>
                         )}
@@ -255,7 +255,7 @@ export function ProfileEventsManager({
                     </p>
                   )}
 
-                  <div className="space-y-1 pt-1 border-t border-border/30 text-[11px] text-muted-foreground">
+                  <div className="space-y-1 pt-1 border-t border-border/30 text-2xs text-muted-foreground">
                     <div className="flex items-center gap-2">
                       <Clock className="size-3 text-muted-foreground/70 shrink-0" />
                       <span>{formattedDate}</span>

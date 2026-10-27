@@ -129,7 +129,7 @@ export function RequestQuoteModal({
  <p className="text-xs text-muted-foreground">Quer agilizar o atendimento?</p>
  <Button
  onClick={handleWhatsAppRedirect}
- className="w-full bg-[#25D366] hover:bg-[#1EBE5D] text-white font-semibold flex items-center justify-center gap-2"
+ className="w-full bg-[#25D366] hover:bg-[#1EBE5D] text-foreground font-semibold flex items-center justify-center gap-2"
  >
  <WhatsappLogo size={20} weight="fill" />
  Chamar no WhatsApp Agora
@@ -284,7 +284,7 @@ export function RequestQuoteModal({
  >
  {isLoading ? (
  <>
- <SpinnerGap className="size-4 animate-spin" />
+ <SpinnerGap className="size-4 animate-spin motion-reduce:animate-none" />
  Enviando...
  </>
  ) : (

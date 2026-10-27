@@ -159,7 +159,7 @@ export function KanbanColumnCustomizerModal({
             <div
               key={stage.stage_key}
               className={cn(
-                "p-3 rounded-lg border border-border/70 bg-card flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 transition-all",
+                "p-3 rounded-lg border border-border/70 bg-card flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 transition-colors duration-200",
                 !stage.is_visible && "opacity-50 bg-muted/40"
               )}
             >
@@ -200,7 +200,7 @@ export function KanbanColumnCustomizerModal({
                 <select
                   value={stage.purpose}
                   onChange={(e) => handlePurposeChange(idx, e.target.value as KanbanPurpose)}
-                  className="h-8 px-2 rounded-lg text-[11px] font-semibold bg-muted/50 border border-border/60 text-foreground focus:outline-none cursor-pointer"
+                  className="h-8 px-2 rounded-lg text-2xs font-semibold bg-muted/50 border border-border/60 text-foreground focus:outline-none cursor-pointer"
                   title="Propósito da Etapa"
                 >
                   {PURPOSE_OPTIONS.map((opt) => (

@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Plane, Calendar, Users, Search, ArrowRightLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AirportCombobox } from "@/components/ui/airport-combobox";
 
 export interface FlightSearchParams {
   origin: string;
@@ -72,7 +73,7 @@ export function FlightSearchWidget({
           <button
             type="button"
             onClick={() => setIsRoundTrip(true)}
-            className={cn(
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "px-3 py-1 rounded-md font-medium transition-colors cursor-pointer",
               isRoundTrip ? "bg-card text-foreground font-semibold shadow-xs" : "text-muted-foreground"
             )}
@@ -82,7 +83,7 @@ export function FlightSearchWidget({
           <button
             type="button"
             onClick={() => setIsRoundTrip(false)}
-            className={cn(
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "px-3 py-1 rounded-md font-medium transition-colors cursor-pointer",
               !isRoundTrip ? "bg-card text-foreground font-semibold shadow-xs" : "text-muted-foreground"
             )}
@@ -105,43 +106,49 @@ export function FlightSearchWidget({
       </div>
 
       {/* Origin & Destination Inputs with Swap */}
-      <div className="flex flex-col md:flex-row items-center gap-2">
-        <div className="space-y-1 flex-1 w-full">
-          <label className="text-2xs font-medium text-muted-foreground">Origem</label>
-          <div className="relative flex items-center">
-            <Plane className="absolute left-3 size-4 text-muted-foreground pointer-events-none" />
-            <input
-              type="text"
-              value={origin}
-              onChange={(e) => setOrigin(e.target.value)}
-              className="w-full min-h-11 pl-9 pr-3 rounded-lg border border-border/70 bg-background text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            />
-          </div>
+      <div className="flex flex-col md:flex-row items-center gap-3">
+        <div className="flex-1 w-full">
+          <AirportCombobox
+            label="Origem"
+            value={origin}
+            onChange={(iata, airport) => {
+              if (airport) {
+                setOrigin(`${airport.city} (${airport.iata_code})`);
+              } else {
+                setOrigin(iata);
+              }
+            }}
+            placeholder="Cidade ou Aeroporto de Origem..."
+            showAirportLink
+          />
         </div>
 
-        <div className="flex items-center justify-center md:pt-5 shrink-0">
+        <div className="flex items-center justify-center md:pt-6 shrink-0">
           <button
             type="button"
             onClick={handleSwapAirports}
             title="Inverter origem e destino"
             aria-label="Inverter aeroportos"
-            className="size-9 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer transition-colors"
+            className="size-11 min-h-11 rounded-lg border border-border/70 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
-            <ArrowRightLeft className="size-3.5" />
+            <ArrowRightLeft className="size-4" />
           </button>
         </div>
 
-        <div className="space-y-1 flex-1 w-full">
-          <label className="text-2xs font-medium text-muted-foreground">Destino</label>
-          <div className="relative flex items-center">
-            <Plane className="absolute left-3 size-4 text-muted-foreground pointer-events-none rotate-90" />
-            <input
-              type="text"
-              value={destination}
-              onChange={(e) => setDestination(e.target.value)}
-              className="w-full min-h-11 pl-9 pr-3 rounded-lg border border-border/70 bg-background text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            />
-          </div>
+        <div className="flex-1 w-full">
+          <AirportCombobox
+            label="Destino"
+            value={destination}
+            onChange={(iata, airport) => {
+              if (airport) {
+                setDestination(`${airport.city} (${airport.iata_code})`);
+              } else {
+                setDestination(iata);
+              }
+            }}
+            placeholder="Cidade ou Aeroporto de Destino..."
+            showAirportLink
+          />
         </div>
       </div>
 

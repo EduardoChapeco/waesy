@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Share2, MapPin, Check, ShieldCheck, Tag, Clock, User, ChevronLeft, ChevronRight, Maximize2, X, Phone, MessageCircle, Package, Truck, CreditCard, QrCode, Receipt, FileSpreadsheet, CheckCircle2, Edit3, Smartphone, ExternalLink, ShieldAlert, Coins, TrendingUp, Banknote, FileCheck, Download, AlertCircle, Eye, Building, Car, Hotel, Briefcase, HelpCircle, Lock, FileText, Landmark, RefreshCw, Star, Utensils, Compass } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -154,14 +154,33 @@ export function ClassifiedDetailDesktop({
     const list: Array<{ id: "overview" | "media" | "seller"; label: string }> = [];
     list.push({
       id: "overview",
-      label: isTravelOrHospitality ? "Infos do Pacote" : nicheTabLabels.overviewTab,
+      label: isTravelOrHospitality && niche.id === "travel" ? "Infos do Pacote" : (nicheTabLabels.overviewTab || "Visão Geral"),
     });
     if (images.length > 1) {
       list.push({ id: "media", label: nicheTabLabels.mediaTab || "Fotos & Mídia" });
     }
-    list.push({ id: "seller", label: nicheTabLabels.sellerTab || "Anunciante / Empresa" });
+    const author = classified.profiles as any;
+    const hasSeller = Boolean(
+      author?.name ||
+      author?.full_name ||
+      author?.phone ||
+      classified.contact_whatsapp ||
+      classified.whatsapp ||
+      classified.store_id ||
+      classified.storeId ||
+      classified.user_id
+    );
+    if (hasSeller) {
+      list.push({ id: "seller", label: nicheTabLabels.sellerTab || "Anunciante / Empresa" });
+    }
     return list;
-  }, [isTravelOrHospitality, nicheTabLabels, images.length]);
+  }, [isTravelOrHospitality, niche.id, nicheTabLabels, images.length, classified]);
+
+  useEffect(() => {
+    if (tabs.length > 0 && !tabs.some((t) => t.id === activeTab)) {
+      setActiveTab(tabs[0].id);
+    }
+  }, [tabs, activeTab]);
 
   const priceCents = Number(classified.price_cents || 0);
   const maxInstallments = Math.max(1, Number(attrs.max_installments) || 1);
@@ -411,7 +430,12 @@ export function ClassifiedDetailDesktop({
   }, [attrs, classified, images, locationText]);
 
   return (
-    <div className="w-full min-h-[100dvh] bg-background text-foreground pb-16">
+    <div
+      data-active-template={templateStyle}
+      data-active-niche={niche.id}
+      data-render-mode="desktop-native"
+      className="w-full min-h-[100dvh] bg-background text-foreground pb-16"
+    >
       {/* ── BREADCRUMBS & TOP BAR ACTIONS (Desktop) ── */}
       <div className="w-full max-w-7xl mx-auto px-6 pt-5 pb-4 flex items-center justify-between gap-4">
         {/* Breadcrumb Limpo */}
@@ -479,16 +503,19 @@ export function ClassifiedDetailDesktop({
         ) : images.length === 1 ? (
           <div className="w-full aspect-[16/9] max-h-[480px] rounded-lg overflow-hidden bg-muted/20 border border-border/40 relative group">
             <img
-              src={images[0]}
-              alt={classified.title}
-              className="size-full object-cover cursor-pointer group-hover:scale-[1.01] transition-transform duration-300"
-              onClick={() => setFullscreenImage(images[0])}
-            />
-            <button
-              type="button"
-              onClick={() => setFullscreenImage(images[0])}
-              className="absolute bottom-4 right-4 px-4 py-2 rounded-lg bg-background/90 hover:bg-background text-foreground text-xs font-semibold border border-border/60 flex items-center gap-2 transition-all shadow-sm"
-            >
+    src={images[0]}
+    alt={classified.title}
+    tabIndex={0}
+    role="button"
+    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setFullscreenImage(images[0]); } }}
+    className="size-full object-cover cursor-pointer group-hover:scale-[1.01] transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    onClick={() => setFullscreenImage(images[0])}
+  />
+  <button
+    type="button"
+    onClick={() => setFullscreenImage(images[0])}
+    className="absolute bottom-4 right-4 px-4 py-2 rounded-lg bg-background/90 hover:bg-background text-foreground text-xs font-semibold border border-border/60 flex items-center gap-2 transition-colors duration-200 shadow-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+  >
               <Maximize2 className="size-4" />
               <span>Ver em tela cheia</span>
             </button>
@@ -498,34 +525,43 @@ export function ClassifiedDetailDesktop({
             {/* Foto Principal Hero (8 colunas) */}
             <div className="col-span-8 relative overflow-hidden bg-muted/30 h-full">
               <img
-                src={images[0]}
-                alt={classified.title}
-                className="size-full object-cover cursor-pointer hover:scale-[1.01] transition-transform duration-300"
-                onClick={() => setFullscreenImage(images[0])}
-              />
+    src={images[0]}
+    alt={classified.title}
+    tabIndex={0}
+    role="button"
+    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setFullscreenImage(images[0]); } }}
+    className="size-full object-cover cursor-pointer hover:scale-[1.01] transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    onClick={() => setFullscreenImage(images[0])}
+  />
             </div>
             {/* Fotos Secundárias (4 colunas) */}
             <div className="col-span-4 grid grid-rows-2 gap-3 h-full">
               <div className="relative overflow-hidden bg-muted/30 h-full">
                 <img
-                  src={images[1] || images[0]}
-                  alt=""
-                  className="size-full object-cover cursor-pointer hover:scale-[1.01] transition-transform duration-300"
-                  onClick={() => setFullscreenImage(images[1] || images[0])}
-                />
+    src={images[1] || images[0]}
+    alt=""
+    tabIndex={0}
+    role="button"
+    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setFullscreenImage(images[1] || images[0]); } }}
+    className="size-full object-cover cursor-pointer hover:scale-[1.01] transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    onClick={() => setFullscreenImage(images[1] || images[0])}
+  />
               </div>
               <div className="relative overflow-hidden bg-muted/30 h-full">
                 <img
-                  src={images[2] || images[0]}
-                  alt=""
-                  className="size-full object-cover cursor-pointer hover:scale-[1.01] transition-transform duration-300"
-                  onClick={() => setFullscreenImage(images[2] || images[0])}
-                />
-                <button
-                  type="button"
-                  onClick={() => setFullscreenImage(images[0])}
-                  className="absolute bottom-4 right-4 px-4 py-2 rounded-lg bg-background/95 border border-border/50 text-foreground text-xs font-semibold flex items-center gap-2 shadow-md hover:bg-background cursor-pointer active:scale-95"
-                >
+    src={images[2] || images[0]}
+    alt=""
+    tabIndex={0}
+    role="button"
+    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setFullscreenImage(images[2] || images[0]); } }}
+    className="size-full object-cover cursor-pointer hover:scale-[1.01] transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    onClick={() => setFullscreenImage(images[2] || images[0])}
+  />
+  <button
+    type="button"
+    onClick={() => setFullscreenImage(images[0])}
+    className="absolute bottom-4 right-4 px-4 py-2 rounded-lg bg-background/95 border border-border/50 text-foreground text-xs font-semibold flex items-center gap-2 shadow-md hover:bg-background cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+  >
                   <Maximize2 className="size-3.5" />
                   <span>Ver todas ({images.length})</span>
                 </button>
@@ -544,6 +580,19 @@ export function ClassifiedDetailDesktop({
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="outline" className="text-xs font-bold text-primary border-primary/30 bg-primary/10">
                 {niche.shortLabel || niche.title}
+              </Badge>
+              <Badge variant="secondary" data-template-badge={templateStyle} className="text-xs font-semibold">
+                {templateStyle === "automotivo"
+                  ? "Showroom Automotivo"
+                  : templateStyle === "imobiliario"
+                  ? "Ficha Patrimonial"
+                  : templateStyle === "resort_hotel"
+                  ? "Estadia & Hospitalidade"
+                  : templateStyle === "servicos_agenda"
+                  ? "Agenda & Serviços"
+                  : templateStyle === "editorial"
+                  ? "Dossiê Editorial"
+                  : "Vitrine Padrão"}
               </Badge>
               {classified.condition && !["hospitality_stay", "real_estate_sale", "real_estate_rent", "service", "job", "event", "travel", "digital", "subscription", "business"].includes(niche.id) && (
                 <Badge variant="secondary" className="text-xs font-medium">
@@ -599,6 +648,97 @@ export function ClassifiedDetailDesktop({
           {/* Destaque Visual por Modelo Canônico */}
           {(displayMode === "continuous_list" || activeTab === "overview") && (
             <>
+              {/* Strip Canônico do Template Selecionado (Desktop Native) */}
+              {templateStyle === "automotivo" && (
+                <div data-template-strip="automotivo" className="rounded-lg border border-border/70 bg-muted/20 p-5 space-y-3">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-2">
+                      <Car className="size-4 text-primary" />
+                      <span className="text-xs font-bold uppercase tracking-wider text-foreground">Showroom Automotivo & Telemetria</span>
+                    </div>
+                    <Badge variant="outline" className="text-xs font-semibold border-primary/30 text-primary">Vistoria & Procedência</Badge>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+                    <div className="rounded-lg bg-card border border-border/50 p-3">
+                      <span className="text-xs text-muted-foreground block">Ano / Modelo</span>
+                      <span className="text-sm font-bold text-foreground break-words">{attrs.year || attrs.year_model || "Consulte"}</span>
+                    </div>
+                    <div className="rounded-lg bg-card border border-border/50 p-3">
+                      <span className="text-xs text-muted-foreground block">Quilometragem</span>
+                      <span className="text-sm font-bold text-foreground break-words">{attrs.mileage || attrs.mileage_km ? `${attrs.mileage || attrs.mileage_km} km` : "Consulte"}</span>
+                    </div>
+                    <div className="rounded-lg bg-card border border-border/50 p-3">
+                      <span className="text-xs text-muted-foreground block">Câmbio</span>
+                      <span className="text-sm font-bold text-foreground break-words">{attrs.transmission || "Original"}</span>
+                    </div>
+                    <div className="rounded-lg bg-card border border-border/50 p-3">
+                      <span className="text-xs text-muted-foreground block">Combustível</span>
+                      <span className="text-sm font-bold text-foreground break-words">{attrs.fuel || "Flex"}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {templateStyle === "resort_hotel" && (
+                <div data-template-strip="resort_hotel" className="rounded-lg border border-border/70 bg-muted/20 p-5 flex items-center justify-between gap-4">
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <Hotel className="size-4 text-primary" />
+                      <span className="text-xs font-bold text-foreground block">Estadia, Check-in & Hospitalidade</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground break-words">
+                      Check-in: {attrs.checkin_time || "14:00"} • Check-out: {attrs.checkout_time || "12:00"} {attrs.max_guests ? `• Até ${attrs.max_guests} hóspedes` : ""}
+                    </p>
+                  </div>
+                  {onOpenBookingModal && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onOpenBookingModal()}
+                      className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg border-primary/40 text-primary hover:bg-primary/10 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      Consultar Datas
+                    </Button>
+                  )}
+                </div>
+              )}
+
+              {templateStyle === "servicos_agenda" && (
+                <div data-template-strip="servicos_agenda" className="rounded-lg border border-border/70 bg-muted/20 p-5 flex items-center justify-between gap-4">
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <Briefcase className="size-4 text-primary" />
+                      <span className="text-xs font-bold text-foreground block">Agenda Profissional & Escopo de Atendimento</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground break-words">
+                      Modalidade: {attrs.modality === "online" ? "Remoto / Online" : attrs.modality === "domicilio" ? "Em Domicílio" : "Presencial"} {attrs.availability ? `• ${attrs.availability}` : ""}
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleStartNativeChat("Olá, gostaria de consultar disponibilidade na agenda.")}
+                    className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg border-primary/40 text-primary hover:bg-primary/10 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    Agendar Horário
+                  </Button>
+                </div>
+              )}
+
+              {templateStyle === "editorial" && (
+                <div data-template-strip="editorial" className="rounded-lg border border-primary/25 bg-primary/5 p-5 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Compass className="size-4 text-primary" />
+                    <span className="text-xs font-bold uppercase tracking-wider text-primary">Dossiê Curatorial Editorial</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed break-words">
+                    Apresentação expandida com narrativa completa, especificações verificadas e atendimento direto com o anunciante.
+                  </p>
+                </div>
+              )}
+
               {/* Ações Comerciais Específicas: Propostas, Troca e Visitas */}
               {templateStyle === "automotivo" && (attrs.accepts_trade || attrs.accepts_financing || attrs.negotiable) && (
                 <div className="rounded-lg border border-primary/20 bg-primary/5 p-5 flex items-center justify-between gap-4">
@@ -779,7 +919,7 @@ export function ClassifiedDetailDesktop({
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {/* Item 1: Alimentação */}
                       <div className="p-3 rounded-lg bg-muted/20 border border-border/40 flex items-start gap-3">
-                        <div className="size-9 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+                        <div className="size-9 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
                           <Utensils className="size-4" />
                         </div>
                         <div className="min-w-0 text-xs leading-snug space-y-1">
@@ -790,7 +930,7 @@ export function ClassifiedDetailDesktop({
 
                       {/* Item 2: Traslados */}
                       <div className="p-3 rounded-lg bg-muted/20 border border-border/40 flex items-start gap-3">
-                        <div className="size-9 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+                        <div className="size-9 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
                           <Truck className="size-4" />
                         </div>
                         <div className="min-w-0 text-xs leading-snug space-y-1">
@@ -801,7 +941,7 @@ export function ClassifiedDetailDesktop({
 
                       {/* Item 3: Passeios */}
                       <div className="p-3 rounded-lg bg-muted/20 border border-border/40 flex items-start gap-3">
-                        <div className="size-9 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+                        <div className="size-9 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
                           <Compass className="size-4" />
                         </div>
                         <div className="min-w-0 text-xs leading-snug space-y-1">
@@ -812,7 +952,7 @@ export function ClassifiedDetailDesktop({
 
                       {/* Item 4: Suporte e Seguro */}
                       <div className="p-3 rounded-lg bg-muted/20 border border-border/40 flex items-start gap-3">
-                        <div className="size-9 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
+                        <div className="size-9 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-1">
                           <ShieldCheck className="size-4" />
                         </div>
                         <div className="min-w-0 text-xs leading-snug space-y-1">
@@ -1278,7 +1418,7 @@ export function ClassifiedDetailDesktop({
                 <Button
                   type="button"
                   onClick={() => setIsLeadFormModalOpen(true)}
-                  className="h-12 w-full rounded-lg text-sm font-bold bg-primary text-primary-foreground shadow-sm hover:opacity-95 active:scale-[0.99] transition-all cursor-pointer flex items-center justify-center gap-2"
+                  className="h-12 w-full rounded-lg text-sm font-bold bg-primary text-primary-foreground shadow-sm hover:opacity-95 active:scale-[0.99] transition-transform duration-200 cursor-pointer flex items-center justify-center gap-2"
                 >
                   <FileText className="size-4" />
                   <span>{attrs?.inquiry_config?.title || "Tenho Interesse neste Anúncio"}</span>
@@ -1290,7 +1430,7 @@ export function ClassifiedDetailDesktop({
                 onClick={primaryCta.action}
                 disabled={isBooking || isBuyingDirect || isDownloadingDigital}
                 className={cn(
-                  "h-12 w-full rounded-lg text-sm font-bold shadow-sm hover:opacity-95 active:scale-[0.99] transition-all cursor-pointer",
+                  "h-12 w-full rounded-lg text-sm font-bold shadow-sm hover:opacity-95 active:scale-[0.99] transition-transform duration-200 cursor-pointer",
                   classified.lead_form || classified.form_id
                     ? "bg-secondary text-secondary-foreground hover:bg-secondary/80"
                     : "bg-primary text-primary-foreground"
@@ -1354,9 +1494,9 @@ export function ClassifiedDetailDesktop({
       {/* ── LIGHTBOX MODAL ── */}
       {fullscreenImage && (
         <div
-          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4 select-none animate-in fade-in duration-200"
-          onClick={() => setFullscreenImage(null)}
-        >
+    className="fixed inset-0 z-50 bg-foreground/95 flex items-center justify-center p-4 select-none animate-in fade-in duration-200 focus-visible:outline-none"
+    onClick={() => setFullscreenImage(null)}
+  >
           <button
             type="button"
             onClick={() => setFullscreenImage(null)}
@@ -1367,20 +1507,20 @@ export function ClassifiedDetailDesktop({
           </button>
           {isVideoUrl(fullscreenImage) ? (
             <video
-              src={fullscreenImage}
-              controls
-              playsInline
-              autoPlay
-              className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
-              onClick={(e) => e.stopPropagation()}
-            />
+    src={fullscreenImage}
+    controls
+    playsInline
+    autoPlay
+    className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg focus-visible:outline-none"
+    onClick={(e) => e.stopPropagation()}
+  />
           ) : (
             <img
-              src={fullscreenImage}
-              alt="Tela cheia"
-              className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
-              onClick={(e) => e.stopPropagation()}
-            />
+    src={fullscreenImage}
+    alt="Tela cheia"
+    className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg focus-visible:outline-none"
+    onClick={(e) => e.stopPropagation()}
+  />
           )}
         </div>
       )}

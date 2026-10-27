@@ -70,11 +70,21 @@ export async function executeMultiProviderSearch(
   // 1. Carregar integrações ativas configuradas pela agência
   const { data: integrations } = await supabase
     .from("travel_operator_integrations")
-    .select("id, provider_code, display_name, engine_type, default_markup_percent, is_active")
+    .select("id, provider_code, display_name, engine_type, default_markup_percent, is_active, credentials_vault_ref")
     .eq("store_id", query.agencyId)
     .eq("is_active", true);
 
   const activeProviders = integrations || [];
+  if (activeProviders.length === 0) {
+    return {
+      offers: [],
+      providersResponded: [],
+      errors: [
+        "BLOCKED — PROVIDER CREDENTIAL REQUIRED: Nenhuma integração de fornecedor GDS/Consolidadora ativa cadastrada para esta agência.",
+      ],
+    };
+  }
+
   const providersResponded: string[] = [];
   const errors: string[] = [];
   const offers: TravelOfferDTO[] = [];
@@ -82,18 +92,25 @@ export async function executeMultiProviderSearch(
   // 2. Despacho em paralelo com Promise.allSettled
   const searchPromises = activeProviders.map(async (provider) => {
     try {
+      if (!provider.credentials_vault_ref) {
+        errors.push(`${provider.provider_code}: BLOCKED — PROVIDER CREDENTIAL REQUIRED (credenciais ausentes no cofre)`);
+        return;
+      }
+
       if (provider.provider_code === "infotravel" || provider.engine_type === "infotravel_v1") {
-        // Chamada real ao conector InfoTravel REST/JSON
+        // Chamada ao conector InfoTravel REST/JSON
         providersResponded.push("infotravel");
       } else if (provider.provider_code === "wooba") {
-        // Chamada real ao conector Wooba Travellink
+        // Chamada ao conector Wooba Travellink
         providersResponded.push("wooba");
       } else if (provider.provider_code === "rexturadvance") {
-        // Chamada real ao conector RexturAdvance / RAIAX
+        // Chamada ao conector RexturAdvance / RAIAX
         providersResponded.push("rexturadvance");
+      } else {
+        errors.push(`${provider.provider_code}: Provedor não suportado`);
       }
     } catch (err: any) {
-      errors.push(`${provider.provider_code}: ${err?.message || "Timeout"}`);
+      errors.push(`${provider.provider_code}: ${err?.message || "Timeout de conexão"}`);
     }
   });
 
@@ -118,7 +135,8 @@ export async function executeMultiProviderBookingSaga(params: {
   agencyId: string;
   items: SagaBookingItem[];
 }): Promise<SagaBookingResult> {
-  const sagaId = `saga_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+  const supabase = getServerClient();
+  const sagaId = `saga_${Date.now()}_${params.tripId.slice(0, 8)}`;
   const steps: SagaStepState[] = [];
   let hasFailure = false;
 
@@ -131,20 +149,26 @@ export async function executeMultiProviderBookingSaga(params: {
         : "car_reservation";
 
     try {
-      // Simulação do handshake seguro com provider real
-      // (Se o provider falhar ou lançar erro, interrompe a saga)
-      const mockSuccess = true;
-      if (!mockSuccess) {
-        throw new Error(`Falha de disponibilidade no provedor ${item.providerCode}`);
+      // 1. Verificação estrita de credenciais ativas do provedor no cofre (P0-3)
+      const { data: integration } = await supabase
+        .from("travel_operator_integrations")
+        .select("id, provider_code, credentials_vault_ref, is_active")
+        .eq("store_id", params.agencyId)
+        .eq("provider_code", item.providerCode)
+        .eq("is_active", true)
+        .maybeSingle();
+
+      if (!integration || !integration.credentials_vault_ref) {
+        throw new Error(
+          `BLOCKED — PROVIDER CREDENTIAL REQUIRED: Provedor ${item.providerCode} não possui credenciais ativas cadastradas na agência.`
+        );
       }
 
-      steps.push({
-        step: stepName,
-        status: "success",
-        provider: item.providerCode,
-        locator_code: `${item.providerCode.slice(0, 3).toUpperCase()}${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
-        timestamp: new Date().toISOString(),
-      });
+      // Provedor real: despacha requisição de reserva para o conector ativo
+      // Proibido fingir sucesso ou emitir localizador fictício
+      throw new Error(
+        `BLOCKED — PROVIDER CREDENTIAL REQUIRED: Conexão de produção com ${item.providerCode} requer credenciais verificadas.`
+      );
     } catch (err: any) {
       hasFailure = true;
       steps.push({

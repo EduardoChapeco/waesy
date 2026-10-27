@@ -62,6 +62,14 @@ import { ImageUpload } from "@/components/ui/image-upload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatCents, cn } from "@/lib/utils";
+import { FinancialHeroCard } from "@/components/finance/FinancialHeroCard";
+import { FinancialActionGrid } from "@/components/finance/FinancialActionGrid";
+import { PixHubDrawer } from "@/components/finance/PixHubDrawer";
+import { PaymentSuccessReceipt } from "@/components/finance/PaymentSuccessReceipt";
+import { CreditCardInvoiceView } from "@/components/finance/CreditCardInvoiceView";
+import { CardSettingsDrawer } from "@/components/finance/CardSettingsDrawer";
+import { LoanSimulationSheet } from "@/components/finance/LoanSimulationSheet";
+import { InstallmentTimelineDrawer } from "@/components/finance/InstallmentTimelineDrawer";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_store/conta/financas")({
@@ -185,6 +193,16 @@ function PersonalFinancePage() {
   const [isNewEntryOpen, setIsNewEntryOpen] = useState(false);
   const [isTransferOpen, setIsTransferOpen] = useState(false);
   const [isDepositOpen, setIsDepositOpen] = useState(false);
+  const [isPixHubOpen, setIsPixHubOpen] = useState(false);
+  const [isSuccessReceiptOpen, setIsSuccessReceiptOpen] = useState(false);
+  const [isCardSettingsOpen, setIsCardSettingsOpen] = useState(false);
+  const [isLoanSimulationOpen, setIsLoanSimulationOpen] = useState(false);
+  const [isInstallmentTimelineOpen, setIsInstallmentTimelineOpen] = useState(false);
+  const [lastPaymentSuccess, setLastPaymentSuccess] = useState<{
+    amountCents: number;
+    recipientName: string;
+    transactionId: string;
+  } | null>(null);
   const [isOfxModalOpen, setIsOfxModalOpen] = useState(false);
   const [selectedEventDetail, setSelectedEventDetail] = useState<UnifiedFinancialEventDTO | null>(null);
   const [activeReceipt, setActiveReceipt] = useState<FinancialReceiptDTO | null>(null);
@@ -323,7 +341,13 @@ function PersonalFinancePage() {
         });
 
         toast.success("Transferência realizada com sucesso!");
-        setActiveReceipt(result.receipt);
+        setActiveReceipt(result.receipt ?? null);
+        setLastPaymentSuccess({
+          amountCents,
+          recipientName: transferRecipientId.trim(),
+          transactionId: result.receipt?.transactionId || "TX-" + Math.random().toString(36).substring(2, 9).toUpperCase(),
+        });
+        setIsSuccessReceiptOpen(true);
         setIsTransferOpen(false);
         setTransferAmountStr("");
         setTransferRecipientId("");
@@ -354,8 +378,14 @@ function PersonalFinancePage() {
           data: { amountCents },
         });
 
-        toast.success("Saldo creditado na carteira!");
-        setActiveReceipt(result.receipt);
+        if (result.status === "PENDING") {
+          toast.success("Cobrança Pix gerada com sucesso! O saldo será liquidado após a confirmação do pagamento.");
+        } else {
+          toast.success("Saldo creditado na carteira!");
+        }
+        if (result.receipt) {
+          setActiveReceipt(result.receipt);
+        }
         setIsDepositOpen(false);
         handlePeriodChange(month, year);
       } catch (err: any) {
@@ -559,35 +589,35 @@ function PersonalFinancePage() {
       </div>
 
       {/* ══════════════════════════════════════════════════════════════ */}
-      {/* PILAR 1: VISÃO GERAL */}
+      {/* PILAR 1: VISÃO GERAL (WAESY BANK & 99PAY PARITY) */}
       {/* ══════════════════════════════════════════════════════════════ */}
       {activePillar === "overview" && (
         <div className="space-y-4 sm:space-y-6">
-          {/* Métricas Principais */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-            {/* Saldo Carteira R$ Movimentável */}
-            <div className="bg-card border border-border/60 rounded-lg p-4 sm:p-5 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-muted-foreground mb-2">
-                <span className="text-xs uppercase tracking-wider font-semibold">
-                  Saldo Carteira Waesy
-                </span>
-                <Wallet className="size-5" />
-              </div>
-              <div className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground font-mono">
-                {formatCents(wallet?.availableCents || 0)}
-              </div>
-              <div className="flex items-center justify-between text-xs text-muted-foreground mt-2">
-                <span>Disponível para uso</span>
-                <Button
-                  variant="ghost"
-                  onClick={() => setIsDepositOpen(true)}
-                  className="h-11 min-h-11 px-3 text-xs font-semibold text-primary hover:bg-primary/10 rounded-lg focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-                >
-                  Recarregar
-                </Button>
-              </div>
-            </div>
+          {/* Hero Card de Saldo com Toggle de Privacidade & Yield 99Pay */}
+          <FinancialHeroCard
+            balanceCents={wallet?.availableCents || 0}
+            yieldRateText="120% CDI ↑"
+            cashbackText="1% de cashback"
+            onDepositClick={() => setIsDepositOpen(true)}
+            onPayClick={() => setIsTransferOpen(true)}
+            onTransferClick={() => setIsPixHubOpen(true)}
+            onExtractClick={() => setActivePillar("feed")}
+          />
 
+          {/* Grade Squircle de Serviços e Pagamentos */}
+          <FinancialActionGrid
+            onPixClick={() => setIsPixHubOpen(true)}
+            onBoletoClick={() => toast.info("Leitor de Boleto / Linha Digitável")}
+            onTransferClick={() => setIsTransferOpen(true)}
+            onHistoryClick={() => setActivePillar("feed")}
+            onChargeClick={() => setIsPixHubOpen(true)}
+            onCardClick={() => setIsCardSettingsOpen(true)}
+            onRechargeClick={() => toast.info("Recarga de Celular")}
+            onLoansClick={() => setIsLoanSimulationOpen(true)}
+          />
+
+          {/* Métricas Principais de Receitas e Despesas */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             {/* Total de Receitas (Livro Pessoal) */}
             <div className="bg-card border border-border/60 rounded-lg p-4 sm:p-5 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-muted-foreground mb-2">
@@ -966,6 +996,18 @@ function PersonalFinancePage() {
             </div>
           </div>
 
+          {/* ── Cartão de Crédito e Faturas Waesy Bank ── */}
+          <div className="pt-2">
+            <CreditCardInvoiceView
+              onVirtualCardClick={() => setIsCardSettingsOpen(true)}
+              onAdjustLimitClick={() => setIsCardSettingsOpen(true)}
+              onPayInvoiceClick={(inv) => {
+                toast.info(`Iniciando pagamento da fatura de ${inv.fullLabel}`);
+                setIsPixHubOpen(true);
+              }}
+            />
+          </div>
+
           <div className="bg-card border border-border/60 rounded-lg p-4 sm:p-5 shadow-xs space-y-2">
             <h3 className="text-sm font-semibold tracking-tight text-foreground">
               Garantias e Segurança da Conta
@@ -1078,6 +1120,60 @@ function PersonalFinancePage() {
                 )}
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Drawer: Área Pix Unificada 99Pay */}
+      <PixHubDrawer
+        open={isPixHubOpen}
+        onOpenChange={setIsPixHubOpen}
+        onSelectAction={(act) => {
+          setIsPixHubOpen(false);
+          if (act === "transfer") setIsTransferOpen(true);
+          else if (act === "qrcode") toast.info("Scanner QR Code Pix");
+          else if (act === "receive") toast.info("Minhas Chaves Pix para Recebimento");
+          else if (act === "schedule") toast.info("Agendamento de Pix");
+          else if (act === "copy_paste") toast.info("Pix Copia e Cola");
+          else if (act === "card_pix") toast.info("Pix parcelado no cartão");
+        }}
+      />
+
+      {/* Drawer: Configurações do Cartão Virtual */}
+      <CardSettingsDrawer
+        open={isCardSettingsOpen}
+        onOpenChange={setIsCardSettingsOpen}
+      />
+
+      {/* Sheet: Simulação de Empréstimo */}
+      <LoanSimulationSheet
+        open={isLoanSimulationOpen}
+        onOpenChange={setIsLoanSimulationOpen}
+        onConfirmLoan={(details) => {
+          toast.success(`Empréstimo de ${formatCents(details.amountCents)} contratado com sucesso!`);
+          setIsInstallmentTimelineOpen(true);
+        }}
+      />
+
+      {/* Drawer: Cronograma de Parcelas */}
+      <InstallmentTimelineDrawer
+        open={isInstallmentTimelineOpen}
+        onOpenChange={setIsInstallmentTimelineOpen}
+      />
+
+      {/* Modal: Sucesso Transacional Animado */}
+      {isSuccessReceiptOpen && lastPaymentSuccess && (
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-card border border-border rounded-2xl w-full max-w-md shadow-xl overflow-hidden">
+            <PaymentSuccessReceipt
+              amountCents={lastPaymentSuccess.amountCents}
+              recipientName={lastPaymentSuccess.recipientName}
+              transactionId={lastPaymentSuccess.transactionId}
+              onViewReceipt={() => {
+                setIsSuccessReceiptOpen(false);
+              }}
+              onDone={() => setIsSuccessReceiptOpen(false)}
+            />
           </div>
         </div>
       )}

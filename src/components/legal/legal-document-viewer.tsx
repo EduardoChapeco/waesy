@@ -30,7 +30,7 @@ export function LegalDocumentViewer({ document }: LegalDocumentProps) {
  fallbackHref="/"
  rightActions={
  <div className="flex items-center gap-2">
- <Badge variant="outline" className="text-[10px] font-mono font-bold bg-primary/10 text-primary border-primary/20">
+ <Badge variant="outline" className="text-2xs font-mono font-bold bg-primary/10 text-primary border-primary/20">
  <ShieldCheck className="size-3 mr-1 inline" /> v{document.version || "2.0"}
  </Badge>
  </div>
@@ -136,7 +136,7 @@ export function LegalDocumentViewer({ document }: LegalDocumentProps) {
  </p>
  </div>
  </div>
- <Badge variant="outline" className="bg-background text-foreground font-mono text-[10px] shrink-0">
+ <Badge variant="outline" className="bg-background text-foreground font-mono text-2xs shrink-0">
  Salvo com Segurança
  </Badge>
  </div>

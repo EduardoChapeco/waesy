@@ -260,22 +260,22 @@ export function OperatorVoucherImportSheet({
                 <button
                   type="button"
                   onClick={() => setActiveInputTab("files")}
-                  className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                  className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-colors duration-200 cursor-pointer ${
                     activeInputTab === "files"
                       ? "bg-card text-foreground shadow-xs font-bold"
                       : "text-muted-foreground hover:text-foreground"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   Arquivos (PDFs, Imagens, Boletos)
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveInputTab("text")}
-                  className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                  className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-colors duration-200 cursor-pointer ${
                     activeInputTab === "text"
                       ? "bg-card text-foreground shadow-xs font-bold"
                       : "text-muted-foreground hover:text-foreground"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   Texto / E-mail Copiado
                 </button>
@@ -288,7 +288,7 @@ export function OperatorVoucherImportSheet({
                     onClick={() => fileInputRef.current?.click()}
                     onPaste={handlePaste}
                     tabIndex={0}
-                    className="border-2 border-dashed border-border hover:border-primary/50 hover:bg-muted/30 transition-all rounded-lg p-8 text-center cursor-pointer flex flex-col items-center justify-center gap-3 outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                    className="border-2 border-dashed border-border hover:border-primary/50 hover:bg-muted/30 transition-colors duration-200 rounded-lg p-8 text-center cursor-pointer flex flex-col items-center justify-center gap-3 outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                   >
                     <input
                       ref={fileInputRef}
@@ -328,7 +328,7 @@ export function OperatorVoucherImportSheet({
                         <button
                           type="button"
                           onClick={() => setDocuments([])}
-                          className="text-xs text-destructive hover:underline cursor-pointer"
+                          className="text-xs text-destructive hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           Limpar todos
                         </button>
@@ -352,7 +352,7 @@ export function OperatorVoucherImportSheet({
                                 e.stopPropagation();
                                 removeDocument(doc.id);
                               }}
-                              className="size-6 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer shrink-0 transition-colors"
+                              className="size-6 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
                               <X className="size-3.5" />
                             </button>
@@ -387,22 +387,22 @@ export function OperatorVoucherImportSheet({
                 <button
                   type="button"
                   onClick={() => setActiveReviewTab("resumo")}
-                  className={`px-3 py-2 rounded-lg transition-all cursor-pointer shrink-0 ${
+                  className={`px-3 py-2 rounded-lg transition-colors duration-200 cursor-pointer shrink-0 ${
                     activeReviewTab === "resumo"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted/50 text-muted-foreground hover:text-foreground"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   Resumo
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveReviewTab("passageiros")}
-                  className={`px-3 py-2 rounded-lg transition-all cursor-pointer shrink-0 flex items-center gap-1 ${
+                  className={`px-3 py-2 rounded-lg transition-colors duration-200 cursor-pointer shrink-0 flex items-center gap-1 ${
                     activeReviewTab === "passageiros"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted/50 text-muted-foreground hover:text-foreground"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   Viajantes e Validades
                   <Badge variant="secondary" className="text-xs h-4 px-1 ml-1">
@@ -412,11 +412,11 @@ export function OperatorVoucherImportSheet({
                 <button
                   type="button"
                   onClick={() => setActiveReviewTab("voos")}
-                  className={`px-3 py-2 rounded-lg transition-all cursor-pointer shrink-0 flex items-center gap-1 ${
+                  className={`px-3 py-2 rounded-lg transition-colors duration-200 cursor-pointer shrink-0 flex items-center gap-1 ${
                     activeReviewTab === "voos"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted/50 text-muted-foreground hover:text-foreground"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   Voos e Bagagens
                   <Badge variant="secondary" className="text-xs h-4 px-1 ml-1">
@@ -426,11 +426,11 @@ export function OperatorVoucherImportSheet({
                 <button
                   type="button"
                   onClick={() => setActiveReviewTab("hospedagem")}
-                  className={`px-3 py-2 rounded-lg transition-all cursor-pointer shrink-0 flex items-center gap-1 ${
+                  className={`px-3 py-2 rounded-lg transition-colors duration-200 cursor-pointer shrink-0 flex items-center gap-1 ${
                     activeReviewTab === "hospedagem"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted/50 text-muted-foreground hover:text-foreground"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   Hospedagem
                   <Badge variant="secondary" className="text-xs h-4 px-1 ml-1">
@@ -440,22 +440,22 @@ export function OperatorVoucherImportSheet({
                 <button
                   type="button"
                   onClick={() => setActiveReviewTab("transfers")}
-                  className={`px-3 py-2 rounded-lg transition-all cursor-pointer shrink-0 ${
+                  className={`px-3 py-2 rounded-lg transition-colors duration-200 cursor-pointer shrink-0 ${
                     activeReviewTab === "transfers"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted/50 text-muted-foreground hover:text-foreground"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   Transfers e Tours
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveReviewTab("financeiro")}
-                  className={`px-3 py-2 rounded-lg transition-all cursor-pointer shrink-0 ${
+                  className={`px-3 py-2 rounded-lg transition-colors duration-200 cursor-pointer shrink-0 ${
                     activeReviewTab === "financeiro"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted/50 text-muted-foreground hover:text-foreground"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   Financeiro e Regras
                 </button>
@@ -697,7 +697,7 @@ export function OperatorVoucherImportSheet({
                                     passengers: parsedData.passengers.filter((_, i) => i !== index),
                                   })
                                 }
-                                className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer transition-colors"
+                                className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                               >
                                 <Trash2 className="size-3.5" />
                               </button>
@@ -862,7 +862,7 @@ export function OperatorVoucherImportSheet({
                                 flights: parsedData.flights.filter((_, i) => i !== index),
                               })
                             }
-                            className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer transition-colors"
+                            className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             <Trash2 className="size-3.5" />
                           </button>
@@ -1043,7 +1043,7 @@ export function OperatorVoucherImportSheet({
                                 hotels: parsedData.hotels.filter((_, i) => i !== index),
                               })
                             }
-                            className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer transition-colors"
+                            className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             <Trash2 className="size-3.5" />
                           </button>
@@ -1471,7 +1471,7 @@ export function OperatorVoucherImportSheet({
                         navigator.clipboard.writeText(`${window.location.origin}${createdVoucherUrl}`);
                         toast.success("Link copiado para a área de transferência!");
                       }}
-                      className="text-primary hover:underline flex items-center gap-1 cursor-pointer font-bold"
+                      className="text-primary hover:underline flex items-center gap-1 cursor-pointer font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <Copy className="size-3" /> Copiar Link
                     </button>
@@ -1504,7 +1504,7 @@ export function OperatorVoucherImportSheet({
               >
                 {isAnalyzing ? (
                   <>
-                    <Loader2 className="size-3.5 animate-spin" /> Processando OCR ({documents.length} arq)...
+                    <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> Processando OCR ({documents.length} arq)...
                   </>
                 ) : (
                   <>
@@ -1527,7 +1527,7 @@ export function OperatorVoucherImportSheet({
               >
                 {isApplying ? (
                   <>
-                    <Loader2 className="size-3.5 animate-spin" /> Sincronizando Viagem...
+                    <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> Sincronizando Viagem...
                   </>
                 ) : (
                   <>

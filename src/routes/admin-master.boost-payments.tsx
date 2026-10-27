@@ -158,7 +158,7 @@ function BoostPaymentsAdmin() {
             key={card.label}
             className="rounded-lg border border-border/60 bg-card p-4 space-y-1"
           >
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-mono">{card.label}</p>
+            <p className="text-2xs text-muted-foreground uppercase tracking-wider font-mono">{card.label}</p>
             <p className={`text-lg font-black font-mono ${card.className}`}>{card.value}</p>
           </div>
         ))}
@@ -185,7 +185,7 @@ function BoostPaymentsAdmin() {
                 filterStatus === s
                   ? "bg-foreground text-background border-foreground"
                   : "bg-card text-muted-foreground border-border/60 hover:border-border"
-              }`}
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
             >
               {s === "all"
                 ? "Todos"
@@ -204,7 +204,7 @@ function BoostPaymentsAdmin() {
       {/* ── Tabela de Transações ─────────────────────────────── */}
       {isLoading ? (
         <div className="flex items-center justify-center py-16 gap-2 text-muted-foreground">
-          <Loader2 className="size-5 animate-spin" />
+          <Loader2 className="size-5 animate-spin motion-reduce:animate-none" />
           <span className="text-xs">Carregando transações...</span>
         </div>
       ) : filtered.length === 0 ? (
@@ -237,13 +237,13 @@ function BoostPaymentsAdmin() {
                     </span>
                     <Badge
                       variant="outline"
-                      className={`text-[9px] font-mono px-2 py-0 flex items-center gap-1 ${statusConf.className}`}
+                      className={`text-3xs font-mono px-2 py-0 flex items-center gap-1 ${statusConf.className}`}
                     >
                       {statusConf.icon}
                       {statusConf.label}
                     </Badge>
                   </div>
-                  <div className="flex items-center gap-2 flex-wrap text-[10px] text-muted-foreground">
+                  <div className="flex items-center gap-2 flex-wrap text-2xs text-muted-foreground">
                     {profile && (
                       <span>
                         @{profile.username || profile.name || "—"}
@@ -256,19 +256,19 @@ function BoostPaymentsAdmin() {
                     {bp.provider_ref && (
                       <>
                         <span>·</span>
-                        <span className="font-mono text-[9px]">{bp.provider_ref.slice(0, 16)}...</span>
+                        <span className="font-mono text-3xs">{bp.provider_ref.slice(0, 16)}...</span>
                       </>
                     )}
                     <span>·</span>
                     <span>{new Date(bp.created_at).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</span>
                   </div>
                   {bp.paid_at && (
-                    <div className="text-[10px] text-emerald-600">
+                    <div className="text-2xs text-emerald-600">
                       Pago em {new Date(bp.paid_at).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
                     </div>
                   )}
                   {bp.failure_reason && (
-                    <div className="text-[10px] text-destructive">{bp.failure_reason}</div>
+                    <div className="text-2xs text-destructive">{bp.failure_reason}</div>
                   )}
                 </div>
 
@@ -294,7 +294,7 @@ function BoostPaymentsAdmin() {
                     <Button
                       size="sm"
                       onClick={() => setConfirmingPayment(bp)}
-                      className="h-8 rounded-lg text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-500 gap-2 cursor-pointer"
+                      className="h-8 rounded-lg text-xs font-bold bg-emerald-600 text-foreground hover:bg-emerald-500 gap-2 cursor-pointer"
                     >
                       <CheckCheck className="size-3.5" />
                       Confirmar
@@ -343,12 +343,12 @@ function BoostPaymentsAdmin() {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Provider</span>
-                <span className="font-mono uppercase text-[10px]">{confirmingPayment.provider}</span>
+                <span className="font-mono uppercase text-2xs">{confirmingPayment.provider}</span>
               </div>
             </div>
           )}
 
-          <div className="text-[10px] text-muted-foreground bg-muted/40 border border-border/60 rounded-lg px-3 py-2 flex items-center gap-2">
+          <div className="text-2xs text-muted-foreground bg-muted/40 border border-border/60 rounded-lg px-3 py-2 flex items-center gap-2">
             <AlertCircle className="size-3.5 text-warning shrink-0" />
             <span>Esta ação é irreversível. O boost será ativado imediatamente após a confirmação.</span>
           </div>
@@ -364,11 +364,11 @@ function BoostPaymentsAdmin() {
             <Button
               onClick={() => confirmingPayment && confirmMutation.mutate(confirmingPayment.id)}
               disabled={confirmMutation.isPending}
-              className="rounded-lg text-xs h-10 flex-1 font-bold bg-emerald-600 text-white hover:bg-emerald-500 gap-2 cursor-pointer"
+              className="rounded-lg text-xs h-10 flex-1 font-bold bg-emerald-600 text-foreground hover:bg-emerald-500 gap-2 cursor-pointer"
             >
               {confirmMutation.isPending ? (
                 <>
-                  <Loader2 className="size-4 animate-spin" />
+                  <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                   Confirmando...
                 </>
               ) : (

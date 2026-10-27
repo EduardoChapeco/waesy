@@ -192,6 +192,7 @@ export function CanonicalListingPreviewFrame({
       >
         <div
           ref={frameRef}
+          data-preview-viewport={viewport}
           className={cn(
             "bg-background text-foreground transition-transform motion-reduce:transition-none border border-border/80 shrink-0 rounded-lg overflow-hidden",
             viewport === "mobile" && "border-4 border-neutral-700/60 ring-1 ring-border/40",
@@ -212,6 +213,7 @@ export function CanonicalListingPreviewFrame({
           <CanonicalListingView
             listing={listing}
             isPreviewMode={true}
+            previewViewport={viewport}
             className="min-h-full"
           />
         </div>

@@ -238,7 +238,7 @@ function PublicTravelVoucherPage() {
           </div>
           <div>
             <h1 className="text-xs font-bold text-foreground">Documento Oficial de Embarque</h1>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               Voucher emitido por <span className="font-semibold text-foreground">{store.name}</span>
             </p>
           </div>
@@ -249,8 +249,8 @@ function PublicTravelVoucherPage() {
           <button
             type="button"
             onClick={() => setViewMode("stories")}
-            className={cn(
-              "px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer",
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+              "px-3 py-2 rounded-lg text-xs font-bold transition-colors duration-200 flex items-center gap-2 cursor-pointer",
               viewMode === "stories"
                 ? "bg-background text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -262,8 +262,8 @@ function PublicTravelVoucherPage() {
           <button
             type="button"
             onClick={() => setViewMode("a4")}
-            className={cn(
-              "px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer",
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+              "px-3 py-2 rounded-lg text-xs font-bold transition-colors duration-200 flex items-center gap-2 cursor-pointer",
               viewMode === "a4"
                 ? "bg-background text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -297,7 +297,7 @@ function PublicTravelVoucherPage() {
                 className="rounded-lg text-xs font-bold gap-2 min-h-11 sm:min-h-9 h-11 sm:h-9"
               >
                 {isExportingPdf ? (
-                  <Loader2 className="size-3.5 animate-spin" />
+                  <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
                 ) : (
                   <Download className="size-3.5" />
                 )}

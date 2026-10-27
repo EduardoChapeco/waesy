@@ -11,6 +11,12 @@ import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_store/f/$slug")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    leadId: (search.leadId as string) || undefined,
+    nome: (search.nome as string) || (search.name as string) || undefined,
+    tel: (search.tel as string) || (search.phone as string) || undefined,
+    email: (search.email as string) || undefined,
+  }),
   head: ({ loaderData }: { loaderData?: { form: LeadFormDTO | null } }) => ({
     meta: [
       {
@@ -41,6 +47,7 @@ export const Route = createFileRoute("/_store/f/$slug")({
 
 function LeadLandingPage() {
   const { form } = Route.useLoaderData();
+  const search = Route.useSearch();
 
   if (!form) {
     return (
@@ -87,12 +94,12 @@ function LeadLandingPage() {
                 </span>
                 <CheckCircle2 className="w-3.5 h-3.5 text-primary fill-primary/20" />
               </div>
-              <span className="text-[11px] text-muted-foreground">Canal de Atendimento Oficial</span>
+              <span className="text-2xs text-muted-foreground">Canal de Atendimento Oficial</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-1 text-[11px] text-emerald-600 bg-emerald-500/10 px-3 py-1 rounded-full font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <div className="flex items-center gap-1 text-2xs text-emerald-600 bg-emerald-500/10 px-3 py-1 rounded-full font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none" />
             <span>Online</span>
           </div>
         </div>
@@ -126,6 +133,10 @@ function LeadLandingPage() {
             form={form}
             fields={form.fields}
             isStandalone={true}
+            initialLeadId={search.leadId}
+            initialName={search.nome}
+            initialPhone={search.tel}
+            initialEmail={search.email}
           />
         </div>
 

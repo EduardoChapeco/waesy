@@ -147,7 +147,7 @@ export function ChatListItem({
             setOffsetX(0);
             onArchive(item.id);
           }}
-          className="flex-1 bg-muted-foreground/80 hover:bg-muted-foreground text-primary-foreground flex flex-col items-center justify-center gap-1 text-[11px] font-semibold cursor-pointer transition-colors"
+          className="flex-1 bg-muted-foreground/80 hover:bg-muted-foreground text-primary-foreground flex flex-col items-center justify-center gap-1 text-2xs font-semibold cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           aria-label="Arquivar conversa"
         >
           <Archive className="size-4" />
@@ -160,7 +160,7 @@ export function ChatListItem({
             setOffsetX(0);
             onDelete(item.id);
           }}
-          className="flex-1 bg-destructive hover:bg-destructive/90 text-white flex flex-col items-center justify-center gap-1 text-[11px] font-semibold cursor-pointer transition-colors"
+          className="flex-1 bg-destructive hover:bg-destructive/90 text-foreground flex flex-col items-center justify-center gap-1 text-2xs font-semibold cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           aria-label="Apagar conversa"
         >
           <Trash2 className="size-4" />
@@ -169,14 +169,14 @@ export function ChatListItem({
       </div>
 
       {/* Superfície Principal Deslizante (Grelha Matemática WhatsApp) */}
-      <div
+      <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onClick={handleRowClick}
         onContextMenu={handleContextMenu}
         style={{ transform: `translate3d(${offsetX}px, 0, 0)` }}
-        className={cn(
+        className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
           "relative z-10 flex items-center gap-4 px-4 sm:px-4 py-3 border-l-4 transition-colors duration-150 cursor-pointer",
           isSelected
             ? "bg-muted/70 border-primary"
@@ -192,6 +192,9 @@ export function ChatListItem({
                 alt={item.title}
                 className="size-full object-cover"
                 loading="lazy"
+                onError={(e) => {
+                  (e.currentTarget as HTMLElement).style.display = "none";
+                }}
               />
             ) : item.isP2P ? (
               <User className="size-5 text-muted-foreground" />
@@ -227,7 +230,7 @@ export function ChatListItem({
           {/* Meio-Baixo: Typing Indicator ou Ticks de Leitura + Pré-visualização de 1 Linha */}
           <div className="flex items-center gap-1 min-w-0">
             {item.isTyping ? (
-              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 truncate animate-pulse">
+              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 truncate animate-pulse motion-reduce:animate-none">
                 Digitando...
               </span>
             ) : (
@@ -274,7 +277,7 @@ export function ChatListItem({
           </span>
 
           {hasUnread ? (
-            <span className="min-w-5 h-5 px-2 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
+            <span className="min-w-5 h-5 px-2 rounded-full bg-emerald-500 text-foreground text-2xs font-bold flex items-center justify-center leading-none">
               {unreadCount > 99 ? "99+" : unreadCount}
             </span>
           ) : (

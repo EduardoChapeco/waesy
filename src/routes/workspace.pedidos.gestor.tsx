@@ -410,7 +410,16 @@ function KDSPage() {
         {!audioUnlocked && (
           <Badge
             variant="warning"
-            className="cursor-pointer text-xs select-none"
+            className="cursor-pointer text-xs select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+            tabIndex={0}
+            role="button"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                unlockAudioContext();
+                setAudioUnlocked(true);
+              }
+            }}
             onClick={() => {
               unlockAudioContext();
               setAudioUnlocked(true);
@@ -433,8 +442,8 @@ function KDSPage() {
  <button
  type="button"
  onClick={() => setTimingTab("now")}
- className={cn(
- "px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "px-3 py-2 rounded-lg text-xs font-bold transition-colors duration-200 flex items-center gap-2 cursor-pointer",
  timingTab === "now"
  ? "bg-background text-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground",
@@ -449,8 +458,8 @@ function KDSPage() {
  <button
  type="button"
  onClick={() => setTimingTab("scheduled")}
- className={cn(
- "px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "px-3 py-2 rounded-lg text-xs font-bold transition-colors duration-200 flex items-center gap-2 cursor-pointer",
  timingTab === "scheduled"
  ? "bg-background text-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground",
@@ -477,7 +486,7 @@ function KDSPage() {
  key={ch.id}
  type="button"
  onClick={() => setChannelFilter(ch.id)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer border",
  channelFilter === ch.id
  ? "bg-foreground text-background border-foreground"
@@ -501,7 +510,7 @@ function KDSPage() {
  <button
  type="button"
  onClick={() => setSearchQuery("")}
- className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+ className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  
  </button>
@@ -513,7 +522,7 @@ function KDSPage() {
  {delayedOrders.length > 0 && (
  <div className="bg-rose-500/10 border-b border-rose-500/30 px-4 py-3 flex items-center justify-between text-xs text-rose-700 dark:text-rose-400 no-print">
  <div className="flex items-center gap-2 font-bold">
- <AlertTriangle className="size-4 text-rose-500 animate-bounce" />
+ <AlertTriangle className="size-4 text-rose-500 animate-bounce motion-reduce:animate-none" />
  <span>
  Atenção Operacional: {delayedOrders.length} pedido(s) ultrapassou(aram) o tempo ideal de preparo (&gt;30min)!
  </span>
@@ -521,7 +530,7 @@ function KDSPage() {
  <button
  type="button"
  onClick={() => setAlertModalOpen(true)}
- className="font-bold underline hover:text-rose-900 dark:hover:text-rose-200 cursor-pointer"
+ className="font-bold underline hover:text-rose-900 dark:hover:text-rose-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  Intervir e Avisar Cozinha / Cliente
  </button>
@@ -571,7 +580,7 @@ function KDSPage() {
  <div className="rounded-lg border border-border bg-card overflow-hidden">
  <div className="p-4 border-b border-border/80 flex items-center justify-between">
  <div>
- <h3 className="text-sm font-bold text-foreground">Live Dashboard de Pedidos e Acompanhamento de SLA</h3>
+ <h3 className="text-sm font-bold text-foreground">Gestor de Pedidos</h3>
  <p className="text-xs text-muted-foreground">Monitoramento segundo a segundo para eliminação de gargalos operacionais</p>
  </div>
  <Badge variant="outline" className="font-mono text-xs font-bold bg-muted/40">
@@ -589,10 +598,18 @@ function KDSPage() {
 
  return (
  <div
- key={ord.id}
- onClick={() => setSelectedOrder(ord)}
- className="p-4 space-y-3 bg-card hover:bg-muted/30 transition-colors cursor-pointer"
- >
+    key={ord.id}
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        setSelectedOrder(ord);
+      }
+    }}
+    onClick={() => setSelectedOrder(ord)}
+    className="p-4 space-y-3 bg-card hover:bg-muted/30 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+  >
  <div className="flex items-center justify-between gap-2">
  <div className="flex items-center gap-2">
  <span className="font-mono font-bold text-sm text-foreground">
@@ -626,7 +643,7 @@ function KDSPage() {
  <div className="w-full bg-muted h-2 rounded-full overflow-hidden">
  <div
  className={cn(
- "h-full transition-all",
+ "h-full transition-colors duration-200",
  isLate ? "bg-rose-500" : elapsed > 20 ? "bg-amber-500" : "bg-emerald-500",
  )}
  style={{ width: `${Math.min(100, Math.round((elapsed / 30) * 100))}%` }}
@@ -634,7 +651,7 @@ function KDSPage() {
  </div>
  </div>
 
- <div className="flex items-center gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
+ <div /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */ className="flex items-center gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
  {(ord.customer_snapshot?.phone || ord.customer?.phone) && (
  <Button
  size="icon"
@@ -682,7 +699,19 @@ function KDSPage() {
  const ch = getChannelInfo(ord);
 
  return (
- <TableRow key={ord.id} className="cursor-pointer hover:bg-muted/40" onClick={() => setSelectedOrder(ord)}>
+ <TableRow
+    key={ord.id}
+    tabIndex={0}
+    role="row"
+    onKeyDown={(e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        setSelectedOrder(ord);
+      }
+    }}
+    className="cursor-pointer hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    onClick={() => setSelectedOrder(ord)}
+  >
  <TableCell className="font-mono font-bold text-xs">
  #{ord.id.split("-")[0].toUpperCase()}
  </TableCell>
@@ -713,7 +742,7 @@ function KDSPage() {
  <div className="w-full bg-muted h-1.5 rounded-full overflow-hidden">
  <div
  className={cn(
- "h-full transition-all",
+ "h-full transition-colors duration-200",
  isLate ? "bg-rose-500" : elapsed > 20 ? "bg-amber-500" : "bg-emerald-500",
  )}
  style={{ width: `${Math.min(100, Math.round((elapsed / 30) * 100))}%` }}
@@ -721,7 +750,7 @@ function KDSPage() {
  </div>
  </div>
  </TableCell>
- <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+ <TableCell className="text-right focus-visible:outline-none" onClick={(e) => e.stopPropagation()}>
  <div className="flex items-center justify-end gap-2">
  {(ord.customer_snapshot?.phone || ord.customer?.phone) && (
  <Button
@@ -890,10 +919,18 @@ function KDSPage() {
 
  return (
  <div
- key={order.id}
- className="bg-card border border-border/80 rounded-lg p-4 flex flex-col gap-3 cursor-pointer hover:border-primary/50 transition-all shadow-2xs"
- onClick={() => setSelectedOrder(order)}
- >
+    key={order.id}
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        setSelectedOrder(order);
+      }
+    }}
+    className="bg-card border border-border/80 rounded-lg p-4 flex flex-col gap-3 cursor-pointer hover:border-primary/50 transition-colors duration-200 shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    onClick={() => setSelectedOrder(order)}
+  >
  <div className="flex justify-between items-start gap-2">
  <div className="space-y-1">
  <div className="flex items-center gap-2">
@@ -943,7 +980,7 @@ function KDSPage() {
  <div className="w-full bg-muted/60 h-1.5 rounded-full overflow-hidden mt-1">
  <div
  className={cn(
- "h-full transition-all duration-500",
+ "h-full transition-colors duration-200 duration-500",
  elapsedMinutes > 30
  ? "bg-rose-500"
  : elapsedMinutes > 20
@@ -1120,8 +1157,8 @@ function KDSPage() {
  <button
  type="button"
  onClick={() => setSheetTab("details")}
- className={cn(
- "flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "flex-1 py-2 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer",
  sheetTab === "details"
  ? "bg-background text-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground",
@@ -1132,8 +1169,8 @@ function KDSPage() {
  <button
  type="button"
  onClick={() => setSheetTab("customer")}
- className={cn(
- "flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "flex-1 py-2 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer",
  sheetTab === "customer"
  ? "bg-background text-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground",
@@ -1144,8 +1181,8 @@ function KDSPage() {
  <button
  type="button"
  onClick={() => setSheetTab("history")}
- className={cn(
- "flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "flex-1 py-2 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer",
  sheetTab === "history"
  ? "bg-background text-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground",

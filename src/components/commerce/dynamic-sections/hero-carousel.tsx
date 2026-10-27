@@ -145,10 +145,10 @@ export function HeroCarousel({
                   </div>
                 ) : (
                   <div className="absolute inset-0 w-full h-full from-[#1a1a2e] to-[#16213e] flex flex-col items-center justify-center border border-dashed border-white/10 p-4">
-                    <span className="text-white/60 text-sm font-semibold tracking-wide uppercase mb-1">
+                    <span className="text-foreground/60 text-sm font-semibold tracking-wide uppercase mb-1">
                       Banner Principal
                     </span>
-                    <span className="text-white/30 text-xs">
+                    <span className="text-foreground/30 text-xs">
                       Arraste/selecione uma imagem ou cole uma URL no painel à direita
                     </span>
                   </div>
@@ -164,7 +164,7 @@ export function HeroCarousel({
                 {/* Content Overlay */}
                 <div className="absolute inset-0 z-10 mx-auto flex w-full max-w-screen-xl flex-col items-start justify-end pb-12 sm:pb-16 px-4 sm:px-6 @md:justify-center @md:pb-0 @md:px-12 pointer-events-none">
                   {title && (
-                    <h2 className="text-balance text-2xl sm:text-4xl text-white @md:text-6xl @xl:text-7xl font-light tracking-tight drop- max-w-3xl pointer-events-auto leading-none">
+                    <h2 className="text-balance text-2xl sm:text-4xl text-foreground @md:text-6xl @xl:text-7xl font-light tracking-tight drop- max-w-3xl pointer-events-auto leading-none">
                       {title}
                     </h2>
                   )}
@@ -172,10 +172,10 @@ export function HeroCarousel({
                     <div className="mt-4 sm:mt-6 @md:mt-8 pointer-events-auto">
                       <Button
                         size="lg"
-                        className="bg-white/95 text-black hover:bg-white border border-transparent hover:scale-[1.02] transition-all font-medium rounded-full px-6 sm:px-8 h-10 sm:h-12 text-xs sm:text-sm"
+                        className="bg-card/95 text-foreground hover:bg-card border border-transparent hover:scale-[1.02] transition-transform duration-200 font-medium rounded-full px-6 sm:px-8 h-10 sm:h-12 text-xs sm:text-sm"
                         asChild
                       >
-                        <Link
+                        <Link className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           to={button_link as never}
                           onClick={() => trackClick({ index, title, link: button_link })}
                         >
@@ -196,14 +196,14 @@ export function HeroCarousel({
         <>
           <button
             onClick={scrollPrev}
-            className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-black/20 p-2 text-white backdrop-blur hover:bg-black/40 z-20 hidden @md:block transition-all cursor-pointer"
+            className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-foreground/20 p-2 text-foreground backdrop-blur hover:bg-foreground/40 z-20 hidden @md:block transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Anterior"
           >
             <ChevronLeft className="size-6" />
           </button>
           <button
             onClick={scrollNext}
-            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-black/20 p-2 text-white backdrop-blur hover:bg-black/40 z-20 hidden @md:block transition-all cursor-pointer"
+            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-foreground/20 p-2 text-foreground backdrop-blur hover:bg-foreground/40 z-20 hidden @md:block transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Próximo"
           >
             <ChevronRight className="size-6" />

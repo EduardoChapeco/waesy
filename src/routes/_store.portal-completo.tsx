@@ -188,7 +188,7 @@ function PortalCompletoPage() {
                 Módulos desenhados para a realidade de cada modelo de negócio.
               </p>
             </div>
-            <Badge variant="outline" className="text-[10px] font-mono font-bold uppercase text-muted-foreground">
+            <Badge variant="outline" className="text-2xs font-mono font-bold uppercase text-muted-foreground">
               {modules.length} Módulos
             </Badge>
           </div>
@@ -197,14 +197,14 @@ function PortalCompletoPage() {
             {modules.map((mod: any) => (
               <div
                 key={mod.id}
-                className="bg-card rounded-lg p-5 border border-border/60 shadow-2xs flex flex-col justify-between space-y-4 hover:border-foreground/30 transition-all"
+                className="bg-card rounded-lg p-5 border border-border/60 shadow-2xs flex flex-col justify-between space-y-4 hover:border-foreground/30 transition-colors duration-200"
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground">
+                    <span className="text-2xs font-mono font-bold uppercase tracking-wider text-muted-foreground">
                       {mod.category}
                     </span>
-                    <Badge variant="outline" className="text-[10px] font-mono text-primary border-primary/20 bg-primary/5">
+                    <Badge variant="outline" className="text-2xs font-mono text-primary border-primary/20 bg-primary/5">
                       {mod.badge}
                     </Badge>
                   </div>
@@ -218,7 +218,7 @@ function PortalCompletoPage() {
                   </p>
                 </div>
 
-                <div className="pt-2 border-t border-border/40 flex items-center justify-between text-[11px] text-muted-foreground font-mono">
+                <div className="pt-2 border-t border-border/40 flex items-center justify-between text-2xs text-muted-foreground font-mono">
                   <span>Status: Integrado</span>
                   <span className="text-primary font-bold">Waesy</span>
                 </div>
@@ -247,7 +247,7 @@ function PortalCompletoPage() {
         {/* Formulário de Inscrição na Lista de Espera */}
         <section id="waitlist" className="max-w-lg mx-auto space-y-5">
           <div className="text-center space-y-1">
-            <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            <Badge variant="outline" className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
               Ativação sob Demanda
             </Badge>
             <h2 className="text-xl font-bold text-foreground">
@@ -348,7 +348,7 @@ function PortalCompletoPage() {
                 >
                   {waitlistMutation.isPending ? (
                     <>
-                      <Loader2 className="size-4 animate-spin" />
+                      <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                       <span>Confirmando Inscrição...</span>
                     </>
                   ) : (

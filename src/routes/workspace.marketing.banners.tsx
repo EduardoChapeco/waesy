@@ -13,6 +13,7 @@ import { listActiveBanners, createBanner, updateBanner, deleteBanner, type Banne
 import { CANONICAL_CITIES } from "@/lib/constants/cities";
 import { toast } from "sonner";
 import { MediaUploader } from "@/components/ui/media-uploader";
+import { BidirectionalMediaUploader } from "@/components/ui/bidirectional-media-uploader";
 import { DestinationPicker } from "@/components/ui/destination-picker";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { cn } from "@/lib/utils";
@@ -110,7 +111,8 @@ function WorkspaceStoreBannersPage() {
       toast.error("Informe o título identificador do banner.");
       return;
     }
-    if (!mediaUrl.trim()) {
+    const effectiveMediaUrl = mediaUrl.trim() || mediaDesktopUrl.trim() || mediaMobileUrl.trim();
+    if (!effectiveMediaUrl) {
       toast.error("Selecione ou envie a imagem/mídia do banner.");
       return;
     }
@@ -123,7 +125,7 @@ function WorkspaceStoreBannersPage() {
             id: editingId,
             title: title.trim(),
             subtitle: subtitle.trim() || null,
-            media_url: mediaUrl,
+            media_url: effectiveMediaUrl,
             media_desktop_url: mediaDesktopUrl.trim() || null,
             media_mobile_url: mediaMobileUrl.trim() || null,
             media_type: mediaType,
@@ -146,7 +148,7 @@ function WorkspaceStoreBannersPage() {
           data: {
             title: title.trim(),
             subtitle: subtitle.trim() || undefined,
-            media_url: mediaUrl,
+            media_url: effectiveMediaUrl,
             media_desktop_url: mediaDesktopUrl.trim() || undefined,
             media_mobile_url: mediaMobileUrl.trim() || undefined,
             media_type: mediaType,
@@ -407,69 +409,26 @@ function WorkspaceStoreBannersPage() {
             </p>
           </div>
 
-          <div className="space-y-3 p-3 rounded-lg bg-muted/20 border border-border/50">
-            <div className="space-y-1">
-              <Label className="text-xs font-bold text-foreground">
-                Mídia Principal / Padrão (Imagem / Vídeo 21:9) *
-              </Label>
-              <MediaUploader
-                value={mediaUrl ? [mediaUrl] : []}
-                onChange={(urls) => {
-                  const url = urls[0] || "";
-                  setMediaUrl(url);
-                  const isVideo = url.endsWith(".mp4") || url.endsWith(".webm");
-                  setMediaType(isVideo ? "video" : "image");
-                }}
-                accept="all"
-                bucket="banners"
-                folder="destaques"
-                aspect={21 / 9}
-                enableCrop={true}
-                lockAspect={false}
-                maxFiles={1}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border/30">
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold text-foreground/90">
-                  Mídia Desktop (Widescreen Fino 28:9)
-                </Label>
-                <MediaUploader
-                  value={mediaDesktopUrl ? [mediaDesktopUrl] : []}
-                  onChange={(urls) => setMediaDesktopUrl(urls[0] || "")}
-                  bucket="banners"
-                  folder="destaques/desktop"
-                  aspect={28 / 9}
-                  enableCrop={true}
-                  lockAspect={false}
-                  maxFiles={1}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Proporção fina para monitores, sem cortes laterais.
-                </p>
-              </div>
-
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold text-foreground/90">
-                  Mídia Mobile (Nativa App 16:9)
-                </Label>
-                <MediaUploader
-                  value={mediaMobileUrl ? [mediaMobileUrl] : []}
-                  onChange={(urls) => setMediaMobileUrl(urls[0] || "")}
-                  bucket="banners"
-                  folder="destaques/mobile"
-                  aspect={16 / 9}
-                  enableCrop={true}
-                  lockAspect={false}
-                  maxFiles={1}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Exibido em celulares no formato clássico.
-                </p>
-              </div>
-            </div>
-          </div>
+          <BidirectionalMediaUploader
+            mobileUrl={mediaMobileUrl || mediaUrl}
+            desktopUrl={mediaDesktopUrl || mediaUrl}
+            onMobileChange={(url) => {
+              setMediaMobileUrl(url);
+              if (!mediaUrl) setMediaUrl(url);
+              const isVideo = url.endsWith(".mp4") || url.endsWith(".webm");
+              setMediaType(isVideo ? "video" : "image");
+            }}
+            onDesktopChange={(url) => {
+              setMediaDesktopUrl(url);
+              if (!mediaUrl) setMediaUrl(url);
+              const isVideo = url.endsWith(".mp4") || url.endsWith(".webm");
+              setMediaType(isVideo ? "video" : "image");
+            }}
+            bucket="banners"
+            folder="destaques"
+            mobileAspect={16 / 9}
+            desktopAspect={28 / 9}
+          />
 
           {/* Seletor de Destino / Link Helper */}
           <DestinationPicker
@@ -561,7 +520,7 @@ function WorkspaceStoreBannersPage() {
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="size-4 animate-spin mr-2" />
+                  <Loader2 className="size-4 animate-spin motion-reduce:animate-none mr-2" />
                   <span>Salvando...</span>
                 </>
               ) : (

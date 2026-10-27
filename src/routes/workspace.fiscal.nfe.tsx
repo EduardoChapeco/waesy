@@ -164,7 +164,7 @@ function FiscalNFePage() {
         <button
           type="button"
           onClick={() => setActiveTab("invoices")}
-          className={cn(
+          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
             "px-4 py-2 rounded-lg text-xs font-medium transition-colors",
             activeTab === "invoices" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
           )}
@@ -174,7 +174,7 @@ function FiscalNFePage() {
         <button
           type="button"
           onClick={() => setActiveTab("config")}
-          className={cn(
+          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
             "px-4 py-2 rounded-lg text-xs font-medium transition-colors",
             activeTab === "config" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
           )}
@@ -212,7 +212,7 @@ function FiscalNFePage() {
             <button
               type="button"
               onClick={() => setDocTypeFilter("all")}
-              className={cn(
+              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                 "px-3 py-2 rounded-lg font-medium transition-colors",
                 docTypeFilter === "all" ? "bg-muted text-foreground font-semibold" : "text-muted-foreground hover:text-foreground"
               )}
@@ -222,7 +222,7 @@ function FiscalNFePage() {
             <button
               type="button"
               onClick={() => setDocTypeFilter("nfe")}
-              className={cn(
+              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                 "px-3 py-2 rounded-lg font-medium transition-colors",
                 docTypeFilter === "nfe" ? "bg-blue-500/15 text-blue-600 font-semibold" : "text-muted-foreground hover:text-foreground"
               )}
@@ -232,7 +232,7 @@ function FiscalNFePage() {
             <button
               type="button"
               onClick={() => setDocTypeFilter("nfse")}
-              className={cn(
+              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                 "px-3 py-2 rounded-lg font-medium transition-colors",
                 docTypeFilter === "nfse" ? "bg-purple-500/15 text-purple-600 font-semibold" : "text-muted-foreground hover:text-foreground"
               )}
@@ -242,7 +242,7 @@ function FiscalNFePage() {
             <button
               type="button"
               onClick={() => setDocTypeFilter("nfce")}
-              className={cn(
+              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                 "px-3 py-2 rounded-lg font-medium transition-colors",
                 docTypeFilter === "nfce" ? "bg-emerald-500/15 text-emerald-600 font-semibold" : "text-muted-foreground hover:text-foreground"
               )}
@@ -548,8 +548,8 @@ function FiscalNFePage() {
                 <button
                   type="button"
                   onClick={() => setInvoiceType("nfe")}
-                  className={cn(
-                    "p-2 rounded-lg text-xs font-medium border text-center transition-all",
+                  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                    "p-2 rounded-lg text-xs font-medium border text-center transition-colors duration-200",
                     invoiceType === "nfe"
                       ? "border-blue-500 bg-blue-500/10 text-blue-600 font-semibold"
                       : "border-border/70 hover:bg-muted/40 text-muted-foreground"
@@ -560,8 +560,8 @@ function FiscalNFePage() {
                 <button
                   type="button"
                   onClick={() => setInvoiceType("nfse")}
-                  className={cn(
-                    "p-2 rounded-lg text-xs font-medium border text-center transition-all",
+                  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                    "p-2 rounded-lg text-xs font-medium border text-center transition-colors duration-200",
                     invoiceType === "nfse"
                       ? "border-purple-500 bg-purple-500/10 text-purple-600 font-semibold"
                       : "border-border/70 hover:bg-muted/40 text-muted-foreground"
@@ -572,8 +572,8 @@ function FiscalNFePage() {
                 <button
                   type="button"
                   onClick={() => setInvoiceType("nfce")}
-                  className={cn(
-                    "p-2 rounded-lg text-xs font-medium border text-center transition-all",
+                  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                    "p-2 rounded-lg text-xs font-medium border text-center transition-colors duration-200",
                     invoiceType === "nfce"
                       ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 font-semibold"
                       : "border-border/70 hover:bg-muted/40 text-muted-foreground"

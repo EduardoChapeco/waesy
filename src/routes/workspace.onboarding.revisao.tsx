@@ -198,7 +198,7 @@ export function OnboardingReviewPage() {
   return (
     <div className="flex-1 flex flex-col w-full min-h-full bg-background text-foreground pb-20">
       {/* TopBar Operacional */}
-      <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border/40 px-4 sm:px-8 py-4 flex items-center justify-between">
+      <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border/40 px-4 sm:px-8 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm">
             <Cpu className="size-5 text-foreground" />
@@ -214,15 +214,15 @@ export function OnboardingReviewPage() {
         </div>
 
         {/* Abas Superiores sem scrollbar visível */}
-        <nav className="flex items-center gap-2 overflow-x-auto no-scrollbar bg-muted/40 p-1 rounded-lg border border-border/40">
+        <nav className="flex items-center gap-2 flex-wrap bg-muted/40 p-1 rounded-lg border border-border/40 w-full sm:w-auto shrink-0">
           <button
             type="button"
             onClick={() => setActiveTab("multimodal")}
-            className={`px-3 py-2 rounded-lg text-xs font-medium transition-all min-h-9 flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-lg text-xs font-medium transition-colors motion-reduce:transition-none h-11 min-h-11 flex items-center gap-2 ${
               activeTab === "multimodal"
                 ? "bg-card text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             <Camera className="size-3.5" />
             <span>Revisão por Foto</span>
@@ -234,11 +234,11 @@ export function OnboardingReviewPage() {
           <button
             type="button"
             onClick={() => setActiveTab("master_catalog")}
-            className={`px-3 py-2 rounded-lg text-xs font-medium transition-all min-h-9 flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-lg text-xs font-medium transition-colors motion-reduce:transition-none h-11 min-h-11 flex items-center gap-2 ${
               activeTab === "master_catalog"
                 ? "bg-card text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             <Barcode className="size-3.5" />
             <span>Master Catalog (500 SKUs)</span>
@@ -247,11 +247,11 @@ export function OnboardingReviewPage() {
           <button
             type="button"
             onClick={() => setActiveTab("traditional")}
-            className={`px-3 py-2 rounded-lg text-xs font-medium transition-all min-h-9 flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-lg text-xs font-medium transition-colors motion-reduce:transition-none h-11 min-h-11 flex items-center gap-2 ${
               activeTab === "traditional"
                 ? "bg-card text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             <Table className="size-3.5" />
             <span>Modo Tradicional (Sem IA)</span>
@@ -276,13 +276,13 @@ export function OnboardingReviewPage() {
                     Gemini 2.5 Flash
                   </Badge>
                 </div>
-                <div className="relative aspect-[3/4] bg-muted/30 flex flex-col items-center justify-center p-6 text-center border border-border/40 rounded-lg overflow-hidden">
+                <div className="relative aspect-video bg-muted/30 flex flex-col items-center justify-center p-6 text-center border border-border/40 rounded-lg overflow-hidden">
                   <Camera className="size-12 text-muted-foreground/40 mb-3" />
                   <p className="text-xs font-bold text-foreground">Documento Processado via OCR</p>
                   <p className="text-xs text-muted-foreground mt-1">
                     {isLoadingSession ? "Carregando sessão persistida…" : sessionStatus ? `Status: ${sessionStatus}` : "Nenhuma sessão vinculada"}
                   </p>
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent p-4">
+                  <div className="absolute inset-x-0 bottom-0 bg-background/90 border-t border-border/40 p-4">
                     <p className="text-xs text-foreground font-medium">Fonte persistida da sessão</p>
                     <p className="text-xs text-muted-foreground">Apenas dados retornados pelo processamento são exibidos.</p>
                   </div>
@@ -339,7 +339,7 @@ export function OnboardingReviewPage() {
                         <button
                           type="button"
                           onClick={() => handleRemoveItem(item.id)}
-                          className="text-muted-foreground hover:text-destructive p-1 rounded-md transition-colors"
+                          className="text-muted-foreground hover:text-destructive p-1 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           <Trash2 className="size-3.5" />
                         </button>
@@ -477,7 +477,7 @@ export function OnboardingReviewPage() {
                         size="sm"
                         disabled={importingId === sku.id}
                         onClick={() => handleImportSku(sku)}
-                        className="h-8 rounded-lg text-xs font-medium px-3 bg-foreground text-background hover:opacity-90 gap-2"
+                        className="h-11 min-h-11 rounded-lg text-xs font-medium px-4 bg-foreground text-background hover:opacity-90 gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       >
                         {importingId === sku.id ? (
                           <Loader2 className="size-3 animate-spin" />

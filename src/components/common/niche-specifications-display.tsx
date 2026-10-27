@@ -46,6 +46,7 @@ export interface NicheSpecificationsDisplayProps {
   nicheId?: string | null;
   className?: string;
   title?: string;
+  columns?: 2 | 4;
 }
 
 /**
@@ -98,6 +99,7 @@ export function NicheSpecificationsDisplay({
   nicheId,
   className,
   title = "Especificações",
+  columns = 4,
 }: NicheSpecificationsDisplayProps) {
   // ── 1. Resolução dos Itens a Exibir ──
   const resolvedList: SpecDisplayItem[] = [];
@@ -231,6 +233,13 @@ export function NicheSpecificationsDisplay({
     detailedSpecs = [];
   }
 
+  // Prevenção de fragmentação: se restar apenas 1 item técnico secundário e houver até 5 destaques,
+  // unifica todos no grid principal em vez de criar uma seção vazia de 1 único item.
+  if (detailedSpecs.length === 1 && topHighlights.length <= 5) {
+    topHighlights = [...topHighlights, ...detailedSpecs];
+    detailedSpecs = [];
+  }
+
   return (
     <div className={cn("space-y-4", className)}>
       {/* ── CABEÇALHO DA SEÇÃO COM CONTAGEM OFICIAL ── */}
@@ -245,6 +254,47 @@ export function NicheSpecificationsDisplay({
 
       {/* ── 1. CARDS GRANDES SQUIRCLES: DESTAQUES PRINCIPAIS (TETETERISGRID AUTO-PACKING) ── */}
       {topHighlights.length > 0 && (
+        columns === 2 ? (
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            {topHighlights.map((item, idx) => {
+              const IconComp = item.icon || resolveSpecIcon(item.label);
+              const val = String(item.value || "");
+              const isNumericOrShort = /^[0-9.,\sR$kmbL%/+-]+$/i.test(val) || val.length <= 6;
+              const valLength = val.length;
+              const textSizeClass = valLength > 22
+                ? "text-xs sm:text-sm font-semibold"
+                : valLength > 12
+                ? "text-sm sm:text-base font-bold"
+                : "text-base sm:text-lg lg:text-xl font-extrabold";
+              const fontFamClass = isNumericOrShort ? "font-mono" : "font-sans";
+              const isOddLast = topHighlights.length % 2 !== 0 && idx === topHighlights.length - 1;
+
+              return (
+                <div
+                  key={`highlight-${idx}`}
+                  className={cn(
+                    "rounded-lg bg-card border border-border/60 p-4 sm:p-5 flex flex-col justify-between transition-colors hover:border-primary/40 shadow-2xs min-w-0",
+                    isOddLast ? "col-span-2" : "col-span-1"
+                  )}
+                >
+                  <div className="flex items-center gap-2 text-muted-foreground min-w-0">
+                    <IconComp className="size-4 text-primary shrink-0 transition-transform group-hover:scale-110" />
+                    <span className="text-xs font-bold uppercase tracking-wider leading-tight break-words text-wrap">
+                      {item.label}
+                    </span>
+                  </div>
+                  <p className={cn(
+                    textSizeClass,
+                    fontFamClass,
+                    "text-foreground tracking-tight leading-snug break-words text-wrap hyphens-none pt-2"
+                  )}>
+                    {item.value}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
         <TeteterisGridView
           items={topHighlights.map((item, idx) => ({
             id: `highlight-${idx}`,
@@ -283,6 +333,7 @@ export function NicheSpecificationsDisplay({
             );
           }}
         />
+        )
       )}
 
       {/* ── 2. GRID TÉCNICO ESTRUTURADO: DETALHES SECUNDÁRIOS ── */}

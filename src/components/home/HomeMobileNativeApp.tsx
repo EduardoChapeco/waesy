@@ -27,6 +27,10 @@ import { NewsCard } from "@/components/news/news-card";
 import { PlacesHighlightBadge } from "@/components/shell/places-highlight-badge";
 import { AdTelemetryBeacon } from "@/components/commerce/ad-telemetry-beacon";
 import { ProceduralInfiniteFeed } from "@/components/commerce/procedural-infinite-feed";
+import { TopGreetingSearchBar } from "@/components/home/TopGreetingSearchBar";
+import { PromoCouponBanner } from "@/components/home/PromoCouponBanner";
+import { DualLineFilterPills } from "@/components/home/DualLineFilterPills";
+import { CuratedVerticalRails } from "@/components/home/CuratedVerticalRails";
 import { MetamorphicBannerSlider } from "@/components/home/MetamorphicBannerSlider";
 import { NoorNativeCategoryDock } from "@/components/home/NoorNativeCategoryDock";
 import { IFoodSquareCategoryButton } from "@/components/home/IFoodSquareCategoryButton";
@@ -120,6 +124,14 @@ export function HomeMobileNativeApp({
 
   return (
     <div className="block md:hidden w-full space-y-3 pb-16" data-testid="home-mobile-native-app">
+      {/* ── 0. TOP GREETING & CLUSTER DE BUSCA NATIVO iFOOD ── */}
+      <TopGreetingSearchBar
+        searchValue={search}
+        onSearchChange={onSearchChange}
+      />
+
+      {/* ── 0.1 ALERTA / BANNER DE CUPONS iFOOD ── */}
+      <PromoCouponBanner />
       {/* ── 1. SELETOR DE ECOSSISTEMA EM LINHA ÚNICA (Lugares | Marketplace | Classificados) ── */}
       <VitrineEngineSelector
         activeMode={engineMode}
@@ -139,14 +151,17 @@ export function HomeMobileNativeApp({
         onViewModeChange={onViewModeChange}
         allowedViewModes={["feed", "grid", "list"]}
         stickyMode="none"
+        hideMobileSearch={true}
       />
+
+      {/* ── 2.1 FILTROS PILLS EM 2 LINHAS (iFood Native Filters) ── */}
+      <DualLineFilterPills />
 
       {/* ── 3. HERO BANNER PROMOCIONAL (Proporção 16:9 Idêntica ao Desktop — Zero Corte Divergente) ── */}
       {(() => {
         const validHeroItems = (heroSection?.items || []).filter(
           (it) =>
-            it.is_active !== false &&
-            isHealthyImageUrl(it.image_desktop_url || it.image_mobile_url || it.image_url),
+            it.is_active !== false && (Boolean(it.title?.trim()) || isHealthyImageUrl(it.image_desktop_url || it.image_mobile_url || it.image_url)),
         );
         if (validHeroItems.length > 0) {
           return (
@@ -182,8 +197,7 @@ export function HomeMobileNativeApp({
       {(() => {
         const validQuickItems = (quickCategoriesSection?.items || []).filter(
           (it) =>
-            it.is_active !== false &&
-            isHealthyImageUrl(it.image_desktop_url || it.image_mobile_url || it.image_url),
+            it.is_active !== false && (Boolean(it.title?.trim()) || isHealthyImageUrl(it.image_desktop_url || it.image_mobile_url || it.image_url)),
         );
         if (validQuickItems.length === 0) return null;
 
@@ -227,8 +241,7 @@ export function HomeMobileNativeApp({
       {customSections.map((sec: HomePageSectionDTO) => {
         const activeSecItems = (sec.items || []).filter(
           (it) =>
-            it.is_active !== false &&
-            isHealthyImageUrl(it.image_desktop_url || it.image_mobile_url || it.image_url),
+            it.is_active !== false && (Boolean(it.title?.trim()) || isHealthyImageUrl(it.image_desktop_url || it.image_mobile_url || it.image_url)),
         );
         if (activeSecItems.length === 0) return null;
 

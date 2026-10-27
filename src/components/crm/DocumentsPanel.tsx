@@ -173,7 +173,7 @@ export function DocumentsPanel({
  return (
  <div
  key={doc.id}
- className={`p-4 rounded-lg border transition-all ${
+ className={`p-4 rounded-lg border transition-colors duration-200 ${
  isExpired
  ? "border-rose-500/30 bg-rose-500/5 dark:bg-rose-950/10"
  : isSoon
@@ -204,7 +204,7 @@ export function DocumentsPanel({
  <button
  type="button"
  onClick={() => handleDelete(doc.id)}
- className="text-muted-foreground hover:text-destructive transition-colors p-1"
+ className="text-muted-foreground hover:text-destructive transition-colors p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  title="Excluir documento"
  >
  <Trash2 className="size-3.5" />
@@ -363,7 +363,7 @@ export function DocumentsPanel({
  onClick={handleCreate}
  className="text-xs font-bold bg-primary text-primary-foreground rounded-lg gap-2"
  >
- {submitting ? <Loader2 className="size-3.5 animate-spin" /> : <ShieldCheck className="size-3.5" />}
+ {submitting ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : <ShieldCheck className="size-3.5" />}
  <span>Salvar Documento</span>
  </Button>
  </div>

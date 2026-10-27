@@ -22,7 +22,7 @@ export function DocumentPage({
 
   return (
     <div
-      className={`relative bg-white flex flex-col shrink-0 overflow-hidden box-border ${pageClass} ${className}`}
+      className={`relative bg-card flex flex-col shrink-0 overflow-hidden box-border ${pageClass} ${className}`}
       style={{
         width: dims.width,
         height: dims.height,

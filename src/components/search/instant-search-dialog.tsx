@@ -120,12 +120,12 @@ export function InstantSearchDialog({ open, onOpenChange }: InstantSearchDialogP
  placeholder="O que você está procurando hoje na sua cidade?..."
  className="border-0 shadow-none focus-visible:ring-0 text-sm md:text-base h-10 px-0 placeholder:text-muted-foreground/70"
  />
- {isLoading && <Loader2 className="size-4 animate-spin text-muted-foreground shrink-0" />}
+ {isLoading && <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-muted-foreground shrink-0" />}
  {query && !isLoading && (
  <button
  type="button"
  onClick={() => setQuery("")}
- className="p-1 rounded-full text-muted-foreground hover:bg-muted"
+ className="p-1 rounded-full text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <X className="size-4" />
  </button>
@@ -144,7 +144,7 @@ export function InstantSearchDialog({ open, onOpenChange }: InstantSearchDialogP
  <button
  type="button"
  onClick={handleClearHistory}
- className="text-[11px] text-muted-foreground hover:text-foreground"
+ className="text-2xs text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  Limpar
  </button>
@@ -155,7 +155,7 @@ export function InstantSearchDialog({ open, onOpenChange }: InstantSearchDialogP
  key={term}
  type="button"
  onClick={() => handleSelectTerm(term)}
- className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-border/60 bg-muted/30 text-xs text-foreground hover:bg-muted/70 transition-colors"
+ className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-border/60 bg-muted/30 text-xs text-foreground hover:bg-muted/70 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Clock className="size-3 text-muted-foreground" />
  <span>{term}</span>
@@ -178,7 +178,7 @@ export function InstantSearchDialog({ open, onOpenChange }: InstantSearchDialogP
  key={cat.label}
  to={cat.to as any}
  onClick={() => onOpenChange(false)}
- className="p-3 rounded-lg border border-border/60 bg-muted/20 hover:bg-muted/60 transition-all text-xs font-semibold text-foreground text-center"
+ className="p-3 rounded-lg border border-border/60 bg-muted/20 hover:bg-muted/60 transition-colors duration-200 text-xs font-semibold text-foreground text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {cat.label}
  </Link>
@@ -205,7 +205,7 @@ export function InstantSearchDialog({ open, onOpenChange }: InstantSearchDialogP
  saveRecentSearch(store.name);
  onOpenChange(false);
  }}
- className="p-3 rounded-lg border border-border/60 hover:bg-muted/40 transition-colors flex items-center gap-3"
+ className="p-3 rounded-lg border border-border/60 hover:bg-muted/40 transition-colors flex items-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="size-10 rounded-lg overflow-hidden bg-muted shrink-0 flex items-center justify-center">
  {store.logo_url ? (
@@ -220,15 +220,15 @@ export function InstantSearchDialog({ open, onOpenChange }: InstantSearchDialogP
  </span>
  <div className="flex items-center gap-2 mt-1">
  {store.is_open !== false ? (
- <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+ <span className="text-2xs text-emerald-600 dark:text-emerald-400 font-semibold">
  • Aberto agora
  </span>
  ) : (
- <span className="text-[10px] text-muted-foreground">
+ <span className="text-2xs text-muted-foreground">
  • Fechado
  </span>
  )}
- <span className="text-[10px] text-muted-foreground">
+ <span className="text-2xs text-muted-foreground">
  {store.city || "Chapecó"}
  </span>
  </div>
@@ -253,7 +253,7 @@ export function InstantSearchDialog({ open, onOpenChange }: InstantSearchDialogP
  saveRecentSearch(prod.title);
  onOpenChange(false);
  }}
- className="p-2 rounded-lg hover:bg-muted/40 transition-colors flex items-center justify-between gap-3"
+ className="p-2 rounded-lg hover:bg-muted/40 transition-colors flex items-center justify-between gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="flex items-center gap-3 min-w-0">
  <div className="size-10 rounded-lg overflow-hidden bg-muted shrink-0 flex items-center justify-center">
@@ -267,7 +267,7 @@ export function InstantSearchDialog({ open, onOpenChange }: InstantSearchDialogP
  <span className="text-xs font-semibold text-foreground truncate block">
  {prod.title}
  </span>
- <span className="text-[11px] text-muted-foreground truncate block">
+ <span className="text-2xs text-muted-foreground truncate block">
  {prod.store_name}
  </span>
  </div>
@@ -288,7 +288,7 @@ export function InstantSearchDialog({ open, onOpenChange }: InstantSearchDialogP
  {query.trim().length >= 2 && !isLoading && !hasResults && (
  <div className="py-8 text-center space-y-2">
  <p className="text-xs font-bold text-foreground">Nenhum resultado direto para "{query}"</p>
- <p className="text-[11px] text-muted-foreground">Tente buscar por termos mais genéricos ou outras categorias.</p>
+ <p className="text-2xs text-muted-foreground">Tente buscar por termos mais genéricos ou outras categorias.</p>
  </div>
  )}
  </div>
@@ -297,7 +297,7 @@ export function InstantSearchDialog({ open, onOpenChange }: InstantSearchDialogP
  {query.trim().length >= 2 && (
  <div className="p-3 bg-muted/20 border-t border-border/40 flex items-center justify-between">
  <span className="text-xs text-muted-foreground">
- Pressione <kbd className="px-2 py-1 rounded bg-muted border border-border text-[10px] font-mono">Enter</kbd> para busca completa
+ Pressione <kbd className="px-2 py-1 rounded bg-muted border border-border text-2xs font-mono">Enter</kbd> para busca completa
  </span>
  <Button
  size="sm"

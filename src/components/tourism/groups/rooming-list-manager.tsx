@@ -334,7 +334,7 @@ export function RoomingListManager({ rooms, onRoomsChange, tourTitle }: RoomingL
  </div>
 
  <div className="flex items-center gap-2">
- <Badge variant="outline" className="text-[10px] font-mono">
+ <Badge variant="outline" className="text-2xs font-mono">
  {r.room_type === "single"
  ? "Single"
  : r.room_type === "double_couple"
@@ -345,7 +345,7 @@ export function RoomingListManager({ rooms, onRoomsChange, tourTitle }: RoomingL
  ? "Triplo"
  : "Quádruplo"}
  </Badge>
- <span className="text-[11px] text-muted-foreground">
+ <span className="text-2xs text-muted-foreground">
  {r.passengers.length} de {r.capacity} hóspedes
  </span>
  </div>

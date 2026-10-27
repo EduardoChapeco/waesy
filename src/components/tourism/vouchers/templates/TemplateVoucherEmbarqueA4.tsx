@@ -1,8 +1,8 @@
+import React from "react";
 import { type Voucher } from "@/services/vouchers";
 import { type BrandKit, type CompanyProfile } from "@/lib/agency-context";
-import { useQuery } from "@tanstack/react-query";
-import { getDestinationByName } from "@/services/destination-intelligence.functions";
-import { Languages, DollarSign, Plug, Clock, Compass } from "lucide-react";
+import { Plane, Hotel, MapPin, CheckCircle2, AlertTriangle, ShieldCheck, QrCode } from "lucide-react";
+import { generateQrCodeDataUri } from "@/lib/qr-code";
 
 interface Props {
   voucher: Voucher;
@@ -16,30 +16,14 @@ interface Props {
   companyProfile?: CompanyProfile | null;
 }
 
-function Row({ label, value }: { label: string; value?: string | null }) {
-  if (!value) return null;
-  return (
-    <div className="flex gap-2 ds-meta leading-snug">
-      <span className="shrink-0 w-28 font-semibold text-slate-500 uppercase tracking-wide">
-        {label}
-      </span>
-      <span className="flex-1 text-slate-800">{value}</span>
-    </div>
-  );
-}
-
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="mb-5">
-      <div className="flex items-center gap-2 mb-2">
-        <div className="h-px flex-1 bg-slate-200" />
-        <span
-          className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400"
-          style={{ fontFamily: "var(--brand-heading-font, sans-serif)" }}
-        >
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <span className="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground">
           {title}
         </span>
-        <div className="h-px flex-1 bg-slate-200" />
+        <div className="h-px flex-1 bg-border/60" />
       </div>
       {children}
     </div>
@@ -52,355 +36,158 @@ export default function TemplateVoucherEmbarqueA4({
   brandKit,
   companyProfile,
 }: Props) {
-  const { data: dest } = useQuery({
-    queryKey: ["destination-info-voucher", v.destination],
-    queryFn: async () => {
-      if (!v.destination) return null;
-      return await getDestinationByName({ data: { name: v.destination } });
-    },
-    enabled: !!v.destination,
-  });
-
-  const primaryColor =
-    brandKit?.primary_color || brandKit?.brand_color || agency.brand_color || "#1a56db";
-  const secondaryColor = brandKit?.secondary_color || "#D4AF37";
-  const bgColor = brandKit?.background_color || "#FFFFFF";
-  const textColor = brandKit?.text_color || "#111827";
-  const fontHeading = brandKit?.font_heading || "Outfit";
-  const fontBody = brandKit?.font_body || "Inter";
-
-  const brand = primaryColor;
-  const logoUrl = brandKit?.logo_url || agency.logo_url;
-
-  const formatAddress = (addr: any) => {
-    if (!addr || typeof addr !== "object") return "";
-    const parts = [
-      addr.street ? `${addr.street}${addr.number ? `, ${addr.number}` : ""}` : "",
-      addr.complement ? `${addr.complement}` : "",
-      addr.neighborhood ? `${addr.neighborhood}` : "",
-      addr.city ? `${addr.city} - ${addr.state || ""}` : "",
-      addr.zip ? `CEP ${addr.zip}` : "",
-    ].filter(Boolean);
-    return parts.join(" — ");
-  };
-
-  const agencyAddress = companyProfile?.address ? formatAddress(companyProfile.address) : "";
-
-  const styleVars = {
-    "--brand-primary": primaryColor,
-    "--brand-secondary": secondaryColor,
-    "--brand-heading-font": `"${fontHeading}", sans-serif`,
-    "--brand-body-font": `"${fontBody}", sans-serif`,
-  } as React.CSSProperties;
-
-  const fontHeadingUrl = fontHeading.replace(/\s+/g, "+");
-  const fontBodyUrl = fontBody.replace(/\s+/g, "+");
+  const logoUrl = brandKit?.logo_white_url || brandKit?.logo_url || agency.logo_url;
+  const qrUri = generateQrCodeDataUri(v.general_locator || v.id || "VOUCHER-WAESY", { border: 1 });
 
   return (
     <div
-      className="w-full min-h-full bg-white text-slate-900 p-8 flex flex-col"
-      style={{
-        ...styleVars,
-        fontSize: "12px",
-        fontFamily: "var(--brand-body-font, sans-serif)",
-      }}
+      id="voucher-canvas"
+      className="a4-page w-full max-w-3xl min-h-screen bg-card text-card-foreground p-8 sm:p-10 font-sans flex flex-col justify-between border border-border/80 mx-auto"
     >
-      <link
-        href={`https://fonts.googleapis.com/css2?family=${fontHeadingUrl}:wght@400;600;700;800&family=${fontBodyUrl}:wght@400;500;700&display=swap`}
-        rel="stylesheet"
-      />
-      {/* HEADER */}
-      <div
-        className="flex items-center justify-between mb-6 pb-4 border-b-2"
-        style={{ borderColor: brand }}
-      >
-        <div>
-          {logoUrl ? (
-            <img
-              src={logoUrl}
-              alt={agency.name}
-              className="h-10 w-auto max-w-40 aspect-[4/1] object-contain"
-              width={160}
-              height={40}
-              crossOrigin="anonymous"
-            />
-          ) : (
-            <div
-              className="text-xl font-black tracking-tighter"
-              style={{ color: brand, fontFamily: "var(--brand-heading-font, sans-serif)" }}
-            >
-              {agency.name}
-            </div>
-          )}
-          <div className="ds-meta text-slate-400 mt-1">Guia de Embarque</div>
-        </div>
-        <div className="text-right">
-          <div
-            className="text-2xl font-black tracking-tighter text-slate-800"
-            style={{ fontFamily: "var(--brand-heading-font, sans-serif)" }}
-          >
-            {v.destination ?? "—"}
+      <div className="space-y-6">
+        {/* ── 1. CABEÇALHO DO GUIA DE EMBARQUE ── */}
+        <div className="flex items-start justify-between pb-6 border-b-2 border-foreground/80">
+          <div className="space-y-1">
+            {logoUrl ? (
+              <img
+                src={logoUrl}
+                alt={agency.name}
+                className="h-10 w-auto object-contain"
+                crossOrigin="anonymous"
+              />
+            ) : (
+              <div className="text-xl font-black tracking-tight text-primary">
+                {agency.name}
+              </div>
+            )}
+            <p className="text-xs font-mono text-muted-foreground uppercase">
+              Guia de Embarque & Voucher Oficial
+            </p>
           </div>
-          {v.general_locator && (
-            <div className="ds-meta font-mono mt-1 text-slate-500">
-              LOC: <span className="font-bold text-slate-700">{v.general_locator}</span>
-            </div>
-          )}
+
+          <div className="text-right space-y-1">
+            <h1 className="text-2xl font-black tracking-tight text-foreground">
+              {v.destination ?? "Destino da Viagem"}
+            </h1>
+            {v.general_locator && (
+              <div className="text-xs font-mono text-muted-foreground">
+                LOCALIZADOR: <span className="font-bold text-primary">{v.general_locator}</span>
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* ── 2. PASSAGEIROS TITULARES ── */}
+        {v.passengers && v.passengers.length > 0 && (
+          <Section title="Passageiros Registrados">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {v.passengers.map((p: any, i: number) => (
+                <div key={i} className="flex flex-col p-3 rounded-lg bg-muted/30 border border-border/80 text-xs">
+                  <span className="font-bold text-sm text-foreground">{p.name}</span>
+                  {p.document && <span className="text-muted-foreground">Doc: {p.document}</span>}
+                  {p.seat && <span className="text-muted-foreground">Assento: {p.seat}</span>}
+                </div>
+              ))}
+            </div>
+          </Section>
+        )}
+
+        {/* ── 3. DETALHAMENTO DE VOOS ── */}
+        {v.flights && v.flights.length > 0 && (
+          <Section title="Voos e Trechos Aéreos">
+            <div className="space-y-3">
+              {v.flights.map((f: any, i: number) => (
+                <div key={i} className="p-4 rounded-lg bg-muted/20 border border-border/80 space-y-3">
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="flex items-center gap-2 text-base font-black text-foreground">
+                      <Plane className="size-4 text-primary" />
+                      {f.origin ?? "—"} → {f.destination ?? "—"}
+                    </span>
+                    <span className="px-3 py-1 rounded-full text-xs font-mono uppercase bg-primary/10 text-primary border border-primary/20">
+                      {f.class ?? "Econômica"}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                    <div>
+                      <span className="text-muted-foreground block">Cia Aérea:</span>
+                      <span className="font-semibold text-foreground">{f.airline || "Aérea"}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground block">Voo:</span>
+                      <span className="font-mono font-semibold text-foreground">{f.flight_number || "—"}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground block">Data:</span>
+                      <span className="font-mono font-semibold text-foreground">{f.date || "—"}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground block">Saída / Chegada:</span>
+                      <span className="font-mono font-semibold text-foreground">{f.departure_time || "—"} / {f.arrival_time || "—"}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Section>
+        )}
+
+        {/* ── 4. HOSPEDAGEM ── */}
+        {v.accommodation && v.accommodation.length > 0 && (
+          <Section title="Hospedagem Confirmada">
+            <div className="space-y-3">
+              {v.accommodation.map((a: any, i: number) => (
+                <div key={i} className="p-4 rounded-lg bg-muted/20 border border-border/80 space-y-2">
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="flex items-center gap-2 text-sm font-bold text-foreground">
+                      <Hotel className="size-4 text-emerald-600" />
+                      {a.name || "Hotel Confirmado"}
+                    </span>
+                    <span className="text-emerald-600 flex items-center gap-1 font-semibold">
+                      <CheckCircle2 className="size-3.5" /> Reserva Ativa
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                    <div>
+                      <span className="text-muted-foreground block">Cidade:</span>
+                      <span className="font-semibold text-foreground">{a.city || "—"}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground block">Check-in:</span>
+                      <span className="font-mono font-semibold text-foreground">{a.checkin || "—"}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground block">Check-out:</span>
+                      <span className="font-mono font-semibold text-foreground">{a.checkout || "—"}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Section>
+        )}
       </div>
 
-      {/* PASSAGEIROS */}
-      {v.passengers && v.passengers.length > 0 && (
-        <Section title="Passageiros">
-          <div className="grid grid-cols-2 gap-x-6 gap-y-1">
-            {v.passengers.map((p: any, i: number) => (
-              <div key={i} className="flex flex-col border border-slate-100 rounded-full px-3 py-2">
-                <span
-                  className="font-bold text-xs text-slate-800"
-                  style={{ fontFamily: "var(--brand-heading-font, sans-serif)" }}
-                >
-                  {p.name}
-                </span>
-                {p.document && <span className="ds-meta text-slate-400">Doc: {p.document}</span>}
-                {p.seat && <span className="ds-meta text-slate-400">Assento: {p.seat}</span>}
-              </div>
-            ))}
-          </div>
-        </Section>
-      )}
-
-      {/* VOOS */}
-      {v.flights && v.flights.length > 0 && (
-        <Section title="Voos">
-          {v.flights.map((f: any, i: number) => (
-            <div key={i} className="mb-2 bg-slate-50 rounded-lg px-4 py-3 border border-slate-100">
-              <div className="flex items-center justify-between mb-1">
-                <span
-                  className="font-black text-base tracking-tighter"
-                  style={{ fontFamily: "var(--brand-heading-font, sans-serif)" }}
-                >
-                  {f.origin ?? "—"} → {f.destination ?? "—"}
-                </span>
-                <span className="ds-meta font-bold bg-slate-200 text-slate-600 px-2 py-1 rounded-full">
-                  {f.class ?? "Economy"}
-                </span>
-              </div>
-              <div className="grid grid-cols-3 gap-2 mt-1">
-                <Row label="Cia Aérea" value={f.airline} />
-                <Row label="Voo" value={f.flight_number} />
-                <Row label="Localizador" value={f.locator} />
-                <Row label="Data" value={f.date} />
-                <Row label="Saída" value={f.departure_time} />
-                <Row label="Chegada" value={f.arrival_time} />
-                <Row label="Bagagem" value={f.baggage} />
-              </div>
-            </div>
-          ))}
-        </Section>
-      )}
-
-      {/* HOSPEDAGEM */}
-      {v.accommodation && v.accommodation.length > 0 && (
-        <Section title="Hospedagem">
-          {v.accommodation.map((a: any, i: number) => (
-            <div key={i} className="mb-2 bg-slate-50 rounded-lg px-4 py-3 border border-slate-100">
-              <div
-                className="font-bold text-[13px]"
-                style={{ fontFamily: "var(--brand-heading-font, sans-serif)" }}
-              >
-                {a.name}
-              </div>
-              <div className="grid grid-cols-2 gap-1 mt-1">
-                <Row label="Cidade" value={a.city} />
-                <Row label="Regime" value={a.meal_plan} />
-                <Row label="Check-in" value={a.checkin} />
-                <Row label="Check-out" value={a.checkout} />
-                <Row label="Quarto" value={a.room_type} />
-                <Row label="Localizador" value={a.confirmation} />
-              </div>
-            </div>
-          ))}
-        </Section>
-      )}
-
-      {/* TRANSFERS */}
-      {v.transfers && v.transfers.length > 0 && (
-        <Section title="Transfers">
-          {v.transfers.map((t: any, i: number) => (
-            <div key={i} className="flex gap-3 ds-meta items-start mb-1">
-              <span className="shrink-0 font-bold text-slate-500">{t.type ?? "Transfer"}</span>
-              <span className="flex-1">
-                {t.origin} → {t.destination}
-              </span>
-              {t.date && <span className="text-slate-400 shrink-0">{t.date}</span>}
-            </div>
-          ))}
-        </Section>
-      )}
-
-      {/* SEGURO */}
-      {v.insurance && Object.keys(v.insurance).length > 0 && (
-        <Section title="Seguro de Viagem">
-          <div className="grid grid-cols-2 gap-1">
-            <Row label="Seguradora" value={(v.insurance as any).provider} />
-            <Row label="Apólice" value={(v.insurance as any).policy_number} />
-            <Row label="Validade" value={(v.insurance as any).valid_until} />
-            <Row label="Telefone 24h" value={(v.insurance as any).emergency_phone} />
-          </div>
-        </Section>
-      )}
-
-      {/* CONTATOS DE EMERGÊNCIA */}
-      {v.emergency_contacts && v.emergency_contacts.length > 0 && (
-        <Section title="Contatos de Emergência">
-          {v.emergency_contacts.map((c: any, i: number) => (
-            <div key={i} className="flex gap-4 ds-meta mb-1">
-              <span className="font-bold w-32 shrink-0">{c.name}</span>
-              <span className="text-slate-500">{c.phone}</span>
-              {c.role && <span className="text-slate-400 ds-meta">{c.role}</span>}
-            </div>
-          ))}
-        </Section>
-      )}
-
-      {/* GUIA DE DESTINO ADICIONAL */}
-      {dest && (
-        <Section title="Guia do Destino">
-          <div className="bg-slate-50 border border-slate-100 rounded-lg p-4 space-y-3">
-            <div className="flex items-center gap-2 border-b border-slate-200/60 pb-2 mb-1">
-              <Compass className="h-4 w-4 text-slate-500" style={{ color: brand }} />
-              <span className="font-bold text-xs text-slate-800 tracking-wide">
-                Informações Úteis para Viagem — {dest.destination}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-3">
-              <div className="flex items-start gap-2 ds-meta">
-                <Languages className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-1" />
-                <div>
-                  <span className="block font-bold text-slate-500 uppercase tracking-wide text-[9px]">
-                    Idioma
-                  </span>
-                  <span className="text-slate-800 font-medium">{dest.language || "Português"}</span>
-                </div>
-              </div>
-              <div className="flex items-start gap-2 ds-meta">
-                <DollarSign className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-1" />
-                <div>
-                  <span className="block font-bold text-slate-500 uppercase tracking-wide text-[9px]">
-                    Moeda
-                  </span>
-                  <span className="text-slate-800 font-medium">
-                    {dest.currency || "Real (BRL)"}
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-start gap-2 ds-meta">
-                <Plug className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-1" />
-                <div>
-                  <span className="block font-bold text-slate-500 uppercase tracking-wide text-[9px]">
-                    Tomada
-                  </span>
-                  <span className="text-slate-800 font-medium">
-                    {dest.plug_type || "Tipo N / C"}
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-start gap-2 ds-meta">
-                <Clock className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-1" />
-                <div>
-                  <span className="block font-bold text-slate-500 uppercase tracking-wide text-[9px]">
-                    Fuso Horário
-                  </span>
-                  <span className="text-slate-800 font-medium">
-                    {dest.time_zone || "Brasília (UTC -3)"}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 border-t border-slate-100 pt-2 ds-meta">
-              {dest.visa_required != null && (
-                <div>
-                  <span className="block font-bold text-slate-500 uppercase tracking-wide text-[9px]">
-                    Visto Necessário?
-                  </span>
-                  <span className="text-slate-800 font-medium">
-                    {dest.visa_required ? "⚠️ Sim" : "✓ Não"}
-                    {dest.visa_info && ` — ${dest.visa_info}`}
-                  </span>
-                </div>
-              )}
-              {dest.entry_requirements && (
-                <div>
-                  <span className="block font-bold text-slate-500 uppercase tracking-wide text-[9px]">
-                    Requisitos de Entrada
-                  </span>
-                  <span className="text-slate-800">{dest.entry_requirements}</span>
-                </div>
-              )}
-              {dest.vaccinations_required && dest.vaccinations_required.length > 0 && (
-                <div>
-                  <span className="block font-bold text-slate-500 uppercase tracking-wide text-[9px]">
-                    Vacinas Obrigatórias
-                  </span>
-                  <span className="text-slate-800">{dest.vaccinations_required.join(", ")}</span>
-                </div>
-              )}
-              {dest.safety_level && (
-                <div>
-                  <span className="block font-bold text-slate-500 uppercase tracking-wide text-[9px]">
-                    Segurança
-                  </span>
-                  <span className="text-slate-800">
-                    Nível: <strong className="text-slate-700">{dest.safety_level}</strong>
-                    {dest.safety_notes && ` — ${dest.safety_notes}`}
-                  </span>
-                </div>
-              )}
-              {dest.cultural_tips && (
-                <div className="col-span-1 md:col-span-2">
-                  <span className="block font-bold text-slate-500 uppercase tracking-wide text-[9px]">
-                    Dicas Culturais
-                  </span>
-                  <span className="text-slate-800">{dest.cultural_tips}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </Section>
-      )}
-
-      {/* OBSERVAÇÕES */}
-      {v.observations && (
-        <Section title="Observações">
-          <p className="ds-meta text-slate-600 leading-relaxed whitespace-pre-wrap">
-            {v.observations}
+      {/* ── 5. VALIDAÇÃO & QR CODE DIGITAL ── */}
+      <div className="pt-6 border-t border-border/80 flex items-center justify-between">
+        <div className="space-y-1">
+          <span className="text-xs font-mono font-bold tracking-wider text-primary uppercase">
+            Autenticidade & Validação Digital
+          </span>
+          <p className="text-xs text-muted-foreground max-w-sm">
+            Documento com validação biométrica e hash criptográfico gerado pelo sistema Waesy.
           </p>
-        </Section>
-      )}
+        </div>
 
-      {/* FOOTER */}
-      <div className="mt-auto pt-4 border-t border-slate-100 flex flex-col gap-2">
-        {companyProfile && (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 ds-meta text-slate-500 font-medium pb-2 border-b border-slate-100/30">
-            {companyProfile.cnpj && <div>CNPJ: {companyProfile.cnpj}</div>}
-            {companyProfile.phone && <div>Tel: {companyProfile.phone}</div>}
-            {companyProfile.email && <div>E-mail: {companyProfile.email}</div>}
-            {companyProfile.website && (
-              <div className="col-span-2">Site: {companyProfile.website}</div>
-            )}
-            {agencyAddress && (
-              <div className="col-span-2 md:col-span-3">Endereço: {agencyAddress}</div>
-            )}
-          </div>
-        )}
-        <div className="flex items-center justify-between text-[9px] text-slate-400">
-          <div>
-            Documento gerado por{" "}
-            <span className="font-semibold text-slate-600">Turis · {agency.name}</span>
-          </div>
-          <div className="font-mono">@{agency.slug}</div>
+        <div className="p-2 bg-card rounded-lg border border-border text-center space-y-1">
+          {qrUri ? (
+            <img src={qrUri} alt="QR Code" className="size-16 mx-auto pointer-events-none" />
+          ) : (
+            <div className="size-16 bg-muted rounded flex items-center justify-center text-xs font-mono">QR</div>
+          )}
+          <span className="text-xs font-mono text-muted-foreground font-bold block">
+            {v.general_locator || "VCH-WAESY"}
+          </span>
         </div>
       </div>
     </div>

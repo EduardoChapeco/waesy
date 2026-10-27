@@ -279,11 +279,11 @@ export function SectionHotels({ draft, save }: Props) {
         </Card>
       ))}
       <div className="flex gap-2">
-        <AddBtn onClick={add}>Adicionar hotel</AddBtn>
+        <AddBtn onClick={add} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Adicionar hotel</AddBtn>
         <Button
           type="button"
           onClick={() => setInfotravelOpen(true)}
-          className="flex-1 inline-flex items-center justify-center gap-2 h-[34px] rounded border border-border bg-surface text-xs font-semibold text-muted-foreground hover:bg-surface-alt hover:text-foreground transition-all cursor-pointer"
+          className="flex-1 inline-flex items-center justify-center gap-2 h-[34px] rounded border border-border bg-surface text-xs font-semibold text-muted-foreground hover:bg-surface-alt hover:text-foreground transition-colors duration-200 cursor-pointer"
         >
           <Search className="h-3.5 w-3.5" /> Buscar no Infotravel
         </Button>
@@ -291,7 +291,7 @@ export function SectionHotels({ draft, save }: Props) {
 
       {infotravelOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay p-4">
-          <div
+          <div /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */
             className="w-full max-w-lg rounded-lg border border-border bg-surface p-5 flex flex-col max-h-[85vh] overflow-hidden shadow-none"
             onClick={(e) => e.stopPropagation()}
           >
@@ -368,7 +368,7 @@ export function SectionHotels({ draft, save }: Props) {
                 {results.map((hotel) => (
                   <div
                     key={hotel.id}
-                    className="flex gap-3 p-3 rounded border border-border hover:border-brand/40 bg-surface-alt/25 transition-all group text-left"
+                    className="flex gap-3 p-3 rounded border border-border hover:border-brand/40 bg-surface-alt/25 transition-colors duration-200 group text-left"
                   >
                     {hotel.images?.[0] && (
                       <img
@@ -396,7 +396,7 @@ export function SectionHotels({ draft, save }: Props) {
                         <Button
                           type="button"
                           onClick={() => importHotel(hotel)}
-                          className="px-3 py-1 ds-meta bg-primary text-primary-foreground font-semibold rounded hover:bg-primary/95 transition-all cursor-pointer"
+                          className="px-3 py-1 ds-meta bg-primary text-primary-foreground font-semibold rounded hover:bg-primary/95 transition-colors duration-200 cursor-pointer"
                         >
                           Selecionar
                         </Button>

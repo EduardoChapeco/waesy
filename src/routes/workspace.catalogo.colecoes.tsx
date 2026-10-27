@@ -171,7 +171,7 @@ function WorkspaceCollectionsPage() {
   return (
     <div className="w-full space-y-6 pb-24 font-sans text-foreground">
       {/* ── 1. Top Header ── */}
-      <PageHeader
+      <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         eyebrow="Catálogo"
         title="Coleções de Produtos"
         actions={
@@ -219,7 +219,7 @@ function WorkspaceCollectionsPage() {
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3].map((n) => (
-            <div key={n} className="h-40 rounded-lg bg-card/60 animate-pulse border border-border/40" />
+            <div key={n} className="h-40 rounded-lg bg-card/60 animate-pulse motion-reduce:animate-none border border-border/40" />
           ))}
         </div>
       ) : filteredCollections.length === 0 ? (
@@ -250,7 +250,7 @@ function WorkspaceCollectionsPage() {
             return (
               <div
                 key={col.id}
-                className="bg-card rounded-lg border border-border/60 p-4 flex flex-col justify-between space-y-3 hover:border-foreground/30 transition-all group shadow-xs"
+                className="bg-card rounded-lg border border-border/60 p-4 flex flex-col justify-between space-y-3 hover:border-foreground/30 transition-colors duration-200 group shadow-xs"
               >
                 <div className="space-y-3">
                   {col.cover_url ? (
@@ -439,7 +439,7 @@ function WorkspaceCollectionsPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="h-9 rounded-lg text-xs font-medium">Cancelar</AlertDialogCancel>
-            <AlertDialogAction
+            <AlertDialogAction /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
               onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
               className="h-9 rounded-lg text-xs font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >

@@ -58,14 +58,20 @@ import { MobilityCancelModal } from "@/components/mobility/mobility-cancel-modal
 import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
 import {
   listMatchingCaronas,
+  listIntercityBusSchedules,
+  bookIntercityBusTicket,
   type MatchedCaronaCorridorDTO,
 } from "@/services/carona.functions";
+import { Ticket } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import {
   CaronaPublishModal,
   CaronaBookModal,
 } from "@/components/mobility";
 import { ModularSurfaceFeed } from "@/components/commerce/modular-surface-feed";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { RideBookingBottomSheet, type SheetSnapPoint, type RideOptionItem } from "@/components/mobility/RideBookingBottomSheet";
 
 export const Route = createFileRoute("/_store/mobilidade")({
   head: () => ({
@@ -207,6 +213,7 @@ function MobilityPage() {
   const [destinationText, setDestinationText] = useState("");
   const [isLocatingGPS, setIsLocatingGPS] = useState(false);
   const [pinMode, setPinMode] = useState<"origin" | "destination" | null>(null);
+  const [bottomSheetSnap, setBottomSheetSnap] = useState<SheetSnapPoint>("medium");
 
   // 4. Subfluxo de Entrega
   const [deliveryAction, setDeliveryAction] = useState<"send" | "receive">("send");
@@ -242,6 +249,13 @@ function MobilityPage() {
   const [caronaOriginCity, setCaronaOriginCity] = useState("Chapecó");
   const [caronaDestinationCity, setCaronaDestinationCity] = useState("Florianópolis");
   const [caronaWomenOnly, setCaronaWomenOnly] = useState(false);
+  const [caronaSubTab, setCaronaSubTab] = useState<"carona" | "bus">("carona");
+  const [selectedBusSchedule, setSelectedBusSchedule] = useState<any>(null);
+  const [busBookingOpen, setBusBookingOpen] = useState(false);
+  const [passengerName, setPassengerName] = useState("");
+  const [passengerDoc, setPassengerDoc] = useState("");
+  const [selectedSeat, setSelectedSeat] = useState(12);
+  const [isBookingBus, setIsBookingBus] = useState(false);
   const [caronaPublishModalOpen, setCaronaPublishModalOpen] = useState(false);
   const [caronaBookModalOpen, setCaronaBookModalOpen] = useState(false);
   const [selectedCorridorForBooking, setSelectedCorridorForBooking] = useState<MatchedCaronaCorridorDTO | null>(null);
@@ -262,8 +276,56 @@ function MobilityPage() {
       });
       return res || [];
     },
-    enabled: selectedCategory === "carona",
+    enabled: selectedCategory === "carona" && caronaSubTab === "carona",
   });
+
+  const { data: busSchedules = [], isLoading: isLoadingBuses, refetch: refetchBuses } = useQuery({
+    queryKey: ["intercity-buses", caronaOriginCity, caronaDestinationCity],
+    queryFn: async () => {
+      try {
+        const res = await listIntercityBusSchedules({
+          data: {
+            originCity: caronaOriginCity,
+            destinationCity: caronaDestinationCity,
+          },
+        });
+        return res || [];
+      } catch (err) {
+        return [];
+      }
+    },
+    enabled: selectedCategory === "carona" && caronaSubTab === "bus",
+  });
+
+  const handleBookBusTicket = async () => {
+    if (!selectedBusSchedule) return;
+    if (!passengerName.trim() || !passengerDoc.trim()) {
+      toast.error("Informe nome e documento do passageiro.");
+      return;
+    }
+    setIsBookingBus(true);
+    try {
+      await bookIntercityBusTicket({
+        data: {
+          scheduleId: String(selectedBusSchedule.id),
+          passengerName: passengerName.trim(),
+          passengerDocument: passengerDoc.trim(),
+          seatNumber: selectedSeat,
+          travelDate: new Date().toISOString().slice(0, 10),
+          boardingCity: selectedBusSchedule.origin_city || caronaOriginCity,
+          alightingCity: selectedBusSchedule.destination_city || caronaDestinationCity,
+          pricePaidCents: Number(selectedBusSchedule.price_cents || 5000),
+        },
+      });
+      toast.success("Passagem de ônibus reservada com sucesso! Consulte em sua conta.");
+      setBusBookingOpen(false);
+      refetchBuses();
+    } catch (err: any) {
+      toast.error("Erro ao reservar passagem: " + (err?.message || "Falha desconhecida"));
+    } finally {
+      setIsBookingBus(false);
+    }
+  };
 
   // Barreira de Inadimplência Zero-Trust (B.24)
   const { data: debtStatus, refetch: refetchDebts } = useQuery({
@@ -336,6 +398,23 @@ function MobilityPage() {
 
   const currentSelectedOption =
     availableOptions.find((o) => o.id === selectedOptionId) || availableOptions[0];
+
+  const mappedRideOptions = useMemo<RideOptionItem[]>(() => {
+    return availableOptions.map((opt) => ({
+      id: opt.id,
+      name: opt.name,
+      category:
+        opt.canonical_service_type === "ride_moto" || opt.icon_name === "bike"
+          ? "moto"
+          : opt.service_level === "comfort"
+          ? "comfort"
+          : "car",
+      etaMinutes: opt.eta_minutes,
+      priceCents: opt.estimated_price_cents,
+      description: opt.description,
+      seats: parseInt(opt.capacity_label) || (opt.icon_name === "bike" ? 1 : 4),
+    }));
+  }, [availableOptions]);
 
   // Inscrição Realtime para Status e Telemetria do Motorista
   useEffect(() => {
@@ -602,14 +681,14 @@ function MobilityPage() {
         )}
       </div>
 
-      {/* ── 2. PAINEL DE SOLICITAÇÃO (DRAWER MOBILE / CARD LATERAL DESKTOP) ── */}
+            {/* ── 2. PAINEL DE SOLICITAÇÃO (DRAWER MOBILE / CARD LATERAL DESKTOP) ── */}
       <div
-        className="
-          absolute z-30
-          bottom-0 left-0 right-0 max-h-screen rounded-t-lg border-t
-          sm:bottom-4 sm:top-4 sm:left-4 sm:right-auto sm:w-96 sm:max-w-md sm:max-h-none sm:rounded-lg sm:border
-          overflow-y-auto no-scrollbar bg-card/95 backdrop-blur-2xl p-5 text-foreground border-border/80 space-y-4 animate-in slide-in-from-bottom-4 sm:slide-in-from-left-4 duration-300
-        "
+        className={cn(
+          "absolute z-30 overflow-y-auto no-scrollbar bg-card/95 backdrop-blur-2xl p-5 text-foreground border-border/80 space-y-4 animate-in duration-300",
+          selectedCategory === "ride" && scheduleMode === "now" && requestStatus === "idle"
+            ? "hidden sm:block sm:bottom-4 sm:top-4 sm:left-4 sm:right-auto sm:w-96 sm:max-w-md sm:max-h-none sm:rounded-lg sm:border sm:slide-in-from-left-4"
+            : "bottom-0 left-0 right-0 max-h-screen rounded-t-lg border-t sm:bottom-4 sm:top-4 sm:left-4 sm:right-auto sm:w-96 sm:max-w-md sm:max-h-none sm:rounded-lg sm:border slide-in-from-bottom-4 sm:slide-in-from-left-4"
+        )}
       >
         {/* Cabeçalho */}
         <div className="flex items-center justify-between pb-1 border-b border-border/50">
@@ -1204,6 +1283,73 @@ function MobilityPage() {
               </div>
             </div>
 
+            {/* Sub-Aba: Ônibus Rodoviário Intermunicipal */}
+            {caronaSubTab === "bus" && (
+              <div className="space-y-3">
+                {isLoadingBuses ? (
+                  <div className="py-8 text-center space-y-2 bg-card rounded-lg border border-border/60 p-4">
+                    <Loader2 className="size-5 animate-spin motion-reduce:animate-none mx-auto text-primary" />
+                    <p className="text-xs text-muted-foreground font-mono">Buscando linhas rodoviárias...</p>
+                  </div>
+                ) : busSchedules.length === 0 ? (
+                  <div className="py-8 text-center space-y-2 bg-card rounded-lg border border-border/60 p-5">
+                    <Ticket className="size-7 text-muted-foreground/40 mx-auto" />
+                    <p className="text-xs font-bold text-foreground">Nenhuma linha de ônibus encontrada neste trecho</p>
+                    <p className="text-xs text-muted-foreground">
+                      Consulte outros horários ou tente a opção de carona compartilhada.
+                    </p>
+                  </div>
+                ) : (
+                  busSchedules.map((bus: any) => (
+                    <div
+                      key={bus.id}
+                      className="p-4 rounded-lg bg-card border border-border/80 hover:border-foreground/30 transition-colors space-y-3 shadow-xs"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="font-bold text-xs text-foreground block">
+                            {bus.operator_name || "Viação Regional"}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            Classe {bus.service_class || "Executivo"} • {bus.available_seats || 32} poltronas livres
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-base font-black text-foreground font-mono block">
+                            {formatMoney(bus.price_cents)}
+                          </span>
+                          <span className="text-2xs text-muted-foreground block">tarifa oficial</span>
+                        </div>
+                      </div>
+
+                      <div className="p-3 rounded-lg bg-muted/20 border border-border/40 text-xs flex items-center justify-between">
+                        <div>
+                          <span className="font-bold text-foreground block">{bus.departure_time}</span>
+                          <span className="text-muted-foreground">{bus.origin_city}</span>
+                        </div>
+                        <ArrowRight className="size-4 text-muted-foreground" />
+                        <div className="text-right">
+                          <span className="font-bold text-foreground block">{bus.arrival_time}</span>
+                          <span className="text-muted-foreground">{bus.destination_city}</span>
+                        </div>
+                      </div>
+
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setSelectedBusSchedule(bus);
+                          setBusBookingOpen(true);
+                        }}
+                        className="w-full h-11 min-h-11 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 cursor-pointer shadow-xs focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                      >
+                        Comprar Passagem
+                      </Button>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+
             {/* Listagem de Caronas Elegíveis */}
             {isLoadingCaronas ? (
               <div className="py-8 text-center space-y-2 bg-card rounded-lg border border-border/60 p-4">
@@ -1469,6 +1615,26 @@ function MobilityPage() {
         </div>
       )}
 
+      {/* ── 2.1 BOTTOM SHEET NATIVO MOBILE BLABLACAR / IFOOD COM 3 SNAP POINTS ── */}
+      {selectedCategory === "ride" && scheduleMode === "now" && requestStatus === "idle" && (
+        <RideBookingBottomSheet
+          snapPoint={bottomSheetSnap}
+          onSnapPointChange={setBottomSheetSnap}
+          originText={originText || origin.label || "Origem atual"}
+          destinationText={destinationText || destination?.label || ""}
+          walkingDistanceMeters={180}
+          walkingMinutes={2}
+          options={mappedRideOptions}
+          selectedOptionId={selectedOptionId}
+          onSelectOption={(id) => setSelectedOptionId(id)}
+          paymentMethod={paymentMethod}
+          onSelectPaymentMethod={(m) => setPaymentMethod(m)}
+          onConfirmRide={handleSubmit}
+          isConfirming={createMutation.isPending}
+          className="sm:hidden"
+        />
+      )}
+
       {/* Modais de Ação e Segurança */}
       <ActionAuthGuardModal
         isOpen={authGuardOpen}
@@ -1505,6 +1671,73 @@ function MobilityPage() {
           setDriverLocation(null);
         }}
       />
+      {/* Modal de Compra de Passagem Rodoviária */}
+      <Dialog open={busBookingOpen} onOpenChange={setBusBookingOpen}>
+        <DialogContent className="sm:max-w-md bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-foreground">Passagem de Ônibus Intermunicipal</DialogTitle>
+          </DialogHeader>
+          {selectedBusSchedule && (
+            <div className="space-y-3 py-2 text-xs">
+              <div className="p-3 rounded-lg bg-muted/30 border border-border/50 flex justify-between items-center">
+                <div>
+                  <span className="font-bold text-foreground block">{selectedBusSchedule.operator_name}</span>
+                  <span className="text-muted-foreground">{selectedBusSchedule.origin_city} → {selectedBusSchedule.destination_city}</span>
+                </div>
+                <span className="text-base font-black font-mono text-foreground">{formatMoney(selectedBusSchedule.price_cents)}</span>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-foreground">Nome do Passageiro *</Label>
+                <Input
+                  placeholder="Nome civil conforme documento"
+                  value={passengerName}
+                  onChange={(e) => setPassengerName(e.target.value)}
+                  className="h-11 min-h-11 text-xs"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-foreground">CPF / Documento *</Label>
+                  <Input
+                    placeholder="000.000.000-00"
+                    value={passengerDoc}
+                    onChange={(e) => setPassengerDoc(e.target.value)}
+                    className="h-11 min-h-11 text-xs"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-foreground">Poltrona</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={44}
+                    value={selectedSeat}
+                    onChange={(e) => setSelectedSeat(Number(e.target.value))}
+                    className="h-11 min-h-11 text-xs"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter className="gap-2 sm:gap-0 pt-2 border-t border-border/50">
+            <Button
+              variant="outline"
+              onClick={() => setBusBookingOpen(false)}
+              disabled={isBookingBus}
+              className="h-11 min-h-11 px-4 text-xs font-medium cursor-pointer"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleBookBusTicket}
+              disabled={isBookingBus}
+              className="h-11 min-h-11 px-5 text-xs font-semibold cursor-pointer"
+            >
+              {isBookingBus ? "Emitindo..." : "Confirmar e Emitir"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

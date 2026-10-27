@@ -27,7 +27,7 @@ export function CreatorNicheSelect({
       <SelectContent className="max-h-80 rounded-lg p-1 shadow-lg">
         {CREATOR_NICHE_GROUPS.map((group) => (
           <SelectGroup key={group.name} className="py-1">
-            <SelectLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-2 py-1 bg-muted/30 rounded-md">
+            <SelectLabel className="text-2xs font-bold uppercase tracking-wider text-muted-foreground px-2 py-1 bg-muted/30 rounded-md">
               {group.name}
             </SelectLabel>
             {group.niches.map((niche) => (
@@ -39,7 +39,7 @@ export function CreatorNicheSelect({
                 <div className="flex flex-col gap-1">
                   <span className="font-medium text-foreground">{niche.label}</span>
                   {niche.description && (
-                    <span className="text-[10px] text-muted-foreground leading-tight">
+                    <span className="text-2xs text-muted-foreground leading-tight">
                       {niche.description}
                     </span>
                   )}

@@ -134,7 +134,7 @@ function WorkspaceLogisticsInvoicesPage() {
   return (
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── HEADER DA PÁGINA ── */}
-      <PageHeader
+      <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         eyebrow="Logística & Frota"
         title="Faturas da Frota"
         description="Controle financeiro de repasses quinzenais para motoristas autônomos e transportadoras parceiras."
@@ -264,7 +264,7 @@ function WorkspaceLogisticsInvoicesPage() {
           <h2 className="text-xs font-bold uppercase tracking-wider text-foreground">
             Demonstrativo de Repasses ({filteredInvoices.length})
           </h2>
-          {isLoading && <Loader2 className="size-4 animate-spin text-muted-foreground" />}
+          {isLoading && <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-muted-foreground" />}
         </div>
 
         {filteredInvoices.length === 0 && !isLoading ? (
@@ -346,7 +346,7 @@ function WorkspaceLogisticsInvoicesPage() {
                         className="h-10 px-4 rounded-lg font-bold text-xs bg-primary hover:bg-primary/90 text-primary-foreground gap-2 cursor-pointer shadow-2xs"
                       >
                         {settleMutation.isPending ? (
-                          <Loader2 className="size-3.5 animate-spin" />
+                          <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
                         ) : (
                           <CheckCircle2 className="size-3.5" />
                         )}
@@ -441,7 +441,7 @@ function WorkspaceLogisticsInvoicesPage() {
                 className="rounded-lg h-10 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground gap-2 shadow-2xs"
               >
                 {settleMutation.isPending ? (
-                  <Loader2 className="size-3.5 animate-spin" />
+                  <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
                 ) : (
                   <CheckCircle2 className="size-3.5" />
                 )}

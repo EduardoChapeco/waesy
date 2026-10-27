@@ -197,7 +197,7 @@ function TimeBox({
  <div className="flex flex-col items-center">
  <div
  className={cn(
- "w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center text-xl sm:text-3xl font-mono font-black shadow-sm transition-all",
+ "w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center text-xl sm:text-3xl font-mono font-black shadow-sm transition-colors duration-200",
  radiusClass
  )}
  style={{
@@ -208,7 +208,7 @@ function TimeBox({
  {value.toString().padStart(2, "0")}
  </div>
  <span
- className="text-[10px] sm:text-xs mt-2 uppercase font-bold tracking-wider opacity-80"
+ className="text-2xs sm:text-xs mt-2 uppercase font-bold tracking-wider opacity-80"
  style={{ color: textColor }}
  >
  {label}

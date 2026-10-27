@@ -5,30 +5,41 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AirportCombobox } from "@/components/ui/airport-combobox";
 import { CANONICAL_AIRPORTS, searchAirports, type AirportItem } from "@/lib/airports-data";
 import { requestTravelQuote, type TravelTripType } from "@/services/tourism.functions";
 import { toast } from "sonner";
 
 interface TravelQuoteModalProps {
  open: boolean;
- onOpenChange: (open: boolean) => void;
+ onOpenChange?: (open: boolean) => void;
+ onClose?: () => void;
  defaultDestination?: string;
+ initialDestination?: string;
  defaultTripType?: TravelTripType;
 }
 
 export function TravelQuoteModal({
  open,
  onOpenChange,
+ onClose,
  defaultDestination = "",
+ initialDestination = "",
  defaultTripType = "air_package",
 }: TravelQuoteModalProps) {
+ const handleOpenChange = (nextOpen: boolean) => {
+  if (!nextOpen && onClose) onClose();
+  if (onOpenChange) onOpenChange(nextOpen);
+ };
+ const effectiveDestination = initialDestination || defaultDestination;
+
  // Wizard steps: 1: Origem & Destino, 2: Datas, 3: Quartos & Idades, 4: Contato & Envio
  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
 
  // Form states
  const [origin, setOrigin] = useState("");
  const [originIata, setOriginIata] = useState("");
- const [destination, setDestination] = useState(defaultDestination || "");
+ const [destination, setDestination] = useState(effectiveDestination);
  const [destinationIata, setDestinationIata] = useState("");
 
  const [departureDate, setDepartureDate] = useState("");
@@ -120,16 +131,16 @@ export function TravelQuoteModal({
  const resetAll = () => {
  setStep(1);
  setIsCompleted(false);
- onOpenChange(false);
+ handleOpenChange(false);
  };
 
  return (
- <Dialog open={open} onOpenChange={onOpenChange}>
+ <Dialog open={open} onOpenChange={handleOpenChange}>
  <DialogContent className="sm:max-w-md sm:w-full sm:rounded-lg p-0 overflow-hidden bg-card border-border">
  {/* Header de Cotação de Viagem */}
- <div className="bg-linear-to-r from-blue-700 via-indigo-600 to-violet-700 text-white p-5 space-y-1 relative">
+ <div className="bg-linear-to-r from-blue-700 via-indigo-600 to-violet-700 text-foreground p-5 space-y-1 relative">
  <div className="flex items-center justify-between">
- <span className="text-[10px] font-mono font-black uppercase tracking-wider bg-white/20 px-3 py-1 rounded-full backdrop-blur-md">
+ <span className="text-2xs font-mono font-black uppercase tracking-wider bg-card/20 px-3 py-1 rounded-full backdrop-blur-md">
  Cotação Especial de Viagem
  </span>
  <span className="text-xs font-mono font-bold opacity-80">
@@ -137,13 +148,13 @@ export function TravelQuoteModal({
  </span>
  </div>
 
- <DialogTitle className="text-xl font-bold tracking-tight text-white pt-1">
+ <DialogTitle className="text-xl font-bold tracking-tight text-foreground pt-1">
  {step === 1 && "Para onde você quer viajar?"}
  {step === 2 && "Escolha as datas da viagem"}
  {step === 3 && "Defina os detalhes e passageiros"}
  {step === 4 && "Finalize sua solicitação"}
  </DialogTitle>
- <p className="text-xs text-white/80 font-medium">
+ <p className="text-xs text-foreground/80 font-medium">
  {step === 1 && "Defina o aeroporto/cidade de embarque e seu destino dos sonhos."}
  {step === 2 && "Selecione a data de ida e volta para encontrarmos as melhores tarifas."}
  {step === 3 && "Informe quantidade de quartos, adultos e idades das crianças."}
@@ -173,99 +184,57 @@ export function TravelQuoteModal({
  {/* ── ETAPA 1: ORIGEM & DESTINO ── */}
  {step === 1 && (
  <div className="space-y-4">
- {/* Seletor de Origem */}
- <div className="space-y-2">
- <Label className="text-xs font-bold text-muted-foreground">Onde você vai pegar seu voo / embarque?</Label>
- <div className="relative">
- <Input
- value={origin}
- onChange={(e) => {
- setOrigin(e.target.value);
- setShowOriginSearch(true);
- setAirportQuery(e.target.value);
- }}
- onFocus={() => setShowOriginSearch(true)}
- placeholder="Cidade ou Aeroporto de Origem..."
- className="h-11 rounded-lg bg-muted/40 border-border text-xs pl-9 font-medium"
- />
- <AirplaneTilt size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
- </div>
+ {/* Seletor de Origem com Combobox Inteligente */}
+              <div className="space-y-2">
+                <AirportCombobox
+                  label="Aeroporto / Cidade de Origem"
+                  value={originIata}
+                  onChange={(iata, airport) => {
+                    setOriginIata(iata);
+                    if (airport) {
+                      setOrigin(`${airport.city} (${airport.iata_code})`);
+                    } else {
+                      setOrigin(iata);
+                    }
+                  }}
+                  placeholder="Ex: Chapecó (XAP), Guarulhos (GRU)..."
+                  showAirportLink
+                />
+              </div>
 
- {showOriginSearch && (
- <div className=" rounded-lg bg-card p-2 space-y-1 max-h-40 overflow-y-auto no-scrollbar">
- {filteredAirports.slice(0, 5).map((a) => (
- <button
- key={a.iata}
- type="button"
- onClick={() => {
- setOrigin(`${a.city} (${a.iata})`);
- setOriginIata(a.iata);
- setShowOriginSearch(false);
- }}
- className="w-full text-left p-2 rounded-lg hover:bg-muted text-xs flex items-center justify-between cursor-pointer"
- >
- <span className="font-semibold text-foreground">{a.city} - {a.state}</span>
- <span className="font-mono font-bold text-primary">{a.iata}</span>
- </button>
- ))}
- </div>
- )}
- </div>
+              {/* Botão de Troca (⇄) */}
+              <div className="flex justify-center -my-1">
+                <button
+                  type="button"
+                  onClick={handleSwapLocations}
+                  className="size-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  title="Inverter Origem e Destino"
+                >
+                  <ArrowsLeftRight size={14} weight="bold" />
+                </button>
+              </div>
 
- {/* Botão de Troca (⇄) */}
- <div className="flex justify-center -my-1">
- <button
- type="button"
- onClick={handleSwapLocations}
- className="size-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer "
- title="Inverter Origem e Destino"
- >
- <ArrowsLeftRight size={14} weight="bold" />
- </button>
- </div>
+              {/* Seletor de Destino com Combobox Inteligente */}
+              <div className="space-y-2">
+                <AirportCombobox
+                  label="Aeroporto / Cidade de Destino"
+                  value={destinationIata}
+                  onChange={(iata, airport) => {
+                    setDestinationIata(iata);
+                    if (airport) {
+                      setDestination(`${airport.city} (${airport.iata_code})`);
+                    } else {
+                      setDestination(iata);
+                    }
+                  }}
+                  placeholder="Ex: Cancún (CUN), Orlando (MCO), Lisboa (LIS)..."
+                  showAirportLink
+                />
+              </div>
 
- {/* Seletor de Destino */}
- <div className="space-y-2">
- <Label className="text-xs font-bold text-muted-foreground">Para qual destino você quer ir?</Label>
- <div className="relative">
- <Input
- value={destination}
- onChange={(e) => {
- setDestination(e.target.value);
- setShowDestSearch(true);
- setAirportQuery(e.target.value);
- }}
- onFocus={() => setShowDestSearch(true)}
- placeholder="Cidade ou Aeroporto de Destino..."
- className="h-11 rounded-lg bg-muted/40 border-border text-xs pl-9 font-medium"
- />
- <MapPin size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
- </div>
-
- {showDestSearch && (
- <div className=" rounded-lg bg-card p-2 space-y-1 max-h-40 overflow-y-auto no-scrollbar">
- {filteredAirports.slice(0, 5).map((a) => (
- <button
- key={a.iata}
- type="button"
- onClick={() => {
- setDestination(`${a.city} (${a.iata})`);
- setDestinationIata(a.iata);
- setShowDestSearch(false);
- }}
- className="w-full text-left p-2 rounded-lg hover:bg-muted text-xs flex items-center justify-between cursor-pointer"
- >
- <span className="font-semibold text-foreground">{a.city} - {a.state} ({a.country})</span>
- <span className="font-mono font-bold text-primary">{a.iata}</span>
- </button>
- ))}
- </div>
- )}
- </div>
-
- {/* Buscas Recentes Rápidas */}
+              {/* Buscas Recentes Rápidas */}
  <div className="pt-2 space-y-2">
- <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
+ <span className="text-2xs font-bold text-muted-foreground uppercase tracking-wider block">
  Destinos Populares
  </span>
  <div className="flex flex-wrap gap-2">
@@ -274,7 +243,7 @@ export function TravelQuoteModal({
  key={d}
  type="button"
  onClick={() => setDestination(d)}
- className="px-3 py-1 rounded-lg bg-muted/60 hover:bg-muted text-[11px] font-semibold text-foreground transition-colors cursor-pointer"
+ className="px-3 py-1 rounded-lg bg-muted/60 hover:bg-muted text-2xs font-semibold text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {d}
  </button>
@@ -319,7 +288,7 @@ export function TravelQuoteModal({
  />
  <div className="text-xs">
  <p className="font-bold text-foreground">Tenho flexibilidade de datas (+/- 3 dias)</p>
- <p className="text-muted-foreground text-[11px]">Ajuda a encontrar tarifas aéreas e pacotes mais baratos.</p>
+ <p className="text-muted-foreground text-2xs">Ajuda a encontrar tarifas aéreas e pacotes mais baratos.</p>
  </div>
  </label>
  </div>
@@ -332,7 +301,7 @@ export function TravelQuoteModal({
  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
  <div>
  <p className="text-xs font-bold text-foreground">Quartos de Hotel</p>
- <p className="text-[11px] text-muted-foreground">Número de acomodações</p>
+ <p className="text-2xs text-muted-foreground">Número de acomodações</p>
  </div>
  <div className="flex items-center gap-3">
  <Button
@@ -361,7 +330,7 @@ export function TravelQuoteModal({
  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
  <div>
  <p className="text-xs font-bold text-foreground">Adultos</p>
- <p className="text-[11px] text-muted-foreground">18 anos ou mais</p>
+ <p className="text-2xs text-muted-foreground">18 anos ou mais</p>
  </div>
  <div className="flex items-center gap-3">
  <Button
@@ -390,7 +359,7 @@ export function TravelQuoteModal({
  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
  <div>
  <p className="text-xs font-bold text-foreground">Crianças e Bebês</p>
- <p className="text-[11px] text-muted-foreground">De 0 a 17 anos</p>
+ <p className="text-2xs text-muted-foreground">De 0 a 17 anos</p>
  </div>
  <div className="flex items-center gap-3">
  <Button
@@ -418,13 +387,13 @@ export function TravelQuoteModal({
  {/* Seleção individual da idade de cada criança */}
  {childrenCount > 0 && (
  <div className="p-3 rounded-lg border border-primary/30 bg-primary/5 space-y-3">
- <span className="text-[11px] font-bold text-primary uppercase tracking-wider block">
+ <span className="text-2xs font-bold text-primary uppercase tracking-wider block">
  Idade de cada criança no momento da viagem:
  </span>
  <div className="grid grid-cols-2 gap-2">
  {childrenAges.map((age, idx) => (
  <div key={idx} className="space-y-1">
- <label className="text-[10px] font-bold text-muted-foreground">
+ <label className="text-2xs font-bold text-muted-foreground">
  {idx + 1}ª Criança
  </label>
  <select
@@ -464,14 +433,14 @@ export function TravelQuoteModal({
  key={t.id}
  type="button"
  onClick={() => setTripType(t.id as any)}
- className={`p-3 rounded-lg border text-left transition-all cursor-pointer ${
+ className={`p-3 rounded-lg border text-left transition-colors duration-200 cursor-pointer ${
  tripType === t.id
  ? "bg-primary/10 border-primary text-primary font-bold "
  : "bg-muted/30 border-border text-muted-foreground hover:text-foreground"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <p className="text-xs font-bold">{t.label}</p>
- <p className="text-[10px] opacity-80">{t.desc}</p>
+ <p className="text-2xs opacity-80">{t.desc}</p>
  </button>
  ))}
  </div>
@@ -503,7 +472,7 @@ export function TravelQuoteModal({
  </div>
 
  {/* Disclaimer Transparente de Turismo & Agências */}
- <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-1 text-[11px] text-muted-foreground leading-relaxed">
+ <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-1 text-2xs text-muted-foreground leading-relaxed">
  <span className="font-bold text-foreground block">
  ℹ️ Transparência de Valores & Disponibilidade:
  </span>

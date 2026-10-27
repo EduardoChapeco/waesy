@@ -138,22 +138,22 @@ function UserLawsuitsPage() {
       <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
         <button
           onClick={() => setActiveTab("lawsuits")}
-          className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-all cursor-pointer ${
+          className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-colors duration-200 cursor-pointer ${
             activeTab === "lawsuits"
               ? "bg-foreground text-background font-bold shadow-xs"
               : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground"
-          }`}
+          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
         >
           <Scales className="size-3.5" />
           <span>Meus Processos ({lawsuits?.length || 0})</span>
         </button>
         <button
           onClick={() => setActiveTab("demands")}
-          className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-all cursor-pointer ${
+          className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-colors duration-200 cursor-pointer ${
             activeTab === "demands"
               ? "bg-foreground text-background font-bold shadow-xs"
               : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground"
-          }`}
+          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
         >
           <FileText className="size-3.5" />
           <span>Demandas Publicadas ({demands?.length || 0})</span>
@@ -161,7 +161,7 @@ function UserLawsuitsPage() {
 
         <Link
           to="/conta/contratos"
-          className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold bg-primary/10 hover:bg-primary/20 text-primary transition-all ml-auto"
+          className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold bg-primary/10 hover:bg-primary/20 text-primary transition-colors duration-200 ml-auto"
         >
           <ShieldCheck className="size-3.5" />
           <span>Procurações e Contratos Digitais</span>
@@ -183,7 +183,7 @@ function UserLawsuitsPage() {
  <div className="mt-6 flex flex-wrap justify-center gap-3">
  <button
  onClick={() => setActiveTab("new_demand")}
- className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90"
+ className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-colors duration-200 hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Plus className="h-4 w-4" />
  Publicar Demanda para Advogados
@@ -191,7 +191,7 @@ function UserLawsuitsPage() {
  <Link
  to="/diretorio"
  search={{ categoria: "advocacia" }}
- className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-4 py-3 text-sm font-semibold text-foreground transition-all hover:bg-accent"
+ className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-4 py-3 text-sm font-semibold text-foreground transition-colors duration-200 hover:bg-accent"
  >
  <MagnifyingGlass className="h-4 w-4" />
  Buscar Escritórios na Cidade
@@ -201,10 +201,10 @@ function UserLawsuitsPage() {
  ) : (
  <div className="grid gap-4">
  {lawsuits?.map((lawsuit: any) => (
- <div
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  key={lawsuit.id}
  onClick={() => setSelectedLawsuit(lawsuit)}
- className="rounded-lg border border-border bg-card p-5 transition-all hover:border-primary/40 cursor-pointer shadow-xs"
+ className="rounded-lg border border-border bg-card p-5 transition-colors duration-200 hover:border-primary/40 cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
  <div>
@@ -361,14 +361,14 @@ function UserLawsuitsPage() {
  <button
  type="button"
  onClick={() => setActiveTab("lawsuits")}
- className="rounded-lg border border-border bg-background px-4 py-3 text-sm font-semibold text-foreground transition-all hover:bg-accent"
+ className="rounded-lg border border-border bg-background px-4 py-3 text-sm font-semibold text-foreground transition-colors duration-200 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  Cancelar
  </button>
  <button
  type="submit"
  disabled={isPending}
- className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 disabled:opacity-50"
+ className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors duration-200 hover:bg-primary/90 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {isPending ? "Publicando..." : "Publicar Demanda"}
  </button>
@@ -412,7 +412,7 @@ function UserLawsuitsPage() {
                 className="font-mono text-xs rounded-lg h-10"
                 required
               />
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-2xs text-muted-foreground">
                 Suporta Tribunais Estaduais (TJSC, TJSP, etc.), Federais (TRFs) e do Trabalho (TRTs).
               </p>
             </div>
@@ -432,7 +432,7 @@ function UserLawsuitsPage() {
                 className="rounded-lg text-xs h-9 font-semibold gap-2 cursor-pointer"
               >
                 {isTracking ? (
-                  <Spinner className="size-3.5 animate-spin" />
+                  <Spinner className="size-3.5 animate-spin motion-reduce:animate-none" />
                 ) : (
                   <MagnifyingGlass className="size-3.5" />
                 )}

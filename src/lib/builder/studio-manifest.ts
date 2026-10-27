@@ -15,6 +15,7 @@ import {
   MediaGalleryItemSchema,
   OmniBlockStylingSchema,
   PricingBlockDataSchema,
+  PrometheeNewsPortalBlockDataSchema,
   TestimonialItemSchema,
   TestimonialsBlockDataSchema,
   CarouselSlideItemSchema,
@@ -99,6 +100,7 @@ export const STUDIO_TEMPLATE_BLOCK_CONFIG_SCHEMAS = {
   infinite_marquee_ribbon: InfiniteMarqueeBlockDataSchema.strict(),
   interactive_comparison_slider: ComparisonSliderBlockDataSchema.strict(),
   interactive_lead_quiz_flow: LeadQuizBlockDataSchema.strict(),
+  news_promethee_portal: PrometheeNewsPortalBlockDataSchema.strict(),
 } as const;
 
 export const StudioAssetSlotSchema = z.object({

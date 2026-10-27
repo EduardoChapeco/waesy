@@ -582,10 +582,10 @@ function ExperienceNodeRenderer({
     }
     const isSelected = selectedNodeId === node.id;
     return (
-      <div
+      <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
         id={(node as any).section_anchor_id}
-        className={cn(
-          "relative group cursor-pointer transition-all outline-none",
+        className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+          "relative group cursor-pointer transition-colors duration-200 outline-none",
           isSelected
             ? "ring-2 ring-primary ring-inset z-10"
             : "hover:ring-2 hover:ring-primary/50 hover:ring-inset z-0",
@@ -600,7 +600,7 @@ function ExperienceNodeRenderer({
       >
         {children}
         {isSelected && (
-          <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-[10px] px-2 py-1 font-mono z-20 rounded-bl-md pointer-events-none">
+          <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-2xs px-2 py-1 font-mono z-20 rounded-bl-md pointer-events-none">
             {manifest.name}
           </div>
         )}

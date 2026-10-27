@@ -447,7 +447,7 @@ function AdminUsuariosPage() {
       <div className="bg-card rounded-lg border p-4 space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="space-y-0.5">
-            <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+            <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
               <AtSign className="size-4 text-primary" />
               <span>Auditoria Global de Identificadores (@) & Propriedade Intelectual</span>
             </h3>
@@ -635,7 +635,7 @@ function AdminUsuariosPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-11 min-h-11 px-3 text-xs font-bold gap-1.5 rounded-lg border-primary/30 text-primary hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary"
+                      className="h-11 min-h-11 px-3 text-xs font-bold gap-2 rounded-lg border-primary/30 text-primary hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary"
                       onClick={() => handleOpenReclaimModal(u)}
                       title="Reivindicar @ / Proteger Marca"
                     >

@@ -71,8 +71,8 @@ function NovoOrcamentoRouterPage() {
  <button
  type="button"
  onClick={() => setActiveMode("commercial")}
- className={cn(
- "px-4 py-2 rounded-lg font-bold text-xs transition-all cursor-pointer",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "px-4 py-2 rounded-lg font-bold text-xs transition-colors duration-200 cursor-pointer",
  activeMode === "commercial"
  ? "bg-background text-foreground shadow-xs"
  : "text-muted-foreground hover:text-foreground",
@@ -83,8 +83,8 @@ function NovoOrcamentoRouterPage() {
  <button
  type="button"
  onClick={() => setActiveMode("travelos")}
- className={cn(
- "px-4 py-2 rounded-lg font-bold text-xs transition-all cursor-pointer flex items-center gap-2",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "px-4 py-2 rounded-lg font-bold text-xs transition-colors duration-200 cursor-pointer flex items-center gap-2",
  activeMode === "travelos"
  ? "bg-primary text-primary-foreground shadow-xs"
  : "text-muted-foreground hover:text-foreground",
@@ -571,8 +571,8 @@ function NovoOrcamentoTravelosPage() {
  key={dest.id}
  type="button"
  onClick={() => handleSelectCanonicalDestination(dest)}
- className={cn(
- "text-xs font-medium px-3 py-1 rounded-lg border transition-all cursor-pointer flex items-center gap-2",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "text-xs font-medium px-3 py-1 rounded-lg border transition-colors duration-200 cursor-pointer flex items-center gap-2",
  destinationIata === dest.iata || proposalData.destinationCity === dest.name
  ? "bg-primary text-primary-foreground border-primary font-bold shadow-2xs"
  : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground border-border/60"
@@ -583,7 +583,7 @@ function NovoOrcamentoTravelosPage() {
  className={cn(
  "text-xs font-mono font-black px-1 rounded",
  destinationIata === dest.iata || proposalData.destinationCity === dest.name
- ? "bg-white/20 text-white"
+ ? "bg-card/20 text-foreground"
  : "bg-muted text-foreground"
  )}
  >
@@ -948,7 +948,7 @@ function NovoOrcamentoTravelosPage() {
  <TabsContent value="roteiro" className="space-y-4">
  <div className="flex items-center justify-between">
  <div>
- <h3 className="text-base font-bold text-foreground">Roteiro Visual e Itinerário Dia a Dia</h3>
+ <h3 className="text-base font-bold text-foreground">Roteiro da Viagem</h3>
  <p className="text-xs text-muted-foreground">Monte o cronograma diário com fotos dos pontos turísticos e atividades.</p>
  </div>
  <div className="flex items-center gap-2">
@@ -1253,7 +1253,7 @@ function NovoOrcamentoTravelosPage() {
  window.open(`https://wa.me/?text=${msg}`, '_blank');
  }
  }}
- className="h-10 px-5 rounded-lg text-xs font-bold flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground transition-colors cursor-pointer shadow-xs"
+ className="h-10 px-5 rounded-lg text-xs font-bold flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground transition-colors cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <span></span>
  <span>Enviar Proposta via WhatsApp</span>
@@ -1279,7 +1279,7 @@ function NovoOrcamentoTravelosPage() {
  navigator.clipboard?.writeText(text);
  toast.success('Texto copiado! Cole no WhatsApp, e-mail ou onde quiser.');
  }}
- className="h-10 px-4 rounded-lg text-xs font-bold flex items-center gap-2 bg-muted hover:bg-muted/80 text-foreground border border-border/60 transition-colors cursor-pointer"
+ className="h-10 px-4 rounded-lg text-xs font-bold flex items-center gap-2 bg-muted hover:bg-muted/80 text-foreground border border-border/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <span></span>
  <span>Copiar Resumo</span>
@@ -1605,7 +1605,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
 
  return (
  <div className="space-y-6 max-w-6xl mx-auto pb-16 animate-in fade-in duration-200">
- <PageHeader
+ <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  eyebrow="Vendas & Propostas Comerciais"
  title="Novo Orçamento Comercial"
  actions={
@@ -1619,7 +1619,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  >
  {isSubmitting ? (
  <>
- <Loader2 className="size-3.5 animate-spin" />
+ <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
  <span>Gerando Orçamento...</span>
  </>
  ) : (
@@ -1666,7 +1666,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  className="h-10 rounded-lg text-xs bg-muted/30 pl-3 pr-8 border-border/70"
  />
  {isLoadingCustomers && (
- <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 size-3.5 animate-spin text-muted-foreground" />
+ <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 size-3.5 animate-spin motion-reduce:animate-none text-muted-foreground" />
  )}
  </div>
 
@@ -1678,7 +1678,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  <button
  type="button"
  onClick={() => setIsClientDropdownOpen(false)}
- className="text-xs hover:text-foreground cursor-pointer px-1"
+ className="text-xs hover:text-foreground cursor-pointer px-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  Fechar
  </button>
@@ -1694,7 +1694,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  key={c.id}
  type="button"
  onClick={() => handleSelectCustomer(c)}
- className="w-full text-left p-3 rounded-lg hover:bg-muted/60 transition-colors flex items-center justify-between gap-3 cursor-pointer group"
+ className="w-full text-left p-3 rounded-lg hover:bg-muted/60 transition-colors flex items-center justify-between gap-3 cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="space-y-1 min-w-0">
  <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors truncate">
@@ -1839,7 +1839,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  return (
  <div
  key={item.id}
- className="p-4 rounded-lg bg-muted/20 border border-border/70 space-y-3 relative group transition-all hover:border-border"
+ className="p-4 rounded-lg bg-muted/20 border border-border/70 space-y-3 relative group transition-colors duration-200 hover:border-border"
  >
  <div className="flex items-center justify-between gap-2">
  <div className="flex items-center gap-2">
@@ -1971,7 +1971,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  key={preset.label}
  type="button"
  onClick={() => applyConditionPreset(preset.text)}
- className="text-xs font-medium px-3 py-1 rounded-lg bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors border border-border/50"
+ className="text-xs font-medium px-3 py-1 rounded-lg bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors border border-border/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {preset.label}
  </button>
@@ -2052,7 +2052,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  >
  {isSubmitting ? (
  <>
- <Loader2 className="size-4 animate-spin" />
+ <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
  <span>Processando...</span>
  </>
  ) : (
@@ -2067,7 +2067,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  {customerData.phone && totalCents > 0 && (
  <button
  type="button"
- className="w-full h-11 mt-2 rounded-lg font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-xs"
+ className="w-full h-11 mt-2 rounded-lg font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-foreground flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  onClick={() => {
    let msg = `*Orçamento Comercial*\n\n`;
    items.forEach(item => {
@@ -2116,7 +2116,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  <button
  type="button"
  onClick={() => setCatalogCategory("all")}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-3 py-1 rounded-lg font-bold text-xs text-muted-foreground/75 whitespace-nowrap transition-colors cursor-pointer",
  catalogCategory === "all"
  ? "bg-primary text-primary-foreground"
@@ -2130,7 +2130,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  key={cat}
  type="button"
  onClick={() => setCatalogCategory(cat)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-3 py-1 rounded-lg font-bold text-xs text-muted-foreground/75 whitespace-nowrap transition-colors cursor-pointer",
  catalogCategory === cat
  ? "bg-primary text-primary-foreground"
@@ -2148,7 +2148,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  <ScrollArea className="max-h-96 p-4">
  {isLoadingCatalog ? (
  <div className="py-12 flex flex-col items-center justify-center gap-2 text-muted-foreground">
- <Loader2 className="size-6 animate-spin text-primary" />
+ <Loader2 className="size-6 animate-spin motion-reduce:animate-none text-primary" />
  <span className="text-xs">Carregando catálogo da loja...</span>
  </div>
  ) : filteredCatalog.length === 0 ? (
@@ -2164,10 +2164,18 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
 
  return (
  <div
- key={product.id}
- onClick={() => handleSelectProduct(product, variant)}
- className="p-3 rounded-lg border border-border/70 hover:border-primary/50 bg-card hover:bg-muted/30 transition-all flex items-center gap-3 cursor-pointer group"
- >
+    key={product.id}
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        handleSelectProduct(product, variant);
+      }
+    }}
+    onClick={() => handleSelectProduct(product, variant)}
+    className="p-3 rounded-lg border border-border/70 hover:border-primary/50 bg-card hover:bg-muted/30 transition-colors duration-200 flex items-center gap-3 cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+  >
  {img ? (
  <img
  src={img}

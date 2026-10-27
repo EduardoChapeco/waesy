@@ -1,0 +1,7 @@
+node_modules/
+output/
+.chrome-session/
+*.csv
+*.json
+!package.json
+!package-lock.json

@@ -1,10 +1,10 @@
-import { useState, useMemo } from "react";
+﻿import { useState, useMemo } from "react";
 import { Link, useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { CampaignDraftCard } from "@/components/adtech/campaign-draft-card";
 import { orchestrateCampaignIntent } from "@/services/mcp-orchestrator.functions";
 import type { DynamicRenderableBlock } from "@/types/ad-tech-mcp";
-import { Search, Briefcase, X, Package, Tags, Boxes, ClipboardList, ShoppingBag, Store, Truck, Users, Sliders, Calendar, MessageSquare, Flame, Newspaper, DollarSign, Ticket, BarChart3, Building2, ExternalLink, ShieldCheck, Zap, ArrowRight, Settings, HelpCircle, FileSpreadsheet, Globe, Coins, Scale, Receipt, Eye, Megaphone, Share2, Star, Bell, Plane, Bus, FileText, ChefHat, Armchair, UtensilsCrossed, CreditCard, Percent, Layers, Award, Target, CheckCircle2, Mic, MicOff, Send, Loader2, Heart, Trophy, Clock, Gift, RefreshCcw, AlertTriangle, ShoppingCart, Link2, Wrench } from "lucide-react";
+import { Search, Briefcase, X, Package, Tags, Boxes, ClipboardList, ShoppingBag, Store, Truck, Users, Sliders, Calendar, MessageSquare, Flame, Newspaper, DollarSign, Ticket, BarChart3, Building2, ExternalLink, ShieldCheck, Zap, ArrowRight, Settings, HelpCircle, FileSpreadsheet, Globe, Coins, Scale, Receipt, Eye, Megaphone, Share2, Star, Bell, Plane, Bus, FileText, ChefHat, Armchair, UtensilsCrossed, CreditCard, Percent, Layers, Award, Target, CheckCircle2, Mic, MicOff, Send, Loader2, Heart, Trophy, Clock, Gift, RefreshCcw, AlertTriangle, ShoppingCart, Link2, Wrench, Sparkles } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -303,6 +303,7 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
     description: "Cotações, estúdio de lâminas, contratos com assinatura digital, excursões e frota",
     tools: [
       { title: "Central de Cotações", path: "/workspace/turismo/cotacoes", icon: Plane },
+      { title: "Radar Comercial & Oportunidades", path: "/workspace/turismo/oportunidades", icon: Sparkles },
       { title: "Lâminas Studio", path: "/workspace/turismo/propostas", icon: FileSpreadsheet },
       { title: "Pacotes e Roteiros", path: "/workspace/turismo/viagens", icon: Plane },
       { title: "Embarques & Check-in", path: "/workspace/turismo/embarques", icon: Bus },
@@ -557,10 +558,10 @@ export function WorkspaceAllToolsDialog({
                 type="button"
                 onClick={handleToggleVoice}
                 title={isListeningVoice ? "Ouvindo... clique para parar" : "Falar comando por voz"}
-                className={cn(
-                  "size-7 rounded-lg flex items-center justify-center transition-all cursor-pointer",
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                  "size-7 rounded-lg flex items-center justify-center transition-colors duration-200 cursor-pointer",
                   isListeningVoice
-                    ? "bg-rose-500 text-white animate-pulse"
+                    ? "bg-rose-500 text-foreground animate-pulse motion-reduce:animate-none"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
               >
@@ -574,7 +575,7 @@ export function WorkspaceAllToolsDialog({
                     setSearchQuery("");
                     setMcpBlock(null);
                   }}
-                  className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
+                  className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <X className="size-3.5" />
                 </button>
@@ -584,9 +585,9 @@ export function WorkspaceAllToolsDialog({
 
           {/* Destaque Spotlight para Ação de IA em Linguagem Natural */}
           {searchQuery.trim().length >= 3 && !mcpBlock && !isOrchestrating && (
-            <div
+            <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
               onClick={() => handleExecuteAiCommand()}
-              className="p-3 px-3 rounded-lg border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors flex items-center justify-between cursor-pointer group animate-in fade-in"
+              className="p-3 px-3 rounded-lg border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors flex items-center justify-between cursor-pointer group animate-in fade-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <div className="flex items-center gap-2 min-w-0">
                 <div className="size-6 rounded-lg bg-primary/20 text-primary flex items-center justify-center shrink-0">
@@ -596,12 +597,12 @@ export function WorkspaceAllToolsDialog({
                   <p className="text-xs font-bold text-foreground truncate">
                     Orquestrar com IA (MCP): &quot;{searchQuery}&quot;
                   </p>
-                  <p className="text-[10px] text-muted-foreground truncate">
+                  <p className="text-2xs text-muted-foreground truncate">
                     Gera rascunho de copy; informe canal e orçamento. Sem previsão de alcance ou publicação externa.
                   </p>
                 </div>
               </div>
-              <Badge className="bg-primary hover:bg-primary text-primary-foreground text-[10px] gap-1 shrink-0 font-medium h-6">
+              <Badge className="bg-primary hover:bg-primary text-primary-foreground text-2xs gap-1 shrink-0 font-medium h-6">
                 <span>Enter</span>
                 <ArrowRight className="size-3" />
               </Badge>
@@ -614,9 +615,9 @@ export function WorkspaceAllToolsDialog({
           <div className="space-y-6 max-w-5xl mx-auto pb-4">
             {/* Estado de Carregamento da IA MCP */}
             {isOrchestrating && (
-              <div className="py-12 p-6 rounded-lg border border-border/80 bg-card text-center space-y-3 animate-pulse">
+              <div className="py-12 p-6 rounded-lg border border-border/80 bg-card text-center space-y-3 animate-pulse motion-reduce:animate-none">
                 <div className="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto">
-                  <Loader2 className="size-6 animate-spin" />
+                  <Loader2 className="size-6 animate-spin motion-reduce:animate-none" />
                 </div>
                 <h4 className="text-sm font-bold text-foreground">
                   Orquestrando Ação Dinâmica via MCP...
@@ -631,13 +632,13 @@ export function WorkspaceAllToolsDialog({
             {mcpBlock && (
               <div className="space-y-3 pb-2 animate-in fade-in">
                 <div className="flex items-center justify-between px-1">
-                  <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-muted-foreground">
+                  <span className="text-2xs font-mono font-bold uppercase tracking-wider text-muted-foreground">
                     Resultado da Intenção MCP
                   </span>
                   <button
                     type="button"
                     onClick={() => setMcpBlock(null)}
-                    className="text-xs text-muted-foreground hover:text-foreground font-semibold cursor-pointer"
+                    className="text-xs text-muted-foreground hover:text-foreground font-semibold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     Voltar para Ferramentas
                   </button>
@@ -662,7 +663,7 @@ export function WorkspaceAllToolsDialog({
             {/* Seção: Usadas com frequência (Exibida quando não há busca ativa) */}
  {!searchQuery && (
  <div className="space-y-3 pb-5 border-b border-border/60">
- <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-muted-foreground block">
+ <span className="text-2xs font-mono font-bold uppercase tracking-wider text-muted-foreground block">
  Usadas com frequência
  </span>
  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
@@ -673,7 +674,7 @@ export function WorkspaceAllToolsDialog({
  key={tool.path}
  to={tool.path}
  onClick={() => onOpenChange(false)}
- className="group flex flex-col items-center justify-center p-3 rounded-lg border border-border/60 bg-card hover:border-primary/40 hover:bg-primary/5 transition-all text-center gap-2 shadow-2xs cursor-pointer active:scale-98"
+ className="group flex flex-col items-center justify-center p-3 rounded-lg border border-border/60 bg-card hover:border-primary/40 hover:bg-primary/5 transition-colors duration-200 text-center gap-2 shadow-2xs cursor-pointer active:scale-98 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center group-hover:scale-105 transition-transform">
  <Icon className="size-5" />
@@ -682,7 +683,7 @@ export function WorkspaceAllToolsDialog({
  <p className="text-xs font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
  {tool.title}
  </p>
- <span className="text-[9px] font-mono text-muted-foreground block truncate">
+ <span className="text-3xs font-mono text-muted-foreground block truncate">
  {tool.badge}
  </span>
  </div>
@@ -704,7 +705,7 @@ export function WorkspaceAllToolsDialog({
  <h3 className="text-xs font-bold text-foreground flex items-center gap-2">
  <span>{sector.title}</span>
  </h3>
- <p className="text-[10px] text-muted-foreground leading-tight">
+ <p className="text-2xs text-muted-foreground leading-tight">
  {sector.description}
  </p>
  </div>
@@ -717,7 +718,7 @@ export function WorkspaceAllToolsDialog({
  key={tool.path}
  to={tool.path}
  onClick={() => onOpenChange(false)}
- className="flex items-center justify-between p-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors group cursor-pointer"
+ className="flex items-center justify-between p-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="flex items-center gap-2 min-w-0">
  <Icon className="size-3.5 text-muted-foreground group-hover:text-primary shrink-0 transition-colors" />
@@ -726,7 +727,7 @@ export function WorkspaceAllToolsDialog({
  {tool.badge && (
  <Badge
  variant="outline"
- className="text-[8px] font-mono font-bold uppercase px-1 py-0 h-3.5 bg-primary/10 text-primary border-primary/20 shrink-0 ml-1"
+ className="text-3xs font-mono font-bold uppercase px-1 py-0 h-3.5 bg-primary/10 text-primary border-primary/20 shrink-0 ml-1"
  >
  {tool.badge}
  </Badge>
@@ -757,12 +758,12 @@ export function WorkspaceAllToolsDialog({
         {/* ── 3. Rodapé com Atalho de Ajuda e Fechamento ── */}
  <div className="p-3 px-6 border-t border-border/60 bg-muted/20 flex items-center justify-between text-xs text-muted-foreground shrink-0">
  <div className="flex items-center gap-3">
- <span className="text-[10px] font-mono">Dica: Use as setas e Enter para navegar rápido</span>
+ <span className="text-2xs font-mono">Dica: Use as setas e Enter para navegar rápido</span>
  </div>
  <Link
  to="/workspace/configuracoes"
  onClick={() => onOpenChange(false)}
- className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1"
+ className="text-2xs font-bold text-primary hover:underline flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <span>Configurações do Espaço</span>
  <ArrowRight className="size-3" />
@@ -772,3 +773,5 @@ export function WorkspaceAllToolsDialog({
  </Dialog>
  );
 }
+
+

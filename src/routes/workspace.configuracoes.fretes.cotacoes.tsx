@@ -201,7 +201,7 @@ function FretesCotacoesPage() {
  className="h-11 px-4 sm:h-9 sm:px-3 text-xs"
  >
  {savingOrderId === order.id ? (
- <Loader2 className="animate-spin size-4" />
+ <Loader2 className="animate-spin motion-reduce:animate-none size-4" />
  ) : (
  <>
  <Check className="mr-1 size-3.5" />

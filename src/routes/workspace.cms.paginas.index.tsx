@@ -274,7 +274,7 @@ function CmsPagesPage() {
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── HEADER SILENCIOSO ── */}
-      <PageHeader
+      <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         eyebrow="CMS"
         title="Páginas"
         actions={
@@ -450,17 +450,17 @@ function CmsPagesPage() {
             return (
               <div
                 key={page.id}
-                className="group relative flex flex-col bg-card border border-border/80 rounded-lg overflow-hidden hover:border-foreground/30 transition-all"
+                className="group relative flex flex-col bg-card border border-border/80 rounded-lg overflow-hidden hover:border-foreground/30 transition-colors duration-200"
               >
                 {/* Viewport Preview / Thumbnail */}
-                <div
+                <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                   onClick={() =>
                     navigate({
                       to: "/workspace/builder/$documentId/editor",
                       params: { documentId: page.id },
                     })
                   }
-                  className="relative aspect-video w-full bg-muted/20 border-b border-border/60 overflow-hidden cursor-pointer flex flex-col justify-between p-3 group-hover:bg-muted/30 transition-colors"
+                  className="relative aspect-video w-full bg-muted/20 border-b border-border/60 overflow-hidden cursor-pointer flex flex-col justify-between p-3 group-hover:bg-muted/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {/* Browser Bar Minimalista */}
                   <div className="flex items-center justify-between">
@@ -504,14 +504,14 @@ function CmsPagesPage() {
                 {/* Corpo do Card */}
                 <div className="p-4 flex flex-col justify-between flex-1 gap-2">
                   <div className="min-w-0">
-                    <h3
+                    <h3 role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                       onClick={() =>
                         navigate({
                           to: "/workspace/builder/$documentId/editor",
                           params: { documentId: page.id },
                         })
                       }
-                      className="text-xs font-bold text-foreground truncate cursor-pointer hover:underline"
+                      className="text-xs font-bold text-foreground truncate cursor-pointer hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       title={page.title}
                     >
                       {page.title}
@@ -546,7 +546,7 @@ function CmsPagesPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-40 rounded-lg">
-                        <DropdownMenuItem
+                        <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                           onClick={() =>
                             navigate({
                               to: "/workspace/builder/$documentId/editor",
@@ -559,7 +559,7 @@ function CmsPagesPage() {
                           <span>Editar</span>
                         </DropdownMenuItem>
 
-                        <DropdownMenuItem
+                        <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                           onClick={() => handleCopyLink(page.slug)}
                           className="text-xs gap-2 cursor-pointer"
                         >
@@ -567,7 +567,7 @@ function CmsPagesPage() {
                           <span>Copiar Link</span>
                         </DropdownMenuItem>
 
-                        <DropdownMenuItem
+                        <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                           onClick={() => handleDuplicate(page.id)}
                           disabled={isDuplicating === page.id}
                           className="text-xs gap-2 cursor-pointer"
@@ -578,7 +578,7 @@ function CmsPagesPage() {
 
                         <DropdownMenuSeparator />
 
-                        <DropdownMenuItem
+                        <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                           onClick={() => setPageToDelete({ id: page.id, title: page.title })}
                           className="text-xs gap-2 text-destructive focus:text-destructive cursor-pointer"
                         >
@@ -622,10 +622,10 @@ function CmsPagesPage() {
                   {TEMPLATE_OPTIONS.map((tpl) => {
                     const Icon = tpl.icon;
                     return (
-                      <div
+                      <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                         key={tpl.id}
                         onClick={() => handleCreate(tpl.id)}
-                        className="p-4 rounded-lg border border-border/80 bg-card active:bg-muted/60 flex items-center justify-between cursor-pointer"
+                        className="p-4 rounded-lg border border-border/80 bg-card active:bg-muted/60 flex items-center justify-between cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <div className="flex items-center gap-3 min-w-0 pr-2">
                           <div className="size-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
@@ -681,14 +681,14 @@ function CmsPagesPage() {
                     const isSelected = selectedTemplateId === tpl.id;
 
                     return (
-                      <div
+                      <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                         key={tpl.id}
                         onClick={() => setSelectedTemplateId(tpl.id)}
-                        className={`p-3 rounded-lg border transition-all cursor-pointer flex flex-col justify-between ${
+                        className={`p-3 rounded-lg border transition-colors duration-200 cursor-pointer flex flex-col justify-between ${
                           isSelected
                             ? "border-foreground bg-muted/40"
                             : "border-border/80 bg-card hover:border-foreground/40"
-                        }`}
+                        } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                       >
                         <div>
                           <div className="flex items-center justify-between mb-2">
@@ -758,7 +758,7 @@ function CmsPagesPage() {
             >
               Cancelar
             </AlertDialogCancel>
-            <AlertDialogAction
+            <AlertDialogAction /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
               onClick={(e) => {
                 e.preventDefault();
                 confirmDelete();

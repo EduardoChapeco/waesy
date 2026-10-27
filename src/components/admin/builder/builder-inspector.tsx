@@ -333,7 +333,7 @@ export function BuilderInspector({
  type="button"
  onClick={() => setInspectorTab("content")}
  className={cn(
- "flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1 min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+ "flex-1 py-2 rounded-lg transition-colors duration-200 cursor-pointer flex items-center justify-center gap-1 min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  inspectorTab === "content"
  ? "bg-background text-foreground font-bold shadow-2xs"
  : "text-muted-foreground hover:text-foreground"
@@ -347,7 +347,7 @@ export function BuilderInspector({
  type="button"
  onClick={() => setInspectorTab("layout")}
  className={cn(
- "flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1 min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+ "flex-1 py-2 rounded-lg transition-colors duration-200 cursor-pointer flex items-center justify-center gap-1 min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  inspectorTab === "layout"
  ? "bg-background text-foreground font-bold shadow-2xs"
  : "text-muted-foreground hover:text-foreground"
@@ -361,7 +361,7 @@ export function BuilderInspector({
  type="button"
  onClick={() => setInspectorTab("design")}
  className={cn(
- "flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1 min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+ "flex-1 py-2 rounded-lg transition-colors duration-200 cursor-pointer flex items-center justify-center gap-1 min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  inspectorTab === "design"
  ? "bg-background text-foreground font-bold shadow-2xs"
  : "text-muted-foreground hover:text-foreground"
@@ -375,7 +375,7 @@ export function BuilderInspector({
  type="button"
  onClick={() => setInspectorTab("animation")}
  className={cn(
- "flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1 min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+ "flex-1 py-2 rounded-lg transition-colors duration-200 cursor-pointer flex items-center justify-center gap-1 min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  inspectorTab === "animation"
  ? "bg-background text-foreground font-bold shadow-2xs"
  : "text-muted-foreground hover:text-foreground"
@@ -389,7 +389,7 @@ export function BuilderInspector({
  type="button"
  onClick={() => setInspectorTab("connection")}
  className={cn(
- "flex-1 py-2 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1 min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+ "flex-1 py-2 rounded-lg transition-colors duration-200 cursor-pointer flex items-center justify-center gap-1 min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  inspectorTab === "connection"
  ? "bg-background text-foreground font-bold shadow-2xs"
  : "text-muted-foreground hover:text-foreground"
@@ -775,7 +775,7 @@ export function BuilderInspector({
  type="button"
  onClick={() => handleLayoutChange("sizingMode", "fluid")}
  className={cn(
- "py-2 rounded-lg text-xs font-semibold transition-all border cursor-pointer min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+ "py-2 rounded-lg text-xs font-semibold transition-colors duration-200 border cursor-pointer min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  (layout.sizingMode || "fluid") === "fluid"
  ? "bg-primary text-primary-foreground font-bold shadow-2xs border-primary"
  : "bg-card border-border/70 text-muted-foreground hover:text-foreground"
@@ -787,7 +787,7 @@ export function BuilderInspector({
  type="button"
  onClick={() => handleLayoutChange("sizingMode", "fixed")}
  className={cn(
- "py-2 rounded-lg text-xs font-semibold transition-all border cursor-pointer min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+ "py-2 rounded-lg text-xs font-semibold transition-colors duration-200 border cursor-pointer min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  layout.sizingMode === "fixed"
  ? "bg-primary text-primary-foreground font-bold shadow-2xs border-primary"
  : "bg-card border-border/70 text-muted-foreground hover:text-foreground"
@@ -1062,7 +1062,7 @@ export function BuilderInspector({
  updateNode(selectedNode.id, "design_tokens", "animation", { ...currAnim, speed: speed.id });
  }}
  className={cn(
- "py-2 px-2 rounded-lg text-xs font-semibold border transition-all min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+ "py-2 px-2 rounded-lg text-xs font-semibold border transition-colors duration-200 min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  currentSpeed === speed.id
  ? "border-primary bg-primary/10 text-primary"
  : "border-border bg-background text-muted-foreground"
@@ -1095,7 +1095,7 @@ export function BuilderInspector({
  updateNode(selectedNode.id, "design_tokens", "animation", { ...currAnim, hover: hov.id });
  }}
  className={cn(
- "py-2 px-3 rounded-lg text-xs font-semibold border text-left transition-all min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+ "py-2 px-3 rounded-lg text-xs font-semibold border text-left transition-colors duration-200 min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  currentHov === hov.id
  ? "border-primary bg-primary/10 text-primary"
  : "border-border bg-background text-muted-foreground"

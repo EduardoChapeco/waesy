@@ -157,7 +157,7 @@ export function ProposalStudio({ draft, save, agency }: ProposalStudioProps) {
                           <span className="font-semibold text-foreground leading-tight">
                             {titleText}
                           </span>
-                          <span className="text-[9px] text-muted-foreground whitespace-nowrap">
+                          <span className="text-3xs text-muted-foreground whitespace-nowrap">
                             {dateStr}
                           </span>
                         </div>

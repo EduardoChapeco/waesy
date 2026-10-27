@@ -30,7 +30,7 @@ export function PostEmbedRenderer({ embed }: { embed?: PostEmbedData | null }) {
  return (
  <Link
  to={embed.target_url as any}
- className="group mt-3 block rounded-lg border border-border/60 bg-muted/20 hover:bg-muted/40 transition-all overflow-hidden shadow-2xs select-none"
+ className="group mt-3 block rounded-lg border border-border/60 bg-muted/20 hover:bg-muted/40 transition-colors duration-200 overflow-hidden shadow-2xs select-none"
  >
  <div className="flex flex-col sm:flex-row items-stretch gap-4 p-4">
  {/* Imagem do Embed */}
@@ -42,7 +42,7 @@ export function PostEmbedRenderer({ embed }: { embed?: PostEmbedData | null }) {
  className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
  />
  {embed.badge_text && (
- <div className="absolute top-1.5 left-1.5 px-2 py-1 rounded-md bg-black/70 backdrop-blur-md text-[10px] font-bold text-white uppercase">
+ <div className="absolute top-1.5 left-1.5 px-2 py-1 rounded-md bg-foreground/70 backdrop-blur-md text-2xs font-bold text-foreground uppercase">
  {embed.badge_text}
  </div>
  )}
@@ -60,7 +60,7 @@ export function PostEmbedRenderer({ embed }: { embed?: PostEmbedData | null }) {
  <div className="flex-1 min-w-0 flex flex-col justify-between space-y-2">
  <div className="space-y-1">
  <div className="flex items-center gap-2">
- <Badge variant="outline" className="text-[10px] px-2 py-0 h-4 font-semibold uppercase tracking-wider bg-background/80">
+ <Badge variant="outline" className="text-2xs px-2 py-0 h-4 font-semibold uppercase tracking-wider bg-background/80">
  {embed.type === "event" && "📅 Evento"}
  {embed.type === "product" && "🛍️ Produto"}
  {embed.type === "classified" && "🏷️ Classificado"}
@@ -86,7 +86,7 @@ export function PostEmbedRenderer({ embed }: { embed?: PostEmbedData | null }) {
  </div>
 
  {/* Rodapé do Embed (Data / Localização) */}
- <div className="flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground pt-1 border-t border-border/30">
+ <div className="flex flex-wrap items-center gap-3 text-2xs text-muted-foreground pt-1 border-t border-border/30">
  {embed.date_str && (
  <div className="flex items-center gap-1 font-medium">
  <Calendar className="size-3 text-primary" />

@@ -1213,3 +1213,269 @@ export const listCustomerCaronasAndBusTickets = createServerFn({ method: "GET" }
     };
   },
 );
+
+
+// ============================================================
+// 7. PREFERÊNCIAS E AVALIAÇÕES DE CARONA (Cluster 2)
+// ============================================================
+
+export const getCaronaDriverPreferences = createServerFn({ method: "GET" })
+  .validator(z.object({ driverId: z.string().uuid().optional() }))
+  .handler(async ({ data }) => {
+    const db = getServerClient();
+    const identity = await getServerIdentity();
+    const driverId = data.driverId || identity?.id;
+    if (!driverId) return null;
+
+    const { data: row, error } = await db
+      .from("carona_preferences")
+      .select("*")
+      .eq("driver_id", driverId)
+      .maybeSingle();
+
+    if (error) {
+      console.warn("[getCaronaDriverPreferences] Erro:", error.message);
+      return null;
+    }
+    return row;
+  });
+
+export const saveCaronaDriverPreferences = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      allowPets: z.boolean().default(false),
+      allowSmoking: z.boolean().default(false),
+      musicPreference: z.enum(["silence", "radio", "varied", "podcasts"]).default("varied"),
+      maxLuggageSize: z.enum(["small", "medium", "large"]).default("medium"),
+      chattiness: z.enum(["quiet", "moderate", "talkative"]).default("moderate"),
+      genderExclusive: z.boolean().default(false),
+    })
+  )
+  .handler(async ({ data }) => {
+    const db = getServerClient();
+    const identity = await getServerIdentity();
+    if (!identity?.id) throw new Error("Não autorizado");
+
+    const payload = {
+      driver_id: identity.id,
+      allow_pets: data.allowPets,
+      allow_smoking: data.allowSmoking,
+      music_preference: data.musicPreference,
+      max_luggage_size: data.maxLuggageSize,
+      chattiness: data.chattiness,
+      gender_exclusive: data.genderExclusive,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data: upserted, error } = await db
+      .from("carona_preferences")
+      .upsert(payload, { onConflict: "driver_id" })
+      .select()
+      .single();
+
+    if (error) throw new Error("Erro ao salvar preferências: " + error.message);
+    return upserted;
+  });
+
+export const listCaronaPassengerReviews = createServerFn({ method: "GET" })
+  .validator(z.object({ userId: z.string().uuid() }))
+  .handler(async ({ data }) => {
+    const db = getServerClient();
+    const { data: rows, error } = await db
+      .from("carona_passenger_reviews")
+      .select("*")
+      .eq("reviewed_user_id", data.userId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.warn("[listCaronaPassengerReviews] Erro:", error.message);
+      return [];
+    }
+    return rows || [];
+  });
+
+export const submitCaronaPassengerReview = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      rideId: z.string().uuid(),
+      reviewedUserId: z.string().uuid(),
+      rating: z.number().int().min(1).max(5),
+      punctualityRating: z.number().int().min(1).max(5).optional(),
+      drivingRating: z.number().int().min(1).max(5).optional(),
+      comments: z.string().max(500).optional().nullable(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const db = getServerClient();
+    const identity = await getServerIdentity();
+    if (!identity?.id) throw new Error("Não autorizado");
+
+    const { data: inserted, error } = await db
+      .from("carona_passenger_reviews")
+      .insert({
+        ride_id: data.rideId,
+        reviewer_id: identity.id,
+        reviewed_user_id: data.reviewedUserId,
+        rating: data.rating,
+        punctuality_rating: data.punctualityRating,
+        driving_rating: data.drivingRating,
+        comments: data.comments,
+      })
+      .select()
+      .single();
+
+    if (error) throw new Error("Erro ao registrar avaliação: " + error.message);
+    return inserted;
+  });
+
+// ============================================================
+// 8. HORÁRIOS RECORRENTES & PONTOS DE PARADA (Cluster 2)
+// ============================================================
+
+export const listCaronaRecurringSchedules = createServerFn({ method: "GET" })
+  .validator(z.object({ driverId: z.string().uuid().optional() }))
+  .handler(async ({ data }) => {
+    const db = getServerClient();
+    const identity = await getServerIdentity();
+    const driverId = data.driverId || identity?.id;
+    if (!driverId) return [];
+
+    const { data: rows, error } = await db
+      .from("carona_recurring_schedules")
+      .select("*")
+      .eq("driver_id", driverId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.warn("[listCaronaRecurringSchedules] Erro:", error.message);
+      return [];
+    }
+    return rows || [];
+  });
+
+export const saveCaronaRecurringSchedule = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string().uuid().optional(),
+      daysOfWeek: z.array(z.number().int().min(0).max(6)).default([1, 2, 3, 4, 5]),
+      departureTime: z.string(),
+      originCity: z.string().min(1),
+      originAddress: z.string().min(1),
+      destinationCity: z.string().min(1),
+      destinationAddress: z.string().min(1),
+      availableSeats: z.number().int().min(1).max(8).default(3),
+      priceCents: z.number().int().min(0).default(0),
+      isActive: z.boolean().default(true),
+    })
+  )
+  .handler(async ({ data }) => {
+    const db = getServerClient();
+    const identity = await getServerIdentity();
+    if (!identity?.id) throw new Error("Não autorizado");
+
+    const payload = {
+      driver_id: identity.id,
+      days_of_week: data.daysOfWeek,
+      departure_time: data.departureTime,
+      origin_city: data.originCity,
+      origin_address: data.originAddress,
+      destination_city: data.destinationCity,
+      destination_address: data.destinationAddress,
+      available_seats: data.availableSeats,
+      price_cents: data.priceCents,
+      is_active: data.isActive,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (data.id) {
+      const { data: updated, error } = await db
+        .from("carona_recurring_schedules")
+        .update(payload)
+        .eq("id", data.id)
+        .eq("driver_id", identity.id)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao atualizar escala: " + error.message);
+      return updated;
+    } else {
+      const { data: inserted, error } = await db
+        .from("carona_recurring_schedules")
+        .insert(payload)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao cadastrar escala: " + error.message);
+      return inserted;
+    }
+  });
+
+export const listCaronaStopPoints = createServerFn({ method: "GET" })
+  .validator(z.object({ rideId: z.string().uuid() }))
+  .handler(async ({ data }) => {
+    const db = getServerClient();
+    const { data: rows, error } = await db
+      .from("carona_stop_points")
+      .select("*")
+      .eq("ride_id", data.rideId)
+      .order("stop_order", { ascending: true });
+
+    if (error) {
+      console.warn("[listCaronaStopPoints] Erro:", error.message);
+      return [];
+    }
+    return rows || [];
+  });
+
+export const saveCaronaStopPoint = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string().uuid().optional(),
+      rideId: z.string().uuid(),
+      stopOrder: z.number().int().min(1),
+      city: z.string().min(1),
+      address: z.string().min(1),
+      latitude: z.number().optional().nullable(),
+      longitude: z.number().optional().nullable(),
+      priceCents: z.number().int().min(0).default(0),
+    })
+  )
+  .handler(async ({ data }) => {
+    const db = getServerClient();
+    const payload = {
+      ride_id: data.rideId,
+      stop_order: data.stopOrder,
+      city: data.city,
+      address: data.address,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      price_cents: data.priceCents,
+    };
+
+    const { data: inserted, error } = await db
+      .from("carona_stop_points")
+      .insert(payload)
+      .select()
+      .single();
+
+    if (error) throw new Error("Erro ao salvar ponto de parada: " + error.message);
+    return inserted;
+  });
+
+// ============================================================
+// 9. TRANSPORTE INTERMUNICIPAL DE ÔNIBUS (Cluster 2)
+// ============================================================
+
+export const listIntercityBusRoutes = createServerFn({ method: "GET" })
+  .validator(z.object({ originCity: z.string().optional(), destinationCity: z.string().optional() }))
+  .handler(async ({ data }) => {
+    const db = getServerClient();
+    let q = db.from("intercity_bus_routes").select("*").eq("is_active", true);
+    if (data.originCity) q = q.ilike("origin_city", `%${data.originCity}%`);
+    if (data.destinationCity) q = q.ilike("destination_city", `%${data.destinationCity}%`);
+
+    const { data: rows, error } = await q.order("company_name", { ascending: true });
+    if (error) {
+      console.warn("[listIntercityBusRoutes] Erro:", error.message);
+      return [];
+    }
+    return rows || [];
+  });

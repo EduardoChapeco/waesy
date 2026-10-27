@@ -121,7 +121,7 @@ export function FoodMenuStreamlinedSection({
  </div>
  </div>
 
- <Badge variant="outline" className="text-[10px] font-mono border-border/80 px-3 py-1">
+ <Badge variant="outline" className="text-2xs font-mono border-border/80 px-3 py-1">
  Cardápio Digital
  </Badge>
  </div>
@@ -135,8 +135,8 @@ export function FoodMenuStreamlinedSection({
  key={cat}
  type="button"
  onClick={() => setActiveCategory(cat)}
- className={cn(
- "px-4 py-2 rounded-full text-xs font-semibold transition-all shrink-0 cursor-pointer",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "px-4 py-2 rounded-full text-xs font-semibold transition-colors duration-200 shrink-0 cursor-pointer",
  isSelected
  ? "bg-primary text-primary-foreground shadow-2xs"
  : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -153,7 +153,7 @@ export function FoodMenuStreamlinedSection({
  {filteredItems.map((item) => (
  <div
  key={item.id}
- className="group p-4 rounded-lg border border-border/70 bg-card hover:border-primary/40 transition-all flex items-center justify-between gap-4 shadow-2xs"
+ className="group p-4 rounded-lg border border-border/70 bg-card hover:border-primary/40 transition-colors duration-200 flex items-center justify-between gap-4 shadow-2xs"
  >
  {/* Informações do Item */}
  <div className="flex-1 min-w-0 space-y-1">
@@ -162,7 +162,7 @@ export function FoodMenuStreamlinedSection({
  {item.name}
  </h3>
  {item.badge && (
- <Badge variant="secondary" className="text-[9px] px-2 py-0 shrink-0 font-medium">
+ <Badge variant="secondary" className="text-3xs px-2 py-0 shrink-0 font-medium">
  {item.badge}
  </Badge>
  )}
@@ -193,7 +193,7 @@ export function FoodMenuStreamlinedSection({
  e.stopPropagation();
  handleAddItem(item);
  }}
- className="absolute bottom-1.5 right-1.5 size-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center cursor-pointer shadow-md hover:scale-110 active:scale-95 transition-all"
+ className="absolute bottom-1.5 right-1.5 size-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center cursor-pointer shadow-md hover:scale-110 active:scale-95 transition-transform duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  title="Adicionar ao Pedido"
  >
  <Plus className="size-3.5" />
@@ -214,7 +214,7 @@ export function FoodMenuStreamlinedSection({
  {cartItemsCount}
  </div>
  <div>
- <span className="text-[10px] text-background/70 block uppercase font-mono tracking-wider">
+ <span className="text-2xs text-background/70 block uppercase font-mono tracking-wider">
  Subtotal
  </span>
  <span className="text-sm font-bold font-mono">

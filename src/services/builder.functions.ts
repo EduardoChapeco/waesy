@@ -103,6 +103,7 @@ async function hydrateBindings(
   let needsClassifieds = false;
   let maxClassifiedsLimit = 6;
   let needsDestinations = false;
+  let needsMarketingBanners = false;
 
   // 1. Map requirements
   nodes.forEach((node) => {
@@ -168,7 +169,6 @@ async function hydrateBindings(
   };
 
   // 2. Execute Batched Queries (Concurrent via Promise.all)
-  let needsMarketingBanners = false;
   const cache = {
     collections: {} as Record<string, any[]>,
     latest: [] as any[],

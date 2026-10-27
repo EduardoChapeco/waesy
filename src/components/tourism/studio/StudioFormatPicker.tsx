@@ -52,7 +52,7 @@ export function StudioFormatPicker({ value, onChange }: StudioFormatPickerProps)
             key={opt.value}
             type="button"
             onClick={() => onChange(opt.value)}
-            className={`flex flex-col items-start gap-2 p-3 rounded-card border text-left transition-all ${
+            className={`flex flex-col items-start gap-2 p-3 rounded-card border text-left transition-colors duration-200 ${
               active
                 ? "border-brand bg-brand/5 dark:bg-brand/10 text-brand"
                 : "border-border/60 bg-surface hover:border-border-hover hover:bg-surface-alt/40"

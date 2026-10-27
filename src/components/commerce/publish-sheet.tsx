@@ -25,7 +25,7 @@ export function PublishSheet() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="default"
-          className="bg-foreground text-background font-semibold hover:opacity-90 w-full text-xs h-11 min-h-11 rounded-lg uppercase tracking-wider flex items-center justify-center gap-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="bg-foreground text-background font-semibold hover:opacity-90 w-full text-xs h-11 min-h-11 rounded-lg uppercase tracking-wider flex items-center justify-center gap-2 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           <PlusCircle className="size-4" />
           PUBLICAR

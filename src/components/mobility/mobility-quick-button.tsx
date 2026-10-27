@@ -28,7 +28,7 @@ export function MobilityQuickButton() {
  to="/mobilidade"
  title="Mobilidade & Fretes: Carro, Moto e Caminhão"
  aria-label="Mobilidade Urbana & Fretes"
- className={`h-9 px-3 sm:px-3 rounded-lg border flex items-center gap-2 transition-all select-none group cursor-pointer shrink-0 ${
+ className={`h-9 px-3 sm:px-3 rounded-lg border flex items-center gap-2 transition-colors duration-200 select-none group cursor-pointer shrink-0 ${
  isActive
  ? "bg-foreground text-background border-foreground scale-102"
  : "bg-card border-border text-foreground hover:bg-muted hover:border-foreground/30 "
@@ -39,13 +39,13 @@ export function MobilityQuickButton() {
  key={index}
  size={16}
  weight="bold"
- className="text-foreground transition-all duration-300 animate-in fade-in zoom-in-75"
+ className="text-foreground transition-colors duration-200 duration-300 animate-in fade-in zoom-in-75"
  />
  </div>
  <span className="hidden sm:inline text-xs font-bold tracking-tight">
  Mobilidade
  </span>
- <span className="hidden md:inline-block text-[10px] font-mono px-2 py-1 rounded-md bg-muted text-muted-foreground group-hover:text-foreground transition-colors">
+ <span className="hidden md:inline-block text-2xs font-mono px-2 py-1 rounded-md bg-muted text-muted-foreground group-hover:text-foreground transition-colors">
  {Current.label}
  </span>
  </Link>

@@ -37,6 +37,48 @@ describe("Meus Endereços / Address Platform - End-to-End Audit & Contracts", ()
       }
     });
 
+    it("validates address with has_no_number: true and empty number (Mercado Livre Parity EARS-03)", () => {
+      const semNumeroPayload = {
+        label: "Casa Interior",
+        recipient_name: "Eduardo Antonio Ramos",
+        recipient_phone: "(49) 99171-6233",
+        zipcode: "89801020",
+        street: "Avenida Nereu Ramos - E",
+        number: "",
+        has_no_number: true,
+        neighborhood: "Centro",
+        city: "Chapecó",
+        state: "SC",
+      };
+
+      const result = UserAddressInputSchema.safeParse(semNumeroPayload);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.has_no_number).toBe(true);
+        expect(result.data.recipient_name).toBe("Eduardo Antonio Ramos");
+        expect(result.data.recipient_phone).toBe("(49) 99171-6233");
+      }
+    });
+
+    it("rejects address when has_no_number is false and number is empty", () => {
+      const missingNumberPayload = {
+        label: "Casa Urbana",
+        zipcode: "89801020",
+        street: "Avenida Nereu Ramos",
+        number: "",
+        has_no_number: false,
+        neighborhood: "Centro",
+        city: "Chapecó",
+        state: "SC",
+      };
+
+      const result = UserAddressInputSchema.safeParse(missingNumberPayload);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.errors.some((e) => e.path.includes("number"))).toBe(true);
+      }
+    });
+
     it("rejects invalid zipcode with less than 8 digits or missing required street", () => {
       const invalid = {
         zipcode: "123",

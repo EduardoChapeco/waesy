@@ -1111,3 +1111,406 @@ export interface TravelLeadPayload {
   customerName: string;
   customerPhone: string;
 }
+
+
+// ─── 17. MOTOR DE TEMPLATES CANÔNICOS, COMPATIBILIDADE POR NICHO & LAYOUT BIDIRECIONAL ───
+
+export type ClassifiedTemplateStyle =
+  | "standard"
+  | "editorial"
+  | "automotivo"
+  | "imobiliario"
+  | "resort_hotel"
+  | "servicos_agenda"
+  | "conveniencia";
+
+export type ClassifiedNicheId =
+  | "viagem"
+  | "hospedagem"
+  | "imovel"
+  | "veiculo"
+  | "equipamento"
+  | "servico"
+  | "vaga"
+  | "digital"
+  | "assinatura"
+  | "doacao"
+  | "negocio"
+  | "gastronomia"
+  | "mercado"
+  | "evento"
+  | "agro"
+  | "farmacia"
+  | "desapego";
+
+export interface TemplateViewportManifest {
+  columns: number;
+  heroAspectRatio: "16:10" | "21:9" | "4:3" | "1:1";
+  layoutPattern: "split_8_4" | "editorial_magazine" | "catalog_2col" | "mobile_native_stack";
+  featuredStripMode: "telemetry" | "architectural" | "hospitality" | "schedule" | "editorial" | "standard" | "commerce";
+  stickyConversionPosition: "right_rail" | "bottom_bar";
+  defaultActiveTab: "specs" | "details" | "conditions";
+}
+
+export interface ClassifiedTemplateManifest {
+  id: ClassifiedTemplateStyle;
+  label: string;
+  shortLabel: string;
+  badgeText: string;
+  description: string;
+  compatibleNiches: ClassifiedNicheId[];
+  desktop: TemplateViewportManifest;
+  mobile: TemplateViewportManifest;
+}
+
+export const CLASSIFIED_TEMPLATES_CATALOG: Record<ClassifiedTemplateStyle, ClassifiedTemplateManifest> = {
+  standard: {
+    id: "standard",
+    label: "Vitrine Padrão Universal",
+    shortLabel: "Padrão",
+    badgeText: "Vitrine Oficial",
+    description: "Layout equilibrado com galeria estruturada, ficha técnica completa e conversão direta.",
+    compatibleNiches: [
+      "desapego",
+      "veiculo",
+      "imovel",
+      "hospedagem",
+      "viagem",
+      "servico",
+      "vaga",
+      "digital",
+      "assinatura",
+      "equipamento",
+      "doacao",
+      "negocio",
+      "gastronomia",
+      "mercado",
+      "evento",
+      "agro",
+      "farmacia",
+    ],
+    desktop: {
+      columns: 12,
+      heroAspectRatio: "16:10",
+      layoutPattern: "split_8_4",
+      featuredStripMode: "standard",
+      stickyConversionPosition: "right_rail",
+      defaultActiveTab: "specs",
+    },
+    mobile: {
+      columns: 1,
+      heroAspectRatio: "4:3",
+      layoutPattern: "mobile_native_stack",
+      featuredStripMode: "standard",
+      stickyConversionPosition: "bottom_bar",
+      defaultActiveTab: "specs",
+    },
+  },
+  editorial: {
+    id: "editorial",
+    label: "Editorial & Storytelling",
+    shortLabel: "Editorial",
+    badgeText: "Curadoria Editorial",
+    description: "Narrativa visual imersiva com tipografia destacada, destaques curatoriais e experiência revista.",
+    compatibleNiches: [
+      "viagem",
+      "hospedagem",
+      "imovel",
+      "veiculo",
+      "servico",
+      "evento",
+      "negocio",
+      "gastronomia",
+      "desapego",
+      "vaga",
+      "digital",
+      "assinatura",
+      "agro",
+    ],
+    desktop: {
+      columns: 12,
+      heroAspectRatio: "21:9",
+      layoutPattern: "editorial_magazine",
+      featuredStripMode: "editorial",
+      stickyConversionPosition: "right_rail",
+      defaultActiveTab: "details",
+    },
+    mobile: {
+      columns: 1,
+      heroAspectRatio: "4:3",
+      layoutPattern: "mobile_native_stack",
+      featuredStripMode: "editorial",
+      stickyConversionPosition: "bottom_bar",
+      defaultActiveTab: "details",
+    },
+  },
+  automotivo: {
+    id: "automotivo",
+    label: "Showroom Automotivo & Maquinário",
+    shortLabel: "Auto",
+    badgeText: "Showroom Certificado",
+    description: "Cockpit técnico com barra de telemetria rápida (Ano, KM, Câmbio, Motor/Potência) e procedência.",
+    compatibleNiches: ["veiculo", "agro"],
+    desktop: {
+      columns: 12,
+      heroAspectRatio: "16:10",
+      layoutPattern: "split_8_4",
+      featuredStripMode: "telemetry",
+      stickyConversionPosition: "right_rail",
+      defaultActiveTab: "specs",
+    },
+    mobile: {
+      columns: 1,
+      heroAspectRatio: "4:3",
+      layoutPattern: "mobile_native_stack",
+      featuredStripMode: "telemetry",
+      stickyConversionPosition: "bottom_bar",
+      defaultActiveTab: "specs",
+    },
+  },
+  imobiliario: {
+    id: "imobiliario",
+    label: "Planta & Patrimônio Imobiliário",
+    shortLabel: "Imóvel",
+    badgeText: "Ficha Patrimonial",
+    description: "Destaque arquitetônico para área privativa, dormitórios/suítes, vagas e composição mensal (Condomínio + IPTU).",
+    compatibleNiches: ["imovel", "hospedagem", "negocio"],
+    desktop: {
+      columns: 12,
+      heroAspectRatio: "16:10",
+      layoutPattern: "split_8_4",
+      featuredStripMode: "architectural",
+      stickyConversionPosition: "right_rail",
+      defaultActiveTab: "specs",
+    },
+    mobile: {
+      columns: 1,
+      heroAspectRatio: "4:3",
+      layoutPattern: "mobile_native_stack",
+      featuredStripMode: "architectural",
+      stickyConversionPosition: "bottom_bar",
+      defaultActiveTab: "specs",
+    },
+  },
+  resort_hotel: {
+    id: "resort_hotel",
+    label: "Resort, Pousada & Hospitalidade",
+    shortLabel: "Resort",
+    badgeText: "Estadia & Lazer",
+    description: "Experiência hoteleira focada em capacidade de hóspedes, horários de check-in/out e comodidades de estadia.",
+    compatibleNiches: ["hospedagem", "viagem"],
+    desktop: {
+      columns: 12,
+      heroAspectRatio: "16:10",
+      layoutPattern: "split_8_4",
+      featuredStripMode: "hospitality",
+      stickyConversionPosition: "right_rail",
+      defaultActiveTab: "specs",
+    },
+    mobile: {
+      columns: 1,
+      heroAspectRatio: "4:3",
+      layoutPattern: "mobile_native_stack",
+      featuredStripMode: "hospitality",
+      stickyConversionPosition: "bottom_bar",
+      defaultActiveTab: "specs",
+    },
+  },
+  servicos_agenda: {
+    id: "servicos_agenda",
+    label: "Agenda Profissional & Serviços",
+    shortLabel: "Serviço",
+    badgeText: "Atendimento & Agenda",
+    description: "Vitrine de prestação de serviços, locação e assinaturas com disponibilidade, SLA e agendamento imediato.",
+    compatibleNiches: ["servico", "assinatura", "equipamento"],
+    desktop: {
+      columns: 12,
+      heroAspectRatio: "16:10",
+      layoutPattern: "split_8_4",
+      featuredStripMode: "schedule",
+      stickyConversionPosition: "right_rail",
+      defaultActiveTab: "specs",
+    },
+    mobile: {
+      columns: 1,
+      heroAspectRatio: "4:3",
+      layoutPattern: "mobile_native_stack",
+      featuredStripMode: "schedule",
+      stickyConversionPosition: "bottom_bar",
+      defaultActiveTab: "specs",
+    },
+  },
+  conveniencia: {
+    id: "conveniencia",
+    label: "Catálogo Rápido & Delivery",
+    shortLabel: "Delivery",
+    badgeText: "Pronta Entrega",
+    description: "Vitrine transacional de compra rápida com seletor de quantidade, descontos progressivos e pedido em 3 toques.",
+    compatibleNiches: ["mercado", "gastronomia", "farmacia", "desapego"],
+    desktop: {
+      columns: 12,
+      heroAspectRatio: "1:1",
+      layoutPattern: "catalog_2col",
+      featuredStripMode: "commerce",
+      stickyConversionPosition: "right_rail",
+      defaultActiveTab: "specs",
+    },
+    mobile: {
+      columns: 1,
+      heroAspectRatio: "1:1",
+      layoutPattern: "mobile_native_stack",
+      featuredStripMode: "commerce",
+      stickyConversionPosition: "bottom_bar",
+      defaultActiveTab: "specs",
+    },
+  },
+};
+
+export const NICHE_TEMPLATE_COMPATIBILITY_MAP: Record<
+  ClassifiedNicheId,
+  {
+    defaultTemplate: ClassifiedTemplateStyle;
+    allowedTemplates: ClassifiedTemplateStyle[];
+  }
+> = {
+  viagem: {
+    defaultTemplate: "editorial",
+    allowedTemplates: ["editorial", "resort_hotel", "standard"],
+  },
+  hospedagem: {
+    defaultTemplate: "resort_hotel",
+    allowedTemplates: ["resort_hotel", "imobiliario", "editorial", "standard"],
+  },
+  imovel: {
+    defaultTemplate: "imobiliario",
+    allowedTemplates: ["imobiliario", "standard", "editorial"],
+  },
+  veiculo: {
+    defaultTemplate: "automotivo",
+    allowedTemplates: ["automotivo", "standard", "editorial"],
+  },
+  agro: {
+    defaultTemplate: "automotivo",
+    allowedTemplates: ["automotivo", "standard", "editorial"],
+  },
+  servico: {
+    defaultTemplate: "servicos_agenda",
+    allowedTemplates: ["servicos_agenda", "standard", "editorial"],
+  },
+  assinatura: {
+    defaultTemplate: "servicos_agenda",
+    allowedTemplates: ["servicos_agenda", "standard", "editorial"],
+  },
+  equipamento: {
+    defaultTemplate: "standard",
+    allowedTemplates: ["standard", "servicos_agenda"],
+  },
+  mercado: {
+    defaultTemplate: "conveniencia",
+    allowedTemplates: ["conveniencia", "standard"],
+  },
+  gastronomia: {
+    defaultTemplate: "conveniencia",
+    allowedTemplates: ["conveniencia", "standard", "editorial"],
+  },
+  farmacia: {
+    defaultTemplate: "conveniencia",
+    allowedTemplates: ["conveniencia", "standard"],
+  },
+  desapego: {
+    defaultTemplate: "standard",
+    allowedTemplates: ["standard", "editorial", "conveniencia"],
+  },
+  evento: {
+    defaultTemplate: "editorial",
+    allowedTemplates: ["editorial", "standard"],
+  },
+  vaga: {
+    defaultTemplate: "standard",
+    allowedTemplates: ["standard", "editorial"],
+  },
+  negocio: {
+    defaultTemplate: "editorial",
+    allowedTemplates: ["editorial", "imobiliario", "standard"],
+  },
+  digital: {
+    defaultTemplate: "standard",
+    allowedTemplates: ["standard", "editorial"],
+  },
+  doacao: {
+    defaultTemplate: "standard",
+    allowedTemplates: ["standard"],
+  },
+};
+
+export function normalizeClassifiedNicheId(rawNiche?: string | null, rawCategory?: string | null): ClassifiedNicheId {
+  const n = (rawNiche || "").toLowerCase().trim();
+  const c = (rawCategory || "").toLowerCase().trim();
+
+  if (n in NICHE_TEMPLATE_COMPATIBILITY_MAP) {
+    return n as ClassifiedNicheId;
+  }
+  if (n === "travel" || n === "turismo" || c === "travel") return "viagem";
+  if (n === "hospitality" || n === "temporada") return "hospedagem";
+  if (n === "real_estate" || n === "imoveis" || c === "real_estate") return "imovel";
+  if (n === "vehicle" || n === "veiculos" || n === "vehicles" || c === "vehicle") return "veiculo";
+  if (n === "agri" || n === "agronegocio") return "agro";
+  if (n === "service" || n === "servicos" || n === "services" || c === "service") return "servico";
+  if (n === "job" || n === "job_offer" || n === "emprego" || c === "job" || c === "job_offer") return "vaga";
+  if (n === "business" || n === "negocios" || c === "business") return "negocio";
+  if (n === "food" || n === "food_service" || c === "food") return "gastronomia";
+  if (n === "grocery" || n === "supermarket" || n === "conveniencia") return "mercado";
+  if (n === "pharmacy" || n === "saude") return "farmacia";
+  if (n === "event" || n === "eventos" || c === "event") return "evento";
+  if (n === "equipment" || n === "locacao" || c === "equipment") return "equipamento";
+  if (n === "donation" || c === "donation") return "doacao";
+  return "desapego";
+}
+
+export function getDefaultClassifiedTemplateForNiche(nicheId?: string | null, category?: string | null): ClassifiedTemplateStyle {
+  const normalized = normalizeClassifiedNicheId(nicheId, category);
+  return NICHE_TEMPLATE_COMPATIBILITY_MAP[normalized]?.defaultTemplate || "standard";
+}
+
+export function getAllowedClassifiedTemplatesForNiche(nicheId?: string | null, category?: string | null): ClassifiedTemplateManifest[] {
+  const normalized = normalizeClassifiedNicheId(nicheId, category);
+  const allowedIds = NICHE_TEMPLATE_COMPATIBILITY_MAP[normalized]?.allowedTemplates || ["standard"];
+  return allowedIds.map((id) => CLASSIFIED_TEMPLATES_CATALOG[id]).filter(Boolean);
+}
+
+/**
+ * Resolve o template ativo ao alternar de nicho:
+ * - Se `preserveIfCompatible === true` e o template atual for suportado no novo nicho, preserva-o;
+ * - Caso contrário, retorna o template canônico default do novo nicho.
+ */
+export function resolveCompatibleClassifiedTemplate(
+  nicheId?: string | null,
+  currentTemplate?: string | null,
+  options?: { preserveIfCompatible?: boolean; category?: string | null }
+): ClassifiedTemplateStyle {
+  const normalized = normalizeClassifiedNicheId(nicheId, options?.category);
+  const rule = NICHE_TEMPLATE_COMPATIBILITY_MAP[normalized] || NICHE_TEMPLATE_COMPATIBILITY_MAP.desapego;
+  const preserve = options?.preserveIfCompatible ?? true;
+
+  if (
+    preserve &&
+    currentTemplate &&
+    (rule.allowedTemplates as string[]).includes(currentTemplate)
+  ) {
+    return currentTemplate as ClassifiedTemplateStyle;
+  }
+
+  return rule.defaultTemplate;
+}
+
+export function resolveClassifiedTemplateManifest(
+  templateStyle?: string | null,
+  nicheId?: string | null,
+  category?: string | null
+): ClassifiedTemplateManifest {
+  const resolvedStyle = resolveCompatibleClassifiedTemplate(nicheId, templateStyle, {
+    preserveIfCompatible: true,
+    category,
+  });
+  return CLASSIFIED_TEMPLATES_CATALOG[resolvedStyle] || CLASSIFIED_TEMPLATES_CATALOG.standard;
+}

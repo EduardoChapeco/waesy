@@ -1,6 +1,6 @@
 /**
  * automated-harvest.ts — Motor de Mineração e Curadoria Automatizada com Agendamento Determinístico
- * 
+ *
  * Pipeline:
  * 1. Descoberta de URLs via Feeds RSS e Sitemaps de Portais Locais e Nacionais
  * 2. Idempotência e Deduplicação via Hash SHA-256 da URL canônica no banco (Zero Desperdício de Tokens)
@@ -142,11 +142,16 @@ export async function executeAutomatedNewsHarvest(
       // Verificação de Idempotência no banco:
       // Verifica se a URL ou seu hash já constam em mined_raw_extractions ou news_articles
       if (!options.forceRefresh) {
-        const [existingExtraction, existingArticle] = await Promise.all([
+        const [existingExtractionUrl, existingExtractionHash, existingArticle] = await Promise.all([
           supabase
             .from("mined_raw_extractions")
             .select("id")
-            .or(`source_url.eq."${candidate.url}",title_hash.eq."${urlHash}"`)
+            .eq("source_url", candidate.url)
+            .maybeSingle(),
+          supabase
+            .from("mined_raw_extractions")
+            .select("id")
+            .eq("title_hash", urlHash)
             .maybeSingle(),
           supabase
             .from("news_articles")
@@ -155,7 +160,7 @@ export async function executeAutomatedNewsHarvest(
             .maybeSingle(),
         ]);
 
-        if (existingExtraction.data || existingArticle.data) {
+        if (existingExtractionUrl.data || existingExtractionHash.data || existingArticle.data) {
           report.totalSkippedDuplicate++;
           // Economia estimada de 3.000 tokens que seriam gastos com re-leitura e curadoria
           report.tokensSavedEstimate += 3000;

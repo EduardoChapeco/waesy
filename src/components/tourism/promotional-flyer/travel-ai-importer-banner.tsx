@@ -79,7 +79,7 @@ export function TravelAiImporterBanner({ onExtracted, className = "" }: TravelAi
 
   return (
     <div
-      className={`rounded-lg border border-primary/30 bg-gradient-to-r from-primary/5 via-primary/10 to-transparent p-4 sm:p-5 transition-all ${className}`}
+      className={`rounded-lg border border-primary/30 bg-gradient-to-r from-primary/5 via-primary/10 to-transparent p-4 sm:p-5 transition-colors duration-200 ${className}`}
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="space-y-1">
@@ -90,11 +90,11 @@ export function TravelAiImporterBanner({ onExtracted, className = "" }: TravelAi
             <h3 className="text-xs sm:text-sm font-bold text-foreground">
               Criação Automática por Imagem, Print ou PDF
             </h3>
-            <Badge variant="outline" className="text-[10px] font-mono text-primary bg-primary/10 border-primary/20">
+            <Badge variant="outline" className="text-2xs font-mono text-primary bg-primary/10 border-primary/20">
               Ctrl+V Ativo
             </Badge>
           </div>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Cole um print do WhatsApp (Ctrl+V) ou suba o folder de uma operadora para a IA preencher o anúncio automaticamente.
           </p>
         </div>
@@ -113,7 +113,7 @@ export function TravelAiImporterBanner({ onExtracted, className = "" }: TravelAi
             />
             <div className="inline-flex items-center gap-2 h-9 px-4 rounded-lg border border-primary/30 bg-card hover:bg-muted text-xs font-semibold text-foreground transition-colors cursor-pointer shadow-2xs">
               {isAnalyzing ? (
-                <Loader2 className="size-3.5 animate-spin text-primary" />
+                <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none text-primary" />
               ) : (
                 <UploadCloud className="size-3.5 text-primary" />
               )}
@@ -124,11 +124,11 @@ export function TravelAiImporterBanner({ onExtracted, className = "" }: TravelAi
       </div>
 
       {lastExtractedTitle && (
-        <div className="mt-3 pt-3 border-t border-border/40 flex items-center justify-between text-[11px] text-muted-foreground">
+        <div className="mt-3 pt-3 border-t border-border/40 flex items-center justify-between text-2xs text-muted-foreground">
           <span className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-medium">
             <Check className="size-3.5" /> Último anúncio extraído: <strong>{lastExtractedTitle}</strong>
           </span>
-          <span className="text-[10px] font-mono text-muted-foreground">
+          <span className="text-2xs font-mono text-muted-foreground">
             Campos aplicados no formulário
           </span>
         </div>

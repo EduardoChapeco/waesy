@@ -122,10 +122,10 @@ function AdminMasterTermosPage() {
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5">
  <div>
  <div className="flex items-center gap-2">
- <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-primary">
+ <span className="text-2xs font-mono font-bold uppercase tracking-wider text-primary">
  Governança e Compliance
  </span>
- <Badge variant="outline" className="text-[10px] rounded-full border-primary/30 text-primary">
+ <Badge variant="outline" className="text-2xs rounded-full border-primary/30 text-primary">
  <ShieldCheck className="size-3 mr-1 inline" /> LGPD Ativo
  </Badge>
  </div>
@@ -141,49 +141,49 @@ function AdminMasterTermosPage() {
  {/* Métricas de Governança */}
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
  <div className="p-4 rounded-lg bg-card ">
- <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
+ <span className="text-2xs font-bold text-muted-foreground uppercase tracking-wider block">
  Total de Aceites
  </span>
  <p className="text-xl sm:text-2xl font-black text-foreground mt-1">
  {stats.totalAcceptances}
  </p>
- <span className="text-[10px] text-primary font-medium flex items-center gap-1 mt-1">
+ <span className="text-2xs text-primary font-medium flex items-center gap-1 mt-1">
  <ShieldCheck className="size-3" /> Logs Registrados
  </span>
  </div>
 
  <div className="p-4 rounded-lg bg-card ">
- <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
+ <span className="text-2xs font-bold text-muted-foreground uppercase tracking-wider block">
  Aceites de Cookies
  </span>
  <p className="text-xl sm:text-2xl font-black text-foreground mt-1">
  {stats.cookieAcceptances}
  </p>
- <span className="text-[10px] text-muted-foreground font-medium">
+ <span className="text-2xs text-muted-foreground font-medium">
  Banner de Consentimento
  </span>
  </div>
 
  <div className="p-4 rounded-lg bg-card ">
- <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
+ <span className="text-2xs font-bold text-muted-foreground uppercase tracking-wider block">
  Termos e LGPD
  </span>
  <p className="text-xl sm:text-2xl font-black text-foreground mt-1">
  {stats.privacyAcceptances + stats.termsAcceptances}
  </p>
- <span className="text-[10px] text-muted-foreground font-medium">
+ <span className="text-2xs text-muted-foreground font-medium">
  Políticas e Contratos
  </span>
  </div>
 
  <div className="p-4 rounded-lg bg-card ">
- <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
+ <span className="text-2xs font-bold text-muted-foreground uppercase tracking-wider block">
  Usuários Logados
  </span>
  <p className="text-xl sm:text-2xl font-black text-foreground mt-1">
  {stats.authenticatedAcceptances}
  </p>
- <span className="text-[10px] text-primary font-medium flex items-center gap-1 mt-1">
+ <span className="text-2xs text-primary font-medium flex items-center gap-1 mt-1">
  <Lock className="size-3" /> Vínculo Permanente
  </span>
  </div>
@@ -208,14 +208,14 @@ function AdminMasterTermosPage() {
  {documents.map((doc: any) => (
  <div
  key={doc.id}
- className="p-5 rounded-lg bg-card hover:border-primary/40 transition-all flex flex-col justify-between gap-4 "
+ className="p-5 rounded-lg bg-card hover:border-primary/40 transition-colors duration-200 flex flex-col justify-between gap-4 "
  >
  <div className="space-y-2">
  <div className="flex items-center justify-between gap-2">
- <Badge variant="outline" className="text-[10px] font-mono uppercase bg-primary/5 text-primary border-primary/20">
+ <Badge variant="outline" className="text-2xs font-mono uppercase bg-primary/5 text-primary border-primary/20">
  /{doc.slug}
  </Badge>
- <span className="text-[10px] font-mono text-muted-foreground">
+ <span className="text-2xs font-mono text-muted-foreground">
  v{doc.version || "1.0"}
  </span>
  </div>
@@ -232,7 +232,7 @@ function AdminMasterTermosPage() {
  </div>
 
  <div className="flex items-center justify-between gap-2 pt-3 ">
- <span className="text-[10px] text-muted-foreground">
+ <span className="text-2xs text-muted-foreground">
  {doc.is_published ? (
  <span className="text-emerald-600 font-semibold flex items-center gap-1">
  ● Publicado Online
@@ -330,14 +330,14 @@ function AdminMasterTermosPage() {
  <div className=" rounded-lg overflow-hidden bg-card ">
  {isLoadingLogs ? (
  <div className="py-12 text-center text-muted-foreground flex items-center justify-center gap-2 text-xs">
- <Loader2 className="size-4 animate-spin" />
+ <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
  <span>Carregando trilha de auditoria...</span>
  </div>
  ) : logs.length === 0 ? (
  <div className="py-12 text-center space-y-2">
  <ShieldCheck className="size-8 text-muted-foreground mx-auto" />
  <p className="text-xs font-bold text-foreground">Nenhum aceite encontrado com estes filtros</p>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Os aceites de novos visitantes e membros cadastrados aparecerão aqui em tempo real.
  </p>
  </div>
@@ -346,19 +346,19 @@ function AdminMasterTermosPage() {
  <Table>
  <TableHeader>
  <TableRow>
- <TableHead className="text-[11px] uppercase font-bold">Tipo de Termo</TableHead>
- <TableHead className="text-[11px] uppercase font-bold">Titular / Usuário</TableHead>
- <TableHead className="text-[11px] uppercase font-bold">Endereço IP Real</TableHead>
- <TableHead className="text-[11px] uppercase font-bold">Versão</TableHead>
- <TableHead className="text-[11px] uppercase font-bold">Timestamp UTC</TableHead>
- <TableHead className="text-[11px] uppercase font-bold text-right">Detalhes</TableHead>
+ <TableHead className="text-2xs uppercase font-bold">Tipo de Termo</TableHead>
+ <TableHead className="text-2xs uppercase font-bold">Titular / Usuário</TableHead>
+ <TableHead className="text-2xs uppercase font-bold">Endereço IP Real</TableHead>
+ <TableHead className="text-2xs uppercase font-bold">Versão</TableHead>
+ <TableHead className="text-2xs uppercase font-bold">Timestamp UTC</TableHead>
+ <TableHead className="text-2xs uppercase font-bold text-right">Detalhes</TableHead>
  </TableRow>
  </TableHeader>
  <TableBody>
  {logs.map((log: any) => (
  <TableRow key={log.id}>
  <TableCell>
- <Badge variant="outline" className="text-[10px] font-mono uppercase bg-muted/60">
+ <Badge variant="outline" className="text-2xs font-mono uppercase bg-muted/60">
  {log.term_type}
  </Badge>
  </TableCell>
@@ -370,7 +370,7 @@ function AdminMasterTermosPage() {
  <p className="text-xs font-bold text-foreground truncate leading-tight">
  {log.profiles.name || log.profiles.email}
  </p>
- <span className="text-[10px] text-muted-foreground block truncate">
+ <span className="text-2xs text-muted-foreground block truncate">
  {log.profiles.email}
  </span>
  </div>
@@ -503,7 +503,7 @@ function AdminMasterTermosPage() {
  className="rounded-lg text-xs font-bold bg-primary text-primary-foreground"
  >
  {isSubmitting ? (
- <Loader2 className="size-3.5 animate-spin mr-2" />
+ <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none mr-2" />
  ) : (
  <CheckCircle2 className="size-3.5 mr-2" />
  )}
@@ -531,35 +531,35 @@ function AdminMasterTermosPage() {
 
  {selectedLog && (
  <div className="space-y-4 text-xs mt-3">
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 rounded-lg bg-muted/50 font-mono text-[11px]">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 rounded-lg bg-muted/50 font-mono text-2xs">
  <div>
- <span className="text-muted-foreground block text-[10px] uppercase font-bold">ID do Registro</span>
+ <span className="text-muted-foreground block text-2xs uppercase font-bold">ID do Registro</span>
  <span className="text-foreground">{selectedLog.id}</span>
  </div>
  <div>
- <span className="text-muted-foreground block text-[10px] uppercase font-bold">Termo / Tipo</span>
+ <span className="text-muted-foreground block text-2xs uppercase font-bold">Termo / Tipo</span>
  <span className="text-foreground font-bold">{selectedLog.term_type} (v{selectedLog.version})</span>
  </div>
  <div>
- <span className="text-muted-foreground block text-[10px] uppercase font-bold">IP de Origem</span>
+ <span className="text-muted-foreground block text-2xs uppercase font-bold">IP de Origem</span>
  <span className="text-foreground">{selectedLog.ip_address || "Não informado"}</span>
  </div>
  <div>
- <span className="text-muted-foreground block text-[10px] uppercase font-bold">Data e Hora (UTC)</span>
+ <span className="text-muted-foreground block text-2xs uppercase font-bold">Data e Hora (UTC)</span>
  <span className="text-foreground">{selectedLog.accepted_at}</span>
  </div>
  </div>
 
  <div className="space-y-1">
  <span className="font-bold text-foreground block">Identificador de Segurança</span>
- <div className="p-2 rounded-lg bg-card font-mono text-[11px] text-primary break-all">
+ <div className="p-2 rounded-lg bg-card font-mono text-2xs text-primary break-all">
  {selectedLog.signature_hash || "Calculado via protocolo seguro"}
  </div>
  </div>
 
  <div className="space-y-1">
  <span className="font-bold text-foreground block">Navegador / User-Agent</span>
- <div className="p-2 rounded-lg bg-muted/40 font-mono text-[10px] text-muted-foreground break-all">
+ <div className="p-2 rounded-lg bg-muted/40 font-mono text-2xs text-muted-foreground break-all">
  {selectedLog.user_agent || "Desconhecido"}
  </div>
  </div>
@@ -568,7 +568,7 @@ function AdminMasterTermosPage() {
  <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-1">
  <span className="font-bold text-primary block">Titular Autenticado</span>
  <p className="text-foreground font-semibold">{selectedLog.profiles.name} ({selectedLog.profiles.email})</p>
- <p className="text-muted-foreground text-[10px]">ID: {selectedLog.profiles.id}</p>
+ <p className="text-muted-foreground text-2xs">ID: {selectedLog.profiles.id}</p>
  </div>
  )}
  </div>

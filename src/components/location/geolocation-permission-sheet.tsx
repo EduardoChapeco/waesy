@@ -118,7 +118,7 @@ export function GeolocationPermissionSheet() {
  {/* Header com Ícone de Pin */}
  <SheetHeader className="text-left space-y-3 p-0">
  <div className="size-14 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
- <MapPin className="size-7 animate-pulse" />
+ <MapPin className="size-7 animate-pulse motion-reduce:animate-none" />
  </div>
 
  <div className="space-y-1">
@@ -211,11 +211,11 @@ export function GeolocationPermissionSheet() {
  type="button"
  disabled={isVerifying}
  onClick={handleAllowLocation}
- className="w-full h-11 rounded-lg font-bold text-xs gap-2 cursor-pointer bg-foreground text-background hover:bg-foreground/90 transition-all active:opacity-90"
+ className="w-full h-11 rounded-lg font-bold text-xs gap-2 cursor-pointer bg-foreground text-background hover:bg-foreground/90 transition-colors duration-200 active:opacity-90"
  >
  {isVerifying ? (
  <>
- <Loader2 className="size-4 animate-spin" />
+ <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
  <span>Verificando localização...</span>
  </>
  ) : (

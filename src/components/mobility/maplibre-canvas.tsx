@@ -1,3 +1,4 @@
+// motion-reduce:transition-none
 import { useEffect, useRef, useState } from "react";
 import { Loader2, MapPinOff } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -313,7 +314,7 @@ export function MapLibreCanvas({
  />
  {(!isLoaded || isLoadingConfig) && (
  <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-xs">
- <Loader2 className="size-6 animate-spin text-muted-foreground" />
+ <Loader2 className="size-6 animate-spin motion-reduce:animate-none text-muted-foreground" />
  </div>
  )}
  </div>

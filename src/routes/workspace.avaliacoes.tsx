@@ -233,7 +233,7 @@ export default function WorkspaceReviewsPage() {
           <button
             type="button"
             onClick={() => setFilterRating("all")}
-            className={cn(
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap",
               filterRating === "all"
                 ? "bg-foreground text-background font-semibold"
@@ -245,7 +245,7 @@ export default function WorkspaceReviewsPage() {
           <button
             type="button"
             onClick={() => setFilterRating("pending")}
-            className={cn(
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap",
               filterRating === "pending"
                 ? "bg-foreground text-background font-semibold"
@@ -257,7 +257,7 @@ export default function WorkspaceReviewsPage() {
           <button
             type="button"
             onClick={() => setFilterRating("5")}
-            className={cn(
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap",
               filterRating === "5"
                 ? "bg-foreground text-background font-semibold"
@@ -269,10 +269,10 @@ export default function WorkspaceReviewsPage() {
           <button
             type="button"
             onClick={() => setFilterRating("critical")}
-            className={cn(
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap",
               filterRating === "critical"
-                ? "bg-rose-500 text-white font-semibold"
+                ? "bg-rose-500 text-foreground font-semibold"
                 : "bg-muted/60 text-muted-foreground hover:text-foreground"
             )}
           >

@@ -239,7 +239,7 @@ export function MasterHeroCards({
  <Link
  key={card.id || card.slug}
  to={card.to as any}
- className="group relative flex flex-col justify-end overflow-hidden rounded-lg bg-card shrink-0 snap-start w-80 sm:w-[420px] md:w-[500px] lg:w-[540px] h-[190px] sm:h-[240px] md:h-[280px] lg:h-[300px] transition-all duration-300 active:scale-[0.99] select-none block border border-border/60 hover:border-primary/60 shadow-md hover:shadow-xl"
+ className="group relative flex flex-col justify-end overflow-hidden rounded-lg bg-card shrink-0 snap-start w-80 sm:w-[420px] md:w-[500px] lg:w-[540px] h-[190px] sm:h-[240px] md:h-[280px] lg:h-[300px] transition-transform duration-200 duration-300 active:scale-[0.99] select-none block border border-border/60 hover:border-primary/60 shadow-md hover:shadow-xl"
  >
  {card.isVideo && card.videoUrl ? (
  <video
@@ -273,7 +273,7 @@ export function MasterHeroCards({
  <div className="absolute top-2 left-2 right-2 flex items-center justify-between z-10">
  <div className="flex items-center gap-1 flex-wrap">
  {card.badgeLabel && (
- <span className="inline-block px-2 py-0.2 rounded-md text-[8px] font-mono font-bold uppercase tracking-wider bg-white/30 backdrop-blur-md text-white border border-white/20 shadow-xs">
+ <span className="inline-block px-2 py-0.2 rounded-md text-3xs font-mono font-bold uppercase tracking-wider bg-card/30 backdrop-blur-md text-foreground border border-white/20 shadow-xs">
  {card.badgeLabel}
  </span>
  )}
@@ -284,7 +284,7 @@ export function MasterHeroCards({
                     {/* Título e Ícone (Apenas se explicitamente habilitado) */}
                     {card.showTitle && card.title && (
                       <div className="relative z-10 p-2 text-left w-full bg-linear-to-t from-black/80 via-black/20 to-transparent">
-                        <h3 className="text-[11px] sm:text-xs font-bold text-white leading-tight drop-shadow-sm truncate">
+                        <h3 className="text-2xs sm:text-xs font-bold text-foreground leading-tight drop-shadow-sm truncate">
                           {card.title}
                         </h3>
                       </div>

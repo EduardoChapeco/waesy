@@ -1,11 +1,11 @@
 /**
  * places-harvester.ts — Harvester de Estabelecimentos Locais & Empresas (Places / Maps)
- * 
+ *
  * Engenharia Reversa baseada em:
  * - gosom/google-maps-scraper
  * - Mahanaicoach/google-maps-scraper-kit
  * - OpenStreetMap Nominatim & Overpass Geo Engine (100% livre de custos)
- * 
+ *
  * Missão:
  * Enriquecer directory_listings e gerar Ghost Stores locais (empresas pré-cadastradas)
  * para prospecção B2B e vitrine urbana instantânea com ZERO custos de APIs pagas do Google.
@@ -15,6 +15,7 @@ import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getRandomUserAgent, cleanHtmlText, isDomainInCooldown, setDomainCooldown, sleep } from "@/lib/mining/scraper-utils";
 import { globalCrawlerCircuitBreaker } from "@/lib/mining/crawler-circuit-breaker";
 import { resolveCityAndState, normalizeStateUf } from "@/lib/mining/geo-resolver";
+import { GLOBAL_BRAZIL_CITIES_CATALOG } from "@/lib/data/cities-brazil-catalog";
 import { getDefaultCity, getDefaultState } from "@/lib/brand.config";
 
 export interface HarvestedPlace {
@@ -32,6 +33,8 @@ export interface HarvestedPlace {
   rating?: number;
   reviewsCount?: number;
   workingHours?: Record<string, string>;
+  contactEmail?: string;
+  externalId?: string;
   source: string;
 }
 
@@ -81,9 +84,17 @@ export function normalizePlaceCategory(rawCategory: string): string {
     return "hospedagem";
   }
   if (
+    lower.includes("clube") || lower.includes("club") ||
+    lower.includes("country_club") || lower.includes("campestre") ||
+    lower.includes("sports_centre") || lower.includes("water_park") ||
+    lower.includes("tiro") || lower.includes("tenis") || lower.includes("nautico")
+  ) {
+    return "lazer_clubes";
+  }
+  if (
     lower.includes("academia") || lower.includes("fitness") ||
     lower.includes("fitness_centre") || lower.includes("crossfit") ||
-    lower.includes("sports_centre") || lower.includes("esporte")
+    lower.includes("esporte")
   ) {
     return "saude_esporte";
   }
@@ -137,7 +148,14 @@ const CITY_BBOX_MAP: Record<string, [number, number, number, number]> = {
   "chapeco-sc": [-27.16, -52.70, -27.04, -52.55],
   "xanxere": [-26.90, -52.45, -26.83, -52.35],
   "concordia": [-27.26, -52.05, -27.19, -51.98],
+  "joacaba": [-27.20, -51.55, -27.14, -51.48],
   "sao-miguel-do-oeste": [-26.75, -53.55, -26.68, -53.48],
+  "ita": [-27.31, -52.35, -27.26, -52.30],
+  "piratuba": [-27.44, -51.80, -27.40, -51.75],
+  "treze-tilias": [-27.02, -51.43, -26.98, -51.38],
+  "balneario-camboriu": [-27.02, -48.66, -26.95, -48.60],
+  "florianopolis": [-27.65, -48.60, -27.40, -48.45],
+  "blumenau": [-26.95, -49.12, -26.88, -49.03],
 };
 
 /**
@@ -158,13 +176,16 @@ export async function queryOverpassPlaces(
   const targetState = resolvedGeo.state || normalizeStateUf(state) || getDefaultState();
 
   const normCity = targetCity.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "-");
-  const bbox = CITY_BBOX_MAP[normCity];
+  const normCityWithState = `${normCity}-${targetState.toLowerCase()}`;
+  let bbox = (targetState === "SC" || !targetState) ? (CITY_BBOX_MAP[normCityWithState] || CITY_BBOX_MAP[normCity]) : undefined;
+
+  // Se não pertencer a Santa Catarina ou não estiver no mapa hardcoded CITY_BBOX_MAP, não consulta Overpass para evitar vazamento geográfico
   if (!bbox) {
     return [];
   }
   const [south, west, north, east] = bbox;
 
-  const ql = `[out:json][timeout:25];(node["amenity"](${south},${west},${north},${east});node["shop"](${south},${west},${north},${east});way["amenity"](${south},${west},${north},${east});way["shop"](${south},${west},${north},${east}););out center body ${limit};`;
+  const ql = `[out:json][timeout:25];(node["amenity"](${south},${west},${north},${east});node["shop"](${south},${west},${north},${east});node["tourism"](${south},${west},${north},${east});node["leisure"](${south},${west},${north},${east});node["office"](${south},${west},${north},${east});node["club"](${south},${west},${north},${east});way["amenity"](${south},${west},${north},${east});way["shop"](${south},${west},${north},${east});way["tourism"](${south},${west},${north},${east});way["leisure"](${south},${west},${north},${east});way["office"](${south},${west},${north},${east});way["club"](${south},${west},${north},${east}););out center body ${limit};`;
   const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(ql)}`;
 
   try {
@@ -200,7 +221,7 @@ export async function queryOverpassPlaces(
       const phone = tags.phone || tags["contact:phone"] || undefined;
       const whatsapp = tags["contact:whatsapp"] || tags.whatsapp || undefined;
       const website = tags.website || tags["contact:website"] || undefined;
-      const rawCat = tags.amenity || tags.shop || tags.cuisine || query;
+      const rawCat = tags.amenity || tags.shop || tags.tourism || tags.leisure || tags.office || tags.club || tags.craft || tags.cuisine || query;
 
       const lat = Number(e.lat || e.center?.lat);
       const lon = Number(e.lon || e.center?.lon);
@@ -325,6 +346,8 @@ export async function harvestAndPersistPlaces(params: {
   state?: string;
   storeId?: string;
   authorProfileId?: string;
+  /** Lugares já coletados por fonte externa (ex.: scraper Google Maps via VPS/Docker). */
+  prefetchedPlaces?: HarvestedPlace[];
 }): Promise<PlacesHarvestResult> {
   const resolvedGeo = resolveCityAndState(params.city, params.state);
   const city = resolvedGeo.city || params.city || getDefaultCity();
@@ -332,8 +355,10 @@ export async function harvestAndPersistPlaces(params: {
   const startTime = Date.now();
 
   // 1. Tentar Overpass API (rápido e rico em dados comerciais), com fallback para Nominatim
-  let places = state ? await queryOverpassPlaces(params.query, city, state) : [];
-  if (places.length === 0) {
+  let places = params.prefetchedPlaces && params.prefetchedPlaces.length > 0
+    ? params.prefetchedPlaces
+    : state ? await queryOverpassPlaces(params.query, city, state) : [];
+  if (places.length === 0 && !params.prefetchedPlaces) {
     places = await queryNominatimPlaces(params.query, city, state);
   }
 
@@ -346,7 +371,7 @@ export async function harvestAndPersistPlaces(params: {
       // Checa duplicidade por nome + cidade
       const { data: existing } = await supabase
         .from("directory_listings")
-        .select("id, avatar_url, banner_url, description, photos, cnpj")
+        .select("id, avatar_url, banner_url, description, photos, cnpj, metadata, contact_email")
         .eq("business_name", place.businessName)
         .eq("city", place.city)
         .maybeSingle();
@@ -392,6 +417,9 @@ export async function harvestAndPersistPlaces(params: {
         longitude: place.longitude,
         contact_phone: place.contactPhone || null,
         contact_whatsapp: place.contactWhatsapp || null,
+        contact_email: place.contactEmail || existing?.contact_email || null,
+        external_id: place.externalId || null,
+        metadata: { ...((existing?.metadata as Record<string, unknown> | null) || {}), ...(place.externalId ? { gmaps_cid: place.externalId } : {}) },
         website_url: place.websiteUrl || null,
         avatar_url: existing?.avatar_url || derivedAvatar,
         banner_url: existing?.banner_url || null,
@@ -466,4 +494,56 @@ export async function harvestAndPersistPlaces(params: {
       error: errorMsg,
     };
   }
+}
+
+/**
+ * Mineração abrangente multi-categoria para cidades selecionadas
+ */
+export async function harvestLocalPlaces(params: {
+  city?: string;
+  state?: string;
+  categories?: string[];
+  limitPerCategory?: number;
+}): Promise<{
+  totalFound: number;
+  totalInserted: number;
+  totalUpdated: number;
+}> {
+  const city = params.city || getDefaultCity();
+  const state = params.state || getDefaultState();
+  const cats = params.categories || [
+    "restaurante",
+    "churrascaria",
+    "pizzaria",
+    "supermercado",
+    "farmacia",
+    "hospital",
+    "clinica",
+    "oficina",
+    "cooperativa",
+    "shopping",
+    "clube",
+  ];
+
+  let totalFound = 0;
+  let totalInserted = 0;
+  let totalUpdated = 0;
+
+  for (const c of cats) {
+    try {
+      const res = await harvestAndPersistPlaces({
+        query: c,
+        city,
+        state,
+      });
+      totalFound += res.totalFound;
+      totalInserted += res.totalInserted;
+      totalUpdated += res.totalUpdated;
+      await sleep(600);
+    } catch (err) {
+      console.warn(`[PlacesHarvester] Falha ao minerar categoria ${c}:`, err);
+    }
+  }
+
+  return { totalFound, totalInserted, totalUpdated };
 }

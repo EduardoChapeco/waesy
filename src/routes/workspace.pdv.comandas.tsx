@@ -57,7 +57,7 @@ const STATUS_CONFIG: Record<
  awaiting_payment: {
  label: "Conta Solicitada",
  badgeVariant: "secondary",
- cardClass: "border-amber-500/50 bg-amber-500/10 hover:border-amber-500/80 animate-pulse",
+ cardClass: "border-amber-500/50 bg-amber-500/10 hover:border-amber-500/80 animate-pulse motion-reduce:animate-none",
  textClass: "text-amber-700 dark:text-amber-400",
  dotClass: "bg-amber-500",
  },
@@ -306,8 +306,8 @@ function PdvComandasPage() {
  key={table.table_number}
  type="button"
  onClick={() => handleTableClick(table)}
- className={cn(
- "relative flex flex-col justify-between p-4 sm:p-4 rounded-lg border text-left transition-all cursor-pointer min-h-[120px] select-none group active:scale-98",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "relative flex flex-col justify-between p-4 sm:p-4 rounded-lg border text-left transition-colors duration-200 cursor-pointer min-h-[120px] select-none group active:scale-98",
  config.cardClass,
  )}
  >
@@ -626,7 +626,7 @@ function PdvComandasPage() {
  key={count}
  type="button"
  onClick={() => setSplitCount(count)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "py-2 rounded-lg text-xs font-bold border transition-colors cursor-pointer text-center",
  splitCount === count
  ? "bg-primary text-primary-foreground border-primary"
@@ -794,7 +794,7 @@ function PdvComandasPage() {
  </span>
  </div>
 
- <div className="p-3 rounded-lg bg-white border border-border/60 flex flex-col items-center justify-center space-y-1 shadow-2xs">
+ <div className="p-3 rounded-lg bg-card border border-border/60 flex flex-col items-center justify-center space-y-1 shadow-2xs">
  <img
  src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(publicMenuTableUrl)}`}
  alt={`QR Code Mesa ${qrTableNumber}`}

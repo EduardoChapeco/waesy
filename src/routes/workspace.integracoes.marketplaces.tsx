@@ -569,7 +569,7 @@ function MarketplaceHubPage() {
         <button
           type="button"
           onClick={() => setMainView("connectors")}
-          className={cn(
+          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
             "px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2 cursor-pointer",
             mainView === "connectors"
               ? "bg-foreground text-background"
@@ -581,7 +581,7 @@ function MarketplaceHubPage() {
         <button
           type="button"
           onClick={() => setMainView("mapping")}
-          className={cn(
+          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
             "px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2 cursor-pointer",
             mainView === "mapping"
               ? "bg-foreground text-background"
@@ -593,7 +593,7 @@ function MarketplaceHubPage() {
         <button
           type="button"
           onClick={() => setMainView("audit")}
-          className={cn(
+          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
             "px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2 cursor-pointer",
             mainView === "audit"
               ? "bg-foreground text-background"
@@ -656,7 +656,7 @@ function MarketplaceHubPage() {
                 <div
                   key={item.platform}
                   className={cn(
-                    "rounded-lg border p-5 flex flex-col justify-between transition-all bg-card shadow-xs min-h-48",
+                    "rounded-lg border p-5 flex flex-col justify-between transition-colors duration-200 bg-card shadow-xs min-h-48",
                     isConnected ? "border-emerald-500/40 bg-emerald-500/5" : "border-border/70"
                   )}
                 >
@@ -708,7 +708,7 @@ function MarketplaceHubPage() {
                       <button
                         type="button"
                         onClick={() => handleOpenWebhookInfo(item)}
-                        className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors cursor-pointer"
+                        className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         title="Ver URL do Webhook"
                       >
                         <FileCode2 className="size-3" /> Webhook
@@ -743,7 +743,7 @@ function MarketplaceHubPage() {
                             onClick={() => syncMutation.mutate(item.platform)}
                             disabled={syncMutation.isPending}
                           >
-                            <RefreshCw className={cn("size-3 mr-1", syncMutation.isPending && "animate-spin")} />
+                            <RefreshCw className={cn("size-3 mr-1", syncMutation.isPending && "animate-spin motion-reduce:animate-none")} />
                             Sincronizar
                           </Button>
                           <Button
@@ -863,7 +863,7 @@ function MarketplaceHubPage() {
                                       type="button"
                                       onClick={() => deleteMappingMutation.mutate({ productId: item.id, platform: ch as MarketplacePlatform })}
                                       disabled={deleteMappingMutation.isPending}
-                                      className="opacity-40 hover:opacity-100 hover:text-destructive cursor-pointer ml-1 text-xs leading-none"
+                                      className="opacity-40 hover:opacity-100 hover:text-destructive cursor-pointer ml-1 text-xs leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                       title={`Desvincular canal ${ch}`}
                                     >
                                       ×
@@ -882,7 +882,7 @@ function MarketplaceHubPage() {
                               disabled={syncStockMutation.isPending}
                               title="Sincronizar estoque nos canais"
                             >
-                              <RefreshCw className={cn("size-3 mr-1", syncStockMutation.isPending && "animate-spin")} />
+                              <RefreshCw className={cn("size-3 mr-1", syncStockMutation.isPending && "animate-spin motion-reduce:animate-none")} />
                               Sync Estoque
                             </Button>
                             <Button
@@ -987,7 +987,7 @@ function MarketplaceHubPage() {
                             onClick={() => reprocessEventMutation.mutate(evt.id)}
                             disabled={reprocessEventMutation.isPending}
                           >
-                            <RefreshCw className={cn("size-3 mr-1", reprocessEventMutation.isPending && "animate-spin")} />
+                            <RefreshCw className={cn("size-3 mr-1", reprocessEventMutation.isPending && "animate-spin motion-reduce:animate-none")} />
                             Reprocessar
                           </Button>
                         </TableCell>
@@ -1192,7 +1192,7 @@ function MarketplaceHubPage() {
                   toast.error(err?.message || "Erro ao testar credenciais.");
                 }
               }}
-              className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-1.5 cursor-pointer"
+              className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
             >
               <RefreshCw className="size-3.5" />
               <span>Testar API</span>

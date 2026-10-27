@@ -112,7 +112,7 @@ export function SectionTransfers({ draft, save }: Props) {
           </div>
         </Card>
       ))}
-      <AddBtn onClick={add}>Adicionar traslado</AddBtn>
+      <AddBtn onClick={add} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Adicionar traslado</AddBtn>
     </Accordion>
   );
 }

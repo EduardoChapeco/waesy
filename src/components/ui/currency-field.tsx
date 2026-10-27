@@ -117,7 +117,7 @@ export const CurrencyField = forwardRef<HTMLInputElement, CurrencyFieldProps>(
  <span
  className={cn(
  "absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground pointer-events-none select-none",
- compact && "left-2 text-[11px]"
+ compact && "left-2 text-2xs"
  )}
  >
  {currencySymbol}

@@ -160,7 +160,7 @@ function WorkspaceLogisticsPriceTablesPage() {
   return (
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── HEADER DA PÁGINA ── */}
-      <PageHeader
+      <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         eyebrow="Logística & Mobilidade"
         title="Tabelas de Tarifas"
         description="Configure as taxas de partida, valor quilométrico e piso mínimo para cálculo automático de fretes e entregadores."
@@ -171,7 +171,7 @@ function WorkspaceLogisticsPriceTablesPage() {
             size="sm"
             className="font-bold text-xs bg-primary text-primary-foreground gap-2 rounded-lg h-10 px-4 cursor-pointer shadow-2xs"
           >
-            {isSaving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+            {isSaving ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> : <Save className="size-4" />}
             <span>{isSaving ? "Salvando no Banco..." : "Salvar Alterações"}</span>
           </Button>
         }
@@ -285,7 +285,7 @@ function WorkspaceLogisticsPriceTablesPage() {
             return (
               <div
                 key={`sim-${table.service_type}`}
-                className={`p-4 rounded-lg border transition-all ${
+                className={`p-4 rounded-lg border transition-colors duration-200 ${
                   table.is_active
                     ? "bg-background border-border/80"
                     : "bg-muted/10 border-border/40 opacity-50"
@@ -325,7 +325,7 @@ function WorkspaceLogisticsPriceTablesPage() {
         {tables.map((table: PriceTableItem) => (
           <div
             key={table.service_type}
-            className="rounded-lg bg-card p-6 border border-border/70 space-y-5 shadow-2xs transition-all"
+            className="rounded-lg bg-card p-6 border border-border/70 space-y-5 shadow-2xs transition-colors duration-200"
           >
             <div className="flex items-center justify-between pb-3 border-b border-border/50">
               <div className="flex items-center gap-3">

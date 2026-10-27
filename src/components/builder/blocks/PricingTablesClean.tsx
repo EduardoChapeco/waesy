@@ -51,9 +51,9 @@ export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ id, data
               type="button"
               aria-pressed={!isAnnual}
               onClick={() => setIsAnnual(false)}
-              className={`px-4 py-2 rounded-full transition-all ${
+              className={`px-4 py-2 rounded-full transition-colors ${
                 !isAnnual ? "bg-background text-foreground font-medium" : "text-muted-foreground"
-              }`}
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
             >
               Faturamento Mensal
             </button>
@@ -61,9 +61,9 @@ export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ id, data
               type="button"
               aria-pressed={isAnnual}
               onClick={() => setIsAnnual(true)}
-              className={`px-4 py-2 rounded-full transition-all flex items-center gap-2 ${
+              className={`px-4 py-2 rounded-full transition-colors flex items-center gap-2 ${
                 isAnnual ? "bg-background text-foreground font-medium" : "text-muted-foreground"
-              }`}
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
             >
               <span>Faturamento Anual</span>
             </button>
@@ -81,7 +81,7 @@ export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ id, data
             return (
               <div
                 key={tier.id}
-                className={`relative rounded-lg p-8 sm:p-10 flex flex-col justify-between transition-all ${
+                className={`relative rounded-lg p-8 sm:p-10 flex flex-col justify-between transition-colors ${
                   tier.isPopular
                     ? "bg-foreground text-background ring-1 ring-foreground"
                     : "bg-card text-foreground border border-border/80 hover:border-border"

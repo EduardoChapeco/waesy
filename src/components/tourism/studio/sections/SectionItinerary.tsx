@@ -229,7 +229,7 @@ export function SectionItinerary({ draft, save }: Props) {
                         newArr.splice(imgIdx, 1);
                         upd(i, { images: newArr });
                       }}
-                      className="absolute right-0 top-0 rounded bg-red-500/80 px-1 py-1 text-[8px] text-white hover:bg-red-500"
+                      className="absolute right-0 top-0 rounded bg-red-500/80 px-1 py-1 text-3xs text-foreground hover:bg-red-500"
                     >
                       X
                     </Button>
@@ -260,10 +260,10 @@ export function SectionItinerary({ draft, save }: Props) {
               type="button"
               onClick={() => refineWithAI(i)}
               disabled={refining === i}
-              className="flex items-center gap-2 ds-meta font-semibold text-brand hover:text-brand/80 disabled:opacity-60 transition-all"
+              className="flex items-center gap-2 ds-meta font-semibold text-brand hover:text-brand/80 disabled:opacity-60 transition-colors duration-200"
             >
               {refining === i ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
+                <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none" />
               ) : (
                 <MapPin className="h-3 w-3" />
               )}
@@ -272,7 +272,7 @@ export function SectionItinerary({ draft, save }: Props) {
           </div>
         </Card>
       ))}
-      <AddBtn onClick={add}>Adicionar dia</AddBtn>
+      <AddBtn onClick={add} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Adicionar dia</AddBtn>
     </Accordion>
   );
 }

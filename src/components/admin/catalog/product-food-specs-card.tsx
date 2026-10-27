@@ -121,7 +121,7 @@ export function ProductFoodSpecsCard({
           <div className="flex items-center gap-2">
             <Layers className="size-4 text-primary" />
             <h3 className="text-sm font-bold text-foreground line-clamp-1 truncate">Especificações de Varejo e Alimentação</h3>
-            <Badge variant="outline" className="text-[10px] font-bold bg-primary/10 text-primary border-none">
+            <Badge variant="outline" className="text-2xs font-bold bg-primary/10 text-primary border-none">
               Padrão iFood / Osuper
             </Badge>
           </div>
@@ -145,7 +145,7 @@ export function ProductFoodSpecsCard({
             className="h-11 text-xs rounded-lg font-mono"
             maxLength={14}
           />
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Usado para busca instantânea por leitor de código de barras no PDV e conferência.
           </p>
         </div>
@@ -161,7 +161,7 @@ export function ProductFoodSpecsCard({
             onChange={(e) => onChange({ ...value, posCode: e.target.value.toUpperCase() })}
             className="h-11 text-xs rounded-lg font-mono uppercase"
           />
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Código interno do ERP/Frente de caixa para conciliação automática de vendas.
           </p>
         </div>
@@ -175,7 +175,7 @@ export function ProductFoodSpecsCard({
               <Scale className="size-3.5 text-primary" />
               <span>Produto Pesável / Hortifrúti / Açougue</span>
             </Label>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               Ative se o produto é vendido a peso variável (ex: frutas, legumes, queijos, carnes frescas).
             </p>
           </div>
@@ -221,7 +221,7 @@ export function ProductFoodSpecsCard({
                     }
                     className="h-11 text-xs rounded-lg bg-background pr-10"
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground font-bold">
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-2xs text-muted-foreground font-bold">
                     g / un
                   </span>
                 </div>
@@ -243,7 +243,7 @@ export function ProductFoodSpecsCard({
 
               {value.ripenessEnabled && (
                 <div className="space-y-2 pt-1">
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-2xs text-muted-foreground">
                     Selecione quais opções estarão disponíveis para o cliente marcar no checkout:
                   </p>
                   <div className="flex flex-wrap gap-2 pt-1">
@@ -255,7 +255,7 @@ export function ProductFoodSpecsCard({
                           type="button"
                           onClick={() => toggleRipenessStage(opt)}
                           className={cn(
-                            "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+                            "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border transition-colors duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
                             isSelected
                               ? "bg-primary text-primary-foreground border-primary font-bold shadow-xs"
                               : "bg-background text-muted-foreground border-border/70 hover:border-foreground/30 hover:text-foreground"
@@ -282,7 +282,7 @@ export function ProductFoodSpecsCard({
               <Percent className="size-3.5 text-primary" />
               <span>Desconto Progressivo por Volume (Pague Menos)</span>
             </Label>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               Incentive compras maiores (ex: A partir de 3 unidades, 10% OFF).
             </p>
           </div>
@@ -342,7 +342,7 @@ export function ProductFoodSpecsCard({
             ))}
           </div>
         ) : (
-          <p className="text-[11px] text-muted-foreground italic">
+          <p className="text-2xs text-muted-foreground italic">
             Nenhuma faixa de desconto por volume configurada.
           </p>
         )}
@@ -351,10 +351,10 @@ export function ProductFoodSpecsCard({
       {/* ── 4. Restrições Alimentares ── */}
       <div className="space-y-3 pt-3 border-t border-border/40">
         <div className="flex items-center justify-between">
-          <Label className="text-xs font-bold text-foreground uppercase tracking-wider text-[11px]">
+          <Label className="text-xs font-bold text-foreground uppercase tracking-wider text-2xs">
             Restrições Alimentares
           </Label>
-          <span className="text-[10px] text-muted-foreground">Selecione todas que se aplicam</span>
+          <span className="text-2xs text-muted-foreground">Selecione todas que se aplicam</span>
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -367,7 +367,7 @@ export function ProductFoodSpecsCard({
                 type="button"
                 onClick={() => toggleDietary(item.id)}
                 className={cn(
-                  "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+                  "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border transition-colors duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
                   isSelected
                     ? "bg-primary text-primary-foreground border-primary font-bold shadow-xs"
                     : "bg-muted/40 text-muted-foreground border-border/70 hover:border-foreground/30 hover:text-foreground"
@@ -384,7 +384,7 @@ export function ProductFoodSpecsCard({
 
       {/* ── 5. Em Caso de Bebidas ── */}
       <div className="space-y-3 pt-2 border-t border-border/40">
-        <Label className="text-xs font-bold text-foreground uppercase tracking-wider text-[11px]">
+        <Label className="text-xs font-bold text-foreground uppercase tracking-wider text-2xs">
           Classificação para Bebidas
         </Label>
         <div className="flex flex-wrap gap-2">
@@ -396,7 +396,7 @@ export function ProductFoodSpecsCard({
                 type="button"
                 onClick={() => toggleBeverage(item.id)}
                 className={cn(
-                  "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+                  "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border transition-colors duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
                   isSelected
                     ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                     : "bg-muted/40 text-muted-foreground border-border/70 hover:border-foreground/30 hover:text-foreground"
@@ -412,7 +412,7 @@ export function ProductFoodSpecsCard({
 
       {/* ── 6. Tamanho do Item, Porção & Tempo de Preparo ── */}
       <div className="pt-2 border-t border-border/40 space-y-4">
-        <Label className="text-xs font-bold text-foreground uppercase tracking-wider text-[11px]">
+        <Label className="text-xs font-bold text-foreground uppercase tracking-wider text-2xs">
           Tamanho do Item e Porção da Refeição
         </Label>
 
@@ -492,7 +492,7 @@ export function ProductFoodSpecsCard({
                 }
                 className="h-11 text-xs rounded-lg pr-10"
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground font-bold">
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-2xs text-muted-foreground font-bold">
                 min
               </span>
             </div>
@@ -501,7 +501,7 @@ export function ProductFoodSpecsCard({
       </div>
 
       {/* Aviso de Transparência */}
-      <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-700 dark:text-amber-300 leading-snug">
+      <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-2xs text-amber-700 dark:text-amber-300 leading-snug">
         Lembre-se: Você é legalmente responsável pela veracidade dos ingredientes e restrições alimentares declaradas, garantindo segurança aos clientes com alergias alimentares.
       </div>
     </div>

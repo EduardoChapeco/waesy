@@ -97,16 +97,16 @@ export function ProductDetailDesktop({
                       key={m.id}
                       type="button"
                       onClick={() => setActiveMedia(m)}
-                      className={cn(
-                        "relative aspect-square w-14 shrink-0 rounded-lg overflow-hidden border transition-all duration-200 cursor-pointer",
+                      className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                        "relative aspect-square w-14 shrink-0 rounded-lg overflow-hidden border transition-colors duration-200 duration-200 cursor-pointer",
                         active
                           ? "border-primary ring-2 ring-primary/20 scale-105"
                           : "border-border/60 hover:border-primary/50 bg-secondary"
                       )}
                     >
                       {isVideo ? (
-                        <div className="relative size-full bg-black/20 flex items-center justify-center">
-                          <Play className="size-4 text-white fill-white relative z-10" />
+                        <div className="relative size-full bg-foreground/20 flex items-center justify-center">
+                          <Play className="size-4 text-foreground fill-white relative z-10" />
                         </div>
                       ) : (
                         <img
@@ -245,7 +245,7 @@ export function ProductDetailDesktop({
                           <button
                             type="button"
                             onClick={() => setSizeGuideOpen(true)}
-                            className="font-semibold text-primary hover:underline cursor-pointer"
+                            className="font-semibold text-primary hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             Guia de Tamanhos
                           </button>
@@ -262,8 +262,8 @@ export function ProductDetailDesktop({
                               onClick={() => {
                                 setSelectedAttributes((prev) => ({ ...prev, [key]: val }));
                               }}
-                              className={cn(
-                                "h-9 min-w-10 px-3 rounded-lg border text-xs font-bold transition-all cursor-pointer flex items-center justify-center",
+                              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                                "h-9 min-w-10 px-3 rounded-lg border text-xs font-bold transition-colors duration-200 cursor-pointer flex items-center justify-center",
                                 isSelected
                                   ? "border-primary bg-primary text-primary-foreground shadow-xs"
                                   : "border-border/70 bg-card text-foreground hover:bg-muted/30"
@@ -324,8 +324,8 @@ export function ProductDetailDesktop({
                               key={val.id}
                               type="button"
                               onClick={() => handleToggle(val.id)}
-                              className={cn(
-                                "w-full flex items-center justify-between p-3 rounded-lg border text-left transition-all cursor-pointer",
+                              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                                "w-full flex items-center justify-between p-3 rounded-lg border text-left transition-colors duration-200 cursor-pointer",
                                 isSelected
                                   ? "border-primary bg-primary/5 ring-1 ring-primary/40"
                                   : "border-border/60 bg-card hover:bg-muted/20"
@@ -334,7 +334,7 @@ export function ProductDetailDesktop({
                               <div className="flex items-center gap-2 min-w-0">
                                 <div
                                   className={cn(
-                                    "flex items-center justify-center border size-4 shrink-0 transition-all",
+                                    "flex items-center justify-center border size-4 shrink-0 transition-colors duration-200",
                                     isMultiple ? "rounded-md" : "rounded-full",
                                     isSelected
                                       ? "bg-primary border-primary text-primary-foreground"
@@ -379,7 +379,7 @@ export function ProductDetailDesktop({
                     <button
                       type="button"
                       onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
-                      className="size-9 flex items-center justify-center font-bold text-sm text-foreground hover:bg-muted rounded-lg active:scale-90 transition-all cursor-pointer"
+                      className="size-9 flex items-center justify-center font-bold text-sm text-foreground hover:bg-muted rounded-lg active:scale-90 transition-transform duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label="Diminuir"
                     >
                       <Minus className="size-4" />
@@ -390,7 +390,7 @@ export function ProductDetailDesktop({
                     <button
                       type="button"
                       onClick={() => setQuantity((prev) => prev + 1)}
-                      className="size-9 flex items-center justify-center font-bold text-sm text-foreground hover:bg-muted rounded-lg active:scale-90 transition-all cursor-pointer"
+                      className="size-9 flex items-center justify-center font-bold text-sm text-foreground hover:bg-muted rounded-lg active:scale-90 transition-transform duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label="Aumentar"
                     >
                       <Plus className="size-4" />
@@ -402,7 +402,7 @@ export function ProductDetailDesktop({
                     <Button
                       variant="outline"
                       size="lg"
-                      className="font-bold text-xs uppercase rounded-lg h-12 transition-all cursor-pointer gap-2 border-border/80 hover:bg-muted text-foreground"
+                      className="font-bold text-xs uppercase rounded-lg h-12 transition-colors duration-200 cursor-pointer gap-2 border-border/80 hover:bg-muted text-foreground"
                       onClick={handleAddToCart}
                       disabled={Boolean(isAdding)}
                     >
@@ -411,7 +411,7 @@ export function ProductDetailDesktop({
                     </Button>
                     <Button
                       size="lg"
-                      className="font-bold text-xs uppercase rounded-lg h-12 transition-all cursor-pointer gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+                      className="font-bold text-xs uppercase rounded-lg h-12 transition-colors duration-200 cursor-pointer gap-2 bg-emerald-600 hover:bg-emerald-700 text-foreground shadow-sm"
                       onClick={() => setIsQuickOrderOpen(true)}
                     >
                       <MessageCircle className="size-4" />
@@ -441,7 +441,7 @@ export function ProductDetailDesktop({
                   className="h-11 min-h-11 text-base sm:text-xs rounded-lg bg-muted/30"
                 />
                 <Button type="submit" size="sm" className="h-11 min-h-11 font-bold px-4 rounded-lg shrink-0 cursor-pointer" disabled={loadingShipping}>
-                  {loadingShipping ? <Loader2 className="size-4 animate-spin" /> : "Calcular"}
+                  {loadingShipping ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> : "Calcular"}
                 </Button>
               </form>
 

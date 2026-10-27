@@ -109,19 +109,19 @@ export function MediaLightboxModal({
  if (!isOpen || !currentMediaUrl) return null;
 
  return (
- <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col justify-between animate-in fade-in duration-200 select-none">
+ <div className="fixed inset-0 z-50 bg-foreground/95 backdrop-blur-md flex flex-col justify-between animate-in fade-in duration-200 select-none">
  {/* Top Bar */}
- <div className="px-4 py-3 flex items-center justify-between text-white z-10 shrink-0">
+ <div className="px-4 py-3 flex items-center justify-between text-foreground z-10 shrink-0">
  <div className="flex items-center gap-3">
  <Avatar className="size-9 border border-white/20">
  <AvatarImage src={post.author.avatar_url || undefined} />
- <AvatarFallback className="bg-white/20 text-white font-bold text-xs">
+ <AvatarFallback className="bg-card/20 text-foreground font-bold text-xs">
  {post.author.name.charAt(0).toUpperCase()}
  </AvatarFallback>
  </Avatar>
  <div>
  <p className="text-sm font-bold truncate">{post.author.name}</p>
- <p className="text-[11px] text-white/60">
+ <p className="text-2xs text-foreground/60">
  Foto {currentIndex + 1} de {post.media_urls.length}
  </p>
  </div>
@@ -129,7 +129,7 @@ export function MediaLightboxModal({
 
  <button
   onClick={onClose}
-  className="size-11 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors cursor-pointer"
+  className="size-11 rounded-full bg-card/10 hover:bg-card/20 flex items-center justify-center text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
   aria-label="Fechar"
   >
   <X className="size-5" />
@@ -142,7 +142,7 @@ export function MediaLightboxModal({
  {post.media_urls.length > 1 && currentIndex > 0 && (
   <button
   onClick={() => setCurrentIndex((prev) => prev - 1)}
-  className="absolute left-3 sm:left-6 z-20 size-11 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-xs transition-transform active:scale-95 cursor-pointer"
+  className="absolute left-3 sm:left-6 z-20 size-11 rounded-full bg-foreground/60 hover:bg-foreground/80 text-foreground flex items-center justify-center backdrop-blur-xs transition-transform active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
   >
   <ChevronLeft className="size-6" />
   </button>
@@ -151,14 +151,14 @@ export function MediaLightboxModal({
  <img
  src={currentMediaUrl}
  alt={`Mídia ${currentIndex + 1}`}
- className="max-h-[75vh] max-w-full rounded-lg object-contain transition-all duration-300"
+ className="max-h-[75vh] max-w-full rounded-lg object-contain transition-colors duration-200 duration-300"
  />
 
  {/* Next Button */}
  {post.media_urls.length > 1 && currentIndex < post.media_urls.length - 1 && (
   <button
   onClick={() => setCurrentIndex((prev) => prev + 1)}
-  className="absolute right-3 sm:right-6 z-20 size-11 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-xs transition-transform active:scale-95 cursor-pointer"
+  className="absolute right-3 sm:right-6 z-20 size-11 rounded-full bg-foreground/60 hover:bg-foreground/80 text-foreground flex items-center justify-center backdrop-blur-xs transition-transform active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
   >
   <ChevronRight className="size-6" />
   </button>
@@ -166,16 +166,16 @@ export function MediaLightboxModal({
  </div>
 
   {/* Bottom Floating Interaction Bar */}
-  <div className="px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] bg-black/80 backdrop-blur-md border-t border-white/10 flex items-center justify-between text-white shrink-0">
+  <div className="px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] bg-foreground/80 backdrop-blur-md border-t border-white/10 flex items-center justify-between text-foreground shrink-0">
     <div className="flex items-center gap-3">
       {/* Curtir foto específica */}
       <Button
         variant="ghost"
         onClick={() => toggleLikeMutation.mutate()}
-        className={`h-11 px-4 rounded-lg gap-2 text-sm font-semibold transition-all cursor-pointer shadow-2xs ${
+        className={`h-11 px-4 rounded-lg gap-2 text-sm font-semibold transition-colors duration-200 cursor-pointer shadow-2xs ${
           currentStat.user_liked
             ? "bg-destructive/20 text-destructive hover:bg-destructive/30"
-            : "bg-white/10 hover:bg-white/20 text-white"
+            : "bg-card/10 hover:bg-card/20 text-foreground"
         }`}
       >
         <Heart
@@ -189,7 +189,7 @@ export function MediaLightboxModal({
       <Button
         variant="ghost"
         onClick={() => setIsCommentDrawerOpen(true)}
-        className="h-11 px-4 rounded-lg gap-2 text-sm font-semibold bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer shadow-2xs"
+        className="h-11 px-4 rounded-lg gap-2 text-sm font-semibold bg-card/10 hover:bg-card/20 text-foreground transition-colors duration-200 cursor-pointer shadow-2xs"
       >
         <MessageSquare className="size-4.5" />
         <span className="hidden sm:inline">
@@ -208,9 +208,9 @@ export function MediaLightboxModal({
  <button
  key={idx}
  onClick={() => setCurrentIndex(idx)}
- className={`size-2 rounded-full transition-all ${
- idx === currentIndex ? "w-6 bg-white" : "bg-white/30 hover:bg-white/60"
- }`}
+ className={`size-2 rounded-full transition-colors duration-200 ${
+ idx === currentIndex ? "w-6 bg-card" : "bg-card/30 hover:bg-card/60"
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  />
  ))}
  </div>

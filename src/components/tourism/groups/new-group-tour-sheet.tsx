@@ -387,27 +387,27 @@ export function NewGroupTourSheet({
  {/* Presets de 1 Clique */}
  <div className="space-y-2">
  <div className="flex items-center justify-between">
- <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+ <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
  <FolderPlus className="size-3.5 text-primary" />
  Modelos Prontos de Excursão (1 Clique)
  </span>
- <span className="text-[10px] text-muted-foreground">Preenche roteiro, fotos e inclusões</span>
+ <span className="text-2xs text-muted-foreground">Preenche roteiro, fotos e inclusões</span>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
  {TOUR_PRESETS.map((preset) => (
- <div
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  key={preset.id}
  onClick={() => applyPreset(preset)}
- className="p-3 rounded-lg border border-border/70 bg-card hover:bg-muted/40 hover:border-primary/40 transition-all cursor-pointer space-y-1 text-left"
+ className="p-3 rounded-lg border border-border/70 bg-card hover:bg-muted/40 hover:border-primary/40 transition-colors duration-200 cursor-pointer space-y-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="flex items-center justify-between">
  <span className="font-bold text-foreground text-xs">{preset.title}</span>
- <Badge variant="secondary" className="text-[10px] font-mono font-bold">
+ <Badge variant="secondary" className="text-2xs font-mono font-bold">
  R$ {preset.priceBrl}
  </Badge>
  </div>
- <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+ <p className="text-2xs text-muted-foreground flex items-center gap-1">
  <MapPin className="size-3 shrink-0" />
  <span>{preset.destination}</span>
  </p>
@@ -498,7 +498,7 @@ export function NewGroupTourSheet({
  <div className="space-y-2">
  <Label className="text-xs font-bold flex items-center justify-between">
  <span>Foto de Capa da Excursão (Panorâmica 16:9)</span>
- <span className="text-[10px] text-muted-foreground font-normal">
+ <span className="text-2xs text-muted-foreground font-normal">
  Exibida na vitrine e vouchers
  </span>
  </Label>
@@ -520,7 +520,7 @@ export function NewGroupTourSheet({
  <div className="space-y-3">
  <div className="space-y-1">
  <Label className="text-xs font-bold">Ônibus da Frota da Agência</Label>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Selecione um veículo cadastrado no seu Editor 2D da Frota para importar as poltronas exatas.
  </p>
  </div>
@@ -530,26 +530,26 @@ export function NewGroupTourSheet({
  {layouts.map((layout) => {
  const isSelected = selectedLayoutId === layout.id;
  return (
- <div
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  key={layout.id}
  onClick={() => setSelectedLayoutId(layout.id)}
- className={`p-4 rounded-lg border transition-all cursor-pointer space-y-2 ${
+ className={`p-4 rounded-lg border transition-colors duration-200 cursor-pointer space-y-2 ${
  isSelected
  ? "bg-primary/5 border-primary shadow-xs"
  : "bg-card border-border/70 hover:border-primary/40"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <div className="flex items-center justify-between">
  <span className="font-bold text-foreground text-xs">{layout.name}</span>
  {isSelected && (
- <Badge className="bg-primary text-primary-foreground text-[10px] font-bold">
+ <Badge className="bg-primary text-primary-foreground text-2xs font-bold">
  Selecionado
  </Badge>
  )}
  </div>
 
- <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
- <Badge variant="outline" className="text-[10px] font-mono">
+ <div className="flex items-center gap-2 text-2xs text-muted-foreground">
+ <Badge variant="outline" className="text-2xs font-mono">
  {layout.total_capacity} Assentos
  </Badge>
  <span>•</span>
@@ -563,7 +563,7 @@ export function NewGroupTourSheet({
  <div className="p-4 rounded-lg bg-muted/30 border border-dashed border-border text-center space-y-2">
  <Bus className="size-6 mx-auto text-muted-foreground/60" />
  <p className="text-xs font-bold text-foreground">Nenhum veículo cadastrado na frota</p>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Usaremos a capacidade padrão de 46 lugares (Semi-Leito). Você pode cadastrar modelos em "Frota & Ônibus (Assentos 2D)".
  </p>
  </div>
@@ -591,7 +591,7 @@ export function NewGroupTourSheet({
 
  {/* Dados Operacionais do Transporte */}
  <div className="space-y-3">
- <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block">
+ <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
  Identificação Operacional (Para Manifesto ANTT)
  </span>
 
@@ -646,7 +646,7 @@ export function NewGroupTourSheet({
  <div className="flex items-center justify-between">
  <div className="space-y-1">
  <Label className="text-xs font-bold">Pontos de Embarque no Trajeto</Label>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Locais e horários onde o ônibus fará paradas para embarcar passageiros.
  </p>
  </div>
@@ -668,13 +668,13 @@ export function NewGroupTourSheet({
  key={idx}
  className="p-3 rounded-lg border border-border/70 bg-card space-y-2"
  >
- <div className="flex items-center justify-between text-[11px] font-bold text-muted-foreground">
+ <div className="flex items-center justify-between text-2xs font-bold text-muted-foreground">
  <span>Ponto #{idx + 1}</span>
  {boardingPoints.length > 1 && (
  <button
  type="button"
  onClick={() => removeBoardingPoint(idx)}
- className="text-destructive hover:underline cursor-pointer"
+ className="text-destructive hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  Remover
  </button>
@@ -683,7 +683,7 @@ export function NewGroupTourSheet({
 
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
  <div className="space-y-1 sm:col-span-1">
- <Label className="text-[10px] text-muted-foreground">Cidade *</Label>
+ <Label className="text-2xs text-muted-foreground">Cidade *</Label>
  <Input
  placeholder="Ex: Maravilha, SC"
  value={bp.city}
@@ -693,7 +693,7 @@ export function NewGroupTourSheet({
  </div>
 
  <div className="space-y-1 sm:col-span-1">
- <Label className="text-[10px] text-muted-foreground">Horário de Saída</Label>
+ <Label className="text-2xs text-muted-foreground">Horário de Saída</Label>
  <Input
  type="time"
  value={bp.time}
@@ -703,7 +703,7 @@ export function NewGroupTourSheet({
  </div>
 
  <div className="space-y-1 sm:col-span-1">
- <Label className="text-[10px] text-muted-foreground">Ponto de Encontro</Label>
+ <Label className="text-2xs text-muted-foreground">Ponto de Encontro</Label>
  <Input
  placeholder="Ex: Trevo de Acesso"
  value={bp.location}
@@ -723,7 +723,7 @@ export function NewGroupTourSheet({
  <div className="space-y-3">
  <div className="space-y-1">
  <Label className="text-xs font-bold">O Que Está Incluso no Pacote</Label>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Clique para ativar ou desativar os benefícios inclusos nesta excursão.
  </p>
  </div>
@@ -733,10 +733,18 @@ export function NewGroupTourSheet({
  const isSelected = includedItems.includes(item);
  return (
  <Badge
- key={item}
- variant={isSelected ? "default" : "outline"}
- onClick={() => toggleInclusion(item)}
- className={`cursor-pointer text-xs py-2 px-3 rounded-lg transition-all ${
+    key={item}
+    variant={isSelected ? "default" : "outline"}
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        toggleInclusion(item);
+      }
+    }}
+    onClick={() => toggleInclusion(item)}
+    className={`cursor-pointer text-xs py-2 px-3 rounded-lg transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
  isSelected ? "bg-primary text-primary-foreground" : "hover:bg-muted"
  }`}
  >
@@ -766,7 +774,7 @@ export function NewGroupTourSheet({
  required
  />
  </div>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Capacidade total: <strong className="text-foreground">{effectiveTotalSeats} lugares</strong> • Volume estimado:{" "}
  <strong className="text-foreground font-mono">
  {(priceCents * effectiveTotalSeats / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}

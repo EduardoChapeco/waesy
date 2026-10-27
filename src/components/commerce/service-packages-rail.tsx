@@ -65,7 +65,7 @@ export function ServicePackagesRail({
  <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 px-1">
  <div>
  <div className="flex items-center gap-2">
- <span className="px-2 py-1 rounded-md text-[10px] font-mono font-bold uppercase bg-primary text-primary-foreground">
+ <span className="px-2 py-1 rounded-md text-2xs font-mono font-bold uppercase bg-primary text-primary-foreground">
  Economia e Passes
  </span>
  </div>
@@ -84,7 +84,7 @@ export function ServicePackagesRail({
  return (
  <div
  key={pkg.id}
- className="p-5 rounded-lg bg-card space-y-4 flex flex-col justify-between hover:border-foreground/20 transition-all group"
+ className="p-5 rounded-lg bg-card space-y-4 flex flex-col justify-between hover:border-foreground/20 transition-colors duration-200 group"
  >
  <div className="space-y-3">
  {/* Header com Loja e Badges */}
@@ -97,7 +97,7 @@ export function ServicePackagesRail({
  className="size-7 rounded-full object-cover "
  />
  ) : (
- <div className="size-7 rounded-full bg-muted flex items-center justify-center text-[10px] font-bold">
+ <div className="size-7 rounded-full bg-muted flex items-center justify-center text-2xs font-bold">
  {store?.name?.substring(0, 2).toUpperCase()}
  </div>
  )}
@@ -106,7 +106,7 @@ export function ServicePackagesRail({
  </span>
  </div>
 
- <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px] font-mono font-bold px-2 py-1">
+ <Badge className="bg-primary/10 text-primary border-primary/20 text-2xs font-mono font-bold px-2 py-1">
  {pkg.total_credits} {pkg.total_credits === 1 ? "Aula" : "Aulas/Sessões"}
  </Badge>
  </div>
@@ -115,7 +115,7 @@ export function ServicePackagesRail({
  <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors">
  {pkg.title}
  </h3>
- <span className="text-[11px] text-muted-foreground font-medium block mt-1">
+ <span className="text-2xs text-muted-foreground font-medium block mt-1">
  {service?.title} ({service?.duration_minutes || 60} min/sessão)
  </span>
  </div>
@@ -129,7 +129,7 @@ export function ServicePackagesRail({
  {/* Preço e Validade */}
  <div className="p-3 rounded-lg bg-muted/30 flex items-center justify-between font-mono">
  <div>
- <span className="text-[9px] uppercase font-bold text-muted-foreground block">
+ <span className="text-3xs uppercase font-bold text-muted-foreground block">
  Valor do Pacote
  </span>
  <span className="text-base font-black text-foreground">
@@ -137,7 +137,7 @@ export function ServicePackagesRail({
  </span>
  </div>
  <div className="text-right">
- <span className="text-[9px] uppercase font-bold text-muted-foreground block">
+ <span className="text-3xs uppercase font-bold text-muted-foreground block">
  Validade
  </span>
  <span className="text-xs font-bold text-foreground">
@@ -230,22 +230,22 @@ export function ServicePackagesRail({
  <button
  type="button"
  onClick={() => setPaymentMethod("pix")}
- className={`p-3 rounded-lg border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+ className={`p-3 rounded-lg border text-xs font-bold flex items-center justify-center gap-2 transition-colors duration-200 cursor-pointer ${
  paymentMethod === "pix"
  ? "bg-foreground text-background border-foreground "
  : "bg-muted/40 border-border text-foreground hover:bg-muted"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <Zap size={14} className="text-primary" /> Pix Imediato
  </button>
  <button
  type="button"
  onClick={() => setPaymentMethod("credit_card")}
- className={`p-3 rounded-lg border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+ className={`p-3 rounded-lg border text-xs font-bold flex items-center justify-center gap-2 transition-colors duration-200 cursor-pointer ${
  paymentMethod === "credit_card"
  ? "bg-foreground text-background border-foreground "
  : "bg-muted/40 border-border text-foreground hover:bg-muted"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  Cartão de Crédito
  </button>

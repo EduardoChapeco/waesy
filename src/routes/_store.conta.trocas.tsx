@@ -347,7 +347,7 @@ function CustomerAfterSalesPage() {
           {filteredRequests.map((req) => (
             <div
               key={req.id}
-              className="bg-card rounded-xl border border-border/60 shadow-xs overflow-hidden transition-all hover:border-foreground/20"
+              className="bg-card rounded-xl border border-border/60 shadow-xs overflow-hidden transition-colors duration-200 hover:border-foreground/20"
             >
               {/* Header do Card Agrupado */}
               <div className="p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3 bg-muted/20 border-b border-border/40">

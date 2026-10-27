@@ -103,7 +103,7 @@ function AdminSecurityOverviewPage() {
  disabled={isRefreshing}
  className="self-start sm:self-auto gap-2 rounded-lg text-xs"
  >
- <RefreshCw className={`size-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
+ <RefreshCw className={`size-3.5 ${isRefreshing ? "animate-spin motion-reduce:animate-none" : ""}`} />
  Atualizar
  </Button>
  </div>
@@ -143,10 +143,10 @@ function AdminSecurityOverviewPage() {
  {highRiskEvents.slice(0, 6).map((ev: any) => (
  <div key={ev.id} className="p-4 rounded-lg bg-amber-500/5 border border-amber-500/30 space-y-2">
  <div className="flex items-center justify-between">
- <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30 text-[10px]">
+ <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30 text-2xs">
  Risco: {ev.risk_score}%
  </Badge>
- <span className="text-[10px] text-muted-foreground">
+ <span className="text-2xs text-muted-foreground">
  {new Date(ev.created_at).toLocaleTimeString("pt-BR")}
  </span>
  </div>
@@ -155,22 +155,22 @@ function AdminSecurityOverviewPage() {
  <p className="text-xs font-bold text-foreground truncate">
  {ev.profiles?.full_name || ev.profiles?.username || "Usuário Não Identificado"}
  </p>
- <p className="text-[11px] font-mono text-muted-foreground">{ev.ip_address || "IP Oculto"}</p>
+ <p className="text-2xs font-mono text-muted-foreground">{ev.ip_address || "IP Oculto"}</p>
  </div>
 
  <div className="flex flex-wrap gap-1 pt-1">
  {ev.is_datacenter && (
- <Badge variant="outline" className="text-[9px] bg-purple-500/10 text-purple-600 border-purple-500/30">
+ <Badge variant="outline" className="text-3xs bg-purple-500/10 text-purple-600 border-purple-500/30">
  Datacenter/VPS
  </Badge>
  )}
  {ev.country_code && ev.country_code !== "BR" && (
- <Badge variant="outline" className="text-[9px] bg-red-500/10 text-red-600 border-red-500/30">
+ <Badge variant="outline" className="text-3xs bg-red-500/10 text-red-600 border-red-500/30">
  {ev.country_code}
  </Badge>
  )}
  {ev.risk_flags?.map((flag: string, i: number) => (
- <Badge key={i} variant="outline" className="text-[9px] bg-muted/40 text-muted-foreground border-border/60">
+ <Badge key={i} variant="outline" className="text-3xs bg-muted/40 text-muted-foreground border-border/60">
  {flag}
  </Badge>
  ))}
@@ -230,7 +230,7 @@ function AdminSecurityOverviewPage() {
  <div className="rounded-lg border border-border/70 bg-card overflow-hidden">
  <div className="overflow-x-auto no-scrollbar">
  <table className="w-full text-left text-xs">
- <thead className="bg-muted/40 border-b border-border/60 text-muted-foreground uppercase text-[10px] tracking-wider font-bold">
+ <thead className="bg-muted/40 border-b border-border/60 text-muted-foreground uppercase text-2xs tracking-wider font-bold">
  <tr>
  <th className="p-4">Status / Evento</th>
  <th className="p-4">Usuário / Perfil</th>
@@ -272,7 +272,7 @@ function AdminSecurityOverviewPage() {
  {ev.profiles ? (
  <div>
  <p className="font-bold text-foreground">{ev.profiles.full_name || "Sem Nome"}</p>
- <p className="text-[10px] text-muted-foreground">@{ev.profiles.username || "user"}</p>
+ <p className="text-2xs text-muted-foreground">@{ev.profiles.username || "user"}</p>
  </div>
  ) : (
  <span className="text-muted-foreground italic">Anônimo / Visitante</span>
@@ -282,7 +282,7 @@ function AdminSecurityOverviewPage() {
  <td className="p-4">
  <div>
  <p className="font-mono font-medium text-foreground">{ev.ip_address || "—"}</p>
- <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+ <p className="text-2xs text-muted-foreground flex items-center gap-1">
  <MapPin className="size-2.5" />
  {ev.city ? `${ev.city}, ${ev.country_code}` : ev.country_code || "BR"}
  </p>
@@ -290,7 +290,7 @@ function AdminSecurityOverviewPage() {
  </td>
 
  <td className="p-4">
- <span className="text-muted-foreground text-[11px]">
+ <span className="text-muted-foreground text-2xs">
  {ev.metadata?.device_name || ev.device_type || "Navegador"}
  </span>
  </td>
@@ -299,7 +299,7 @@ function AdminSecurityOverviewPage() {
  <div className="flex items-center gap-2 flex-wrap">
  <Badge
  variant="outline"
- className={`text-[10px] px-2 py-0 ${
+ className={`text-2xs px-2 py-0 ${
  ev.risk_score >= 40
  ? "bg-red-500/10 text-red-600 border-red-500/30"
  : ev.risk_score > 0
@@ -311,16 +311,16 @@ function AdminSecurityOverviewPage() {
  </Badge>
 
  {ev.is_datacenter && (
- <Badge variant="outline" className="text-[9px] bg-purple-500/10 text-purple-600 border-purple-500/30">
+ <Badge variant="outline" className="text-3xs bg-purple-500/10 text-purple-600 border-purple-500/30">
  VPS
  </Badge>
  )}
  </div>
  </td>
 
- <td className="p-4 text-right font-mono text-[11px] text-muted-foreground">
+ <td className="p-4 text-right font-mono text-2xs text-muted-foreground">
  <p>{new Date(ev.created_at).toLocaleDateString("pt-BR")}</p>
- <p className="text-[10px] text-muted-foreground/70">{new Date(ev.created_at).toLocaleTimeString("pt-BR")}</p>
+ <p className="text-2xs text-muted-foreground/70">{new Date(ev.created_at).toLocaleTimeString("pt-BR")}</p>
  </td>
  </tr>
  );

@@ -11,3 +11,7 @@ export { RichPostContent } from './rich-post-content';
 export { StoryRail, type StoryItem } from './story-rail';
 export { SuggestedFriendsBlock, type SuggestedFriend } from './suggested-friends-block';
 export { ThumbnailPreviewRail } from './thumbnail-preview-rail';
+export { MediaCarousel } from './MediaCarousel';
+export { QuickProfilePeekModal } from './QuickProfilePeekModal';
+export { CommunityJoinSheet } from './CommunityJoinSheet';
+export { FeedThreadPostCard } from './FeedThreadPostCard';

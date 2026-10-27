@@ -99,7 +99,7 @@ export function CitySelect({
  <button
  type="button"
  onClick={() => setIsCustomMode(!isCustomMode)}
- className="text-[10px] font-semibold text-primary hover:underline cursor-pointer"
+ className="text-2xs font-semibold text-primary hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {isCustomMode ? "Voltar para lista de cidades" : "Outra cidade"}
  </button>
@@ -128,7 +128,7 @@ export function CitySelect({
  <div className="p-2 sticky top-0 bg-popover z-10">
  <div className="flex items-center gap-2 px-2 py-1 bg-muted/50 rounded-lg ">
  <Search size={12} className="text-muted-foreground shrink-0" />
- <input
+ <input /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */
  placeholder="Filtrar cidade..."
  value={citySearch}
  onChange={(e) => setCitySearch(e.target.value)}

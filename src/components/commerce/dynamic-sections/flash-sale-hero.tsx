@@ -155,7 +155,7 @@ export const FlashSaleHero: React.FC<FlashSaleHeroProps> = (props) => {
  color: accentColor,
  }}
  >
- <Flame className="size-3.5 animate-pulse" style={{ color: accentColor }} />
+ <Flame className="size-3.5 animate-pulse motion-reduce:animate-none" style={{ color: accentColor }} />
  <span>{badge}</span>
  </div>
  )}
@@ -192,10 +192,10 @@ export const FlashSaleHero: React.FC<FlashSaleHeroProps> = (props) => {
  }}
  >
  <div className="space-y-1 min-w-0 flex-1">
- <p className="text-[10px] uppercase font-bold" style={{ color: accentColor }}>
+ <p className="text-2xs uppercase font-bold" style={{ color: accentColor }}>
  Cupom de Desconto
  </p>
- <p className="font-mono text-sm font-bold text-white tracking-widest truncate">
+ <p className="font-mono text-sm font-bold text-foreground tracking-widest truncate">
  {couponCode || "SEM CUPOM DEFINIDO"}
  </p>
  </div>
@@ -205,9 +205,9 @@ export const FlashSaleHero: React.FC<FlashSaleHeroProps> = (props) => {
  onClick={handleCopyCoupon}
  size="sm"
  className={cn(
- "h-8 px-3 rounded-lg text-xs font-bold gap-2 transition-all cursor-pointer",
+ "h-8 px-3 rounded-lg text-xs font-bold gap-2 transition-colors duration-200 cursor-pointer",
  copied
- ? "bg-emerald-500 text-white"
+ ? "bg-emerald-500 text-foreground"
  : "text-zinc-950 font-bold hover:brightness-110"
  )}
  style={
@@ -272,7 +272,7 @@ export const FlashSaleHero: React.FC<FlashSaleHeroProps> = (props) => {
  >
  {String(item.value).padStart(2, "0")}
  </span>
- <span className="text-[10px] font-semibold text-zinc-400 uppercase mt-1">
+ <span className="text-2xs font-semibold text-zinc-400 uppercase mt-1">
  {item.label}
  </span>
  </div>
@@ -286,7 +286,7 @@ export const FlashSaleHero: React.FC<FlashSaleHeroProps> = (props) => {
  background: `linear-gradient(135deg, ${accentColor}, #f97316)`,
  }}
  >
- <a
+ <a className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  href={props.isEditing ? "#" : targetLink}
  onClick={(e) => {
  if (props.isEditing) {

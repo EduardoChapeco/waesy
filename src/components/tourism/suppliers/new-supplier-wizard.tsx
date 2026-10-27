@@ -91,7 +91,7 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId }: NewSu
  <DialogTitle className="text-sm font-bold text-foreground">
  Cadastrar Novo Fornecedor / Operadora
  </DialogTitle>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Passo {step + 1} de {STEPS.length}: <strong className="text-foreground">{STEPS[step]}</strong>
  </p>
  </div>
@@ -201,7 +201,7 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId }: NewSu
  min="0"
  max="100"
  />
- <p className="text-[10px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Percentual repassado para a agência nas vendas deste operador.
  </p>
  </div>

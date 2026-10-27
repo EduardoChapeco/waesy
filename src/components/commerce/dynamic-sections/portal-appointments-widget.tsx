@@ -66,7 +66,7 @@ export function PortalAppointmentsWidget({ content, design_tokens }: PortalAppoi
  {appointments.map((apt) => (
  <div
  key={apt.id}
- className="p-5 rounded-lg border border-border bg-card shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:border-primary/40 transition-all"
+ className="p-5 rounded-lg border border-border bg-card shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:border-primary/40 transition-colors duration-200"
  >
  <div className="space-y-2 flex-1">
  <div className="flex items-center gap-3 flex-wrap">

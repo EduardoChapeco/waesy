@@ -1,0 +1,20 @@
+# SPEC-NEWS-FEED-RESPONSIVE-BIDIRECTIONAL-REENGINEERING — Reestruturação Bidirecional do Feed de Notícias e Dimensionamento Ergonômico de Cards
+
+## 1. Contexto e Diagnóstico
+A rota de notícias (`_store.noticias.index.tsx`) e o componente de card (`news-card.tsx`) apresentavam defeitos críticos de ergonomia visual e quebra de layout:
+1. **Cards Gigantes Monopolizando a Viewport:** No modo desktop (`max-w-7xl` ~1280px), os artigos do feed inferior eram renderizados em coluna única vertical (`space-y-6`), com imagem de proporção `16:10` estendida em 100% da largura. Isso gerava imagens com mais de 750px de altura e cards superiores a 1.000px, ultrapassando 100% da altura da tela (1080p) para um único post e forçando rolagem exaustiva.
+2. **Ausência de Grid Editorial Adaptativo:** Falta de bifurcação entre Compact (<600px) e Expanded (>=840px), deixando de aproveitar o espaço horizontal no desktop com grid multi-colunar (2 a 3 colunas) e sobrecarregando o mobile com blocos desproporcionais.
+3. **Conflito e Truncamento nos Trilhos Horizontais:** Nos carrosséis editoriais (`Cotidiano e Cidade`, `Economia e Negócios`, etc.), o container pai definia `w-68` (272px), enquanto o filho `NewsCard` declarava `min-w-72 sm:min-w-80` (288px-320px), gerando estouro, colapso de texto e truncamento agressivo da cidade e autor.
+4. **Manchete Principal Desproporcional:** A manchete de topo acumulava altura vertical excessiva em desktop ao invés de adotar grid editorial horizontal bipartido (imagem em 7 colunas e conteúdo em 5 colunas), além de falhar silenciosamente caso a imagem estivesse ausente ou indisponível.
+
+## 2. Requisitos em Sintaxe EARS
+- **REQ-01 (Ubiquitous — Grid Editorial Bidirecional Responsivo):** No feed principal de notícias (`_store.noticias.index.tsx`), o sistema **SHALL** renderizar os artigos em grade editorial multi-colunar adaptativa (`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5`), garantindo que em telas desktop múltiplos artigos caibam confortavelmente no campo de visão vertical.
+- **REQ-02 (Ubiquitous — Dimensionamento Restrito de Mídia e Ergonomia Visual):** Em `NewsCard` (modo grid), a imagem de capa **SHALL** possuir proporção contida (`aspect-16/10` ou `aspect-video`) delimitada à largura da coluna do grid (altura contida em ~180px–220px), mantendo a altura total do card em no máximo 420px.
+- **REQ-03 (Event-Driven — Alternância de Visualização Grade / Lista Compacta):** Quando o usuário estiver no feed de notícias, o sistema **SHALL** disponibilizar controle de alternância entre visualização em "Grade" e "Lista Compacta" (estilo Apple News / G1), permitindo leitura rápida onde a imagem é uma miniatura lateral de `size-24 sm:size-28` sem monopolizar a tela no mobile.
+- **REQ-04 (Ubiquitous — Desobstrução dos Trilhos Horizontais):** Nos trilhos horizontais (`HorizontalRail`), os contêineres de cards compactos **SHALL** utilizar largura compatível (`w-80 sm:w-88 shrink-0`), e `NewsCard` (modo compacto) **SHALL** respeitar a grade modular sem extrapolar seu container, eliminando truncamentos arbitrários de metadados.
+- **REQ-05 (Ubiquitous — Manchete Principal Bipartida no Desktop):** A manchete principal de topo (`featuredArticle`) **SHALL** renderizar em layout bipartido em desktop (`md:grid md:grid-cols-12 md:gap-6 md:items-center`), com mídia ocupando 7 colunas e texto ocupando 5 colunas, mantendo altura contida (~360px) e exibindo fallback tipográfico editorial caso a mídia falhe ou não exista.
+- **REQ-06 (Ubiquitous — Acessibilidade e Alvos de Toque):** Todos os botões, links e controles interativos **SHALL** manter touch target mínimo de 44x44px (`min-h-11`), com `:focus-visible:ring-2` e contraste WCAG 2.2 AA.
+
+## 3. Invariantes e Evidências Esperadas
+- Invariantes: B.4 (Gates de Design), B.9 (Definition of Done), B.22 (CTAs Táteis 44px), B.26 (Piso 44px), B.32 (Layouts Híbridos & Travas Anti-Jank), B.38 (Anti-Truncate).
+- Verificação: `npm run typecheck` (Exit Code 0), `node scripts/design-lint.mjs --ratchet` (0 regressões), build limpo.

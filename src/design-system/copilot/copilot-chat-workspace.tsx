@@ -94,7 +94,7 @@ export function CopilotChatWorkspace({
                     key={idx}
                     type="button"
                     onClick={() => onSendMessage(prompt)}
-                    className="text-xs px-3 py-2 rounded-full border border-border/70 bg-card hover:bg-muted text-foreground transition-colors cursor-pointer"
+                    className="text-xs px-3 py-2 rounded-full border border-border/70 bg-card hover:bg-muted text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     {prompt}
                   </button>
@@ -149,7 +149,7 @@ export function CopilotChatWorkspace({
 
         {isLoading && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground py-2">
-            <Bot className="size-4 animate-pulse text-primary" />
+            <Bot className="size-4 animate-pulse motion-reduce:animate-none text-primary" />
             <span>Copilot está processando...</span>
           </div>
         )}
@@ -162,7 +162,7 @@ export function CopilotChatWorkspace({
         onSubmit={handleSubmit}
         className="p-3 md:p-4 border-t border-border/50 bg-card/80 backdrop-blur-xs shrink-0 sticky bottom-0 z-10"
       >
-        <div className="relative flex items-center w-full max-w-4xl mx-auto rounded-lg border border-border/80 bg-background focus-within:border-primary/80 focus-within:ring-2 focus-within:ring-ring transition-all">
+        <div className="relative flex items-center w-full max-w-4xl mx-auto rounded-lg border border-border/80 bg-background focus-within:border-primary/80 focus-within:ring-2 focus-within:ring-ring transition-colors duration-200">
           <input
             type="text"
             value={inputText}
@@ -177,7 +177,7 @@ export function CopilotChatWorkspace({
               type="submit"
               disabled={isLoading || !inputText.trim()}
               aria-label="Enviar mensagem"
-              className="size-9 rounded-lg bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors cursor-pointer"
+              className="size-9 rounded-lg bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <Send className="size-4" />
             </button>

@@ -47,7 +47,7 @@ export function Modal({
         {/* Modal Window */}
         <DialogPrimitive.Content
           className={cn(
-            "fixed z-50 bg-card text-foreground border border-border/80 shadow-2xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            "fixed z-50 bg-card text-foreground border border-border/80 shadow-2xl transition-colors duration-200 duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
             isCompact
               ? "inset-x-0 bottom-0 rounded-t-2xl border-b-0 p-5 max-h-sheet flex flex-col overscroll-contain"
               : cn(

@@ -1,12 +1,14 @@
 import { createFileRoute, useNavigate, useSearch, Link, redirect } from "@tanstack/react-router";
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Tag, Car, Home as HomeIcon, Tractor, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Building2, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Wand2, Bot, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, Clock, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal, Store as StoreIcon, Star, Lock, ShieldAlert, FileSpreadsheet, Receipt, BookOpenCheck, Zap, Apple, Flame, Croissant, Milk, Wine, Palette, Ticket, Mic, Coffee, HelpCircle, Sparkles } from 'lucide-react';
+import { Tag, Car, Home as HomeIcon, Tractor, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Building2, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Wand2, Bot, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, Clock, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal, Store as StoreIcon, Star, Lock, ShieldAlert, FileSpreadsheet, Receipt, BookOpenCheck, Zap, Apple, Flame, Croissant, Milk, Wine, Palette, Ticket, Mic, Coffee, HelpCircle, Sparkles, ExternalLink, Film } from 'lucide-react';
 import { StoryHighlightUploader, type StoryHighlight } from "@/components/classifieds/story-highlight-uploader";
 import { ItineraryDayEditor, type ItineraryDay } from "@/components/classifieds/itinerary-day-editor";
 import { WeatherWidget } from "@/components/classifieds/weather-widget";
 import { EditorialShowcaseView } from "@/components/classifieds/editorial-showcase-view";
+import { AiWritingCopilotSheet } from "@/components/classifieds/ai-writing-copilot-sheet";
+import type { CopilotScope, CopilotWorkingDraft, EditorialFieldKey } from "@/lib/classifieds/ai-writing-copilot";
 import { UniversalClassifiedShowcase } from "@/components/classifieds/universal-classified-showcase";
 import { ConvenienceShowcaseView } from "@/components/classifieds/convenience-showcase-view";
 import {
@@ -16,11 +18,15 @@ import {
   type EventSpeaker,
   type EventSponsor,
   type EventSurvey,
+  type EventPollOptionNormalized,
 } from "@/components/classifieds/event-classified-showcase-view";
 import { uploadClassifiedMedia, uploadClassifiedDocument } from "@/lib/classifieds/upload-classified-media";
 import { CANONICAL_AIRPORTS, CANONICAL_AIRLINES, CANONICAL_TRANSPORT_TYPES, CANONICAL_BUS_CATEGORIES, CANONICAL_GUIDE_SERVICES, CANONICAL_TRANSFER_VEHICLES, DEPARTURE_STATUS_CONFIG, airportLabel, type DepartureOption, type DepartureStatus } from "@/lib/classifieds/canonical-airports";
+import { AirportCombobox } from "@/components/ui/airport-combobox";
 import { cn } from "@/lib/utils";
 import { ClassifiedTemplateStyle, ClassifiedDisplayMode, CivilInquiryQuestion, CivilInquiryConfig } from "@/types/unified-ad-engine";
+import { TravelPromoFlyerModal } from "@/components/tourism/promotional-flyer/travel-promo-flyer-modal";
+import { FipeVehicleSelector } from "@/components/classifieds/fipe-vehicle-selector";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -40,6 +46,7 @@ import { DigitalFileDropzone } from "@/components/classifieds/digital-file-dropz
 import { ChoiceCard } from "@/components/ui/choice-card";
 import { SquircleCard } from "@/components/ui/squircle-card";
 import { CityCombobox, type StructuredLocationValue } from "@/components/ui/city-combobox";
+import { resolveStorageMediaUrl } from "@/lib/classifieds/storage-media";
 import { upsertClassified, getPublicClassifiedById, refineClassifiedWithAI } from "@/services/classifieds.functions";
 import { getMyStoresList } from "@/services/store.functions";
 import { getProfile, getUserSession } from "@/services/auth.functions";
@@ -47,7 +54,7 @@ import { listStoreLeadForms } from "@/services/lead-forms.functions";
 import { createListingWithAI } from "@/services/ai-sdr.functions";
 import { analyzeCommercialPointPotential, auditCnpjWithSimLabs } from "@/services/market-intelligence.functions";
 import { lookupCnpj } from "@/services/public-apis.functions";
-import { CANONICAL_VEHICLE_BRANDS, CANONICAL_TRANSMISSIONS, CANONICAL_FUELS, CANONICAL_VEHICLE_COLORS, CANONICAL_VEHICLE_OPTIONS, CANONICAL_VEHICLE_PROVENANCE, CANONICAL_GOODS_SEGMENTS, CANONICAL_ITEM_CONDITIONS, CANONICAL_SMARTPHONE_BRANDS, CANONICAL_COMPUTER_TYPES, CANONICAL_COMPUTER_BRANDS, CANONICAL_PROCESSORS, CANONICAL_RAM_OPTIONS, CANONICAL_STORAGE_OPTIONS, CANONICAL_APPLIANCE_TYPES, CANONICAL_APPLIANCE_BRANDS, CANONICAL_VOLTAGES, CANONICAL_GAME_CONSOLES, CANONICAL_FASHION_CATEGORIES, CANONICAL_FASHION_SIZES, CANONICAL_FOOD_SUBNICHES, CANONICAL_SERVICE_SUBNICHES, CANONICAL_BUSINESS_TYPES, CANONICAL_BUSINESS_SEGMENTS, CANONICAL_SALE_REASONS, CANONICAL_EMPLOYEES_RANGES, CANONICAL_COMMERCIAL_POINT_TYPES, CANONICAL_INVESTMENT_MODELS, CANONICAL_PROJECT_STAGES, CANONICAL_USE_OF_FUNDS, CANONICAL_GROCERY_DEPARTMENTS, CANONICAL_UNIT_TYPES, CANONICAL_STORAGE_TEMPERATURES, CANONICAL_MEAT_CUT_OPTIONS, CANONICAL_BAKERY_PREP_OPTIONS, GroceryFreshPricing, GroceryRipenessConfig, ProgressiveDiscountTier, OrderBumpOffer, RipenessStage, DEFAULT_RIPENESS_LABELS } from "@/lib/classifieds/canonical-taxonomy";
+import { CANONICAL_VEHICLE_BRANDS, CANONICAL_TRANSMISSIONS, CANONICAL_FUELS, CANONICAL_VEHICLE_COLORS, CANONICAL_VEHICLE_OPTIONS, CANONICAL_VEHICLE_PROVENANCE, CANONICAL_GOODS_SEGMENTS, CANONICAL_ITEM_CONDITIONS, CANONICAL_SMARTPHONE_BRANDS, CANONICAL_COMPUTER_TYPES, CANONICAL_COMPUTER_BRANDS, CANONICAL_PROCESSORS, CANONICAL_RAM_OPTIONS, CANONICAL_STORAGE_OPTIONS, CANONICAL_APPLIANCE_TYPES, CANONICAL_APPLIANCE_BRANDS, CANONICAL_VOLTAGES, CANONICAL_GAME_CONSOLES, CANONICAL_FASHION_CATEGORIES, CANONICAL_FASHION_SIZES, CANONICAL_FOOD_SUBNICHES, CANONICAL_SERVICE_SUBNICHES, CANONICAL_BUSINESS_TYPES, CANONICAL_BUSINESS_SEGMENTS, CANONICAL_SALE_REASONS, CANONICAL_EMPLOYEES_RANGES, CANONICAL_COMMERCIAL_POINT_TYPES, CANONICAL_INVESTMENT_MODELS, CANONICAL_PROJECT_STAGES, CANONICAL_USE_OF_FUNDS, CANONICAL_GROCERY_DEPARTMENTS, CANONICAL_UNIT_TYPES, CANONICAL_STORAGE_TEMPERATURES, CANONICAL_MEAT_CUT_OPTIONS, CANONICAL_BAKERY_PREP_OPTIONS, GroceryFreshPricing, GroceryRipenessConfig, ProgressiveDiscountTier, OrderBumpOffer, RipenessStage, DEFAULT_RIPENESS_LABELS, getDefaultClassifiedTemplateForNiche, getAllowedClassifiedTemplatesForNiche, resolveCompatibleClassifiedTemplate } from "@/lib/classifieds/canonical-taxonomy";
 import { CANONICAL_EDUCATION_LEVELS, CANONICAL_EXPERIENCE_LEVELS, CANONICAL_JOB_REGIMES, CANONICAL_WORKPLACE_MODELS, CANONICAL_WORK_SCHEDULES, CANONICAL_SALARY_RANGES, CANONICAL_JOB_BENEFITS, SUGGESTED_JOB_SKILLS, getEducationLabel, getExperienceLabel, getRegimeLabel, getWorkplaceModelLabel } from "@/lib/classifieds/canonical-hiring";
 import { resolveClassifiedNiche, getNicheDefaultInquiryConfig, isNichePaymentApplicable } from "@/lib/classifieds/semantics";
 import { z } from "zod";
@@ -860,7 +867,7 @@ function CreateTypePicker({
               <Wand2 className="size-4 text-primary" />
             )}
             <span>{isAiGenerating ? "Gerando..." : "Criar com IA"}</span>
-            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground bg-muted/60 px-2 py-0.5 rounded border border-border/50">
+            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground bg-muted/60 px-2 py-1 rounded border border-border/50">
               Copilot
             </span>
           </Button>
@@ -1111,6 +1118,7 @@ function SpecializedClassifiedEditor({
  const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState<2 | 3 | 4 | 5>(2);
   const [previewDevice, setPreviewDevice] = useState<"mobile" | "desktop">("mobile");
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
 
   // Identidade do Anúncio (Perfil Pessoal vs Loja Oficial)
   const [selectedStoreId, setSelectedStoreId] = useState<string | null>(
@@ -1143,7 +1151,6 @@ function SpecializedClassifiedEditor({
 
   const [isCustomCommercialOpen, setIsCustomCommercialOpen] = useState(false);
   const [draftInfo, setDraftInfo] = useState<{ step: number; savedAt: string } | null>(null);
-  const [mobileTab, setMobileTab] = useState<"edit" | "preview">("edit");
  const [jobWorkSchedule, setJobWorkSchedule] = useState("integral_44h");
  const [jobAcceptedMethods, setJobAcceptedMethods] = useState<string[]>([
  "perfil_waesy",
@@ -1177,135 +1184,136 @@ function SpecializedClassifiedEditor({
  const [description, setDescription] = useState(
    initialData?.content || initialData?.description || ""
  );
-  const [isRefiningDescription, setIsRefiningDescription] = useState(false);
   const [copilotModalOpen, setCopilotModalOpen] = useState(false);
-  const [copilotSuggestions, setCopilotSuggestions] = useState<{
-    version1?: { title: string; description: string; badge: string };
-    version2?: { title: string; description: string; badge: string };
-    suggestedTags?: string[];
-  } | null>(null);
-  const [selectedCopilotVersion, setSelectedCopilotVersion] = useState<"version1" | "version2">("version1");
+  const [copilotInitialScope, setCopilotInitialScope] = useState<CopilotScope>("all_editorial_fields");
+  const [editorialTags, setEditorialTags] = useState<string[]>(() =>
+    Array.isArray(initialData?.attributes?.tags) ? initialData.attributes.tags : []
+  );
+  const [editorialSummary, setEditorialSummary] = useState<string>(() =>
+    typeof initialData?.attributes?.summary === "string"
+      ? initialData.attributes.summary
+      : Array.isArray(initialData?.attributes?.bio_bullets)
+        ? initialData.attributes.bio_bullets.join("\n")
+        : ""
+  );
 
   const buildCurrentNicheContext = () => {
     const ctx: Record<string, any> = {};
-    if (priceCents) ctx["preço"] = formatMoney(priceCents);
-    if (locationName) ctx["localização"] = locationName;
+    if (priceCents) ctx["price"] = formatMoney(priceCents);
+    if (locationName) ctx["location_name"] = locationName;
+    if (structuredLoc?.city) ctx["city"] = structuredLoc.city;
+    if (structuredLoc?.neighborhood) ctx["neighborhood"] = structuredLoc.neighborhood;
     if (niche.id === "veiculo") {
-      if (vehicleBrand) ctx["marca"] = vehicleBrand;
-      if (vehicleModel) ctx["modelo"] = vehicleModel;
-      if (vehicleVersion) ctx["versão"] = vehicleVersion;
-      if (vehicleYearModel) ctx["ano_modelo"] = vehicleYearModel;
-      if (vehicleYearFab) ctx["ano_fabricação"] = vehicleYearFab;
-      if (vehicleKm) ctx["quilometragem"] = `${vehicleKm} km`;
-      if (vehicleTransmission) ctx["câmbio"] = vehicleTransmission;
-      if (vehicleFuel) ctx["combustível"] = vehicleFuel;
-      if (vehicleColor) ctx["cor"] = vehicleColor;
-      if (vehicleFeatures?.length) ctx["opcionais"] = vehicleFeatures;
+      if (vehicleBrand) ctx["brand"] = vehicleBrand;
+      if (vehicleModel) ctx["model"] = vehicleModel;
+      if (vehicleVersion) ctx["version"] = vehicleVersion;
+      if (vehicleYearModel) ctx["year"] = vehicleYearModel;
+      if (vehicleYearFab) ctx["year_fab"] = vehicleYearFab;
+      if (vehicleKm) ctx["mileage"] = `${vehicleKm} km`;
+      if (vehicleTransmission) ctx["transmission"] = vehicleTransmission;
+      if (vehicleFuel) ctx["fuel"] = vehicleFuel;
+      if (vehicleColor) ctx["color"] = vehicleColor;
+      if (vehicleFeatures?.length) ctx["features"] = vehicleFeatures;
     } else if (niche.id === "imovel") {
-      ctx["tipo_negocio"] = reDealType === "aluguel" ? "Locação" : "Venda";
-      if (rePropertyType) ctx["tipo_imovel"] = rePropertyType;
-      if (reAreaSqm) ctx["área_útil"] = `${reAreaSqm} m²`;
-      if (reBedrooms) ctx["quartos"] = reBedrooms;
-      if (reSuites) ctx["suítes"] = reSuites;
-      if (reParking) ctx["vagas"] = reParking;
-      if (reCondoCents) ctx["condomínio"] = formatMoney(reCondoCents);
+      ctx["transaction_type"] = reDealType === "aluguel" ? "Locação" : "Venda";
+      if (rePropertyType) ctx["property_type"] = rePropertyType;
+      if (reAreaSqm) ctx["area_sqm"] = `${reAreaSqm}m²`;
+      if (reBedrooms) ctx["bedrooms"] = reBedrooms;
+      if (reSuites) ctx["suites"] = reSuites;
+      if (reParking) ctx["parking_spaces"] = reParking;
+      if (reCondoCents) ctx["condo_fee"] = formatMoney(reCondoCents);
       if (reIptuCents) ctx["iptu"] = formatMoney(reIptuCents);
-      if (reAmenities?.length) ctx["comodidades"] = reAmenities;
+      if (reAmenities?.length) ctx["amenities"] = reAmenities;
     } else if (niche.id === "viagem") {
-      if (travelDestinationCity) ctx["destino"] = travelDestinationCity;
-      if (travelDuration) ctx["duração"] = travelDuration;
-      if (travelMealPlan) ctx["regime"] = travelMealPlan;
-      if (travelGuests) ctx["capacidade_hóspedes"] = travelGuests;
-      if (travelTransportType) ctx["transporte"] = travelTransportType === "flight" ? "Aéreo" : travelTransportType === "bus" ? "Rodoviário" : travelTransportType;
-      if (travelDepartureCity) ctx["cidade_saída"] = travelDepartureCity;
-      if (travelStoryHighlights?.length) ctx["destaques"] = travelStoryHighlights.map((s) => s.title);
+      if (travelDestinationCity) ctx["destination"] = travelDestinationCity;
+      if (travelDuration) ctx["duration_days"] = travelDuration;
+      if (travelMealPlan) ctx["meal_plan"] = travelMealPlan;
+      if (travelGuests) ctx["guests"] = travelGuests;
+      if (travelTransportType) ctx["transport"] = travelTransportType === "flight" ? "Aéreo" : travelTransportType === "bus" ? "Rodoviário" : travelTransportType;
+      if (travelDepartureCity) ctx["departure_location"] = travelDepartureCity;
+      if (travelDepartureDate) ctx["departure_date"] = travelDepartureDate;
+      if (travelReturnDate) ctx["return_date"] = travelReturnDate;
+      if (travelStoryHighlights?.length) ctx["highlights"] = travelStoryHighlights.map((s) => s.title);
       if (travelItineraryDays?.length) {
-        ctx["roteiro_dias"] = travelItineraryDays.map((d) => `Dia ${d.day_number}: ${d.title}`).join("; ");
+        ctx["itinerary"] = travelItineraryDays.map((d) => `Dia ${d.day_number}: ${d.title}`).join("; ");
       }
     } else if (niche.id === "evento") {
-      if (eventDate) ctx["data_evento"] = eventDate;
-      if (eventStartTime) ctx["horario_inicio"] = eventStartTime;
-      if (eventVenueName) ctx["local_evento"] = eventVenueName;
-      if (eventSpeakers?.length) ctx["palestrantes"] = eventSpeakers.map((s) => s.name).join(", ");
-      if (eventTicketTiers?.length) ctx["lotes_ingressos"] = eventTicketTiers.map((t) => `${t.name}: ${formatMoney(t.price_cents)}`).join(", ");
+      if (eventDate) ctx["event_date"] = eventDate;
+      if (eventStartTime) ctx["start_time"] = eventStartTime;
+      if (eventVenueName) ctx["venue_name"] = eventVenueName;
+      if (eventSpeakers?.length) ctx["lineup"] = eventSpeakers.map((s) => s.name).join(", ");
+      if (eventTicketTiers?.length) ctx["ticket_tiers"] = eventTicketTiers.map((t) => `${t.name}: ${formatMoney(t.price_cents)}`).join(", ");
     } else if (niche.id === "hospedagem") {
-      if (hospPropertyType) ctx["tipo_espaço"] = hospPropertyType;
-      if (hospGuests) ctx["capacidade_hóspedes"] = hospGuests;
-      if (hospBedrooms) ctx["quartos"] = hospBedrooms;
+      if (hospPropertyType) ctx["property_type"] = hospPropertyType;
+      if (hospGuests) ctx["max_guests"] = hospGuests;
+      if (hospBedrooms) ctx["bedrooms"] = hospBedrooms;
       if (hospCheckinTime) ctx["check_in"] = hospCheckinTime;
       if (hospCheckoutTime) ctx["check_out"] = hospCheckoutTime;
-      if (hospCleaningFeeCents) ctx["taxa_limpeza"] = formatMoney(hospCleaningFeeCents);
-      if (hospAmenities?.length) ctx["comodidades"] = hospAmenities;
+      if (hospCleaningFeeCents) ctx["cleaning_fee"] = formatMoney(hospCleaningFeeCents);
+      if (hospAmenities?.length) ctx["amenities"] = hospAmenities;
     } else if (niche.id === "servico") {
-      if (serviceArea) ctx["área_atuação"] = serviceArea;
-      if (serviceModality) ctx["modalidade"] = serviceModality === "remoto" ? "Online / Remoto" : serviceModality === "domicilio" ? "A Domicílio" : "Presencial";
-      if (serviceDuration) ctx["duração_estimada"] = `${serviceDuration} minutos`;
-      if (serviceSpecialty) ctx["especialidade"] = serviceSpecialty;
-      if (serviceProfessionalCouncil) ctx["conselho_profissional"] = serviceProfessionalCouncil;
+      if (serviceArea) ctx["service_type"] = serviceArea;
+      if (serviceModality) ctx["attendance_mode"] = serviceModality === "remoto" ? "Online / Remoto" : serviceModality === "domicilio" ? "A Domicílio" : "Presencial";
+      if (serviceDuration) ctx["duration"] = `${serviceDuration} minutos`;
+      if (serviceSpecialty) ctx["specialty"] = serviceSpecialty;
+      if (serviceProfessionalCouncil) ctx["council"] = serviceProfessionalCouncil;
     } else if (niche.id === "vaga") {
-      if (jobRole) ctx["cargo"] = jobRole;
-      if (jobMinEducation) ctx["escolaridade"] = jobMinEducation;
-      if (jobExperienceLevel) ctx["experiência"] = jobExperienceLevel;
-      if (jobModel) ctx["modelo_trabalho"] = jobModel;
-      if (jobRegime) ctx["regime_contratação"] = jobRegime;
-      if (jobSalaryRange) ctx["salário"] = jobSalaryRange;
+      if (jobRole) ctx["job_role"] = jobRole;
+      if (jobMinEducation) ctx["education"] = jobMinEducation;
+      if (jobExperienceLevel) ctx["seniority"] = jobExperienceLevel;
+      if (jobModel) ctx["work_model"] = jobModel;
+      if (jobRegime) ctx["contract_type"] = jobRegime;
+      if (jobSalaryRange) ctx["salary_range"] = jobSalaryRange;
     } else if (niche.id === "desapego") {
-      if (itemCondition) ctx["condição"] = itemCondition;
-      if (phoneBrand) ctx["marca_aparelho"] = phoneBrand;
-      if (phoneModel) ctx["modelo_aparelho"] = phoneModel;
+      if (itemCondition) ctx["condition"] = itemCondition;
+      if (phoneBrand) ctx["brand"] = phoneBrand;
+      if (phoneModel) ctx["model"] = phoneModel;
+      if (itemWarranty) ctx["warranty"] = itemWarranty;
+    } else if (niche.id === "mercado" || niche.id === "gastronomia") {
+      if (convenienceBrand) ctx["brand"] = convenienceBrand;
+      if (convenienceVolume) ctx["portion_size"] = convenienceVolume;
+      if (convenienceTemp && convenienceTemp !== "none") ctx["beverage_temperature"] = convenienceTemp;
+      if (deliveryEstimateText) ctx["delivery_estimate"] = deliveryEstimateText;
+    } else if (niche.id === "assinatura") {
+      if (billingCycle) ctx["billing_cycle"] = billingCycle;
+      if (recurringFeatures?.length) ctx["included_items"] = recurringFeatures;
     }
     return ctx;
   };
 
-  const handleRefineDescriptionWithAI = async () => {
-    if (!title.trim() && !description.trim()) {
-      toast.error("Preencha ao menos o título ou um resumo da descrição para o Copilot refinar.");
-      return;
-    }
-    setIsRefiningDescription(true);
-    toast.loading("Copilot analisando especificações e formulando opções...", { id: "copilot-refine" });
-    try {
-      const res = await refineClassifiedWithAI({
-        data: {
-          title: title.trim(),
-          description: description.trim(),
-          niche: niche.id,
-          attributes: buildCurrentNicheContext(),
-        },
-      });
-      if (res.success && (res.version1 || res.version2)) {
-        setCopilotSuggestions({
-          version1: res.version1,
-          version2: res.version2,
-          suggestedTags: res.suggestedTags,
-        });
-        setSelectedCopilotVersion("version1");
-        setCopilotModalOpen(true);
-        toast.success("Opções de anúncio geradas com sucesso!", { id: "copilot-refine" });
-      } else if (res.success && res.title) {
-        setTitle(res.title);
-        if (res.description) setDescription(res.description);
-        toast.success("Título e descrição aprimorados com sucesso!", { id: "copilot-refine" });
-      } else {
-        toast.error(res.message || "Não foi possível aprimorar no momento.", { id: "copilot-refine" });
-      }
-    } catch (err: any) {
-      toast.error(err?.message || "Erro ao conectar com o Copilot.", { id: "copilot-refine" });
-    } finally {
-      setIsRefiningDescription(false);
-    }
+  const handleOpenCopilot = (targetScope: CopilotScope = "all_editorial_fields") => {
+    setCopilotInitialScope(targetScope);
+    setCopilotModalOpen(true);
   };
 
-  const handleApplyCopilotVersion = (versionKey: "version1" | "version2") => {
-    const chosen = copilotSuggestions?.[versionKey];
-    if (chosen) {
-      if (chosen.title) setTitle(chosen.title);
-      if (chosen.description) setDescription(chosen.description);
-      setCopilotModalOpen(false);
-      toast.success(`${chosen.badge} aplicada com sucesso ao anúncio!`);
+  const handleApplyCopilotDraft = (
+    patched: CopilotWorkingDraft,
+    appliedFields: EditorialFieldKey[]
+  ) => {
+    if (appliedFields.includes("title") && patched.title.trim()) {
+      setTitle(patched.title.trim());
     }
+    if (appliedFields.includes("description") && patched.description.trim()) {
+      setDescription(patched.description.trim());
+    }
+    if (appliedFields.includes("summary")) {
+      setEditorialSummary(patched.summary.trim());
+      if (niche.id === "viagem" && patched.summary.trim()) {
+        const bullets = patched.summary
+          .split(/\r?\n/)
+          .map((line) => line.replace(/^[•\-*]\s*/, "").trim())
+          .filter(Boolean);
+        if (bullets.length > 0) {
+          setTravelBioBullets(bullets);
+        }
+      }
+    }
+    if (appliedFields.includes("tags")) {
+      setEditorialTags(patched.tags);
+    }
+    toast.success("Alterações do Copilot aplicadas ao anúncio.");
   };
- const [aiInstructions, setAiInstructions] = useState("");
+const [aiInstructions, setAiInstructions] = useState("");
  const [aiAgentEnabled, setAiAgentEnabled] = useState<boolean>(
    initialData?.ai_agent_enabled ?? false
  );
@@ -1353,26 +1361,35 @@ function SpecializedClassifiedEditor({
     enabled: !!effectiveStoreId,
   });
 
-  // Template de Exibição (6 Modelos Canônicos + Auto-Theming Inteligente)
+  // Template de Exibição (Catálogo Canônico + Compatibilidade por Nicho)
   const defaultNicheTemplateStyle = useMemo<ClassifiedTemplateStyle>(() => {
-    if (niche.id === "veiculo") return "automotivo";
-    if (niche.id === "imovel") return "imobiliario";
-    if (niche.id === "viagem" || niche.id === "hospedagem") return "resort_hotel";
-    if (niche.id === "servico") return "servicos_agenda";
-    if (niche.id === "mercado") return "conveniencia";
-    return "standard";
+    return getDefaultClassifiedTemplateForNiche(niche.id);
   }, [niche.id]);
 
-  const [templateStyle, setTemplateStyle] = useState<ClassifiedTemplateStyle>(
-    (initialData?.attributes?.template_style as ClassifiedTemplateStyle) || defaultNicheTemplateStyle
+  const allowedTemplatesForNiche = useMemo(() => {
+    return getAllowedClassifiedTemplatesForNiche(niche.id);
+  }, [niche.id]);
+
+  const [templateStyle, setTemplateStyle] = useState<ClassifiedTemplateStyle>(() =>
+    resolveCompatibleClassifiedTemplate(
+      niche.id,
+      (initialData?.attributes?.template_style || initialData?.template_style) as string | undefined
+    )
   );
 
-  // Sincroniza o template quando o usuário troca o nicho ativo (se não for edição com template explícito inicial)
+  const prevNicheIdRef = useRef<string>(niche.id);
   useEffect(() => {
-    if (!initialData?.attributes?.template_style) {
-      setTemplateStyle(defaultNicheTemplateStyle);
+    if (prevNicheIdRef.current !== niche.id) {
+      const prevDefault = getDefaultClassifiedTemplateForNiche(prevNicheIdRef.current);
+      prevNicheIdRef.current = niche.id;
+      setTemplateStyle((prev) =>
+        resolveCompatibleClassifiedTemplate(
+          niche.id,
+          prev === prevDefault ? undefined : prev
+        )
+      );
     }
-  }, [defaultNicheTemplateStyle, initialData]);
+  }, [niche.id]);
 
   const [displayMode, setDisplayMode] = useState<ClassifiedDisplayMode>(
     (initialData?.attributes?.display_mode as ClassifiedDisplayMode) || "tabs"
@@ -1714,6 +1731,81 @@ function SpecializedClassifiedEditor({
     });
   };
 
+    // ── Estúdio Excelência Tour (Story 9:16 + Liquid Glass + WhatsApp Intake) ──
+  const [travelStudioOpen, setTravelStudioOpen] = useState(false);
+
+  const handleApplyExtractedTravelOffer = (offer: {
+    title: string;
+    destinationCity: string;
+    datesText: string;
+    hotelName?: string;
+    mealPlan?: string;
+    inclusions: string[];
+    priceCents: number | null;
+    installments: number;
+    adults: number;
+    children: number;
+  }) => {
+    if (offer.title?.trim()) {
+      setTitle(offer.title.trim());
+    }
+    if (offer.destinationCity?.trim()) {
+      setTravelDestinationCity(offer.destinationCity.trim());
+    }
+    if (offer.datesText?.trim()) {
+      setTravelDates(offer.datesText.trim());
+    }
+    if (offer.mealPlan?.trim()) {
+      setTravelMealPlan(offer.mealPlan.trim());
+    }
+    if (offer.priceCents && offer.priceCents > 0) {
+      setPriceCents(offer.priceCents);
+    }
+    if (offer.installments && offer.installments > 0) {
+      setMaxInstallments(offer.installments);
+    }
+    if (offer.adults) {
+      setTravelAdultsCount(offer.adults);
+    }
+    if (offer.children !== undefined) {
+      setTravelChildrenCount(offer.children);
+    }
+    if (offer.inclusions && offer.inclusions.length > 0) {
+      setTravelBioBullets(offer.inclusions.filter(Boolean));
+    }
+    if (offer.hotelName?.trim()) {
+      setTravelLodgings((prev) => {
+        if (prev.length > 0) {
+          return prev.map((l, idx) =>
+            idx === 0
+              ? {
+                  ...l,
+                  name: offer.hotelName!.trim(),
+                  regime: offer.mealPlan?.trim() || l.regime,
+                  city: offer.destinationCity?.trim() || l.city,
+                }
+              : l
+          );
+        }
+        return [
+          {
+            id: crypto.randomUUID(),
+            name: offer.hotelName!.trim(),
+            type: "hotel",
+            stars: 4,
+            city: offer.destinationCity?.trim() || travelDestinationCity || "",
+            regime: offer.mealPlan?.trim() || travelMealPlan || "Café da Manhã",
+            amenities: [],
+            photos: [],
+            checkin_time: "14:00",
+            checkout_time: "11:00",
+          },
+        ];
+      });
+    }
+    toast.success("Dados estruturados da cotação sincronizados com o anúncio!");
+  };
+
   // Specialized: Aluguel de Equipamentos
   const [equipmentPeriod, setEquipmentPeriod] = useState<"diaria" | "evento" | "semanal">(
     initialData?.attributes?.equipment_period || "diaria"
@@ -1758,6 +1850,10 @@ function SpecializedClassifiedEditor({
   const [vehicleTransmission, setVehicleTransmission] = useState("Automático");
   const [vehicleColor, setVehicleColor] = useState("");
   const [vehicleFeatures, setVehicleFeatures] = useState<string[]>([]);
+  const [vehicleFipeCode, setVehicleFipeCode] = useState("");
+  const [vehicleFipePriceCents, setVehicleFipePriceCents] = useState<number | undefined>(undefined);
+  const [vehicleFipeReferenceMonth, setVehicleFipeReferenceMonth] = useState("");
+  const [vehicleFipeDeltaPercent, setVehicleFipeDeltaPercent] = useState<number | undefined>(undefined);
 
   // Specialized: Desapego & Itens Gerais
   const [desapegoCategory, setDesapegoCategory] = useState<
@@ -2288,16 +2384,16 @@ function SpecializedClassifiedEditor({
   const [eventBannerUrl, setEventBannerUrl] = useState<string>(
     initialData?.attributes?.banner_image_url || ""
   );
-  const [eventTicketTiers, setEventTicketTiers] = useState<EventTicketTier[]>(
+  const [eventTicketTiers, setEventTicketTiers] = useState<any[]>(
     Array.isArray(initialData?.attributes?.ticket_tiers) ? initialData.attributes.ticket_tiers : []
   );
-  const [eventSchedule, setEventSchedule] = useState<EventScheduleItem[]>(
+  const [eventSchedule, setEventSchedule] = useState<any[]>(
     Array.isArray(initialData?.attributes?.schedule) ? initialData.attributes.schedule : []
   );
-  const [eventSpeakers, setEventSpeakers] = useState<EventSpeaker[]>(
+  const [eventSpeakers, setEventSpeakers] = useState<any[]>(
     Array.isArray(initialData?.attributes?.speakers) ? initialData.attributes.speakers : []
   );
-  const [eventSponsors, setEventSponsors] = useState<EventSponsor[]>(
+  const [eventSponsors, setEventSponsors] = useState<any[]>(
     Array.isArray(initialData?.attributes?.sponsors) ? initialData.attributes.sponsors : []
   );
   const [eventSurveys, setEventSurveys] = useState<EventSurvey[]>(
@@ -2335,6 +2431,34 @@ function SpecializedClassifiedEditor({
   const [eventHostRole, setEventHostRole] = useState<string>(
     initialData?.attributes?.host_role || "Organizador Principal"
   );
+  const [eventHostEntityType, setEventHostEntityType] = useState<"ORGANIZATION" | "PERSON">(
+    initialData?.attributes?.host_entity_type === "PERSON" ? "PERSON" : "ORGANIZATION"
+  );
+  const [eventTimezone, setEventTimezone] = useState<string>(
+    initialData?.attributes?.timezone || "America/Sao_Paulo"
+  );
+  const [eventOrganizers, setEventOrganizers] = useState<
+    Array<{
+      id: string;
+      name: string;
+      role: "ORGANIZER" | "CO_ORGANIZER" | "REALIZER" | "SUPPORTER";
+      entity_type: "ORGANIZATION" | "PERSON";
+      avatar_url?: string;
+    }>
+  >(Array.isArray(initialData?.attributes?.organizers) ? initialData.attributes.organizers : []);
+  const [eventAccessPoints, setEventAccessPoints] = useState<
+    Array<{
+      id: string;
+      label: string;
+      type: "main_venue" | "accreditation" | "parking" | "vip_entrance" | "pcd_access" | "other";
+      address?: string;
+      instructions?: string;
+    }>
+  >(
+    Array.isArray(initialData?.attributes?.access_points)
+      ? initialData.attributes.access_points
+      : []
+  );
   const [eventPwaEnabled, setEventPwaEnabled] = useState<boolean>(
     initialData?.attributes?.pwa_enabled ?? false
   );
@@ -2356,13 +2480,23 @@ function SpecializedClassifiedEditor({
     if (initialData.attributes?.delivery_mode) setDeliveryMode(initialData.attributes.delivery_mode as any);
     if (initialData.attributes?.hide_location !== undefined) setHideLocation(!!initialData.attributes.hide_location);
     if (initialData.contact_whatsapp || initialData.whatsapp) setWhatsapp(initialData.contact_whatsapp || initialData.whatsapp);
-    if (Array.isArray(initialData.images)) setImages(initialData.images);
+    if (Array.isArray(initialData.images) && initialData.images.length > 0) {
+      setImages(initialData.images.filter(Boolean).map((img: string) => resolveStorageMediaUrl(img, "post-media")));
+    } else if (Array.isArray(initialData.photos) && initialData.photos.length > 0) {
+      setImages(initialData.photos.filter(Boolean).map((img: string) => resolveStorageMediaUrl(img, "post-media")));
+    } else if (Array.isArray(initialData.attributes?.gallery_images) && initialData.attributes.gallery_images.length > 0) {
+      setImages(initialData.attributes.gallery_images.filter(Boolean).map((img: string) => resolveStorageMediaUrl(img, "post-media")));
+    } else if (initialData.attributes?.banner_image_url) {
+      setImages([resolveStorageMediaUrl(initialData.attributes.banner_image_url, "post-media")]);
+    } else if (initialData.image_url) {
+      setImages([resolveStorageMediaUrl(initialData.image_url, "post-media")]);
+    }
     if (Array.isArray(initialData.feed_media) && initialData.feed_media.length > 0) {
-      setFeedMedia(initialData.feed_media);
+      setFeedMedia(initialData.feed_media.filter(Boolean).map((m: string) => resolveStorageMediaUrl(m, "post-media")));
     } else if (Array.isArray(initialData.attributes?.feed_media) && initialData.attributes.feed_media.length > 0) {
-      setFeedMedia(initialData.attributes.feed_media);
+      setFeedMedia(initialData.attributes.feed_media.filter(Boolean).map((m: string) => resolveStorageMediaUrl(m, "post-media")));
     } else if (Array.isArray(initialData.attributes?.feed_images) && initialData.attributes.feed_images.length > 0) {
-      setFeedMedia(initialData.attributes.feed_images);
+      setFeedMedia(initialData.attributes.feed_images.filter(Boolean).map((m: string) => resolveStorageMediaUrl(m, "post-media")));
     }
 
     const loadedPs = initialData.payment_settings || initialData.attributes?.payment_settings;
@@ -2681,6 +2815,33 @@ function SpecializedClassifiedEditor({
       if (initialData.attributes.transmission) setVehicleTransmission(initialData.attributes.transmission);
       if (initialData.attributes.color) setVehicleColor(initialData.attributes.color);
       if (Array.isArray(initialData.attributes.features)) setVehicleFeatures(initialData.attributes.features);
+      if (initialData.attributes.fipe_code) setVehicleFipeCode(initialData.attributes.fipe_code);
+      if (initialData.attributes.fipe_price_cents) setVehicleFipePriceCents(Number(initialData.attributes.fipe_price_cents));
+      if (initialData.attributes.fipe_reference_month) setVehicleFipeReferenceMonth(initialData.attributes.fipe_reference_month);
+      if (initialData.attributes.fipe_delta_percent !== undefined) setVehicleFipeDeltaPercent(Number(initialData.attributes.fipe_delta_percent));
+    }
+
+    // Agronegócio: reidrata campos quando initialData chega de forma assíncrona (modo edição).
+    if ((initialData.category === "agri" || initialData.category === "agro") && initialData.attributes) {
+      const a = initialData.attributes;
+      const hours = a.hours_used ?? a.horimetro;
+      const traction = a.traction ?? a.tracao;
+      if (hours !== undefined && hours !== null) setAgriHoursUsed(String(hours));
+      if (traction !== undefined && traction !== null) setAgriTraction(String(traction));
+      if (a.implement_type !== undefined && a.implement_type !== null) setAgriImplementType(String(a.implement_type));
+      if (a.year_fab !== undefined && a.year_fab !== null) setAgriYearFab(String(a.year_fab));
+      if (a.power_cv !== undefined && a.power_cv !== null) setAgriPowerCv(String(a.power_cv));
+      if (a.cabin_type !== undefined && a.cabin_type !== null) setAgriCabinType(String(a.cabin_type));
+    }
+
+    // Farmácia: idem; retention_prescription=false precisa ser preservado.
+    if ((initialData.category === "pharmacy" || initialData.category === "farmacia") && initialData.attributes) {
+      const a = initialData.attributes;
+      if (a.subniche !== undefined && a.subniche !== null) setPharmacySubNiche(String(a.subniche));
+      if (a.retention_prescription !== undefined && a.retention_prescription !== null) setPharmacyRetentionPrescription(Boolean(a.retention_prescription));
+      if (a.active_ingredient !== undefined && a.active_ingredient !== null) setPharmacyActiveIngredient(String(a.active_ingredient));
+      if (a.manufacturer !== undefined && a.manufacturer !== null) setPharmacyManufacturer(String(a.manufacturer));
+      if (a.anvisa_registry !== undefined && a.anvisa_registry !== null) setPharmacyAnvisaRegistry(String(a.anvisa_registry));
     }
 
     if (initialData.sub_category || initialData.attributes?.desapego_subcategory) {
@@ -2799,6 +2960,8 @@ function SpecializedClassifiedEditor({
         max_installments: acceptsCard ? Number(maxInstallments) || 1 : (acceptsCarne ? Number(maxCarneInstallments) || 1 : (acceptsBoletoInstallments ? Number(maxBoletoInstallments) || 1 : 1)),
         free_shipping_local: niche.id === "desapego" ? freeShippingLocal : false,
         template_style: templateStyle,
+        tags: editorialTags.length > 0 ? editorialTags : undefined,
+        summary: editorialSummary.trim() || undefined,
         display_mode: displayMode,
         inquiry_config: {
           enabled: civilInquiryEnabled,
@@ -2807,9 +2970,13 @@ function SpecializedClassifiedEditor({
           activate_sdr_ai: civilInquiryActivateSdr,
           questions: civilInquiryQuestions,
         },
-        story_highlights: travelStoryHighlights,
-        itinerary_days: travelItineraryDays,
-        bio_bullets: travelBioBullets.map((b) => b.trim()).filter(Boolean),
+        ...(niche.id === "viagem"
+          ? {
+              story_highlights: travelStoryHighlights,
+              itinerary_days: travelItineraryDays,
+              bio_bullets: travelBioBullets.map((b) => b.trim()).filter(Boolean),
+            }
+          : {}),
       };
 
       if (niche.id === "mercado" || niche.id === "gastronomia" || templateStyle === "conveniencia") {
@@ -2900,6 +3067,7 @@ function SpecializedClassifiedEditor({
         attributes.is_donation = true;
       } else if (niche.id === "evento") {
         attributes.niche = "evento";
+        attributes.timezone = eventTimezone || "America/Sao_Paulo";
         attributes.event_date = eventDate;
         attributes.end_date = eventEndDate || undefined;
         attributes.start_time = eventStartTime;
@@ -2913,6 +3081,7 @@ function SpecializedClassifiedEditor({
         attributes.visibility = eventVisibility;
         attributes.video_url = eventVideoUrl || undefined;
         attributes.banner_image_url = eventBannerUrl || undefined;
+        attributes.gallery_images = images;
         attributes.story_url = eventStoryUrl.trim() || undefined;
         attributes.story_auto_open = eventStoryAutoOpen;
         attributes.pwa_enabled = eventPwaEnabled;
@@ -2920,9 +3089,34 @@ function SpecializedClassifiedEditor({
         attributes.host_avatar_url = eventHostAvatarUrl.trim() || undefined;
         attributes.host_phone = eventHostPhone.trim() || whatsapp.trim() || undefined;
         attributes.host_role = eventHostRole.trim() || undefined;
-        attributes.ticket_tiers = eventTicketTiers;
-        attributes.schedule = eventSchedule;
-        attributes.speakers = eventSpeakers;
+        attributes.host_entity_type = eventHostEntityType;
+        attributes.organizers = eventOrganizers;
+        attributes.access_points = eventAccessPoints;
+        attributes.ticket_tiers = eventTicketTiers.map((t: any) => {
+          const resolvedCents =
+            typeof t.price_cents === "number" && (t.price_cents > 0 || !t.price)
+              ? t.price_cents
+              : Math.round((Number(t.price) || 0) * 100);
+          return {
+            ...t,
+            price_cents: resolvedCents,
+            price: resolvedCents / 100,
+            external_url: t.purchase_url || t.external_url || undefined,
+            purchase_url: t.purchase_url || t.external_url || undefined,
+          };
+        });
+        attributes.schedule = eventSchedule.map((item: any) => ({
+          ...item,
+          stage_or_room: item.stage || item.stage_or_room || undefined,
+          stage: item.stage || item.stage_or_room || undefined,
+        }));
+        attributes.speakers = eventSpeakers.map((sp: any) => ({
+          ...sp,
+          photo_url: sp.avatar_url || sp.photo_url || undefined,
+          avatar_url: sp.avatar_url || sp.photo_url || undefined,
+          social_link: sp.social_url || sp.social_link || undefined,
+          social_url: sp.social_url || sp.social_link || undefined,
+        }));
         attributes.sponsors = eventSponsors;
         attributes.surveys = eventSurveys;
         attributes.policies = {
@@ -2970,6 +3164,10 @@ function SpecializedClassifiedEditor({
         attributes.color = vehicleColor;
         attributes.features = vehicleFeatures;
         attributes.provenance = vehicleProvenance;
+        if (vehicleFipeCode) attributes.fipe_code = vehicleFipeCode;
+        if (vehicleFipePriceCents) attributes.fipe_price_cents = vehicleFipePriceCents;
+        if (vehicleFipeReferenceMonth) attributes.fipe_reference_month = vehicleFipeReferenceMonth;
+        if (vehicleFipeDeltaPercent !== undefined) attributes.fipe_delta_percent = vehicleFipeDeltaPercent;
       } else if (niche.id === "servico") {
         attributes.modality = serviceModality;
         attributes.service_area = serviceArea;
@@ -3189,7 +3387,19 @@ function SpecializedClassifiedEditor({
             payment_instructions: paymentInstructions.trim(),
           } : undefined,
           price_cents:
-            pricingType === "free" || niche.id === "doacao"
+            niche.id === "evento"
+              ? (eventTicketTiers.length > 0
+                  ? Math.min(
+                      ...eventTicketTiers.map((t: any) => {
+                        const c =
+                          typeof t.price_cents === "number" && (t.price_cents > 0 || !t.price)
+                            ? t.price_cents
+                            : Math.round((Number(t.price) || 0) * 100);
+                        return c >= 0 ? c : 0;
+                      })
+                    )
+                  : 0)
+              : pricingType === "free" || niche.id === "doacao"
               ? 0
               : pricingType === "on_quote" || pricingType === "exchange_only"
               ? null
@@ -3430,7 +3640,20 @@ function SpecializedClassifiedEditor({
             content: description.trim() || "Rascunho em preenchimento...",
             status: "draft",
             images,
-            price_cents: priceCents ?? null,
+            price_cents:
+              niche.id === "evento"
+                ? (eventTicketTiers.length > 0
+                    ? Math.min(
+                        ...eventTicketTiers.map((t: any) => {
+                          const c =
+                            typeof t.price_cents === "number" && (t.price_cents > 0 || !t.price)
+                              ? t.price_cents
+                              : Math.round((Number(t.price) || 0) * 100);
+                          return c >= 0 ? c : 0;
+                        })
+                      )
+                    : 0)
+                : (priceCents ?? null),
             location_name: locationName.trim() || undefined,
             attributes: {
               draft_step: currentStep,
@@ -3454,7 +3677,19 @@ function SpecializedClassifiedEditor({
 
   const livePreviewClassified = useMemo(() => {
     const computedPriceCents =
-      pricingType === "free" || niche.id === "doacao"
+      niche.id === "evento"
+        ? (eventTicketTiers.length > 0
+            ? Math.min(
+                ...eventTicketTiers.map((t: any) => {
+                  const c =
+                    typeof t.price_cents === "number" && (t.price_cents > 0 || !t.price)
+                      ? t.price_cents
+                      : Math.round((Number(t.price) || 0) * 100);
+                  return c >= 0 ? c : 0;
+                })
+              )
+            : 0)
+        : pricingType === "free" || niche.id === "doacao"
         ? 0
         : pricingType === "on_quote" || pricingType === "exchange_only"
         ? null
@@ -3539,9 +3774,9 @@ function SpecializedClassifiedEditor({
       content: description || "",
       description: description || "",
       price_cents: computedPriceCents,
-      images: images || [],
-      feed_media: feedMedia || [],
-      feed_images: feedMedia || [],
+      images: (images || []).map((img) => resolveStorageMediaUrl(img, "post-media")),
+      feed_media: (feedMedia || []).map((m) => resolveStorageMediaUrl(m, "post-media")),
+      feed_images: (feedMedia || []).map((m) => resolveStorageMediaUrl(m, "post-media")),
       payment_settings: {
         pix_key: pixKey.trim(),
         pix_key_type: pixKeyType,
@@ -3549,8 +3784,8 @@ function SpecializedClassifiedEditor({
         payment_link: paymentLink.trim(),
         payment_instructions: paymentInstructions.trim(),
       },
-      photos: images || [],
-      media: images || [],
+      photos: (images || []).map((img) => resolveStorageMediaUrl(img, "post-media")),
+      media: (images || []).map((img) => resolveStorageMediaUrl(img, "post-media")),
       city: hideLocation ? "" : (structuredLoc?.city || (locationName ? locationName.split(",")[0].trim() : "Chapecó")),
       neighborhood: hideLocation ? "" : ((locationName && locationName.split("-")[1]?.trim()) || ""),
       location_name: hideLocation ? "" : (locationName || ""),
@@ -3609,6 +3844,11 @@ function SpecializedClassifiedEditor({
         host_avatar_url: eventHostAvatarUrl,
         host_phone: eventHostPhone,
         host_role: eventHostRole,
+        host_entity_type: eventHostEntityType,
+        timezone: eventTimezone,
+        organizers: eventOrganizers,
+        access_points: eventAccessPoints,
+        gallery_images: images,
         pwa_enabled: eventPwaEnabled,
         inquiry_config: {
           enabled: civilInquiryEnabled,
@@ -3650,57 +3890,62 @@ function SpecializedClassifiedEditor({
         financing_notes: financingNotes,
         accepts_cash: acceptsCash,
         cancellation_policy: cancellationPolicy,
-        destination_city: travelDestinationCity || locationName || "Chapecó",
-        duration_text: travelDuration,
-        package_duration: travelDuration,
-        meal_plan: travelMealPlan,
-        guests_text: travelGuests,
-        guest_capacity: travelGuests,
-        dates_text: travelDates,
-        departure_options: travelDepartureOptions,
-        flight_details: {
-          transport_type: travelTransportType,
-          departure_iata: travelDepartureIATA,
-          arrival_iata: travelArrivalIATA,
-          airline: travelAirline,
-          connections: travelConnections,
-          departure_time: travelDepartureTime,
-          arrival_time: travelArrivalTime,
-          price_text: travelFlightPrice,
-          duration_text: travelFlightDuration,
-          bus_category: travelBusCategory,
-          bus_company: travelBusCompany,
-          departure_city: travelDepartureCity,
-          meeting_point: travelMeetingPoint,
-          boarding_gateways: travelBoardingGateways,
-          return_departure_time: travelReturnDepartureTime,
-          guide_service: travelGuideService,
-          combo_flight_from_iata: travelComboFromIATA,
-          combo_flight_to_iata: travelComboToIATA,
-          combo_airline: travelComboAirline,
-          combo_flight_price_text: travelComboFlightPrice,
-          transfer_vehicle: travelTransferVehicle,
-          transfer_from: travelTransferFrom,
-          transfer_to: travelTransferTo,
-          transfer_duration: travelTransferDuration,
-          transfer_departure_time: travelTransferTime,
-          combo_notes: travelComboNotes,
-          ship_name: travelShipName,
-          cruise_line: travelCruiseLine,
-          cabin_category: travelCabinCategory,
-          embarkation_port: travelEmbarkationPort,
-        },
-        story_highlights: travelStoryHighlights,
-        itinerary_days: travelItineraryDays,
-        bio_bullets: generatedBioBullets,
-        // Hospedagem do Pacote de Turismo
-        lodgings: travelLodgings.filter((l) => l.name.trim() !== ""),
-        hotels: travelLodgings.filter((l) => l.name.trim() !== ""),
-        hotel_name: travelLodgings[0]?.name || undefined,
-        hotel_description: travelLodgings[0]?.description || undefined,
-        hotel_address: travelLodgings[0]?.address || undefined,
-        hotel_stars: travelLodgings[0]?.stars || undefined,
-        hotel_amenities: travelLodgings[0]?.amenities || undefined,
+        ...(niche.id === "viagem"
+          ? {
+              destination_city: travelDestinationCity || locationName || "Chapecó",
+              departure_date: travelDepartureDate || undefined,
+              return_date: travelReturnDate || undefined,
+              duration_text: travelDuration,
+              package_duration: travelDuration,
+              meal_plan: travelMealPlan,
+              guests_text: travelGuests,
+              guest_capacity: travelGuests,
+              dates_text: travelDates,
+              departure_options: travelDepartureOptions,
+              flight_details: {
+                transport_type: travelTransportType,
+                departure_iata: travelDepartureIATA,
+                arrival_iata: travelArrivalIATA,
+                airline: travelAirline,
+                connections: travelConnections,
+                departure_time: travelDepartureTime,
+                arrival_time: travelArrivalTime,
+                price_text: travelFlightPrice,
+                duration_text: travelFlightDuration,
+                bus_category: travelBusCategory,
+                bus_company: travelBusCompany,
+                departure_city: travelDepartureCity,
+                meeting_point: travelMeetingPoint,
+                boarding_gateways: travelBoardingGateways,
+                return_departure_time: travelReturnDepartureTime,
+                guide_service: travelGuideService,
+                combo_flight_from_iata: travelComboFromIATA,
+                combo_flight_to_iata: travelComboToIATA,
+                combo_airline: travelComboAirline,
+                combo_flight_price_text: travelComboFlightPrice,
+                transfer_vehicle: travelTransferVehicle,
+                transfer_from: travelTransferFrom,
+                transfer_to: travelTransferTo,
+                transfer_duration: travelTransferDuration,
+                transfer_departure_time: travelTransferTime,
+                combo_notes: travelComboNotes,
+                ship_name: travelShipName,
+                cruise_line: travelCruiseLine,
+                cabin_category: travelCabinCategory,
+                embarkation_port: travelEmbarkationPort,
+              },
+              story_highlights: travelStoryHighlights,
+              itinerary_days: travelItineraryDays,
+              bio_bullets: generatedBioBullets,
+              lodgings: travelLodgings.filter((l) => l.name.trim() !== ""),
+              hotels: travelLodgings.filter((l) => l.name.trim() !== ""),
+              hotel_name: travelLodgings[0]?.name || undefined,
+              hotel_description: travelLodgings[0]?.description || undefined,
+              hotel_address: travelLodgings[0]?.address || undefined,
+              hotel_stars: travelLodgings[0]?.stars || undefined,
+              hotel_amenities: travelLodgings[0]?.amenities || undefined,
+            }
+          : {}),
         // Hospedagem
         deal_type: niche.id === "hospedagem" ? "temporada" : niche.id === "imovel" ? reDealType : undefined,
         rental_period: niche.id === "hospedagem" ? "diaria" : undefined,
@@ -3922,6 +4167,21 @@ function SpecializedClassifiedEditor({
     pitchDeckUrl,
   ]);
 
+  const handleOpenLivePreview = useCallback(() => {
+    if (typeof window !== "undefined") {
+      try {
+        sessionStorage.setItem("waesy_preview_payload", JSON.stringify(livePreviewClassified));
+        const previewUrl = `/classificados/${editId || "preview-live"}?preview=true`;
+        const win = window.open(previewUrl, "_blank");
+        if (!win) {
+          setIsPreviewModalOpen(true);
+        }
+      } catch {
+        setIsPreviewModalOpen(true);
+      }
+    }
+  }, [editId, livePreviewClassified]);
+
  return (
  <div className="space-y-4">
  {/* ── Topbar Operacional Compacta & Sticky no Mobile ────────── */}
@@ -3947,38 +4207,23 @@ function SpecializedClassifiedEditor({
           </div>
         </div>
 
-        {/* Mobile Switcher & Publicar / Salvar Action */}
+        {/* Ações Globais: Visualizar Prévia Real e Publicar / Salvar */}
         <div className="flex items-center gap-2">
-          <div className="flex md:hidden bg-muted p-1 rounded-lg text-xs font-semibold">
-            <button
-              type="button"
-              onClick={() => setMobileTab("edit")}
-              className={`px-3 py-2 rounded-lg min-h-11 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                mobileTab === "edit"
-                  ? "bg-card text-foreground font-bold "
-                  : "text-muted-foreground"
-              }`}
-            >
-              Editar
-            </button>
-            <button
-              type="button"
-              onClick={() => setMobileTab("preview")}
-              className={`px-3 py-2 rounded-lg min-h-11 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                mobileTab === "preview"
-                  ? "bg-card text-foreground font-bold "
-                  : "text-muted-foreground"
-              }`}
-            >
-              Prévia ({images.length})
-            </button>
-          </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleOpenLivePreview}
+            className="rounded-lg text-xs font-bold gap-2 border-border/80 hover:bg-muted h-11 min-h-11 px-3 sm:px-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary text-foreground"
+          >
+            <Eye className="size-4 text-primary shrink-0" />
+            <span>Visualizar Prévia</span>
+          </Button>
 
           <Button
             onClick={handlePublish}
             disabled={isSubmitting || isUploadingMedia}
             size="sm"
-            className="rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground h-11 min-h-11 px-4"
+            className="rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground h-11 min-h-11 px-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             {isSubmitting ? (
               <>
@@ -4004,10 +4249,24 @@ function SpecializedClassifiedEditor({
             { step: 3, label: "Informações", short: "Info" },
             {
               step: 4,
-              label: niche.id === "vaga" ? "Remuneração" : niche.id === "doacao" ? "Disponibilidade" : "Preço e Pagamento",
-              short: niche.id === "vaga" ? "Salário" : niche.id === "doacao" ? "Doação" : "Preço",
+              label:
+                niche.id === "evento"
+                  ? "Ingressos e Lotes"
+                  : niche.id === "vaga"
+                  ? "Remuneração"
+                  : niche.id === "doacao"
+                  ? "Disponibilidade"
+                  : "Preço e Pagamento",
+              short:
+                niche.id === "evento"
+                  ? "Ingressos"
+                  : niche.id === "vaga"
+                  ? "Salário"
+                  : niche.id === "doacao"
+                  ? "Doação"
+                  : "Preço",
             },
-            { step: 5, label: "Prévia e Publicar", short: "Publicar" },
+            { step: 5, label: "Visualizar Prévia", short: "Prévia" },
           ].map((s) => {
             const isCurrent = currentStep === s.step;
             const isPast = currentStep > s.step;
@@ -4017,6 +4276,7 @@ function SpecializedClassifiedEditor({
                 type="button"
                 onClick={() => {
                   if (s.step === 1) onBack();
+                  else if (s.step === 5) handleOpenLivePreview();
                   else setCurrentStep(s.step as any);
                 }}
                 className={cn(
@@ -4096,242 +4356,42 @@ function SpecializedClassifiedEditor({
         </span>
       </div>
 
-      {currentStep === 5 ? (
-        <div className="space-y-4 max-w-5xl mx-auto">
-          {/* Header do Preview com Alternador de Layout e Dispositivo */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-lg bg-card border border-border/60">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-bold text-foreground uppercase tracking-wider">
-                Visualização do Comprador
-              </span>
-              <div className="flex items-center gap-1 bg-muted p-0.5 rounded-lg text-xs">
-                {[
-                  { id: "standard", label: "Padrão" },
-                  { id: "editorial", label: "Editorial" },
-                  { id: "automotivo", label: "Auto" },
-                  { id: "imobiliario", label: "Imóvel" },
-                  { id: "resort_hotel", label: "Resort" },
-                  { id: "servicos_agenda", label: "Serviço" },
-                  ...(niche.id === "mercado" ? [{ id: "conveniencia", label: "Mercado" }] : []),
-                ].map((t) => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => setTemplateStyle(t.id as any)}
-                    className={cn(
-                      "px-2.5 py-1 text-xs font-semibold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                      templateStyle === t.id
-                        ? "bg-primary text-primary-foreground font-bold shadow-xs"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Alternador Limpo: Mobile vs Desktop (Sem Emojis) */}
-            <div className="flex items-center self-end sm:self-auto bg-muted p-1 rounded-lg text-xs font-semibold">
-              <button
-                type="button"
-                onClick={() => setPreviewDevice("mobile")}
-                className={cn(
-                  "px-3 py-2 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                  previewDevice === "mobile"
-                    ? "bg-card text-foreground font-bold "
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                Mobile (390px)
-              </button>
-              <button
-                type="button"
-                onClick={() => setPreviewDevice("desktop")}
-                className={cn(
-                  "px-3 py-2 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                  previewDevice === "desktop"
-                    ? "bg-card text-foreground font-bold "
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                Desktop
-              </button>
-            </div>
-          </div>
-
-          {/* Container da Prévia Real */}
-          <div className="flex justify-center">
-            <div
-              className={cn(
-                "w-full transition-colors duration-300",
-                previewDevice === "mobile"
-                  ? "max-w-sm border border-border/80 rounded-lg p-1 bg-background  overflow-hidden"
-                  : "max-w-5xl"
-              )}
-            >
-              {templateStyle === "conveniencia" || niche.id === "mercado" ? (
-                <ConvenienceShowcaseView
-                  classified={livePreviewClassified}
-                  previewData={{
-                    title: title || "Produto de Mercado",
-                    description: description,
-                    priceCents: priceCents || 0,
-                    images: images || [],
-                    locationName: locationName || "São Miguel do Oeste e Região",
-                    whatsapp,
-                    storeName: selectedStore?.name,
-                    storeSlug: selectedStore?.slug,
-                    storeLogo: selectedStore?.logo_url,
-                    authorName: !selectedStore ? (userProfile?.full_name || "Você") : undefined,
-                    authorAvatar: !selectedStore ? (userProfile?.avatar_url || undefined) : undefined,
-                    authorId: !selectedStore ? userProfile?.id : undefined,
-                    volume: convenienceVolume,
-                    unitType: groceryUnitType,
-                    department: groceryDepartment,
-                    temperature: groceryTemperature,
-                    isAlcoholic: groceryIsAlcoholic,
-                    containsGluten: groceryContainsGluten ?? undefined,
-                    containsLactose: groceryContainsLactose ?? undefined,
-                    isOrganic: groceryIsOrganic,
-                    brand: groceryBrand,
-                    barcodeEan: groceryBarcodeEan,
-                    ingredients: groceryIngredients,
-                    prepOptions: groceryPrepOptions,
-                    deliveryEstimate: groceryDeliveryEstimate,
-                    deliveryFeeCents: groceryDeliveryFeeCents,
-                    readyDelivery: readyDelivery,
-                    acceptsPix,
-                    pixDiscountPercent,
-                    acceptsCard,
-                    maxInstallments,
-                    cardInterestFree,
-                    acceptsCash,
-                    groceryFreshPricing: grocerySupportsFreshPricing ? {
-                      supports_fresh_pricing: true,
-                      default_pricing_mode: groceryDefaultPricingMode,
-                      avg_piece_weight_grams: groceryAvgPieceWeightGrams,
-                      price_per_kg_cents: groceryPricePerKgCents,
-                      price_per_unit_cents: priceCents,
-                    } : undefined,
-                    groceryRipenessConfig: groceryRipenessEnabled ? {
-                      enabled: true,
-                      stages: groceryRipenessStages,
-                      default_stage: "maduro",
-                    } : undefined,
-                    progressiveDiscountTiers: groceryProgressiveDiscountsEnabled ? groceryDiscountTiers : undefined,
-                    orderBumpOffer: groceryOrderBumpEnabled && groceryOrderBumpTitle.trim() ? {
-                      enabled: true,
-                      mode: "manual",
-                      target_title: groceryOrderBumpTitle.trim(),
-                      special_price_cents: groceryOrderBumpSpecialPriceCents,
-                      original_price_cents: groceryOrderBumpOriginalPriceCents,
-                      badge_text: groceryOrderBumpBadge,
-                    } : undefined,
-                  }}
-                  isOwner={true}
-                  previewDevice={previewDevice}
-                  compact={previewDevice === "mobile"}
-                  onEdit={() => setCurrentStep(2)}
-                />
-              ) : templateStyle === "editorial" || (templateStyle as string) === "instagram" || (templateStyle as string) === "instagram_resort" || (!templateStyle && niche.id === "viagem") ? (
-                <EditorialShowcaseView
-                  classified={livePreviewClassified}
-                  isOwner={true}
-                  onOpenBookingModal={() => toast.info("Modo de Pré-visualização: As reservas estarão ativas após a publicação do anúncio.")}
-                  onOpenProposalModal={() => toast.info("Modo de Pré-visualização: O envio de propostas estará ativo após a publicação do anúncio.")}
-                  onEditClassified={() => setCurrentStep(2)}
-                />
-              ) : (
-                <UniversalClassifiedShowcase
-                  classified={livePreviewClassified}
-                  previewViewport={previewDevice}
-                  isOwner={true}
-                  canManage={true}
-                  onOpenBookingModal={() => toast.info("Modo de Pré-visualização: As reservas estarão ativas após a publicação do anúncio.")}
-                  onOpenProposalModal={() => toast.info("Modo de Pré-visualização: O envio de propostas estará ativo após a publicação do anúncio.")}
-                  onEdit={() => setCurrentStep(2)}
-                />
-              )}
-
-            </div>
-          </div>
-
-          {/* Sticky Thumb Zone Action Bar no Step 5 */}
-          <div className="sticky bottom-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/80 p-3 sm:p-4 -mx-4 sm:mx-0 sm:rounded-lg sm:border flex items-center justify-between gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setCurrentStep(4)}
-              className="rounded-lg h-11 px-4 text-xs font-semibold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              <ArrowLeft className="size-4" />
-              <span>Ajustar Condições</span>
-            </Button>
-
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={handleSaveDraft}
-                disabled={isSubmitting}
-                className="rounded-lg h-11 px-3 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              >
-                Salvar Rascunho
-              </Button>
-
-              <Button
-                type="button"
-                onClick={handlePublish}
-                disabled={isSubmitting || isUploadingMedia}
-                className="rounded-lg h-11 px-6 text-sm font-bold bg-primary text-primary-foreground active:scale-98 transition-colors gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
-                    <span>Publicando...</span>
-                  </>
-                ) : (
-                  <>
-                    <Check className="size-4 stroke-2" />
-                    <span>{editId ? "Salvar Alterações" : "Publicar Anúncio"}</span>
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : (
-        /* ── Grid Principal: Editor (42%) + Truthful Preview (58%) ── */
- <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
- {/* Painel Esquerdo: Formulário Especializado com Scroll Dedicado */}
- <aside
- className={`md:col-span-5 space-y-6 ${mobileTab === "edit" ? "block" : "hidden md:block"} `}
- >
+        {/* Formulário de Edição Unificado & Confortável (Sem Mockup Embutido) */}
+        <div className="w-full max-w-4xl mx-auto space-y-6">
           <div className="space-y-6">
-            {/* Section 1: Fotos do Topo & Galeria Exclusiva do Feed */}
-            <div className="bg-card rounded-lg p-4 sm:p-5 space-y-5 border border-border/60">
+            {/* Section 1: Mídias do Anúncio (Capa de Topo & Mural do Feed da Cidade) */}
+            <div className="bg-card rounded-lg p-5 sm:p-6 space-y-6 border border-border/60 shadow-xs">
               <div className="flex items-center justify-between pb-3 border-b border-border/40">
                 <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                   <ImagePlus className="size-4 text-primary shrink-0" />
-                  <span>1. Mídias do Anúncio</span>
+                  <span>Mídias e Identidade Visual</span>
                 </div>
+                <Badge variant="outline" className="text-xs font-mono text-muted-foreground">
+                  {images.length + feedMedia.length} mídia(s)
+                </Badge>
               </div>
 
-              {/* 1.1 Fotos de Destaque / Carrossel Superior */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
-                    <span>Fotos do Topo (Carrossel Hero)</span>
-                    <Badge variant="outline" className="text-xs py-0 px-2 font-mono">Até 10 fotos</Badge>
-                  </Label>
-                  <span className="text-xs text-muted-foreground/75 font-mono text-muted-foreground">
-                    {images.length}/10 adicionada(s)
-                  </span>
+              {/* 1.1 Fotos de Capa e Destaque (Topo do Anúncio) */}
+              <SquircleCard variant="media" className="p-5 sm:p-6 space-y-4 border border-border/60 bg-muted/20">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                  <div className="space-y-2 min-w-0">
+                    <Label className="text-sm font-bold text-foreground flex items-center gap-2">
+                      <ImagePlus className="size-4 text-primary shrink-0" />
+                      <span>Fotos de Capa e Topo (Visualização Principal)</span>
+                    </Label>
+                    <p className="text-xs text-muted-foreground leading-relaxed break-words text-wrap">
+                      Estas fotos aparecem no cabeçalho do anúncio, no banner principal e nos cards das vitrines de busca da cidade. A 1ª foto será a capa oficial do anúncio.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                    <Badge variant="outline" className="text-xs py-1 px-3 font-mono">
+                      4:3 Horizontal
+                    </Badge>
+                    <Badge className="bg-primary/10 text-primary border-primary/20 text-xs py-1 px-3 font-mono font-bold">
+                      {images.length}/10 adicionada(s)
+                    </Badge>
+                  </div>
                 </div>
-                <p className="text-xs text-muted-foreground/75 text-muted-foreground leading-relaxed">
-                  Imagens principais exibidas no carrossel de topo do anúncio (formato 4:3 com recorte).
-                </p>
                 <MediaUploader
                   value={images}
                   onChange={setImages}
@@ -4343,22 +4403,29 @@ function SpecializedClassifiedEditor({
                   lockAspect={true}
                   maxFiles={10}
                 />
-              </div>
+              </SquircleCard>
 
-              {/* 1.2 Galeria Exclusiva do Feed */}
-              <div className="pt-3 border-t border-border/40 space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
-                    <span>Galeria Exclusiva do Feed</span>
-                    <Badge className="bg-primary/10 text-primary border-primary/20 text-xs py-0 px-2 font-bold">Até 12 mídias</Badge>
-                  </Label>
-                  <span className="text-xs text-muted-foreground/75 font-mono text-muted-foreground">
-                    {feedMedia.length}/12 adicionada(s)
-                  </span>
+              {/* 1.2 Mídias do Feed da Cidade e Galeria */}
+              <SquircleCard variant="media" className="p-5 sm:p-6 space-y-4 border border-border/60 bg-muted/20">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                  <div className="space-y-2 min-w-0">
+                    <Label className="text-sm font-bold text-foreground flex items-center gap-2">
+                      <Layers className="size-4 text-primary shrink-0" />
+                      <span>Mídias do Feed da Cidade e Galeria</span>
+                    </Label>
+                    <p className="text-xs text-muted-foreground leading-relaxed break-words text-wrap">
+                      Fotos e vídeos curtos publicados no Feed da Cidade dos membros e na grade visual quadrada do anúncio. Formato quadrado 1:1 nativo.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                    <Badge variant="outline" className="text-xs py-1 px-3 font-mono">
+                      1:1 Quadrado
+                    </Badge>
+                    <Badge className="bg-primary/10 text-primary border-primary/20 text-xs py-1 px-3 font-mono font-bold">
+                      {feedMedia.length}/12 adicionada(s)
+                    </Badge>
+                  </div>
                 </div>
-                <p className="text-xs text-muted-foreground/75 text-muted-foreground leading-relaxed">
-                  Mídias que aparecem exclusivamente no feed e grid do anúncio. Aceita Fotos, GIFs animados e Vídeos curtos (MP4/WebM). <strong>Não duplica as fotos do topo.</strong>
-                </p>
                 <MediaUploader
                   value={feedMedia}
                   onChange={setFeedMedia}
@@ -4370,18 +4437,30 @@ function SpecializedClassifiedEditor({
                   maxFiles={12}
                   accept="all"
                 />
-              </div>
+              </SquircleCard>
             </div>
 
             {/* Section 2: Informações Básicas (Design Silencioso V121) */}
             <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
               <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-3 border-b border-border/40">
                 <FileText className="size-4 text-primary shrink-0" />
-                <span>2. Informações</span>
+                <span>Informações Gerais</span>
               </div>
 
             <div className="space-y-2">
-              <Label className="text-xs text-foreground font-medium">Título do Anúncio *</Label>
+              <div className="flex items-center justify-between gap-2">
+                <Label className="text-xs text-foreground font-medium">Título do Anúncio *</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleOpenCopilot("title")}
+                  className="h-11 min-h-11 px-3 text-xs font-semibold text-primary hover:text-primary hover:bg-primary/10 gap-2 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <Sparkles className="size-4" />
+                  <span>Sugerir título</span>
+                </Button>
+              </div>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -4396,6 +4475,8 @@ function SpecializedClassifiedEditor({
                     ? "Ex: Manutenção Elétrica Residencial & Comercial"
                     : niche.id === "vaga"
                     ? "Ex: Analista Financeiro Sênior (Híbrido)"
+                    : niche.id === "evento"
+                    ? "Ex: Festival de Inverno 2026 - Música & Gastronomia"
                     : "Ex: iPhone 15 Pro Max 256GB Impecável na Caixa"
                 }
                 className="h-11 rounded-lg text-xs bg-background font-medium"
@@ -4403,44 +4484,47 @@ function SpecializedClassifiedEditor({
             </div>
 
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <Label className="text-xs text-foreground font-medium">Descrição Completa *</Label>
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  disabled={isRefiningDescription}
-                  onClick={handleRefineDescriptionWithAI}
-                  className="h-11 min-h-11 px-3 text-xs font-semibold text-primary hover:text-primary hover:bg-primary/10 gap-1.5 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  onClick={() => handleOpenCopilot("all_editorial_fields")}
+                  className="h-11 min-h-11 px-3 text-xs font-semibold text-primary hover:text-primary hover:bg-primary/10 gap-2 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
-                  {isRefiningDescription ? (
-                    <>
-                      <Loader2 className="size-3.5 animate-spin" />
-                      <span>Copilot pensando...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Wand2 className="size-3.5" />
-                      <span>Refinar com Copilot</span>
-                    </>
-                  )}
+                  <Wand2 className="size-4" />
+                  <span>Refinar com Copilot</span>
                 </Button>
               </div>
               <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                rows={4}
+                rows={5}
                 placeholder={
                   niche.id === "hospedagem"
                     ? "Descreva a atmosfera do espaço, comodidades, localização, distâncias de pontos turísticos e regras de convivência..."
+                    : niche.id === "evento"
+                    ? "Descreva a programação, atrações principais, estrutura do evento, classificação e orientações aos participantes..."
                     : "Descreva todos os detalhes, histórico, diferenciais e informações importantes..."
                 }
-                className="rounded-lg text-xs bg-background resize-none leading-relaxed"
+                className="rounded-lg text-xs bg-background resize-y leading-relaxed"
               />
+              {editorialTags.length > 0 && (
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <span className="text-xs font-medium text-muted-foreground">Tags ativas:</span>
+                  {editorialTags.map((t) => (
+                    <Badge key={t} variant="secondary" className="text-xs">
+                      #{t}
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Motor de Precificação Dinâmica & Avisos */}
-            <div className="space-y-3 pt-1 border-t border-border/40">
+            {niche.id !== "evento" ? (
+              <div className="space-y-3 pt-1 border-t border-border/40">
               <div className="space-y-2">
                 <Label className="text-xs text-foreground font-semibold">
                   Modalidade de Preço
@@ -4691,18 +4775,39 @@ function SpecializedClassifiedEditor({
                 )}
               </div>
             </div>
- </div>
+          ) : (
+            <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 flex items-start gap-3 mt-4">
+              <Ticket className="size-5 text-primary shrink-0 mt-1" />
+              <div className="space-y-1 text-xs">
+                <p className="font-bold text-foreground">Precificação Direta nos Ingressos e Lotes</p>
+                <p className="text-muted-foreground leading-relaxed">
+                  Eventos não utilizam preço geral no topo do anúncio. Seus valores são cadastrados individualmente por lote e tipo de ingresso na Seção 3. O menor valor ativo será exibido na capa como &quot;A partir de R$...&quot; (ou Entrada Franca se gratuito).
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
 
- {/* Seção 2: Especificações Técnicas do Anúncio */}
+            {/* Seção 3: Especificações Técnicas do Anúncio */}
             {/* Viagens, Turismo & Resorts */}
             {niche.id === "viagem" && (
               <div className="bg-card rounded-lg p-4 sm:p-5 space-y-6 border border-border/60">
                 {/* Header */}
-                <div className="flex items-center justify-between pb-3 border-b border-border/40">
+                <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border/40 w-full">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
-                    <Key className="size-4 text-primary shrink-0" />
-                    <span>2. Detalhes da Viagem</span>
+                    <Plane className="size-4 text-primary shrink-0" />
+                    <span>Detalhes da Viagem</span>
                   </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setTravelStudioOpen(true)}
+                    className="h-11 min-h-11 px-4 text-xs font-semibold gap-2 border-primary/40 text-primary hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <Sparkles className="size-4 shrink-0 text-primary" />
+                    <span>Estúdio Excelência (Story 9:16 + WhatsApp)</span>
+                  </Button>
                 </div>
 
                 {/* 2.0 — Modo de Visibilidade & Orçamento Privado (Link Direto) */}
@@ -4910,30 +5015,22 @@ function SpecializedClassifiedEditor({
                       </p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div className="space-y-2">
-                          <Label className="text-xs font-medium">Aeroporto de Saída (IATA)</Label>
-                          <Select value={travelDepartureIATA} onValueChange={setTravelDepartureIATA}>
-                            <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
-                              <SelectValue placeholder="XAP — Chapecó, SC" />
-                            </SelectTrigger>
-                            <SelectContent className="max-h-72">
-                              {CANONICAL_AIRPORTS.map((a) => (
-                                <SelectItem key={a.iata} value={a.iata}>{airportLabel(a)}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <AirportCombobox
+                            label="Aeroporto de Saída (IATA)"
+                            value={travelDepartureIATA}
+                            onChange={(iata) => setTravelDepartureIATA(iata)}
+                            placeholder="Buscar saída (ex: XAP, GRU)..."
+                            showAirportLink={true}
+                          />
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-xs font-medium">Aeroporto de Chegada (IATA)</Label>
-                          <Select value={travelArrivalIATA} onValueChange={setTravelArrivalIATA}>
-                            <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
-                              <SelectValue placeholder="FOR — Fortaleza, CE" />
-                            </SelectTrigger>
-                            <SelectContent className="max-h-72">
-                              {CANONICAL_AIRPORTS.map((a) => (
-                                <SelectItem key={a.iata} value={a.iata}>{airportLabel(a)}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <AirportCombobox
+                            label="Aeroporto de Chegada (IATA)"
+                            value={travelArrivalIATA}
+                            onChange={(iata) => setTravelArrivalIATA(iata)}
+                            placeholder="Buscar chegada (ex: FOR, MIA)..."
+                            showAirportLink={true}
+                          />
                         </div>
                         <div className="space-y-2">
                           <Label className="text-xs font-medium">Companhia Aérea</Label>
@@ -5148,30 +5245,22 @@ function SpecializedClassifiedEditor({
                         </p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <div className="space-y-2">
-                            <Label className="text-xs font-medium">Aeroporto de Origem</Label>
-                            <Select value={travelComboFromIATA} onValueChange={setTravelComboFromIATA}>
-                              <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
-                                <SelectValue placeholder="XAP — Chapecó" />
-                              </SelectTrigger>
-                              <SelectContent className="max-h-72">
-                                {CANONICAL_AIRPORTS.map((a) => (
-                                  <SelectItem key={a.iata} value={a.iata}>{airportLabel(a)}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <AirportCombobox
+                              label="Aeroporto de Origem"
+                              value={travelComboFromIATA}
+                              onChange={(iata) => setTravelComboFromIATA(iata)}
+                              placeholder="Buscar origem (ex: XAP, CWB)..."
+                              showAirportLink={true}
+                            />
                           </div>
                           <div className="space-y-2">
-                            <Label className="text-xs font-medium">Aeroporto de Desembarque (Gateway)</Label>
-                            <Select value={travelComboToIATA} onValueChange={setTravelComboToIATA}>
-                              <SelectTrigger className="h-11 rounded-lg text-xs bg-background font-medium">
-                                <SelectValue placeholder="FOR — Fortaleza" />
-                              </SelectTrigger>
-                              <SelectContent className="max-h-72">
-                                {CANONICAL_AIRPORTS.map((a) => (
-                                  <SelectItem key={a.iata} value={a.iata}>{airportLabel(a)}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <AirportCombobox
+                              label="Aeroporto de Desembarque (Gateway)"
+                              value={travelComboToIATA}
+                              onChange={(iata) => setTravelComboToIATA(iata)}
+                              placeholder="Buscar gateway (ex: FOR, CUN)..."
+                              showAirportLink={true}
+                            />
                           </div>
                           <div className="space-y-2">
                             <Label className="text-xs font-medium">Companhia Aérea</Label>
@@ -5448,7 +5537,7 @@ function SpecializedClassifiedEditor({
                                 size="sm"
                                 disabled={idx === 0}
                                 onClick={() => handleMoveTravelBullet(idx, "up")}
-                                className="h-11 min-h-11 w-7 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                className="h-11 min-h-11 w-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                 title="Mover para cima"
                                 aria-label="Mover para cima"
                               >
@@ -5460,7 +5549,7 @@ function SpecializedClassifiedEditor({
                                 size="sm"
                                 disabled={idx === travelBioBullets.length - 1}
                                 onClick={() => handleMoveTravelBullet(idx, "down")}
-                                className="h-11 min-h-11 w-7 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                className="h-11 min-h-11 w-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                 title="Mover para baixo"
                                 aria-label="Mover para baixo"
                               >
@@ -5473,7 +5562,7 @@ function SpecializedClassifiedEditor({
                             variant="ghost"
                             size="sm"
                             onClick={() => handleRemoveTravelBullet(idx)}
-                            className="h-11 min-h-11 w-7 p-0 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            className="h-11 min-h-11 w-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                             title={travelBioBullets.length === 1 ? "Limpar campo" : "Remover diferencial"}
                             aria-label="Remover diferencial"
                           >
@@ -5861,26 +5950,26 @@ function SpecializedClassifiedEditor({
 
             {/* Eventos, Festivais & Congressos */}
             {niche.id === "evento" && (
-              <div className="bg-card rounded-lg p-4 sm:p-5 space-y-6 border border-border/60">
+              <div className="bg-card rounded-lg p-5 sm:p-6 space-y-6 border border-border/60 shadow-xs">
                 <div className="flex items-center justify-between pb-3 border-b border-border/40">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <Calendar className="size-4 text-primary shrink-0" />
-                    <span>2. Gestão Completa do Evento</span>
+                    <span>Detalhes do Evento</span>
                   </div>
                   <Badge variant="outline" className="text-xs font-mono text-muted-foreground">
                     Classificado / Eventos
                   </Badge>
                 </div>
 
-                {/* 2.1 — Datas, Horários & Visibilidade */}
+                {/* 3.1 — Datas, Horários & Visibilidade */}
                 <div className="space-y-4">
                   <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <Clock className="size-4 text-primary" />
-                    <span>Datas, Horários e Acesso</span>
+                    <span>Datas e Horários</span>
                   </p>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-date" className="text-xs font-medium text-foreground">
                         Data de Início *
                       </Label>
@@ -5893,7 +5982,7 @@ function SpecializedClassifiedEditor({
                       />
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-end-date" className="text-xs font-medium text-foreground">
                         Data de Término (Opcional)
                       </Label>
@@ -5908,7 +5997,7 @@ function SpecializedClassifiedEditor({
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-start-time" className="text-xs font-medium text-foreground">
                         Horário de Início
                       </Label>
@@ -5921,7 +6010,7 @@ function SpecializedClassifiedEditor({
                       />
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-end-time" className="text-xs font-medium text-foreground">
                         Horário de Encerramento
                       </Label>
@@ -5934,7 +6023,7 @@ function SpecializedClassifiedEditor({
                       />
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-gates-open" className="text-xs font-medium text-foreground">
                         Abertura dos Portões
                       </Label>
@@ -5949,7 +6038,7 @@ function SpecializedClassifiedEditor({
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-age-rating" className="text-xs font-medium text-foreground">
                         Classificação Indicativa
                       </Label>
@@ -5968,7 +6057,7 @@ function SpecializedClassifiedEditor({
                       </Select>
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-visibility" className="text-xs font-medium text-foreground">
                         Visibilidade do Evento
                       </Label>
@@ -5980,23 +6069,23 @@ function SpecializedClassifiedEditor({
                           <SelectValue placeholder="Visibilidade" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="public">Público (Listado na busca e marketplace)</SelectItem>
-                          <SelectItem value="unlisted">Não Listado (Acesso somente via link)</SelectItem>
+                          <SelectItem value="public">Público (Listado na busca e vitrines)</SelectItem>
+                          <SelectItem value="unlisted">Não Listado (Acesso restrito via link)</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
                 </div>
 
-                {/* 2.2 — Local & Espaço */}
+                {/* 3.2 — Local & Espaço */}
                 <div className="space-y-4 pt-4 border-t border-border/40">
                   <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <MapPin className="size-4 text-primary" />
-                    <span>Local e Espaço do Evento</span>
+                    <span>Local do Evento</span>
                   </p>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-venue-name" className="text-xs font-medium text-foreground">
                         Nome do Local / Pavilhão
                       </Label>
@@ -6004,12 +6093,12 @@ function SpecializedClassifiedEditor({
                         id="event-venue-name"
                         value={eventVenueName}
                         onChange={(e) => setEventVenueName(e.target.value)}
-                        placeholder="Ex: Centro de Convenções, Parque de Exposições"
+                        placeholder="Ex: Centro de Eventos, Pavilhão Central"
                         className="h-11 rounded-lg text-xs sm:text-sm bg-background border-border"
                       />
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-venue-address" className="text-xs font-medium text-foreground">
                         Endereço Completo do Local
                       </Label>
@@ -6023,7 +6112,7 @@ function SpecializedClassifiedEditor({
                     </div>
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label htmlFor="event-parking-info" className="text-xs font-medium text-foreground">
                       Estacionamento e Acessibilidade do Local
                     </Label>
@@ -6031,34 +6120,34 @@ function SpecializedClassifiedEditor({
                       id="event-parking-info"
                       value={eventParkingInfo}
                       onChange={(e) => setEventParkingInfo(e.target.value)}
-                      placeholder="Ex: Estacionamento gratuito no local com 500 vagas e rampas de acesso"
+                      placeholder="Ex: Estacionamento gratuito com vagas PCD e rampas de acesso"
                       className="h-11 rounded-lg text-xs sm:text-sm bg-background border-border"
                     />
                   </div>
                 </div>
 
-                {/* 2.3 — Anfitrião & Organizador (Estilo Luma "Hosted By") */}
+                {/* 3.3 — Anfitrião & Realização */}
                 <div className="space-y-4 pt-4 border-t border-border/40">
                   <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <Users className="size-4 text-primary" />
-                    <span>Anfitrião e Organizador do Evento</span>
+                    <span>Anfitrião e Realização</span>
                   </p>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-host-name" className="text-xs font-medium text-foreground">
-                        Nome do Anfitrião ou Entidade
+                        Nome do Anfitrião ou Entidade Organizadora
                       </Label>
                       <Input
                         id="event-host-name"
                         value={eventHostName}
                         onChange={(e) => setEventHostName(e.target.value)}
-                        placeholder="Ex: Ana Souza ou Associação Comercial"
+                        placeholder="Ex: Associação Empresarial ou Produtora Alpha"
                         className="h-11 rounded-lg text-xs sm:text-sm bg-background border-border"
                       />
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-host-role" className="text-xs font-medium text-foreground">
                         Papel / Título do Anfitrião
                       </Label>
@@ -6066,32 +6155,57 @@ function SpecializedClassifiedEditor({
                         id="event-host-role"
                         value={eventHostRole}
                         onChange={(e) => setEventHostRole(e.target.value)}
-                        placeholder="Ex: Curador do Evento, Organizador Principal"
+                        placeholder="Ex: Organizador Oficial, Realizador"
                         className="h-11 rounded-lg text-xs sm:text-sm bg-background border-border"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="event-host-avatar" className="text-xs font-medium text-foreground">
-                        Foto / Avatar do Anfitrião
-                      </Label>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <Label htmlFor="event-host-avatar" className="text-xs font-medium text-foreground">
+                          Logo da Entidade ou Foto do Anfitrião
+                        </Label>
+                        <div className="flex items-center gap-1 bg-muted p-1 rounded-md">
+                          <button
+                            type="button"
+                            onClick={() => setEventHostEntityType("ORGANIZATION")}
+                            className={`px-2 py-1 rounded text-xs font-semibold cursor-pointer ${
+                              eventHostEntityType === "ORGANIZATION"
+                                ? "bg-background text-foreground shadow-xs"
+                                : "text-muted-foreground"
+                            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+                          >
+                            Logo (Retangular)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEventHostEntityType("PERSON")}
+                            className={`px-2 py-1 rounded text-xs font-semibold cursor-pointer ${
+                              eventHostEntityType === "PERSON"
+                                ? "bg-background text-foreground shadow-xs"
+                                : "text-muted-foreground"
+                            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+                          >
+                            Pessoa (Circular)
+                          </button>
+                        </div>
+                      </div>
                       <MediaUploader
                         value={eventHostAvatarUrl ? [eventHostAvatarUrl] : []}
                         onChange={(urls) => setEventHostAvatarUrl(urls[0] || "")}
                         bucket="post-media"
                         folder="avatar"
                         maxFiles={1}
-                        aspect={1}
-                        cropShape="round"
+                        aspect={eventHostEntityType === "PERSON" ? 1 : 16 / 9}
+                        cropShape={eventHostEntityType === "PERSON" ? "round" : "rect"}
                         accept="image"
                         showExternalUrlOption={true}
-                        label="Foto do Anfitrião (Upload, Ctrl+V ou URL)"
                       />
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-host-phone" className="text-xs font-medium text-foreground">
                         WhatsApp de Contato Direto
                       </Label>
@@ -6106,16 +6220,16 @@ function SpecializedClassifiedEditor({
                   </div>
                 </div>
 
-                {/* 2.4 — Story 9:16 & Aplicativo PWA */}
+                {/* 3.4 — Story Vertical & Atalho no Celular */}
                 <div className="space-y-4 pt-4 border-t border-border/40">
                   <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                    <Sparkles className="size-4 text-primary" />
-                    <span>Story 9:16 e Experiência Mobile</span>
+                    <Film className="size-4 text-primary" />
+                    <span>Story Vertical</span>
                   </p>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label htmlFor="event-story-url" className="text-xs font-medium text-foreground">
-                      Mídia do Story 9:16 (Vídeo ou Foto Vertical)
+                      Mídia do Story Vertical 9:16 (Vídeo ou Foto)
                     </Label>
                     <MediaUploader
                       value={eventStoryUrl ? [eventStoryUrl] : []}
@@ -6126,21 +6240,20 @@ function SpecializedClassifiedEditor({
                       aspect={9 / 16}
                       accept="all"
                       showExternalUrlOption={true}
-                      label="Mídia Vertical 9:16 (Upload, Ctrl+V ou URL)"
                     />
                     <p className="text-xs text-muted-foreground">
-                      Vídeos curtos ou teasers verticais abrem em formato imersivo full-screen para engajamento instantâneo.
+                      Teaser vertical exibido em formato imersivo full-screen para engajamento instantâneo.
                     </p>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                    <div className="flex items-center justify-between p-3.5 rounded-lg border border-border/60 bg-muted/20 gap-3">
-                      <div className="space-y-0.5">
+                    <div className="flex items-center justify-between p-4 rounded-lg border border-border/60 bg-muted/20 gap-3">
+                      <div className="space-y-1">
                         <Label htmlFor="story-auto-open" className="text-xs font-bold text-foreground cursor-pointer">
-                          Abertura Automática do Story
+                          Exibir Story ao Abrir o Anúncio
                         </Label>
                         <p className="text-xs text-muted-foreground">
-                          Apresenta o story automaticamente ao visitante na primeira visita
+                          Apresenta o story automaticamente na primeira visita
                         </p>
                       </div>
                       <Switch
@@ -6150,13 +6263,13 @@ function SpecializedClassifiedEditor({
                       />
                     </div>
 
-                    <div className="flex items-center justify-between p-3.5 rounded-lg border border-border/60 bg-muted/20 gap-3">
-                      <div className="space-y-0.5">
+                    <div className="flex items-center justify-between p-4 rounded-lg border border-border/60 bg-muted/20 gap-3">
+                      <div className="space-y-1">
                         <Label htmlFor="event-pwa-enabled" className="text-xs font-bold text-foreground cursor-pointer">
-                          Habilitar App PWA do Evento
+                          Atalho no Celular (Adicionar à Tela de Início)
                         </Label>
                         <p className="text-xs text-muted-foreground">
-                          Exibe convite para o participante salvar o evento na tela de início do celular
+                          Convida o participante a salvar o evento como aplicativo na tela inicial
                         </p>
                       </div>
                       <Switch
@@ -6168,19 +6281,24 @@ function SpecializedClassifiedEditor({
                   </div>
                 </div>
 
-                {/* 2.5 — Ingressos & Lotes */}
+                {/* 3.5 — Ingressos & Lotes */}
                 <div className="space-y-4 pt-4 border-t border-border/40">
                   <div className="flex items-center justify-between">
-                    <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                      <Ticket className="size-4 text-primary" />
-                      <span>Ingressos e Lotes</span>
-                    </p>
+                    <div className="space-y-1">
+                      <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                        <Ticket className="size-4 text-primary" />
+                        <span>Ingressos e Lotes</span>
+                      </p>
+                      <p className="text-xs text-muted-foreground hidden sm:block">
+                        Defina os lotes e valores. O menor valor ativo será a precificação oficial do anúncio.
+                      </p>
+                    </div>
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        const newTier: EventTicketTier = {
+                        const newTier: any = {
                           id: `tier_${Date.now()}`,
                           name: "",
                           price: 0,
@@ -6189,7 +6307,7 @@ function SpecializedClassifiedEditor({
                         };
                         setEventTicketTiers([...eventTicketTiers, newTier]);
                       }}
-                      className="h-9 px-3 text-xs gap-1.5 border-dashed"
+                      className="h-11 min-h-11 px-3 text-xs gap-2 border-dashed"
                     >
                       <Plus className="size-3.5" />
                       Adicionar Lote
@@ -6203,7 +6321,7 @@ function SpecializedClassifiedEditor({
                   ) : (
                     <div className="space-y-3">
                       {eventTicketTiers.map((tier, idx) => (
-                        <div key={tier.id} className="p-3.5 rounded-lg border border-border/60 bg-muted/20 space-y-3">
+                        <div key={tier.id} className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-bold text-foreground">Lote #{idx + 1}</span>
                             <Button
@@ -6211,7 +6329,7 @@ function SpecializedClassifiedEditor({
                               variant="ghost"
                               size="sm"
                               onClick={() => setEventTicketTiers(eventTicketTiers.filter((_, i) => i !== idx))}
-                              className="size-8 p-0 text-muted-foreground hover:text-destructive"
+                              className="size-11 min-h-11 min-w-11 p-0 text-muted-foreground hover:text-destructive"
                             >
                               <Trash2 className="size-4" />
                             </Button>
@@ -6238,12 +6356,17 @@ function SpecializedClassifiedEditor({
                                 min="0"
                                 value={tier.price || ""}
                                 onChange={(e) => {
+                                  const parsed = parseFloat(e.target.value) || 0;
                                   const updated = [...eventTicketTiers];
-                                  updated[idx] = { ...updated[idx], price: parseFloat(e.target.value) || 0 };
+                                  updated[idx] = {
+                                    ...updated[idx],
+                                    price: parsed,
+                                    price_cents: Math.round(parsed * 100),
+                                  } as any;
                                   setEventTicketTiers(updated);
                                 }}
-                                placeholder="0.00"
-                                className="h-10 text-xs bg-background"
+                                placeholder="0.00 (0 = GRÁTIS)"
+                                className="h-11 text-xs bg-background"
                               />
                             </div>
                             <div className="space-y-1">
@@ -6256,13 +6379,13 @@ function SpecializedClassifiedEditor({
                                   setEventTicketTiers(updated);
                                 }}
                               >
-                                <SelectTrigger className="h-10 text-xs bg-background">
+                                <SelectTrigger className="h-11 text-xs bg-background">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="available">Disponível</SelectItem>
                                   <SelectItem value="sold_out">Esgotado</SelectItem>
-                                  <SelectItem value="coming_soon">Em Breve</SelectItem>
+                                  <SelectItem value="coming_soon">Agendado / Em Breve</SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>
@@ -6271,27 +6394,35 @@ function SpecializedClassifiedEditor({
                             <div className="space-y-1">
                               <Label className="text-xs text-muted-foreground">Link de Compra Externa (Opcional)</Label>
                               <Input
-                                value={tier.purchase_url || ""}
+                                value={tier.purchase_url || (tier as any).external_url || ""}
                                 onChange={(e) => {
                                   const updated = [...eventTicketTiers];
-                                  updated[idx] = { ...updated[idx], purchase_url: e.target.value };
+                                  updated[idx] = {
+                                    ...updated[idx],
+                                    purchase_url: e.target.value,
+                                    external_url: e.target.value,
+                                  } as any;
                                   setEventTicketTiers(updated);
                                 }}
                                 placeholder="https://sympla.com.br/... ou https://..."
-                                className="h-10 text-xs bg-background"
+                                className="h-11 text-xs bg-background"
                               />
                             </div>
                             <div className="space-y-1">
-                              <Label className="text-xs text-muted-foreground">Benefícios / Descrição</Label>
+                              <Label className="text-xs text-muted-foreground">Regra de Elegibilidade / Benefícios</Label>
                               <Input
                                 value={tier.description || ""}
                                 onChange={(e) => {
                                   const updated = [...eventTicketTiers];
-                                  updated[idx] = { ...updated[idx], description: e.target.value };
+                                  updated[idx] = {
+                                    ...updated[idx],
+                                    description: e.target.value,
+                                    eligibility_rule: e.target.value,
+                                  } as any;
                                   setEventTicketTiers(updated);
                                 }}
-                                placeholder="Ex: Acesso total + kit de boas-vindas"
-                                className="h-10 text-xs bg-background"
+                                placeholder="Ex: Exclusivo para associados ACIC / Acesso total"
+                                className="h-11 text-xs bg-background"
                               />
                             </div>
                           </div>
@@ -6301,19 +6432,19 @@ function SpecializedClassifiedEditor({
                   )}
                 </div>
 
-                {/* 2.4 — Programação Completa */}
+                {/* 3.6 — Programação e Cronograma */}
                 <div className="space-y-4 pt-4 border-t border-border/40">
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                       <Clock className="size-4 text-primary" />
-                      <span>Programação e Cronograma</span>
+                      <span>Programação do Evento</span>
                     </p>
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        const newItem: EventScheduleItem = {
+                        const newItem: any = {
                           id: `sched_${Date.now()}`,
                           time: "09:00",
                           title: "",
@@ -6322,9 +6453,9 @@ function SpecializedClassifiedEditor({
                         };
                         setEventSchedule([...eventSchedule, newItem]);
                       }}
-                      className="h-9 px-3 text-xs gap-1.5 border-dashed"
+                      className="h-11 min-h-11 px-3 text-xs gap-2 border-dashed"
                     >
-                      <Plus className="size-3.5" />
+                      <Plus className="size-4" />
                       Adicionar Atividade
                     </Button>
                   </div>
@@ -6336,7 +6467,7 @@ function SpecializedClassifiedEditor({
                   ) : (
                     <div className="space-y-3">
                       {eventSchedule.map((item, idx) => (
-                        <div key={item.id} className="p-3.5 rounded-lg border border-border/60 bg-muted/20 space-y-3">
+                        <div key={item.id} className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <span className="text-xs font-bold text-foreground">Horário #{idx + 1}</span>
@@ -6351,7 +6482,7 @@ function SpecializedClassifiedEditor({
                               variant="ghost"
                               size="sm"
                               onClick={() => setEventSchedule(eventSchedule.filter((_, i) => i !== idx))}
-                              className="size-8 p-0 text-muted-foreground hover:text-destructive"
+                              className="size-11 min-h-11 min-w-11 p-0 text-muted-foreground hover:text-destructive"
                             >
                               <Trash2 className="size-4" />
                             </Button>
@@ -6386,45 +6517,62 @@ function SpecializedClassifiedEditor({
                             <div className="space-y-1 sm:col-span-1">
                               <Label className="text-xs text-muted-foreground">Palco / Sala</Label>
                               <Input
-                                value={item.stage || ""}
+                                value={item.stage || (item as any).stage_or_room || ""}
                                 onChange={(e) => {
                                   const updated = [...eventSchedule];
-                                  updated[idx] = { ...updated[idx], stage: e.target.value };
+                                  updated[idx] = {
+                                    ...updated[idx],
+                                    stage: e.target.value,
+                                    stage_or_room: e.target.value,
+                                  } as any;
                                   setEventSchedule(updated);
                                 }}
                                 placeholder="Ex: Auditório Principal"
-                                className="h-10 text-xs bg-background"
+                                className="h-11 text-xs bg-background"
                               />
                             </div>
                           </div>
-                          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-                            <div className="flex-1 w-full space-y-1">
-                              <Label className="text-xs text-muted-foreground">Palestrante / Descrição</Label>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                              <Label className="text-xs text-muted-foreground">Palestrante Vinculado (Opcional)</Label>
                               <Input
-                                value={item.speaker_name || item.description || ""}
+                                value={item.speaker_name || ""}
                                 onChange={(e) => {
                                   const updated = [...eventSchedule];
-                                  updated[idx] = { ...updated[idx], speaker_name: e.target.value, description: e.target.value };
+                                  updated[idx] = { ...updated[idx], speaker_name: e.target.value };
                                   setEventSchedule(updated);
                                 }}
-                                placeholder="Ex: Palestrante: Ana Silva | Tema: Inovação e Inteligência Artificial"
-                                className="h-10 text-xs bg-background"
+                                placeholder="Ex: Dra. Mariana Costa"
+                                className="h-11 text-xs bg-background"
                               />
                             </div>
-                            <div className="flex items-center gap-2 pt-4 sm:pt-0 shrink-0">
-                              <Switch
-                                id={`break-switch-${idx}`}
-                                checked={item.is_break || false}
-                                onCheckedChange={(val) => {
+                            <div className="space-y-1">
+                              <Label className="text-xs text-muted-foreground">Descrição da Atividade (Opcional)</Label>
+                              <Input
+                                value={item.description || ""}
+                                onChange={(e) => {
                                   const updated = [...eventSchedule];
-                                  updated[idx] = { ...updated[idx], is_break: val };
+                                  updated[idx] = { ...updated[idx], description: e.target.value };
                                   setEventSchedule(updated);
                                 }}
+                                placeholder="Ex: Painel sobre Inovação e Inteligência Artificial"
+                                className="h-11 text-xs bg-background"
                               />
-                              <Label htmlFor={`break-switch-${idx}`} className="text-xs text-muted-foreground cursor-pointer">
-                                Intervalo / Café
-                              </Label>
                             </div>
+                          </div>
+                          <div className="flex items-center justify-end gap-2">
+                            <Switch
+                              id={`break-switch-${idx}`}
+                              checked={item.is_break || false}
+                              onCheckedChange={(val) => {
+                                const updated = [...eventSchedule];
+                                updated[idx] = { ...updated[idx], is_break: val };
+                                setEventSchedule(updated);
+                              }}
+                            />
+                            <Label htmlFor={`break-switch-${idx}`} className="text-xs text-muted-foreground cursor-pointer">
+                              Intervalo / Café
+                            </Label>
                           </div>
                         </div>
                       ))}
@@ -6432,7 +6580,7 @@ function SpecializedClassifiedEditor({
                   )}
                 </div>
 
-                {/* 2.5 — Palestrantes & Atrações */}
+                {/* 3.7 — Palestrantes & Atrações */}
                 <div className="space-y-4 pt-4 border-t border-border/40">
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
@@ -6453,9 +6601,9 @@ function SpecializedClassifiedEditor({
                         };
                         setEventSpeakers([...eventSpeakers, newSpeaker]);
                       }}
-                      className="h-9 px-3 text-xs gap-1.5 border-dashed"
+                      className="h-11 min-h-11 px-3 text-xs gap-2 border-dashed"
                     >
-                      <Plus className="size-3.5" />
+                      <Plus className="size-4" />
                       Adicionar Palestrante
                     </Button>
                   </div>
@@ -6467,7 +6615,7 @@ function SpecializedClassifiedEditor({
                   ) : (
                     <div className="space-y-3">
                       {eventSpeakers.map((speaker, idx) => (
-                        <div key={speaker.id} className="p-3.5 rounded-lg border border-border/60 bg-muted/20 space-y-3">
+                        <div key={speaker.id} className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-bold text-foreground">Palestrante #{idx + 1}</span>
                             <Button
@@ -6475,7 +6623,7 @@ function SpecializedClassifiedEditor({
                               variant="ghost"
                               size="sm"
                               onClick={() => setEventSpeakers(eventSpeakers.filter((_, i) => i !== idx))}
-                              className="size-8 p-0 text-muted-foreground hover:text-destructive"
+                              className="size-11 min-h-11 min-w-11 p-0 text-muted-foreground hover:text-destructive"
                             >
                               <Trash2 className="size-4" />
                             </Button>
@@ -6523,29 +6671,43 @@ function SpecializedClassifiedEditor({
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div className="space-y-1">
-                              <Label className="text-xs text-muted-foreground">URL da Foto (Avatar)</Label>
-                              <Input
-                                value={speaker.avatar_url || ""}
-                                onChange={(e) => {
+                              <Label className="text-xs text-muted-foreground">Foto do Palestrante</Label>
+                              <MediaUploader
+                                value={speaker.avatar_url ? [speaker.avatar_url] : []}
+                                onChange={(urls) => {
+                                  const url = urls[0] || "";
                                   const updated = [...eventSpeakers];
-                                  updated[idx] = { ...updated[idx], avatar_url: e.target.value };
+                                  updated[idx] = {
+                                    ...updated[idx],
+                                    avatar_url: url,
+                                    photo_url: url,
+                                  } as any;
                                   setEventSpeakers(updated);
                                 }}
-                                placeholder="https://..."
-                                className="h-10 text-xs bg-background"
+                                bucket="post-media"
+                                folder="avatar"
+                                maxFiles={1}
+                                aspect={1}
+                                cropShape="rect"
+                                accept="image"
+                                showExternalUrlOption={true}
                               />
                             </div>
                             <div className="space-y-1">
                               <Label className="text-xs text-muted-foreground">LinkedIn / Rede Social</Label>
                               <Input
-                                value={speaker.social_url || ""}
+                                value={speaker.social_url || (speaker as any).social_link || ""}
                                 onChange={(e) => {
                                   const updated = [...eventSpeakers];
-                                  updated[idx] = { ...updated[idx], social_url: e.target.value };
+                                  updated[idx] = {
+                                    ...updated[idx],
+                                    social_url: e.target.value,
+                                    social_link: e.target.value,
+                                  } as any;
                                   setEventSpeakers(updated);
                                 }}
                                 placeholder="https://linkedin.com/in/..."
-                                className="h-10 text-xs bg-background"
+                                className="h-11 text-xs bg-background"
                               />
                             </div>
                           </div>
@@ -6568,7 +6730,7 @@ function SpecializedClassifiedEditor({
                   )}
                 </div>
 
-                {/* 2.6 — Patrocinadores & Parceiros */}
+                {/* 3.8 — Patrocinadores & Parceiros */}
                 <div className="space-y-4 pt-4 border-t border-border/40">
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
@@ -6580,16 +6742,17 @@ function SpecializedClassifiedEditor({
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        const newSponsor: EventSponsor = {
+                        const newSponsor: any = {
                           id: `spn_${Date.now()}`,
                           name: "",
                           tier: "master",
+                          tier_label: "Patrocínio Master",
                         };
                         setEventSponsors([...eventSponsors, newSponsor]);
                       }}
-                      className="h-9 px-3 text-xs gap-1.5 border-dashed"
+                      className="h-11 min-h-11 px-3 text-xs gap-2 border-dashed"
                     >
-                      <Plus className="size-3.5" />
+                      <Plus className="size-4" />
                       Adicionar Patrocinador
                     </Button>
                   </div>
@@ -6601,7 +6764,7 @@ function SpecializedClassifiedEditor({
                   ) : (
                     <div className="space-y-3">
                       {eventSponsors.map((sponsor, idx) => (
-                        <div key={sponsor.id} className="p-3.5 rounded-lg border border-border/60 bg-muted/20 space-y-3">
+                        <div key={sponsor.id} className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-bold text-foreground">Marca #{idx + 1}</span>
                             <Button
@@ -6609,7 +6772,7 @@ function SpecializedClassifiedEditor({
                               variant="ghost"
                               size="sm"
                               onClick={() => setEventSponsors(eventSponsors.filter((_, i) => i !== idx))}
-                              className="size-8 p-0 text-muted-foreground hover:text-destructive"
+                              className="size-11 min-h-11 min-w-11 p-0 text-muted-foreground hover:text-destructive"
                             >
                               <Trash2 className="size-4" />
                             </Button>
@@ -6664,16 +6827,22 @@ function SpecializedClassifiedEditor({
                             </div>
                           </div>
                           <div className="space-y-1">
-                            <Label className="text-xs text-muted-foreground">URL da Logomarca</Label>
-                            <Input
-                              value={sponsor.logo_url || ""}
-                              onChange={(e) => {
-                                  const updated = [...eventSponsors];
-                                  updated[idx] = { ...updated[idx], logo_url: e.target.value };
-                                  setEventSponsors(updated);
+                            <Label className="text-xs text-muted-foreground">Logomarca do Patrocinador</Label>
+                            <MediaUploader
+                              value={sponsor.logo_url ? [sponsor.logo_url] : []}
+                              onChange={(urls) => {
+                                const url = urls[0] || "";
+                                const updated = [...eventSponsors];
+                                updated[idx] = { ...updated[idx], logo_url: url };
+                                setEventSponsors(updated);
                               }}
-                              placeholder="https://... (PNG ou SVG transparente)"
-                              className="h-10 text-xs bg-background"
+                              bucket="post-media"
+                              folder="sponsors"
+                              maxFiles={1}
+                              aspect={16 / 9}
+                              cropShape="rect"
+                              accept="image"
+                              showExternalUrlOption={true}
                             />
                           </div>
                         </div>
@@ -6682,12 +6851,12 @@ function SpecializedClassifiedEditor({
                   )}
                 </div>
 
-                {/* 2.7 — Enquetes & Interatividade ao Vivo */}
+                {/* 3.9 — Enquetes & Interatividade ao Vivo */}
                 <div className="space-y-4 pt-4 border-t border-border/40">
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                       <HelpCircle className="size-4 text-primary" />
-                      <span>Enquetes e Interatividade ao Vivo</span>
+                      <span>Enquetes e Interatividade</span>
                     </p>
                     <Button
                       type="button"
@@ -6697,14 +6866,20 @@ function SpecializedClassifiedEditor({
                         const newSurvey: EventSurvey = {
                           id: `srv_${Date.now()}`,
                           question: "",
-                          options: ["Opção A", "Opção B"],
-                          active: true,
+                          options: [
+                            { id: `opt_${Date.now()}_1`, text: "Opção A", votes: 0 },
+                            { id: `opt_${Date.now()}_2`, text: "Opção B", votes: 0 },
+                          ],
+                          is_active: true,
+                          lifecycle_state: "OPEN",
+                          lifecycle_label: "Aberta",
+                          total_votes: 0,
                         };
                         setEventSurveys([...eventSurveys, newSurvey]);
                       }}
-                      className="h-9 px-3 text-xs gap-1.5 border-dashed"
+                      className="h-11 min-h-11 px-3 text-xs gap-2 border-dashed"
                     >
-                      <Plus className="size-3.5" />
+                      <Plus className="size-4" />
                       Adicionar Enquete
                     </Button>
                   </div>
@@ -6716,7 +6891,7 @@ function SpecializedClassifiedEditor({
                   ) : (
                     <div className="space-y-3">
                       {eventSurveys.map((survey, idx) => (
-                        <div key={survey.id} className="p-3.5 rounded-lg border border-border/60 bg-muted/20 space-y-3">
+                        <div key={survey.id} className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-bold text-foreground">Enquete #{idx + 1}</span>
                             <Button
@@ -6724,7 +6899,7 @@ function SpecializedClassifiedEditor({
                               variant="ghost"
                               size="sm"
                               onClick={() => setEventSurveys(eventSurveys.filter((_, i) => i !== idx))}
-                              className="size-8 p-0 text-muted-foreground hover:text-destructive"
+                              className="size-11 min-h-11 min-w-11 p-0 text-muted-foreground hover:text-destructive"
                             >
                               <Trash2 className="size-4" />
                             </Button>
@@ -6739,24 +6914,24 @@ function SpecializedClassifiedEditor({
                                 setEventSurveys(updated);
                               }}
                               placeholder="Ex: Qual tema você quer ver aprofundado na sessão da tarde?"
-                              className="h-10 text-xs bg-background"
+                              className="h-11 text-xs bg-background"
                             />
                           </div>
                           <div className="space-y-2">
                             <Label className="text-xs text-muted-foreground">Opções de Resposta</Label>
-                            {survey.options.map((opt, optIdx) => (
-                              <div key={optIdx} className="flex items-center gap-2">
+                            {survey.options.map((opt: EventPollOptionNormalized, optIdx: number) => (
+                              <div key={opt.id || optIdx} className="flex items-center gap-2">
                                 <Input
-                                  value={opt}
+                                  value={opt.text}
                                   onChange={(e) => {
                                     const updated = [...eventSurveys];
                                     const opts = [...updated[idx].options];
-                                    opts[optIdx] = e.target.value;
+                                    opts[optIdx] = { ...opts[optIdx], text: e.target.value };
                                     updated[idx] = { ...updated[idx], options: opts };
                                     setEventSurveys(updated);
                                   }}
                                   placeholder={`Opção ${optIdx + 1}`}
-                                  className="h-9 text-xs bg-background"
+                                  className="h-11 text-xs bg-background"
                                 />
                                 {survey.options.length > 2 && (
                                   <Button
@@ -6765,13 +6940,13 @@ function SpecializedClassifiedEditor({
                                     size="sm"
                                     onClick={() => {
                                       const updated = [...eventSurveys];
-                                      const opts = updated[idx].options.filter((_, i) => i !== optIdx);
+                                      const opts = updated[idx].options.filter((_, i: number) => i !== optIdx);
                                       updated[idx] = { ...updated[idx], options: opts };
                                       setEventSurveys(updated);
                                     }}
-                                    className="size-8 p-0 text-muted-foreground hover:text-destructive"
+                                    className="size-11 min-h-11 min-w-11 p-0 text-muted-foreground hover:text-destructive"
                                   >
-                                    <Trash2 className="size-3.5" />
+                                    <Trash2 className="size-4" />
                                   </Button>
                                 )}
                               </div>
@@ -6783,13 +6958,17 @@ function SpecializedClassifiedEditor({
                                 size="sm"
                                 onClick={() => {
                                   const updated = [...eventSurveys];
-                                  const opts = [...updated[idx].options, `Opção ${updated[idx].options.length + 1}`];
+                                  const nextIdx = updated[idx].options.length + 1;
+                                  const opts: EventPollOptionNormalized[] = [
+                                    ...updated[idx].options,
+                                    { id: `opt_${Date.now()}_${nextIdx}`, text: `Opção ${nextIdx}`, votes: 0 },
+                                  ];
                                   updated[idx] = { ...updated[idx], options: opts };
                                   setEventSurveys(updated);
                                 }}
-                                className="h-8 px-2.5 text-xs gap-1 border-dashed mt-1"
+                                className="h-11 min-h-11 px-3 text-xs gap-2 border-dashed mt-1"
                               >
-                                <Plus className="size-3" />
+                                <Plus className="size-4" />
                                 Adicionar Opção
                               </Button>
                             )}
@@ -6800,15 +6979,15 @@ function SpecializedClassifiedEditor({
                   )}
                 </div>
 
-                {/* 2.8 — Políticas e Regras do Evento */}
+                {/* 3.10 — Políticas e Regras do Evento */}
                 <div className="space-y-4 pt-4 border-t border-border/40">
                   <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <ShieldCheck className="size-4 text-primary" />
-                    <span>Políticas e Informações Importantes</span>
+                    <span>Políticas do Evento</span>
                   </p>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-refund-policy" className="text-xs font-medium text-foreground">
                         Política de Cancelamento e Reembolso
                       </Label>
@@ -6821,7 +7000,7 @@ function SpecializedClassifiedEditor({
                       />
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <Label htmlFor="event-half-price" className="text-xs font-medium text-foreground">
                         Regras de Meia-Entrada e Benefícios
                       </Label>
@@ -6835,7 +7014,7 @@ function SpecializedClassifiedEditor({
                     </div>
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label htmlFor="event-accessibility" className="text-xs font-medium text-foreground">
                       Acessibilidade e Inclusão no Local
                     </Label>
@@ -6875,7 +7054,7 @@ function SpecializedClassifiedEditor({
                 <div className="flex items-center justify-between pb-3 border-b border-border/40">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <Wrench className="size-4 text-primary shrink-0" />
-                    <span>2. Equipamento</span>
+                    <span>Equipamento</span>
                   </div>
                   <Badge variant="outline" className="text-xs font-mono text-muted-foreground">
                     Aluguel / Eventos
@@ -6916,7 +7095,7 @@ function SpecializedClassifiedEditor({
                 <div className="flex items-center justify-between pb-3 border-b border-border/40">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <Key className="size-4 text-primary shrink-0" />
- <span>2. Hospedagem</span>
+                    <span>Hospedagem</span>
  </div>
  <Badge variant="outline" className="text-xs font-mono text-muted-foreground">
  Temporada / Diária
@@ -7130,7 +7309,7 @@ function SpecializedClassifiedEditor({
               <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
                 <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-3 border-b border-border/40">
                   <HomeIcon className="size-4 text-primary shrink-0" />
- <span>2. Imóvel</span>
+                  <span>Imóvel</span>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -7291,7 +7470,7 @@ function SpecializedClassifiedEditor({
             <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Car className="size-4 text-primary" />
- <span>2. Veículo</span>
+ <span>Veículo</span>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -7375,6 +7554,27 @@ function SpecializedClassifiedEditor({
  </Select>
  </div>
  </div>
+
+ {/* Consulta e Referência Tabela FIPE */}
+ <FipeVehicleSelector
+ currentBrand={vehicleBrand}
+ currentModel={vehicleModel}
+ currentYearModel={vehicleYearModel}
+ currentFuel={vehicleFuel}
+ currentPriceCents={priceCents || 0}
+ initialFipeCode={vehicleFipeCode}
+ initialFipePriceCents={vehicleFipePriceCents}
+ onSelectVehicle={(data) => {
+ if (data.brand) setVehicleBrand(data.brand);
+ if (data.model) setVehicleModel(data.model);
+ if (data.yearModel) setVehicleYearModel(data.yearModel);
+ if (data.fuel) setVehicleFuel(data.fuel);
+ if (data.fipeCode) setVehicleFipeCode(data.fipeCode);
+ if (data.fipePriceCents) setVehicleFipePriceCents(data.fipePriceCents);
+ if (data.referenceMonth) setVehicleFipeReferenceMonth(data.referenceMonth);
+ if (data.fipeDeltaPercent !== undefined) setVehicleFipeDeltaPercent(data.fipeDeltaPercent);
+ }}
+ />
 
  {/* Opcionais & Diferenciais do Veículo */}
  <div className="rounded-lg border border-border/60 bg-muted/20 p-4 space-y-3 pt-2">
@@ -8697,7 +8897,7 @@ function SpecializedClassifiedEditor({
                   <div className="flex items-center justify-between pb-2 border-b border-border/40">
                     <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
                       <Briefcase className="size-4 text-primary" />
-                      <span>2. Parâmetros do Negócio</span>
+                      <span>Parâmetros do Negócio</span>
                     </div>
                     <Badge variant="outline" className="text-xs font-semibold text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10">
                       Negócios
@@ -9279,7 +9479,7 @@ function SpecializedClassifiedEditor({
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Tag className="size-4 text-primary" />
- <span>2. Especificações</span>
+ <span>Especificações</span>
  </div>
  
  </div>
@@ -9570,7 +9770,7 @@ function SpecializedClassifiedEditor({
             <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Wrench className="size-4 text-primary" />
- <span>2. Atendimento</span>
+ <span>Atendimento</span>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -9885,7 +10085,7 @@ function SpecializedClassifiedEditor({
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <FileArchive className="size-4 text-primary" />
- <span>2. Arquivo Digital</span>
+ <span>Arquivo Digital</span>
  </div>
  <Badge variant="outline" className="text-xs font-mono text-muted-foreground">
  Download Imediato
@@ -10184,7 +10384,7 @@ function SpecializedClassifiedEditor({
                                   size="sm"
                                   disabled={idx === 0}
                                   onClick={() => handleMoveTravelBullet(idx, "up")}
-                                  className="h-11 min-h-11 w-7 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                  className="h-11 min-h-11 w-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                   title="Mover para cima"
                                   aria-label="Mover para cima"
                                 >
@@ -10196,7 +10396,7 @@ function SpecializedClassifiedEditor({
                                   size="sm"
                                   disabled={idx === travelBioBullets.length - 1}
                                   onClick={() => handleMoveTravelBullet(idx, "down")}
-                                  className="h-11 min-h-11 w-7 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                  className="h-11 min-h-11 w-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                   title="Mover para baixo"
                                   aria-label="Mover para baixo"
                                 >
@@ -10209,7 +10409,7 @@ function SpecializedClassifiedEditor({
                               variant="ghost"
                               size="sm"
                               onClick={() => handleRemoveTravelBullet(idx)}
-                              className="h-11 min-h-11 w-7 p-0 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                              className="h-11 min-h-11 w-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                               title={travelBioBullets.length === 1 ? "Limpar campo" : "Remover diferencial"}
                               aria-label="Remover diferencial"
                             >
@@ -10224,12 +10424,12 @@ function SpecializedClassifiedEditor({
               )}
 
               {/* Formas de Pagamento (LISTA ESTRUTURADA ESPAÇOSA - ZERO TRUNCATION - 1x = À VISTA) */}
-              {isPaymentAllowed && (
+              {isPaymentAllowed && niche.id !== "evento" && (
                 <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
                   <div className="flex items-center justify-between pb-3 border-b border-border/40">
                     <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                       <CreditCard className="size-4 text-primary shrink-0" />
-                      <span>Formas de Pagamento Aceitas</span>
+                      <span>Formas de Pagamento</span>
                     </div>
                     <span className="text-xs text-muted-foreground font-mono">Ative as opções aceitas</span>
                   </div>
@@ -10745,7 +10945,7 @@ function SpecializedClassifiedEditor({
               <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
                 <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-3 border-b border-border/40">
                   <MapPin className="size-4 text-primary shrink-0" />
-                  <span>Localização</span>
+                  <span>Localização e Contato</span>
                 </div>
 
  <CityCombobox
@@ -10836,6 +11036,7 @@ function SpecializedClassifiedEditor({
                           <Link
                             to="/f/$slug"
                             params={{ slug: storeForms.find((f: any) => f.id === selectedFormId)?.slug || selectedFormId }}
+                            search={{ leadId: undefined, nome: undefined, tel: undefined, email: undefined }}
                             target="_blank"
                             className="text-xs text-primary hover:underline flex items-center gap-1 font-medium"
                           >
@@ -11077,7 +11278,7 @@ function SpecializedClassifiedEditor({
                 <div className="flex items-center justify-between pb-3 border-b border-blue-500/15">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <Bot className="size-4 text-blue-500 shrink-0" />
-                    <span>6. Agente Vendedor (SDR)</span>
+                    <span>Assistente de Vendas (SDR)</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
@@ -11127,43 +11328,57 @@ function SpecializedClassifiedEditor({
                       </p>
                     </div>
 
-                    {/* Desconto Máximo */}
-                    <div className="space-y-2 p-4 bg-background rounded-lg border border-border/60">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-xs font-medium text-foreground flex items-center gap-2">
+                    {/* Desconto Máximo (Isolado por Nicho) */}
+                    {niche.id === "evento" ? (
+                      <div className="space-y-2 p-4 bg-background rounded-lg border border-border/60">
+                        <div className="flex items-center gap-2">
                           <BadgePercent className="size-4 text-primary" />
-                          Desconto Máximo Permitido
-                        </Label>
-                        <span className="text-xs font-bold text-foreground tabular-nums font-mono">
-                          {maxDiscountPct === 0 ? "Sem desconto" : `${maxDiscountPct}%`}
-                        </span>
-                      </div>
-                      <input
-                        type="range"
-                        min={0}
-                        max={30}
-                        step={1}
-                        value={maxDiscountPct}
-                        onChange={(e) => setMaxDiscountPct(Number(e.target.value))}
-                        className="w-full h-2 rounded-full accent-primary cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                        aria-label="Desconto máximo para o agente SDR"
-                      />
-                      <div className="flex justify-between text-xs text-muted-foreground font-mono">
-                        <span>0%</span>
-                        <span>10%</span>
-                        <span>20%</span>
-                        <span>30%</span>
-                      </div>
-                      {maxDiscountPct === 0 ? (
-                        <p className="text-xs text-muted-foreground/75 text-muted-foreground">
-                          O agente não poderá negociar desconto algum — defenderá o preço cheio.
+                          <Label className="text-xs font-medium text-foreground">
+                            Desconto Automático Desativado
+                          </Label>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Preços e lotes de ingressos são definidos individualmente na seção de Ingressos e Lotes. Descontos automáticos via SDR são desativados para preservar as regras de lote do evento.
                         </p>
-                      ) : (
-                        <p className="text-xs text-muted-foreground/75 text-amber-600 dark:text-amber-400">
-                          O agente pode conceder até {maxDiscountPct}% de desconto como último recurso. Ele negociará profissionalmente antes de ceder.
-                        </p>
-                      )}
-                    </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-2 p-4 bg-background rounded-lg border border-border/60">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs font-medium text-foreground flex items-center gap-2">
+                            <BadgePercent className="size-4 text-primary" />
+                            Desconto Máximo Permitido
+                          </Label>
+                          <span className="text-xs font-bold text-foreground tabular-nums font-mono">
+                            {maxDiscountPct === 0 ? "Sem desconto" : `${maxDiscountPct}%`}
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min={0}
+                          max={30}
+                          step={1}
+                          value={maxDiscountPct}
+                          onChange={(e) => setMaxDiscountPct(Number(e.target.value))}
+                          className="w-full h-2 rounded-full accent-primary cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          aria-label="Desconto máximo para o agente SDR"
+                        />
+                        <div className="flex justify-between text-xs text-muted-foreground font-mono">
+                          <span>0%</span>
+                          <span>10%</span>
+                          <span>20%</span>
+                          <span>30%</span>
+                        </div>
+                        {maxDiscountPct === 0 ? (
+                          <p className="text-xs text-muted-foreground/75 text-muted-foreground">
+                            O agente não poderá negociar desconto algum — defenderá o preço cheio.
+                          </p>
+                        ) : (
+                          <p className="text-xs text-muted-foreground/75 text-amber-600 dark:text-amber-400">
+                            O agente pode conceder até {maxDiscountPct}% de desconto como último recurso. Ele negociará profissionalmente antes de ceder.
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -11224,14 +11439,7 @@ function SpecializedClassifiedEditor({
                     <div className="space-y-2">
                       <Label className="text-xs font-semibold text-foreground">Modelo Visual do Anúncio</Label>
                       <div className="grid grid-cols-2 sm:grid-cols-1 sm:grid-cols-3 gap-2">
-                        {[
-                          { id: "standard", label: "Padrão Geral", desc: "Limpo & Universal" },
-                          { id: "editorial", label: "Revista Editorial", desc: "Narrativa Imersiva" },
-                          { id: "automotivo", label: "Automotivo", desc: "Specs & Ficha Técnica" },
-                          { id: "imobiliario", label: "Imobiliário", desc: "Cômodos & Condomínio" },
-                          { id: "resort_hotel", label: "Resort & Hotel", desc: "Diárias & Lazer" },
-                          { id: "servicos_agenda", label: "Serviços & Agenda", desc: "Slots & Reserva" },
-                        ].map((tpl) => (
+                        {allowedTemplatesForNiche.map((tpl) => (
                           <button
                             key={tpl.id}
                             type="button"
@@ -11244,314 +11452,292 @@ function SpecializedClassifiedEditor({
                             )}
                           >
                             <p className="text-xs font-bold text-foreground">{tpl.label}</p>
-                            <p className="text-xs text-muted-foreground mt-1">{tpl.desc}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{tpl.description}</p>
                           </button>
                         ))}
                       </div>
                     </div>
                   </div>
                 )}
+              {/* Barra Inferior Confortável de Ações do Formulário */}
+              <div className="pt-6 border-t border-border/40 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleOpenLivePreview}
+                  className="w-full sm:w-auto rounded-lg h-11 min-h-11 px-5 text-xs font-bold gap-2 border-border/80 hover:bg-muted cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary text-foreground"
+                >
+                  <Eye className="size-4 text-primary shrink-0" />
+                  <span>Visualizar Prévia Real</span>
+                </Button>
+
+                <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={handleSaveDraft}
+                    disabled={isSubmitting}
+                    className="rounded-lg h-11 min-h-11 px-4 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    Salvar Rascunho
+                  </Button>
+
+                  <Button
+                    type="button"
+                    onClick={handlePublish}
+                    disabled={isSubmitting || isUploadingMedia}
+                    className="rounded-lg h-11 min-h-11 px-6 text-xs sm:text-sm font-bold bg-primary text-primary-foreground active:scale-98 transition-colors gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
+                        <span>{editId ? "Salvando..." : "Publicando..."}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Check className="size-4 stroke-2" />
+                        <span>{editId ? "Salvar Alterações" : "Publicar Anúncio"}</span>
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        {/* Modal Canônico de Prévia Isolada (Mobile & Desktop) */}
+        <Dialog open={isPreviewModalOpen} onOpenChange={setIsPreviewModalOpen}>
+          <DialogContent className="max-w-5xl w-full max-h-screen p-0 flex flex-col overflow-hidden bg-background border-border/80">
+            <DialogHeader className="px-4 py-3 sm:px-6 sm:py-4 border-b border-border/60 bg-muted/30 flex flex-row items-center justify-between space-y-0 gap-3">
+              <div className="flex items-center gap-2">
+                <Eye className="size-4 text-primary" />
+                <div>
+                  <DialogTitle className="text-sm font-bold text-foreground">
+                    Prévia do Anúncio
+                  </DialogTitle>
+                  <DialogDescription className="sr-only">
+                    Visualização em tempo real do anúncio em mobile e desktop
+                  </DialogDescription>
+                </div>
               </div>
 
- </aside>
+              <div className="flex items-center gap-2 mr-6 sm:mr-8">
+                {/* Seletor de Modelo Visual (quando houver mais de 1) */}
+                {allowedTemplatesForNiche.length > 1 && (
+                  <div className="hidden sm:flex items-center gap-1 bg-background/80 p-1 rounded-lg border border-border/50">
+                    {allowedTemplatesForNiche.map((tpl) => (
+                      <button
+                        key={tpl.id}
+                        type="button"
+                        onClick={() => setTemplateStyle(tpl.id as any)}
+                        className={cn(
+                          "px-2 py-1 text-xs font-semibold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                          templateStyle === tpl.id
+                            ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        {tpl.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
 
-
- {/* Painel Direito: Live Truthful Preview (Visualização Padrão) */}
- <main
- className={`md:col-span-7 ${mobileTab === "preview" ? "block" : "hidden md:block"} sticky top-0`}
- >
-        <div className="bg-card rounded-lg overflow-hidden border border-border/60">
-          <div className="bg-muted/40 px-3 py-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 border-b border-border/40 text-xs">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="font-semibold flex items-center gap-1.5 text-foreground shrink-0">
-                <Eye className="size-4 text-primary" />
-                <span>Prévia ao vivo</span>
-              </span>
-              <div className="flex items-center gap-1 bg-background/80 p-0.5 rounded-lg border border-border/50">
-                {[
-                  { id: "standard", label: "Padrão" },
-                  { id: "editorial", label: "Editorial" },
-                  { id: "automotivo", label: "Auto" },
-                  { id: "imobiliario", label: "Imóvel" },
-                  { id: "resort_hotel", label: "Resort" },
-                  { id: "servicos_agenda", label: "Serviço" },
-                  ...(niche.id === "mercado" ? [{ id: "conveniencia", label: "Mercado" }] : []),
-                ].map((tpl) => (
+                {/* Seletor de Dispositivo (Mobile / Desktop) */}
+                <div className="flex items-center gap-1 bg-background p-1 rounded-lg border border-border/50">
                   <button
-                    key={tpl.id}
                     type="button"
-                    onClick={() => setTemplateStyle(tpl.id as any)}
+                    onClick={() => setPreviewDevice("mobile")}
                     className={cn(
-                      "px-2 py-0.5 text-xs font-semibold rounded transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                      templateStyle === tpl.id
-                        ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                      "px-3 py-1 text-xs font-bold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      previewDevice === "mobile"
+                        ? "bg-primary text-primary-foreground shadow-xs"
                         : "text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    {tpl.label}
+                    Mobile
                   </button>
-                ))}
-              </div>
-            </div>
+                  <button
+                    type="button"
+                    onClick={() => setPreviewDevice("desktop")}
+                    className={cn(
+                      "px-3 py-1 text-xs font-bold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      previewDevice === "desktop"
+                        ? "bg-primary text-primary-foreground shadow-xs"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Desktop
+                  </button>
+                </div>
 
-            <div className="flex items-center gap-1 bg-background p-0.5 rounded-lg border border-border/50 self-end sm:self-auto">
-              <button
-                type="button"
-                onClick={() => setPreviewDevice("mobile")}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      try {
+                        sessionStorage.setItem("waesy_preview_payload", JSON.stringify(livePreviewClassified));
+                        const previewUrl = editId ? `/classificados/${editId}?preview=true` : `/classificados/preview-live`;
+                        window.open(previewUrl, "_blank");
+                      } catch {
+                        toast.info("Prévia interativa carregada na tela.");
+                      }
+                    }
+                  }}
+                  className="hidden md:flex items-center gap-2 h-11 min-h-11 text-xs font-semibold px-3 rounded-lg border-border/70 hover:bg-muted text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <ExternalLink className="size-3.5 text-muted-foreground" />
+                  <span>Nova Aba</span>
+                </Button>
+              </div>
+            </DialogHeader>
+
+            {/* Área com rolagem independente do preview (Contenção CSS anti-leak) */}
+            <div className="flex-1 overflow-y-auto bg-muted/20 p-2 sm:p-6 pb-20">
+              <div
+                data-preview-device={previewDevice}
                 className={cn(
-                  "px-2.5 py-1 text-xs font-bold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  "transition-colors duration-200 mx-auto",
                   previewDevice === "mobile"
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "w-full max-w-sm rounded-lg border border-border/80 bg-background relative overflow-hidden min-h-96"
+                    : "w-full max-w-5xl rounded-lg border border-border/80 bg-background relative overflow-hidden"
                 )}
               >
-                Mobile
-              </button>
-              <button
-                type="button"
-                onClick={() => setPreviewDevice("desktop")}
-                className={cn(
-                  "px-2.5 py-1 text-xs font-bold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                  previewDevice === "desktop"
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
+                {templateStyle === "conveniencia" ? (
+                  <ConvenienceShowcaseView
+                    classified={livePreviewClassified}
+                    previewData={{
+                      title: title || "Produto de Mercado / Conveniência",
+                      description: description,
+                      priceCents: priceCents || 0,
+                      images: images,
+                      locationName: locationName || "São Miguel do Oeste - SC",
+                      whatsapp: whatsapp,
+                      storeName: selectedStore?.name || "Sua Loja",
+                      storeSlug: selectedStore?.slug,
+                      storeLogo: selectedStore?.logo_url,
+                      authorName: !selectedStore ? (userProfile?.full_name || "Você") : undefined,
+                      authorAvatar: !selectedStore ? (userProfile?.avatar_url || undefined) : undefined,
+                      authorId: !selectedStore ? userProfile?.id : undefined,
+                      volume: convenienceVolume,
+                      unitType: groceryUnitType,
+                      estimatedWeightPerUnit: groceryEstimatedWeightPerUnit,
+                      department: CANONICAL_GROCERY_DEPARTMENTS.find((d) => d.id === groceryDepartment)?.label || "Mercado & Varejo",
+                      subCategory: grocerySubCategory,
+                      temperature: groceryTemperature,
+                      isAlcoholic: groceryIsAlcoholic,
+                      containsGluten: groceryContainsGluten ?? undefined,
+                      containsLactose: groceryContainsLactose ?? undefined,
+                      isOrganic: groceryIsOrganic,
+                      brand: groceryBrand,
+                      barcodeEan: groceryBarcodeEan,
+                      ingredients: groceryIngredients,
+                      prepOptions: groceryPrepOptions,
+                      deliveryEstimate: groceryDeliveryEstimate,
+                      deliveryFeeCents: groceryDeliveryFeeCents,
+                      readyDelivery: readyDelivery,
+                      acceptsPix,
+                      pixDiscountPercent,
+                      acceptsCard,
+                      maxInstallments,
+                      cardInterestFree,
+                      acceptsCash,
+                      groceryFreshPricing: grocerySupportsFreshPricing ? {
+                        supports_fresh_pricing: true,
+                        default_pricing_mode: groceryDefaultPricingMode,
+                        avg_piece_weight_grams: groceryAvgPieceWeightGrams,
+                        price_per_kg_cents: groceryPricePerKgCents || ((priceCents || 0) > 0 ? (priceCents || 0) * 2 : 990),
+                        price_per_unit_cents: priceCents || 0,
+                      } : undefined,
+                      groceryRipenessConfig: groceryRipenessEnabled ? {
+                        enabled: true,
+                        stages: groceryRipenessStages,
+                        default_stage: "maduro",
+                      } : undefined,
+                      progressiveDiscountTiers: groceryProgressiveDiscountsEnabled && groceryDiscountTiers.length > 0 ? groceryDiscountTiers : undefined,
+                      orderBumpOffer: groceryOrderBumpEnabled && groceryOrderBumpTitle.trim() ? {
+                        enabled: true,
+                        mode: "manual",
+                        target_title: groceryOrderBumpTitle.trim(),
+                        special_price_cents: groceryOrderBumpSpecialPriceCents,
+                        original_price_cents: groceryOrderBumpOriginalPriceCents,
+                        badge_text: groceryOrderBumpBadge || "Oferta Relâmpago",
+                      } : undefined,
+                    }}
+                    isOwner={true}
+                    previewDevice={previewDevice}
+                    compact={previewDevice === "mobile"}
+                    onEdit={() => {
+                      setIsPreviewModalOpen(false);
+                      setCurrentStep(2);
+                    }}
+                  />
+                ) : niche.id === "viagem" && (templateStyle === "editorial" || (templateStyle as string) === "instagram" || (templateStyle as string) === "instagram_resort" || !templateStyle) ? (
+                  <EditorialShowcaseView
+                    classified={livePreviewClassified}
+                    isOwner={false}
+                    previewViewport={previewDevice}
+                  />
+                ) : (
+                  <UniversalClassifiedShowcase
+                    classified={livePreviewClassified}
+                    previewViewport={previewDevice}
+                    isOwner={true}
+                    canManage={true}
+                    onOpenBookingModal={() => toast.info("Modo de Pré-visualização: As reservas estarão ativas após a publicação do anúncio.")}
+                    onOpenProposalModal={() => toast.info("Modo de Pré-visualização: O envio de propostas estará ativo após a publicação do anúncio.")}
+                    onEdit={() => {
+                      setIsPreviewModalOpen(false);
+                      setCurrentStep(2);
+                    }}
+                  />
                 )}
-              >
-                Desktop
-              </button>
+              </div>
             </div>
-          </div>
-
-          <div className="max-h-[calc(100vh-140px)] overflow-y-auto">
-            {templateStyle === "conveniencia" || niche.id === "mercado" ? (
-              <ConvenienceShowcaseView
-                classified={livePreviewClassified}
-                previewData={{
-                  title: title || "Produto de Mercado / Conveniência",
-                  description: description,
-                  priceCents: priceCents || 0,
-                  images: images,
-                  locationName: locationName || "São Miguel do Oeste - SC",
-                  whatsapp: whatsapp,
-                  storeName: selectedStore?.name || "Sua Loja",
-                  storeSlug: selectedStore?.slug,
-                  storeLogo: selectedStore?.logo_url,
-                  authorName: !selectedStore ? (userProfile?.full_name || "Você") : undefined,
-                  authorAvatar: !selectedStore ? (userProfile?.avatar_url || undefined) : undefined,
-                  authorId: !selectedStore ? userProfile?.id : undefined,
-                  volume: convenienceVolume,
-                  unitType: groceryUnitType,
-                  estimatedWeightPerUnit: groceryEstimatedWeightPerUnit,
-                  department: CANONICAL_GROCERY_DEPARTMENTS.find((d) => d.id === groceryDepartment)?.label || "Mercado & Varejo",
-                  subCategory: grocerySubCategory,
-                  temperature: groceryTemperature,
-                  isAlcoholic: groceryIsAlcoholic,
-                  containsGluten: groceryContainsGluten ?? undefined,
-                  containsLactose: groceryContainsLactose ?? undefined,
-                  isOrganic: groceryIsOrganic,
-                  brand: groceryBrand,
-                  barcodeEan: groceryBarcodeEan,
-                  ingredients: groceryIngredients,
-                  prepOptions: groceryPrepOptions,
-                  deliveryEstimate: groceryDeliveryEstimate,
-                  deliveryFeeCents: groceryDeliveryFeeCents,
-                  readyDelivery: readyDelivery,
-                  acceptsPix,
-                  pixDiscountPercent,
-                  acceptsCard,
-                  maxInstallments,
-                  cardInterestFree,
-                  acceptsCash,
-                  groceryFreshPricing: grocerySupportsFreshPricing ? {
-                    supports_fresh_pricing: true,
-                    default_pricing_mode: groceryDefaultPricingMode,
-                    avg_piece_weight_grams: groceryAvgPieceWeightGrams,
-                    price_per_kg_cents: groceryPricePerKgCents || ((priceCents || 0) > 0 ? (priceCents || 0) * 2 : 990),
-                    price_per_unit_cents: priceCents || 0,
-                  } : undefined,
-                  groceryRipenessConfig: groceryRipenessEnabled ? {
-                    enabled: true,
-                    stages: groceryRipenessStages,
-                    default_stage: "maduro",
-                  } : undefined,
-                  progressiveDiscountTiers: groceryProgressiveDiscountsEnabled && groceryDiscountTiers.length > 0 ? groceryDiscountTiers : undefined,
-                  orderBumpOffer: groceryOrderBumpEnabled && groceryOrderBumpTitle.trim() ? {
-                    enabled: true,
-                    mode: "manual",
-                    target_title: groceryOrderBumpTitle.trim(),
-                    special_price_cents: groceryOrderBumpSpecialPriceCents,
-                    original_price_cents: groceryOrderBumpOriginalPriceCents,
-                    badge_text: groceryOrderBumpBadge || "Oferta Relâmpago",
-                  } : undefined,
-                }}
-                isOwner={true}
-                previewDevice={previewDevice}
-                compact={previewDevice === "mobile"}
-                onEdit={() => setCurrentStep(2)}
-              />
-            ) : templateStyle === "editorial" || (templateStyle as string) === "instagram" || (templateStyle as string) === "instagram_resort" || (!templateStyle && niche.id === "viagem") ? (
-              <EditorialShowcaseView
-                classified={livePreviewClassified}
-                isOwner={false}
-              />
-            ) : (
-              <UniversalClassifiedShowcase
-                classified={livePreviewClassified}
-                previewViewport={previewDevice}
-                isOwner={true}
-                canManage={true}
-                onOpenBookingModal={() => toast.info("Modo de Pré-visualização: As reservas estarão ativas após a publicação do anúncio.")}
-                onOpenProposalModal={() => toast.info("Modo de Pré-visualização: O envio de propostas estará ativo após a publicação do anúncio.")}
-                onEdit={() => setCurrentStep(2)}
-              />
-            )}
-          </div>
-        </div>
- </main>
- </div>
+          </DialogContent>
+        </Dialog>
+      {/* Superfície Editorial Bidirecional do Copilot de Conteúdo */}
+      <AiWritingCopilotSheet
+        open={copilotModalOpen}
+        onOpenChange={setCopilotModalOpen}
+        initialScope={copilotInitialScope}
+        entityId={editId}
+        storeId={selectedStoreId && selectedStoreId !== "civil" ? selectedStoreId : undefined}
+        niche={niche.id}
+        categoryName={niche.title}
+        title={title}
+        description={description}
+        summary={editorialSummary}
+        tags={editorialTags}
+        price={priceCents ? formatMoney(priceCents) : undefined}
+        city={structuredLoc?.city}
+        neighborhood={structuredLoc?.neighborhood}
+        attributes={buildCurrentNicheContext()}
+        onApplyDraft={handleApplyCopilotDraft}
+      />
+      {/* Estúdio Excelência Tour (Story 9:16 + Liquid Glass + WhatsApp Intake) */}
+      {niche.id === "viagem" && (
+        <TravelPromoFlyerModal
+          open={travelStudioOpen}
+          onOpenChange={setTravelStudioOpen}
+          niche={niche.id}
+          destinationTitle={title}
+          destinationCity={travelDestinationCity}
+          datesText={travelDates}
+          inclusions={travelBioBullets.filter((b) => b && b.trim())}
+          priceCents={priceCents ?? null}
+          installments={maxInstallments}
+          backgroundImageUrl={images[0] || null}
+          storeName={selectedStoreId ? undefined : "Excelência Tour"}
+          onAttachToClassified={(imageUrl) => {
+            setImages((prev) => [imageUrl, ...prev]);
+            toast.success("Story 9:16 exportado e adicionado à galeria de fotos!");
+          }}
+          onApplyExtractedOffer={handleApplyExtractedTravelOffer}
+        />
       )}
-      {/* Modal de Comparação e Escolha do Copilot */}
-      <Dialog open={copilotModalOpen} onOpenChange={setCopilotModalOpen}>
-        <DialogContent className="max-w-3xl rounded-lg bg-card border border-border/60 p-0 overflow-hidden shadow-2xl">
-          <DialogHeader className="p-4 sm:p-5 border-b border-border/40 bg-muted/20">
-            <div className="flex items-center gap-2">
-              <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                <Wand2 className="size-4" />
-              </div>
-              <div>
-                <DialogTitle className="text-sm sm:text-base font-bold text-foreground">
-                  Refinamento com Copilot
-                </DialogTitle>
-                <DialogDescription className="text-xs text-muted-foreground">
-                  O Copilot analisou as especificações do nicho e redigiu 2 abordagens de alta conversão. Escolha a que melhor se adapta à sua estratégia:
-                </DialogDescription>
-              </div>
-            </div>
-          </DialogHeader>
-
-          <div className="p-4 sm:p-5 space-y-4 max-h-[70vh] overflow-y-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Opção 1: Comercial & Direta */}
-              {copilotSuggestions?.version1 && (
-                <div
-                  onClick={() => setSelectedCopilotVersion("version1")}
-                  className={cn(
-                    "p-4 rounded-lg border text-left transition-colors cursor-pointer space-y-3",
-                    selectedCopilotVersion === "version1"
-                      ? "border-primary bg-primary/5 ring-2 ring-primary/30"
-                      : "border-border/60 bg-muted/10 hover:border-border hover:bg-muted/20"
-                  )}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <Badge variant="outline" className="text-xs font-bold text-primary border-primary/30 bg-primary/10">
-                      {copilotSuggestions.version1.badge || "Opção 1 · Comercial"}
-                    </Badge>
-                    <div className={cn(
-                      "size-5 rounded-full border flex items-center justify-center transition-colors",
-                      selectedCopilotVersion === "version1"
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border"
-                    )}>
-                      {selectedCopilotVersion === "version1" && <Check className="size-3 stroke-3" />}
-                    </div>
-                  </div>
-
-                  <div>
-                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Título Sugerido</span>
-                    <h4 className="text-sm font-bold text-foreground mt-0.5 leading-snug">
-                      {copilotSuggestions.version1.title}
-                    </h4>
-                  </div>
-
-                  <div>
-                    <span className="text-xs uppercase font-semibold text-muted-foreground block mb-1">Descrição Comercial</span>
-                    <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed whitespace-pre-line bg-background/60 p-3 rounded-md border border-border/40 max-h-48 overflow-y-auto">
-                      {copilotSuggestions.version1.description}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Opção 2: Storytelling & Detalhada */}
-              {copilotSuggestions?.version2 && (
-                <div
-                  onClick={() => setSelectedCopilotVersion("version2")}
-                  className={cn(
-                    "p-4 rounded-lg border text-left transition-colors cursor-pointer space-y-3",
-                    selectedCopilotVersion === "version2"
-                      ? "border-primary bg-primary/5 ring-2 ring-primary/30"
-                      : "border-border/60 bg-muted/10 hover:border-border hover:bg-muted/20"
-                  )}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <Badge variant="outline" className="text-xs font-bold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10">
-                      {copilotSuggestions.version2.badge || "Opção 2 · Storytelling"}
-                    </Badge>
-                    <div className={cn(
-                      "size-5 rounded-full border flex items-center justify-center transition-colors",
-                      selectedCopilotVersion === "version2"
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border"
-                    )}>
-                      {selectedCopilotVersion === "version2" && <Check className="size-3 stroke-3" />}
-                    </div>
-                  </div>
-
-                  <div>
-                    <span className="text-xs uppercase font-semibold text-muted-foreground block">Título Sugerido</span>
-                    <h4 className="text-sm font-bold text-foreground mt-0.5 leading-snug">
-                      {copilotSuggestions.version2.title}
-                    </h4>
-                  </div>
-
-                  <div>
-                    <span className="text-xs uppercase font-semibold text-muted-foreground block mb-1">Descrição com Storytelling</span>
-                    <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed whitespace-pre-line bg-background/60 p-3 rounded-md border border-border/40 max-h-48 overflow-y-auto">
-                      {copilotSuggestions.version2.description}
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Tags Sugeridas */}
-            {copilotSuggestions?.suggestedTags && copilotSuggestions.suggestedTags.length > 0 && (
-              <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-1.5">
-                <span className="text-xs uppercase font-semibold text-muted-foreground block">
-                  Palavras-chave de Descoberta Sugeridas
-                </span>
-                <div className="flex flex-wrap gap-1.5">
-                  {copilotSuggestions.suggestedTags.map((tag, idx) => (
-                    <Badge key={idx} variant="secondary" className="text-xs font-mono">
-                      #{tag}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <DialogFooter className="p-4 sm:p-5 border-t border-border/40 bg-muted/10 flex items-center justify-between gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setCopilotModalOpen(false)}
-              className="h-11 px-4 text-xs font-semibold rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              Manter Texto Atual
-            </Button>
-
-            <Button
-              type="button"
-              onClick={() => handleApplyCopilotVersion(selectedCopilotVersion)}
-              className="h-11 px-6 text-xs font-bold rounded-lg bg-primary text-primary-foreground gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-98"
-            >
-              <Check className="size-4" />
-              <span>Aplicar {selectedCopilotVersion === "version1" ? "Opção 1 (Comercial)" : "Opção 2 (Storytelling)"}</span>
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
  </div>
  );
 }

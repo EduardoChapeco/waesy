@@ -50,7 +50,7 @@ export function ShopTheLookSection({
  <section className="py-12 bg-background w-full">
  <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
  <div className="text-center max-w-xl mx-auto space-y-2">
- <Badge variant="outline" className="text-[11px] font-mono text-muted-foreground border-border/80">
+ <Badge variant="outline" className="text-2xs font-mono text-muted-foreground border-border/80">
  Editorial de Moda
  </Badge>
  <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">{title}</h2>
@@ -75,8 +75,8 @@ export function ShopTheLookSection({
  type="button"
  onClick={() => setActiveHotspotId(spot.id)}
  style={{ left: `${spot.xPercent}%`, top: `${spot.yPercent}%` }}
- className={cn(
- "absolute -translate-x-1/2 -translate-y-1/2 size-8 sm:size-9 rounded-full flex items-center justify-center cursor-pointer transition-all shadow-lg",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "absolute -translate-x-1/2 -translate-y-1/2 size-8 sm:size-9 rounded-full flex items-center justify-center cursor-pointer transition-colors duration-200 shadow-lg",
  isSelected
  ? "bg-primary text-primary-foreground scale-110 ring-4 ring-primary/30"
  : "bg-background/90 text-foreground backdrop-blur-md hover:scale-105 border border-border"
@@ -92,7 +92,7 @@ export function ShopTheLookSection({
  <div className="lg:col-span-4">
  {activeHotspot ? (
  <div className="p-6 rounded-lg border border-border/80 bg-card space-y-4 shadow-2xs">
- <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block">
+ <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
  Peça Selecionada
  </span>
 

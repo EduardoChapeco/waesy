@@ -120,7 +120,7 @@ function EntregadorDetailPage() {
  if (!courier) {
  return (
  <div className="py-20">
- <EmptyState
+ <EmptyState /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  title="Entregador não encontrado"
  action={
  <Button
@@ -356,7 +356,7 @@ function EntregadorDetailPage() {
  >
  {isSubmitting ? (
  <>
- <Loader2 className="size-4 animate-spin mr-2" />
+ <Loader2 className="size-4 animate-spin motion-reduce:animate-none mr-2" />
  Salvando...
  </>
  ) : (

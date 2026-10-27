@@ -47,15 +47,15 @@ export function EventoAuditoria({ eventId }: EventoAuditoriaProps) {
   const getActionBadge = (action: string) => {
     const act = (action || "").toUpperCase();
     if (act.includes("INSERT") || act.includes("CREATE")) {
-      return <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-[10px]">Criação</Badge>;
+      return <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-2xs">Criação</Badge>;
     }
     if (act.includes("UPDATE") || act.includes("CHECKIN")) {
-      return <Badge variant="secondary" className="bg-blue-500/10 text-blue-600 border-blue-500/20 text-[10px]">Atualização</Badge>;
+      return <Badge variant="secondary" className="bg-blue-500/10 text-blue-600 border-blue-500/20 text-2xs">Atualização</Badge>;
     }
     if (act.includes("DELETE") || act.includes("REVOKE")) {
-      return <Badge variant="destructive" className="text-[10px]">Exclusão</Badge>;
+      return <Badge variant="destructive" className="text-2xs">Exclusão</Badge>;
     }
-    return <Badge variant="outline" className="text-[10px]">{act}</Badge>;
+    return <Badge variant="outline" className="text-2xs">{act}</Badge>;
   };
 
   return (
@@ -82,7 +82,7 @@ export function EventoAuditoria({ eventId }: EventoAuditoriaProps) {
             />
           </div>
           <Button variant="outline" size="sm" onClick={loadLogs} className="gap-2 h-9">
-            <RefreshCw className={`size-3.5 ${isLoading ? "animate-spin" : ""}`} />
+            <RefreshCw className={`size-3.5 ${isLoading ? "animate-spin motion-reduce:animate-none" : ""}`} />
             Atualizar
           </Button>
         </div>
@@ -147,7 +147,7 @@ export function EventoAuditoria({ eventId }: EventoAuditoriaProps) {
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-xs text-left">
-              <thead className="text-[11px] text-muted-foreground uppercase bg-muted/40 border-b border-border/40">
+              <thead className="text-2xs text-muted-foreground uppercase bg-muted/40 border-b border-border/40">
                 <tr>
                   <th className="px-4 py-3 font-semibold">Horário</th>
                   <th className="px-4 py-3 font-semibold">Ação</th>
@@ -186,11 +186,11 @@ export function EventoAuditoria({ eventId }: EventoAuditoriaProps) {
                       <td className="px-4 py-3 text-muted-foreground">
                         {log.profiles?.full_name || "Sistema / Autônomo"}
                       </td>
-                      <td className="px-4 py-3 max-w-xs truncate font-mono text-[11px] text-muted-foreground">
+                      <td className="px-4 py-3 max-w-xs truncate font-mono text-2xs text-muted-foreground">
                         {JSON.stringify(log.payload_snapshot || {})}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                        <span className="inline-flex items-center gap-1 text-2xs font-semibold text-emerald-600">
                           <CheckCircle2 className="size-3" /> Assinado
                         </span>
                       </td>

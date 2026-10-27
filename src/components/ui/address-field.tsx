@@ -29,6 +29,7 @@ export const AddressField: React.FC<AddressFieldProps> = ({ value, onChange, cla
   const [showAiPaste, setShowAiPaste] = useState(false);
   const [aiText, setAiText] = useState("");
   const [isParsingAi, setIsParsingAi] = useState(false);
+  const [isLocatingGPS, setIsLocatingGPS] = useState(false);
 
   const { data: mapConfig } = useQuery({
     queryKey: ["public-map-config"],
@@ -77,7 +78,7 @@ export const AddressField: React.FC<AddressFieldProps> = ({ value, onChange, cla
       markerEl.innerHTML = `
         <div class="relative flex items-center justify-center">
           <div class="size-8 rounded-full bg-primary/20 animate-ping absolute inset-0"></div>
-          <div class="size-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg border-2 border-background">
+          <div class="size-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center border-2 border-background">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
           </div>
         </div>
@@ -134,6 +135,48 @@ export const AddressField: React.FC<AddressFieldProps> = ({ value, onChange, cla
   };
 
   // 1. Autopreenchimento de CEP com BrasilAPI v2 + ViaCEP
+  const handleUseCurrentLocation = () => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      toast.error("Geolocalização não suportada pelo dispositivo.");
+      return;
+    }
+    setIsLocatingGPS(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        setIsLocatingGPS(false);
+        const lat = Number(pos.coords.latitude.toFixed(6));
+        const lng = Number(pos.coords.longitude.toFixed(6));
+        updateMapPosition(lat, lng);
+        try {
+          const rev = await reverseGeocode({ data: { lat, lng } });
+          const newText = rev.fullAddress || `${lat}, ${lng}`;
+          setQuery(newText);
+          if (rev.zipCode) setCepInput(formatCep(rev.zipCode));
+          onChange?.({
+            ...value,
+            text: newText,
+            lat,
+            lng,
+            street: rev.street,
+            number: rev.number,
+            neighborhood: rev.neighborhood,
+            city: rev.city,
+            state: rev.state,
+            cep: rev.zipCode || value?.cep,
+          });
+          toast.success("Endereço preenchido via GPS!");
+        } catch {
+          onChange?.({ ...value, text: `${lat}, ${lng}`, lat, lng });
+        }
+      },
+      (err) => {
+        setIsLocatingGPS(false);
+        toast.error("Não foi possível obter sua localização via GPS.");
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
   const handleCepLookup = async () => {
     const clean = cepInput.replace(/\D/g, "");
     if (clean.length !== 8) {
@@ -255,7 +298,7 @@ export const AddressField: React.FC<AddressFieldProps> = ({ value, onChange, cla
             onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleCepLookup())}
             placeholder="CEP 00000-000"
             maxLength={9}
-            className="h-10 rounded-lg text-xs font-mono bg-card"
+            className="h-11 min-h-11 rounded-lg text-xs font-mono bg-card"
           />
         </div>
 
@@ -265,7 +308,7 @@ export const AddressField: React.FC<AddressFieldProps> = ({ value, onChange, cla
           size="sm"
           onClick={handleCepLookup}
           disabled={isSearchingCep || !cepInput}
-          className="h-10 rounded-lg text-xs font-bold gap-2 shrink-0"
+          className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
         >
           {isSearchingCep ? <Loader2 className="size-3.5 animate-spin" /> : <Navigation className="size-3.5 text-primary" />}
           <span>Buscar CEP</span>
@@ -273,10 +316,26 @@ export const AddressField: React.FC<AddressFieldProps> = ({ value, onChange, cla
 
         <Button
           type="button"
+          variant="outline"
+          size="sm"
+          onClick={handleUseCurrentLocation}
+          disabled={isLocatingGPS}
+          className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary transition-colors motion-reduce:transition-none"
+        >
+          {isLocatingGPS ? (
+            <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none text-primary" />
+          ) : (
+            <Navigation className="size-3.5 text-primary" />
+          )}
+          <span>Localização Atual</span>
+        </Button>
+
+        <Button
+          type="button"
           variant="ghost"
           size="sm"
           onClick={() => setShowAiPaste(!showAiPaste)}
-          className="h-10 rounded-lg text-xs font-bold gap-2 text-muted-foreground hover:text-foreground shrink-0"
+          className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 text-muted-foreground hover:text-foreground shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
         >
           <Zap className="size-3.5 text-amber-500" />
           <span>Colar com IA</span>
@@ -295,7 +354,7 @@ export const AddressField: React.FC<AddressFieldProps> = ({ value, onChange, cla
               value={aiText}
               onChange={(e) => setAiText(e.target.value)}
               placeholder="Ex: Av. Getúlio Vargas 1200, Centro, Chapecó - SC, CEP 89801-000"
-              className="h-9 text-xs bg-background rounded-lg flex-1"
+              className="h-11 min-h-11 text-xs bg-background rounded-lg flex-1"
               onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleApplyAiAddress())}
             />
             <Button
@@ -303,7 +362,7 @@ export const AddressField: React.FC<AddressFieldProps> = ({ value, onChange, cla
               size="sm"
               onClick={handleApplyAiAddress}
               disabled={isParsingAi || !aiText.trim()}
-              className="h-9 rounded-lg font-bold text-xs shrink-0"
+              className="h-11 min-h-11 rounded-lg font-bold text-xs shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
             >
               {isParsingAi ? <Loader2 className="size-3.5 animate-spin" /> : <CheckCircle2 className="size-3.5" />}
               <span>Preencher</span>
@@ -323,7 +382,7 @@ export const AddressField: React.FC<AddressFieldProps> = ({ value, onChange, cla
               onChange?.({ ...value, text: e.target.value, lat: value?.lat, lng: value?.lng });
             }}
             placeholder="Endereço, rua, número ou ponto de referência..."
-            className="pl-9 h-10 rounded-lg text-xs bg-card"
+            className="pl-9 h-11 min-h-11 rounded-lg text-xs bg-card"
             onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleSearch())}
           />
         </div>
@@ -332,7 +391,7 @@ export const AddressField: React.FC<AddressFieldProps> = ({ value, onChange, cla
           variant="secondary"
           onClick={handleSearch}
           disabled={loading || !query.trim()}
-          className="h-10 rounded-lg px-4 text-xs font-bold gap-2 shrink-0"
+          className="h-11 min-h-11 rounded-lg px-4 text-xs font-bold gap-2 shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
         >
           {loading ? <Loader2 className="size-3.5 animate-spin" /> : <Search className="size-3.5 text-primary" />}
           <span>Localizar</span>
@@ -341,9 +400,9 @@ export const AddressField: React.FC<AddressFieldProps> = ({ value, onChange, cla
 
       {/* Mapa Real Interativo MapLibre GL (Carto Voyager / OpenStreetMap) */}
       <div className="rounded-lg overflow-hidden border border-border/70 relative bg-muted/20 shadow-2xs">
-        <div ref={mapContainer} className="w-full h-[220px]" />
+        <div ref={mapContainer} className="w-full h-56" />
         {!value?.lat && (
-          <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px] flex items-center justify-center p-4 text-center z-10 pointer-events-none">
+          <div className="absolute inset-0 bg-background/60 backdrop-blur-xs flex items-center justify-center p-4 text-center z-10 pointer-events-none">
             <p className="text-xs font-medium text-muted-foreground bg-card p-3 rounded-lg border border-border/70 shadow-xs max-w-xs">
               Digite seu CEP ou endereço e clique em <strong>Localizar</strong> para fixar o ponto exato no mapa.
             </p>
@@ -353,7 +412,7 @@ export const AddressField: React.FC<AddressFieldProps> = ({ value, onChange, cla
 
       {/* Coordenadas & Status de Precisão */}
       {value?.lat && value?.lng && (
-        <div className="flex items-center justify-between text-[11px] text-muted-foreground px-1 font-mono">
+        <div className="flex items-center justify-between text-xs text-muted-foreground px-1 font-mono">
           <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
             <CheckCircle2 className="size-3" /> Ponto fixado no mapa
           </span>

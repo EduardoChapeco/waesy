@@ -30,7 +30,7 @@ export function RealEstateSeasonRentalGrid({ data, scale = 1, className = "" }: 
         </h1>
 
         {/* Badge Verde de Chamada (ex: Feriado de Carnaval Disponível) */}
-        <div className="inline-block bg-[#48BB78] text-white px-10 py-3 rounded-2xl shadow-md">
+        <div className="inline-block bg-[#48BB78] text-foreground px-10 py-3 rounded-2xl shadow-md">
           <span className="text-3xl sm:text-4xl font-black uppercase tracking-wide">
             {data.promoBadge || data.subtitle || "Disponível para Temporada"}
           </span>
@@ -56,8 +56,8 @@ export function RealEstateSeasonRentalGrid({ data, scale = 1, className = "" }: 
         </div>
 
         {/* Lado Direito: Card Flutuante Verde de Preço por Diária ou Pacote */}
-        <div className="bg-[#48BB78] text-white p-8 rounded-3xl shadow-xl text-center min-w-[340px] shrink-0">
-          <span className="text-xl font-bold uppercase tracking-wider block text-white/90 mb-1">
+        <div className="bg-[#48BB78] text-foreground p-8 rounded-3xl shadow-xl text-center min-w-[340px] shrink-0">
+          <span className="text-xl font-bold uppercase tracking-wider block text-foreground/90 mb-1">
             {data.pricingMode === "monthly" ? "Aluguel Mensal" : "Promoção por apenas"}
           </span>
           <div className="flex items-baseline justify-center gap-1 font-mono">
@@ -69,7 +69,7 @@ export function RealEstateSeasonRentalGrid({ data, scale = 1, className = "" }: 
               ,{data.priceCents ? String(data.priceCents % 100).padStart(2, "0") : "90"}
             </span>
           </div>
-          <span className="text-lg font-bold uppercase tracking-wide block text-white/90 mt-2">
+          <span className="text-lg font-bold uppercase tracking-wide block text-foreground/90 mt-2">
             {data.datesOrAvailability || "Pacote 4 diárias"}
           </span>
         </div>
@@ -114,7 +114,7 @@ export function RealEstateSeasonRentalGrid({ data, scale = 1, className = "" }: 
       {/* ── 4. Rodapé Verde de Localização & Telefone de Contato ── */}
       <div className="pt-6 border-t-2 border-slate-300 flex items-center justify-between px-2">
         <div className="flex items-center gap-4">
-          <div className="size-14 rounded-full bg-[#48BB78] flex items-center justify-center text-white shrink-0 shadow">
+          <div className="size-14 rounded-full bg-[#48BB78] flex items-center justify-center text-foreground shrink-0 shadow">
             <MapPin className="size-8" />
           </div>
           <div>
@@ -128,7 +128,7 @@ export function RealEstateSeasonRentalGrid({ data, scale = 1, className = "" }: 
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="size-14 rounded-full bg-[#48BB78] flex items-center justify-center text-white shrink-0 shadow">
+          <div className="size-14 rounded-full bg-[#48BB78] flex items-center justify-center text-foreground shrink-0 shadow">
             <Phone className="size-8" />
           </div>
           <div className="text-right">

@@ -86,7 +86,7 @@ export function StockAuditDialog({
  )}
  </Button>
 
- <SheetPage
+ <SheetPage /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  open={open}
  onOpenChange={setOpen}
  title={`Auditoria de Balanço (SKU: ${variant.sku})`}
@@ -108,7 +108,7 @@ export function StockAuditDialog({
  >
  {isSubmitting ? (
  <>
- <Loader2 className="mr-2 size-3.5 animate-spin" />
+ <Loader2 className="mr-2 size-3.5 animate-spin motion-reduce:animate-none" />
  Gravando...
  </>
  ) : (

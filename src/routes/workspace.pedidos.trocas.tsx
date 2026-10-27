@@ -239,7 +239,7 @@ function ResolutionDrawer({
                     resolutionType === "store_credit"
                       ? "border-primary bg-primary/5 ring-1 ring-primary"
                       : "border-border/70 hover:bg-muted/30"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   <Gift
                     className={`size-5 shrink-0 ${resolutionType === "store_credit" ? "text-primary" : "text-muted-foreground"}`}
@@ -259,7 +259,7 @@ function ResolutionDrawer({
                     resolutionType === "refund"
                       ? "border-primary bg-primary/5 ring-1 ring-primary"
                       : "border-border/70 hover:bg-muted/30"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   <Banknote
                     className={`size-5 shrink-0 ${resolutionType === "refund" ? "text-primary" : "text-muted-foreground"}`}
@@ -279,7 +279,7 @@ function ResolutionDrawer({
                     resolutionType === "replacement"
                       ? "border-primary bg-primary/5 ring-1 ring-primary"
                       : "border-border/70 hover:bg-muted/30"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   <RefreshCw
                     className={`size-5 shrink-0 ${resolutionType === "replacement" ? "text-primary" : "text-muted-foreground"}`}
@@ -471,7 +471,7 @@ function ExchangesDashboardPage() {
           <Button
             size="sm"
             variant="default"
-            className="rounded-lg h-8 text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer"
+            className="rounded-lg h-8 text-xs font-semibold bg-emerald-600 text-foreground hover:bg-emerald-700 cursor-pointer"
             onClick={() => setResolvingExchange(exchange)}
             disabled={processingId === exchange.id}
           >
@@ -484,7 +484,7 @@ function ExchangesDashboardPage() {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
-      <PageHeader
+      <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         eyebrow="Pós-Venda & Logística Reversa"
         title="Trocas"
         description="Gerencie solicitações de trocas de produtos, estornos financeiros (Pix/Cartão) e emissão de vale-compras com baixa contábil."

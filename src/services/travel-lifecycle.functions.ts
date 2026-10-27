@@ -1892,3 +1892,240 @@ export const getTravelerTripPortalDossier = createServerFn({ method: "GET" })
       },
     };
   });
+
+
+// ─── PUBLICAÇÃO 1-CLIQUE NA VITRINE PÚBLICA ───────────────────────────────────
+
+export const PublishTripToPublicStorefrontSchema = z.object({
+  tripId: z.string().uuid(),
+  customPriceCents: z.number().int().positive().optional(),
+  availableSeats: z.number().int().positive().optional(),
+  isFeatured: z.boolean().default(false),
+});
+
+export type PublishTripToPublicStorefrontDTO = z.infer<typeof PublishTripToPublicStorefrontSchema>;
+
+export const publishTripToPublicStorefront = createServerFn({ method: "POST" })
+  .validator((data: unknown) => PublishTripToPublicStorefrontSchema.parse(data))
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await requireStaff();
+
+    const { data: trip, error: tripErr } = await supabase
+      .from("tourism_trips")
+      .select("*")
+      .eq("id", data.tripId)
+      .eq("store_id", identity.store_id)
+      .single();
+
+    if (tripErr || !trip) {
+      throw new Error(`Viagem não encontrada: ${tripErr?.message || "ID inválido"}`);
+    }
+
+    const { data: store } = await supabase
+      .from("stores")
+      .select("id, name, logo_url, phone, settings")
+      .eq("id", identity.store_id)
+      .single();
+
+    const storeSettings = (store?.settings as Record<string, any>) || {};
+    const contactPhone = storeSettings.whatsapp_phone || store?.phone || trip.client_whatsapp || "";
+
+    const priceCents = data.customPriceCents || trip.total_cents || 0;
+    const priceDisplay = priceCents > 0
+      ? `R$ ${(priceCents / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
+      : "Consulte Valores";
+
+    // Mapeia itinerário da viagem
+    const formattedItinerary = Array.isArray(trip.itinerary) && trip.itinerary.length > 0
+      ? trip.itinerary.map((it: any, idx: number) => ({
+          day: it.day || idx + 1,
+          title: it.title || `Dia ${idx + 1}`,
+          description: it.description || "",
+        }))
+      : null;
+
+    // Procura se já existe uma experiência publicada com este título e store
+    const { data: existingExp } = await supabase
+      .from("tourism_experiences")
+      .select("id")
+      .eq("store_id", identity.store_id)
+      .ilike("title", trip.title || trip.destination_city)
+      .limit(1)
+      .maybeSingle();
+
+    let experienceId: string;
+
+    const payload = {
+      store_id: identity.store_id,
+      author_profile_id: identity.id,
+      title: trip.title || `Roteiro ${trip.destination_city}`,
+      subtitle: `Pacote Exclusivo ${trip.destination_city}`,
+      description: trip.notes || `Pacote completo para ${trip.destination_city} com traslados, passeios e acompanhamento especializado.`,
+      category: "travel_package",
+      destination: trip.destination_city,
+      destination_city: trip.destination_city,
+      departure_date: trip.travel_start_date || null,
+      return_date: trip.travel_end_date || null,
+      cover_image_url: trip.cover_image_url || null,
+      location: trip.destination_city,
+      duration: trip.travel_start_date && trip.travel_end_date
+        ? `${Math.max(1, Math.round((new Date(trip.travel_end_date).getTime() - new Date(trip.travel_start_date).getTime()) / (1000 * 60 * 60 * 24)))} dias`
+        : "Sob consulta",
+      price_display: priceDisplay,
+      price_cents: priceCents,
+      provider_name: store?.name || "Agência de Viagens",
+      provider_logo_url: store?.logo_url || null,
+      contact_whatsapp: contactPhone,
+      included_items: trip.includes || [],
+      what_to_bring: trip.excludes || [],
+      itinerary: formattedItinerary,
+      total_seats: data.availableSeats || 30,
+      available_seats: data.availableSeats || 30,
+      is_featured: data.isFeatured,
+      status: "active",
+      updated_at: new Date().toISOString(),
+    };
+
+    if (existingExp?.id) {
+      const { error: updErr } = await supabase
+        .from("tourism_experiences")
+        .update(payload)
+        .eq("id", existingExp.id);
+      if (updErr) throw new Error(`Falha ao atualizar vitrine pública: ${updErr.message}`);
+      experienceId = existingExp.id;
+    } else {
+      const { data: newExp, error: insErr } = await supabase
+        .from("tourism_experiences")
+        .insert({
+          ...payload,
+          created_at: new Date().toISOString(),
+        })
+        .select("id")
+        .single();
+      if (insErr || !newExp) throw new Error(`Falha ao publicar na vitrine pública: ${insErr?.message}`);
+      experienceId = newExp.id;
+    }
+
+    return {
+      success: true,
+      experienceId,
+      publicUrl: `/_store/turismo/${experienceId}`,
+    };
+  });
+
+
+// ─── 21. DETECÇÃO DE VIAGEM ATIVA / PRÓXIMA PARA WIDGET GLOBAL DO VIAJANTE ───
+
+export interface ActiveTravelerTripDTO {
+  hasActiveTrip: boolean;
+  tripId?: string;
+  tripCode?: string;
+  title?: string;
+  destination?: string;
+  departureDate?: string;
+  returnDate?: string;
+  daysUntilDeparture?: number;
+  isCurrentlyTraveling?: boolean;
+  primaryFlightPnr?: string | null;
+  hotelCheckinTime?: string | null;
+  tourType?: "package" | "group_tour" | "air";
+  publicSlugOrCode?: string;
+}
+
+export const getMyActiveOrUpcomingTrip = createServerFn({ method: "GET" }).handler(
+  async (): Promise<ActiveTravelerTripDTO> => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    if (!identity?.id) {
+      return { hasActiveTrip: false };
+    }
+
+    const todayStr = new Date().toISOString().split("T")[0];
+
+    // 1. Busca em tourism_trips onde o cliente é o titular da reserva
+    const { data: clientTrips } = await supabase
+      .from("tourism_trips")
+      .select(
+        "id, trip_number, title, destination_city, travel_start_date, travel_end_date, status, flights, hotels, client_whatsapp"
+      )
+      .or(`customer_id.eq.${identity.id},client_email.eq.${identity.email || "none"}`)
+      .gte("travel_end_date", todayStr)
+      .neq("status", "cancelled")
+      .order("travel_start_date", { ascending: true })
+      .limit(1);
+
+    if (clientTrips && clientTrips.length > 0) {
+      const trip = clientTrips[0];
+      const depDate = new Date(trip.travel_start_date || todayStr);
+      const now = new Date();
+      const diffDays = Math.ceil((depDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      const isTraveling = diffDays <= 0;
+
+      const firstFlight =
+        Array.isArray(trip.flights) && trip.flights.length > 0 ? (trip.flights[0] as any) : null;
+      const firstHotel =
+        Array.isArray(trip.hotels) && trip.hotels.length > 0 ? (trip.hotels[0] as any) : null;
+
+      return {
+        hasActiveTrip: true,
+        tripId: trip.id,
+        tripCode: trip.trip_number || trip.id.slice(0, 8),
+        title: trip.title,
+        destination: trip.destination_city || "Destino",
+        departureDate: trip.travel_start_date || todayStr,
+        returnDate: trip.travel_end_date || todayStr,
+        daysUntilDeparture: diffDays,
+        isCurrentlyTraveling: isTraveling,
+        primaryFlightPnr: firstFlight?.locatorCode || firstFlight?.pnr || null,
+        hotelCheckinTime: firstHotel?.checkinTime || firstHotel?.checkin_time || "14:00",
+        tourType: "package",
+        publicSlugOrCode: trip.id,
+      };
+    }
+
+    // 2. Busca em group_tour_enrollments onde o passageiro está inscrito
+    const { data: enrollments } = await supabase
+      .from("group_tour_enrollments")
+      .select(
+        `
+        id, seat_number, room_type, payment_status,
+        tourism_experiences:group_tour_id (
+          id, title, destination, departure_date, return_date, description
+        )
+      `
+      )
+      .eq("client_id", identity.id)
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    if (enrollments && enrollments.length > 0) {
+      const enr = enrollments[0];
+      const tour = (enr as any).tourism_experiences;
+      if (tour) {
+        const depDate = new Date(tour.departure_date || todayStr);
+        const now = new Date();
+        const diffDays = Math.ceil((depDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        const isTraveling = diffDays <= 0;
+
+        return {
+          hasActiveTrip: true,
+          tripId: tour.id,
+          tripCode: tour.id.slice(0, 8),
+          title: tour.title,
+          destination: tour.destination || "Destino",
+          departureDate: tour.departure_date,
+          returnDate: tour.return_date,
+          daysUntilDeparture: diffDays,
+          isCurrentlyTraveling: isTraveling,
+          primaryFlightPnr: null,
+          hotelCheckinTime: "14:00",
+          tourType: "group_tour",
+          publicSlugOrCode: tour.id,
+        };
+      }
+    }
+
+    return { hasActiveTrip: false };
+  }
+);

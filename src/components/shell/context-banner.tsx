@@ -82,7 +82,7 @@ export function ActiveContextBanner({ session }: ActiveContextBannerProps) {
           : "bg-amber-500/10 border-amber-500/20 text-foreground"
       )}
     >
-      <div className="flex items-center gap-2.5 min-w-0">
+      <div className="flex items-center gap-3 min-w-0">
         <div
           className={cn(
             "size-6 rounded-md flex items-center justify-center shrink-0 border",
@@ -111,7 +111,7 @@ export function ActiveContextBanner({ session }: ActiveContextBannerProps) {
         <button
           type="button"
           onClick={handleSwitchToCivil}
-          className="h-8 min-h-8 px-3 rounded-md text-xs font-bold bg-background text-foreground hover:bg-muted/80 border border-border/80 shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="h-8 min-h-8 px-3 rounded-md text-xs font-bold bg-background text-foreground hover:bg-muted/80 border border-border/80 shadow-xs flex items-center gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           <ArrowRightLeft className="size-3" />
           <span>Alternar para Pessoal</span>

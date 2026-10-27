@@ -51,12 +51,12 @@ export const RmaMessageCard: React.FC<RmaMessageCardProps> = ({
  <span className="text-xs font-bold text-foreground block">
  {TICKET_TYPE_LABELS[payload.ticket_type] || "Ocorrência"}
  </span>
- <span className="text-[10px] text-muted-foreground font-mono">
+ <span className="text-2xs text-muted-foreground font-mono">
  Chamado #{payload.ticket_id?.slice(0, 8)}
  </span>
  </div>
  </div>
- <Badge variant={statusInfo.variant} className="text-[10px] uppercase font-bold">
+ <Badge variant={statusInfo.variant} className="text-2xs uppercase font-bold">
  {statusInfo.label}
  </Badge>
  </div>
@@ -70,7 +70,7 @@ export const RmaMessageCard: React.FC<RmaMessageCardProps> = ({
 
  {payload.photo_urls && payload.photo_urls.length > 0 && (
  <div className="space-y-2">
- <span className="text-[10px] font-semibold text-muted-foreground flex items-center gap-1">
+ <span className="text-2xs font-semibold text-muted-foreground flex items-center gap-1">
  <ImageIcon className="size-3" />
  Evidências anexadas ({payload.photo_urls.length})
  </span>
@@ -92,7 +92,7 @@ export const RmaMessageCard: React.FC<RmaMessageCardProps> = ({
 
  {payload.resolution_notes && (
  <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 text-xs text-foreground">
- <span className="font-bold text-primary block text-[10px] uppercase">Parecer da Empresa:</span>
+ <span className="font-bold text-primary block text-2xs uppercase">Parecer da Empresa:</span>
  {payload.resolution_notes}
  </div>
  )}

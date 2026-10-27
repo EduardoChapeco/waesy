@@ -157,7 +157,7 @@ export function AdvancedVariantEditor({
  }
  placeholder="Ex: 15"
  />
- <p className="text-[10px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Adicionado ao prazo de frete.
  </p>
  </div>

@@ -5,3 +5,4 @@ export * from "./chip";
 export * from "./card";
 export * from "./modal";
 export * from "./tabs";
+export * from "./squircle-card";

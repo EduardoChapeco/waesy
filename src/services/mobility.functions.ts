@@ -5,7 +5,7 @@
 
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import crypto from "node:crypto";
+import * as crypto from "node:crypto";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 
@@ -213,6 +213,60 @@ const SERVICE_CONFIGS: Record<
 // ============================================================
 
 /**
+ * Motor Interno de Cotação de Mobilidade Server-Side (Zero-Trust ao Client)
+ * Em conformidade com AGENTS.md P0-2: Toda precificação é calculada e validada no servidor.
+ */
+export async function computeServerMobilityQuoteInternal(
+  supabase: any,
+  params: {
+    service_type: MobilityServiceType;
+    distance_km: number;
+    helpers_count?: number;
+    surge_multiplier?: number;
+  }
+): Promise<{
+  price_cents: number;
+  base_fee_cents: number;
+  km_rate_cents: number;
+  duration_minutes: number;
+  surge_multiplier: number;
+}> {
+  const { service_type, distance_km, helpers_count = 0, surge_multiplier = 1 } = params;
+  const cfg = SERVICE_CONFIGS[service_type] || SERVICE_CONFIGS.ride_car;
+  const surge = Math.max(1, Math.min(3, surge_multiplier || 1));
+
+  const { data: priceTable } = await supabase
+    .from("logistics_price_tables")
+    .select("*")
+    .eq("service_type", service_type)
+    .eq("is_active", true)
+    .order("base_fee_cents", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  const baseFee = priceTable?.base_fee_cents ?? cfg.base_fee_cents;
+  const kmRate = priceTable?.km_rate_cents ?? cfg.km_rate_cents;
+  const minuteRate = priceTable?.minute_rate_cents ?? 0;
+  const helperFee = priceTable?.helper_fee_cents || cfg.helper_fee_cents || 0;
+  const minFare = priceTable?.min_fare_cents ?? cfg.min_fare_cents;
+  const durationMin = Math.max(8, Math.round(distance_km * 2.8) + 4);
+
+  const rawKmCost = Math.round(distance_km * kmRate);
+  const rawMinuteCost = Math.round(durationMin * minuteRate);
+  const rawHelperCost = helpers_count * helperFee;
+  const rawTotal = Math.round((baseFee + rawKmCost + rawMinuteCost + rawHelperCost) * surge);
+  const finalPrice = Math.max(rawTotal, minFare);
+
+  return {
+    price_cents: finalPrice,
+    base_fee_cents: baseFee,
+    km_rate_cents: kmRate,
+    duration_minutes: durationMin,
+    surge_multiplier: surge,
+  };
+}
+
+/**
  * 1. Simula cotação para todos os modais disponíveis baseando-se nas tabelas ativas no banco de dados (logistics_price_tables).
  * Se o administrador ou empresa de logística não cadastrou nenhuma tabela de preço ativa, retorna lista vazia
  * para que a interface informe "Sem atendimento ou tabela de tarifas configurada para esta região".
@@ -336,7 +390,7 @@ export const createMobilityRequest = createServerFn({ method: "POST" })
  helpers_count: z.number().int().min(0).max(6).default(0),
  needs_packing: z.boolean().default(false),
  scheduled_for: z.string().optional().nullable(),
- estimated_price_cents: z.number().int().min(100),
+ estimated_price_cents: z.number().int().min(100).optional(),
  payment_method: z.string().default("pix"),
  notes: z.string().optional(),
  direct_driver_slug: z.string().optional(),
@@ -425,6 +479,14 @@ export const createMobilityRequest = createServerFn({ method: "POST" })
    .filter(Boolean)
    .join(" • ");
 
+ // P0-2: Derivação estrita do preço no servidor (Zero-Trust ao cliente - ignora valor vindo do frontend)
+ const serverQuote = await computeServerMobilityQuoteInternal(supabase, {
+   service_type,
+   distance_km,
+   helpers_count,
+ });
+ const authoritativePriceCents = serverQuote.price_cents;
+
  const mobilityPayload: Record<string, any> = {
  id: sharedId,
  customer_id: identity?.id || null,
@@ -450,8 +512,8 @@ export const createMobilityRequest = createServerFn({ method: "POST" })
  helpers_count,
  needs_packing,
  scheduled_for: scheduledIso,
- estimated_price_cents,
- final_price_cents: estimated_price_cents,
+ estimated_price_cents: authoritativePriceCents,
+ final_price_cents: authoritativePriceCents,
  payment_method,
  payment_status: "pending",
  courier_profile_id: assignedCourierProfileId,
@@ -3114,5 +3176,5 @@ export const calculateCategorizedMobilityOptions = createServerFn({ method: "POS
     }),
   )
   .handler(async ({ data }): Promise<CategorizedMobilityOption[]> => {
-    return computeCategorizedMobilityOptionsHelper(data);
+    return computeCategorizedMobilityOptionsHelper(data as any);
   });

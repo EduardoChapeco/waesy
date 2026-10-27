@@ -209,7 +209,7 @@ export function StudioMapWidget({
           className="rounded-lg h-10 text-xs"
         />
         <Button onClick={handleSearch} disabled={searching} variant="secondary" className="rounded-lg h-10 text-xs gap-2 shrink-0">
-          {searching ? <Loader2 className="size-3.5 animate-spin" /> : <Plus className="size-3.5" />}
+          {searching ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : <Plus className="size-3.5" />}
           <span>Adicionar</span>
         </Button>
       </div>
@@ -226,7 +226,7 @@ export function StudioMapWidget({
               <button
                 type="button"
                 onClick={() => removeWaypoint(wp.id)}
-                className="text-muted-foreground hover:text-destructive ml-1"
+                className="text-muted-foreground hover:text-destructive ml-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label={`Remover ${wp.label}`}
               >
                 <X className="size-3" />
@@ -242,7 +242,7 @@ export function StudioMapWidget({
         {capturing && (
           <div className="absolute inset-0 bg-background/70 backdrop-blur-xs flex items-center justify-center z-20">
             <div className="bg-card p-4 rounded-lg border border-border flex items-center gap-3 shadow-lg">
-              <Loader2 className="size-4 animate-spin text-primary" />
+              <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-primary" />
               <span className="text-xs font-semibold">Capturando mapa em alta resolução...</span>
             </div>
           </div>

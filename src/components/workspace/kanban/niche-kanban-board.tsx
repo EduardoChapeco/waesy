@@ -63,10 +63,18 @@ export function NicheKanbanBoard({
 
         return (
           <div
-            key={item.id}
-            onClick={() => onCardClick?.(item)}
-            className={cn(
-              "group relative flex flex-col gap-2 p-3 rounded-lg border border-border/70 bg-card hover:border-primary/40 hover:shadow-xs transition-all duration-150 cursor-pointer select-none",
+    key={item.id}
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        onCardClick?.(item);
+      }
+    }}
+    onClick={() => onCardClick?.(item)}
+    className={cn(
+      "group relative flex flex-col gap-2 p-3 rounded-lg border border-border/70 bg-card hover:border-primary/40 hover:shadow-xs transition-colors duration-200 duration-150 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
               item.status === "won" && "border-success/30 bg-success/5",
               item.status === "lost" && "opacity-70 border-destructive/20 bg-destructive/5"
             )}
@@ -88,7 +96,7 @@ export function NicheKanbanBoard({
 
             {/* Linha de Contato / Atributos */}
             {(item.contactName || item.contactPhone) && (
-              <div className="flex items-center gap-2 text-[11px] text-muted-foreground truncate">
+              <div className="flex items-center gap-2 text-2xs text-muted-foreground truncate">
                 {item.contactName && (
                   <span className="inline-flex items-center gap-1 truncate">
                     <User className="h-3 w-3 shrink-0" />
@@ -110,7 +118,7 @@ export function NicheKanbanBoard({
                 {item.tags.slice(0, 3).map((tag: string, idx: number) => (
                   <span
                     key={idx}
-                    className="text-[10px] font-medium px-2 py-1 rounded-md bg-muted text-muted-foreground"
+                    className="text-2xs font-medium px-2 py-1 rounded-md bg-muted text-muted-foreground"
                   >
                     {tag}
                   </span>
@@ -120,11 +128,11 @@ export function NicheKanbanBoard({
 
             {/* Linha de Ações de Transição Rápida */}
             {allowedTransitions.length > 0 && (
-              <div
+              <div /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */
                 className="flex items-center gap-1 pt-1 border-t border-border/40 mt-1"
                 onClick={(e) => e.stopPropagation()}
               >
-                <span className="text-[10px] text-muted-foreground mr-1">Mover:</span>
+                <span className="text-2xs text-muted-foreground mr-1">Mover:</span>
                 <div className="flex flex-wrap gap-1">
                   {allowedTransitions.slice(0, 2).map((nextStatus) => {
                     const meta = getStatusMeta(entity, nextStatus);
@@ -133,7 +141,7 @@ export function NicheKanbanBoard({
                         key={nextStatus}
                         type="button"
                         onClick={() => onTransitionStatus(item.id, nextStatus)}
-                        className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring transition-colors"
+                        className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-2xs font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring transition-colors"
                       >
                         <span>{meta.label}</span>
                         <ArrowRight className="h-2.5 w-2.5" />

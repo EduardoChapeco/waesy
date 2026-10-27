@@ -304,7 +304,7 @@ function NovoAnuncioPage() {
  disabled={isAiExtracting}
  className="h-10 rounded-lg text-xs font-semibold px-4 cursor-pointer shrink-0"
  >
- {isAiExtracting ? <Loader2 className="size-4 animate-spin" /> : "Estruturar"}
+ {isAiExtracting ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> : "Estruturar"}
  </Button>
  </div>
  </div>
@@ -362,8 +362,8 @@ function NovoAnuncioPage() {
  if (obj.id === "direct_sales") setDestinationType("product");
  if (obj.id === "brand_awareness") setDestinationType("custom_url");
  }}
- className={cn(
- "p-3 rounded-lg border text-left flex flex-col justify-between gap-2 transition-all cursor-pointer",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "p-3 rounded-lg border text-left flex flex-col justify-between gap-2 transition-colors duration-200 cursor-pointer",
  isSel
  ? "border-primary bg-primary/5 ring-1 ring-primary/30"
  : "border-border/60 bg-background hover:bg-muted/40",
@@ -491,7 +491,7 @@ function NovoAnuncioPage() {
  <button
  type="button"
  onClick={() => setIsFormatDrawerOpen(!isFormatDrawerOpen)}
- className="w-full flex items-center justify-between text-xs font-semibold text-foreground hover:text-primary transition-colors cursor-pointer"
+ className="w-full flex items-center justify-between text-xs font-semibold text-foreground hover:text-primary transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="flex items-center gap-2">
  <Palette className="size-4 text-primary shrink-0" />
@@ -514,8 +514,8 @@ function NovoAnuncioPage() {
  key={f.id}
  type="button"
  onClick={() => setFormat(f.id)}
- className={cn(
- "p-3 rounded-lg border text-left flex items-start justify-between transition-all cursor-pointer",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "p-3 rounded-lg border text-left flex items-start justify-between transition-colors duration-200 cursor-pointer",
  format === f.id
  ? "border-primary bg-primary/5 ring-1 ring-primary/30"
  : "border-border/60 bg-background hover:bg-muted/40",
@@ -542,7 +542,7 @@ function NovoAnuncioPage() {
  >
  {isSubmitting ? (
  <>
- <Loader2 className="size-4 animate-spin" />
+ <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
  <span>Ativando Campanha...</span>
  </>
  ) : (
@@ -603,7 +603,7 @@ function NovoAnuncioPage() {
  <div className="rounded-lg overflow-hidden bg-muted/30 border border-border/40 relative">
  {mediaUrls[0] ? (
  <div
- className="w-full relative overflow-hidden bg-black/5 flex items-center justify-center"
+ className="w-full relative overflow-hidden bg-foreground/5 flex items-center justify-center"
  style={{
  aspectRatio: `${selectedFormatConfig.aspect}`,
  maxHeight: format === "banner_destaque" ? "180px" : "280px",

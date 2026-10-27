@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import { createFileRoute, isRedirect } from "@tanstack/react-router";
 import { UniversalClassifiedShowcase } from "@/components/classifieds/universal-classified-showcase";
 import { ConvenienceShowcaseView } from "@/components/classifieds/convenience-showcase-view";
@@ -19,6 +20,9 @@ import { useActionAuthGuard } from "@/hooks/use-action-auth-guard";
 
 export const Route = createFileRoute("/_store/classificados/$id")({
   head: buildClassifiedHead,
+  validateSearch: (search: Record<string, unknown>): { preview?: boolean } => ({
+    preview: (search.preview === true || search.preview === "true") ? true : undefined,
+  }),
 
   loader: async ({
     params,
@@ -32,6 +36,18 @@ export const Route = createFileRoute("/_store/classificados/$id")({
     similarAds: any[];
     errorMessage?: string;
   }> => {
+    if (params.id === "preview-live") {
+      const profile = await getProfile().catch(() => null);
+      return {
+        classified: null,
+        status: "active",
+        isOwner: true,
+        canManage: true,
+        viewerContext: "owner",
+        currentProfile: profile || null,
+        similarAds: [],
+      };
+    }
     try {
       const [result, profileRes] = await Promise.all([
         (getPublicClassifiedById({ data: params.id } as any) as Promise<any>).catch((err) => ({
@@ -92,28 +108,58 @@ function ClassifiedDetailPage() {
     errorMessage,
   } = (Route.useLoaderData?.() as any) || {};
 
-  if (status === "error") {
+  const params = Route.useParams();
+  const search = Route.useSearch() as any;
+  const isPreviewMode = params.id === "preview-live" || search?.preview === true || search?.preview === "true";
+
+  // Suporte a preview de rascunho em sessionStorage (GAP-01)
+  const [previewClassified, setPreviewClassified] = useState<any>(null);
+
+  useEffect(() => {
+    if (isPreviewMode && typeof window !== "undefined") {
+      try {
+        const raw = sessionStorage.getItem("waesy_preview_payload");
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          setPreviewClassified(parsed);
+        }
+      } catch (err) {
+        console.warn("[_store.classificados.$id] Falha ao carregar rascunho do preview:", err);
+      }
+    }
+  }, [isPreviewMode]);
+
+  const effectiveClassified = previewClassified || classified;
+
+  if (status === "error" && !effectiveClassified) {
     return <ClassifiedDetailErrorState errorMessage={errorMessage} />;
   }
 
-  if (!classified || status === "not_found" || status === "invalid_id") {
+  if (!effectiveClassified) {
+    if (isPreviewMode) {
+      return (
+        <div className="min-h-72 flex flex-col items-center justify-center p-6 text-center space-y-3">
+          <p className="text-sm font-semibold text-muted-foreground">Carregando dados da prévia em tempo real...</p>
+        </div>
+      );
+    }
     return <ClassifiedEmptyState status={status} similarAds={similarAds} />;
   }
 
   const { requireAuth, modalProps } = useActionAuthGuard();
 
   const detail = useClassifiedDetail({
-    classified,
-    status,
-    isOwner,
-    canManage,
-    viewerContext,
+    classified: effectiveClassified,
+    status: isPreviewMode ? "active" : status,
+    isOwner: isPreviewMode ? true : isOwner,
+    canManage: isPreviewMode ? true : canManage,
+    viewerContext: isPreviewMode ? "owner" : viewerContext,
     currentProfile,
   });
 
   const dialogs = (
     <ClassifiedDetailDialogs
-      classified={classified}
+      classified={effectiveClassified}
       detail={detail}
       viewerContext={viewerContext}
       currentProfile={currentProfile}
@@ -123,6 +169,12 @@ function ClassifiedDetailPage() {
   if (detail.isConvenienceProduct) {
     return (
       <>
+        {isPreviewMode && (
+          <div className="w-full bg-primary/10 border-b border-primary/20 text-primary px-4 py-2 text-xs font-bold flex items-center justify-between">
+            <span>Modo de Pré-Visualização (Rascunho não publicado)</span>
+            <span className="text-xs opacity-80 font-normal">Dados do editor local</span>
+          </div>
+        )}
         <ProductTelemetry
           storeId={classified?.store_id || classified?.storeId}
           productId={classified?.id}

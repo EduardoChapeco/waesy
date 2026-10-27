@@ -17,7 +17,7 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
   const brand = vm.agency.brand_color;
 
   return (
-    <div className="flex flex-col w-full font-sans bg-white text-slate-900 px-16 py-12">
+    <div className="flex flex-col w-full font-sans bg-card text-slate-900 px-16 py-12">
       {/* HEADER DA CAPA */}
       <div className="flex justify-between items-start mb-12 break-inside-avoid">
         {vm.agency.logo_url ? (
@@ -50,7 +50,7 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
           <div className="absolute inset-0 w-full h-full bg-slate-900" />
         )}
         <div className="absolute inset-0 bg-slate-900/40" />
-        <h1 className="relative text-white text-4xl font-semibold tracking-tight text-center px-8">
+        <h1 className="relative text-foreground text-4xl font-semibold tracking-tight text-center px-8">
           {p.title || "Proposta de Viagem"}
         </h1>
       </div>
@@ -231,7 +231,7 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
 
         {/* FINANCEIRO */}
         <div className="mt-16 break-inside-avoid">
-          <div className="bg-[#1E293B] rounded-lg p-10 text-white border border-slate-700">
+          <div className="bg-[#1E293B] rounded-lg p-10 text-foreground border border-slate-700">
             <h2 className="text-xl font-medium text-slate-300 mb-8 border-b border-slate-700 pb-4">
               Investimento Total
             </h2>
@@ -263,14 +263,14 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
                   <div className="ds-meta uppercase font-bold tracking-widest text-slate-400 mb-2">
                     Cartão de Crédito
                   </div>
-                  <div className="text-lg font-semibold text-white">
+                  <div className="text-lg font-semibold text-foreground">
                     {vm.totals.parcelasCartao}x de{" "}
                     {formatCurrency(vm.totals.valorParcelaCartao, p.currency)}
                   </div>
                 </div>
 
                 <div
-                  className="bg-white rounded-card p-5 text-slate-900 border-2"
+                  className="bg-card rounded-card p-5 text-slate-900 border-2"
                   style={{ borderColor: brand === "#0f172a" ? "#38bdf8" : brand }}
                 >
                   <div className="flex justify-between items-start mb-2">

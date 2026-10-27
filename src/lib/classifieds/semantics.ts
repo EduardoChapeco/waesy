@@ -11,7 +11,7 @@ import { Home, Building, Key, Car, Tag, Ticket, Wrench, Tractor, Calendar, Clock
 import { formatMoney } from "@/lib/money";
 import { getEducationLabel, getExperienceLabel, getRegimeLabel, getWorkplaceModelLabel } from "@/lib/classifieds/canonical-hiring";
 
-export type ClassifiedNicheId =
+export type SemanticClassifiedNicheId =
   | "hospitality_stay" // Hospedagem & Temporada (Chalés, Cabanas, Pousadas, Studios)
   | "real_estate_sale" // Imóveis (Venda de Casas, Aptos, Terrenos, Comerciais)
   | "real_estate_rent" // Imóveis (Locação Mensal Residencial / Comercial)
@@ -32,7 +32,7 @@ export type ClassifiedNicheId =
   | "event"; // Eventos, Festivais, Shows & Workshops
 
 export interface ClassifiedNicheDefinition {
-  id: ClassifiedNicheId;
+  id: SemanticClassifiedNicheId;
   canonicalCategory: "real_estate" | "vehicle" | "sale" | "service" | "job";
   dealType: "venda" | "aluguel" | "temporada" | "servico";
   title: string;
@@ -49,7 +49,7 @@ export interface ClassifiedNicheDefinition {
   allowEscrowGuarantee: boolean;
 }
 
-export const NICHE_DEFINITIONS: Record<ClassifiedNicheId, ClassifiedNicheDefinition> = {
+export const NICHE_DEFINITIONS: Record<SemanticClassifiedNicheId, ClassifiedNicheDefinition> = {
   hospitality_stay: {
     id: "hospitality_stay",
     canonicalCategory: "real_estate",
@@ -1625,7 +1625,7 @@ export function isClassifiedConversational(classified: any): boolean {
     return true;
   }
   const niche = resolveClassifiedNiche(classified);
-  const conversationalNiches: ClassifiedNicheId[] = [
+  const conversationalNiches: SemanticClassifiedNicheId[] = [
     "service",
     "real_estate_sale",
     "real_estate_rent",

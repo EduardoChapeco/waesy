@@ -346,7 +346,7 @@ function KDSDashboard() {
  key={f}
  type="button"
  onClick={() => setOriginFilter(f)}
- className={cn(
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-3 py-1 rounded-lg transition-colors cursor-pointer",
  originFilter === f
  ? "bg-background text-foreground shadow-2xs"
@@ -376,8 +376,8 @@ function KDSDashboard() {
  key={station.id}
  type="button"
  onClick={() => setStationFilter(station.id)}
- className={cn(
- "flex items-center gap-2 px-3 py-1 rounded-lg border text-xs font-bold transition-all cursor-pointer",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "flex items-center gap-2 px-3 py-1 rounded-lg border text-xs font-bold transition-colors duration-200 cursor-pointer",
  isActive
  ? "bg-background border-border shadow-2xs text-foreground"
  : "border-transparent text-muted-foreground hover:text-foreground hover:border-border/60",
@@ -524,7 +524,7 @@ function KDSDashboard() {
  <div className="py-2 flex flex-col items-center">
  <div
  id="printable-kitchen-ticket"
- className="w-full bg-white text-black p-4 rounded-lg font-mono text-xs border border-neutral-300 space-y-3 shadow-inner"
+ className="w-full bg-card text-foreground p-4 rounded-lg font-mono text-xs border border-neutral-300 space-y-3 shadow-inner"
  >
  <div className="text-center border-b border-dashed border-neutral-400 pb-2">
  <h3 className="font-black text-sm uppercase tracking-wider">PRODUÇÃO COZINHA</h3>
@@ -690,18 +690,18 @@ function KitchenTicketCard({
  const headerUrgencyClass = {
  normal: "bg-slate-900 dark:bg-slate-800",
  warning: "bg-amber-600",
- critical: "bg-destructive animate-pulse",
+ critical: "bg-destructive animate-pulse motion-reduce:animate-none",
  }[urgency];
 
  return (
- <div className={cn("rounded-lg border bg-card overflow-hidden flex flex-col transition-all shadow-2xs", cardUrgencyClass)}>
+ <div className={cn("rounded-lg border bg-card overflow-hidden flex flex-col transition-colors duration-200 shadow-2xs", cardUrgencyClass)}>
  {/* Topo do Ticket */}
- <div className={cn("p-3 text-white flex justify-between items-center", headerUrgencyClass)}>
+ <div className={cn("p-3 text-foreground flex justify-between items-center", headerUrgencyClass)}>
  <div className="flex items-center gap-2">
  <span className="font-black text-xl font-mono">#{ticketNumber}</span>
  <Badge
  variant="outline"
- className="text-xs uppercase font-mono font-bold bg-white/10 text-white border-white/20"
+ className="text-xs uppercase font-mono font-bold bg-card/10 text-foreground border-white/20"
  >
  {originLabel}
  </Badge>
@@ -712,7 +712,7 @@ function KitchenTicketCard({
  type="button"
  onClick={(e) => { e.stopPropagation(); onPrint(); }}
  title="Imprimir comanda térmica"
- className="size-10 sm:size-8 rounded-lg bg-white/15 hover:bg-white/30 flex items-center justify-center text-white transition-colors cursor-pointer"
+ className="size-10 sm:size-8 rounded-lg bg-card/15 hover:bg-card/30 flex items-center justify-center text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Printer className="size-4" />
  </button>
@@ -721,12 +721,12 @@ function KitchenTicketCard({
  <div className="text-right">
  <div className={cn(
  "text-xs font-black font-mono flex items-center gap-1",
- urgency === "critical" ? "text-white" : urgency === "warning" ? "text-white" : "text-white/90"
+ urgency === "critical" ? "text-foreground" : urgency === "warning" ? "text-foreground" : "text-foreground/90"
  )}>
  <Clock className="size-3.5" />
  {waitMinutes}min
  </div>
- <span className="text-xs text-white/70 font-mono">{formatTimeOnly(order.created_at)}</span>
+ <span className="text-xs text-foreground/70 font-mono">{formatTimeOnly(order.created_at)}</span>
  </div>
  </div>
  </div>
@@ -735,7 +735,7 @@ function KitchenTicketCard({
  <div className="h-1 w-full bg-border/30 shrink-0">
  <div
  className={cn(
- "h-full transition-all",
+ "h-full transition-colors duration-200",
  urgency === "critical" ? "bg-destructive" : urgency === "warning" ? "bg-amber-500" : "bg-emerald-500",
  )}
  style={{
@@ -779,7 +779,7 @@ function KitchenTicketCard({
  <div className="flex items-start gap-3">
  <button
  type="button"
- className="p-1 -m-1 text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
+ className="p-1 -m-1 text-muted-foreground hover:text-foreground cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  onClick={(e) => { e.stopPropagation(); onToggleCheck(itemKey); }}
  aria-label="Marcar item preparado"
  >

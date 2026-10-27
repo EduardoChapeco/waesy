@@ -269,7 +269,7 @@ export function SwotMatrixPage() {
                 <button
                   type="button"
                   onClick={() => handleRemoveItem(quadrantKey, idx)}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-muted-foreground hover:text-destructive"
+                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   title="Remover ponto"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
@@ -358,7 +358,7 @@ export function SwotMatrixPage() {
                 disabled={isGenerating}
                 className="h-11 px-4 rounded-lg text-xs font-medium gap-2"
               >
-                <Zap className={`w-3.5 h-3.5 ${isGenerating ? "animate-spin" : ""}`} />
+                <Zap className={`w-3.5 h-3.5 ${isGenerating ? "animate-spin motion-reduce:animate-none" : ""}`} />
                 {isGenerating ? "Analisando Empresa..." : "Gerar com IA"}
               </Button>
 
@@ -368,7 +368,7 @@ export function SwotMatrixPage() {
                 disabled={isSaving}
                 className="h-11 px-4 rounded-lg text-xs font-medium gap-2"
               >
-                <Save className={`w-3.5 h-3.5 ${isSaving ? "animate-spin" : ""}`} />
+                <Save className={`w-3.5 h-3.5 ${isSaving ? "animate-spin motion-reduce:animate-none" : ""}`} />
                 {isSaving ? "Salvando..." : "Salvar Matriz"}
               </Button>
             </div>

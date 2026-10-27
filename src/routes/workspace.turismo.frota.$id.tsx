@@ -44,11 +44,11 @@ const TOOL_OPTIONS: Array<{
 }> = [
  { type: "seat", label: "Poltrona", badgeColor: "bg-primary text-primary-foreground" },
  { type: "aisle", label: "Corredor", badgeColor: "bg-muted text-muted-foreground" },
- { type: "wc", label: "Banheiro (WC)", badgeColor: "bg-amber-500 text-white" },
- { type: "door", label: "Porta", badgeColor: "bg-emerald-500 text-white" },
- { type: "driver", label: "Motorista", badgeColor: "bg-indigo-500 text-white" },
- { type: "guide", label: "Guia", badgeColor: "bg-purple-500 text-white" },
- { type: "stairs", label: "Escada", badgeColor: "bg-slate-500 text-white" },
+ { type: "wc", label: "Banheiro (WC)", badgeColor: "bg-amber-500 text-foreground" },
+ { type: "door", label: "Porta", badgeColor: "bg-emerald-500 text-foreground" },
+ { type: "driver", label: "Motorista", badgeColor: "bg-indigo-500 text-foreground" },
+ { type: "guide", label: "Guia", badgeColor: "bg-purple-500 text-foreground" },
+ { type: "stairs", label: "Escada", badgeColor: "bg-slate-500 text-foreground" },
  { type: "empty", label: "Vazio", badgeColor: "bg-background text-muted-foreground border" },
 ];
 
@@ -418,8 +418,8 @@ function VehicleLayoutEditorPage() {
  <button
  type="button"
  onClick={() => setActiveDeck(1)}
- className={cn(
- "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "px-3 py-1 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer",
  activeDeck === 1
  ? "bg-primary text-primary-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground"
@@ -430,8 +430,8 @@ function VehicleLayoutEditorPage() {
  <button
  type="button"
  onClick={() => setActiveDeck(2)}
- className={cn(
- "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "px-3 py-1 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer",
  activeDeck === 2
  ? "bg-primary text-primary-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground"
@@ -451,8 +451,8 @@ function VehicleLayoutEditorPage() {
  key={tool.type}
  type="button"
  onClick={() => setActiveTool(tool.type)}
- className={cn(
- "px-3 py-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer flex items-center gap-2",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "px-3 py-2 rounded-lg text-xs font-semibold border transition-colors duration-200 cursor-pointer flex items-center gap-2",
  isSelected
  ? "border-primary bg-primary/10 text-primary ring-2 ring-primary/20 shadow-2xs"
  : "border-border/70 bg-background text-foreground hover:bg-muted/50"
@@ -491,8 +491,8 @@ function VehicleLayoutEditorPage() {
  key={cat.key}
  type="button"
  onClick={() => setActiveCategory(cat.key)}
- className={cn(
- "px-3 py-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer flex items-center gap-2",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "px-3 py-2 rounded-lg text-xs font-semibold border transition-colors duration-200 cursor-pointer flex items-center gap-2",
  isSelected
  ? "border-primary bg-primary/10 text-primary ring-2 ring-primary/20 shadow-2xs"
  : "border-border/70 bg-background text-foreground hover:bg-muted/50"
@@ -547,22 +547,22 @@ function VehicleLayoutEditorPage() {
  type="button"
  onClick={(e) => handleCellClick(r, c, e)}
  title={`Linha ${r + 1}, Coluna ${c + 1}: ${cell?.label || cellType} (${cell?.category || ""})`}
- className={cn(
- "size-11 sm:size-12 rounded-lg flex flex-col items-center justify-center font-bold text-xs transition-all cursor-pointer select-none active:scale-95",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "size-11 sm:size-12 rounded-lg flex flex-col items-center justify-center font-bold text-xs transition-colors duration-200 cursor-pointer select-none active:scale-95",
  // Estilização por Tipo
  cellType === "seat" &&
  !isAccessible &&
  !isBlocked &&
  (cell?.category === "leito_cama"
- ? "bg-amber-500 text-white border-amber-600 shadow-xs"
+ ? "bg-amber-500 text-foreground border-amber-600 shadow-xs"
  : cell?.category === "leito"
  ? "bg-primary text-primary-foreground border-primary shadow-xs"
  : cell?.category === "semi_leito"
- ? "bg-emerald-600 text-white border-emerald-700 shadow-xs"
+ ? "bg-emerald-600 text-foreground border-emerald-700 shadow-xs"
  : "bg-primary text-primary-foreground border-primary shadow-xs"),
  cellType === "seat" &&
  isAccessible &&
- "bg-cyan-500 text-white border-cyan-600 shadow-xs ring-2 ring-cyan-300",
+ "bg-cyan-500 text-foreground border-cyan-600 shadow-xs ring-2 ring-cyan-300",
  cellType === "seat" &&
  isBlocked &&
  "bg-slate-400 text-slate-800 border-slate-500 opacity-60",
@@ -689,7 +689,7 @@ function VehicleLayoutEditorPage() {
  <button
  type="button"
  onClick={() => handleApplyPreset("exec_46")}
- className="p-4 rounded-lg border border-border hover:border-primary text-left transition-all hover:bg-muted/40 cursor-pointer space-y-1"
+ className="p-4 rounded-lg border border-border hover:border-primary text-left transition-colors duration-200 hover:bg-muted/40 cursor-pointer space-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="font-bold text-sm text-foreground flex items-center gap-2">
  <Bus className="size-4 text-primary" /> 46L Executivo
@@ -702,7 +702,7 @@ function VehicleLayoutEditorPage() {
  <button
  type="button"
  onClick={() => handleApplyPreset("semi_42")}
- className="p-4 rounded-lg border border-border hover:border-primary text-left transition-all hover:bg-muted/40 cursor-pointer space-y-1"
+ className="p-4 rounded-lg border border-border hover:border-primary text-left transition-colors duration-200 hover:bg-muted/40 cursor-pointer space-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="font-bold text-sm text-foreground flex items-center gap-2">
  <Bus className="size-4 text-emerald-500" /> 42L Semi-Leito
@@ -715,7 +715,7 @@ function VehicleLayoutEditorPage() {
  <button
  type="button"
  onClick={() => handleApplyPreset("dd_60")}
- className="p-4 rounded-lg border border-border hover:border-primary text-left transition-all hover:bg-muted/40 cursor-pointer space-y-1 sm:col-span-2"
+ className="p-4 rounded-lg border border-border hover:border-primary text-left transition-colors duration-200 hover:bg-muted/40 cursor-pointer space-y-1 sm:col-span-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="font-bold text-sm text-foreground flex items-center gap-2">
  <Layers className="size-4 text-amber-500" /> 60L Double Decker (G8 DD)
@@ -728,7 +728,7 @@ function VehicleLayoutEditorPage() {
  <button
  type="button"
  onClick={() => handleApplyPreset("micro_28")}
- className="p-4 rounded-lg border border-border hover:border-primary text-left transition-all hover:bg-muted/40 cursor-pointer space-y-1 sm:col-span-2"
+ className="p-4 rounded-lg border border-border hover:border-primary text-left transition-colors duration-200 hover:bg-muted/40 cursor-pointer space-y-1 sm:col-span-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="font-bold text-sm text-foreground flex items-center gap-2">
  <Bus className="size-4 text-indigo-500" /> 28L Micro-ônibus

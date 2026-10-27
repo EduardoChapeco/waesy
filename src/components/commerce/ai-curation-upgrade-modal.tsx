@@ -29,7 +29,7 @@ export function AiCurationUpgradeModal({
             <span className="p-2 rounded-lg bg-primary/10 text-primary">
               <Star className="size-5" />
             </span>
-            <Badge variant="outline" className="text-[10px] font-mono border-primary/40 text-primary">
+            <Badge variant="outline" className="text-2xs font-mono border-primary/40 text-primary">
               RECURSO PREMIUM / BYOK
             </Badge>
           </div>
@@ -47,7 +47,7 @@ export function AiCurationUpgradeModal({
           <Link
             to="/workspace/configuracoes/inteligencia-artificial"
             onClick={onClose}
-            className="flex items-start gap-3 p-4 rounded-lg border border-border/70 hover:border-primary/50 bg-muted/20 hover:bg-muted/40 transition-all cursor-pointer group"
+            className="flex items-start gap-3 p-4 rounded-lg border border-border/70 hover:border-primary/50 bg-muted/20 hover:bg-muted/40 transition-colors duration-200 cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <div className="size-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0 mt-1">
               <Key className="size-4" />
@@ -55,11 +55,11 @@ export function AiCurationUpgradeModal({
             <div className="space-y-1 min-w-0 flex-1">
               <div className="text-xs font-bold text-foreground flex items-center justify-between">
                 <span>Inserir Minha Chave de API (BYOK)</span>
-                <span className="text-[10px] text-emerald-500 font-mono font-bold bg-emerald-500/10 px-2 py-0.2 rounded">
+                <span className="text-2xs text-emerald-500 font-mono font-bold bg-emerald-500/10 px-2 py-0.2 rounded">
                   Grátis
                 </span>
               </div>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-2xs text-muted-foreground">
                 Conecte sua própria chave da OpenAI, Anthropic ou Google Gemini sem pagar mensalidade adicional.
               </p>
             </div>
@@ -69,7 +69,7 @@ export function AiCurationUpgradeModal({
           <Link
             to="/workspace/configuracoes"
             onClick={onClose}
-            className="flex items-start gap-3 p-4 rounded-lg border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-all cursor-pointer group"
+            className="flex items-start gap-3 p-4 rounded-lg border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors duration-200 cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
               <Zap className="size-4" />
@@ -79,7 +79,7 @@ export function AiCurationUpgradeModal({
                 <span>Assinar Plano Comercial Premium</span>
                 <ArrowRight className="size-3.5 text-primary group-hover:translate-x-0.5 transition-transform" />
               </div>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-2xs text-muted-foreground">
                 Tokens de IA inclusos, curadoria automática do OpenSquad e suporte prioritário.
               </p>
             </div>

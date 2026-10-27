@@ -230,7 +230,7 @@ export function NewClientWizard({
  {STEPS.map((s, idx) => (
  <div
  key={s}
- className={`flex items-center gap-2 py-1 px-2 rounded-lg text-xs font-semibold transition-all ${
+ className={`flex items-center gap-2 py-1 px-2 rounded-lg text-xs font-semibold transition-colors duration-200 ${
  idx === step
  ? "bg-primary text-primary-foreground shadow-xs"
  : idx < step
@@ -257,11 +257,11 @@ export function NewClientWizard({
  <button
  type="button"
  onClick={() => setKind("individual")}
- className={`flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all cursor-pointer ${
+ className={`flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-colors duration-200 cursor-pointer ${
  kind === "individual"
  ? "border-primary bg-primary/5 text-primary shadow-xs"
  : "border-border hover:border-primary/40 bg-card text-muted-foreground"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <User className="size-7 mb-2" />
  <span className="font-bold text-sm">Pessoa Física (B2C)</span>
@@ -271,11 +271,11 @@ export function NewClientWizard({
  <button
  type="button"
  onClick={() => setKind("company")}
- className={`flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all cursor-pointer ${
+ className={`flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-colors duration-200 cursor-pointer ${
  kind === "company"
  ? "border-primary bg-primary/5 text-primary shadow-xs"
  : "border-border hover:border-primary/40 bg-card text-muted-foreground"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <Building2 className="size-7 mb-2" />
  <span className="font-bold text-sm">Empresa (PJ / B2B)</span>
@@ -433,7 +433,7 @@ export function NewClientWizard({
  className="h-10 rounded-lg text-xs bg-background font-mono"
  />
  {loadingCep && (
- <Loader2 className="size-3.5 animate-spin absolute right-3 top-3 text-primary" />
+ <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none absolute right-3 top-3 text-primary" />
  )}
  </div>
  </div>
@@ -537,11 +537,19 @@ export function NewClientWizard({
  <div className="flex flex-wrap gap-2 pt-1">
  {tags.map((t) => (
  <Badge
- key={t}
- variant="secondary"
- className="text-xs font-semibold px-3 py-1 rounded-lg gap-2 cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors"
- onClick={() => handleRemoveTag(t)}
- >
+    key={t}
+    variant="secondary"
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        handleRemoveTag(t);
+      }
+    }}
+    className="text-xs font-semibold px-3 py-1 rounded-lg gap-2 cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    onClick={() => handleRemoveTag(t)}
+  >
  <span>{t}</span>
  <span className="text-xs opacity-60">×</span>
  </Badge>
@@ -556,7 +564,7 @@ export function NewClientWizard({
  key={st}
  type="button"
  onClick={() => handleAddTag(st)}
- className="text-xs px-2 py-1 rounded-full bg-muted/60 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer"
+ className="text-xs px-2 py-1 rounded-full bg-muted/60 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  + {st}
  </button>
@@ -668,7 +676,7 @@ export function NewClientWizard({
  onClick={handleSubmit}
  className="text-xs font-bold gap-2 px-6 h-9 rounded-lg bg-primary text-primary-foreground shadow-sm"
  >
- {submitting ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />}
+ {submitting ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : <Check className="size-3.5" />}
  <span>Salvar Cliente na Carteira</span>
  </Button>
  )}

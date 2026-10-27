@@ -120,7 +120,7 @@ export function VideoStudioTimeline({
  <div className="flex-1 h-9 rounded-lg bg-muted/40 relative overflow-hidden border border-border/60">
  <div
  style={{ backgroundColor: track.color }}
- className="h-full w-4/5 rounded-lg opacity-80 flex items-center px-3 text-[10px] font-bold text-white shadow-sm"
+ className="h-full w-4/5 rounded-lg opacity-80 flex items-center px-3 text-2xs font-bold text-foreground shadow-sm"
  >
  Clip 01 ({track.duration}s)
  </div>

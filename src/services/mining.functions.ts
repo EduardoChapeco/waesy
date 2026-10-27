@@ -3043,6 +3043,9 @@ export const dispatchScheduledMiningJobFn = createServerFn({ method: "POST" })
         "ai-curate",
         "publish-approved",
         "events-harvest",
+        "jobs-harvest",
+        "places-harvest",
+        "hospitality-harvest",
         "full-daily-pipeline",
       ]),
     })
@@ -3063,13 +3066,12 @@ export const dispatchScheduledMiningJobFn = createServerFn({ method: "POST" })
       let totalQueued = 0;
 
       if (feeds && feeds.length > 0) {
-        for (const feed of feeds) {
+        // Concorrência paralela controlada (StormCrawler / Crawlee Concurrency Pattern)
+        const feedPromises = feeds.slice(0, 5).map(async (feed) => {
           try {
             const parsed = await parseFeed(feed.feed_url);
-            totalParsed += parsed.items.length;
-
-            if (parsed.items.length > 0) {
-              const queueInserts = parsed.items.slice(0, 10).map((item) => ({
+            if (parsed && parsed.items && parsed.items.length > 0) {
+              const queueInserts = parsed.items.slice(0, 8).map((item) => ({
                 url: item.link,
                 domain: extractDomain(item.link),
                 discovered_via: "rss_cron",
@@ -3088,10 +3090,19 @@ export const dispatchScheduledMiningJobFn = createServerFn({ method: "POST" })
                 .from("crawl_queue")
                 .upsert(queueInserts, { onConflict: "url", ignoreDuplicates: true });
 
-              totalQueued += queueInserts.length;
+              return { parsed: parsed.items.length, queued: queueInserts.length };
             }
           } catch (feedErr) {
             console.warn(`[MiningCron] Erro ao processar feed ${feed.feed_url}:`, feedErr);
+          }
+          return { parsed: 0, queued: 0 };
+        });
+
+        const settled = await Promise.allSettled(feedPromises);
+        for (const res of settled) {
+          if (res.status === "fulfilled" && res.value) {
+            totalParsed += res.value.parsed;
+            totalQueued += res.value.queued;
           }
         }
       }
@@ -3282,8 +3293,9 @@ export const dispatchScheduledMiningJobFn = createServerFn({ method: "POST" })
         result_summary: jobResult,
       });
     } else if (data.jobType === "continuous-crawler" || data.jobType === "crawl-batch") {
-      const batchRes = await executeCrawlQueueBatchDirect({ limit: 6 });
-      jobResult = batchRes;
+      const batchRes = await executeCrawlQueueBatchDirect({ limit: 4 });
+      const autoCurateRes = await runAiCurationAndPublish(6);
+      jobResult = { batchRes, autoCurateRes };
 
       await supabase.from("scraper_audit_log").insert({
         scraper_name: "continuous-crawler",
@@ -3291,8 +3303,8 @@ export const dispatchScheduledMiningJobFn = createServerFn({ method: "POST" })
         target_table: "crawl_queue",
         status: "success",
         duration_ms: Date.now() - startTime,
-        records_affected: batchRes?.succeeded || 0,
-        result_summary: batchRes,
+        records_affected: (batchRes?.succeeded || 0) + autoCurateRes.publishedNewsCount,
+        result_summary: jobResult,
       });
     } else if (data.jobType === "ai-curate" || data.jobType === "publish-approved") {
       jobResult = await runAiCurationAndPublish(12);
@@ -3305,30 +3317,68 @@ export const dispatchScheduledMiningJobFn = createServerFn({ method: "POST" })
         records_affected: jobResult.publishedNewsCount,
         result_summary: jobResult,
       });
-    } else if (data.jobType === "events-harvest") {
-      const { harvestAndPersistEvent } = await import("./mining/event-harvester");
-      const { data: eventQueue } = await supabase
-        .from("crawl_queue")
-        .select("id, url, store_id, metadata")
-        .in("entity_type", ["event", "events", "agenda"])
-        .eq("status", "pending")
-        .limit(6);
+    } else if (data.jobType === "jobs-harvest") {
+      const { harvestJobsBatch } = await import("./mining/job-opportunity-extractor");
+      const batchRes = await harvestJobsBatch(4);
+      jobResult = batchRes;
+      await supabase.from("scraper_audit_log").insert({
+        scraper_name: "jobs-harvest",
+        action: "harvest_jobs_cron",
+        target_table: "jobs",
+        status: "success",
+        duration_ms: Date.now() - startTime,
+        records_affected: batchRes.harvestedJobs,
+        result_summary: jobResult,
+      });
+    } else if (data.jobType === "places-harvest") {
+      const pRes = await harvestAndPersistPlaces({
+        query: "comércio",
+        city: "Chapecó",
+        state: "SC",
+      }).catch((err) => ({ success: false, totalFound: 0, totalInserted: 0, totalUpdated: 0, error: String(err) }));
 
-      let harvestedEvents = 0;
-      for (const eq of eventQueue || []) {
-        const res = await harvestAndPersistEvent({
-          url: eq.url,
-          city: eq.metadata?.city || "Chapecó",
-          state: eq.metadata?.state || "SC",
-          storeId: eq.store_id || undefined,
-        }).catch(() => null);
-        if (res?.success) {
-          harvestedEvents++;
-          await supabase.from("crawl_queue").update({ status: "completed", completed_at: new Date().toISOString() }).eq("id", eq.id);
-        }
-      }
+      jobResult = pRes;
+      await supabase.from("scraper_audit_log").insert({
+        scraper_name: "places-harvest",
+        action: "harvest_places_cron",
+        target_table: "directory_listings",
+        status: pRes.success ? "success" : "failed",
+        duration_ms: Date.now() - startTime,
+        records_affected: (pRes as any).totalInserted || 0,
+        result_summary: jobResult,
+      });
+    } else if (data.jobType === "hospitality-harvest") {
+      const { harvestHotelsAndResorts, purgeUnsplashFromHotelsBank } = await import("./mining/hospitality-harvester");
+      const purgeRes = await purgeUnsplashFromHotelsBank().catch(() => ({ inspected: 0, purgedPhotosCount: 0, enrichedWebsitesCount: 0 }));
+      const harvestRes = await harvestHotelsAndResorts({ city: "Chapecó", state: "SC" }).catch((err) => ({
+        success: false,
+        city: "Chapecó",
+        totalFound: 0,
+        totalInsertedDirectory: 0,
+        totalInsertedHotelsBank: 0,
+        hotels: [],
+        error: String(err),
+      }));
+
+      jobResult = { purgeRes, harvestRes };
+      await supabase.from("scraper_audit_log").insert({
+        scraper_name: "hospitality-harvest",
+        action: "harvest_and_purge_hotels_cron",
+        target_table: "hotels_bank",
+        status: harvestRes.success ? "success" : "failed",
+        duration_ms: Date.now() - startTime,
+        records_affected: harvestRes.totalInsertedDirectory + harvestRes.totalInsertedHotelsBank,
+        result_summary: jobResult,
+      });
+    } else if (data.jobType === "events-harvest") {
+      const { harvestEventsBatch } = await import("./mining/event-harvester");
+      const batchRes = await harvestEventsBatch(6);
       const fromArticles = await runAiCurationAndPublish(6);
-      jobResult = { harvestedEvents: harvestedEvents + fromArticles.publishedEventsCount, fromArticles };
+      jobResult = {
+        ...batchRes,
+        harvestedEvents: batchRes.harvestedEvents + fromArticles.publishedEventsCount,
+        fromArticles,
+      };
       await supabase.from("scraper_audit_log").insert({
         scraper_name: "events-harvest",
         action: "harvest_events_cron",

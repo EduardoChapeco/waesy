@@ -128,11 +128,11 @@ function SkillsCatalogPage() {
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
-              className={`px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
+              className={`px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors duration-200 ${
                 selectedCategory === cat.id
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "bg-muted/40 text-muted-foreground hover:bg-muted/70 hover:text-foreground border border-border/40"
-              }`}
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
             >
               {cat.label}
             </button>
@@ -143,7 +143,7 @@ function SkillsCatalogPage() {
       {/* Grid de Cards de Skills */}
       {isLoading ? (
         <div className="py-20 flex flex-col items-center justify-center gap-3 text-muted-foreground">
-          <Loader2 className="size-8 animate-spin text-primary" />
+          <Loader2 className="size-8 animate-spin motion-reduce:animate-none text-primary" />
           <p className="text-xs">Carregando catálogo de skills...</p>
         </div>
       ) : skills.length === 0 ? (
@@ -161,7 +161,7 @@ function SkillsCatalogPage() {
             return (
               <div
                 key={skill.id}
-                className="bg-card border border-border/60 rounded-lg p-5 hover:border-border transition-all flex flex-col justify-between space-y-4 shadow-sm"
+                className="bg-card border border-border/60 rounded-lg p-5 hover:border-border transition-colors duration-200 flex flex-col justify-between space-y-4 shadow-sm"
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-3">
@@ -281,7 +281,7 @@ function SkillsCatalogPage() {
                 >
                   {executeMutation.isPending ? (
                     <>
-                      <Loader2 className="size-3.5 mr-2 animate-spin" /> Processando...
+                      <Loader2 className="size-3.5 mr-2 animate-spin motion-reduce:animate-none" /> Processando...
                     </>
                   ) : (
                     <>

@@ -295,7 +295,7 @@ export function CarouselStudioEditor({
               <h3 className="text-sm font-bold truncate text-foreground leading-tight">
                 {project.title}
               </h3>
-              <p className="text-[11px] text-muted-foreground truncate">
+              <p className="text-2xs text-muted-foreground truncate">
                 {project.brand.name} • Sistema ESCAMAS (1080x1350 4:5)
               </p>
             </div>
@@ -307,11 +307,11 @@ export function CarouselStudioEditor({
               <button
                 key={s.id}
                 onClick={() => setCurrentSlideIndex(idx)}
-                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors duration-200 ${
                   currentSlideIndex === idx
                     ? "bg-background text-foreground shadow-xs border border-border"
                     : "text-muted-foreground hover:text-foreground"
-                }`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 Slide {idx + 1}
               </button>
@@ -334,11 +334,11 @@ export function CarouselStudioEditor({
                   setProject(updated);
                   onProjectUpdated?.(updated);
                 }}
-                className={`px-2 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                className={`px-2 py-1 rounded-lg text-2xs font-bold transition-colors duration-200 cursor-pointer ${
                   aspectRatio === opt.id
                     ? "bg-background text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
-                }`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 {opt.label}
               </button>
@@ -454,7 +454,7 @@ export function CarouselStudioEditor({
               <div className="w-px h-4 bg-border" />
 
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-muted-foreground font-mono">Zoom</span>
+                <span className="text-2xs text-muted-foreground font-mono">Zoom</span>
                 <Slider
                   min={0.25}
                   max={0.75}
@@ -497,7 +497,7 @@ export function CarouselStudioEditor({
                       handleTriggerAiRefinement();
                     }
                   }}
-                  className="h-7 px-3 gap-1 rounded-lg text-[11px] font-semibold border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
+                  className="h-7 px-3 gap-1 rounded-lg text-2xs font-semibold border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
                 >
                   <Star className="size-3 text-primary" />
                   Refinar com IA
@@ -575,7 +575,7 @@ export function CarouselStudioEditor({
                     value={currentSlide.background_url || ""}
                     onChange={(e) => updateCurrentSlide({ background_url: e.target.value })}
                     placeholder="https://..."
-                    className="h-9 mt-1 text-xs rounded-lg font-mono text-[11px]"
+                    className="h-9 mt-1 text-xs rounded-lg font-mono text-2xs"
                   />
                 </div>
 
@@ -672,11 +672,11 @@ export function CarouselStudioEditor({
                       setAiTone(t.id);
                       handleTriggerAiRefinement(t.id);
                     }}
-                    className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                    className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors duration-200 cursor-pointer ${
                       aiTone === t.id
                         ? "bg-primary text-primary-foreground shadow-xs"
                         : "bg-muted text-muted-foreground hover:text-foreground"
-                    }`}
+                    } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                   >
                     {t.label}
                   </button>
@@ -690,7 +690,7 @@ export function CarouselStudioEditor({
                 disabled={isRefiningAI}
                 className="h-8 gap-2 text-xs font-medium rounded-lg"
               >
-                <RefreshCw className={`size-3.5 ${isRefiningAI ? "animate-spin" : ""}`} />
+                <RefreshCw className={`size-3.5 ${isRefiningAI ? "animate-spin motion-reduce:animate-none" : ""}`} />
                 {isRefiningAI ? "Refinando..." : "Gerar Novas Variações"}
               </Button>
             </div>
@@ -699,7 +699,7 @@ export function CarouselStudioEditor({
             <div className="flex-1 overflow-y-auto py-4 space-y-3">
               {isRefiningAI ? (
                 <div className="py-12 flex flex-col items-center justify-center text-center space-y-3">
-                  <div className="size-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+                  <div className="size-10 rounded-full border-2 border-primary border-t-transparent animate-spin motion-reduce:animate-none" />
                   <p className="text-xs text-muted-foreground">
                     Orquestrando modelos de IA para criar variações de alto impacto...
                   </p>
@@ -719,15 +719,15 @@ export function CarouselStudioEditor({
                 aiVariants.map((variant, idx) => (
                   <div
                     key={idx}
-                    className="p-4 rounded-lg border border-border/80 bg-card hover:border-primary/50 transition-all space-y-3"
+                    className="p-4 rounded-lg border border-border/80 bg-card hover:border-primary/50 transition-colors duration-200 space-y-3"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-[10px] font-bold text-primary border-primary/30">
+                        <Badge variant="outline" className="text-2xs font-bold text-primary border-primary/30">
                           {variant.tone}
                         </Badge>
                         {variant.badge && (
-                          <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                          <span className="text-2xs font-bold text-muted-foreground uppercase">
                             • {variant.badge}
                           </span>
                         )}
@@ -744,7 +744,7 @@ export function CarouselStudioEditor({
 
                     <div>
                       {variant.kicker && (
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                        <p className="text-2xs font-bold uppercase tracking-wider text-muted-foreground mb-1">
                           {variant.kicker}
                         </p>
                       )}
@@ -759,7 +759,7 @@ export function CarouselStudioEditor({
                     </div>
 
                     {variant.rationale && (
-                      <p className="text-[11px] text-primary/80 italic bg-primary/5 p-2 rounded-lg border border-primary/10">
+                      <p className="text-2xs text-primary/80 italic bg-primary/5 p-2 rounded-lg border border-primary/10">
                         💡 {variant.rationale}
                       </p>
                     )}

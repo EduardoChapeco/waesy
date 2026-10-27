@@ -258,7 +258,7 @@ export default function WorkspaceTeamPage() {
  return (
  <div className="space-y-6 max-w-6xl mx-auto w-full pb-20">
  {/* ── PageHeader Canônico Clean ── */}
- <PageHeader
+ <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  eyebrow="RH & Gestão"
  title="Equipe"
  actions={
@@ -734,7 +734,7 @@ export default function WorkspaceTeamPage() {
  </Tabs>
 
  {/* ── SheetPage de Criação de Vaga ── */}
- <SheetPage
+ <SheetPage /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  open={isJobOpen}
  onOpenChange={setIsJobOpen}
  title="Publicar Nova Vaga de Emprego"
@@ -987,7 +987,7 @@ export default function WorkspaceTeamPage() {
  <AlertDialogCancel className="h-10 rounded-lg text-xs font-semibold">
  Cancelar
  </AlertDialogCancel>
- <AlertDialogAction
+ <AlertDialogAction /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
  onClick={handleConfirmRemove}
  disabled={isRemoving}
  className="h-10 rounded-lg text-xs font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90"

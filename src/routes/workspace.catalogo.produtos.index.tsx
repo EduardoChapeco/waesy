@@ -601,7 +601,7 @@ function AdminProductsPage() {
  return (
  <div
  key={product.id}
- className={`p-4 rounded-lg bg-card border border-border/50 shadow-2xs space-y-3 transition-all ${
+ className={`p-4 rounded-lg bg-card border border-border/50 shadow-2xs space-y-3 transition-colors duration-200 ${
  isSelected ? "ring-2 ring-primary/40 bg-primary/5" : ""
  }`}
  >

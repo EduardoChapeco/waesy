@@ -570,7 +570,7 @@ export function InteractiveCard({
         }
       }}
       className={cn(
-        "relative flex flex-col p-5 rounded-lg border transition-all cursor-pointer select-none",
+        "relative flex flex-col p-5 rounded-lg border transition-colors duration-200 cursor-pointer select-none",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         selected
           ? "border-primary bg-primary/5 shadow-xs"

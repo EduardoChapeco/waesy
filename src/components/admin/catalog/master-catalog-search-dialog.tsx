@@ -96,7 +96,7 @@ export function MasterCatalogSearchDialog({
               <div>
                 <SheetTitle className="text-base font-bold text-foreground flex items-center gap-2">
                   <span>Catálogo Central de Produtos e Dados Fiscais</span>
-                  <Badge variant="outline" className="text-[10px] bg-primary/5 text-primary border-primary/20 font-semibold">
+                  <Badge variant="outline" className="text-2xs bg-primary/5 text-primary border-primary/20 font-semibold">
                     Reforma Tributária 2026
                   </Badge>
                 </SheetTitle>
@@ -121,7 +121,7 @@ export function MasterCatalogSearchDialog({
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <X className="size-4" />
               </button>
@@ -135,11 +135,11 @@ export function MasterCatalogSearchDialog({
                 key={cat.id}
                 type="button"
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                className={`px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors duration-200 cursor-pointer ${
                   selectedCategory === cat.id
                     ? "bg-primary text-primary-foreground shadow-2xs"
                     : "bg-muted/60 text-muted-foreground hover:text-foreground hover:bg-muted"
-                }`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 {cat.label}
               </button>
@@ -151,7 +151,7 @@ export function MasterCatalogSearchDialog({
         <div className="flex-1 overflow-y-auto p-5 space-y-3">
           {isLoading ? (
             <div className="py-20 flex flex-col items-center justify-center gap-3 text-muted-foreground">
-              <Loader2 className="size-6 animate-spin text-primary" />
+              <Loader2 className="size-6 animate-spin motion-reduce:animate-none text-primary" />
               <span className="text-xs">Consultando base mestre de produtos...</span>
             </div>
           ) : products.length === 0 ? (
@@ -170,7 +170,7 @@ export function MasterCatalogSearchDialog({
                 return (
                   <div
                     key={p.barcode_ean}
-                    className="p-4 rounded-lg bg-card border border-border/70 hover:border-primary/50 transition-all hover:shadow-sm flex flex-col justify-between gap-3 group"
+                    className="p-4 rounded-lg bg-card border border-border/70 hover:border-primary/50 transition-colors duration-200 hover:shadow-sm flex flex-col justify-between gap-3 group"
                   >
                     <div className="flex items-start gap-3">
                       {/* Miniatura do Produto */}
@@ -190,11 +190,11 @@ export function MasterCatalogSearchDialog({
                       {/* Informações Centrais */}
                       <div className="flex-1 min-w-0 space-y-1">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-[10px] uppercase font-bold text-primary tracking-wider">
+                          <span className="text-2xs uppercase font-bold text-primary tracking-wider">
                             {p.brand_name}
                           </span>
-                          <span className="text-[10px] text-muted-foreground">•</span>
-                          <span className="text-[10px] text-muted-foreground truncate">
+                          <span className="text-2xs text-muted-foreground">•</span>
+                          <span className="text-2xs text-muted-foreground truncate">
                             {p.category}
                           </span>
                         </div>
@@ -207,7 +207,7 @@ export function MasterCatalogSearchDialog({
                           <span className="text-xs font-mono font-bold text-foreground">
                             {formatMoney(p.suggested_price_cents)}
                           </span>
-                          <span className="text-[10px] text-muted-foreground font-mono">
+                          <span className="text-2xs text-muted-foreground font-mono">
                             /{(p.unit_of_measure || "UN").toUpperCase()}
                           </span>
                         </div>
@@ -215,7 +215,7 @@ export function MasterCatalogSearchDialog({
                     </div>
 
                     {/* Barra de Inteligência Fiscal */}
-                    <div className="p-2 rounded-lg bg-muted/30 border border-border/50 space-y-1 text-[11px]">
+                    <div className="p-2 rounded-lg bg-muted/30 border border-border/50 space-y-1 text-2xs">
                       <div className="flex items-center justify-between text-muted-foreground">
                         <span className="font-mono">
                           NCM: <strong className="text-foreground">{p.ncm_code}</strong>
@@ -233,11 +233,11 @@ export function MasterCatalogSearchDialog({
                       <div className="flex items-center justify-between pt-1 border-t border-border/40">
                         <div className="flex items-center gap-2">
                           {isExempt ? (
-                            <Badge className="h-5 text-[9px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 font-bold">
+                            <Badge className="h-5 text-3xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 font-bold">
                               Cesta Básica (IBS/CBS 0%)
                             </Badge>
                           ) : (
-                            <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                            <div className="flex items-center gap-1 text-2xs text-muted-foreground">
                               <span>IBS: <strong className="text-foreground">{p.ibs_rate}%</strong></span>
                               <span>•</span>
                               <span>CBS: <strong className="text-foreground">{p.cbs_rate}%</strong></span>
@@ -245,7 +245,7 @@ export function MasterCatalogSearchDialog({
                           )}
                         </div>
 
-                        <span className="text-[10px] font-mono text-muted-foreground">
+                        <span className="text-2xs font-mono text-muted-foreground">
                           EAN: {p.barcode_ean}
                         </span>
                       </div>
@@ -256,7 +256,7 @@ export function MasterCatalogSearchDialog({
                       type="button"
                       size="sm"
                       onClick={() => handleSelect(p)}
-                      className="w-full h-8 rounded-lg text-xs font-bold gap-2 bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground border border-primary/20 transition-all cursor-pointer"
+                      className="w-full h-8 rounded-lg text-xs font-bold gap-2 bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground border border-primary/20 transition-colors duration-200 cursor-pointer"
                     >
                       <CheckCircle2 className="size-3.5" />
                       <span>Usar Este Produto</span>

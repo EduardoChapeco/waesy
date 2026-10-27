@@ -138,20 +138,20 @@ export function EventoKanban({ eventId }: EventoKanbanProps) {
   const getPriorityBadge = (p: string) => {
     switch (p) {
       case "urgente":
-        return <Badge variant="destructive" className="text-[10px] uppercase font-bold">Urgente</Badge>;
+        return <Badge variant="destructive" className="text-2xs uppercase font-bold">Urgente</Badge>;
       case "alta":
-        return <Badge className="bg-amber-500/15 text-amber-600 border border-amber-500/30 text-[10px] font-bold">Alta</Badge>;
+        return <Badge className="bg-amber-500/15 text-amber-600 border border-amber-500/30 text-2xs font-bold">Alta</Badge>;
       case "media":
-        return <Badge className="bg-sky-500/15 text-sky-600 border border-sky-500/30 text-[10px] font-bold">Média</Badge>;
+        return <Badge className="bg-sky-500/15 text-sky-600 border border-sky-500/30 text-2xs font-bold">Média</Badge>;
       default:
-        return <Badge variant="secondary" className="text-[10px] font-bold">Baixa</Badge>;
+        return <Badge variant="secondary" className="text-2xs font-bold">Baixa</Badge>;
     }
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12 text-muted-foreground text-sm gap-2">
-        <Layers className="size-4 animate-spin" />
+        <Layers className="size-4 animate-spin motion-reduce:animate-none" />
         <span>Carregando quadro de operações...</span>
       </div>
     );
@@ -288,7 +288,7 @@ export function EventoKanban({ eventId }: EventoKanbanProps) {
       </div>
 
       {/* Quadro Kanban Canônico */}
-      <FullViewportKanban
+      <FullViewportKanban /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         columns={columns.map((col) => ({
           id: col.id,
           title: col.nome,
@@ -297,14 +297,14 @@ export function EventoKanban({ eventId }: EventoKanbanProps) {
           renderItem: (task: any) => (
             <Card
               key={task.id}
-              className="rounded-lg border border-border/80 bg-card p-4 shadow-2xs hover:border-primary/40 transition-all group"
+              className="rounded-lg border border-border/80 bg-card p-4 shadow-2xs hover:border-primary/40 transition-colors duration-200 group"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="space-y-1 flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     {getPriorityBadge(task.prioridade)}
                     {task.responsavel_nome && (
-                      <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                      <span className="text-2xs text-muted-foreground flex items-center gap-1">
                         <UserCheck className="size-3" />
                         {task.responsavel_nome}
                       </span>
@@ -314,7 +314,7 @@ export function EventoKanban({ eventId }: EventoKanbanProps) {
                     {task.titulo}
                   </p>
                   {task.descricao && (
-                    <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
+                    <p className="text-2xs text-muted-foreground line-clamp-2 leading-relaxed">
                       {task.descricao}
                     </p>
                   )}
@@ -331,7 +331,7 @@ export function EventoKanban({ eventId }: EventoKanbanProps) {
               </div>
 
               {/* Rodapé do Card com Ações Rápidas de Transição de Coluna */}
-              <div className="mt-3 pt-3 border-t border-border/50 flex items-center justify-between text-[10px] text-muted-foreground">
+              <div className="mt-3 pt-3 border-t border-border/50 flex items-center justify-between text-2xs text-muted-foreground">
                 <div className="flex items-center gap-1">
                   {task.data_fim ? (
                     <span className="flex items-center gap-1 text-muted-foreground">
@@ -352,7 +352,7 @@ export function EventoKanban({ eventId }: EventoKanbanProps) {
                         key={targetCol.id}
                         type="button"
                         onClick={() => handleMoveTask(task.id, targetCol.id)}
-                        className="px-2 py-1 rounded border border-border/80 text-[9px] hover:bg-primary/10 hover:text-primary transition-colors flex items-center gap-1 cursor-pointer"
+                        className="px-2 py-1 rounded border border-border/80 text-3xs hover:bg-primary/10 hover:text-primary transition-colors flex items-center gap-1 cursor-pointer"
                         title={`Mover para ${targetCol.nome}`}
                       >
                         <span>{targetCol.nome.substring(0, 4)}</span>
@@ -363,7 +363,7 @@ export function EventoKanban({ eventId }: EventoKanbanProps) {
               </div>
             </Card>
           ),
-          emptyState: <span className="text-[11px]">Nenhuma tarefa nesta etapa</span>,
+          emptyState: <span className="text-2xs">Nenhuma tarefa nesta etapa</span>,
         }))}
         className="h-[calc(100dvh-13rem)] sm:h-[calc(100dvh-12rem)] pb-2"
       />

@@ -145,8 +145,8 @@ export function EmployeeDocumentsPanel({
                 key={key}
                 type="button"
                 onClick={() => setSelectedCategory(key)}
-                className={cn(
-                  "min-h-9 px-3 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer",
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                  "min-h-9 px-3 rounded-lg text-xs font-semibold transition-colors duration-200 flex items-center gap-2 cursor-pointer",
                   active
                     ? "bg-background text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground",
@@ -163,7 +163,7 @@ export function EmployeeDocumentsPanel({
       {/* Documents List */}
       {loading ? (
         <div className="flex justify-center py-16">
-          <Loader2 className="size-6 animate-spin text-primary" />
+          <Loader2 className="size-6 animate-spin motion-reduce:animate-none text-primary" />
         </div>
       ) : filtered.length === 0 ? (
         <div className="p-8 rounded-lg bg-card border border-border/60 text-center space-y-2">
@@ -184,7 +184,7 @@ export function EmployeeDocumentsPanel({
             return (
               <div
                 key={doc.id}
-                className="p-5 rounded-lg bg-card border border-border/70 hover:border-primary/40 transition-all space-y-3 flex flex-col justify-between shadow-xs"
+                className="p-5 rounded-lg bg-card border border-border/70 hover:border-primary/40 transition-colors duration-200 space-y-3 flex flex-col justify-between shadow-xs"
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between gap-2">
@@ -194,7 +194,7 @@ export function EmployeeDocumentsPanel({
                       </div>
                       <Badge
                         variant="outline"
-                        className="text-[10px] font-mono uppercase"
+                        className="text-2xs font-mono uppercase"
                       >
                         {cfg.label}
                       </Badge>
@@ -204,7 +204,7 @@ export function EmployeeDocumentsPanel({
                       <Badge
                         variant={doc.has_read ? "outline" : "destructive"}
                         className={cn(
-                          "text-[10px] font-semibold gap-1",
+                          "text-2xs font-semibold gap-1",
                           doc.has_read
                             ? "text-emerald-600 border-emerald-500/30"
                             : "",
@@ -233,7 +233,7 @@ export function EmployeeDocumentsPanel({
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-border/60 text-[11px] text-muted-foreground">
+                <div className="flex items-center justify-between pt-2 border-t border-border/60 text-2xs text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Calendar className="size-3" />
                     v{doc.version} • {formatDate(doc.created_at)}
@@ -247,7 +247,7 @@ export function EmployeeDocumentsPanel({
                     className="rounded-lg h-8 px-3 text-xs gap-2 cursor-pointer"
                   >
                     {readingDocId === doc.id ? (
-                      <Loader2 className="size-3.5 animate-spin" />
+                      <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
                     ) : (
                       <>
                         <ExternalLink className="size-3.5" />

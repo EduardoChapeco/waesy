@@ -202,10 +202,10 @@ export function ProductAiSdrChat({
           <Button
             type="button"
             variant="outline"
-            className={`h-11 px-3 rounded-lg text-xs font-medium border-border flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer ${className}`}
+            className={`w-full h-11 min-h-11 px-3 rounded-lg text-xs font-semibold bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-2 shadow-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer ${className}`}
           >
-            <ChatCircleDots className="size-3.5 text-primary" weight="fill" />
-            <span>Duvidas com SDR</span>
+            <ChatCircleDots className="size-3.5 text-primary shrink-0" weight="fill" />
+            <span className="whitespace-nowrap">Dúvidas</span>
           </Button>
         ) : (
           <Button
@@ -251,7 +251,7 @@ export function ProductAiSdrChat({
               className="text-primary hover:underline font-semibold flex items-center gap-1 text-xs shrink-0 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer"
             >
               {isEscalating ? (
-                <CircleNotch className="size-3 animate-spin" />
+                <CircleNotch className="size-3 animate-spin motion-reduce:animate-none" />
               ) : (
                 <ArrowSquareOut className="size-3" />
               )}
@@ -296,7 +296,7 @@ export function ProductAiSdrChat({
           {isSending && (
             <div className="flex gap-3 justify-start">
               <div className="size-7 rounded-full bg-primary/10 text-primary flex items-center justify-center border border-border shrink-0 mt-1">
-                <CircleNotch className="size-3.5 animate-spin" />
+                <CircleNotch className="size-3.5 animate-spin motion-reduce:animate-none" />
               </div>
               <div className="bg-muted text-muted-foreground border border-border/60 rounded-lg px-4 py-2 text-xs flex items-center gap-2">
                 <span>Digitando resposta...</span>

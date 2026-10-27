@@ -81,7 +81,7 @@ export function ModuleActionHeader({
         {/* Lado Esquerdo: Identidade do Módulo (Direta & Semântica) */}
         <div className="min-w-0">
           {eyebrow ? (
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+            <p className="text-2xs font-bold uppercase tracking-wider text-muted-foreground mb-1">
               {eyebrow}
             </p>
           ) : null}
@@ -124,8 +124,8 @@ export function ModuleActionHeader({
                     key={v.id}
                     type="button"
                     onClick={() => onViewModeChange(v.id)}
-                    className={cn(
-                      "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all",
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                      "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors duration-200",
                       isActive
                         ? "bg-background text-foreground shadow-sm"
                         : "text-muted-foreground hover:text-foreground"

@@ -162,11 +162,11 @@ function StorePrivacySettingsPage() {
                 key={opt.id}
                 type="button"
                 onClick={() => setAccessType(opt.id as any)}
-                className={`p-4 rounded-lg border text-left transition-all cursor-pointer flex flex-col justify-between space-y-2 ${
+                className={`p-4 rounded-lg border text-left transition-colors duration-200 cursor-pointer flex flex-col justify-between space-y-2 ${
                   accessType === opt.id
                     ? "border-primary bg-primary/10 shadow-xs ring-1 ring-primary/20"
                     : "border-border/60 bg-muted/20 hover:border-foreground/20"
-                }`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 <div className="flex items-center justify-between">
                   <opt.icon

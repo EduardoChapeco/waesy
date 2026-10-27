@@ -1,8 +1,23 @@
 import { useState, useRef, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Download, Copy, Share2, Star, Smartphone, Square, Monitor, Check } from "lucide-react";
+import {
+  Download,
+  Copy,
+  Share2,
+  Star,
+  Smartphone,
+  Square,
+  Monitor,
+  Check,
+} from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -73,13 +88,17 @@ export function SocialCardGeneratorModal({
 
     // Fundo elegante escuro editorial
     const gradient = ctx.createLinearGradient(0, 0, 0, cfg.height);
+    // design-lint-ignore DL-01 reason:"Cores de renderizacao 2D de canvas" expiry:"2030-01-01"
     gradient.addColorStop(0, "#121214");
+    // design-lint-ignore DL-01 reason:"Cores de renderizacao 2D de canvas" expiry:"2030-01-01"
     gradient.addColorStop(0.6, "#18181b");
+    // design-lint-ignore DL-01 reason:"Cores de renderizacao 2D de canvas" expiry:"2030-01-01"
     gradient.addColorStop(1, "#09090b");
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, cfg.width, cfg.height);
 
     // Borda interna sutil HIG
+    // design-lint-ignore DL-01 reason:"Borda translúcida em contexto 2D de canvas" expiry:"2030-01-01"
     ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
     ctx.lineWidth = 2;
     ctx.strokeRect(32, 32, cfg.width - 64, cfg.height - 64);
@@ -89,21 +108,18 @@ export function SocialCardGeneratorModal({
       if (loadedImg) {
         ctx.save();
         if (format === "stories") {
-          // Imagem no terço superior para Stories
           const imgH = cfg.height * 0.52;
           ctx.beginPath();
           ctx.roundRect(64, 120, cfg.width - 128, imgH, 32);
           ctx.clip();
           ctx.drawImage(loadedImg, 64, 120, cfg.width - 128, imgH);
         } else if (format === "feed") {
-          // Imagem central no Feed
           const imgH = cfg.height * 0.55;
           ctx.beginPath();
           ctx.roundRect(64, 100, cfg.width - 128, imgH, 24);
           ctx.clip();
           ctx.drawImage(loadedImg, 64, 100, cfg.width - 128, imgH);
         } else {
-          // Threads/Twitter split horizontal
           const imgW = (cfg.width - 128) * 0.45;
           ctx.beginPath();
           ctx.roundRect(64, 64, imgW, cfg.height - 128, 20);
@@ -114,22 +130,32 @@ export function SocialCardGeneratorModal({
       }
 
       // 2. Badge de Nicho / Loja
-      const badgeY = format === "stories" ? cfg.height * 0.60 : format === "feed" ? cfg.height * 0.70 : 120;
-      const textX = format === "threads" && loadedImg ? cfg.width * 0.50 : 64;
+      const badgeY =
+        format === "stories"
+          ? cfg.height * 0.6
+          : format === "feed"
+          ? cfg.height * 0.7
+          : 120;
+      const textX = format === "threads" && loadedImg ? cfg.width * 0.5 : 64;
 
+      // design-lint-ignore DL-01 reason:"Cor de badge em contexto 2D de canvas" expiry:"2030-01-01"
       ctx.fillStyle = "#f59e0b";
       ctx.font = "bold 28px -apple-system, BlinkMacSystemFont, 'Inter', sans-serif";
       const badgeText = data.badge || data.storeName || "Waesy Oficial";
       ctx.fillText(badgeText.toUpperCase(), textX, badgeY);
 
       // 3. Título Principal
+      // design-lint-ignore DL-01 reason:"Cor de titulo em contexto 2D de canvas" expiry:"2030-01-01"
       ctx.fillStyle = "#ffffff";
-      ctx.font = `bold ${format === "stories" ? 64 : format === "feed" ? 54 : 44}px -apple-system, BlinkMacSystemFont, 'Inter', sans-serif`;
-      
+      ctx.font = `bold ${
+        format === "stories" ? 64 : format === "feed" ? 54 : 44
+      }px -apple-system, BlinkMacSystemFont, 'Inter', sans-serif`;
+
       const titleWords = data.title.split(" ");
       let line = "";
       let currentY = badgeY + (format === "stories" ? 80 : 70);
-      const maxLineWidth = format === "threads" && loadedImg ? cfg.width * 0.45 : cfg.width - 128;
+      const maxLineWidth =
+        format === "threads" && loadedImg ? cfg.width * 0.45 : cfg.width - 128;
 
       for (const word of titleWords) {
         const testLine = line + word + " ";
@@ -137,7 +163,7 @@ export function SocialCardGeneratorModal({
         if (metrics.width > maxLineWidth && line !== "") {
           ctx.fillText(line, textX, currentY);
           line = word + " ";
-          currentY += (format === "stories" ? 80 : 64);
+          currentY += format === "stories" ? 80 : 64;
         } else {
           line = testLine;
         }
@@ -147,16 +173,22 @@ export function SocialCardGeneratorModal({
       // 4. Preço em Destaque
       if (data.priceFormatted) {
         currentY += 80;
+        // design-lint-ignore DL-01 reason:"Cor de preco em contexto 2D de canvas" expiry:"2030-01-01"
         ctx.fillStyle = "#10b981";
         ctx.font = "bold 58px -apple-system, BlinkMacSystemFont, 'Inter', sans-serif";
         ctx.fillText(data.priceFormatted, textX, currentY);
       }
 
       // 5. Rodapé da Plataforma (Watermark sóbria)
+      // design-lint-ignore DL-01 reason:"Cor de rodape em contexto 2D de canvas" expiry:"2030-01-01"
       ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
       ctx.font = "24px -apple-system, BlinkMacSystemFont, 'Inter', sans-serif";
       const footerY = cfg.height - 70;
-      ctx.fillText("Disponível na plataforma Waesy • Saiba mais no link", textX, footerY);
+      ctx.fillText(
+        "Disponível na plataforma Waesy • Saiba mais no link",
+        textX,
+        footerY
+      );
     };
 
     if (data.imageUrl) {
@@ -233,7 +265,7 @@ export function SocialCardGeneratorModal({
         </DialogHeader>
 
         {/* Seletor de Formato (Apple HIG) */}
-        <div className="grid grid-cols-3 gap-2 py-2">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-2">
           {(Object.keys(FORMAT_CONFIGS) as SocialCardFormat[]).map((f) => {
             const item = FORMAT_CONFIGS[f];
             const Icon = item.icon;
@@ -245,15 +277,20 @@ export function SocialCardGeneratorModal({
                 type="button"
                 onClick={() => setFormat(f)}
                 className={cn(
-                  "p-3 rounded-lg border text-center transition-all flex flex-col items-center gap-2 cursor-pointer focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-foreground",
+                  "p-3 min-h-11 rounded-lg border text-center transition-colors motion-reduce:transition-none flex flex-col items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground",
                   isSelected
-                    ? "border-foreground bg-foreground/5 shadow-xs"
+                    ? "border-foreground bg-foreground/5"
                     : "border-border/60 hover:border-border text-muted-foreground"
                 )}
               >
-                <Icon className={cn("size-4", isSelected ? "text-foreground" : "text-muted-foreground")} />
+                <Icon
+                  className={cn(
+                    "size-4",
+                    isSelected ? "text-foreground" : "text-muted-foreground"
+                  )}
+                />
                 <span className="text-xs font-semibold text-foreground">{item.label}</span>
-                <Badge variant="secondary" className="text-xs h-4 px-2 leading-none">
+                <Badge variant="secondary" className="text-xs px-2">
                   {item.ratioLabel}
                 </Badge>
               </button>
@@ -262,12 +299,16 @@ export function SocialCardGeneratorModal({
         </div>
 
         {/* Preview do Canvas */}
-        <div className="flex items-center justify-center p-4 bg-muted/30 rounded-lg border border-border/60 min-h-[320px] max-h-[440px] overflow-hidden">
+        <div className="flex items-center justify-center p-4 bg-muted/30 rounded-lg border border-border/60 min-h-80 max-h-110 overflow-hidden">
           <canvas
             ref={canvasRef}
             className={cn(
-              "shadow-xl rounded-lg object-contain max-h-[380px] w-auto transition-all",
-              format === "stories" ? "aspect-[9/16]" : format === "feed" ? "aspect-square" : "aspect-[16/9]"
+              "rounded-lg object-contain max-h-96 w-auto transition-opacity motion-reduce:transition-none border border-border/40",
+              format === "stories"
+                ? "aspect-9/16"
+                : format === "feed"
+                ? "aspect-square"
+                : "aspect-16/9"
             )}
           />
         </div>
@@ -279,7 +320,11 @@ export function SocialCardGeneratorModal({
             className="h-11 min-h-11 rounded-lg text-xs font-medium cursor-pointer focus-visible:ring-2 focus-visible:ring-foreground"
             onClick={handleCopy}
           >
-            {isCopied ? <Check className="size-3.5 mr-1 text-emerald-500" /> : <Copy className="size-3.5 mr-1" />}
+            {isCopied ? (
+              <Check className="size-3.5 mr-1 text-emerald-500" />
+            ) : (
+              <Copy className="size-3.5 mr-1" />
+            )}
             {isCopied ? "Copiado!" : "Copiar Imagem"}
           </Button>
 
@@ -303,5 +348,3 @@ export function SocialCardGeneratorModal({
     </Dialog>
   );
 }
-
-export default SocialCardGeneratorModal;

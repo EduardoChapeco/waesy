@@ -128,9 +128,13 @@ function AccountDashboardPage() {
 
   // Seta o cookie de tenant ativo e navega para o workspace da loja correta
   const handleOpenWorkspace = async (storeId: string) => {
-    setClientContextCookies({ context: "store", storeId });
-    await setTenantContext({ data: { store_id: storeId } }).catch(() => null);
-    window.location.href = "/workspace";
+    try {
+      setClientContextCookies({ context: "store", storeId });
+      await setTenantContext({ data: { store_id: storeId } });
+      window.location.href = "/workspace";
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao acessar workspace.");
+    }
   };
 
   const handleSignOut = async () => {
@@ -176,6 +180,7 @@ function AccountDashboardPage() {
         },
         { to: "/conta/agendamentos", label: "Agendamentos", icon: Calendar },
         { to: "/conta/ingressos", label: "Ingressos", icon: Ticket },
+        { to: "/conta/eventos", label: "Meus Eventos", icon: Calendar },
         { to: "/conta/viagens", label: "Viagens", icon: Plane },
         { to: "/conta/pacotes", label: "Pacotes", icon: Ticket },
         { to: "/conta/enderecos", label: "Endereços", icon: MapPin },

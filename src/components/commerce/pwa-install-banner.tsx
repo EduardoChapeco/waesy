@@ -119,7 +119,7 @@ export function PWAInstallBanner({
  <p className="text-xs font-bold text-foreground truncate">
  App de {storeName}
  </p>
- <p className="text-[11px] text-muted-foreground truncate">
+ <p className="text-2xs text-muted-foreground truncate">
  Instale na tela inicial para acesso rápido
  </p>
  </div>
@@ -138,7 +138,7 @@ export function PWAInstallBanner({
  <button
  type="button"
  onClick={handleDismiss}
- className="min-h-11 min-w-[44px] rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
+ className="min-h-11 min-w-[44px] rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  title="Fechar"
  aria-label="Fechar banner de instalação"
  >
@@ -149,14 +149,14 @@ export function PWAInstallBanner({
 
  {/* ── Modal Guia de Instalação no iOS Safari ── */}
  {showIOSGuide && (
- <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-4">
+ <div className="fixed inset-0 z-50 bg-foreground/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-4">
  <div className="w-full max-w-sm rounded-lg bg-card border border-border/80 p-5 space-y-4 shadow-2xl animate-in slide-in-from-bottom-6">
  <div className="flex items-center justify-between">
  <h3 className="text-sm font-bold text-foreground">Como instalar no iPhone</h3>
  <button
  type="button"
  onClick={() => setShowIOSGuide(false)}
- className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground"
+ className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <X className="size-4" />
  </button>
@@ -172,7 +172,7 @@ export function PWAInstallBanner({
  <span>Toque no botão Compartilhar</span>
  <Share className="size-3.5 text-primary" />
  </p>
- <p className="text-[11px]">Localizado na barra inferior do Safari.</p>
+ <p className="text-2xs">Localizado na barra inferior do Safari.</p>
  </div>
  </div>
 
@@ -185,7 +185,7 @@ export function PWAInstallBanner({
  <span>"Adicionar à Tela de Início"</span>
  <PlusSquare className="size-3.5 text-primary" />
  </p>
- <p className="text-[11px]">Role para baixo e selecione esta opção.</p>
+ <p className="text-2xs">Role para baixo e selecione esta opção.</p>
  </div>
  </div>
  </div>

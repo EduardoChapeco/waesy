@@ -177,6 +177,38 @@
       "approvedBy": "design-system-architect"
     },
     {
+      "id": "DL-01",
+      "file": "src/lib/travel/excelencia-offer-engine.ts",
+      "reason": "Motor gerador de arte gráfica e renderização canvas de ofertas de turismo",
+      "date": "2026-10-21",
+      "expiry": "2028-12-31",
+      "approvedBy": "design-system-architect"
+    },
+    {
+      "id": "DL-01",
+      "file": "src/lib/travel/liquid-glass-engine.ts",
+      "reason": "Motor de renderização gráfica e física óptica de liquid glass para cartões",
+      "date": "2026-10-21",
+      "expiry": "2028-12-31",
+      "approvedBy": "design-system-architect"
+    },
+    {
+      "id": "DL-01",
+      "file": "src/components/social-templates/TravelTemplateEditorial.tsx",
+      "reason": "Gerador de templates visuais de stories e flyers de marketing com gradientes fotográficos",
+      "date": "2026-10-21",
+      "expiry": "2028-12-31",
+      "approvedBy": "design-system-architect"
+    },
+    {
+      "id": "DL-01",
+      "file": "src/components/tourism/promotional-flyer/travel-promo-artboard.tsx",
+      "reason": "Artboard de composição visual de encartes de turismo",
+      "date": "2026-10-21",
+      "expiry": "2028-12-31",
+      "approvedBy": "design-system-architect"
+    },
+    {
       "id": "DL-18",
       "file": "src/components/resume/resume-document.tsx",
       "reason": "Folha fisica A4 de papel para impressao e preview isolado do modo escuro exige fundo branco e cores fisicas",

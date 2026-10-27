@@ -125,23 +125,23 @@ export function CampaignDraftCard({
               <span className="text-xs font-bold text-foreground">
                 Rascunho de campanha gerado por IA
               </span>
-              <Badge variant="outline" className="text-[9px] font-mono py-0 px-2 h-4">
+              <Badge variant="outline" className="text-3xs font-mono py-0 px-2 h-4">
                 {payload.platform === "meta_instagram" ? "Instagram" : payload.platform === "meta_facebook" ? "Facebook" : payload.platform === "google_search" ? "Google" : "Waesy local"}
               </Badge>
             </div>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               Comando: &quot;{metadata.sourcePrompt}&quot;
             </p>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               Proveniência: {metadata.provenance.provider || "provedor não informado"} · {metadata.provenance.model || "modelo não informado"} · rascunho não testado.
             </p>
             {metadata.planningAssumptions.map((assumption, index) => (
-              <p key={index} className="text-[10px] text-amber-700 dark:text-amber-300">Premissa: {assumption}</p>
+              <p key={index} className="text-2xs text-amber-700 dark:text-amber-300">Premissa: {assumption}</p>
             ))}
           </div>
         </div>
 
-        <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-[10px] font-bold w-fit">
+        <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-2xs font-bold w-fit">
           Aguardando Revisão Humana
         </Badge>
       </div>
@@ -150,7 +150,7 @@ export function CampaignDraftCard({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 p-5 sm:p-6 items-start">
         {/* COLUNA ESQUERDA: MOCKUP NATIVO INSTAGRAM FEED */}
         <div className="lg:col-span-5 flex flex-col items-center">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2 self-start">
+          <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground mb-2 self-start">
             Prévia ilustrativa (não publicada)
           </span>
 
@@ -160,7 +160,7 @@ export function CampaignDraftCard({
               <div className="flex items-center gap-3">
                 <div className="size-8 rounded-full border border-primary/40 p-[1.5px]">
                   <div className="size-full rounded-full bg-background flex items-center justify-center overflow-hidden">
-                    <span className="text-[11px] font-bold text-foreground">
+                    <span className="text-2xs font-bold text-foreground">
                       {(payload.creative.sponsorHandle || "W")[0].toUpperCase()}
                     </span>
                   </div>
@@ -169,7 +169,7 @@ export function CampaignDraftCard({
                   <p className="text-xs font-bold text-foreground leading-tight">
                     {payload.creative.sponsorHandle || "Sua Loja"}
                   </p>
-                  <p className="text-[10px] text-muted-foreground">Patrocinado</p>
+                  <p className="text-2xs text-muted-foreground">Patrocinado</p>
                 </div>
               </div>
               <MoreHorizontal className="size-4 text-muted-foreground cursor-pointer" />
@@ -206,12 +206,12 @@ export function CampaignDraftCard({
 
             {/* Legenda Autêntica do Anúncio */}
             <div className="p-3 pt-1 space-y-1">
-              <p className="text-[11px] leading-relaxed text-foreground">
+              <p className="text-2xs leading-relaxed text-foreground">
                 <span className="font-bold mr-2">{payload.creative.sponsorHandle || "Sua Loja"}</span>
                 <span className="font-semibold">{headline}</span> — {bodyCopy}
               </p>
               {payload.creative.displayUrlText && (
-                <p className="text-[10px] font-mono text-muted-foreground pt-1">
+                <p className="text-2xs font-mono text-muted-foreground pt-1">
                   <span className="inline-flex items-center gap-1"><ExternalLink className="size-3" /> {payload.creative.displayUrlText}</span>
                 </p>
               )}
@@ -244,7 +244,7 @@ export function CampaignDraftCard({
           {isEditing ? (
             <div className="space-y-3 p-4 rounded-lg bg-muted/30 border border-border/70 text-xs">
               <div className="space-y-1">
-                <Label className="text-[11px] font-semibold">Título Interno</Label>
+                <Label className="text-2xs font-semibold">Título Interno</Label>
                 <Input
                   value={campaignTitle}
                   onChange={(e) => setCampaignTitle(e.target.value)}
@@ -254,7 +254,7 @@ export function CampaignDraftCard({
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label className="text-[11px] font-semibold">Orçamento Diário (R$)</Label>
+                  <Label className="text-2xs font-semibold">Orçamento Diário (R$)</Label>
                   <Input
                     type="number"
                     min={0.01}
@@ -268,7 +268,7 @@ export function CampaignDraftCard({
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-[11px] font-semibold">Duração (Dias)</Label>
+                  <Label className="text-2xs font-semibold">Duração (Dias)</Label>
                   <Input
                     type="number"
                     min={1}
@@ -284,7 +284,7 @@ export function CampaignDraftCard({
               </div>
 
               <div className="space-y-1">
-                <Label className="text-[11px] font-semibold">Chamada Principal (Headline)</Label>
+                <Label className="text-2xs font-semibold">Chamada Principal (Headline)</Label>
                 <Input
                   value={headline}
                   onChange={(e) => setHeadline(e.target.value)}
@@ -293,7 +293,7 @@ export function CampaignDraftCard({
               </div>
 
               <div className="space-y-1">
-                <Label className="text-[11px] font-semibold">Texto do Anúncio (Copy)</Label>
+                <Label className="text-2xs font-semibold">Texto do Anúncio (Copy)</Label>
                 <Textarea
                   value={bodyCopy}
                   onChange={(e) => setBodyCopy(e.target.value)}
@@ -304,7 +304,7 @@ export function CampaignDraftCard({
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label className="text-[11px] font-semibold">Botão de Ação (CTA)</Label>
+                  <Label className="text-2xs font-semibold">Botão de Ação (CTA)</Label>
                   <Input
                     value={ctaLabel}
                     onChange={(e) => setCtaLabel(e.target.value as any)}
@@ -312,7 +312,7 @@ export function CampaignDraftCard({
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-[11px] font-semibold">Raio Geográfico (Km)</Label>
+                  <Label className="text-2xs font-semibold">Raio Geográfico (Km)</Label>
                   <Input
                     type="number"
                     min={5}
@@ -329,17 +329,17 @@ export function CampaignDraftCard({
               {/* Card de Investimento */}
               <div className="p-4 rounded-lg border border-border/80 bg-muted/30 grid grid-cols-3 gap-2 text-center">
                 <div>
-                  <p className="text-[10px] text-muted-foreground font-medium">Orçamento Diário</p>
+                  <p className="text-2xs text-muted-foreground font-medium">Orçamento Diário</p>
                   <p className="text-sm font-black font-mono text-foreground">
                     {formatMoney(dailyBudgetCents)}/dia
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-muted-foreground font-medium">Prazo planejado</p>
+                  <p className="text-2xs text-muted-foreground font-medium">Prazo planejado</p>
                   <p className="text-sm font-bold text-foreground">{durationDays} dias</p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-muted-foreground font-medium">Total do orçamento</p>
+                  <p className="text-2xs text-muted-foreground font-medium">Total do orçamento</p>
                   <p className="text-sm font-black font-mono text-primary">
                     {formatMoney(totalBudgetCents)}
                   </p>
@@ -351,7 +351,7 @@ export function CampaignDraftCard({
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <MapPin className="size-3.5 text-primary shrink-0" />
                   <span className="font-semibold text-foreground">{locationLabel || "Localização não informada"}</span>
-                  {radiusKm && <Badge variant="outline" className="text-[10px] py-0">Raio {radiusKm} km</Badge>}
+                  {radiusKm && <Badge variant="outline" className="text-2xs py-0">Raio {radiusKm} km</Badge>}
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Users className="size-3.5 text-primary shrink-0" />
@@ -361,17 +361,17 @@ export function CampaignDraftCard({
                 </div>
                 <div className="flex flex-wrap gap-1 pt-1">
                   {payload.targeting.interestTags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="text-[10px] py-0 px-2 font-normal">
+                    <Badge key={tag} variant="secondary" className="text-2xs py-0 px-2 font-normal">
                       #{tag}
                     </Badge>
                   ))}
                   {payload.targeting.interestTags.length === 0 && (
-                    <span className="text-[10px] text-muted-foreground">Interesses não configurados.</span>
+                    <span className="text-2xs text-muted-foreground">Interesses não configurados.</span>
                   )}
                 </div>
               </div>
 
-              <div className="rounded-lg border border-amber-500/25 bg-amber-500/5 p-3 text-[10px] leading-relaxed text-amber-700 dark:text-amber-300">
+              <div className="rounded-lg border border-amber-500/25 bg-amber-500/5 p-3 text-2xs leading-relaxed text-amber-700 dark:text-amber-300">
                 Alcance, impressões e CPA não estimados: não há dados de entrega do canal nem desempenho histórico desta campanha. Segmentação sem valor informado permanece vazia.
               </div>
             </div>
@@ -383,11 +383,11 @@ export function CampaignDraftCard({
               type="button"
               onClick={handleApprove}
               disabled={isSubmitting}
-              className="w-full sm:flex-1 h-11 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-2 cursor-pointer active:scale-95 shadow-sm transition-all"
+              className="w-full sm:flex-1 h-11 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-foreground font-bold gap-2 cursor-pointer active:scale-95 shadow-sm transition-transform duration-200"
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="size-4 animate-spin" />
+                  <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                   <span>Salvando proposta...</span>
                 </>
               ) : (

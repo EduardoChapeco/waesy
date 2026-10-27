@@ -48,7 +48,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               {Boolean(tab.badge && tab.badge > 0) && (
                 <span
                   style={{ backgroundColor: accentColor }}
-                  className="absolute -top-1.5 -right-2 min-w-4 h-4 px-1 rounded-full text-xs font-bold text-white flex items-center justify-center leading-none"
+                  className="absolute -top-1.5 -right-2 min-w-4 h-4 px-1 rounded-full text-xs font-bold text-foreground flex items-center justify-center leading-none"
                 >
                   {tab.badge}
                 </span>

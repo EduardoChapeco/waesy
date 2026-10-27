@@ -36,7 +36,7 @@ export function InfoCards({ content }: InfoCardsProps) {
  return (
  <div
  key={idx}
- className="flex items-start gap-4 p-5 bg-card transition-all duration-300 hover: hover:border-primary/20"
+ className="flex items-start gap-4 p-5 bg-card transition-colors duration-200 duration-300 hover: hover:border-primary/20"
  >
  <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-primary/10 text-primary">
  {IconComponent && <IconComponent className="size-5" />}

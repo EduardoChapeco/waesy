@@ -661,7 +661,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
 
                 <DropdownMenuSeparator className="bg-border" />
 
-                <DropdownMenuItem
+                <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                   onClick={() => requestSwitchToPersonal("/conta")}
                   className="rounded-lg cursor-pointer text-xs font-semibold text-foreground flex items-center justify-between"
                 >

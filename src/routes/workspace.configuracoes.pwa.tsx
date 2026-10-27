@@ -184,7 +184,7 @@ function PwaOmniBuilderPage() {
 
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="px-3 py-1 font-semibold text-xs border-border gap-2">
-            <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="size-2 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none" />
             <span>PWA Whitelabel Ativo</span>
           </Badge>
 
@@ -208,7 +208,7 @@ function PwaOmniBuilderPage() {
             activeMainTab === "builder"
               ? "bg-primary text-primary-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground hover:bg-muted"
-          }`}
+          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
         >
           <Smartphone className="size-4" />
           <span>Construtor Visual do App</span>
@@ -221,7 +221,7 @@ function PwaOmniBuilderPage() {
             activeMainTab === "manifest"
               ? "bg-primary text-primary-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground hover:bg-muted"
-          }`}
+          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
         >
           <Sliders className="size-4" />
           <span>Identidade & Manifesto</span>
@@ -234,7 +234,7 @@ function PwaOmniBuilderPage() {
             activeMainTab === "telemetry"
               ? "bg-primary text-primary-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground hover:bg-muted"
-          }`}
+          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
         >
           <BarChart3 className="size-4" />
           <span>Telemetria de Downloads</span>
@@ -252,7 +252,7 @@ function PwaOmniBuilderPage() {
             activeMainTab === "governance"
               ? "bg-primary text-primary-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground hover:bg-muted"
-          }`}
+          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
         >
           <ShieldCheck className="size-4" />
           <span>Governança & Termos</span>
@@ -463,7 +463,7 @@ function PwaOmniBuilderPage() {
                     phonePreviewScreen === "app"
                       ? "bg-card text-foreground shadow-xs"
                       : "text-muted-foreground hover:text-foreground"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   Home do App
                 </button>
@@ -474,7 +474,7 @@ function PwaOmniBuilderPage() {
                     phonePreviewScreen === "splash"
                       ? "bg-card text-foreground shadow-xs"
                       : "text-muted-foreground hover:text-foreground"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   Splash Screen
                 </button>
@@ -519,7 +519,7 @@ function PwaOmniBuilderPage() {
                         ) : (
                           <div
                             style={{ backgroundColor: themeColor }}
-                            className="size-7 rounded-lg flex items-center justify-center font-bold text-xs text-white"
+                            className="size-7 rounded-lg flex items-center justify-center font-bold text-xs text-foreground"
                           >
                             {shortName.slice(0, 2).toUpperCase()}
                           </div>
@@ -887,7 +887,7 @@ function PwaOmniBuilderPage() {
                           : 0
                       }%`,
                     }}
-                    className="h-full bg-emerald-500 rounded-full transition-all"
+                    className="h-full bg-emerald-500 rounded-full transition-colors duration-200"
                   />
                 </div>
 
@@ -910,7 +910,7 @@ function PwaOmniBuilderPage() {
                           : 0
                       }%`,
                     }}
-                    className="h-full bg-blue-500 rounded-full transition-all"
+                    className="h-full bg-blue-500 rounded-full transition-colors duration-200"
                   />
                 </div>
 
@@ -935,7 +935,7 @@ function PwaOmniBuilderPage() {
                           : 0
                       }%`,
                     }}
-                    className="h-full bg-purple-500 rounded-full transition-all"
+                    className="h-full bg-purple-500 rounded-full transition-colors duration-200"
                   />
                 </div>
               </div>

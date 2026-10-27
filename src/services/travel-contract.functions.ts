@@ -723,3 +723,110 @@ export const generateTravelReservationCheckout = createServerFn({ method: "POST"
     };
   });
 
+// ─── 9. Gestão de Templates de Contratos & Cláusulas Customizadas ────────────
+
+export const ContractClauseSchema = z.object({
+  number: z.number().int().positive(),
+  section: z.string().min(2),
+  clause_text: z.string().min(5),
+  is_mandatory: z.boolean().default(true),
+});
+
+export const SaveContractTemplateSchema = z.object({
+  id: z.string().uuid().optional(),
+  title: z.string().min(2).max(120),
+  description: z.string().max(500).optional(),
+  clauses: z.array(ContractClauseSchema).min(1, "O template deve conter ao menos uma cláusula"),
+  isDefault: z.boolean().default(false),
+});
+
+export const listAgencyContractTemplates = createServerFn({ method: "GET" })
+  .handler(async (): Promise<{
+    templates: Array<{
+      id: string;
+      title: string;
+      description?: string;
+      clauses: ContractClauseDTO[];
+      isDefault: boolean;
+      updatedAt: string;
+    }>;
+  }> => {
+    const identity = await requireStaff();
+    const supabase = getServerClient();
+
+    const { data: rows, error } = await supabase
+      .from("travel_contract_templates")
+      .select("*")
+      .eq("store_id", identity.store_id)
+      .order("created_at", { ascending: false });
+
+    if (error || !rows || rows.length === 0) {
+      // Retorna template canônico padrão Embratur/CDC
+      return {
+        templates: [
+          {
+            id: "default-canonical-template",
+            title: "Contrato Padrão de Prestação de Serviços Turísticos",
+            description: "Template regulamentado com cláusulas padrão Embratur, CDC e retenção de honorários de agência.",
+            clauses: CANONICAL_TOURISM_CLAUSES,
+            isDefault: true,
+            updatedAt: new Date().toISOString(),
+          },
+        ],
+      };
+    }
+
+    return {
+      templates: rows.map((r: any) => ({
+        id: r.id,
+        title: r.title,
+        description: r.description,
+        clauses: r.clauses || CANONICAL_TOURISM_CLAUSES,
+        isDefault: !!r.is_default,
+        updatedAt: r.updated_at || r.created_at,
+      })),
+    };
+  });
+
+export const saveAgencyContractTemplate = createServerFn({ method: "POST" })
+  .validator(SaveContractTemplateSchema)
+  .handler(async ({ data }) => {
+    const identity = await requireStaff();
+    const supabase = getServerClient();
+
+    if (data.isDefault) {
+      // Desmarca outros defaults da agência
+      await supabase
+        .from("travel_contract_templates")
+        .update({ is_default: false })
+        .eq("store_id", identity.store_id);
+    }
+
+    const { data: row, error } = await supabase
+      .from("travel_contract_templates")
+      .upsert(
+        {
+          id: data.id || undefined,
+          store_id: identity.store_id,
+          title: data.title,
+          description: data.description || null,
+          clauses: data.clauses,
+          is_default: data.isDefault,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "id" }
+      )
+      .select("*")
+      .single();
+
+    if (error) {
+      throw new Error("Erro ao salvar template de contrato: " + error.message);
+    }
+
+    return {
+      success: true,
+      template: row,
+    };
+  });
+
+

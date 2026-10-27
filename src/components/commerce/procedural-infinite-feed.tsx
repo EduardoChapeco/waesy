@@ -176,7 +176,7 @@ export function ProceduralInfiniteFeed({
                     key={item.id}
                     to="/classificados/$id"
                     params={{ id: item.id }}
-                    className="min-w-[250px] sm:min-w-72 max-w-[290px] shrink-0 group flex flex-col justify-between rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all shadow-2xs select-none"
+                    className="min-w-[250px] sm:min-w-72 max-w-[290px] shrink-0 group flex flex-col justify-between rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-colors duration-200 shadow-2xs select-none"
                   >
                     <div className="relative aspect-16/10 w-full overflow-hidden bg-muted/30">
                       {item.cover_image ? (
@@ -192,7 +192,7 @@ export function ProceduralInfiniteFeed({
                         </div>
                       )}
                       <div className="absolute top-2.5 left-2.5">
-                        <Badge variant="secondary" className="bg-background/90 backdrop-blur-md text-[9px] font-bold uppercase">
+                        <Badge variant="secondary" className="bg-background/90 backdrop-blur-md text-3xs font-bold uppercase">
                           {item.deal_type || "Anúncio"}
                         </Badge>
                       </div>
@@ -205,7 +205,7 @@ export function ProceduralInfiniteFeed({
                       <p className="text-xs font-black text-foreground font-mono">
                         {item.price_cents ? formatMoney(item.price_cents) : "Sob Consulta"}
                       </p>
-                      <p className="text-[11px] text-muted-foreground truncate flex items-center gap-1">
+                      <p className="text-2xs text-muted-foreground truncate flex items-center gap-1">
                         <MapPin size={11} className="shrink-0 text-primary" />
                         <span>{item.location_name || "Na sua região"}</span>
                       </p>
@@ -224,7 +224,7 @@ export function ProceduralInfiniteFeed({
       <div ref={sentinelRef} className={hasMore || isLoading ? "py-3 flex items-center justify-center min-h-9" : "h-0 w-full"}>
         {isLoading && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
-            <CircleNotch size={16} className="animate-spin text-primary" />
+            <CircleNotch size={16} className="animate-spin motion-reduce:animate-none text-primary" />
             <span>Descobrindo mais recomendações...</span>
           </div>
         )}

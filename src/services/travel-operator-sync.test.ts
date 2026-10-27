@@ -3,6 +3,7 @@ import {
   IntegrationInputSchema,
   ListTravelOperatorSyncRunsSchema,
   SyncTravelDocumentSchema,
+  IngestOperatorSyncBatchSchema,
 } from "./travel-operator-sync.functions";
 
 describe("Travel Operator Sync Contracts (BFF) & Invariante B.25", () => {
@@ -98,4 +99,55 @@ describe("Travel Operator Sync Contracts (BFF) & Invariante B.25", () => {
       expect(invalid.success).toBe(false);
     });
   });
+
+  describe("IngestOperatorSyncBatchSchema — Ingestão de Lote da Extensão e Coletor", () => {
+    it("valida payload de lote contendo reservas, passageiros e metadados de pagamento", () => {
+      const batch = IngestOperatorSyncBatchSchema.parse({
+        operatorCode: "orinter",
+        items: [
+          {
+            id: "13567890",
+            status: "Confirmada",
+            criacao: "20/10/2026",
+            valorTotal: "4.500,00",
+            taxas: "150,00",
+            comissao: "450,00",
+            contato: "Carlos Eduardo da Silva",
+            email: "carlos@exemplo.com.br",
+            telefone: "(49) 99999-8888",
+            hotel: "Mabu Thermas Grand Resort",
+            acomodacao: "Master Duplo",
+            formaPagto: "Boleto Faturado",
+            statusPagto: "Aprovado",
+            scoreConfianca: 95,
+            bancoEmissor: "Itaú Unibanco",
+            parcelamento: "10x",
+            passageiros: [
+              {
+                nome: "Carlos Eduardo da Silva",
+                tipo: "ADT",
+                birthDate: "15/05/1982",
+                cpf: "12345678901",
+                titular: true,
+              },
+              {
+                nome: "Mariana da Silva",
+                tipo: "ADT",
+                birthDate: "20/08/1985",
+                cpf: "98765432100",
+                titular: false,
+              },
+            ],
+          },
+        ],
+      });
+
+      expect(batch.operatorCode).toBe("orinter");
+      expect(batch.items.length).toBe(1);
+      expect(batch.items[0].passageiros.length).toBe(2);
+      expect(batch.items[0].scoreConfianca).toBe(95);
+      expect(batch.items[0].bancoEmissor).toBe("Itaú Unibanco");
+    });
+  });
 });
+

@@ -29,7 +29,7 @@ export function ProductEditorStickyBar({
         <div className="flex items-center gap-3 min-w-0">
           <Badge
             variant={isDraft ? "secondary" : "default"}
-            className="text-[11px] font-semibold shrink-0"
+            className="text-2xs font-semibold shrink-0"
           >
             {isDraft ? "Rascunho" : "Publicado"}
           </Badge>

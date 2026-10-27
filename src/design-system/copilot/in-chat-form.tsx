@@ -102,7 +102,7 @@ export function InChatForm({
 
           <button
             type="submit"
-            className="w-full min-h-11 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 cursor-pointer mt-2"
+            className="w-full min-h-11 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 cursor-pointer mt-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Send className="size-3.5" />
             <span>{submitLabel}</span>

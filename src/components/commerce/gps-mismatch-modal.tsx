@@ -41,7 +41,7 @@ export function GpsMismatchModal({
 
         <div className="p-4 rounded-lg bg-muted/30 border border-border/40 text-xs space-y-1">
           <p className="font-bold text-foreground">{deliveryAddressSummary}</p>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Se você estiver pedindo para outra pessoa (presente) ou para receber em outro local, confirme abaixo.
           </p>
         </div>

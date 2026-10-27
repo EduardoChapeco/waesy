@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
-import { FileText, Plus, FileSignature, CheckCircle2, Clock, ExternalLink, ShieldCheck, TrendingUp, DollarSign, Copy, Check, Star, ArrowRight, Eye, Sliders, Share2, PenTool } from "lucide-react";
+import { FileText, Plus, FileSignature, CheckCircle2, Clock, ExternalLink, ShieldCheck, TrendingUp, DollarSign, Copy, Check, Star, ArrowRight, Eye, Sliders, Share2, PenTool, Receipt } from "lucide-react";
 import { ContractEditorSheet } from "@/components/office/contract-editor-sheet";
+import { CommercialBudgetPadSheet } from "@/components/documents/CommercialBudgetPadSheet";
+import { CountertopSigningModal } from "@/components/contracts/CountertopSigningModal";
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { toast } from "sonner";
 
@@ -55,7 +57,7 @@ function ContractsDashboard() {
  const router = useRouter();
   const { contracts: initialContracts } = ((Route.useLoaderData?.() as any) || {});
 
-  const { data: contracts = [], isError } = useQuery({
+  const { data: contracts = [], isError, refetch } = useQuery({
     queryKey: ["contracts-list"],
     queryFn: () => listContracts(),
     initialData: initialContracts || [],
@@ -67,6 +69,9 @@ function ContractsDashboard() {
   const [dashboardOpen, setDashboardOpen] = useState(false);
   const [copiedContractId, setCopiedContractId] = useState<string | null>(null);
   const [quickEditorOpen, setQuickEditorOpen] = useState(false);
+  const [budgetPadOpen, setBudgetPadOpen] = useState(false);
+  const [countertopModalOpen, setCountertopModalOpen] = useState(false);
+  const [countertopTargetContract, setCountertopTargetContract] = useState<any>(null);
 
   const contractsList = (contracts || []) as any[];
   const totalContracts = contractsList.length;
@@ -165,6 +170,10 @@ function ContractsDashboard() {
           description="Gestão de acordos formais, envelopes de assinatura eletrônica com carimbo de tempo e evidências criptográficas imutáveis."
         />
         <div className="flex items-center gap-2">
+          <Button type="button" variant="outline" onClick={() => setBudgetPadOpen(true)} className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary">
+            <Receipt className="size-4 text-primary" />
+            <span>Bloco de Orçamento</span>
+          </Button>
           <Button type="button" variant="outline" onClick={() => setQuickEditorOpen(true)} className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary">
             <PenTool className="size-4 text-primary" />
             <span>Minuta Rápida</span>
@@ -225,7 +234,7 @@ function ContractsDashboard() {
             return (
               <div
                 key={contract.id}
-                className="bg-card border border-border hover:border-primary/40 rounded-lg p-5 transition-all shadow-xs space-y-4 flex flex-col justify-between"
+                className="bg-card border border-border hover:border-primary/40 rounded-lg p-5 transition-colors duration-200 shadow-xs space-y-4 flex flex-col justify-between"
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-2">
@@ -241,7 +250,7 @@ function ContractsDashboard() {
                     </div>
 
                     {isSigned ? (
-                      <Badge className="bg-emerald-600 text-white hover:bg-emerald-700 text-xs font-semibold gap-1">
+                      <Badge className="bg-emerald-600 text-foreground hover:bg-emerald-700 text-xs font-semibold gap-1">
                         <CheckCircle2 size={11} /> Assinado
                       </Badge>
                     ) : isSigning ? (
@@ -314,6 +323,20 @@ function ContractsDashboard() {
           })}
         </div>
       )}
+
+      {countertopTargetContract && (
+        <CountertopSigningModal
+          open={countertopModalOpen}
+          onOpenChange={setCountertopModalOpen}
+          contractId={countertopTargetContract.id}
+          contractTitle={countertopTargetContract.title}
+          initialClientName={countertopTargetContract.deal?.customer_name || ""}
+          onSignSuccess={() => {
+            refetch();
+          }}
+        />
+      )}
+      <CommercialBudgetPadSheet open={budgetPadOpen} onOpenChange={setBudgetPadOpen} />
 
       {quickEditorOpen && (
         <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">

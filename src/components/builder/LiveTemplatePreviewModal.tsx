@@ -32,7 +32,7 @@ export const LiveTemplatePreviewModal: React.FC<LiveTemplatePreviewModalProps> =
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="fixed inset-0 z-50 max-w-none w-screen h-[100dvh] m-0 p-0 rounded-none bg-background flex flex-col border-none shadow-none overflow-hidden duration-200">
+      <DialogContent className="fixed inset-0 z-50 max-w-none w-screen h-screen-dvh m-0 p-0 rounded-none bg-background flex flex-col border-none shadow-none overflow-hidden duration-200">
         <header className="h-14 border-b border-border/70 bg-card px-4 sm:px-6 flex items-center justify-between gap-3 shrink-0 z-20">
           <div className="flex items-center gap-3 min-w-0">
             <span className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
@@ -62,7 +62,7 @@ export const LiveTemplatePreviewModal: React.FC<LiveTemplatePreviewModalProps> =
                 viewport === "desktop"
                   ? "bg-background text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
-              }`}
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
             >
               <Monitor className="size-3.5" />
               <span className="hidden sm:inline">Desktop</span>
@@ -75,7 +75,7 @@ export const LiveTemplatePreviewModal: React.FC<LiveTemplatePreviewModalProps> =
                 viewport === "mobile"
                   ? "bg-background text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
-              }`}
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
             >
               <Smartphone className="size-3.5" />
               <span className="hidden sm:inline">Mobile</span>
@@ -109,7 +109,7 @@ export const LiveTemplatePreviewModal: React.FC<LiveTemplatePreviewModalProps> =
 
         <div className="flex-1 bg-muted/20 overflow-y-auto p-2 sm:p-8 flex justify-center items-start overflow-x-hidden">
           <div
-            className={`transition-[width,box-shadow] duration-200 motion-reduce:transition-none ${
+            className={`transition-colors duration-200 motion-reduce:transition-none ${
               viewport === "mobile"
                 ? "w-full max-w-sm min-h-dvh shadow-xs rounded-lg border border-border/80 overflow-hidden bg-background my-2 shrink-0"
                 : "w-full max-w-6xl shadow-xs bg-background rounded-lg border border-border/60 my-2"

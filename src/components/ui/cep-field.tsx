@@ -113,7 +113,7 @@ export const CepField = forwardRef<HTMLInputElement, CepFieldProps>(
 
         <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none text-muted-foreground">
           {isLoading ? (
-            <Loader2 className="size-4 animate-spin text-primary" />
+            <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-primary" />
           ) : (
             <MapPin className="size-3.5 opacity-60" />
           )}

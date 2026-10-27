@@ -40,9 +40,9 @@ export function SupplierAutocomplete({
 
  return (
  <div className="relative w-full">
- <div
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  onClick={() => setIsOpen(!isOpen)}
- className="w-full h-10 px-3 rounded-lg border border-border bg-background text-xs flex items-center justify-between cursor-pointer hover:border-primary/50 transition-colors"
+ className="w-full h-10 px-3 rounded-lg border border-border bg-background text-xs flex items-center justify-between cursor-pointer hover:border-primary/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="flex items-center gap-2 truncate">
  <Building2 className="size-3.5 text-muted-foreground shrink-0" />
@@ -70,19 +70,19 @@ export function SupplierAutocomplete({
  </div>
  ) : (
  filtered.map((s) => (
- <div
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  key={s.id}
  onClick={() => {
  onChange(s);
  setIsOpen(false);
  }}
- className={'p-2 rounded-lg text-xs flex items-center justify-between cursor-pointer hover:bg-muted transition-all ' + (
- selectedSupplier?.id === s.id ? 'bg-primary/10 font-bold text-primary' : 'text-foreground'
+ className={'p-2 rounded-lg text-xs flex items-center justify-between cursor-pointer hover:bg-muted transition-colors duration-200 ' + (
+ selectedSupplier?.id === s.id ? 'bg-primary/10 font-bold text-primary' : 'text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
  <div className="space-y-1 truncate">
  <p className="truncate">{s.name}</p>
- <span className="text-[10px] text-muted-foreground">{s.country} · {s.commission_rate}% comissão</span>
+ <span className="text-2xs text-muted-foreground">{s.country} · {s.commission_rate}% comissão</span>
  </div>
  {selectedSupplier?.id === s.id && <Check className="size-3.5 text-primary shrink-0" />}
  </div>

@@ -271,11 +271,11 @@ function FocusGroupPage() {
                   key={p.id}
                   type="button"
                   onClick={() => handleTogglePersona(p)}
-                  className={`h-11 px-3 rounded-lg border text-xs font-medium shrink-0 flex items-center gap-2 transition-all min-h-11 ${
+                  className={`h-11 px-3 rounded-lg border text-xs font-medium shrink-0 flex items-center gap-2 transition-colors duration-200 min-h-11 ${
                     isSelected
                       ? 'bg-card border-border shadow-xs text-foreground ring-1 ring-primary/30'
                       : 'bg-muted/30 border-transparent text-muted-foreground opacity-60'
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   <span className="truncate max-w-28">{p.display_name}</span>
                   <Badge variant="secondary" className="text-xs py-0 px-2 rounded-sm">
@@ -305,14 +305,14 @@ function FocusGroupPage() {
               return (
                 <div
                   key={p.id}
-                  className={`p-4 rounded-lg border transition-all min-h-11 ${
+                  className={`p-4 rounded-lg border transition-colors duration-200 min-h-11 ${
                     isSelected 
                       ? 'bg-card border-border/90 shadow-xs ring-1 ring-border/80' 
                       : 'bg-muted/20 border-transparent opacity-60 hover:opacity-100 hover:bg-muted/40'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0" onClick={() => handleTogglePersona(p)}>
+                    <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} className="flex-1 min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" onClick={() => handleTogglePersona(p)}>
                       <p className="text-xs font-semibold text-foreground truncate">{p.display_name}</p>
                       <p className="text-xs text-muted-foreground truncate mt-1">
                         {profession}
@@ -323,7 +323,7 @@ function FocusGroupPage() {
                     </Badge>
                   </div>
 
-                  <div className="mt-3 pt-3 border-t border-border/40 space-y-1 text-[10px] text-muted-foreground">
+                  <div className="mt-3 pt-3 border-t border-border/40 space-y-1 text-2xs text-muted-foreground">
                     <p>{p.median_income_brl == null ? 'Renda: não informada' : 'Renda: preenchida, origem não verificada'}</p>
                     <p>Origem: {p.source_profile_type || p.profile_origin || 'desconhecida'} · calibração: {p.calibration_status || 'desconhecida'}</p>
                   </div>
@@ -333,7 +333,7 @@ function FocusGroupPage() {
                     <button
                       type="button"
                       onClick={() => handleTogglePersona(p)}
-                      className="text-xs text-primary font-medium hover:underline"
+                      className="text-xs text-primary font-medium hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       {isSelected ? 'Desmarcar' : 'Incluir na Bancada'}
                     </button>
@@ -343,7 +343,7 @@ function FocusGroupPage() {
                         e.stopPropagation();
                         setInspectingPersona(p);
                       }}
-                      className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
+                      className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <FileText className="size-3" />
                       <span>Dossiê 360°</span>
@@ -363,7 +363,7 @@ function FocusGroupPage() {
                 <div className="p-6 text-center space-y-2">
                   <MessageSquare className="mx-auto size-5 text-muted-foreground" />
                   <p className="text-xs font-semibold text-foreground">Nenhuma pergunta ou resposta nesta sessão</p>
-                  <p className="text-[10px] text-muted-foreground">Selecione perfis sintéticos e envie uma pergunta. Se a IA falhar, nenhuma resposta será inventada.</p>
+                  <p className="text-2xs text-muted-foreground">Selecione perfis sintéticos e envie uma pergunta. Se a IA falhar, nenhuma resposta será inventada.</p>
                 </div>
               )}
               {statements.map((s) => {
@@ -393,7 +393,7 @@ function FocusGroupPage() {
                             <button
                               type="button"
                               onClick={() => setInspectingPersona(matchedPersona)}
-                              className="text-xs text-muted-foreground hover:text-primary underline flex items-center gap-1"
+                              className="text-xs text-muted-foreground hover:text-primary underline flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
                           <span>ver perfil e proveniência</span>
                             </button>
@@ -407,7 +407,7 @@ function FocusGroupPage() {
                       <p className="text-sm text-foreground/90 mt-2 leading-relaxed">
                       {s.content}
                       </p>
-                      {isModerator ? <Badge variant="outline" className="mt-2 text-[10px]">Pergunta do pesquisador</Badge> : s.provenance?.record_kind === 'llm_generated_synthetic_qualitative_response' ? <Badge variant="outline" className="mt-2 text-[10px]">Resposta hipotética de IA · não é cliente real</Badge> : <Badge variant="secondary" className="mt-2 text-[10px]">Registro legado · origem desconhecida</Badge>}
+                      {isModerator ? <Badge variant="outline" className="mt-2 text-2xs">Pergunta do pesquisador</Badge> : s.provenance?.record_kind === 'llm_generated_synthetic_qualitative_response' ? <Badge variant="outline" className="mt-2 text-2xs">Resposta hipotética de IA · não é cliente real</Badge> : <Badge variant="secondary" className="mt-2 text-2xs">Registro legado · origem desconhecida</Badge>}
                     </div>
                   </div>
                 );
@@ -416,7 +416,7 @@ function FocusGroupPage() {
 
             {isProcessing && (
               <div className="flex items-center gap-2 text-xs text-muted-foreground py-2 px-1">
-                <span className="size-2 rounded-full bg-primary animate-pulse" />
+                <span className="size-2 rounded-full bg-primary animate-pulse motion-reduce:animate-none" />
                 Gerando respostas qualitativas para os perfis selecionados...
               </div>
             )}
@@ -514,33 +514,33 @@ function FocusGroupPage() {
                 <button
                   type="button"
                   onClick={() => setKeyProvider('gemini')}
-                  className={`h-10 rounded-lg border text-xs font-medium transition-all ${
+                  className={`h-10 rounded-lg border text-xs font-medium transition-colors duration-200 ${
                     keyProvider === 'gemini' 
                       ? 'bg-primary text-primary-foreground border-primary' 
                       : 'bg-muted/40 border-border/80 text-muted-foreground'
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   Google Gemini
                 </button>
                 <button
                   type="button"
                   onClick={() => setKeyProvider('groq')}
-                  className={`h-10 rounded-lg border text-xs font-medium transition-all ${
+                  className={`h-10 rounded-lg border text-xs font-medium transition-colors duration-200 ${
                     keyProvider === 'groq' 
                       ? 'bg-primary text-primary-foreground border-primary' 
                       : 'bg-muted/40 border-border/80 text-muted-foreground'
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   Groq (Llama)
                 </button>
                 <button
                   type="button"
                   onClick={() => setKeyProvider('openai')}
-                  className={`h-10 rounded-lg border text-xs font-medium transition-all ${
+                  className={`h-10 rounded-lg border text-xs font-medium transition-colors duration-200 ${
                     keyProvider === 'openai' 
                       ? 'bg-primary text-primary-foreground border-primary' 
                       : 'bg-muted/40 border-border/80 text-muted-foreground'
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   OpenAI
                 </button>

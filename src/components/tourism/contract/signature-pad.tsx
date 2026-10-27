@@ -115,7 +115,7 @@ export function SignaturePad({ onSave, onClear }: SignaturePadProps) {
  </div>
 
  <div className="flex items-center justify-between text-xs">
- <span className="text-[11px] text-muted-foreground">
+ <span className="text-2xs text-muted-foreground">
  Assinatura capturada com data/hora e IP para validação jurídica.
  </span>
  <Button

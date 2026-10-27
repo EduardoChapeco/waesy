@@ -35,8 +35,8 @@ export function ReputationBadgesStrip({ content, design_tokens }: ReputationBadg
               </div>
               <div className="space-y-1">
                 <h4 className="font-semibold text-xs text-foreground">{badge.title}</h4>
-                <p className="text-[11px] text-muted-foreground leading-snug">{badge.desc}</p>
-                <a className="text-[10px] text-primary underline" href={badge.source_url} target="_blank" rel="noreferrer">Ver fonte</a>
+                <p className="text-2xs text-muted-foreground leading-snug">{badge.desc}</p>
+                <a className="text-2xs text-primary underline" href={badge.source_url} target="_blank" rel="noreferrer">Ver fonte</a>
               </div>
             </div>
           ))}

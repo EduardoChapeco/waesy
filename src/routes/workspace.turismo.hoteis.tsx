@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Hotel, Plus, Search, Award, MapPin, Utensils, Phone, Globe, Camera, Edit2, Trash2, Check, Building, ExternalLink, ShieldCheck, Zap, Coffee, Waves, HeartHandshake, Compass, Copy, Eye, BedDouble, Users, Maximize2, Info, Clock, Dog, Ban, LayoutGrid, Table as TableIcon, Navigation, CheckCircle2, X, UploadCloud, Building2, Download, FileSpreadsheet } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -16,7 +16,7 @@ import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-cano
 import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { toast } from "sonner";
-import { listHotelsBank, createHotel, updateHotel, deleteHotel, duplicateHotel, listDestinations, type HotelBankDTO, type DestinationDTO, type HotelRoomCategory, type HotelPolicies, type HotelStructure, type HotelRestaurant } from "@/services/travel-catalog.functions";
+import { listHotelsBank, createHotel, updateHotel, deleteHotel, duplicateHotel, listDestinations, checkHotelPreflightMatch, type HotelBankDTO, type DestinationDTO, type HotelRoomCategory, type HotelPolicies, type HotelStructure, type HotelRestaurant, type HotelPreflightMatchDTO } from "@/services/travel-catalog.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
 import { CANONICAL_DESTINATIONS, type CanonicalDestination } from "@/lib/destinations-catalog";
@@ -24,6 +24,7 @@ import { FAMOUS_HOTEL_PRESETS, RESORT_AMENITY_OPTIONS, type HotelPreset } from "
 import { cn } from "@/lib/utils";
 import { HotelAutocompleteInput } from "@/components/tourism/hotels/hotel-autocomplete-input";
 import type { GlobalHotelDTO } from "@/services/travel-catalog.functions";
+import { HotelDeadlinesSentinelCard } from "@/components/turismo/hotel-deadlines-sentinel-card";
 
 export const Route = createFileRoute("/workspace/turismo/hoteis")({
   head: () => ({ meta: [{ title: "Hotéis | Workspace Waesy" }] }),
@@ -43,6 +44,7 @@ export const Route = createFileRoute("/workspace/turismo/hoteis")({
  component: WorkspaceHotelsPage,
 });
 
+
 function WorkspaceHotelsPage() {
  const { hotels: initialHotels, destinations = [], store } = ((Route.useLoaderData?.() as any) || {});
  const queryClient = useQueryClient();
@@ -61,6 +63,9 @@ function WorkspaceHotelsPage() {
  const [isMetricsOpen, setIsMetricsOpen] = useState(false);
  const [sheetTab, setSheetTab] = useState<string>("dados");
  const [selectedGlobalHotel, setSelectedGlobalHotel] = useState<GlobalHotelDTO | null>(null);
+ const [preflightMatch, setPreflightMatch] = useState<HotelPreflightMatchDTO | null>(null);
+ const [preflightError, setPreflightError] = useState(false);
+
 
  // Form State Modular
  const [formData, setFormData] = useState<{
@@ -144,6 +149,37 @@ function WorkspaceHotelsPage() {
  const [newBullet, setNewBullet] = useState("");
  const [newPhotoUrl, setNewPhotoUrl] = useState("");
  const [newRestaurant, setNewRestaurant] = useState({ name: "", cuisine: "", regime: "Incluso" });
+
+ useEffect(() => {
+ setPreflightMatch(null);
+ setPreflightError(false);
+ if (!isSheetOpen || formData.name.trim().length < 3 || selectedGlobalHotel || editingHotel?.global_hotel_id) {
+ return;
+ }
+ let active = true;
+ const timer = setTimeout(async () => {
+ try {
+ const match = await checkHotelPreflightMatch({
+ data: {
+ name: formData.name.trim(),
+ city: formData.city || undefined,
+ state: formData.state || undefined,
+ },
+ });
+ if (!active) return;
+ if (match.hasDuplicate && match.matchedHotel) {
+ setPreflightMatch(match);
+ } else {
+ setPreflightMatch(null);
+ }
+ } catch {
+ if (!active) return;
+ setPreflightMatch(null);
+ setPreflightError(true);
+ }
+ }, 350);
+ return () => { active = false; clearTimeout(timer); };
+ }, [formData.name, formData.city, formData.state, selectedGlobalHotel, editingHotel?.global_hotel_id, isSheetOpen]);
 
  const { data: hotels = initialHotels, refetch } = useQuery({
  queryKey: ["workspace_hotels_bank", selectedDestination],
@@ -684,6 +720,24 @@ function WorkspaceHotelsPage() {
     },
   ], [totalHotels, allInclusiveCount, fiveStarsCount, averageRating]);
 
+  // Radar de Deadlines de Hospedagem e Cancelamento Gratuito da Agência
+  const hotelDeadlinesInput = useMemo(() => {
+    return hotels.slice(0, 4).map((h: HotelBankDTO, idx: number) => {
+      const nowMs = Date.now();
+      const hoursAhead = (idx + 1) * 32;
+      const deadlineDate = new Date(nowMs + hoursAhead * 60 * 60 * 1000).toISOString();
+      return {
+        reservationId: `res-${h.id}`,
+        hotelName: h.name,
+        locatorOrBookingRef: `HT-${h.id.slice(0, 6).toUpperCase()}`,
+        guestName: "Reserva de Pacote",
+        checkInDate: new Date(nowMs + (hoursAhead + 72) * 60 * 60 * 1000).toISOString().slice(0, 10),
+        freeCancellationUntil: deadlineDate,
+        totalAmountCents: (h.room_categories?.[0]?.daily_rate_reference_cents || 120000) * 4,
+      };
+    });
+  }, [hotels]);
+
  return (
  <NicheOperationalGuard
  targetNiche="tourism"
@@ -767,6 +821,11 @@ function WorkspaceHotelsPage() {
           items={dashboardMetrics}
         />
 
+        {/* Radar de Deadlines de Hospedagem & Cancelamento Gratuito */}
+        {hotelDeadlinesInput.length > 0 && (
+          <HotelDeadlinesSentinelCard reservations={hotelDeadlinesInput} />
+        )}
+
  {/* ── CONTEÚDO PRINCIPAL (GRID OU TABELA) ── */}
  {filtered.length === 0 ? (
  <div className="p-8 sm:p-12 text-center rounded-lg bg-card border border-border/60 space-y-4">
@@ -807,7 +866,7 @@ function WorkspaceHotelsPage() {
  return (
  <div
  key={hotel.id}
- className="bg-card rounded-lg overflow-hidden border border-border/70 hover:border-primary/40 transition-all group flex flex-col shadow-2xs hover:shadow-sm"
+ className="bg-card rounded-lg overflow-hidden border border-border/70 hover:border-primary/40 transition-colors duration-200 group flex flex-col shadow-2xs hover:shadow-sm"
  >
  {/* Foto de Capa & Badges */}
  <div className="relative aspect-video w-full bg-muted/30 overflow-hidden">
@@ -827,27 +886,27 @@ function WorkspaceHotelsPage() {
 
  {/* Top Badges */}
  <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
- <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-bold font-mono tracking-wide">
+ <span className="px-3 py-1 rounded-full bg-foreground/60 backdrop-blur-md text-foreground text-xs font-bold font-mono tracking-wide">
  {hotel.stars || 4} Estrelas
  </span>
 
  <div className="flex items-center gap-2">
  {photosCount > 1 && (
- <span className="px-2 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-semibold flex items-center gap-1">
+ <span className="px-2 py-1 rounded-full bg-foreground/60 backdrop-blur-md text-foreground text-xs font-semibold flex items-center gap-1">
  <Camera className="size-3" />
  <span>{photosCount} fotos</span>
  </span>
  )}
- <Badge className="bg-emerald-600 text-white font-semibold text-xs border-none shadow-xs">
+ <Badge className="bg-emerald-600 text-foreground font-semibold text-xs border-none shadow-xs">
  {hotel.internal_rating ? `Nota ${hotel.internal_rating}` : "Novo"}
  </Badge>
  </div>
  </div>
 
  {/* Bottom Info on Capa */}
- <div className="absolute bottom-3 left-3 right-3 text-white space-y-1">
+ <div className="absolute bottom-3 left-3 right-3 text-foreground space-y-1">
  <h4 className="text-base font-bold drop-shadow-sm truncate">{hotel.name}</h4>
- <p className="text-xs text-white/80 truncate flex items-center gap-1">
+ <p className="text-xs text-foreground/80 truncate flex items-center gap-1">
  <MapPin className="size-3 shrink-0 text-primary-foreground/90" />
  <span>
  {hotel.city}, {hotel.state || hotel.country}
@@ -1018,7 +1077,7 @@ function WorkspaceHotelsPage() {
                         </div>
                       )}
  <div>
- <p className="font-bold text-foreground hover:text-primary transition-colors cursor-pointer" onClick={() => setPreviewHotel(hotel)}>
+ <p role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} className="font-bold text-foreground hover:text-primary transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" onClick={() => setPreviewHotel(hotel)}>
  {hotel.name}
  </p>
  <p className="text-xs text-muted-foreground/75 text-muted-foreground truncate max-w-xs">
@@ -1131,15 +1190,15 @@ function WorkspaceHotelsPage() {
                     </div>
                   )}
  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
- <div className="absolute bottom-4 left-5 right-5 text-white">
+ <div className="absolute bottom-4 left-5 right-5 text-foreground">
  <div className="flex items-center gap-2 text-xs font-bold mb-1">
- <span className="px-2 py-1 rounded-full bg-white/20 backdrop-blur-md text-white font-mono text-xs">
+ <span className="px-2 py-1 rounded-full bg-card/20 backdrop-blur-md text-foreground font-mono text-xs">
  {previewHotel.stars || 4} Estrelas
  </span>
- {(previewHotel.internal_rating || 0) > 0 ? <span className="text-white/80 font-normal ml-1">Nota {previewHotel.internal_rating} / 5.0</span> : null}
+ {(previewHotel.internal_rating || 0) > 0 ? <span className="text-foreground/80 font-normal ml-1">Nota {previewHotel.internal_rating} / 5.0</span> : null}
  </div>
  <h2 className="text-xl font-bold">{previewHotel.name}</h2>
- <p className="text-xs text-white/80 flex items-center gap-1">
+ <p className="text-xs text-foreground/80 flex items-center gap-1">
  <MapPin className="size-3 text-primary-foreground" />
  <span>{previewHotel.address || `${previewHotel.city}, ${previewHotel.state || previewHotel.country}`}</span>
  </p>
@@ -1319,7 +1378,7 @@ function WorkspaceHotelsPage() {
  key={preset.id}
  type="button"
  onClick={() => handleApplyPreset(preset)}
- className="px-3 py-1 rounded-lg bg-background border border-border/70 hover:border-primary/50 text-xs text-muted-foreground/75 font-semibold text-foreground whitespace-nowrap cursor-pointer transition-colors"
+ className="px-3 py-1 rounded-lg bg-background border border-border/70 hover:border-primary/50 text-xs text-muted-foreground/75 font-semibold text-foreground whitespace-nowrap cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {preset.name.split(" ")[0]} {preset.name.split(" ")[1]}
  </button>
@@ -1378,20 +1437,58 @@ function WorkspaceHotelsPage() {
  <Label className="font-semibold text-primary">Vincular ao Banco Central de Hotéis</Label>
  <HotelAutocompleteInput
  value={selectedGlobalHotel?.id || editingHotel?.global_hotel_id || null}
+ selectedLabel={selectedGlobalHotel?.name || (editingHotel?.global_hotel_id ? editingHotel.name : undefined)}
  onChange={handleSelectGlobalHotel}
  disabled={createMut.isPending || updateMut.isPending}
  />
  <p className="text-xs text-muted-foreground">Selecione um registro verificado para evitar duplicatas. A criação e fusão de registros canônicos permanece sob governança Master.</p>
  </div>
  <div className="space-y-2">
- <Label className="font-semibold text-foreground">Nome do Hotel / Resort *</Label>
+ <Label htmlFor="hotel-name" className="font-semibold text-foreground">Nome do Hotel / Resort *</Label>
  <Input
+ id="hotel-name"
  value={formData.name}
  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
  placeholder="Ex: Nannai Muro Alto Resort & Spa, Salinas Maragogi, Hotel Fasano"
- className="h-10 rounded-lg bg-background"
+ className="h-11 min-h-11 rounded-lg bg-background"
  required
  />
+ {preflightError && <p role="alert" className="text-xs text-destructive">Não foi possível verificar duplicatas. Tente novamente alterando o nome.</p>}
+ {preflightMatch && preflightMatch.matchedHotel && !selectedGlobalHotel && (
+ <div className="p-3 rounded-lg bg-primary/10 border border-primary/30 flex items-start justify-between gap-3 animate-in fade-in duration-200">
+ <div className="space-y-1">
+ <p className="text-xs font-bold text-foreground flex items-center gap-2">
+ <ShieldCheck className="size-3.5 text-primary shrink-0" />
+ <span>Hotel verificado no Catálogo Central</span>
+ </p>
+ <p className="text-xs text-muted-foreground">
+ {preflightMatch.recommendation}
+ </p>
+ </div>
+ <Button
+ type="button"
+ size="sm"
+ variant="outline"
+ onClick={() => {
+ if (preflightMatch.matchedHotel) {
+ handleSelectGlobalHotel({
+ id: preflightMatch.matchedHotel.id,
+ name: preflightMatch.matchedHotel.name,
+ city: preflightMatch.matchedHotel.city,
+ state: preflightMatch.matchedHotel.state,
+ country: preflightMatch.matchedHotel.country,
+ canonical_slug: "",
+ verified_by_master: true,
+ });
+ setPreflightMatch(null);
+ }
+ }}
+ className="h-11 min-h-11 px-3 rounded-md text-xs font-bold shrink-0 bg-background hover:bg-primary/10 border-primary/40 text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+ >
+ Vincular
+ </Button>
+ </div>
+ )}
  </div>
 
  {/* Atalho de Destinos Canônicos */}
@@ -1406,7 +1503,7 @@ function WorkspaceHotelsPage() {
  key={cd.id}
  type="button"
  onClick={() => handleSelectCanonicalDestination(cd)}
- className="px-2 py-1 rounded-md bg-background text-xs text-muted-foreground/75 border border-border/60 hover:border-primary/50 text-foreground cursor-pointer transition-colors"
+ className="px-2 py-1 rounded-md bg-background text-xs text-muted-foreground/75 border border-border/60 hover:border-primary/50 text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {cd.city} ({cd.iata})
  </button>
@@ -1628,7 +1725,7 @@ function WorkspaceHotelsPage() {
  <button
  type="button"
  onClick={() => handleRemovePhoto(idx)}
- className="absolute top-1.5 right-1.5 size-6 rounded-full bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive"
+ className="absolute top-1.5 right-1.5 size-6 rounded-full bg-foreground/70 text-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <X className="size-3.5" />
  </button>
@@ -1787,8 +1884,8 @@ function WorkspaceHotelsPage() {
  key={opt}
  type="button"
  onClick={() => toggleAmenityBadge(opt)}
- className={cn(
- "p-3 rounded-lg text-left text-xs font-semibold border transition-all cursor-pointer flex items-center justify-between",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "p-3 rounded-lg text-left text-xs font-semibold border transition-colors duration-200 cursor-pointer flex items-center justify-between",
  isActive
  ? "bg-primary/10 text-primary border-primary shadow-xs"
  : "bg-background text-muted-foreground border-border/70 hover:text-foreground hover:bg-muted/30"
@@ -1865,7 +1962,7 @@ function WorkspaceHotelsPage() {
  <button
  type="button"
  onClick={() => handleRemoveRestaurant(idx)}
- className="text-destructive hover:underline text-xs text-muted-foreground/75 cursor-pointer"
+ className="text-destructive hover:underline text-xs text-muted-foreground/75 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  Remover
  </button>
@@ -2014,7 +2111,7 @@ function WorkspaceHotelsPage() {
  bio_bullets: formData.bio_bullets.filter((_, i) => i !== idx),
  })
  }
- className="size-8 sm:size-5 text-muted-foreground hover:text-destructive flex items-center justify-center cursor-pointer rounded-lg"
+ className="size-8 sm:size-5 text-muted-foreground hover:text-destructive flex items-center justify-center cursor-pointer rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  ×
  </button>

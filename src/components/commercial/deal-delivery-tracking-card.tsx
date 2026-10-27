@@ -92,7 +92,7 @@ export function DealDeliveryTrackingCard({ dealId, orderId }: DealDeliveryTracki
               </Badge>
               {hasLiveGps && (
                 <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-2 py-1 rounded-full">
-                  <span className="size-1.5 rounded-full bg-emerald-500 animate-ping inline-block" />
+                  <span className="size-1.5 rounded-full bg-emerald-500 animate-ping motion-reduce:animate-none inline-block" />
                   GPS Ao Vivo
                 </span>
               )}
@@ -121,21 +121,21 @@ export function DealDeliveryTrackingCard({ dealId, orderId }: DealDeliveryTracki
 
       {/* Linha do Tempo Visual de 3 Etapas */}
       <div className="grid grid-cols-3 gap-2 py-1">
-        <div className={`p-3 rounded-lg border text-center transition-all ${
+        <div className={`p-3 rounded-lg border text-center transition-colors duration-200 ${
           statusConfig.step >= 1 ? "bg-primary/10 border-primary/30 text-foreground font-semibold" : "bg-muted/20 border-border/40 text-muted-foreground opacity-60"
         }`}>
           <div className="text-xs uppercase font-bold mb-1">1. Despachado</div>
           <span className="text-xs">Loja acionou motoboy</span>
         </div>
 
-        <div className={`p-3 rounded-lg border text-center transition-all ${
+        <div className={`p-3 rounded-lg border text-center transition-colors duration-200 ${
           statusConfig.step >= 3 ? "bg-primary/10 border-primary/30 text-foreground font-semibold" : "bg-muted/20 border-border/40 text-muted-foreground opacity-60"
         }`}>
           <div className="text-xs uppercase font-bold mb-1">2. Em Trânsito</div>
           <span className="text-xs">A caminho do endereço</span>
         </div>
 
-        <div className={`p-3 rounded-lg border text-center transition-all ${
+        <div className={`p-3 rounded-lg border text-center transition-colors duration-200 ${
           statusConfig.step >= 4 ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-400 font-bold" : "bg-muted/20 border-border/40 text-muted-foreground opacity-60"
         }`}>
           <div className="text-xs uppercase font-bold mb-1">3. Entregue</div>
@@ -147,7 +147,7 @@ export function DealDeliveryTrackingCard({ dealId, orderId }: DealDeliveryTracki
       {hasLiveGps && (
         <div className="p-3 bg-card border border-emerald-500/30 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-xs">
-            <Radio className="size-4 text-emerald-600 animate-pulse shrink-0" />
+            <Radio className="size-4 text-emerald-600 animate-pulse motion-reduce:animate-none shrink-0" />
             <div>
               <p className="font-bold text-foreground">Sinal do Motoboy Conectado</p>
               <p className="text-xs text-muted-foreground">

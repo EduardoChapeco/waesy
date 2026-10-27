@@ -124,8 +124,8 @@ export function StoryHighlightUploader({
                   type="button"
                   onClick={() => handleImageClick(hl.id)}
                   disabled={readOnly}
-                  className={cn(
-                    "size-16 rounded-full overflow-hidden border-2 transition-all",
+                  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                    "size-16 rounded-full overflow-hidden border-2 transition-colors duration-200",
                     hl.image
                       ? "border-primary/40 hover:border-primary"
                       : "border-dashed border-border/60 hover:border-primary/60 bg-muted/30",
@@ -135,7 +135,7 @@ export function StoryHighlightUploader({
                 >
                   {isUploading ? (
                     <div className="size-full flex items-center justify-center bg-muted">
-                      <Loader2 className="size-5 animate-spin text-primary" />
+                      <Loader2 className="size-5 animate-spin motion-reduce:animate-none text-primary" />
                     </div>
                   ) : hl.image ? (
                     <img
@@ -151,8 +151,8 @@ export function StoryHighlightUploader({
 
                   {/* Overlay hover */}
                   {!readOnly && hl.image && (
-                    <div className="absolute inset-0 rounded-full bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                      <PencilSimple className="size-4 text-white" weight="bold" />
+                    <div className="absolute inset-0 rounded-full bg-foreground/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                      <PencilSimple className="size-4 text-foreground" weight="bold" />
                     </div>
                   )}
                 </button>
@@ -162,7 +162,7 @@ export function StoryHighlightUploader({
                   <button
                     type="button"
                     onClick={() => handleRemove(hl.id)}
-                    className="absolute -top-1 -right-1 size-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                    className="absolute -top-1 -right-1 size-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     aria-label={`Remover destaque ${hl.title}`}
                   >
                     <X className="size-3" />
@@ -194,8 +194,8 @@ export function StoryHighlightUploader({
                       setEditTitle(hl.title);
                     }
                   }}
-                  className={cn(
-                    "text-[11px] font-medium text-foreground tracking-tight max-w-[64px] truncate",
+                  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                    "text-2xs font-medium text-foreground tracking-tight max-w-[64px] truncate",
                     !readOnly && "hover:text-primary transition-colors cursor-pointer"
                   )}
                 >
@@ -212,18 +212,18 @@ export function StoryHighlightUploader({
             <button
               type="button"
               onClick={handleAddNew}
-              className="size-16 rounded-full border-2 border-dashed border-border/50 hover:border-primary/60 bg-muted/20 hover:bg-muted/40 flex items-center justify-center transition-all active:scale-95"
+              className="size-16 rounded-full border-2 border-dashed border-border/50 hover:border-primary/60 bg-muted/20 hover:bg-muted/40 flex items-center justify-center transition-transform duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label="Adicionar novo destaque"
             >
               <Plus className="size-5 text-muted-foreground" weight="bold" />
             </button>
-            <span className="text-[11px] text-muted-foreground font-medium">Adicionar</span>
+            <span className="text-2xs text-muted-foreground font-medium">Adicionar</span>
           </div>
         )}
       </div>
 
       {highlights.length === 0 && !readOnly && (
-        <p className="text-[11px] text-muted-foreground pl-1">
+        <p className="text-2xs text-muted-foreground pl-1">
           Adicione destaques visuais para valorizar os pontos principais do anúncio.
         </p>
       )}

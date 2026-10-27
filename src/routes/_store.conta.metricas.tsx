@@ -80,7 +80,7 @@ function MemberMetricsPage() {
           asChild
           size="sm"
           variant="ghost"
-          className="size-11 rounded-full p-0 text-muted-foreground hover:text-foreground hover:bg-muted/80 active:scale-95 transition-all cursor-pointer"
+          className="size-11 rounded-full p-0 text-muted-foreground hover:text-foreground hover:bg-muted/80 active:scale-95 transition-transform duration-200 cursor-pointer"
           aria-label="Voltar para Perfil"
         >
           <Link to="/membro/$id" params={{ id: profile.username || profile.id }}>
@@ -99,7 +99,7 @@ function MemberMetricsPage() {
  <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
  Métricas
  </h1>
- <Badge className="bg-primary/10 text-primary hover:bg-primary/20 text-[10px] font-mono">
+ <Badge className="bg-primary/10 text-primary hover:bg-primary/20 text-2xs font-mono">
  OFICIAL
  </Badge>
  </div>
@@ -144,7 +144,7 @@ function MemberMetricsPage() {
  <p className="text-2xl font-black text-foreground tracking-tight">
  {overview.estimatedReach.toLocaleString("pt-BR")}
  </p>
- <div className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+ <div className="flex items-center gap-1 text-2xs font-semibold text-emerald-600">
  <TrendingUp className="size-3" />
  <span>Impressões e visitas ativas</span>
  </div>
@@ -161,7 +161,7 @@ function MemberMetricsPage() {
  <p className="text-2xl font-black text-foreground tracking-tight">
  {overview.engagementRate}%
  </p>
- <div className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+ <div className="flex items-center gap-1 text-2xs font-semibold text-emerald-600">
  <span>{overview.totalLikes + overview.totalComments} interações totais</span>
  </div>
  </div>
@@ -177,7 +177,7 @@ function MemberMetricsPage() {
  <p className="text-2xl font-black text-foreground tracking-tight">
  {overview.totalLikes.toLocaleString("pt-BR")}
  </p>
- <div className="flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
+ <div className="flex items-center gap-1 text-2xs font-semibold text-muted-foreground">
  <span>+{overview.totalComments} comentários no total</span>
  </div>
  </div>
@@ -193,7 +193,7 @@ function MemberMetricsPage() {
  <p className="text-2xl font-black text-foreground tracking-tight">
  {overview.followersCount.toLocaleString("pt-BR")}
  </p>
- <div className="flex items-center gap-1 text-[11px] font-semibold text-primary">
+ <div className="flex items-center gap-1 text-2xs font-semibold text-primary">
  <span>+{overview.followersGained30d} novos nos últimos 30d</span>
  </div>
  </div>
@@ -208,11 +208,11 @@ function MemberMetricsPage() {
  <Users className="size-4 text-primary" />
  <span>Crescimento da Audiência</span>
  </h3>
- <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-lg text-[10px] font-bold">
+ <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-lg text-2xs font-bold">
  <button
  onClick={() => setSelectedPeriod("7d")}
- className={cn(
- "px-2 py-1 rounded-lg transition-all cursor-pointer",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "px-2 py-1 rounded-lg transition-colors duration-200 cursor-pointer",
  selectedPeriod === "7d" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground"
  )}
  >
@@ -220,8 +220,8 @@ function MemberMetricsPage() {
  </button>
  <button
  onClick={() => setSelectedPeriod("30d")}
- className={cn(
- "px-2 py-1 rounded-lg transition-all cursor-pointer",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "px-2 py-1 rounded-lg transition-colors duration-200 cursor-pointer",
  selectedPeriod === "30d" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground"
  )}
  >
@@ -258,7 +258,7 @@ function MemberMetricsPage() {
  <div className="flex items-center gap-3">
  <Avatar className="size-8 rounded-lg">
  <AvatarImage src={f.avatar_url || ""} />
- <AvatarFallback className="rounded-lg text-[10px] font-bold">
+ <AvatarFallback className="rounded-lg text-2xs font-bold">
  {f.full_name.slice(0, 2).toUpperCase()}
  </AvatarFallback>
  </Avatar>
@@ -266,7 +266,7 @@ function MemberMetricsPage() {
  <p className="font-bold text-foreground truncate max-w-[140px]">
  {f.full_name}
  </p>
- <p className="text-muted-foreground text-[10px]">
+ <p className="text-muted-foreground text-2xs">
  @{f.username || "membro"}
  </p>
  </div>
@@ -302,7 +302,7 @@ function MemberMetricsPage() {
  </div>
  <div className="h-2 rounded-full bg-muted overflow-hidden">
  <div
- className="h-full bg-info rounded-full transition-all"
+ className="h-full bg-info rounded-full transition-colors duration-200"
  style={{
  width: `${totalContentCount > 0 ? (formatDistribution.photo / totalContentCount) * 100 : 0}%`,
  }}
@@ -320,7 +320,7 @@ function MemberMetricsPage() {
  </div>
  <div className="h-2 rounded-full bg-muted overflow-hidden">
  <div
- className="h-full bg-primary rounded-full transition-all"
+ className="h-full bg-primary rounded-full transition-colors duration-200"
  style={{
  width: `${totalContentCount > 0 ? (formatDistribution.gallery / totalContentCount) * 100 : 0}%`,
  }}
@@ -338,7 +338,7 @@ function MemberMetricsPage() {
  </div>
  <div className="h-2 rounded-full bg-muted overflow-hidden">
  <div
- className="h-full bg-rose-500 rounded-full transition-all"
+ className="h-full bg-rose-500 rounded-full transition-colors duration-200"
  style={{
  width: `${totalContentCount > 0 ? (formatDistribution.video / totalContentCount) * 100 : 0}%`,
  }}
@@ -356,7 +356,7 @@ function MemberMetricsPage() {
  </div>
  <div className="h-2 rounded-full bg-muted overflow-hidden">
  <div
- className="h-full bg-amber-500 rounded-full transition-all"
+ className="h-full bg-amber-500 rounded-full transition-colors duration-200"
  style={{
  width: `${totalContentCount > 0 ? (formatDistribution.zine / totalContentCount) * 100 : 0}%`,
  }}
@@ -374,7 +374,7 @@ function MemberMetricsPage() {
  </div>
  <div className="h-2 rounded-full bg-muted overflow-hidden">
  <div
- className="h-full bg-slate-500 rounded-full transition-all"
+ className="h-full bg-slate-500 rounded-full transition-colors duration-200"
  style={{
  width: `${totalContentCount > 0 ? (formatDistribution.text / totalContentCount) * 100 : 0}%`,
  }}
@@ -394,13 +394,13 @@ function MemberMetricsPage() {
  <div className="space-y-3 text-xs text-muted-foreground">
  <div className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-1">
  <p className="font-bold text-foreground">💡 Poste com Mídias e Galerias</p>
- <p className="text-[11px]">
+ <p className="text-2xs">
  Publicações com carrosséis e fotos de alta qualidade têm 4x mais retenção.
  </p>
  </div>
  <div className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-1">
  <p className="font-bold text-foreground">📍 Marque Sua Localização</p>
- <p className="text-[11px]">
+ <p className="text-2xs">
  Posts geolocalizados aparecem automaticamente no Mapa Social da Cidade.
  </p>
  </div>
@@ -441,7 +441,7 @@ function MemberMetricsPage() {
  {topPosts.map((post: any, idx: number) => (
  <div
  key={post.id}
- className="group relative p-4 rounded-lg bg-muted/20 border border-border/50 hover:border-primary/40 transition-all flex flex-col justify-between gap-3"
+ className="group relative p-4 rounded-lg bg-muted/20 border border-border/50 hover:border-primary/40 transition-colors duration-200 flex flex-col justify-between gap-3"
  >
  <div className="flex gap-3">
  {post.media_url ? (
@@ -458,10 +458,10 @@ function MemberMetricsPage() {
 
  <div className="space-y-1 flex-1 min-w-0">
  <div className="flex items-center gap-2">
- <Badge variant="outline" className="text-[9px] font-mono py-0 px-2">
+ <Badge variant="outline" className="text-3xs font-mono py-0 px-2">
  #{idx + 1} TOP
  </Badge>
- <span className="text-[10px] text-muted-foreground font-mono">
+ <span className="text-2xs text-muted-foreground font-mono">
  {new Date(post.created_at).toLocaleDateString("pt-BR")}
  </span>
  </div>
@@ -483,7 +483,7 @@ function MemberMetricsPage() {
 
  <Link
  to="/mural"
- className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1"
+ className="text-2xs font-bold text-primary hover:underline flex items-center gap-1"
  >
  <span>Ver no Mural</span>
  <ArrowUpRight className="size-3" />

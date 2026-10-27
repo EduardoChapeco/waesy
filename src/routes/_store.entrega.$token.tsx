@@ -296,7 +296,7 @@ function DeliveryCourierPage() {
             {delivery.delivery_to_door ? "Subir no Apartamento" : "Entrega na Portaria / Portão"}
           </span>
           {delivery.delivery_to_door && (
-            <Badge variant="outline" className="text-[10px] font-bold text-amber-600 dark:text-amber-400 border-amber-500/30">
+            <Badge variant="outline" className="text-2xs font-bold text-amber-600 dark:text-amber-400 border-amber-500/30">
               Taxa de Subida Paga
             </Badge>
           )}
@@ -317,11 +317,11 @@ function DeliveryCourierPage() {
                 type="button"
                 onClick={handleRecordArrival}
                 disabled={isRecordingArrival}
-                className="w-full h-11 rounded-lg font-bold bg-primary text-primary-foreground gap-2 cursor-pointer shadow-xs active:scale-98 transition-all"
+                className="w-full h-11 rounded-lg font-bold bg-primary text-primary-foreground gap-2 cursor-pointer shadow-xs active:scale-98 transition-transform duration-200"
               >
                 {isRecordingArrival ? (
                   <>
-                    <Loader2 className="size-4 animate-spin" />
+                    <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                     <span>Registrando chegada...</span>
                   </>
                 ) : (
@@ -331,7 +331,7 @@ function DeliveryCourierPage() {
                   </>
                 )}
               </Button>
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-2xs text-muted-foreground">
                 Inicia a contagem de tolerância de 15 minutos e envia aviso push para o cliente descer.
               </p>
             </div>
@@ -360,7 +360,7 @@ function DeliveryCourierPage() {
                     <AlertTriangle className="size-4 shrink-0" />
                     <span>Tolerância de 15 minutos excedida</span>
                   </div>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-2xs text-muted-foreground">
                     Taxa de espera aplicada automaticamente:{" "}
                     <span className="font-bold font-mono text-foreground">
                       {formatMoney(waitingPenaltyCents || (elapsedMinutes - 15) * 50)}
@@ -380,7 +380,7 @@ function DeliveryCourierPage() {
  {/* Dados do Destinatário & Endereço */}
  <div className="bg-card rounded-lg p-4 space-y-4 border border-border/60 shadow-2xs">
  <div className="space-y-1">
- <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+ <span className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
  Cliente / Destinatário
  </span>
  <p className="text-sm font-bold text-foreground">{delivery.recipient_name}</p>
@@ -390,7 +390,7 @@ function DeliveryCourierPage() {
  </div>
 
  <div className="space-y-1 pt-2 border-t border-border/40">
- <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+ <span className="text-2xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
  <MapPin className="size-3 text-primary" /> Endereço de Entrega
  </span>
  <p className="text-xs text-foreground font-medium leading-relaxed">
@@ -467,7 +467,7 @@ function DeliveryCourierPage() {
  <div className="flex items-center justify-between">
  <div>
  <p className="text-xs font-bold text-foreground">Status da Coleta</p>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  {pickupStarted ? "Pedido já retirado no restaurante/loja." : "Confirme assim que retirar o pacote."}
  </p>
  </div>
@@ -490,7 +490,7 @@ function DeliveryCourierPage() {
  <div className="bg-card rounded-lg p-4 border border-border/60 shadow-2xs space-y-2">
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-foreground">Forma de Pagamento</span>
- <span className="text-[10px] text-muted-foreground font-mono">Sincronização em tempo real</span>
+ <span className="text-2xs text-muted-foreground font-mono">Sincronização em tempo real</span>
  </div>
  <div className="flex items-center gap-2">
  <Select
@@ -531,7 +531,7 @@ function DeliveryCourierPage() {
  <KeyRound className="size-4 text-primary" />
  Código PIN de Confirmação
  </div>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Solicite o código de 4 dígitos para o cliente ao entregar o pedido.
  </p>
  </div>
@@ -570,7 +570,7 @@ function DeliveryCourierPage() {
  >
  {isConfirming ? (
  <>
- <Loader2 className="size-4 animate-spin" />
+ <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
  Validando Código...
  </>
  ) : (
@@ -585,7 +585,7 @@ function DeliveryCourierPage() {
  </div>
  </div>
 
- <div className="py-4 text-center text-[10px] text-muted-foreground">
+ <div className="py-4 text-center text-2xs text-muted-foreground">
  Waesy Delivery Network • Despacho Seguro em Tempo Real
  </div>
  </div>

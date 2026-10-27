@@ -781,3 +781,57 @@ export const GLOBAL_HOTELS_RESORTS_CATALOG: HotelRecord[] = [
     },
   },
 ];
+
+
+/**
+ * Normaliza o nome do hotel para indexação fonética e deduplicação
+ */
+export function normalizeHotelName(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * Busca de hotéis no catálogo estático SSOT com suporte a nome, cidade, estado e badges
+ */
+export function searchHotelsCatalog(query: string, limit = 20): HotelRecord[] {
+  const normalized = normalizeHotelName(query);
+  if (!normalized) return GLOBAL_HOTELS_RESORTS_CATALOG.slice(0, limit);
+
+  const tokens = normalized.split(" ").filter((t) => t.length > 1);
+
+  return GLOBAL_HOTELS_RESORTS_CATALOG.filter((hotel) => {
+    const hotelNorm = normalizeHotelName(hotel.name);
+    const cityNorm = normalizeHotelName(hotel.city);
+    const stateNorm = normalizeHotelName(hotel.state);
+    const countryNorm = normalizeHotelName(hotel.country);
+
+    if (
+      hotelNorm.includes(normalized) ||
+      cityNorm.includes(normalized) ||
+      stateNorm.includes(normalized)
+    ) {
+      return true;
+    }
+
+    const combined = `${hotelNorm} ${cityNorm} ${stateNorm} ${countryNorm}`;
+    return tokens.every((token) => combined.includes(token));
+  }).slice(0, limit);
+}
+
+/**
+ * Busca hotel canônico por nome exato ou slug aproximado
+ */
+export function getHotelByNameOrSlug(identifier: string): HotelRecord | undefined {
+  const norm = normalizeHotelName(identifier.replace(/-/g, " "));
+  return GLOBAL_HOTELS_RESORTS_CATALOG.find((hotel) => {
+    const hotelNorm = normalizeHotelName(hotel.name);
+    const slug = hotelNorm.replace(/\s+/g, "-");
+    return hotelNorm === norm || slug === norm || hotel.id === identifier;
+  });
+}

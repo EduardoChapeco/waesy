@@ -159,6 +159,45 @@ function ContaClassificadosErrorComponent({ error }: { error: any }) {
   );
 }
 
+
+export const NICHE_TABS = [
+  { id: "all", label: "Todos os Anúncios" },
+  { id: "job", label: "Vagas de Emprego" },
+  { id: "event", label: "Eventos & Shows" },
+  { id: "market", label: "Mercearia & Mercado" },
+  { id: "sale", label: "Desapego & Vendas" },
+  { id: "real_estate", label: "Imóveis & Temporada" },
+  { id: "vehicle", label: "Veículos & Auto" },
+  { id: "service", label: "Serviços Autônomos" },
+  { id: "travel", label: "Turismo & Viagens" },
+] as const;
+
+export function matchesNicheTab(ad: any, nicheTabId: string): boolean {
+  if (nicheTabId === "all") return true;
+  const niche = resolveClassifiedNiche(ad);
+  const cat = ad.category;
+  switch (nicheTabId) {
+    case "job":
+      return cat === "job" || niche?.id === "job";
+    case "event":
+      return cat === "event" || niche?.id === "event";
+    case "market":
+      return cat === "market" || cat === "food" || niche?.id === "market" || niche?.id === "food";
+    case "sale":
+      return cat === "sale" || cat === "goods" || cat === "trade" || cat === "donation" || niche?.id === "goods" || niche?.id === "donation";
+    case "real_estate":
+      return cat === "real_estate" || niche?.id === "real_estate_sale" || niche?.id === "real_estate_rent" || niche?.id === "hospitality_stay";
+    case "vehicle":
+      return cat === "vehicle" || niche?.id === "vehicle";
+    case "service":
+      return cat === "service" || niche?.id === "service" || niche?.id === "equipment";
+    case "travel":
+      return cat === "travel" || niche?.id === "travel";
+    default:
+      return true;
+  }
+}
+
 const CATEGORY_LABELS: Record<string, string> = {
   sale: "Desapego",
   vehicle: "Veículo",
@@ -219,6 +258,7 @@ function ClassificadosIndex() {
 
   // Filtros
   const [isMlFilterOpen, setIsMlFilterOpen] = useState(false);
+  const [nicheTab, setNicheTab] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"recent" | "views" | "contacts" | "price_desc" | "price_asc">("recent");
@@ -410,7 +450,17 @@ function ClassificadosIndex() {
 
   const safeClassifieds = Array.isArray(classifieds) ? classifieds : [];
 
+  const nicheCounts = (function() {
+    const counts: Record<string, number> = { all: safeClassifieds.length };
+    for (const tab of NICHE_TABS) {
+      if (tab.id === "all") continue;
+      counts[tab.id] = safeClassifieds.filter((ad: any) => matchesNicheTab(ad, tab.id)).length;
+    }
+    return counts;
+  })();
+
   const filtered = safeClassifieds.filter((ad: any) => {
+    if (nicheTab !== "all" && !matchesNicheTab(ad, nicheTab)) return false;
     if (statusFilter !== "all") {
       if (statusFilter === "boosted") {
         const isBoosted = ad.is_boosted && ad.boosted_until && new Date(ad.boosted_until) > new Date();
@@ -532,6 +582,41 @@ function ClassificadosIndex() {
         </div>
       )}
 
+      {/* ── SELETOR HORIZONTAL DE NICHOS COM ABAS (Segmented Control com Snap Scroll) ── */}
+      <div className="px-4 sm:px-0">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth py-1 tab-list">
+          {NICHE_TABS.map((tab) => {
+            const count = nicheCounts[tab.id] || 0;
+            const isActive = nicheTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setNicheTab(tab.id)}
+                className={cn(
+                  "h-11 min-h-11 px-4 rounded-lg border text-xs font-semibold shrink-0 cursor-pointer flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  isActive
+                    ? "border-foreground bg-foreground text-background font-bold shadow-xs"
+                    : "border-border/70 bg-card text-foreground hover:bg-muted/40"
+                )}
+              >
+                <span>{tab.label}</span>
+                <span
+                  className={cn(
+                    "text-xs font-mono font-bold px-2 py-1 rounded-md",
+                    isActive
+                      ? "bg-background/20 text-background"
+                      : "bg-muted text-muted-foreground"
+                  )}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* ── Barra de Ordenação e Atalho de Cockpit Mobile ── */}
       <div className="px-4 sm:px-0 flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-2">
@@ -606,7 +691,7 @@ function ClassificadosIndex() {
                   <Link
                     to="/classificados/$id"
                     params={{ id: ad.id }}
-                    className="relative size-16 shrink-0 rounded-lg overflow-hidden bg-muted flex items-center justify-center"
+                    className="relative size-20 shrink-0 rounded-lg overflow-hidden bg-muted flex items-center justify-center border border-border/40"
                   >
                     {thumbUrl ? (
                       isVideo ? (
@@ -615,10 +700,10 @@ function ClassificadosIndex() {
                         <img src={thumbUrl} alt={ad.title} loading="lazy" onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }} className="size-full object-cover" />
                       )
                     ) : (
-                      <ImageIcon className="size-6 text-muted-foreground/35" />
+                      <ImageIcon className="size-7 text-muted-foreground/35" />
                     )}
                     {isBoosted && (
-                      <span className="absolute top-1 left-1 px-1 py-0.2 rounded bg-amber-500 text-primary-foreground text-xs font-black uppercase">
+                      <span className="absolute top-1 left-1 px-2 py-0 rounded bg-amber-500 text-primary-foreground text-xs font-black uppercase">
                         Boost
                       </span>
                     )}
@@ -626,28 +711,29 @@ function ClassificadosIndex() {
 
                   {/* Conteúdo Central */}
                   <div className="flex-1 min-w-0 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <Link
-                        to="/classificados/$id"
-                        params={{ id: ad.id }}
-                        className="text-xs font-bold text-foreground break-words text-wrap leading-tight hover:text-primary transition-colors flex-1"
-                      >
-                        {ad.title}
-                      </Link>
+                    <div className="flex items-center gap-2 flex-wrap">
                       <Badge
                         variant="outline"
                         className={cn("text-xs font-mono px-2 py-0 shrink-0", statusConf.className)}
                       >
                         {statusConf.label}
                       </Badge>
+                      <span className="text-xs text-muted-foreground capitalize">
+                        {niche.shortLabel}
+                      </span>
                     </div>
 
+                    <Link
+                      to="/classificados/$id"
+                      params={{ id: ad.id }}
+                      className="text-sm font-bold text-foreground break-words text-wrap leading-snug hover:text-primary transition-colors block line-clamp-2"
+                    >
+                      {ad.title}
+                    </Link>
+
                     <div className="flex items-baseline justify-between gap-1">
-                      <span className="text-xs font-bold font-mono text-foreground">
+                      <span className="text-sm font-black font-mono text-foreground">
                         {ad.price_cents != null ? (ad.price_cents === 0 ? "Doação" : formatMoney(ad.price_cents)) : "—"}
-                      </span>
-                      <span className="text-xs text-muted-foreground capitalize break-words text-wrap leading-tight">
-                        {niche.shortLabel}
                       </span>
                     </div>
 

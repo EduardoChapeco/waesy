@@ -625,6 +625,7 @@ function EventosPage() {
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         allowedViewModes={["feed", "grid", "list"]}
+        hideMobileSearch={true}
       />
 
       {/* ── 4. Filtro de Data & Calendário Canônico ── */}
@@ -681,7 +682,7 @@ function EventosPage() {
                 key={pill.id}
                 type="button"
                 onClick={() => setSelectedDateFilter(pill.id)}
-                className={`h-11 px-3.5 rounded-lg text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer shrink-0 snap-start whitespace-nowrap ${
+                className={`h-11 px-4 rounded-lg text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer shrink-0 snap-start whitespace-nowrap ${
                   isSelected
                     ? "bg-foreground text-background font-bold shadow-xs"
                     : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -819,12 +820,16 @@ function EventosPage() {
                     </div>
                   </div>
 
-                  <div className="p-4 pt-3 flex items-center justify-between border-t border-border/40 mt-3">
-                    <span className="text-xs font-bold text-primary">
-                      {(event as any).price_cents ? `R$ ${((event as any).price_cents / 100).toFixed(2)}` : "Entrada Gratuita"}
-                    </span>
-                    <span className="text-xs font-semibold text-foreground flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
-                      Ver ingressos <CaretRight size={12} weight="bold" />
+                  <div className="p-3 pt-2.5 flex items-center justify-between border-t border-border/40 mt-3 gap-2">
+                    <div className="min-w-0">
+                      <span className="text-3xs text-muted-foreground block uppercase font-mono tracking-wider">A partir de</span>
+                      <span className="text-xs font-bold text-foreground">
+                        {(event as any).price_cents ? `R$ ${((event as any).price_cents / 100).toFixed(2)}` : "Entrada Gratuita"}
+                      </span>
+                    </div>
+                    <span className="h-11 min-h-11 px-3.5 rounded-xl bg-primary text-primary-foreground font-bold text-xs inline-flex items-center justify-center gap-1.5 shrink-0 group-hover:bg-primary/90 transition-colors">
+                      <Ticket size={14} weight="bold" />
+                      Garantir
                     </span>
                   </div>
                 </Link>
@@ -887,12 +892,16 @@ function EventosPage() {
                 </div>
               </div>
 
-              <div className="p-4 pt-3 flex items-center justify-between border-t border-border/40 mt-3">
-                <span className="text-xs font-bold text-primary">
-                  {(event as any).price_cents ? `R$ ${((event as any).price_cents / 100).toFixed(2)}` : "Entrada Gratuita"}
-                </span>
-                <span className="text-xs font-semibold text-foreground flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
-                  Detalhes <CaretRight size={12} weight="bold" />
+              <div className="p-3 pt-2.5 flex items-center justify-between border-t border-border/40 mt-3 gap-2">
+                <div className="min-w-0">
+                  <span className="text-3xs text-muted-foreground block uppercase font-mono tracking-wider">A partir de</span>
+                  <span className="text-xs font-bold text-foreground">
+                    {(event as any).price_cents ? `R$ ${((event as any).price_cents / 100).toFixed(2)}` : "Entrada Gratuita"}
+                  </span>
+                </div>
+                <span className="h-11 min-h-11 px-3.5 rounded-xl bg-primary text-primary-foreground font-bold text-xs inline-flex items-center justify-center gap-1.5 shrink-0 group-hover:bg-primary/90 transition-colors">
+                  <Ticket size={14} weight="bold" />
+                  Garantir
                 </span>
               </div>
             </Link>

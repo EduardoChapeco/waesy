@@ -148,8 +148,8 @@ export function ContractSignPad({
  Signatário: <span className="font-medium text-foreground">{signerName}</span> ({signerCpf})
  </p>
  </div>
- <div className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-semibold flex items-center gap-2">
- <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+ <div className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-2xs font-semibold flex items-center gap-2">
+ <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none" />
  MP 2.200-2/2001
  </div>
  </div>
@@ -161,7 +161,7 @@ export function ContractSignPad({
  </span>
  </div>
 
- <div className="relative border-2 border-dashed border-border/80 rounded-lg bg-white overflow-hidden shadow-inner">
+ <div className="relative border-2 border-dashed border-border/80 rounded-lg bg-card overflow-hidden shadow-inner">
  <canvas
  ref={canvasRef}
  width={500}
@@ -175,7 +175,7 @@ export function ContractSignPad({
  onTouchMove={draw}
  onTouchEnd={stopDrawing}
  />
- <div className="absolute bottom-2 left-4 right-4 pointer-events-none flex justify-between items-center text-[10px] text-slate-400 font-mono">
+ <div className="absolute bottom-2 left-4 right-4 pointer-events-none flex justify-between items-center text-2xs text-slate-400 font-mono">
  <span>X_______________________________________</span>
  <span>Área de captura biométrica</span>
  </div>
@@ -208,7 +208,7 @@ export function ContractSignPad({
  type="button"
  disabled={!hasDrawn || isSubmitting}
  onClick={handleConfirm}
- className="min-h-11 px-6 rounded-lg bg-primary text-primary-foreground font-semibold text-xs flex items-center gap-2 shadow-md hover:opacity-90 disabled:opacity-50 transition-all"
+ className="min-h-11 px-6 rounded-lg bg-primary text-primary-foreground font-semibold text-xs flex items-center gap-2 shadow-md hover:opacity-90 disabled:opacity-50 transition-colors duration-200"
  >
  <CheckCircle2 className="w-4 h-4" />
  {isSubmitting ? 'Gravando Hash...' : 'Concluir Assinatura Digital'}

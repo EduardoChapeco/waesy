@@ -414,7 +414,7 @@ function WorkspaceFaturasPage() {
                         <button
                           type="button"
                           onClick={() => setPreviewReceiptUrl(inv.receipt_url)}
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           <FileText className="size-3" />
                           <span>Ver Anexo</span>
@@ -467,7 +467,7 @@ function WorkspaceFaturasPage() {
         /* ── MODO RAZÃO CONTÁBIL & MICROTAXAS (V141) ── */
         <div className="space-y-6">
           {loadingLedger ? (
-            <div className="p-12 text-center text-xs text-muted-foreground animate-pulse rounded-lg border border-border/60 bg-card">
+            <div className="p-12 text-center text-xs text-muted-foreground animate-pulse motion-reduce:animate-none rounded-lg border border-border/60 bg-card">
               Carregando razão contábil e verificando conciliação atômica...
             </div>
           ) : statement ? (
@@ -635,7 +635,7 @@ function WorkspaceFaturasPage() {
           </DialogHeader>
 
           {loadingPix ? (
-            <div className="py-12 text-center text-xs text-muted-foreground animate-pulse">
+            <div className="py-12 text-center text-xs text-muted-foreground animate-pulse motion-reduce:animate-none">
               Gerando chave PIX oficial...
             </div>
           ) : pixDetails ? (
@@ -727,8 +727,8 @@ function WorkspaceFaturasPage() {
                 className="h-10 text-xs cursor-pointer rounded-lg file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary file:text-primary-foreground"
               />
               {isUploadingProof && (
-                <span className="text-xs text-primary flex items-center gap-2 animate-pulse">
-                  <UploadCloud className="size-3.5 animate-spin" />
+                <span className="text-xs text-primary flex items-center gap-2 animate-pulse motion-reduce:animate-none">
+                  <UploadCloud className="size-3.5 animate-spin motion-reduce:animate-none" />
                   Fazendo upload seguro para o storage...
                 </span>
               )}

@@ -3,12 +3,13 @@ import { resolveActiveCity } from "@/lib/city-helper";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Compass, MapPin, AirplaneTilt, ArrowRight, GridFour, Rows, SquaresFour } from "@phosphor-icons/react";
+import { Compass, MapPin, AirplaneTilt, ArrowRight, GridFour, Rows, SquaresFour, Bus, Bed, SuitcaseRolling, Ticket } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { SlimActionBanner } from "@/components/commerce/slim-action-banner";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
 import { DiscoveryControlBar, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
+import { BusTicketResultsRail } from "@/components/tourism/BusTicketResultsRail";
 import { listActiveBanners } from "@/services/banner.functions";
 import { listHotpages } from "@/services/hotpage.functions";
 import { listPublicTourism } from "@/services/tourism.functions";
@@ -73,7 +74,9 @@ export type TourismLayoutMode = "cards" | "compact" | "rails";
 const CATEGORY_CHIPS: FilterChipOption[] = [
   { id: "todos", label: "Tudo" },
   { id: "pacotes", label: "Pacotes" },
-  { id: "hospedagens", label: "Hospedagens" },
+  { id: "aereos", label: "Passagens Aéreas" },
+  { id: "hospedagens", label: "Hotéis" },
+  { id: "onibus", label: "Ônibus" },
   { id: "passeios", label: "Passeios" },
   { id: "cruzeiros", label: "Cruzeiros" },
   { id: "vistos", label: "Vistos" },
@@ -183,6 +186,87 @@ function TourismMasterPage() {
         />
       )}
 
+      {/* ── CVC & Decolar Navigation Hub (Apple HIG Large Squircles) ── */}
+      <section aria-label="Canais de Viagem" className="w-full">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+          <button
+            type="button"
+            onClick={() => setSelectedCategory("pacotes")}
+            className={cn(
+              "h-14 min-h-11 px-3 py-2 rounded-lg border flex items-center gap-3 transition-colors text-left cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              selectedCategory === "pacotes"
+                ? "bg-foreground text-background border-foreground shadow-xs"
+                : "bg-card text-foreground border-border/70 hover:bg-muted/50"
+            )}
+          >
+            <div className={cn("size-9 rounded-lg flex items-center justify-center shrink-0", selectedCategory === "pacotes" ? "bg-background/20 text-background" : "bg-primary/10 text-primary")}>
+              <SuitcaseRolling size={20} weight="bold" />
+            </div>
+            <div className="min-w-0">
+              <span className="text-xs font-bold block truncate">Pacotes</span>
+              <span className="text-3xs opacity-70 block truncate">Roteiros completos</span>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleOpenQuote("Passagens Aéreas")}
+            className={cn(
+              "h-14 min-h-11 px-3 py-2 rounded-lg border flex items-center gap-3 transition-colors text-left cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              selectedCategory === "aereos"
+                ? "bg-foreground text-background border-foreground shadow-xs"
+                : "bg-card text-foreground border-border/70 hover:bg-muted/50"
+            )}
+          >
+            <div className={cn("size-9 rounded-lg flex items-center justify-center shrink-0", selectedCategory === "aereos" ? "bg-background/20 text-background" : "bg-sky-500/10 text-sky-600")}>
+              <AirplaneTilt size={20} weight="bold" />
+            </div>
+            <div className="min-w-0">
+              <span className="text-xs font-bold block truncate">Passagens</span>
+              <span className="text-3xs opacity-70 block truncate">Voos e cotações</span>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSelectedCategory("hospedagens")}
+            className={cn(
+              "h-14 min-h-11 px-3 py-2 rounded-lg border flex items-center gap-3 transition-colors text-left cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              selectedCategory === "hospedagens"
+                ? "bg-foreground text-background border-foreground shadow-xs"
+                : "bg-card text-foreground border-border/70 hover:bg-muted/50"
+            )}
+          >
+            <div className={cn("size-9 rounded-lg flex items-center justify-center shrink-0", selectedCategory === "hospedagens" ? "bg-background/20 text-background" : "bg-amber-500/10 text-amber-600")}>
+              <Bed size={20} weight="bold" />
+            </div>
+            <div className="min-w-0">
+              <span className="text-xs font-bold block truncate">Hotéis</span>
+              <span className="text-3xs opacity-70 block truncate">Resorts e pousadas</span>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSelectedCategory("onibus")}
+            className={cn(
+              "h-14 min-h-11 px-3 py-2 rounded-lg border flex items-center gap-3 transition-colors text-left cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              selectedCategory === "onibus"
+                ? "bg-foreground text-background border-foreground shadow-xs"
+                : "bg-card text-foreground border-border/70 hover:bg-muted/50"
+            )}
+          >
+            <div className={cn("size-9 rounded-lg flex items-center justify-center shrink-0", selectedCategory === "onibus" ? "bg-background/20 text-background" : "bg-emerald-500/10 text-emerald-600")}>
+              <Bus size={20} weight="bold" />
+            </div>
+            <div className="min-w-0">
+              <span className="text-xs font-bold block truncate">Ônibus</span>
+              <span className="text-3xs opacity-70 block truncate">Linhas e horários</span>
+            </div>
+          </button>
+        </div>
+      </section>
+
       {/* Coleções */}
       {hotpages && hotpages.length > 0 && (
         <section aria-label="Coleções">
@@ -204,11 +288,12 @@ function TourismMasterPage() {
         onSelectCategory={(id) => setSelectedCategory(id)}
         viewMode={layoutMode === "rails" ? "feed" : layoutMode === "compact" ? "list" : "grid"}
         onViewModeChange={(m) => setLayoutMode(m === "feed" ? "rails" : m === "list" ? "compact" : "cards")}
+        hideMobileSearch={true}
         allowedViewModes={["feed", "grid", "list"]}
       />
 
       {/* Filtro de Saída por Aeroporto Regional (Padrão Botão Grande com Snap Scroll) */}
-      <div className="flex items-center gap-2 sm:gap-2 overflow-x-auto no-scrollbar py-1 pr-8 border-b border-border/40 snap-x snap-mandatory [mask-image:linear-gradient(to_right,black_88%,transparent_100%)]">
+      <div className="tab-list flex items-center gap-2 sm:gap-2 overflow-x-auto no-scrollbar py-1 pr-8 border-b border-border/40 snap-x snap-mandatory [mask-image:linear-gradient(to_right,black_88%,transparent_100%)]">
         <span className="text-xs font-semibold text-muted-foreground shrink-0 mr-1 snap-start">
           Saída:
         </span>
@@ -236,6 +321,16 @@ function TourismMasterPage() {
       {surfaceFeed?.sections && surfaceFeed.sections.length > 0 && (
         <section aria-label="Destaques de Turismo CMS" className="w-full">
           <ModularSurfaceFeed sections={surfaceFeed.sections} />
+        </section>
+      )}
+
+      
+      {/* ── Linhas de Ônibus Intermunicipais (CVC / Decolar / Waesy Mobility) ── */}
+      {(selectedCategory === "onibus" || selectedCategory === "todos") && (
+        <section aria-label="Passagens de Ônibus Intermunicipais" className="w-full pt-2">
+          <BusTicketResultsRail
+            originCity={selectedAirport !== "todos" ? selectedAirport : undefined}
+          />
         </section>
       )}
 

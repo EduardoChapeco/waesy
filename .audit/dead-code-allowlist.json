@@ -68,6 +68,9 @@
     "src/lib/strategic-frameworks.ts": "catálogo estratégico carregado pela camada de IA",
     "src/lib/tourism/formatters.ts": "formatadores de turismo carregados por templates",
     "src/lib/upload-helper.ts": "helper de upload carregado por integrações",
-    "src/utils/storage-helper.ts": "helper de storage carregado por integrações"
+    "src/utils/storage-helper.ts": "helper de storage carregado por integrações",
+    "src/components/finance/PaymentReviewDrawer.tsx": "drawer reutilizável de revisão pré-pagamento 99Pay parity",
+    "src/components/tourism/traveler/GlobalTripCompanionWidget.tsx": "widget flutuante global de acompanhamento de viagem do passageiro",
+    "src/lib/financial-receipt-canvas.ts": "motor de geração em canvas de comprovante financeiro PNG"
   }
 }

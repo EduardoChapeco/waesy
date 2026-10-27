@@ -171,50 +171,50 @@ export function VoucherCreationSheet({
               <button
                 type="button"
                 onClick={() => setVoucherType("flight")}
-                className={cn(
-                  "p-3 rounded-lg border flex flex-col items-center gap-2 transition-all cursor-pointer text-center",
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                  "p-3 rounded-lg border flex flex-col items-center gap-2 transition-colors duration-200 cursor-pointer text-center",
                   voucherType === "flight"
                     ? "border-primary bg-primary/10 text-primary font-bold shadow-2xs"
                     : "border-border/70 hover:bg-muted/40 text-muted-foreground"
                 )}
               >
                 <Plane className="size-4" />
-                <span className="text-[11px]">Aéreo / Voo</span>
+                <span className="text-2xs">Aéreo / Voo</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setVoucherType("hotel")}
-                className={cn(
-                  "p-3 rounded-lg border flex flex-col items-center gap-2 transition-all cursor-pointer text-center",
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                  "p-3 rounded-lg border flex flex-col items-center gap-2 transition-colors duration-200 cursor-pointer text-center",
                   voucherType === "hotel"
                     ? "border-primary bg-primary/10 text-primary font-bold shadow-2xs"
                     : "border-border/70 hover:bg-muted/40 text-muted-foreground"
                 )}
               >
                 <Building2 className="size-4" />
-                <span className="text-[11px]">Hospedagem</span>
+                <span className="text-2xs">Hospedagem</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setVoucherType("transfer")}
-                className={cn(
-                  "p-3 rounded-lg border flex flex-col items-center gap-2 transition-all cursor-pointer text-center",
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                  "p-3 rounded-lg border flex flex-col items-center gap-2 transition-colors duration-200 cursor-pointer text-center",
                   voucherType === "transfer"
                     ? "border-primary bg-primary/10 text-primary font-bold shadow-2xs"
                     : "border-border/70 hover:bg-muted/40 text-muted-foreground"
                 )}
               >
                 <Car className="size-4" />
-                <span className="text-[11px]">Transfer</span>
+                <span className="text-2xs">Transfer</span>
               </button>
             </div>
           </div>
 
           {/* 2. DADOS DO PASSAGEIRO */}
           <div className="space-y-3 pt-2">
-            <div className="flex items-center gap-2 pb-1 border-b border-border/40 font-bold text-foreground uppercase tracking-wider text-[11px]">
+            <div className="flex items-center gap-2 pb-1 border-b border-border/40 font-bold text-foreground uppercase tracking-wider text-2xs">
               <User className="size-3.5 text-primary" />
               <span>Passageiro Titular</span>
             </div>
@@ -254,7 +254,7 @@ export function VoucherCreationSheet({
           {/* 3. DADOS ESPECÍFICOS: AÉREO */}
           {voucherType === "flight" && (
             <div className="space-y-3 pt-2">
-              <div className="flex items-center gap-2 pb-1 border-b border-border/40 font-bold text-foreground uppercase tracking-wider text-[11px]">
+              <div className="flex items-center gap-2 pb-1 border-b border-border/40 font-bold text-foreground uppercase tracking-wider text-2xs">
                 <Plane className="size-3.5 text-primary" />
                 <span>Detalhes do Voo e Cartão de Embarque</span>
               </div>
@@ -357,7 +357,7 @@ export function VoucherCreationSheet({
           {/* 3. DADOS ESPECÍFICOS: HOSPEDAGEM */}
           {voucherType === "hotel" && (
             <div className="space-y-3 pt-2">
-              <div className="flex items-center gap-2 pb-1 border-b border-border/40 font-bold text-foreground uppercase tracking-wider text-[11px]">
+              <div className="flex items-center gap-2 pb-1 border-b border-border/40 font-bold text-foreground uppercase tracking-wider text-2xs">
                 <Building2 className="size-3.5 text-primary" />
                 <span>Detalhes da Hospedagem e Quarto</span>
               </div>
@@ -435,7 +435,7 @@ export function VoucherCreationSheet({
           {/* 3. DADOS ESPECÍFICOS: TRANSFER */}
           {voucherType === "transfer" && (
             <div className="space-y-3 pt-2">
-              <div className="flex items-center gap-2 pb-1 border-b border-border/40 font-bold text-foreground uppercase tracking-wider text-[11px]">
+              <div className="flex items-center gap-2 pb-1 border-b border-border/40 font-bold text-foreground uppercase tracking-wider text-2xs">
                 <Car className="size-3.5 text-primary" />
                 <span>Detalhes do Receptivo e Transfer</span>
               </div>
@@ -515,7 +515,7 @@ export function VoucherCreationSheet({
           >
             {createMutation.isPending ? (
               <>
-                <Loader2 className="size-3.5 animate-spin" />
+                <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
                 <span>Emitindo Voucher...</span>
               </>
             ) : (

@@ -240,7 +240,7 @@ export default function WorkspaceNotificationsPage() {
         <button
           type="button"
           onClick={() => setActiveFilter("all")}
-          className={cn(
+          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
             "px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap",
             activeFilter === "all"
               ? "bg-foreground text-background font-semibold"
@@ -252,7 +252,7 @@ export default function WorkspaceNotificationsPage() {
         <button
           type="button"
           onClick={() => setActiveFilter("order")}
-          className={cn(
+          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
             "px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap",
             activeFilter === "order"
               ? "bg-foreground text-background font-semibold"
@@ -264,7 +264,7 @@ export default function WorkspaceNotificationsPage() {
         <button
           type="button"
           onClick={() => setActiveFilter("interaction")}
-          className={cn(
+          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
             "px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap",
             activeFilter === "interaction"
               ? "bg-foreground text-background font-semibold"
@@ -276,7 +276,7 @@ export default function WorkspaceNotificationsPage() {
         <button
           type="button"
           onClick={() => setActiveFilter("system")}
-          className={cn(
+          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
             "px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap",
             activeFilter === "system"
               ? "bg-foreground text-background font-semibold"
@@ -299,14 +299,14 @@ export default function WorkspaceNotificationsPage() {
           </div>
         ) : (
           filteredNotifications.map((notif: NotificationItemDTO) => (
-            <div
+            <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
               key={notif.id}
               onClick={() => {
                 if (!notif.isRead) markAsReadMutation.mutate(notif.id);
                 if (notif.linkUrl) navigate({ to: notif.linkUrl as any });
               }}
-              className={cn(
-                "group relative bg-card border rounded-lg p-4.5 transition-all cursor-pointer flex items-start gap-4",
+              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                "group relative bg-card border rounded-lg p-4.5 transition-colors duration-200 cursor-pointer flex items-start gap-4",
                 !notif.isRead
                   ? "border-primary/40 bg-primary/2 hover:border-primary/60 shadow-2xs"
                   : "border-border/60 hover:border-border hover:bg-muted/20"

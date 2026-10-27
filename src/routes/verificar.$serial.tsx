@@ -48,7 +48,7 @@ export default function VerifySerialPage() {
 
  return (
  <div className="min-h-[100dvh] bg-slate-50 dark:bg-zinc-950 flex flex-col items-center justify-center p-4">
- <div className="max-w-md w-full bg-white dark:bg-zinc-900 rounded-lg shadow-xs border border-border p-6 sm:p-8 flex flex-col gap-6">
+ <div className="max-w-md w-full bg-card dark:bg-zinc-900 rounded-lg shadow-xs border border-border p-6 sm:p-8 flex flex-col gap-6">
  {/* Header Badge */}
  <div className="flex flex-col items-center text-center gap-3">
  <div className="size-16 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center shadow-inner">
@@ -69,7 +69,7 @@ export default function VerifySerialPage() {
 
  {/* Certificate Details */}
  {isLoading ? (
- <div className="p-8 text-center text-sm text-muted-foreground animate-pulse">
+ <div className="p-8 text-center text-sm text-muted-foreground animate-pulse motion-reduce:animate-none">
  Validando integridade na cadeia de custódia...
  </div>
  ) : error ? (
@@ -102,7 +102,7 @@ export default function VerifySerialPage() {
 
  <div className="flex flex-col gap-1 py-2">
  <span className="text-muted-foreground font-medium">Hash Criptográfico (SHA-256):</span>
- <span className="font-mono text-[10px] break-all bg-muted/60 p-2 rounded-lg text-foreground">
+ <span className="font-mono text-2xs break-all bg-muted/60 p-2 rounded-lg text-foreground">
  {data.content_hash || 'sha256:7b9195b8d234a5d...'}
  </span>
  </div>
@@ -114,7 +114,7 @@ export default function VerifySerialPage() {
  </div>
  ) : null}
 
- <div className="pt-2 text-center text-[11px] text-muted-foreground border-t border-border/50">
+ <div className="pt-2 text-center text-2xs text-muted-foreground border-t border-border/50">
  Esta certidão comprova a inviolabilidade do documento assinado eletronicamente sob guarda do sistema Waesy.
  </div>
  </div>

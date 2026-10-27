@@ -115,7 +115,7 @@ export function ProductDetailMobile({
               controls
               playsInline
               autoPlay
-              className="size-full object-contain bg-black"
+              className="size-full object-contain bg-foreground"
             />
           ) : (
             <div className="relative size-full overflow-hidden flex items-center justify-center">
@@ -147,7 +147,7 @@ export function ProductDetailMobile({
 
         {/* Contador de Fotos */}
         {mediaList.length > 1 && (
-          <div className="absolute bottom-3 right-3 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-2xs font-mono font-medium pointer-events-none">
+          <div className="absolute bottom-3 right-3 px-3 py-1 rounded-full bg-foreground/60 backdrop-blur-md text-foreground text-2xs font-mono font-medium pointer-events-none">
             {(currentMediaIndex >= 0 ? currentMediaIndex : 0) + 1} / {mediaList.length}
           </div>
         )}
@@ -164,17 +164,17 @@ export function ProductDetailMobile({
           <button
             type="button"
             onClick={handleShare}
-            className="size-11 rounded-full bg-black/50 backdrop-blur-md text-white border border-white/20 flex items-center justify-center shadow-md active:scale-95 transition-transform cursor-pointer"
+            className="size-11 rounded-full bg-foreground/50 backdrop-blur-md text-foreground border border-white/20 flex items-center justify-center shadow-md active:scale-95 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Compartilhar"
           >
             <Share2 className="size-5" />
           </button>
 
-          <div className="size-11 rounded-full bg-black/50 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-md">
+          <div className="size-11 rounded-full bg-foreground/50 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-md">
             <FavoriteButton
               itemId={product.id}
               itemType="product"
-              className="size-9 text-white hover:text-white"
+              className="size-9 text-foreground hover:text-foreground"
             />
           </div>
         </div>
@@ -190,8 +190,8 @@ export function ProductDetailMobile({
                 key={m.id}
                 type="button"
                 onClick={() => setActiveMedia(m)}
-                className={cn(
-                  "relative aspect-square size-12 rounded-lg overflow-hidden border shrink-0 snap-start transition-all cursor-pointer",
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                  "relative aspect-square size-12 rounded-lg overflow-hidden border shrink-0 snap-start transition-colors duration-200 cursor-pointer",
                   active
                     ? "border-primary ring-2 ring-primary/20 scale-105"
                     : "border-border/60 bg-muted/20"
@@ -273,7 +273,7 @@ export function ProductDetailMobile({
                       <button
                         type="button"
                         onClick={() => setSizeGuideOpen(true)}
-                        className="text-2xs font-semibold text-primary hover:underline cursor-pointer"
+                        className="text-2xs font-semibold text-primary hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         Guia de Tamanhos
                       </button>
@@ -290,8 +290,8 @@ export function ProductDetailMobile({
                           onClick={() => {
                             setSelectedAttributes((prev) => ({ ...prev, [key]: val }));
                           }}
-                          className={cn(
-                            "h-9 min-w-10 px-3 rounded-lg border text-xs font-bold transition-all cursor-pointer active:scale-95 flex items-center justify-center",
+                          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                            "h-9 min-w-10 px-3 rounded-lg border text-xs font-bold transition-colors duration-200 cursor-pointer active:scale-95 flex items-center justify-center",
                             isSelected
                               ? "border-primary bg-primary text-primary-foreground shadow-xs"
                               : "border-border/70 bg-card text-foreground hover:bg-muted/30"
@@ -352,8 +352,8 @@ export function ProductDetailMobile({
                           key={val.id}
                           type="button"
                           onClick={() => handleToggle(val.id)}
-                          className={cn(
-                            "w-full flex items-center justify-between p-3 rounded-lg border text-left transition-all active:scale-95 cursor-pointer",
+                          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                            "w-full flex items-center justify-between p-3 rounded-lg border text-left transition-transform duration-200 active:scale-95 cursor-pointer",
                             isSelected
                               ? "border-primary bg-primary/5 ring-1 ring-primary/40"
                               : "border-border/60 bg-card hover:bg-muted/20"
@@ -362,7 +362,7 @@ export function ProductDetailMobile({
                           <div className="flex items-center gap-2 min-w-0">
                             <div
                               className={cn(
-                                "flex items-center justify-center border size-4 shrink-0 transition-all",
+                                "flex items-center justify-center border size-4 shrink-0 transition-colors duration-200",
                                 isMultiple ? "rounded-md" : "rounded-full",
                                 isSelected
                                   ? "bg-primary border-primary text-primary-foreground"
@@ -373,7 +373,7 @@ export function ProductDetailMobile({
                                 isMultiple ? <Check className="size-2.5 stroke-2" /> : <span className="size-1.5 bg-primary-foreground rounded-full" />
                               )}
                             </div>
-                            <span className="text-xs font-semibold text-foreground truncate">{val.label}</span>
+                            <span className="text-xs font-semibold text-foreground break-words text-wrap leading-tight">{val.label}</span>
                           </div>
                           <span className="text-xs font-bold text-foreground font-mono shrink-0">
                             {val.priceModifierCents > 0 ? `+ ${formatMoney(val.priceModifierCents)}` : "Incluso"}
@@ -395,7 +395,7 @@ export function ProductDetailMobile({
               {(product as any).store?.name?.slice(0, 2).toUpperCase() || "LJ"}
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-xs font-semibold text-foreground truncate">
+              <span className="text-xs font-semibold text-foreground break-words text-wrap leading-tight">
                 {(product as any).store?.name || product.brand || "Loja Oficial Waesy"}
               </span>
               <div className="flex items-center gap-1 text-2xs text-emerald-600 dark:text-emerald-400">
@@ -435,7 +435,7 @@ export function ProductDetailMobile({
               className="h-11 min-h-11 font-bold px-4 rounded-lg shrink-0 cursor-pointer"
               disabled={loadingShipping}
             >
-              {loadingShipping ? <Loader2 className="size-4 animate-spin" /> : "Calcular"}
+              {loadingShipping ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> : "Calcular"}
             </Button>
           </form>
 
@@ -474,7 +474,7 @@ export function ProductDetailMobile({
                 <button
                   type="button"
                   onClick={() => setIsDescExpanded(!isDescExpanded)}
-                  className="text-xs font-bold text-primary hover:underline cursor-pointer block pt-1"
+                  className="text-xs font-bold text-primary hover:underline cursor-pointer block pt-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {isDescExpanded ? "Ver menos" : "Ler descrição completa"}
                 </button>
@@ -511,7 +511,7 @@ export function ProductDetailMobile({
           <button
             type="button"
             onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
-            className="size-8 flex items-center justify-center font-bold text-sm text-foreground hover:bg-muted rounded-lg active:scale-90 transition-all cursor-pointer"
+            className="size-8 flex items-center justify-center font-bold text-sm text-foreground hover:bg-muted rounded-lg active:scale-90 transition-transform duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Diminuir"
           >
             <Minus className="size-3.5" />
@@ -522,7 +522,7 @@ export function ProductDetailMobile({
           <button
             type="button"
             onClick={() => setQuantity((prev) => prev + 1)}
-            className="size-8 flex items-center justify-center font-bold text-sm text-foreground hover:bg-muted rounded-lg active:scale-90 transition-all cursor-pointer"
+            className="size-8 flex items-center justify-center font-bold text-sm text-foreground hover:bg-muted rounded-lg active:scale-90 transition-transform duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Aumentar"
           >
             <Plus className="size-3.5" />
@@ -544,7 +544,7 @@ export function ProductDetailMobile({
             <Button
               variant="outline"
               size="lg"
-              className="rounded-lg font-bold text-xs h-11 px-2 border-border/80 flex items-center justify-center gap-2 cursor-pointer active:scale-95 transition-all text-foreground hover:bg-muted"
+              className="rounded-lg font-bold text-xs h-11 px-2 border-border/80 flex items-center justify-center gap-2 cursor-pointer active:scale-95 transition-transform duration-200 text-foreground hover:bg-muted"
               onClick={handleAddToCart}
               disabled={Boolean(isAdding)}
             >
@@ -553,7 +553,7 @@ export function ProductDetailMobile({
             </Button>
             <Button
               size="lg"
-              className="rounded-lg font-bold text-xs h-11 px-2 bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center gap-2 cursor-pointer active:scale-95 transition-all shadow-sm"
+              className="rounded-lg font-bold text-xs h-11 px-2 bg-emerald-600 hover:bg-emerald-700 text-foreground flex items-center justify-center gap-2 cursor-pointer active:scale-95 transition-transform duration-200 shadow-sm"
               onClick={() => setIsQuickOrderOpen(true)}
             >
               <MessageCircle className="size-4 shrink-0" />

@@ -68,12 +68,12 @@ export function SectionIncludes({ draft, save }: Props) {
         type="button"
         onClick={handleAISuggestions}
         disabled={loading}
-        className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-card border border-brand/20 bg-brand/5 text-brand ds-label-caps tracking-wider hover:bg-brand/10 active:scale-[0.98] transition-all disabled:opacity-50"
+        className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-card border border-brand/20 bg-brand/5 text-brand ds-label-caps tracking-wider hover:bg-brand/10 active:scale-[0.98] transition-transform duration-200 disabled:opacity-50"
       >
         {loading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />
         ) : (
-          <Check className="h-4 w-4 text-brand animate-pulse" />
+          <Check className="h-4 w-4 text-brand animate-pulse motion-reduce:animate-none" />
         )}
         {loading ? "Gerando sugestões..." : "Sugerir com IA"}
       </Button>

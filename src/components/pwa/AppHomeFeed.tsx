@@ -53,7 +53,7 @@ export const AppHomeFeed: React.FC<AppHomeFeedProps> = ({
               <div
                 style={{ backgroundColor: h.active ? themeColor : undefined }}
                 className={`size-full rounded-full flex items-center justify-center text-xs font-bold ${
-                  h.active ? "text-white" : "text-muted-foreground bg-muted"
+                  h.active ? "text-foreground" : "text-muted-foreground bg-muted"
                 }`}
               >
                 {h.label.slice(0, 2).toUpperCase()}
@@ -71,10 +71,10 @@ export const AppHomeFeed: React.FC<AppHomeFeedProps> = ({
         style={{
           background: `linear-gradient(135deg, ${themeColor} 0%, #000000 100%)`,
         }}
-        className="rounded-lg p-4 text-white space-y-2 relative overflow-hidden shadow-xs border border-white/10"
+        className="rounded-lg p-4 text-foreground space-y-2 relative overflow-hidden shadow-xs border border-white/10"
       >
         <div className="flex items-center gap-2">
-          <span className="text-xs font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-white/20 text-white backdrop-blur-sm flex items-center gap-1">
+          <span className="text-xs font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-card/20 text-foreground backdrop-blur-sm flex items-center gap-1">
             <Star className="size-3 fill-current" />
             <span>Exclusivo App</span>
           </span>
@@ -82,12 +82,12 @@ export const AppHomeFeed: React.FC<AppHomeFeedProps> = ({
 
         <div className="space-y-1">
           <h4 className="font-bold text-sm leading-snug line-clamp-1">{bannerTitle}</h4>
-          <p className="text-xs text-white/80 line-clamp-2 leading-relaxed">
+          <p className="text-xs text-foreground/80 line-clamp-2 leading-relaxed">
             {bannerSubtitle}
           </p>
         </div>
 
-        <div className="pt-1 flex items-center justify-between text-xs font-semibold text-white/90">
+        <div className="pt-1 flex items-center justify-between text-xs font-semibold text-foreground/90">
           <span>Ver catálogo completo</span>
           <ArrowRight className="size-3.5" />
         </div>
@@ -115,10 +115,18 @@ export const AppHomeFeed: React.FC<AppHomeFeedProps> = ({
           <div className="grid grid-cols-2 gap-3">
             {products.map((prod) => (
               <div
-                key={prod.id}
-                onClick={() => onProductClick?.(prod.id)}
-                className="bg-card border border-border/70 rounded-lg p-3 flex flex-col justify-between space-y-2 transition-all hover:border-primary/40 cursor-pointer shadow-2xs group"
-              >
+    key={prod.id}
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        onProductClick?.(prod.id);
+      }
+    }}
+    onClick={() => onProductClick?.(prod.id)}
+    className="bg-card border border-border/70 rounded-lg p-3 flex flex-col justify-between space-y-2 transition-colors duration-200 hover:border-primary/40 cursor-pointer shadow-2xs group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+  >
                 <div className="aspect-square w-full rounded-lg bg-muted overflow-hidden relative flex items-center justify-center">
                   {prod.coverUrl ? (
                     <img
@@ -159,7 +167,7 @@ export const AppHomeFeed: React.FC<AppHomeFeedProps> = ({
                     onAddToCart?.(prod.id);
                   }}
                   style={{ backgroundColor: themeColor }}
-                  className="w-full h-8 rounded-lg text-white font-semibold text-xs flex items-center justify-center gap-1 active:scale-95 transition-transform"
+                  className="w-full h-8 rounded-lg text-foreground font-semibold text-xs flex items-center justify-center gap-1 active:scale-95 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <ShoppingBag className="size-3" />
                   <span>Adicionar</span>

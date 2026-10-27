@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { CANONICAL_FOOD_SUBNICHES, CANONICAL_SERVICE_SUBNICHES, CANONICAL_BUSINESS_TYPES, CANONICAL_INVESTMENT_MODELS } from '@/lib/classifieds/canonical-taxonomy';
 import { resolveWorkspaceNavigation } from '@/lib/workspace-navigation';
 import { AuditCnpjInputSchema } from '@/services/market-intelligence.functions';
+import { ConvertClassifiedToWorkspaceStoreSchema, convertClassifiedToWorkspaceStore, listStoreBusinessClassifieds, listStoreAllNdaSignatures, listStoreDonations } from '@/services/classifieds.functions';
 
 describe('Fases 2, 3 e 4: Sub-nichos em Cascata, M&A sob NDA e Hub de Inteligência', () => {
   describe('2.1 Cascatas de Sub-nichos Especializados (Taxonomia Canônica)', () => {
@@ -80,9 +81,7 @@ describe('Fases 2, 3 e 4: Sub-nichos em Cascata, M&A sob NDA e Hub de Inteligên
 
   describe('5.1 Migração de Anúncios e Ponte para Conta Pro (Workspace)', () => {
     it('deve validar schema de conversão de anúncio para loja com UUID estrito', async () => {
-      const { ConvertClassifiedToWorkspaceStoreSchema, convertClassifiedToWorkspaceStore } = await import(
-        '@/services/classifieds.functions'
-      );
+      // static import used
 
       expect(typeof convertClassifiedToWorkspaceStore).toBe('function');
 

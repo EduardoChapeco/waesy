@@ -107,7 +107,7 @@ export function DynamicMediaChip({
 
  const content = (
  <div
-   className={`relative overflow-hidden inline-flex items-center gap-2 sm:gap-3 border transition-all select-none group cursor-pointer shrink-0 max-w-full active:scale-[0.98] ${heightClasses} ${
+   className={`relative overflow-hidden inline-flex items-center gap-2 sm:gap-3 border transition-colors duration-200 select-none group cursor-pointer shrink-0 max-w-full active:scale-[0.98] ${heightClasses} ${
      show_shadow ? "shadow-xs" : ""
    } ${
      isActive
@@ -141,7 +141,7 @@ export function DynamicMediaChip({
 
  {/* Overlay de contraste configurável */}
  <div
- className="absolute inset-0 bg-black transition-opacity duration-300 group-hover:opacity-40"
+ className="absolute inset-0 bg-foreground transition-opacity duration-300 group-hover:opacity-40"
  style={{ opacity: overlayOpacity }}
  />
 
@@ -158,7 +158,7 @@ export function DynamicMediaChip({
  <div
  className={`relative ${iconSizes} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300 ${
  hasMedia
- ? "text-white drop-shadow-sm"
+ ? "text-foreground drop-shadow-sm"
  : isActive
  ? "text-background"
  : "text-foreground"
@@ -192,7 +192,7 @@ export function DynamicMediaChip({
  text_color
  ? ""
  : hasMedia
- ? "text-white drop-shadow-sm group-hover:text-amber-200"
+ ? "text-foreground drop-shadow-sm group-hover:text-amber-200"
  : isActive
  ? "text-background"
  : "text-foreground"
@@ -205,9 +205,9 @@ export function DynamicMediaChip({
  {/* Contador Opcional */}
  {typeof count === "number" && (
  <span
- className={`text-[10px] font-mono px-2 py-0.2 rounded-full font-bold shrink-0 ${
+ className={`text-2xs font-mono px-2 py-0.2 rounded-full font-bold shrink-0 ${
  hasMedia
- ? "bg-black/40 text-white border border-white/20"
+ ? "bg-foreground/40 text-foreground border border-white/20"
  : isActive
  ? "bg-background/20 text-background"
  : "bg-muted text-muted-foreground"
@@ -221,7 +221,7 @@ export function DynamicMediaChip({
  {badge && (
  <Badge
  variant="outline"
- className={`text-[9px] uppercase font-mono px-2 py-0 h-4 shrink-0 max-w-[110px] truncate ${
+ className={`text-3xs uppercase font-mono px-2 py-0 h-4 shrink-0 max-w-[110px] truncate ${
  hasMedia
  ? "bg-amber-500/20 text-amber-300 border-amber-400/40"
  : isActive
@@ -253,7 +253,7 @@ export function DynamicMediaChip({
  <button
  type="button"
  onClick={onClick}
- className="focus:outline-none shrink-0"
+ className="focus:outline-none shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  aria-label={ariaLabel || label}
  >
  {content}

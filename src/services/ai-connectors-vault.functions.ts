@@ -168,3 +168,5 @@ export const disconnectConnector = createServerFn({ method: "POST" })
 
     return { success: true };
   });
+
+export const disconnectUserConnector = disconnectConnector;

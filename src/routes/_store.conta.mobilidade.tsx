@@ -38,7 +38,11 @@ import {
   payCustomerDebt,
   type MobilityRequestDTO,
 } from "@/services/mobility.functions";
-import { listCustomerCaronasAndBusTickets, cancelCaronaBooking } from "@/services/carona.functions";
+import { listCustomerCaronasAndBusTickets, cancelCaronaBooking, sendCaronaChatMessage } from "@/services/carona.functions";
+import { MessageCircle, Ticket } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { getMyCourierApplicationStatus } from "@/services/courier-verification.functions";
 import {
   MobilityReceiptModal,
@@ -143,6 +147,30 @@ function CustomerMobilityDashboardPage() {
   const [activeTab, setActiveTab] = useState<DashboardTab>("active");
 
   const [cancellingCaronaId, setCancellingCaronaId] = useState<string | null>(null);
+  const [chatModalOpen, setChatModalOpen] = useState(false);
+  const [chatBooking, setChatBooking] = useState<any>(null);
+  const [chatMessageText, setChatMessageText] = useState("");
+  const [isSendingMessage, setIsSendingMessage] = useState(false);
+
+  const handleSendChatMessage = async () => {
+    if (!chatBooking?.id || !chatMessageText.trim()) return;
+    setIsSendingMessage(true);
+    try {
+      await sendCaronaChatMessage({
+        data: {
+          bookingId: chatBooking.id,
+          message: chatMessageText.trim(),
+        },
+      });
+      toast.success("Mensagem enviada ao motorista!");
+      setChatMessageText("");
+      setChatModalOpen(false);
+    } catch (err: any) {
+      toast.error("Erro ao enviar mensagem: " + (err?.message || "Falha desconhecida"));
+    } finally {
+      setIsSendingMessage(false);
+    }
+  };
 
   const handleCancelCarona = async (bookingId: string) => {
     setCancellingCaronaId(bookingId);
@@ -1023,20 +1051,70 @@ function CustomerMobilityDashboardPage() {
                         <span className="text-xs text-muted-foreground">
                           Apresente o PIN ao motorista no embarque
                         </span>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={cancellingCaronaId === b.id}
-                          onClick={() => handleCancelCarona(b.id)}
-                          className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold text-destructive border-destructive/30 hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-destructive focus-visible:outline-none"
-                        >
-                          {cancellingCaronaId === b.id ? "Cancelando..." : "Desistir da Vaga"}
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setChatBooking(b);
+                              setChatModalOpen(true);
+                            }}
+                            className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold border-border cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                          >
+                            <MessageCircle className="size-3.5 mr-1" />
+                            Conversar
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={cancellingCaronaId === b.id}
+                            onClick={() => handleCancelCarona(b.id)}
+                            className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold text-destructive border-destructive/30 hover:bg-destructive/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-destructive focus-visible:outline-none"
+                          >
+                            {cancellingCaronaId === b.id ? "Cancelando..." : "Desistir"}
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {/* Passagens de Ônibus Rodoviário Emitidas */}
+          {caronasData?.busTickets && caronasData.busTickets.length > 0 && (
+            <div className="pt-4 space-y-3">
+              <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                <Ticket className="size-4" />
+                <span>Passagens Rodoviárias Emitidas</span>
+              </h3>
+              <div className="space-y-3">
+                {caronasData.busTickets.map((tk: any) => (
+                  <div
+                    key={tk.id}
+                    className="rounded-lg bg-card border border-border p-5 space-y-3 shadow-xs"
+                  >
+                    <div className="flex items-center justify-between pb-2 border-b border-border/50">
+                      <div>
+                        <span className="font-bold text-xs text-foreground block">
+                          {tk.origin_city} → {tk.destination_city}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {tk.operator_name || "Viação Intermunicipal"} • Poltrona {tk.seat_number}
+                        </span>
+                      </div>
+                      <Badge variant="outline" className="font-mono text-xs">
+                        PIN: {tk.boarding_pin || "CONFIRMADO"}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Passageiro: {tk.passenger_name} ({tk.passenger_document})</span>
+                      <span className="font-bold text-foreground font-mono">{formatMoney(tk.price_cents || 0)}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -1090,6 +1168,48 @@ function CustomerMobilityDashboardPage() {
         onOpenChange={setRatingModalOpen}
         onRated={() => refetchRequests()}
       />
+      {/* Modal de Chat de Carona */}
+      <Dialog open={chatModalOpen} onOpenChange={setChatModalOpen}>
+        <DialogContent className="sm:max-w-md bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-foreground">Conversar com o Motorista</DialogTitle>
+          </DialogHeader>
+          {chatBooking && (
+            <div className="space-y-3 py-2 text-xs">
+              <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
+                <span className="font-bold text-foreground block">{chatBooking.from_city} → {chatBooking.to_city}</span>
+                <span className="text-muted-foreground">Motorista: {chatBooking.carona_rides?.driver_name || "Condutor Parceiro"}</span>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-foreground">Sua Mensagem</Label>
+                <Input
+                  placeholder="Ex: Combinar ponto exato de embarque, bagagem..."
+                  value={chatMessageText}
+                  onChange={(e) => setChatMessageText(e.target.value)}
+                  className="h-11 min-h-11 text-xs"
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter className="gap-2 sm:gap-0 pt-2 border-t border-border/50">
+            <Button
+              variant="outline"
+              onClick={() => setChatModalOpen(false)}
+              disabled={isSendingMessage}
+              className="h-11 min-h-11 px-4 text-xs font-medium cursor-pointer"
+            >
+              Fechar
+            </Button>
+            <Button
+              onClick={handleSendChatMessage}
+              disabled={isSendingMessage || !chatMessageText.trim()}
+              className="h-11 min-h-11 px-5 text-xs font-semibold cursor-pointer"
+            >
+              {isSendingMessage ? "Enviando..." : "Enviar Mensagem"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

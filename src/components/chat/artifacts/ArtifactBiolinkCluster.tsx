@@ -3,7 +3,6 @@ import {
   MessageCircle,
   MapPin,
   Instagram,
-  Phone,
   Globe,
   ExternalLink,
   ShieldCheck,
@@ -120,18 +119,7 @@ export function ArtifactBiolinkCluster({
                     <MessageCircle className="size-4" />
                     <span>WhatsApp</span>
                   </Button>
-                ) : (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled
-                    className="h-11 min-h-11 px-3 text-xs opacity-50 cursor-not-allowed"
-                  >
-                    <Phone className="size-4 mr-2" />
-                    <span>Sem Whats</span>
-                  </Button>
-                )}
+                ) : null}
 
                 {mapsUrl ? (
                   <Button

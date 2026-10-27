@@ -380,6 +380,14 @@ export async function pollActiveCrawlerSources(limit = 10): Promise<{
 }> {
   const supabase = getServerClient();
 
+  // Recupera fontes presas em "fetching" há mais de 15 minutos
+  const staleFetchingCutoff = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+  await supabase
+    .from("crawler_sources")
+    .update({ status: "idle", updated_at: new Date().toISOString() })
+    .eq("status", "fetching")
+    .lt("last_fetched_at", staleFetchingCutoff);
+
   const { data: sources, error } = await supabase
     .from("crawler_sources")
     .select("*")

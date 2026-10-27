@@ -11,7 +11,7 @@ import { ArrowLeft, ArrowRight, CheckCircle2, CreditCard, Info, Loader2, ShieldC
 import { approveTravelProposal, type TravelProposalDTO } from "@/services/travel-proposal.functions";
 
 type PaymentPreference = "pix" | "cartao_operadora" | "financiamento_bancario" | "faturado_agencia";
-type PassengerForm = { name: string; document: string; birthDate: string };
+type PassengerForm = { name: string; document: string; birthDate: string; roomPreference: string };
 
 interface TravelProposalCheckoutModalProps {
   isOpen: boolean;
@@ -35,8 +35,9 @@ export function TravelProposalCheckoutModal({
   const [leadBirthDate, setLeadBirthDate] = useState("");
   const [leadPhone, setLeadPhone] = useState(proposal.client_whatsapp || "");
   const [leadEmail, setLeadEmail] = useState(proposal.client_email || "");
+  const [leadRoomPreference, setLeadRoomPreference] = useState("Quarto 1 - Duplo / Casal");
   const [additionalPassengers, setAdditionalPassengers] = useState<PassengerForm[]>(() =>
-    Array.from({ length: Math.max(0, totalPassengers - 1) }, () => ({ name: "", document: "", birthDate: "" })),
+    Array.from({ length: Math.max(0, totalPassengers - 1) }, () => ({ name: "", document: "", birthDate: "", roomPreference: "Quarto 1 - Duplo / Casal" })),
   );
   const [paymentPreference, setPaymentPreference] = useState<PaymentPreference | null>(null);
   const [paymentInstallments, setPaymentInstallments] = useState(1);
@@ -89,12 +90,14 @@ export function TravelProposalCheckoutModal({
         birthDate: leadBirthDate || null,
         phone: leadPhone.trim() || null,
         email: leadEmail.trim() || null,
+        roomPreference: leadRoomPreference || null,
         isLead: true,
       },
       ...additionalPassengers.map((passenger) => ({
         name: passenger.name.trim(),
         document: passenger.document.trim(),
         birthDate: passenger.birthDate || null,
+        roomPreference: passenger.roomPreference || null,
         isLead: false,
       })),
     ];
@@ -184,9 +187,25 @@ export function TravelProposalCheckoutModal({
                   <Label htmlFor="lead-phone">WhatsApp</Label>
                   <PhoneField id="lead-phone" value={leadPhone} onChange={(value) => setLeadPhone(value || "")} className="h-11" />
                 </div>
-                <div className="space-y-2 sm:col-span-2">
+                <div className="space-y-2">
                   <Label htmlFor="lead-email">E-mail</Label>
                   <Input id="lead-email" type="email" autoComplete="email" value={leadEmail} onChange={(event) => setLeadEmail(event.target.value)} className="h-11" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lead-room">Acomodação / Quarto</Label>
+                  <select
+                    id="lead-room"
+                    value={leadRoomPreference}
+                    onChange={(event) => setLeadRoomPreference(event.target.value)}
+                    className="w-full h-11 rounded-lg border border-input bg-background px-3 text-sm focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <option value="Quarto 1 - Duplo / Casal">Quarto 1 - Duplo / Casal</option>
+                    <option value="Quarto 1 - Duplo Twin (2 Camas)">Quarto 1 - Duplo Twin (2 Camas)</option>
+                    <option value="Quarto 1 - Triplo / Família">Quarto 1 - Triplo / Família</option>
+                    <option value="Quarto 2 - Duplo / Casal">Quarto 2 - Duplo / Casal</option>
+                    <option value="Quarto 2 - Individual (Single)">Quarto 2 - Individual (Single)</option>
+                    <option value="Quarto Individual (Single)">Quarto Individual (Single)</option>
+                  </select>
                 </div>
               </div>
             </section>
@@ -207,9 +226,45 @@ export function TravelProposalCheckoutModal({
                     <Label htmlFor={`passenger-${index}-birth-date`}>Nascimento</Label>
                     <Input id={`passenger-${index}-birth-date`} type="date" value={passenger.birthDate} onChange={(event) => setAdditionalPassengers((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, birthDate: event.target.value } : item))} className="h-11" />
                   </div>
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label htmlFor={`passenger-${index}-room`}>Distribuição de Quarto</Label>
+                    <select
+                      id={`passenger-${index}-room`}
+                      value={passenger.roomPreference || "Quarto 1 - Duplo / Casal"}
+                      onChange={(event) => setAdditionalPassengers((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, roomPreference: event.target.value } : item))}
+                      className="w-full h-11 rounded-lg border border-input bg-background px-3 text-sm focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <option value="Quarto 1 - Duplo / Casal">Quarto 1 - Duplo / Casal</option>
+                      <option value="Quarto 1 - Duplo Twin (2 Camas)">Quarto 1 - Duplo Twin (2 Camas)</option>
+                      <option value="Quarto 1 - Triplo / Família">Quarto 1 - Triplo / Família</option>
+                      <option value="Quarto 2 - Duplo / Casal">Quarto 2 - Duplo / Casal</option>
+                      <option value="Quarto 2 - Individual (Single)">Quarto 2 - Individual (Single)</option>
+                    </select>
+                  </div>
                 </div>
               </section>
             ))}
+
+            <div className="flex items-center justify-between gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setAdditionalPassengers((curr) => [...curr, { name: "", document: "", birthDate: "", roomPreference: "Quarto 1 - Duplo / Casal" }])}
+                className="h-11 min-h-11 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                + Adicionar Acompanhante / Passageiro
+              </Button>
+              {additionalPassengers.length > 0 && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setAdditionalPassengers((curr) => curr.slice(0, -1))}
+                  className="h-11 min-h-11 text-xs text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  Remover Último
+                </Button>
+              )}
+            </div>
 
             <div className="rounded-lg border border-border/60 p-4">
               <p className="text-sm font-medium">Opção selecionada</p>
@@ -296,7 +351,7 @@ export function TravelProposalCheckoutModal({
                 <ArrowLeft className="size-4" /> Voltar
               </Button>
               <Button type="button" onClick={handleSubmitAcceptance} disabled={!paymentPreference || isSubmitting || proposal.status !== "sent" || !proposal.snapshot_hash} className="h-11 min-h-11 gap-2 focus-visible:ring-2 focus-visible:ring-ring">
-                {isSubmitting ? <Loader2 className="size-4 animate-spin" /> : <ShieldCheck className="size-4" />}
+                {isSubmitting ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> : <ShieldCheck className="size-4" />}
                 {isSubmitting ? "Enviando" : "Registrar aceite"}
               </Button>
             </div>
@@ -305,7 +360,7 @@ export function TravelProposalCheckoutModal({
 
         {step === "processing" && (
           <div className="py-12 text-center space-y-3" role="status" aria-live="polite">
-            <Loader2 className="size-8 animate-spin mx-auto text-primary" />
+            <Loader2 className="size-8 animate-spin motion-reduce:animate-none mx-auto text-primary" />
             <p className="text-sm font-medium">Registrando o aceite</p>
             <p className="text-sm text-muted-foreground">Nenhuma cobrança ou reserva será criada nesta etapa.</p>
           </div>

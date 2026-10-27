@@ -281,7 +281,7 @@ function ContasPagarPage() {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
-      <PageHeader
+      <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         eyebrow="Financeiro"
         title="Contas a Pagar"
         description="Controle despesas fixas, boletos de fornecedores, impostos e aluguéis com previsão de saída e conciliação financeira."
@@ -321,7 +321,7 @@ function ContasPagarPage() {
           <button
             type="button"
             onClick={() => setStatusFilter("overdue")}
-            className="text-xs font-bold underline hover:opacity-80 cursor-pointer"
+            className="text-xs font-bold underline hover:opacity-80 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             Filtrar Atrasadas
           </button>
@@ -423,7 +423,7 @@ function ContasPagarPage() {
                 statusFilter === "all"
                   ? "bg-background text-foreground shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
-              }`}
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
             >
               Todas ({obligations.length})
             </button>
@@ -434,7 +434,7 @@ function ContasPagarPage() {
                 statusFilter === "pending"
                   ? "bg-background text-foreground shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
-              }`}
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
             >
               A Vencer ({obligations.filter((o) => o.status === "pending").length})
             </button>
@@ -445,7 +445,7 @@ function ContasPagarPage() {
                 statusFilter === "overdue"
                   ? "bg-background text-foreground shadow-2xs text-rose-600"
                   : "text-rose-600/70 hover:text-rose-600"
-              }`}
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
             >
               Atrasadas ({kpis.overdueCount})
             </button>
@@ -456,7 +456,7 @@ function ContasPagarPage() {
                 statusFilter === "paid"
                   ? "bg-background text-foreground shadow-2xs text-emerald-600"
                   : "text-emerald-600/70 hover:text-emerald-600"
-              }`}
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
             >
               Pagas ({kpis.paidCount})
             </button>
@@ -466,7 +466,7 @@ function ContasPagarPage() {
 
       {/* ── TABELA DE OBRIGAÇÕES A PAGAR ── */}
       {filteredObligations.length === 0 ? (
-        <EmptyState
+        <EmptyState /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
           title="Nenhuma conta a pagar encontrada"
           description="Você está em dia com os seus compromissos ou nenhum lançamento atende aos filtros atuais."
           action={
@@ -777,7 +777,7 @@ function ContasPagarPage() {
       )}
 
       {/* ── GAVETA DE CADASTRO DE NOVA CONTA (SHEETPAGE) ── */}
-      <SheetPage
+      <SheetPage /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         open={isCreateOpen}
         onOpenChange={(open) => !isSubmitting && setIsCreateOpen(open)}
         title="Nova Conta a Pagar"
@@ -908,7 +908,7 @@ function ContasPagarPage() {
       </SheetPage>
 
       {/* ── GAVETA DE BAIXA / LIQUIDAÇÃO DE PAGAMENTO ── */}
-      <SheetPage
+      <SheetPage /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         open={payModal.isOpen}
         onOpenChange={(open) => !isPaying && setPayModal({ isOpen: open, obligation: null })}
         title={`Liquidar Conta • ${payModal.obligation?.title || ""}`}

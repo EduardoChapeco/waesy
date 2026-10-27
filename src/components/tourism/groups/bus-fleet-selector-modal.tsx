@@ -194,7 +194,7 @@ export function BusFleetSelectorModal({
  <DialogTitle className="text-sm font-bold text-foreground">
  Vincular Ônibus da Frota 2D à Excursão
  </DialogTitle>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Importa automaticamente capacidade, motorista, placa e mapa 2D de poltronas
  </p>
  </div>
@@ -214,13 +214,13 @@ export function BusFleetSelectorModal({
 
  <div className="space-y-3">
  {filteredVehicles.map((v) => (
- <div
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  key={v.id}
  onClick={() => setSelectedId(v.id)}
- className={'p-4 rounded-lg border transition-all cursor-pointer space-y-3 ' + (
+ className={'p-4 rounded-lg border transition-colors duration-200 cursor-pointer space-y-3 ' + (
  selectedId === v.id
  ? 'border-primary bg-primary/5 shadow-sm ring-1 ring-primary'
- : 'border-border bg-card hover:border-border/80'
+ : 'border-border bg-card hover:border-border/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
  <div className="flex items-start justify-between">
@@ -228,28 +228,28 @@ export function BusFleetSelectorModal({
  <div className="flex items-center gap-2">
  <span className="text-xs font-bold text-foreground">{v.name}</span>
  {v.isDoubleDecker && (
- <Badge className="bg-primary/20 text-primary hover:bg-primary/20 text-[10px] py-0 h-4">
+ <Badge className="bg-primary/20 text-primary hover:bg-primary/20 text-2xs py-0 h-4">
  Double Decker (2 Andares)
  </Badge>
  )}
  </div>
- <p className="text-[11px] text-muted-foreground">{v.companyName} · Placa: <strong className="font-mono text-foreground">{v.plate}</strong></p>
+ <p className="text-2xs text-muted-foreground">{v.companyName} · Placa: <strong className="font-mono text-foreground">{v.plate}</strong></p>
  </div>
- <Badge variant="outline" className="font-mono text-[10px]">
+ <Badge variant="outline" className="font-mono text-2xs">
  {v.totalCapacity} lugares
  </Badge>
  </div>
 
  <div className="flex flex-wrap gap-1 pt-1">
  {v.amenities.map((a, i) => (
- <span key={i} className="px-2 py-1 rounded-md bg-muted text-[10px] text-muted-foreground font-medium">
+ <span key={i} className="px-2 py-1 rounded-md bg-muted text-2xs text-muted-foreground font-medium">
  {a}
  </span>
  ))}
  </div>
 
  {v.driverName && (
- <div className="text-[10px] text-muted-foreground pt-1 border-t border-border/40 flex items-center justify-between">
+ <div className="text-2xs text-muted-foreground pt-1 border-t border-border/40 flex items-center justify-between">
  <span>Motorista: <strong className="text-foreground">{v.driverName}</strong></span>
  <span className="font-mono">{v.driverPhone}</span>
  </div>

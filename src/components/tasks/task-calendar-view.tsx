@@ -165,7 +165,7 @@ export function TaskCalendarView({
  </div>
 
  {/* Cabeçalho dos Dias da Semana */}
- <div className="grid grid-cols-7 border-b border-border/60 bg-muted/10 text-center text-[11px] font-bold text-muted-foreground uppercase tracking-wider py-3">
+ <div className="grid grid-cols-7 border-b border-border/60 bg-muted/10 text-center text-2xs font-bold text-muted-foreground uppercase tracking-wider py-3">
  {DAYS_OF_WEEK.map((d, i) => (
  <div key={d} className={cn(i === 0 || i === 6 ? "text-muted-foreground/70" : "")}>
  {d}
@@ -206,7 +206,7 @@ export function TaskCalendarView({
  <button
  type="button"
  onClick={() => onAddTaskOnDate(cell.dateStr)}
- className="size-5 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-muted text-muted-foreground hover:text-foreground transition-opacity cursor-pointer"
+ className="size-5 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-muted text-muted-foreground hover:text-foreground transition-opacity cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  title={`Criar tarefa para ${cell.dateStr}`}
  >
  <Plus className="size-3" />
@@ -219,11 +219,11 @@ export function TaskCalendarView({
  {dayTasks.slice(0, 3).map((task) => {
  const isDone = task.status === "done";
  return (
- <div
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  key={task.id}
  onClick={() => onSelectTask(task)}
- className={cn(
- "group/chip flex items-center gap-2 px-2 py-1 rounded-md text-[11px] font-medium transition-all cursor-pointer truncate border shadow-2xs",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "group/chip flex items-center gap-2 px-2 py-1 rounded-md text-2xs font-medium transition-colors duration-200 cursor-pointer truncate border shadow-2xs",
  isDone
  ? "bg-muted/40 text-muted-foreground border-border/40 line-through"
  : task.priority === "urgent"
@@ -253,9 +253,9 @@ export function TaskCalendarView({
  })}
 
  {dayTasks.length > 3 && (
- <div
+ <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  onClick={() => onSelectTask(dayTasks[3])}
- className="text-[10px] font-bold text-muted-foreground hover:text-primary px-1 cursor-pointer pt-1"
+ className="text-2xs font-bold text-muted-foreground hover:text-primary px-1 cursor-pointer pt-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  +{dayTasks.length - 3} mais
  </div>

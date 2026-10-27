@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Plane, Bus, Ship, Anchor, Layers, Hotel, Calendar, Compass, MapPin, Clock, Check, ChevronRight, ExternalLink, MessageCircle, Share2, Sliders, Sun, CloudSun, CloudRain, ShieldCheck, ShieldAlert, Camera, Star, Coffee, Car, Ticket, Users, Utensils, ArrowRight, Info, Luggage, X, Edit3, Navigation } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { formatMoney } from "@/lib/money";
@@ -6,7 +6,8 @@ import { cn } from "@/lib/utils";
 import { useWindowSizeClass } from "@/hooks/use-mobile";
 import type { TravelPackageData } from "@/types/travel-package";
 import { WeatherWidget } from "@/components/classifieds/weather-widget";
-import { MapLibreCanvas } from "@/components/mobility/maplibre-canvas";
+import { MapLibreCanvas, type MapMarkerItem } from "@/components/mobility/maplibre-canvas";
+import { downloadTripIcsFile } from "@/services/travel-calendar-export";
 import { CANONICAL_BUS_CATEGORIES, CANONICAL_GUIDE_SERVICES, DEPARTURE_STATUS_CONFIG, type DepartureOption } from "@/lib/classifieds/canonical-airports";
 
 interface TravelPackageDetailViewProps {
@@ -102,6 +103,27 @@ export function TravelPackageDetailView({
  mediaUrls[0] ||
  "";
 
+  const hasResort = Boolean(resort?.name || packageData?.resort?.name || (packageData as any)?.hotel_name || (packageData as any)?.hotel_details);
+  const hasItinerary = Boolean(itineraryDays && itineraryDays.length > 0);
+  const hasExplore = Boolean(
+    flightDetails?.flight_number_out ||
+    flightDetails?.departure_time_out ||
+    flightDetails?.bus_company ||
+    flightDetails?.meeting_point ||
+    (Array.isArray(departureOptions) && departureOptions.length > 0) ||
+    (destination?.latitude && destination?.longitude) ||
+    (packageData as any)?.payment_conditions
+  );
+
+  const availableTabs = [
+    { id: "destination" as const, label: "Destino", icon: Camera },
+    ...(hasResort ? [{ id: "resort" as const, label: "Hospedagem", icon: Hotel }] : []),
+    ...(hasItinerary ? [{ id: "itinerary" as const, label: "Roteiro", icon: Calendar }] : []),
+    ...(hasExplore ? [{ id: "explore" as const, label: "Voos e Mapa", icon: Compass }] : []),
+  ];
+
+  const currentTab = availableTabs.some((t) => t.id === activeTab) ? activeTab : (availableTabs[0]?.id || "destination");
+
  const gallery =
  destination.gallery_urls && destination.gallery_urls.length > 0
  ? destination.gallery_urls
@@ -134,6 +156,91 @@ export function TravelPackageDetailView({
  const toggleDay = (day: number) => {
  setExpandedDays((prev) => ({ ...prev, [day]: !prev[day] }));
  };
+
+  const mapMarkers = useMemo((): MapMarkerItem[] => {
+    const list: MapMarkerItem[] = [];
+    if (destination.lat && destination.lng) {
+      list.push({
+        id: "dest-center",
+        lat: Number(destination.lat),
+        lng: Number(destination.lng),
+        title: destination.name || productTitle,
+        category: "Destino Principal",
+        kind: "destination",
+      });
+    }
+    if (resort.lat && resort.lng) {
+      list.push({
+        id: "resort-stay",
+        lat: Number(resort.lat),
+        lng: Number(resort.lng),
+        title: resort.name || "Hospedagem",
+        category: "Hospedagem",
+        kind: "hotel",
+      });
+    }
+    itineraryDays.forEach((d) => {
+      if ((d as any).lat && (d as any).lng) {
+        list.push({
+          id: `day-${d.day}`,
+          lat: Number((d as any).lat),
+          lng: Number((d as any).lng),
+          title: `Dia ${d.day}: ${d.title}`,
+          category: "Roteiro",
+          kind: "itinerary",
+        });
+      }
+    });
+    recommendations.forEach((rec, idx) => {
+      if ((rec as any).lat && (rec as any).lng) {
+        list.push({
+          id: rec.id || `rec-${idx}`,
+          lat: Number((rec as any).lat),
+          lng: Number((rec as any).lng),
+          title: rec.title,
+          category: rec.category || "Gastronomia & Lazer",
+          kind: "poi",
+        });
+      }
+    });
+    return list;
+  }, [destination, resort, itineraryDays, recommendations, productTitle]);
+
+  const handleExportCalendar = () => {
+    const selectedOpt = departureOptions.find((o) => (o.id || "") === selectedDepartureId) || departureOptions[0];
+    downloadTripIcsFile({
+      reservationCode: productTitle.slice(0, 10).toUpperCase(),
+      destination: destination.name || destination.city || productTitle,
+      operatorName: storeName || "Waesy Turismo",
+      travelStartDate: selectedOpt?.departure_date,
+      travelEndDate: selectedOpt?.return_date,
+      flights:
+        isAir && flightDetails.flight_number_out
+          ? [
+              {
+                direction: "Ida",
+                airline: flightDetails.airline_name || "Companhia Aérea",
+                flightNumber: flightDetails.flight_number_out,
+                originIata: flightDetails.departure_airport || "Origem",
+                destinationIata: flightDetails.destination_airport || "Destino",
+                departureTime: flightDetails.departure_time_out,
+                arrivalTime: flightDetails.arrival_time_out,
+                departureDate: selectedOpt?.departure_date,
+              },
+            ]
+          : undefined,
+      hotel:
+        resort.name
+          ? {
+              hotelName: resort.name,
+              hotelAddress: resort.location,
+              checkinDate: selectedOpt?.departure_date,
+              checkoutDate: selectedOpt?.return_date,
+              mealPlan: resort.regime,
+            }
+          : undefined,
+    });
+  };
 
  const handleBooking = () => {
  if (onReserveClick) {
@@ -169,7 +276,7 @@ export function TravelPackageDetailView({
  Pacote Oficial
  </span>
  <span className="text-xs text-muted-foreground">•</span>
- <span className="text-xs font-semibold text-foreground truncate max-w-[180px] sm:max-w-xs">
+ <span className="text-xs font-semibold text-foreground truncate max-w-44 sm:max-w-xs">
  {productTitle}
  </span>
  </div>
@@ -185,7 +292,7 @@ export function TravelPackageDetailView({
               size="sm"
               variant="outline"
               onClick={onEditClick}
-              className="h-7 text-xs border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 gap-2"
+              className="h-11 min-h-11 px-4 text-xs border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             >
               <Edit3 className="size-3.5" />
               Editar
@@ -203,8 +310,9 @@ export function TravelPackageDetailView({
           </div>
           {onEditClick && (
             <button
+              type="button"
               onClick={onEditClick}
-              className="text-amber-600 dark:text-amber-400 hover:underline font-semibold flex items-center gap-1"
+              className="text-amber-600 dark:text-amber-400 hover:underline font-semibold flex items-center gap-1 h-11 min-h-11 px-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none rounded-md cursor-pointer"
             >
               <Edit3 className="size-3" />
               Editar no Gestor
@@ -213,95 +321,61 @@ export function TravelPackageDetailView({
         </div>
       )}
 
- {/* 4 Abas com Indicador Limpo */}
- <nav className="flex w-full max-w-4xl mx-auto px-2 justify-between border-t border-border/40 text-xs font-semibold">
- <button
- type="button"
- onClick={() => setActiveTab("destination")}
- className={cn(
- "relative flex-1 flex items-center justify-center gap-2 py-3 transition-colors cursor-pointer",
- activeTab === "destination"
- ? "text-primary font-bold after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-8 after:h-0.5 after:bg-primary after:rounded-full"
- : "text-muted-foreground hover:text-foreground"
- )}
- >
- <Camera className="size-3.5" />
- <span>Destino</span>
- </button>
-
- <button
- type="button"
- onClick={() => setActiveTab("resort")}
- className={cn(
- "relative flex-1 flex items-center justify-center gap-2 py-3 transition-colors cursor-pointer",
- activeTab === "resort"
- ? "text-primary font-bold after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-8 after:h-0.5 after:bg-primary after:rounded-full"
- : "text-muted-foreground hover:text-foreground"
- )}
- >
- <Hotel className="size-3.5" />
- <span>Hospedagem</span>
- </button>
-
- <button
- type="button"
- onClick={() => setActiveTab("itinerary")}
- className={cn(
- "relative flex-1 flex items-center justify-center gap-2 py-3 transition-colors cursor-pointer",
- activeTab === "itinerary"
- ? "text-primary font-bold after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-8 after:h-0.5 after:bg-primary after:rounded-full"
- : "text-muted-foreground hover:text-foreground"
- )}
- >
- <Calendar className="size-3.5" />
- <span>Roteiro</span>
- </button>
-
- <button
- type="button"
- onClick={() => setActiveTab("explore")}
- className={cn(
- "relative flex-1 flex items-center justify-center gap-2 py-3 transition-colors cursor-pointer",
- activeTab === "explore"
- ? "text-primary font-bold after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-8 after:h-0.5 after:bg-primary after:rounded-full"
- : "text-muted-foreground hover:text-foreground"
- )}
- >
- <Compass className="size-3.5" />
- <span>Voos e Mapa</span>
- </button>
- </nav>
+ {/* Abas dinâmicas com omissão de estados vazios (Invariante B.33), piso 44px (DL-14) e foco teclado (DL-15) */}
+        <nav className="flex w-full max-w-4xl mx-auto px-2 justify-between border-t border-border/40 text-xs font-semibold overflow-x-auto no-scrollbar">
+          {availableTabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = currentTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  "relative flex-1 flex items-center justify-center gap-2 h-11 min-h-11 px-3 transition-colors cursor-pointer rounded-none",
+                  "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+                  isActive
+                    ? "text-primary font-bold border-b-2 border-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Icon className="size-4 shrink-0" />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </nav>
  </header>
 
  {/* ── 2. Conteúdo Principal das Abas ── */}
  <main className="flex-1 pb-32 max-w-4xl mx-auto w-full">
  {/* ── ABA 1: DESTINO ── */}
- {activeTab === "destination" && (
+ {currentTab === "destination" && (
  <div className="flex flex-col w-full space-y-6 animate-in fade-in duration-200">
  {/* Hero Panorâmico com Gradiente Editorial */}
- <div className="relative w-full h-[50vh] min-h-[350px] max-h-[500px] overflow-hidden sm:rounded-b-lg">
+ <div className="relative w-full aspect-video min-h-64 sm:h-96 max-h-96 overflow-hidden sm:rounded-b-lg">
  <img src={heroImage} alt={productTitle} className="absolute inset-0 size-full object-cover" />
- <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent" />
- <div className="absolute bottom-0 left-0 w-full p-5 sm:p-7 flex flex-col justify-end text-white">
+ <div className="absolute inset-0 bg-foreground/70" />
+ <div className="absolute bottom-0 left-0 w-full p-5 sm:p-7 flex flex-col justify-end text-primary-foreground">
  {(destination.country || destination.region || destination.state) && (
  <div className="flex items-center gap-2 mb-2">
  {destination.country && (
- <span className="px-3 py-1 rounded-full text-xs font-bold bg-white/20 backdrop-blur-md uppercase tracking-wider">
+ <span className="px-3 py-1 rounded-full text-xs font-bold bg-primary-foreground/20 backdrop-blur-md uppercase tracking-wider">
  {destination.country}
  </span>
  )}
  {destination.country && (destination.region || destination.state) && (
- <span className="text-xs text-white/80">•</span>
+ <span className="text-xs text-primary-foreground/80">•</span>
  )}
  {(destination.region || destination.state) && (
- <span className="text-xs text-white/90 font-medium">{destination.region || destination.state}</span>
+ <span className="text-xs text-primary-foreground/90 font-medium">{destination.region || destination.state}</span>
  )}
  </div>
  )}
- <h1 className="text-2xl sm:text-3xl font-serif font-bold text-white tracking-tight drop-shadow-sm">
+ <h1 className="text-2xl sm:text-3xl font-serif font-bold text-primary-foreground tracking-tight ">
  {destination.name || productTitle}
  </h1>
- <p className="text-xs sm:text-sm text-white/85 mt-1 max-w-md line-clamp-2 leading-relaxed">
+ <p className="text-xs sm:text-sm text-primary-foreground/90 mt-1 max-w-md line-clamp-2 leading-relaxed">
  {resort.name || "Experiência completa com hospedagem, lazer e atrações locais."}
  </p>
  </div>
@@ -313,12 +387,12 @@ export function TravelPackageDetailView({
  <div className="flex gap-4 px-4 sm:px-6">
  {(packageData?.story_highlights || resort.highlights || []).map((hl: any) => (
  <div key={hl.id} className="flex flex-col items-center gap-2 shrink-0 cursor-pointer group">
- <div className="size-16 sm:size-18 rounded-full p-[2.5px] bg-gradient-to-tr from-amber-400 via-rose-500 to-sky-500 group-hover:scale-105 transition-transform shadow-2xs">
+ <div className="size-16 sm:size-18 rounded-full p-1 bg-border group-hover:bg-primary/40 group-hover:scale-105 transition-transform shadow-2xs">
  <div className="size-full rounded-full bg-background p-1 overflow-hidden">
  <img src={hl.imageUrl || hl.image} alt={hl.label || hl.title || "Destaque"} className="size-full object-cover rounded-full" />
  </div>
  </div>
- <span className="text-xs font-medium text-foreground tracking-tight text-center max-w-[68px] truncate">
+ <span className="text-xs font-medium text-foreground tracking-tight text-center max-w-16 truncate">
  {hl.label || hl.title}
  </span>
  </div>
@@ -348,7 +422,7 @@ export function TravelPackageDetailView({
            className="p-3 rounded-lg bg-card border border-border/70 flex items-center gap-2 shadow-2xs"
          >
            <div className="size-6 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-             <Check className="size-3.5 stroke-[2.5]" />
+             <Check className="size-3.5 stroke-2" />
            </div>
            <span className="text-xs font-semibold text-foreground">{item}</span>
          </div>
@@ -383,7 +457,7 @@ export function TravelPackageDetailView({
  className="p-3 rounded-lg bg-muted/30 border border-border/60 flex items-center gap-2"
  >
  <div className="size-6 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
- <X className="size-3.5 stroke-[2.5]" />
+ <X className="size-3.5 stroke-2" />
  </div>
  <span className="text-xs font-medium text-muted-foreground">{item}</span>
  </div>
@@ -416,8 +490,11 @@ export function TravelPackageDetailView({
                 <div
                   key={opt.id || i}
                   onClick={() => setSelectedDepartureId(selectedDepartureId === optId ? null : optId)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedDepartureId(selectedDepartureId === optId ? null : optId); } }}
                   className={cn(
-                    "p-4 rounded-lg bg-card border transition-colors flex flex-col justify-between gap-2 shadow-2xs cursor-pointer text-left",
+                    "p-4 rounded-lg bg-card border transition-colors flex flex-col justify-between gap-2 shadow-2xs cursor-pointer text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
                     isSelected
                       ? "border-primary ring-2 ring-primary/25 bg-primary/5"
                       : "border-border/70 hover:border-primary/40 hover:bg-muted/20"
@@ -522,14 +599,14 @@ export function TravelPackageDetailView({
  )}
 
  {/* ── ABA 2: RESORT & HOSPEDAGEM (PERFIL VISUAL) ── */}
- {activeTab === "resort" && (
+ {currentTab === "resort" && (
  <div className="px-4 sm:px-6 py-4 space-y-6 animate-in fade-in duration-200">
  {/* Header Perfil Visual do Resort */}
  <div className="p-4 sm:p-5 rounded-lg bg-card border border-border/70 space-y-4 shadow-2xs">
  <div className="flex items-center justify-between gap-4">
  {/* Foto com anel gradiente de viagem */}
  <div className="relative shrink-0">
- <div className="size-20 rounded-full p-[2.5px] bg-gradient-to-tr from-amber-400 via-rose-500 to-sky-500">
+ <div className="size-20 rounded-full p-1 bg-border">
  <div className="size-full bg-background rounded-full p-1 overflow-hidden">
  <img
  src={resort.cover_image_url || heroImage}
@@ -538,8 +615,8 @@ export function TravelPackageDetailView({
  />
  </div>
  </div>
- <span className="absolute bottom-0 right-0 size-5 bg-sky-500 text-white rounded-full flex items-center justify-center ring-2 ring-background">
- <Check className="size-3 stroke-[3]" />
+ <span className="absolute bottom-0 right-0 size-5 bg-sky-500 text-primary-foreground rounded-full flex items-center justify-center ring-2 ring-background">
+ <Check className="size-3 stroke-2" />
  </span>
  </div>
 
@@ -681,7 +758,7 @@ export function TravelPackageDetailView({
  )}
 
  {/* ── ABA 3: ROTEIRO DIA A DIA (TIMELINE EXPANSÍVEL) ── */}
- {activeTab === "itinerary" && (
+ {currentTab === "itinerary" && (
  <div className="px-4 sm:px-6 py-4 space-y-6 animate-in fade-in duration-200">
  <div className="flex items-center justify-between pb-1 border-b border-border/40">
  <div className="space-y-1">
@@ -703,11 +780,11 @@ export function TravelPackageDetailView({
        const isExpanded = !!expandedDays[day.day];
 
        return (
-         <div key={day.id || day.day} className="relative group cursor-pointer" onClick={() => toggleDay(day.day)}>
+         <div key={day.id || day.day} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleDay(day.day); } }} className="relative group cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none rounded-lg" onClick={() => toggleDay(day.day)}>
            {/* Marcador Circular Numerado */}
            <div
              className={cn(
-               "absolute -left-7 sm:-left-8 top-0.5 size-6 rounded-full border-2 flex items-center justify-center text-xs font-bold z-10 transition-colors",
+               "absolute -left-7 sm:-left-8 top-1 size-6 rounded-full border-2 flex items-center justify-center text-xs font-bold z-10 transition-colors",
                isExpanded
                  ? "bg-primary border-primary text-primary-foreground"
                  : "bg-background border-border text-muted-foreground group-hover:border-primary/60"
@@ -823,7 +900,7 @@ export function TravelPackageDetailView({
  )}
 
  {/* ── ABA 4: EXPLORE, VOOS E MAPA ── */}
- {activeTab === "explore" && (
+ {currentTab === "explore" && (
  <div className="px-4 sm:px-6 py-4 space-y-4 animate-in fade-in duration-200">
  <div className="space-y-1">
  <h3 className="text-sm font-bold text-foreground">Logística</h3>
@@ -861,7 +938,7 @@ export function TravelPackageDetailView({
  <Plane className="size-3.5" /> Trecho Aéreo do Pacote
  </span>
  )}
- 
+
  {/* Voo de Ida */}
  <div className="p-3 rounded-lg bg-muted/20 border border-border/50 space-y-2">
  <div className="flex items-center justify-between">
@@ -1181,8 +1258,11 @@ export function TravelPackageDetailView({
  <div
  key={opt.id || i}
  onClick={() => setSelectedDepartureId(selectedDepartureId === optId ? null : optId)}
- className={cn(
- "flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg border gap-2 transition-colors cursor-pointer text-left",
+ role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedDepartureId(selectedDepartureId === optId ? null : optId); } }}
+                  className={cn(
+                    "flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg border gap-2 transition-colors cursor-pointer text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
  isSelected
  ? "border-primary ring-2 ring-primary/25 bg-primary/5"
  : "bg-muted/20 border-border/50 hover:border-primary/40 hover:bg-muted/30"
@@ -1233,6 +1313,23 @@ export function TravelPackageDetailView({
  </div>
  )}
 
+ {/* Ações de Logística e Exportação iCalendar (RFC 5545) */}
+ <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 rounded-lg bg-card border border-border/70 shadow-2xs">
+ <div className="space-y-1">
+ <h4 className="text-xs font-bold text-foreground">Sincronização de Viagem</h4>
+ <p className="text-xs text-muted-foreground">Exporte os horários de voos, hotéis e saídas para sua agenda digital.</p>
+ </div>
+ <Button
+ type="button"
+ variant="outline"
+ onClick={handleExportCalendar}
+ className="h-11 min-h-11 px-4 text-xs font-semibold rounded-lg shrink-0 gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+ >
+ <Calendar className="size-4 text-primary" />
+ <span>Salvar no Calendário (.ics)</span>
+ </Button>
+ </div>
+
  {/* Mapa Interativo ou Localização Oficial */}
  <div className="relative w-full rounded-lg overflow-hidden border border-border/60 shadow-xs">
  {(destination.lat && destination.lng) || (resort.lat && resort.lng) ? (
@@ -1243,6 +1340,7 @@ export function TravelPackageDetailView({
  lng: Number(destination.lng || resort.lng),
  }}
  zoom={13}
+ markers={mapMarkers}
  />
  </div>
  ) : (
@@ -1259,7 +1357,7 @@ export function TravelPackageDetailView({
  </main>
 
  {/* ── 3. Barra Fixa Inferior de Conversão (Bottom Booking Bar Dinâmica & Bilateral) ── */}
- <footer className={cn("fixed bottom-0 z-40 bg-background/95 backdrop-blur-xl border-t border-border/80 p-3 sm:p-4 shadow-lg pb-safe", isCompact ? "left-0 right-0" : "left-1/2 -translate-x-1/2 w-full max-w-4xl rounded-t-lg border-x")}>
+ <footer className={cn("fixed bottom-0 z-30 bg-background/95 backdrop-blur-xl border-t border-border/80 p-3 sm:p-4 shadow-2xs pb-safe", isCompact ? "left-0 right-0" : "left-1/2 -translate-x-1/2 w-full max-w-4xl rounded-t-lg border-x")}>
  <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
  <div className="flex flex-col">
  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -1316,7 +1414,7 @@ export function TravelPackageDetailView({
  type="button"
  size="lg"
  onClick={handleBooking}
- className="rounded-full px-6 sm:px-8 h-11 text-xs sm:text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-md cursor-pointer flex items-center gap-2"
+ className="rounded-full px-6 sm:px-8 h-11 text-xs sm:text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90  cursor-pointer flex items-center gap-2"
  >
  <MessageCircle className="size-4" />
  <span>Reservar Pacote</span>

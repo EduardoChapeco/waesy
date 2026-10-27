@@ -1,6 +1,6 @@
 /**
  * job-opportunity-extractor.ts — Extrator Mecânico Especializado de Vagas de Emprego
- * 
+ *
  * Pipeline de Alta Fidelidade:
  * 1. Detecção Precoce de Catálogo/Listagem (isJobListingPage) & Spidering de Links Filhos
  * 2. Extração estruturada de Schema.org/JobPosting (JSON-LD e Microdados)
@@ -482,7 +482,7 @@ export function isJobListingPage(title: string, url: string, html: string): bool
 
   // 1. Verificação por URL de busca ou listagem
   if (
-    /vagas-em-|empregos-em-|\/vagas\?|\/buscar|\/busca\b|\/search\b|\/jobs\?|\/vagas\/[a-z0-9-]+-sc\/?$/i.test(cleanUrl)
+    /vagas-em-|vagas-de-|empregos-em-|\/cargo\/|\/profissoes\/|\/vagas\?|\/buscar|\/busca\b|\/search\b|\/jobs\?|\/vagas\/[a-z0-9-]+-sc\/?$/i.test(cleanUrl)
   ) {
     return true;
   }
@@ -527,8 +527,8 @@ export function extractJobLinksFromListing(html: string, baseUrl: string): strin
     /href=["'](\/vaga-de[a-zA-Z0-9_.-]+-\d+\.aspx)["']/gi,
     // Trabalha Brasil
     /href=["'](\/vagas-emprego\/[^"'\s]+)["']/gi,
-    // Links Genéricos de Vagas
-    /href=["'](\/(?:vaga|emprego|oportunidade|job|cargo)\/[a-zA-Z0-9_-]{4,}[^"'\s]*)["']/gi,
+    // Links Genéricos de Vagas Individuais (exclui diretórios /cargo/ e /profissoes/)
+    /href=["'](\/(?:vaga|emprego|oportunidade|job)\/[a-zA-Z0-9_-]{4,}[^"'\s]*)["']/gi,
   ];
 
   const links = new Set<string>();
@@ -538,8 +538,8 @@ export function extractJobLinksFromListing(html: string, baseUrl: string): strin
     for (const match of matches) {
       try {
         const resolved = new URL(match[1], baseUrl).toString();
-        // Não inclui se for link de busca ou paginação
-        if (!/busca|search|\?p=|\/vagas-em-/i.test(resolved)) {
+        // Não inclui se for link de busca, diretório de cargos ou paginação
+        if (!/busca|search|\?p=|\/vagas-em-|\/vagas-de-|\/cargo\/|\/profissoes\/|\/mapa-de-carreiras/i.test(resolved)) {
           links.add(resolved);
         }
       } catch {}
@@ -668,18 +668,30 @@ export async function extractAndPersistJobOpportunity(
     job.location = `${job.locationCity}, ${job.locationState}`;
   }
 
-  // 4. Deduplicação por URL externa ou (título + empresa)
-  const { data: existing } = await supabase
+  // 4. Deduplicação segura por URL externa ou (título + empresa)
+  const { data: existingUrl } = await supabase
     .from("jobs")
     .select("id")
-    .or(`external_url.eq."${normalized}",and(title.ilike."${job.title}",company_name.ilike."${job.companyName}")`)
+    .eq("external_url", normalized)
     .maybeSingle();
 
-  if (existing?.id) {
+  let existingId = existingUrl?.id;
+
+  if (!existingId && job.title && job.companyName) {
+    const { data: existingTitle } = await supabase
+      .from("jobs")
+      .select("id")
+      .ilike("title", job.title)
+      .ilike("company_name", job.companyName)
+      .maybeSingle();
+    existingId = existingTitle?.id;
+  }
+
+  if (existingId) {
     return {
       success: true,
       job,
-      insertedId: existing.id,
+      insertedId: existingId,
       isDuplicate: true,
     };
   }
@@ -776,4 +788,122 @@ export async function sanitizeAndPurgeCorruptedJobs(): Promise<{
   }
 
   return { purgedListingRecords, fixedSalaries };
+}
+
+
+/**
+ * Semeia portais e catálogos regionais de vagas na crawl_queue quando a fila estiver vazia
+ */
+export async function seedRegionalJobPortals(
+  city = getDefaultCity(),
+  state = getDefaultState()
+): Promise<{ seeded: number }> {
+  const supabase = getServerClient();
+  const normalizedCity = city.toLowerCase().replace(/\s+/g, "-");
+  const seeds = [
+    {
+      url: `https://www.vagas.com.br/vagas-em-${normalizedCity}`,
+      domain: "vagas.com.br",
+      entity_type: "job",
+      status: "pending",
+      priority: 10,
+      discovered_via: "job_seeder",
+      metadata: { city, state, source_name: "Vagas.com.br Regional" },
+    },
+    {
+      url: `https://www.sine.net.br/vagas-empregos-em-${normalizedCity}-${state.toLowerCase()}`,
+      domain: "sine.net.br",
+      entity_type: "job",
+      status: "pending",
+      priority: 9,
+      discovered_via: "job_seeder",
+      metadata: { city, state, source_name: "SINE Santa Catarina" },
+    },
+    {
+      url: `https://www.trabalhabrasil.com.br/vagas-empregos-em-${normalizedCity}-${state.toLowerCase()}`,
+      domain: "trabalhabrasil.com.br",
+      entity_type: "job",
+      status: "pending",
+      priority: 8,
+      discovered_via: "job_seeder",
+      metadata: { city, state, source_name: "Trabalha Brasil" },
+    },
+  ];
+
+  await supabase.from("crawl_queue").upsert(seeds, { onConflict: "url", ignoreDuplicates: true });
+  return { seeded: seeds.length };
+}
+
+/**
+ * Processador em lote de vagas com auto-seeding quando a fila estiver vazia
+ */
+export async function harvestJobsBatch(limit = 4): Promise<{
+  inspected: number;
+  harvestedJobs: number;
+  queuedFromListings: number;
+  errors: number;
+}> {
+  const { scrapeUrl } = await import("@/lib/mining/firecrawl-client");
+  const supabase = getServerClient();
+
+  let { data: jobQueue } = await supabase
+    .from("crawl_queue")
+    .select("id, url, store_id, metadata")
+    .in("entity_type", ["job", "jobs_portal", "jobs", "vagas"])
+    .eq("status", "pending")
+    .limit(limit);
+
+  if (!jobQueue || jobQueue.length === 0) {
+    await seedRegionalJobPortals();
+    const { data: refetched } = await supabase
+      .from("crawl_queue")
+      .select("id, url, store_id, metadata")
+      .in("entity_type", ["job", "jobs_portal", "jobs", "vagas"])
+      .eq("status", "pending")
+      .limit(limit);
+    jobQueue = refetched || [];
+  }
+
+  let inspected = jobQueue.length;
+  let harvestedJobs = 0;
+  let queuedFromListings = 0;
+  let errors = 0;
+
+  for (const jq of jobQueue) {
+    try {
+      const scrape = await scrapeUrl(jq.url);
+      if (scrape.success && scrape.html) {
+        const jRes = await extractAndPersistJobOpportunity(scrape.html, jq.url, {
+          storeId: jq.store_id || undefined,
+          city: jq.metadata?.city || getDefaultCity(),
+          state: jq.metadata?.state || getDefaultState(),
+        });
+        if (jRes.success) {
+          if (jRes.isListingPage) queuedFromListings += jRes.queuedJobsCount || 0;
+          else harvestedJobs++;
+        }
+        await supabase.from("crawl_queue").update({
+          status: jRes.success ? "completed" : "failed",
+          last_error: jRes.error || null,
+          completed_at: new Date().toISOString(),
+        }).eq("id", jq.id);
+      } else {
+        errors++;
+        await supabase.from("crawl_queue").update({
+          status: "failed",
+          last_error: scrape.error || "Falha ao obter HTML da vaga",
+          completed_at: new Date().toISOString(),
+        }).eq("id", jq.id);
+      }
+    } catch (err: any) {
+      errors++;
+      await supabase.from("crawl_queue").update({
+        status: "failed",
+        last_error: err?.message || "Erro desconhecido ao processar vaga",
+        completed_at: new Date().toISOString(),
+      }).eq("id", jq.id);
+    }
+  }
+
+  return { inspected, harvestedJobs, queuedFromListings, errors };
 }

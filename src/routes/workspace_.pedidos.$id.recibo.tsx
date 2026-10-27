@@ -60,13 +60,13 @@ function ReceiptPrintPage() {
   const hasNFe = Boolean((order as any).danfe_pdf_url || (order as any).nfe_key);
 
   return (
-    <div className="bg-white text-black p-6 sm:p-8 max-w-3xl mx-auto min-h-screen font-mono text-xs">
+    <div className="bg-card text-foreground p-6 sm:p-8 max-w-3xl mx-auto min-h-screen font-mono text-xs">
       {/* Botão de Impressão na visualização em tela */}
       <div className="flex justify-end gap-2 mb-6 print:hidden">
         <Button
           type="button"
           onClick={() => window.print()}
-          className="h-11 sm:h-9 px-4 rounded-lg border border-neutral-300 text-xs font-sans font-medium text-neutral-800 bg-white hover:bg-neutral-100 transition-colors shadow-xs gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+          className="h-11 sm:h-9 px-4 rounded-lg border border-neutral-300 text-xs font-sans font-medium text-neutral-800 bg-card hover:bg-neutral-100 transition-colors shadow-xs gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
         >
           <Printer className="size-4" />
           <span>Imprimir Comanda / Recibo</span>
@@ -74,7 +74,7 @@ function ReceiptPrintPage() {
         {hasNFe && (order as any).danfe_pdf_url && (
           <Button
             asChild
-            className="h-11 sm:h-9 px-4 rounded-lg bg-emerald-600 text-white text-xs font-sans font-medium hover:bg-emerald-700 transition-colors shadow-xs gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+            className="h-11 sm:h-9 px-4 rounded-lg bg-emerald-600 text-foreground text-xs font-sans font-medium hover:bg-emerald-700 transition-colors shadow-xs gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
           >
             <a
               href={(order as any).danfe_pdf_url}
@@ -98,7 +98,7 @@ function ReceiptPrintPage() {
           <div className="text-right">
             <p className="font-bold">{formatDateTime(order.created_at)}</p>
             <span
-              className={`inline-block mt-1 px-2 py-0.5 text-xs font-bold rounded uppercase tracking-wider ${
+              className={`inline-block mt-1 px-2 py-1 text-xs font-bold rounded uppercase tracking-wider ${
                 hasNFe ? "bg-emerald-100 text-emerald-800" : "bg-neutral-100 text-neutral-700"
               }`}
             >

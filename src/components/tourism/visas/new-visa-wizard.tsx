@@ -65,7 +65,7 @@ export function NewVisaWizard({ isOpen, onClose, onCreated, storeId }: NewVisaWi
  <DialogTitle className="text-sm font-bold text-foreground">
  Novo Processo de Visto / Passaporte
  </DialogTitle>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Controle de documentação consular, agendamento de CASV e entrevista
  </p>
  </div>

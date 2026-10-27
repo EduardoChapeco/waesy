@@ -52,7 +52,7 @@ export function UnifiedEntityTimeline({
     return (
       <div className={cn("space-y-3 p-4", className)}>
         {[1, 2, 3].map((i) => (
-          <div key={i} className="flex gap-3 animate-pulse">
+          <div key={i} className="flex gap-3 animate-pulse motion-reduce:animate-none">
             <div className="size-7 rounded-full bg-muted shrink-0" />
             <div className="flex-1 space-y-2 pt-1">
               <div className="h-3 w-1/3 bg-muted rounded" />
@@ -99,7 +99,7 @@ export function UnifiedEntityTimeline({
                 <span className="text-xs font-semibold text-foreground truncate">
                   {entry.title}
                 </span>
-                <span className="text-[11px] font-mono text-muted-foreground shrink-0 tabular-nums">
+                <span className="text-2xs font-mono text-muted-foreground shrink-0 tabular-nums">
                   {formattedDate} às {formattedTime}
                 </span>
               </div>
@@ -110,12 +110,12 @@ export function UnifiedEntityTimeline({
                 </p>
               )}
 
-              <div className="flex items-center gap-2 text-[10px] text-muted-foreground/80 pt-1">
+              <div className="flex items-center gap-2 text-2xs text-muted-foreground/80 pt-1">
                 <span>Por {entry.actorName}</span>
                 {entry.entityType && (
                   <>
                     <span>•</span>
-                    <span className="uppercase tracking-wider font-mono text-[9px]">
+                    <span className="uppercase tracking-wider font-mono text-3xs">
                       {entry.entityType}
                     </span>
                   </>

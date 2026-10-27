@@ -14,9 +14,11 @@
 
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { Home, Search, Plus, MessageCircle, Menu, ShoppingCart, ArrowRight } from "lucide-react";
+import { Home, Search, Plus, MessageCircle, Menu, ShoppingCart, ArrowRight, User } from "lucide-react";
+import { useSuperAppDrawer, useAccountSwitcherDrawer } from "@/lib/drawer-store";
+import { AccountSwitcherDrawer } from "@/components/shell/AccountSwitcherDrawer";
 import { QuickCreateModal } from "@/components/commerce/quick-create-modal";
-import { GlobalMenuHub } from "@/components/shell/global-menu-hub";
+import { SuperAppModuleDrawer } from "@/components/shell/SuperAppModuleDrawer";
 import { useCartContext } from "@/lib/cart-context";
 import { listCustomerOrders } from "@/services/order.functions";
 import { formatCents } from "@/lib/utils";
@@ -33,8 +35,8 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
   const navigate = useNavigate();
   const pathname = location.pathname || "";
 
-  // Estado do Hub Global (FASE 3)
-  const [isMenuHubOpen, setIsMenuHubOpen] = useState(false);
+  const { isOpen: isSuperAppOpen, setOpen: setIsSuperAppOpen } = useSuperAppDrawer();
+  const { isOpen: isAccountSwitcherOpen, toggle: toggleAccountSwitcher } = useAccountSwitcherDrawer();
 
   // Páginas onde a barra deve ser suprimida (formulários densos)
   const isFormPage =
@@ -250,20 +252,20 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
               <span className="text-xs font-semibold tracking-tight leading-none">Mensagens</span>
             </Link>
 
-            {/* TAB 5: MENU HUB GLOBAL (SUPER APP PATTERN) */}
+            {/* TAB 5: MINHA CONTA / ALTERNADOR DE PERFIS (APPLE HIG & 99PAY) */}
             <button
               type="button"
-              onClick={() => setIsMenuHubOpen(true)}
-              aria-label="Menu principal"
+              onClick={toggleAccountSwitcher}
+              aria-label="Minha conta e perfis"
               className={cn(
                 "flex-1 h-12 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
-                isMenuHubOpen
+                isAccountSwitcherOpen || pathname.startsWith("/conta")
                   ? "text-primary font-bold"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
               <div className="relative">
-                <Menu className="size-5" strokeWidth={isMenuHubOpen ? 2.5 : 2} />
+                <User className="size-5" strokeWidth={isAccountSwitcherOpen || pathname.startsWith("/conta") ? 2.5 : 2} />
                 {activeOrdersCount > 0 && (
                   <span className="absolute -top-1 -right-1 size-2 rounded-full bg-amber-500 animate-ping" />
                 )}
@@ -271,20 +273,22 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
                   <span className="absolute -top-1 -right-1 size-2 rounded-full bg-amber-500" />
                 )}
               </div>
-              <span className="text-xs font-semibold tracking-tight leading-none">Menu</span>
+              <span className="text-xs font-semibold tracking-tight leading-none">Conta</span>
             </button>
           </nav>
         </div>
       </div>
 
-      {/* ── 3. MODAL / BOTTOM SHEET DO MENU HUB GLOBAL ── */}
-      <GlobalMenuHub
-        open={isMenuHubOpen}
-        onOpenChange={setIsMenuHubOpen}
+      {/* ── 3. MODAIS / BOTTOM SHEETS GLOBAIS DO SUPERAPP & CONTA ── */}
+      <SuperAppModuleDrawer
+        open={isSuperAppOpen}
+        onOpenChange={setIsSuperAppOpen}
         session={session}
         userRole={userRole}
-        activeOrdersCount={activeOrdersCount}
-        totalCartItems={totalCartItems}
+      />
+      <AccountSwitcherDrawer
+        session={session}
+        userRole={userRole}
       />
     </>
   );

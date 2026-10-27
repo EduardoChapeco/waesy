@@ -183,7 +183,7 @@ export function SectionCover({ draft, save }: SectionCoverProps) {
                   className="w-full flex h-8 items-center justify-center gap-2 rounded-lg bg-brand text-brand-foreground text-xs font-bold hover:opacity-90 disabled:opacity-50 transition-colors"
                 >
                   {generatingCover ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
                   ) : (
                     <Zap className="w-3.5 h-3.5" />
                   )}
@@ -228,7 +228,7 @@ export function SectionCover({ draft, save }: SectionCoverProps) {
                 <Button
                   type="button"
                   onClick={() => save({ cover_image_url: null })}
-                  className="absolute right-1 top-1 rounded bg-destructive/80 px-2 py-1 text-[9px] text-white hover:bg-destructive"
+                  className="absolute right-1 top-1 rounded bg-destructive/80 px-2 py-1 text-3xs text-foreground hover:bg-destructive"
                 >
                   Remover
                 </Button>
@@ -319,7 +319,7 @@ export function SectionCover({ draft, save }: SectionCoverProps) {
                 <Button
                   type="button"
                   onClick={() => save({ agent_photo_url: null })}
-                  className="ml-auto rounded bg-destructive/80 px-2 py-1 text-[9px] text-white hover:bg-destructive"
+                  className="ml-auto rounded bg-destructive/80 px-2 py-1 text-3xs text-foreground hover:bg-destructive"
                 >
                   Remover
                 </Button>

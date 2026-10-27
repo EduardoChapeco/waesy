@@ -236,7 +236,7 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
             <Button
               size="lg"
               onClick={() => setIsSheetOpen(true)}
-              className="w-full sm:w-auto h-12 rounded-lg text-xs sm:text-sm font-bold bg-primary text-primary-foreground px-6 gap-2  hover:bg-primary/90 transition-all cursor-pointer"
+              className="w-full sm:w-auto h-12 rounded-lg text-xs sm:text-sm font-bold bg-primary text-primary-foreground px-6 gap-2  hover:bg-primary/90 transition-colors duration-200 cursor-pointer"
             >
               <span>Garantir Vaga de Membro Fundador</span>
               <ArrowRight className="size-4" />
@@ -354,7 +354,7 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
                 disabled={isLookingUp}
                 className="rounded-lg text-xs font-bold h-10 px-4 shrink-0 bg-primary text-primary-foreground cursor-pointer"
               >
-                {isLookingUp ? <Loader2 className="size-3.5 animate-spin" /> : "Consultar"}
+                {isLookingUp ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : "Consultar"}
               </Button>
             </div>
           </form>
@@ -435,7 +435,7 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
               <Link
                 key={idx}
                 to={nicho.to as any}
-                className="rounded-lg border border-border/80 bg-card p-4 space-y-2 text-center flex flex-col items-center justify-center hover:border-primary/40 hover: transition-all cursor-pointer group"
+                className="rounded-lg border border-border/80 bg-card p-4 space-y-2 text-center flex flex-col items-center justify-center hover:border-primary/40 hover: transition-colors duration-200 cursor-pointer group"
               >
                 <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                   <nicho.icon className="size-4" />

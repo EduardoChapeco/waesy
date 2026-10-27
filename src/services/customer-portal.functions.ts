@@ -13,7 +13,7 @@ export const getCustomerPortalBySlug = createServerFn({ method: "GET" })
       const { data: store } = await db
         .from("stores")
         .select("id, name, slug, description, phone, email, settings")
-        .eq("slug", slug)
+        .eq("slug", (slug || "").replace(/^@/, ""))
         .maybeSingle();
 
       if (!store) {

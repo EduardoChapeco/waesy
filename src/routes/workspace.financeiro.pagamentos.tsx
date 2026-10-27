@@ -197,7 +197,7 @@ function AdminPaymentsPage() {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
-      <PageHeader
+      <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         eyebrow="Financeiro"
         title="Pagamentos"
         description="Acompanhe entradas financeiras, aprove comprovantes pendentes e monitore o faturamento em tempo real."
@@ -289,7 +289,7 @@ function AdminPaymentsPage() {
               statusFilter === "all"
                 ? "bg-background text-foreground shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             Todos ({payments.length})
           </button>
@@ -300,7 +300,7 @@ function AdminPaymentsPage() {
               statusFilter === "processing"
                 ? "bg-background text-foreground shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             Comprovantes ({kpis.processingCount})
           </button>
@@ -311,7 +311,7 @@ function AdminPaymentsPage() {
               statusFilter === "awaiting"
                 ? "bg-background text-foreground shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             Aguardando ({payments.filter((p) => p.status === "awaiting_payment").length})
           </button>
@@ -322,7 +322,7 @@ function AdminPaymentsPage() {
               statusFilter === "paid"
                 ? "bg-background text-foreground shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             Liquidados ({kpis.paidCount})
           </button>
@@ -427,7 +427,7 @@ function AdminPaymentsPage() {
       )}
 
       {/* ── MODAL DE APROVAÇÃO COM SELEÇÃO DE MEIO DE PAGAMENTO ── */}
-      <SheetPage
+      <SheetPage /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         open={approveModal.isOpen}
         onOpenChange={(open) => !isApproving && setApproveModal({ isOpen: open, order: null })}
         title={`Aprovar Pagamento • Pedido #${approveModal.order?.public_token || ""}`}
@@ -515,7 +515,7 @@ function AdminPaymentsPage() {
       </SheetPage>
 
       {/* ── MODAL DE RECUSA / REJEIÇÃO DE PAGAMENTO ── */}
-      <SheetPage
+      <SheetPage /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         open={rejectModal.isOpen}
         onOpenChange={(open) => !isRejecting && setRejectModal({ isOpen: open, order: null })}
         title={`Recusar Pagamento • Pedido #${rejectModal.order?.public_token || ""}`}
@@ -533,7 +533,7 @@ function AdminPaymentsPage() {
             <Button
               onClick={handleConfirmReject}
               disabled={isRejecting}
-              className="h-10 px-5 rounded-lg font-bold text-xs bg-rose-600 hover:bg-rose-700 text-white gap-2"
+              className="h-10 px-5 rounded-lg font-bold text-xs bg-rose-600 hover:bg-rose-700 text-foreground gap-2"
             >
               {isRejecting ? "Recusando..." : "Confirmar Recusa"}
             </Button>

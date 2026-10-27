@@ -63,7 +63,7 @@ export function ProductOptionsCustomizer({
  <h3 className="text-sm font-black uppercase tracking-wider text-foreground">
  Personalize seu Pedido
  </h3>
- <span className="text-[11px] text-muted-foreground font-medium">
+ <span className="text-2xs text-muted-foreground font-medium">
  Adicionais e Opções
  </span>
  </div>
@@ -90,7 +90,7 @@ export function ProductOptionsCustomizer({
  <span className="text-xs text-destructive font-bold">*</span>
  )}
  </h4>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  {group.selectionType === "single"
  ? "Escolha 1 opção"
  : `Escolha ${group.minSelections ? `no mínimo ${group.minSelections}` : ""} ${
@@ -103,7 +103,7 @@ export function ProductOptionsCustomizer({
 
  <Badge
  variant={isComplete ? "secondary" : "destructive"}
- className="text-[9px] font-bold uppercase tracking-wider"
+ className="text-3xs font-bold uppercase tracking-wider"
  >
  {isComplete
  ? group.isRequired
@@ -132,15 +132,15 @@ export function ProductOptionsCustomizer({
  group.maxSelections,
  )
  }
- className={`w-full p-3 rounded-lg border text-left transition-all flex items-center justify-between select-none cursor-pointer ${
+ className={`w-full p-3 rounded-lg border text-left transition-colors duration-200 flex items-center justify-between select-none cursor-pointer ${
  isChecked
  ? "bg-primary/10 border-primary text-foreground font-semibold"
  : "bg-card border-border/70 text-muted-foreground hover:border-border hover:bg-muted/30"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <div className="flex items-center gap-3">
  <div
- className={`size-5 rounded-md flex items-center justify-center transition-all ${
+ className={`size-5 rounded-md flex items-center justify-center transition-colors duration-200 ${
  isSingle ? "rounded-full" : "rounded-md"
  } ${
  isChecked

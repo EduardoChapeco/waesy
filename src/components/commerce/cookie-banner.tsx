@@ -85,7 +85,7 @@ export function CookieBanner() {
  <div className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
  <div className="flex items-center gap-2 mb-1">
  <span className="font-bold text-foreground text-xs sm:text-sm">Privacidade e Cookies LGPD</span>
- <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.2 rounded-md">
+ <span className="inline-flex items-center gap-1 text-2xs font-mono font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.2 rounded-md">
  <ShieldCheck className="size-3" /> Seguro
  </span>
  </div>
@@ -114,7 +114,7 @@ export function CookieBanner() {
  <div className="flex shrink-0 gap-2 w-full sm:w-auto">
  <Button
  onClick={handleAccept}
- className="w-full sm:w-auto font-bold rounded-lg bg-primary text-primary-foreground text-xs h-9 px-5 hover:scale-[1.02] active:scale-[0.98] transition-all"
+ className="w-full sm:w-auto font-bold rounded-lg bg-primary text-primary-foreground text-xs h-9 px-5 hover:scale-[1.02] active:scale-[0.98] transition-transform duration-200"
  >
  Entendi e Aceito
  </Button>

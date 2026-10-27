@@ -66,7 +66,7 @@ export const Button = React.forwardRef<HTMLButtonElement, DSButtonProps>(
         disabled={isBlocked}
         aria-busy={isLoading || undefined}
         aria-disabled={isBlocked || undefined}
-        className={cn(dsButtonVariants({ variant, size }), className)}
+        className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", dsButtonVariants({ variant, size }), className)}
         {...props}
       >
         {isLoading ? (

@@ -67,7 +67,7 @@ function RiskGauge({ score }: { score: number }) {
  <span className="font-bold font-mono">{score}/100 — {label}</span>
  </div>
  <div className="h-2 bg-muted rounded-full overflow-hidden">
- <div className={cn("h-full rounded-full transition-all", color)} style={{ width: `${score}%` }} />
+ <div className={cn("h-full rounded-full transition-colors duration-200", color)} style={{ width: `${score}%` }} />
  </div>
  </div>
  );
@@ -109,17 +109,17 @@ function CertificateDetailPage() {
  <div className="flex-1 min-w-0">
  <div className="flex items-center gap-2">
  <h1 className="text-base font-semibold">Certificado de Transação</h1>
- <Badge variant="outline" className="text-[10px] font-mono uppercase">
+ <Badge variant="outline" className="text-2xs font-mono uppercase">
  {cert.entity_type}
  </Badge>
  {status.auto_flagged && (
- <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[10px]">
+ <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-2xs">
  <AlertTriangle className="size-2.5 mr-1" />
  Sinalizado
  </Badge>
  )}
  </div>
- <code className="text-[10px] text-muted-foreground font-mono">{cryptography.certificate_hash}</code>
+ <code className="text-2xs text-muted-foreground font-mono">{cryptography.certificate_hash}</code>
  </div>
  </div>
  </div>
@@ -133,19 +133,19 @@ function CertificateDetailPage() {
  <div className={cn("text-base font-bold", status.is_valid ? "text-emerald-600 dark:text-emerald-400" : "text-destructive")}>
  {status.is_valid ? "✓ Válido" : "✗ Inválido"}
  </div>
- <div className="text-[10px] text-muted-foreground">Status</div>
+ <div className="text-2xs text-muted-foreground">Status</div>
  </div>
  <div className="text-center">
  <div className={cn("text-base font-bold", cryptography.chain_valid ? "text-emerald-600 dark:text-emerald-400" : "text-destructive")}>
  {cryptography.chain_valid ? "⛓ Íntegra" : "⚠ Quebrada"}
  </div>
- <div className="text-[10px] text-muted-foreground">Cadeia</div>
+ <div className="text-2xs text-muted-foreground">Cadeia</div>
  </div>
  <div className="text-center">
  <div className={cn("text-base font-bold", (timestamps.clock_drift_ms || 0) < 30000 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-500")}>
  {timestamps.clock_drift_ms != null ? `${(timestamps.clock_drift_ms / 1000).toFixed(1)}s` : "—"}
  </div>
- <div className="text-[10px] text-muted-foreground">Clock Drift</div>
+ <div className="text-2xs text-muted-foreground">Clock Drift</div>
  </div>
  </div>
  </div>
@@ -227,7 +227,7 @@ function CertificateDetailPage() {
 
  {/* Payload Snapshot */}
  <Section title="Snapshot do Payload (Imutável)" icon={Eye}>
- <pre className="text-[11px] font-mono bg-muted/50 rounded-lg p-4 overflow-x-auto no-scrollbar whitespace-pre-wrap text-muted-foreground max-h-72">
+ <pre className="text-2xs font-mono bg-muted/50 rounded-lg p-4 overflow-x-auto no-scrollbar whitespace-pre-wrap text-muted-foreground max-h-72">
  {JSON.stringify(cert.payload_snapshot, null, 2)}
  </pre>
  </Section>
@@ -259,9 +259,9 @@ function CertificateDetailPage() {
  <div className="flex-1 min-w-0">
  <code className="font-semibold">{ev.event_type}</code>
  {ev.risk_score > 0 && (
- <Badge variant="outline" className="ml-2 text-[10px]">{ev.risk_score}pts</Badge>
+ <Badge variant="outline" className="ml-2 text-2xs">{ev.risk_score}pts</Badge>
  )}
- <div className="text-muted-foreground mt-1 text-[10px]">
+ <div className="text-muted-foreground mt-1 text-2xs">
  {new Date(ev.created_at).toLocaleString("pt-BR")}
  </div>
  </div>
@@ -271,7 +271,7 @@ function CertificateDetailPage() {
  </Section>
  )}
 
- <div className="flex items-center justify-center gap-2 text-[11px] text-muted-foreground py-2">
+ <div className="flex items-center justify-center gap-2 text-2xs text-muted-foreground py-2">
  <Lock className="size-3.5" />
  Este certificado é imutável. Gerado por SHA-256 server-side. Nenhum UPDATE ou DELETE é possível.
  </div>

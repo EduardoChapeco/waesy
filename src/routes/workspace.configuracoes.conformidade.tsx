@@ -148,7 +148,7 @@ export function WorkspaceConformidadePage() {
       </div>
 
       {isLoading ? (
-        <div className="p-12 text-center text-xs text-muted-foreground animate-pulse rounded-lg border border-border/60 bg-card">
+        <div className="p-12 text-center text-xs text-muted-foreground animate-pulse motion-reduce:animate-none rounded-lg border border-border/60 bg-card">
           Carregando status cadastral e dados fiscais da loja...
         </div>
       ) : (
@@ -282,7 +282,7 @@ export function WorkspaceConformidadePage() {
                 >
                   {submitMutation.isPending ? (
                     <>
-                      <Loader2 className="size-4 animate-spin" />
+                      <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                       <span>Validando e Salvando...</span>
                     </>
                   ) : (

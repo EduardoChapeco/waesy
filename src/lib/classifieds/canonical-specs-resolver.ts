@@ -45,8 +45,24 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
 
   const titleLower = (classified.title || "").toLowerCase();
 
+  const explicitNiche = String(
+    attrs.niche ||
+    classified.niche ||
+    attrs.niche_id ||
+    classified.niche_id ||
+    ""
+  )
+    .toLowerCase()
+    .trim();
+
+  const isExplicitNonTravel = Boolean(
+    explicitNiche && !["viagem", "travel", "turismo"].includes(explicitNiche)
+  );
+
   // ── Identificação MECE de Nichos com Isolamento Estrito (Invariante B.37) ──
   const isEvent = Boolean(
+    explicitNiche === "evento" ||
+    explicitNiche === "event" ||
     rawCategory.includes("event") ||
     rawCategory.includes("evento") ||
     classified.niche_id === "event" ||
@@ -59,6 +75,8 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
   );
 
   const isJobs = Boolean(
+    explicitNiche === "vaga" ||
+    explicitNiche === "job" ||
     attrs.role ||
     attrs.work_model ||
     attrs.salary_range ||
@@ -70,6 +88,8 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
   );
 
   const isBusiness = Boolean(
+    explicitNiche === "negocio" ||
+    explicitNiche === "business" ||
     attrs.business_type ||
     attrs.monthly_revenue_cents ||
     attrs.is_business_sale ||
@@ -81,21 +101,25 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
   );
 
   const isTravel = Boolean(
-    attrs.destination_city ||
-    attrs.destination ||
-    attrs.itinerary_days?.length ||
-    attrs.lodgings?.length ||
-    attrs.departure_options?.length ||
-    attrs.flight_details ||
-    attrs.meal_plan ||
-    attrs.passenger_composition ||
-    classified.template_style === "editorial" ||
-    attrs.template_style === "editorial" ||
-    rawCategory.includes("turismo") ||
-    rawCategory.includes("viag") ||
-    rawCategory.includes("pacote") ||
-    rawCategory.includes("travel") ||
-    classified.niche_id === "travel"
+    !isExplicitNonTravel &&
+    (
+      explicitNiche === "viagem" ||
+      explicitNiche === "travel" ||
+      explicitNiche === "turismo" ||
+      attrs.destination_city ||
+      attrs.destination ||
+      attrs.itinerary_days?.length ||
+      attrs.lodgings?.length ||
+      attrs.departure_options?.length ||
+      attrs.flight_details ||
+      attrs.meal_plan ||
+      attrs.passenger_composition ||
+      rawCategory.includes("turismo") ||
+      rawCategory.includes("viag") ||
+      rawCategory.includes("pacote") ||
+      rawCategory.includes("travel") ||
+      classified.niche_id === "travel"
+    )
   ) && !isEvent && !isJobs && !isBusiness;
 
   const isHospitality = Boolean(
@@ -191,6 +215,8 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
 
   // Zero falso-positivo de grocery: se for qualquer outro nicho explícito, grocery é desativado!
   const isExplicitNonGrocery = Boolean(
+    explicitNiche === "desapego" ||
+    explicitNiche === "digital" ||
     isEvent ||
     isJobs ||
     isBusiness ||
@@ -315,6 +341,31 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
     }
     if (Array.isArray(attrs.provenance) && attrs.provenance.length > 0) {
       list.push({ label: "Procedência", value: attrs.provenance.join(", "), category: "technical" });
+    }
+
+    if (attrs.fipe_price_cents) {
+      const fipePrice = Number(attrs.fipe_price_cents);
+      const fipeFormatted = `R$ ${(fipePrice / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      list.push({
+        label: "Referência FIPE",
+        value: attrs.fipe_reference_month ? `${fipeFormatted} (${attrs.fipe_reference_month})` : fipeFormatted,
+        category: "commercial",
+        highlight: true,
+      });
+      if (attrs.fipe_delta_percent !== undefined && attrs.fipe_delta_percent !== null) {
+        const delta = Number(attrs.fipe_delta_percent);
+        const deltaLabel = delta < 0
+          ? `${Math.abs(delta).toFixed(1)}% abaixo da FIPE`
+          : delta === 0
+          ? "No valor da FIPE"
+          : `${delta.toFixed(1)}% acima da FIPE`;
+        list.push({
+          label: "Variação FIPE",
+          value: deltaLabel,
+          category: "commercial",
+          highlight: delta <= 0,
+        });
+      }
     }
   }
 
@@ -708,8 +759,11 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
     const traction = attrs.traction ?? attrs.tracao;
     const yearFab = attrs.year_fab ?? attrs.year;
     const implementType = attrs.implement_type ?? attrs.subniche;
-    const powerHp = attrs.power_hp ?? attrs.potencia;
-    const cabin = attrs.cabin;
+    const powerCvRaw = attrs.power_cv;
+    const powerHpRaw = attrs.power_hp ?? attrs.potencia;
+    const hasPowerCv = powerCvRaw !== undefined && powerCvRaw !== null && powerCvRaw !== "";
+    const hasPowerHp = powerHpRaw !== undefined && powerHpRaw !== null && powerHpRaw !== "";
+    const cabinRaw = attrs.cabin_type ?? attrs.cabin;
 
     list.push({ label: "Segmento", value: "Agronegócio & Maquinário", category: "technical", highlight: true });
     if (horimetro !== undefined && horimetro !== null && horimetro !== "") {
@@ -731,11 +785,20 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
     if (implementType) {
       list.push({ label: "Implemento / Tipo", value: String(implementType), category: "technical" });
     }
-    if (powerHp) {
-      list.push({ label: "Potência", value: `${powerHp} CV`, category: "technical" });
+    if (hasPowerCv || hasPowerHp) {
+      // Contrato legado: ambas as chaves exibem CV (power_hp era exibido como CV antes desta correção).
+      const powerValue = hasPowerCv ? powerCvRaw : powerHpRaw;
+      list.push({ label: "Potência", value: `${powerValue} CV`, category: "technical" });
     }
-    if (cabin !== undefined) {
-      list.push({ label: "Cabine", value: cabin ? "Cabinado com Ar" : "Plataformado", category: "technical" });
+    if (cabinRaw !== undefined && cabinRaw !== null && cabinRaw !== "") {
+      const cabinKey = String(cabinRaw).toLowerCase();
+      const isCabin = cabinRaw === true || cabinKey === "cabin" || cabinKey === "true";
+      const isOpen = cabinRaw === false || cabinKey === "open" || cabinKey === "platform" || cabinKey === "false";
+      if (isCabin) {
+        list.push({ label: "Cabine", value: "Cabinado com Ar", category: "technical" });
+      } else if (isOpen) {
+        list.push({ label: "Cabine", value: "Plataformado", category: "technical" });
+      }
     }
     if (attrs.cautelar_aprovada) {
       list.push({ label: "Vistoria", value: "Vistoria no Campo Aprovada", category: "technical" });

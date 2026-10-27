@@ -359,6 +359,65 @@ describe("resolveClassifiedDetailedSpecs", () => {
     );
   });
 
+  it("agro: lê power_cv e cabin_type gravados pelo formulário de cadastro", () => {
+    const specs = resolveClassifiedDetailedSpecs({
+      title: "Colheitadeira",
+      category: "agri",
+      attributes: { power_cv: 150, cabin_type: "cabin" },
+    });
+    expect(specs).toEqual(
+      expect.arrayContaining([
+        { label: "Potência", value: "150 CV", category: "technical" },
+        { label: "Cabine", value: "Cabinado com Ar", category: "technical" },
+      ])
+    );
+  });
+
+  it("agro: cabin_type open resolve como plataformado", () => {
+    const specs = resolveClassifiedDetailedSpecs({
+      title: "Trator",
+      category: "agri",
+      attributes: { cabin_type: "open" },
+    });
+    expect(specs.map((s) => s.value)).toContain("Plataformado");
+  });
+
+  it("agro: cabine desconhecida ou ausente e potência ausente omitem as linhas", () => {
+    const specs = resolveClassifiedDetailedSpecs({
+      title: "Trator",
+      category: "agri",
+      attributes: { cabin_type: "valor-invalido" },
+    });
+    const labels = specs.map((s) => s.label);
+    expect(labels).not.toContain("Cabine");
+    expect(labels).not.toContain("Potência");
+  });
+
+  it("agro: power_cv tem precedência sobre power_hp e cabin booleano legado continua válido", () => {
+    const specs = resolveClassifiedDetailedSpecs({
+      title: "Trator",
+      category: "agri",
+      attributes: { power_cv: 120, power_hp: 90, cabin: false },
+    });
+    expect(specs).toEqual(
+      expect.arrayContaining([
+        { label: "Potência", value: "120 CV", category: "technical" },
+        { label: "Cabine", value: "Plataformado", category: "technical" },
+      ])
+    );
+  });
+
+  it("isolamento B.37: serviço com power_cv não exibe potência agrícola", () => {
+    const specs = resolveClassifiedDetailedSpecs({
+      title: "Aulas de violão",
+      category: "service",
+      attributes: { power_cv: 150, cabin_type: "cabin" },
+    });
+    const labels = specs.map((s) => s.label);
+    expect(labels).not.toContain("Potência");
+    expect(labels).not.toContain("Cabine");
+  });
+
   it("resolve farmácia com retenção de receita e princípio ativo", () => {
     const pharmaAd = {
       title: "Suplemento Vitamínico D3 50.000 UI",

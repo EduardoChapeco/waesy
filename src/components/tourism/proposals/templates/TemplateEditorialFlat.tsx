@@ -19,7 +19,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
 
   return (
     <div
-      className="flex flex-col w-full bg-white text-slate-900"
+      className="flex flex-col w-full bg-card text-slate-900"
       style={{ fontFamily: "var(--brand-body-font, sans-serif)" }}
     >
       {/* 
@@ -140,7 +140,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                 {p.flights!.map((f, i) => (
                   <div
                     key={i}
-                    className="rounded-lg overflow-hidden border border-slate-200 bg-white break-inside-avoid"
+                    className="rounded-lg overflow-hidden border border-slate-200 bg-card break-inside-avoid"
                   >
                     <div
                       className="px-5 py-2 flex items-center justify-between"
@@ -152,7 +152,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                           {f.airline || "Companhia"}
                         </span>
                       </div>
-                      <span className="bg-white px-3 py-1 rounded-full ds-meta font-mono font-bold text-slate-700 border border-slate-200">
+                      <span className="bg-card px-3 py-1 rounded-full ds-meta font-mono font-bold text-slate-700 border border-slate-200">
                         {f.flight_number || "Voo"}
                       </span>
                     </div>
@@ -170,7 +170,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                       </div>
                       <div className="flex-1 flex flex-col items-center relative px-4">
                         <div className="w-full border-t-2 border-dashed border-slate-200 absolute top-1/2 -translate-y-1/2 z-0" />
-                        <div className="bg-white z-10 px-3 py-1 rounded-full border border-slate-200 ds-meta font-semibold text-slate-500 uppercase tracking-wider">
+                        <div className="bg-card z-10 px-3 py-1 rounded-full border border-slate-200 ds-meta font-semibold text-slate-500 uppercase tracking-wider">
                           {f.stops === 0
                             ? "Voo Direto"
                             : `${f.stops} Parada${f.stops > 1 ? "s" : ""}`}
@@ -203,7 +203,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                 {p.hotels!.map((h, i) => (
                   <div
                     key={i}
-                    className="rounded-lg overflow-hidden border border-slate-200 bg-white break-inside-avoid"
+                    className="rounded-lg overflow-hidden border border-slate-200 bg-card break-inside-avoid"
                   >
                     <div className="bg-[#FFFBEB] px-5 py-3 flex items-center gap-2 border-b border-amber-100">
                       <span className="ds-label-caps text-amber-700">Hospedagem</span>
@@ -258,14 +258,14 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                   {p.itinerary!.map((d, i) => (
                     <div key={i} className="relative pl-8 pb-10 last:pb-0 break-inside-avoid">
                       <div
-                        className="absolute w-5 h-5 rounded-full -left-[11px] border-[3px] border-white top-1 flex items-center justify-center text-[9px] font-bold text-white"
+                        className="absolute w-5 h-5 rounded-full -left-[11px] border-[3px] border-white top-1 flex items-center justify-center text-3xs font-bold text-foreground"
                         style={{ backgroundColor: brand }}
                       >
                         {i + 1}
                       </div>
                       <div className="flex items-center gap-3 mb-3">
                         <span
-                          className="px-3 py-1 rounded-full ds-label-caps text-white"
+                          className="px-3 py-1 rounded-full ds-label-caps text-foreground"
                           style={{ backgroundColor: brand }}
                         >
                           {d.day || `Dia ${i + 1}`}
@@ -376,7 +376,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
       </div>
 
       {/* FOOTER */}
-      <div className="mt-auto border-t border-slate-200 bg-white px-12 py-8 flex justify-between items-center break-inside-avoid">
+      <div className="mt-auto border-t border-slate-200 bg-card px-12 py-8 flex justify-between items-center break-inside-avoid">
         {p.agent_name ? (
           <div className="flex items-center gap-4">
             {p.agent_photo_url ? (

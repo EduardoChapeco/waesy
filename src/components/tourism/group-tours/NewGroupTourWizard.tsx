@@ -609,7 +609,7 @@ export function NewGroupTourWizard({
                               : [...current, amenity];
                             setValue("hotelAmenities", next, { shouldValidate: true });
                           }}
-                          className={`px-3 py-2 rounded-full text-xs font-medium border transition-all duration-200 cursor-pointer ${
+                          className={`px-3 py-2 rounded-full text-xs font-medium border transition-colors duration-200 duration-200 cursor-pointer ${
                             selected
                               ? "bg-brand/10 border-brand text-brand shadow-sm shadow-brand/10"
                               : "bg-surface-alt/55 border-border text-muted-foreground hover:border-muted-foreground/30"
@@ -1049,7 +1049,7 @@ export function NewGroupTourWizard({
                         <Button
                           type="button"
                           onClick={() => setValue("coverUrl", "", { shouldValidate: true })}
-                          className="text-danger flex items-center gap-2 text-sm font-bold bg-surface px-4 py-2 rounded-lg border border-danger/30 hover:bg-danger hover:text-white transition-colors"
+                          className="text-danger flex items-center gap-2 text-sm font-bold bg-surface px-4 py-2 rounded-lg border border-danger/30 hover:bg-danger hover:text-foreground transition-colors"
                         >
                           <Trash2 className="h-4 w-4" /> Remover Imagem
                         </Button>
@@ -1070,7 +1070,7 @@ export function NewGroupTourWizard({
                         className="flex flex-col items-center justify-center w-full h-40 rounded-card border-2 border-dashed border-border/60 bg-surface hover:border-brand/50 hover:bg-surface-alt/50 cursor-pointer transition-colors"
                       >
                         {uploading ? (
-                          <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand border-t-transparent mb-2" />
+                          <div className="h-6 w-6 animate-spin motion-reduce:animate-none rounded-full border-2 border-brand border-t-transparent mb-2" />
                         ) : (
                           <Upload className="h-8 w-8 text-muted-foreground/50 mb-2" />
                         )}

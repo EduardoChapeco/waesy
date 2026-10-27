@@ -113,11 +113,11 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  type="button"
  onClick={handleTriggerClick}
  aria-label="Abrir Notificações"
- className="relative size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 active:scale-95 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+ className="relative size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 active:scale-95 transition-transform duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
  >
  <Bell className="size-5" />
  {unreadCount > 0 && (
- <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-primary ring-2 ring-background animate-pulse" />
+ <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-primary ring-2 ring-background animate-pulse motion-reduce:animate-none" />
  )}
  </button>
  </PopoverTrigger>
@@ -132,7 +132,7 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  <div className="flex items-center gap-2">
  <h3 className="text-sm font-bold text-foreground">Notificações</h3>
  {unreadCount > 0 && (
- <Badge className="bg-primary text-primary-foreground font-mono text-[10px] px-2 py-0 h-4 rounded-full font-bold">
+ <Badge className="bg-primary text-primary-foreground font-mono text-2xs px-2 py-0 h-4 rounded-full font-bold">
  {unreadCount} novas
  </Badge>
  )}
@@ -143,7 +143,7 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  type="button"
  onClick={() => markAllMutation.mutate()}
  disabled={markAllMutation.isPending}
- className="text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 cursor-pointer"
+ className="text-2xs font-semibold text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <CheckCheck className="size-3.5" />
  <span>Marcar todas</span>
@@ -160,8 +160,8 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  key={tab.id}
  type="button"
  onClick={() => setActiveTab(tab.id)}
- className={cn(
- "px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-colors duration-200 cursor-pointer",
  isActive
  ? "bg-primary/10 text-primary border border-primary/25 font-bold"
  : "bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted border border-transparent"
@@ -179,13 +179,21 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  <div className="p-1 space-y-1">
  {notifications.map((item) => (
  <div
- key={item.id}
- onClick={() => handleNotificationClick(item)}
- className={cn(
- "p-3 rounded-lg flex items-start gap-3 transition-colors cursor-pointer group text-left",
- item.isRead ? "hover:bg-muted/40" : "bg-muted/30 hover:bg-muted/60"
- )}
- >
+    key={item.id}
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        handleNotificationClick(item);
+      }
+    }}
+    onClick={() => handleNotificationClick(item)}
+    className={cn(
+      "p-3 rounded-lg flex items-start gap-3 transition-colors cursor-pointer group text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+      item.isRead ? "hover:bg-muted/40" : "bg-muted/30 hover:bg-muted/60"
+    )}
+  >
  {/* Avatar Squircle da Empresa / Autor */}
  <div className="size-10 rounded-lg bg-card overflow-hidden shrink-0 flex items-center justify-center ">
  {item.avatarUrl ? (
@@ -203,17 +211,17 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  <p className={cn("text-xs line-clamp-1 leading-snug", item.isRead ? "font-semibold text-foreground" : "font-bold text-foreground")}>
  {item.title}
  </p>
- <span className="text-[10px] font-mono text-muted-foreground shrink-0">
+ <span className="text-2xs font-mono text-muted-foreground shrink-0">
  {getRelativeTime(item.createdAt)}
  </span>
  </div>
 
- <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
+ <p className="text-2xs text-muted-foreground line-clamp-2 leading-relaxed">
  {item.message}
  </p>
 
  {item.authorName && (
- <span className="text-[10px] font-medium text-foreground/70 block pt-1">
+ <span className="text-2xs font-medium text-foreground/70 block pt-1">
  {item.authorName}
  </span>
  )}
@@ -230,7 +238,7 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  e.stopPropagation();
  markReadMutation.mutate(item.id);
  }}
- className="hidden sm:group-hover:flex items-center justify-center size-5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+ className="hidden sm:group-hover:flex items-center justify-center size-5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Check className="size-3" />
  </button>
@@ -244,7 +252,7 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  <div className="py-12 px-4 text-center space-y-2">
  <Bell className="size-8 text-muted-foreground/40 mx-auto" />
  <p className="text-xs font-bold text-foreground">Nenhuma notificação no momento</p>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Avisos de pedidos, interações e ofertas aparecerão aqui.
  </p>
  </div>

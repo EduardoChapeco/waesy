@@ -17,6 +17,7 @@ import { HotpagesRail } from "@/components/commerce/hotpages-rail";
 import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
 import { ContextualStoriesRail } from "@/components/stories/contextual-stories-rail";
 import { GroceryProductCard } from "@/components/commerce/grocery-product-card";
+import { SupermarketCatalogGrid } from "@/components/commerce/SupermarketCatalogGrid";
 import { listPublishedProducts, listPublishedCategories, listAvailableAttributes } from "@/services/catalog.functions";
 import { getMarketplaceFeed } from "@/services/marketplace.functions";
 import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
@@ -257,8 +258,8 @@ function SupermarketMasterPage() {
  <button
  type="button"
  onClick={() => setSelectedStore("todos")}
- className={cn(
- "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-colors duration-200 cursor-pointer select-none active:scale-98",
  selectedStore === "todos"
  ? "bg-foreground text-background border-foreground font-bold"
  : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
@@ -272,8 +273,8 @@ function SupermarketMasterPage() {
  key={store}
  type="button"
  onClick={() => setSelectedStore(store)}
- className={cn(
- "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 shadow-2xs",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-colors duration-200 cursor-pointer select-none active:scale-98 shadow-2xs",
  selectedStore === store
  ? "bg-foreground text-background border-foreground font-bold shadow-xs"
  : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
@@ -314,8 +315,8 @@ function SupermarketMasterPage() {
  key={f.id}
  type="button"
  onClick={() => setSelectedDietary(f.id)}
- className={cn(
- "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 shadow-2xs",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-colors duration-200 cursor-pointer select-none active:scale-98 shadow-2xs",
  isSelected
  ? "bg-foreground text-background border-foreground font-bold shadow-xs"
  : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"

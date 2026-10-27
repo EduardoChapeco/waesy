@@ -120,7 +120,7 @@ function ConcursoDetailPage() {
           asChild
           variant="ghost"
           size="sm"
-          className="size-11 sm:size-auto rounded-full sm:rounded-lg p-0 sm:px-3 text-xs font-semibold gap-2 h-11 text-muted-foreground hover:text-foreground hover:bg-muted/80 active:scale-95 transition-all"
+          className="size-11 sm:size-auto rounded-full sm:rounded-lg p-0 sm:px-3 text-xs font-semibold gap-2 h-11 text-muted-foreground hover:text-foreground hover:bg-muted/80 active:scale-95 transition-transform duration-200"
           aria-label="Todos os Sorteios"
         >
           <Link to="/concursos">
@@ -160,13 +160,13 @@ function ConcursoDetailPage() {
             <Link
               to="/diretorio/$id"
               params={{ id: raffle.storeId }}
-              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/70 hover:bg-black/90 text-white text-[11px] backdrop-blur-md transition-all active:scale-95 cursor-pointer"
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-foreground/70 hover:bg-foreground/90 text-foreground text-2xs backdrop-blur-md transition-transform duration-200 active:scale-95 cursor-pointer"
             >
               <Store className="size-3" />
               <span>{raffle.storeName}</span>
             </Link>
           ) : (
-            <Badge className="bg-black/70 text-white text-[11px] backdrop-blur-md border-0 gap-2 px-3 py-1">
+            <Badge className="bg-foreground/70 text-foreground text-2xs backdrop-blur-md border-0 gap-2 px-3 py-1">
               <Store className="size-3" />
               <span>{raffle.storeName || "Comunidade Waesy"}</span>
             </Badge>
@@ -177,8 +177,8 @@ function ConcursoDetailPage() {
           <Badge
             className={
               isCompleted
-                ? "bg-black/70 text-white text-[11px] backdrop-blur-md border-0"
-                : "bg-emerald-600 text-white text-[11px] font-bold border-0"
+                ? "bg-foreground/70 text-foreground text-2xs backdrop-blur-md border-0"
+                : "bg-emerald-600 text-foreground text-2xs font-bold border-0"
             }
           >
             {isCompleted ? "Sorteio Encerrado" : "Aberto para Participação"}
@@ -202,7 +202,7 @@ function ConcursoDetailPage() {
       {/* ── Métricas & Dados Chave ── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
-          <span className="text-[10px] uppercase font-mono text-muted-foreground block">
+          <span className="text-2xs uppercase font-mono text-muted-foreground block">
             Data do Sorteio
           </span>
           <span className="text-xs font-bold text-foreground block">
@@ -211,7 +211,7 @@ function ConcursoDetailPage() {
         </div>
 
         <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
-          <span className="text-[10px] uppercase font-mono text-muted-foreground block">
+          <span className="text-2xs uppercase font-mono text-muted-foreground block">
             Participação
           </span>
           <span className="text-xs font-bold text-foreground block">
@@ -222,7 +222,7 @@ function ConcursoDetailPage() {
         </div>
 
         <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
-          <span className="text-[10px] uppercase font-mono text-muted-foreground block">
+          <span className="text-2xs uppercase font-mono text-muted-foreground block">
             Seus Cupons
           </span>
           <span className="text-xs font-bold text-foreground block">
@@ -310,7 +310,7 @@ function ConcursoDetailPage() {
           <div className="p-4 rounded-lg bg-muted/40 border border-border/60 space-y-2 text-xs text-muted-foreground leading-relaxed">
             <p className="font-semibold text-foreground">Termos e Condições:</p>
             <p className="line-clamp-3">{raffle.termsText}</p>
-            <p className="text-[11px] font-mono">
+            <p className="text-2xs font-mono">
               Data do Sorteio: <strong>{drawDateFormatted}</strong>
             </p>
           </div>
@@ -345,7 +345,7 @@ function ConcursoDetailPage() {
               className="h-11 px-5 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer"
             >
               {isSubmitting ? (
-                <Loader2 className="size-4 animate-spin" />
+                <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
               ) : (
                 <Ticket className="size-4" />
               )}

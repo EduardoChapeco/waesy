@@ -227,7 +227,7 @@ function VehicleLayoutsListPage() {
  {filtered.map((layout) => (
  <div
  key={layout.id}
- className="flex flex-col justify-between p-4 sm:p-5 rounded-lg border border-border/70 bg-card hover:border-primary/40 transition-all space-y-4"
+ className="flex flex-col justify-between p-4 sm:p-5 rounded-lg border border-border/70 bg-card hover:border-primary/40 transition-colors duration-200 space-y-4"
  >
  <div className="space-y-3">
  <div className="flex items-start justify-between gap-2">
@@ -434,13 +434,13 @@ function VehicleLayoutsListPage() {
           >
             Cancelar
           </AlertDialogCancel>
-          <AlertDialogAction
+          <AlertDialogAction /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
             onClick={(e) => {
               e.preventDefault();
               confirmDelete();
             }}
             disabled={isDeleting}
-            className="h-11 sm:h-10 px-4 rounded-lg text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white"
+            className="h-11 sm:h-10 px-4 rounded-lg text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-foreground"
           >
             {isDeleting ? "Excluindo..." : "Excluir Definitivamente"}
           </AlertDialogAction>

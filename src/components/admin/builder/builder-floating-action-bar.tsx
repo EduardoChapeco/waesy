@@ -30,7 +30,7 @@ export function BuilderFloatingActionBar({
  const blockName = reg?.name || selectedNode.block_type;
 
  return (
- <div
+ <div /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */
  onClick={(e) => e.stopPropagation()}
  className="inline-flex items-center gap-1 p-1 bg-card/95 backdrop-blur-md border border-border/80 rounded-lg shadow-xl z-40 select-none animate-in fade-in zoom-in-95 duration-150 ring-1 ring-black/5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
  >

@@ -159,17 +159,17 @@ export function BannerHeroCarousel({
             currentBanner.subtitle ||
             currentBanner.badge_text ||
             currentBanner.cta_label) && (
-            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent sm:bg-gradient-to-r sm:from-black/90 sm:via-black/50 sm:to-transparent flex flex-col justify-end sm:justify-center p-4 sm:p-8 lg:p-12 text-white pointer-events-none z-10">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent sm:bg-gradient-to-r sm:from-black/90 sm:via-black/50 sm:to-transparent flex flex-col justify-end sm:justify-center p-4 sm:p-8 lg:p-12 text-foreground pointer-events-none z-10">
               <div className="max-w-xl space-y-2 sm:space-y-3 z-10 pointer-events-auto">
                 {currentBanner.show_badge === true && currentBanner.badge_text && (
-                  <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3 sm:py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold uppercase tracking-wider text-white border border-white/30">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3 sm:py-1 rounded-full bg-card/20 backdrop-blur-md text-xs font-bold uppercase tracking-wider text-foreground border border-white/30">
                     <Layers className="size-3 text-amber-300" />
                     <span>{currentBanner.badge_text}</span>
                   </div>
                 )}
 
                 {currentBanner.show_title === true && currentBanner.title && (
-                  <h2 className="text-base sm:text-2xl lg:text-4xl font-black tracking-tight leading-tight line-clamp-2 text-white">
+                  <h2 className="text-base sm:text-2xl lg:text-4xl font-black tracking-tight leading-tight line-clamp-2 text-foreground">
                     {currentBanner.title}
                   </h2>
                 )}
@@ -184,7 +184,7 @@ export function BannerHeroCarousel({
                   <div className="pt-2 sm:pt-2">
                     <Link
                       to={targetLink as any}
-                      className="inline-flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-3 rounded-lg bg-white text-black font-bold text-xs sm:text-sm hover:bg-zinc-100 hover:scale-105 active:scale-95 transition-transform"
+                      className="inline-flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-3 rounded-lg bg-card text-foreground font-bold text-xs sm:text-sm hover:bg-zinc-100 hover:scale-105 active:scale-95 transition-transform"
                     >
                       <span>{currentBanner.cta_label || "Conferir"}</span>
                       <ArrowRight className="size-3.5 sm:size-4" />
@@ -201,14 +201,14 @@ export function BannerHeroCarousel({
             <button
               onClick={handlePrev}
               aria-label="Banner anterior"
-              className="absolute left-3 top-1/2 -translate-y-1/2 size-11 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md hidden sm:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              className="absolute left-3 top-1/2 -translate-y-1/2 size-11 rounded-full bg-foreground/40 hover:bg-foreground/70 text-foreground backdrop-blur-md hidden sm:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
             >
               <ChevronLeft className="size-5" />
             </button>
             <button
               onClick={handleNext}
               aria-label="Próximo banner"
-              className="absolute right-3 top-1/2 -translate-y-1/2 size-11 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md hidden sm:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              className="absolute right-3 top-1/2 -translate-y-1/2 size-11 rounded-full bg-foreground/40 hover:bg-foreground/70 text-foreground backdrop-blur-md hidden sm:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
             >
               <ChevronRight className="size-5" />
             </button>
@@ -218,10 +218,10 @@ export function BannerHeroCarousel({
               {activeBanners.map((_, i) => (
                 <span
                   key={i}
-                  className={`transition-all duration-300 rounded-full ${
+                  className={`transition-colors duration-200 duration-300 rounded-full ${
                     i === currentIndex
-                      ? "w-5 h-1.5 bg-white shadow-sm"
-                      : "w-1.5 h-1.5 bg-white/50"
+                      ? "w-5 h-1.5 bg-card shadow-sm"
+                      : "w-1.5 h-1.5 bg-card/50"
                   }`}
                 />
               ))}

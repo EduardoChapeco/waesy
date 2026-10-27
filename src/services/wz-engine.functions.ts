@@ -410,7 +410,7 @@ export const chargeAiUsageWz = createServerFn({ method: "POST" })
     // 3. Debitar do primeiro bucket elegível atomicamente
     const targetBucket = eligibleBuckets[0];
     const newBal = Number(targetBucket.available_balance) - costWz;
-    const idempotencyKey = `ai_charge_${identity.id}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const idempotencyKey = `ai_charge_${identity.id}_${Date.now()}_${crypto.randomUUID().replace(/-/g, "").substring(0, 8)}`;
     const seal = `SEAL_AI_${Date.now()}`;
 
     // Atualiza bucket

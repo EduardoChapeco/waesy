@@ -206,7 +206,7 @@ function WorkspaceNoticiasIndexPage() {
  return (
  <div className="w-full space-y-6">
  {/* Header */}
- <PageHeader
+ <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  title="Notícias"
  actions={
  <div className="flex items-center gap-2">
@@ -373,7 +373,7 @@ function WorkspaceNoticiasIndexPage() {
                     className="h-8 px-3 rounded-lg font-bold text-xs gap-2 shadow-2xs cursor-pointer"
                   >
                     {isBatchProcessing ? (
-                      <Loader2 className="size-3.5 animate-spin" />
+                      <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
                     ) : (
                       <Zap className="size-3.5 fill-current" />
                     )}
@@ -422,7 +422,7 @@ function WorkspaceNoticiasIndexPage() {
                       }}
                     />
                     {!isHealthyImageUrl(mined.ai_suggested_cover_url) && (
-                      <span className="absolute bottom-0 right-0 rounded-tl-md bg-amber-500 text-xs font-bold px-1 text-white" title="Fallback fotográfico em alta definição">
+                      <span className="absolute bottom-0 right-0 rounded-tl-md bg-amber-500 text-xs font-bold px-1 text-foreground" title="Fallback fotográfico em alta definição">
                         HD
                       </span>
                     )}
@@ -473,7 +473,7 @@ function WorkspaceNoticiasIndexPage() {
                     className="rounded-lg font-bold text-xs gap-1 h-8"
                   >
                     {curatingId === mined.id ? (
-                      <Loader2 className="size-3.5 animate-spin" />
+                      <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
                     ) : (
                       <ThumbsUp className="size-3.5" />
                     )}

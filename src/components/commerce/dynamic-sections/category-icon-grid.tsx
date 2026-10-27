@@ -131,7 +131,7 @@ export const CategoryIconGrid: React.FC<CategoryIconGridProps> = ({
                 key={cat.id}
                 type="button"
                 onClick={() => onCategorySelect?.(cat)}
-                className="relative p-4 rounded-2xl border border-border/80 bg-card hover:bg-muted/40 hover:border-primary/40 transition-all cursor-pointer flex flex-col items-center text-center justify-center gap-2.5 group shadow-2xs hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-[110px]"
+                className="relative p-4 rounded-2xl border border-border/80 bg-card hover:bg-muted/40 hover:border-primary/40 transition-colors duration-200 cursor-pointer flex flex-col items-center text-center justify-center gap-3 group shadow-2xs hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-[110px]"
               >
                 {/* Badge de Desconto / Destaque */}
                 {(hasDiscount || hasBadge) && (
@@ -139,7 +139,7 @@ export const CategoryIconGrid: React.FC<CategoryIconGridProps> = ({
                     <Badge
                       variant="outline"
                       className={cn(
-                        "text-[10px] font-bold px-1.5 py-0.5 rounded-full border",
+                        "text-2xs font-bold px-2 py-1 rounded-full border",
                         hasDiscount
                           ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
                           : "bg-primary/10 text-primary border-primary/20"
@@ -161,7 +161,7 @@ export const CategoryIconGrid: React.FC<CategoryIconGridProps> = ({
                     {cat.title}
                   </span>
                   {cat.subtitle && (
-                    <span className="text-[10px] text-muted-foreground line-clamp-1">
+                    <span className="text-2xs text-muted-foreground line-clamp-1">
                       {cat.subtitle}
                     </span>
                   )}

@@ -82,8 +82,8 @@ export function WzCardMockup({
         return {
           bg: "bg-gradient-to-br from-neutral-900 via-neutral-950 to-black",
           border: "border-neutral-700/50",
-          accent: "text-white",
-          badge: "bg-white/10 text-neutral-200 border-white/20",
+          accent: "text-foreground",
+          badge: "bg-card/10 text-neutral-200 border-white/20",
           badgeText: "Edição Especial",
         };
       case "neon_pulse":
@@ -110,7 +110,7 @@ export function WzCardMockup({
     <div className={cn("relative w-full max-w-sm mx-auto select-none perspective-1000", className)}>
       <div
         className={cn(
-          "relative w-full aspect-[16/10] rounded-2xl transition-all duration-500 transform-style-3d shadow-xl",
+          "relative w-full aspect-[16/10] rounded-2xl transition-colors duration-200 duration-500 transform-style-3d shadow-xl",
           isFlipped ? "rotate-y-180" : ""
         )}
       >
@@ -139,16 +139,16 @@ export function WzCardMockup({
                   className="size-7 rounded-full object-cover border border-white/20 shrink-0"
                 />
               ) : (
-                <div className="size-7 rounded-full bg-white/10 flex items-center justify-center border border-white/10 shrink-0">
-                  <Store className="size-3.5 text-white/80" />
+                <div className="size-7 rounded-full bg-card/10 flex items-center justify-center border border-white/10 shrink-0">
+                  <Store className="size-3.5 text-foreground/80" />
                 </div>
               )}
-              <span className="text-xs font-bold text-white tracking-wide truncate uppercase">
+              <span className="text-xs font-bold text-foreground tracking-wide truncate uppercase">
                 {issuerName}
               </span>
             </div>
 
-            <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full border", designTheme.badge)}>
+            <span className={cn("text-2xs font-semibold px-2 py-1 rounded-full border", designTheme.badge)}>
               {designTheme.badgeText}
             </span>
           </div>
@@ -161,15 +161,15 @@ export function WzCardMockup({
               </div>
             ) : (
               <div className="space-y-0.5">
-                <p className="text-[11px] text-white/60 font-medium">
+                <p className="text-2xs text-foreground/60 font-medium">
                   {recipientName ? `Para: ${recipientName}` : "Para você com carinho ❤️"}
                 </p>
                 {personalMessage ? (
-                  <p className="text-xs text-white/90 italic line-clamp-2 font-serif">
+                  <p className="text-xs text-foreground/90 italic line-clamp-2 font-serif">
                     "{personalMessage}"
                   </p>
                 ) : (
-                  <p className="text-xs text-white/80 font-serif">
+                  <p className="text-xs text-foreground/80 font-serif">
                     Aproveite esta experiência exclusiva.
                   </p>
                 )}
@@ -180,21 +180,21 @@ export function WzCardMockup({
           {/* Bottom Bar: Valor $WZ, Equivalência e Código */}
           <div className="relative z-10 flex items-end justify-between border-t border-white/10 pt-2">
             <div>
-              <div className="flex items-baseline gap-1.5">
+              <div className="flex items-baseline gap-2">
                 <span className={cn("text-xl sm:text-2xl font-black tracking-tight", designTheme.accent)}>
                   {formatWz(effectiveWz)}
                 </span>
               </div>
-              <p className="text-[10px] text-white/60 font-mono">
+              <p className="text-2xs text-foreground/60 font-mono">
                 Valor de ref.: {refBrl}
               </p>
             </div>
 
             <div className="text-right">
-              <span className="text-[9px] text-white/40 uppercase tracking-widest block font-mono">
+              <span className="text-3xs text-foreground/40 uppercase tracking-widest block font-mono">
                 Código
               </span>
-              <span className="text-[11px] font-mono font-bold text-white/90 tracking-wider">
+              <span className="text-2xs font-mono font-bold text-foreground/90 tracking-wider">
                 {codeDisplay}
               </span>
             </div>
@@ -204,7 +204,7 @@ export function WzCardMockup({
         {/* ── VERSO DO CARTÃO ── */}
         <div
           className={cn(
-            "absolute inset-0 w-full h-full rounded-2xl p-5 flex flex-col justify-between backface-hidden rotate-y-180 border overflow-hidden bg-slate-950 text-white",
+            "absolute inset-0 w-full h-full rounded-2xl p-5 flex flex-col justify-between backface-hidden rotate-y-180 border overflow-hidden bg-slate-950 text-foreground",
             designTheme.border
           )}
         >
@@ -213,11 +213,11 @@ export function WzCardMockup({
 
           {/* Regras de Uso e Escopo */}
           <div className="space-y-2 py-2">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-amber-400">
+            <div className="flex items-center gap-2 text-xs font-bold text-amber-400">
               <ShieldCheck className="size-4 shrink-0" />
               <span>Regras de Utilização do Ativo</span>
             </div>
-            <ul className="text-[11px] text-white/70 space-y-1 list-disc pl-4 leading-tight">
+            <ul className="text-2xs text-foreground/70 space-y-1 list-disc pl-4 leading-tight">
               {scopeType === "MERCHANT" ? (
                 <>
                   <li>Válido exclusivamente para compras e serviços na {issuerName}.</li>
@@ -235,7 +235,7 @@ export function WzCardMockup({
           </div>
 
           {/* Rodapé do Verso */}
-          <div className="flex items-center justify-between border-t border-white/10 pt-2 text-[10px] text-white/50">
+          <div className="flex items-center justify-between border-t border-white/10 pt-2 text-2xs text-foreground/50">
             <span>Emitido por Waesy Commerce</span>
             {senderName && <span>De: {senderName}</span>}
           </div>
@@ -248,7 +248,7 @@ export function WzCardMockup({
           <button
             type="button"
             onClick={() => setIsFlipped(!isFlipped)}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-lg border border-border/60 hover:border-border active:scale-95 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+            className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-lg border border-border/60 hover:border-border active:scale-95 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
             aria-label={isFlipped ? "Ver frente do cartão" : "Ver verso e regras do cartão"}
           >
             <RotateCw className="size-3.5" />

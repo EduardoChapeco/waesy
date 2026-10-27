@@ -83,11 +83,11 @@ function RecipeCard({ recipe, isMobileList = false }: { recipe: SearchResultReci
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] uppercase font-bold text-primary font-mono tracking-wider">
+            <span className="text-2xs uppercase font-bold text-primary font-mono tracking-wider">
               {recipe.category || "Receita"}
             </span>
             {recipe.prep_time && (
-              <span className="text-[10px] text-muted-foreground font-mono">
+              <span className="text-2xs text-muted-foreground font-mono">
                 • {recipe.prep_time}
               </span>
             )}
@@ -96,12 +96,12 @@ function RecipeCard({ recipe, isMobileList = false }: { recipe: SearchResultReci
             {recipe.title}
           </h4>
           {recipe.description && (
-            <p className="text-[11px] text-muted-foreground truncate">
+            <p className="text-2xs text-muted-foreground truncate">
               {recipe.description}
             </p>
           )}
         </div>
-        <ChevronRight className="size-4 text-muted-foreground/50 shrink-0 group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
+        <ChevronRight className="size-4 text-muted-foreground/50 shrink-0 group-hover:text-foreground group-hover:translate-x-0.5 transition-transform duration-200" />
       </Link>
     );
   }
@@ -110,7 +110,7 @@ function RecipeCard({ recipe, isMobileList = false }: { recipe: SearchResultReci
     <Link
       to="/receitas/$id"
       params={{ id: recipe.id }}
-      className="group rounded-lg border border-border/50 bg-card overflow-hidden hover:border-primary/40 transition-all flex flex-col justify-between"
+      className="group rounded-lg border border-border/50 bg-card overflow-hidden hover:border-primary/40 transition-colors duration-200 flex flex-col justify-between"
     >
       <div className="aspect-video w-full bg-muted overflow-hidden relative flex items-center justify-center">
         {recipe.cover_image_url ? (
@@ -123,18 +123,18 @@ function RecipeCard({ recipe, isMobileList = false }: { recipe: SearchResultReci
         ) : (
           <div className="flex flex-col items-center justify-center gap-1 text-muted-foreground/60 p-4">
             <CookingPot className="size-8" />
-            <span className="text-[11px] font-mono">Gastronomia</span>
+            <span className="text-2xs font-mono">Gastronomia</span>
           </div>
         )}
         {recipe.prep_time && (
-          <span className="absolute bottom-2 left-2 rounded-md bg-background/90 px-2 py-1 text-[10px] font-mono font-medium text-foreground">
+          <span className="absolute bottom-2 left-2 rounded-md bg-background/90 px-2 py-1 text-2xs font-mono font-medium text-foreground">
             {recipe.prep_time}
           </span>
         )}
       </div>
       <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
         <div>
-          <span className="text-[10px] font-mono uppercase text-primary font-semibold">
+          <span className="text-2xs font-mono uppercase text-primary font-semibold">
             {recipe.category || "Receita"}
           </span>
           <h4 className="text-sm font-semibold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
@@ -184,7 +184,7 @@ function EventCard({ event, isMobileList = false }: { event: SearchResultEvent; 
           <p className="font-bold text-xs text-foreground truncate group-hover:text-primary transition-colors">
             {event.title}
           </p>
-          <div className="flex items-center gap-2 text-[11px] text-muted-foreground truncate">
+          <div className="flex items-center gap-2 text-2xs text-muted-foreground truncate">
             <span>{formatted}</span>
             {event.location && (
               <>
@@ -193,7 +193,7 @@ function EventCard({ event, isMobileList = false }: { event: SearchResultEvent; 
               </>
             )}
           </div>
-          <span className="text-[10px] font-mono font-semibold text-muted-foreground">
+          <span className="text-2xs font-mono font-semibold text-muted-foreground">
             {event.is_free ? "Gratuito" : "Ingresso"}
           </span>
         </div>
@@ -229,7 +229,7 @@ function EventCard({ event, isMobileList = false }: { event: SearchResultEvent; 
         {event.location && (
           <p className="text-xs text-muted-foreground truncate">{event.location}</p>
         )}
-        <Badge variant="outline" className="mt-1 text-[10px] font-mono border-border/70 py-0 px-2">
+        <Badge variant="outline" className="mt-1 text-2xs font-mono border-border/70 py-0 px-2">
           {event.is_free ? "Gratuito" : "Pago"}
         </Badge>
       </div>
@@ -264,7 +264,7 @@ function ClassifiedCard({ classified, isMobileList = false }: { classified: Sear
               {classified.title}
             </h4>
             {classified.category && (
-              <span className="text-[9px] font-mono uppercase px-1 py-0 rounded border border-border/60 text-muted-foreground">
+              <span className="text-3xs font-mono uppercase px-1 py-0 rounded border border-border/60 text-muted-foreground">
                 {classified.category}
               </span>
             )}
@@ -276,7 +276,7 @@ function ClassifiedCard({ classified, isMobileList = false }: { classified: Sear
             {classified.location_text && (
               <>
                 <span className="text-muted-foreground">•</span>
-                <span className="text-muted-foreground text-[11px] truncate">{classified.location_text}</span>
+                <span className="text-muted-foreground text-2xs truncate">{classified.location_text}</span>
               </>
             )}
           </div>
@@ -290,7 +290,7 @@ function ClassifiedCard({ classified, isMobileList = false }: { classified: Sear
     <Link
       to="/classificados/$id"
       params={{ id: classified.id }}
-      className="flex items-stretch justify-between rounded-lg bg-card hover:border-foreground/30 transition-all overflow-hidden p-0 group border border-border/60"
+      className="flex items-stretch justify-between rounded-lg bg-card hover:border-foreground/30 transition-colors duration-200 overflow-hidden p-0 group border border-border/60"
     >
       <div className="relative w-24 sm:w-28 bg-muted shrink-0 overflow-hidden">
         {classified.images && classified.images[0] ? (
@@ -310,12 +310,12 @@ function ClassifiedCard({ classified, isMobileList = false }: { classified: Sear
       <div className="flex-1 min-w-0 p-3 space-y-1">
         <div className="flex items-center gap-2 flex-wrap">
           {classified.category && (
-            <Badge variant="outline" className="text-[9px] uppercase font-mono px-2 py-0 border-border/70">
+            <Badge variant="outline" className="text-3xs uppercase font-mono px-2 py-0 border-border/70">
               {classified.category}
             </Badge>
           )}
           {(classified as any).deal_type && (
-            <span className="text-[10px] font-mono text-muted-foreground uppercase font-bold">
+            <span className="text-2xs font-mono text-muted-foreground uppercase font-bold">
               • {(classified as any).deal_type}
             </span>
           )}
@@ -361,7 +361,7 @@ function StoreCard({ store, isMobileList = false }: { store: SearchResultStore; 
             {store.name}
           </p>
           {store.description && (
-            <p className="text-[11px] text-muted-foreground truncate">{store.description}</p>
+            <p className="text-2xs text-muted-foreground truncate">{store.description}</p>
           )}
         </div>
         <ChevronRight className="size-4 text-muted-foreground shrink-0 group-hover:translate-x-0.5 transition-transform" />
@@ -702,7 +702,7 @@ function SearchPage() {
                 {recentSearches.map((term) => (
                   <div
                     key={term}
-                    className="inline-flex items-center gap-2 pl-3 pr-2 py-1 rounded-lg text-xs font-semibold bg-muted/60 hover:bg-muted text-foreground transition-all group"
+                    className="inline-flex items-center gap-2 pl-3 pr-2 py-1 rounded-lg text-xs font-semibold bg-muted/60 hover:bg-muted text-foreground transition-colors duration-200 group"
                   >
                     <button
                       type="button"
@@ -710,7 +710,7 @@ function SearchPage() {
                         setInput(term);
                         handleSearch(term);
                       }}
-                      className="cursor-pointer"
+                      className="cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       {term}
                     </button>
@@ -720,7 +720,7 @@ function SearchPage() {
                         e.stopPropagation();
                         removeRecentSearch(term);
                       }}
-                      className="size-4 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer"
+                      className="size-4 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       title="Remover termo"
                     >
                       <X className="size-3" />
@@ -749,7 +749,7 @@ function SearchPage() {
                         setInput(tagLabel);
                         handleSearch(tagLabel);
                       }}
-                      className="px-3 py-2 rounded-lg text-xs font-semibold bg-muted/40 text-foreground border border-border/40 hover:bg-muted transition-all cursor-pointer select-none active:scale-95"
+                      className="px-3 py-2 rounded-lg text-xs font-semibold bg-muted/40 text-foreground border border-border/40 hover:bg-muted transition-colors duration-200 cursor-pointer select-none active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       #{tagLabel}
                     </button>
@@ -775,7 +775,7 @@ function SearchPage() {
                       setInput(term);
                       handleSearch(term);
                     }}
-                    className="px-4 py-2 rounded-lg text-xs font-semibold bg-card border border-border/60 hover:border-primary/40 hover:text-primary text-foreground transition-all cursor-pointer select-none active:scale-95"
+                    className="px-4 py-2 rounded-lg text-xs font-semibold bg-card border border-border/60 hover:border-primary/40 hover:text-primary text-foreground transition-colors duration-200 cursor-pointer select-none active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     {term}
                   </button>
@@ -797,7 +797,7 @@ function SearchPage() {
                 <Link
                   key={cat.to}
                   to={cat.to as any}
-                  className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border/60 hover:bg-muted/40 transition-all group"
+                  className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border/60 hover:bg-muted/40 transition-colors duration-200 group"
                 >
                   <div className={`flex size-9 items-center justify-center rounded-lg ${cat.color} shrink-0 group-hover:scale-105 transition-transform`}>
                     <Icon className="size-4.5" />
@@ -827,7 +827,7 @@ function SearchPage() {
                     key={p.id}
                     to="/produto/$slug"
                     params={{ slug: p.slug || p.id }}
-                    className="flex flex-col rounded-lg overflow-hidden bg-card border border-border/60 hover:border-border transition-all group"
+                    className="flex flex-col rounded-lg overflow-hidden bg-card border border-border/60 hover:border-border transition-colors duration-200 group"
                   >
                     <div className="aspect-square bg-muted overflow-hidden relative">
                       {p.cover_url ? (
@@ -873,7 +873,7 @@ function SearchPage() {
                     key={s.id}
                     to="/bio/$slug"
                     params={{ slug: s.slug }}
-                    className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border/60 hover:bg-muted/50 transition-all group"
+                    className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border/60 hover:bg-muted/50 transition-colors duration-200 group"
                   >
                     <div className="size-10 rounded-lg overflow-hidden bg-muted shrink-0 flex items-center justify-center border border-border/40">
                       {s.logo_url ? (
@@ -886,7 +886,7 @@ function SearchPage() {
                       <p className="text-xs font-bold text-foreground truncate group-hover:text-primary">
                         {s.name}
                       </p>
-                      <p className="text-[10px] text-muted-foreground truncate">{s.category}</p>
+                      <p className="text-2xs text-muted-foreground truncate">{s.category}</p>
                     </div>
                   </Link>
                 ))}
@@ -905,19 +905,19 @@ function SearchPage() {
  <div className="flex flex-wrap justify-center gap-2 pt-2">
  <Link
  to="/mercado"
- className="px-4 py-2 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-all"
+ className="px-4 py-2 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-200"
  >
  Ir para o Mercado
  </Link>
  <Link
  to="/gastronomia"
- className="px-4 py-2 rounded-lg text-xs font-bold bg-muted hover:bg-muted/80 text-foreground transition-all"
+ className="px-4 py-2 rounded-lg text-xs font-bold bg-muted hover:bg-muted/80 text-foreground transition-colors duration-200"
  >
  Ver Restaurantes
  </Link>
  <Link
  to="/classificados"
- className="px-4 py-2 rounded-lg text-xs font-bold bg-muted hover:bg-muted/80 text-foreground transition-all"
+ className="px-4 py-2 rounded-lg text-xs font-bold bg-muted hover:bg-muted/80 text-foreground transition-colors duration-200"
  >
  Explorar Desapegos
  </Link>
@@ -952,7 +952,7 @@ function SearchPage() {
  </div>
  <div className="min-w-0">
  <span className="text-xs font-bold text-foreground truncate block">{selectedStoreMarker.name}</span>
- <span className="text-[10px] text-success font-semibold">• Aberto agora</span>
+ <span className="text-2xs text-success font-semibold">• Aberto agora</span>
  </div>
  </div>
 
@@ -996,7 +996,7 @@ function SearchPage() {
           <div className="flex items-center gap-2">
             <ShoppingBag className="size-4 text-primary" />
             <h2 className="text-sm font-bold text-foreground">Produtos</h2>
-            <Badge variant="outline" className="text-[10px] font-mono border-border/70">
+            <Badge variant="outline" className="text-2xs font-mono border-border/70">
               {filteredProducts.length}
             </Badge>
           </div>

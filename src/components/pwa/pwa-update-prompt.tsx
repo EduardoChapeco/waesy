@@ -127,7 +127,7 @@ export function PwaUpdatePrompt({ className }: PwaUpdatePromptProps) {
           <ArrowsClockwise
             size={16}
             weight="bold"
-            className={cn("text-primary", isUpdating && "animate-spin")}
+            className={cn("text-primary", isUpdating && "animate-spin motion-reduce:animate-none")}
           />
         </div>
 
@@ -136,7 +136,7 @@ export function PwaUpdatePrompt({ className }: PwaUpdatePromptProps) {
           <p className="text-xs font-semibold text-foreground leading-tight truncate">
             Nova versão disponível
           </p>
-          <p className="text-[11px] text-muted-foreground leading-tight">
+          <p className="text-2xs text-muted-foreground leading-tight">
             Clique para atualizar sem perder dados
           </p>
         </div>
@@ -146,10 +146,10 @@ export function PwaUpdatePrompt({ className }: PwaUpdatePromptProps) {
           type="button"
           onClick={handleUpdate}
           disabled={isUpdating}
-          className={cn(
+          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
             "shrink-0 h-8 px-3 rounded-lg text-xs font-bold",
             "bg-primary text-primary-foreground",
-            "hover:bg-primary/90 active:scale-95 transition-all cursor-pointer",
+            "hover:bg-primary/90 active:scale-95 transition-transform duration-200 cursor-pointer",
             "disabled:opacity-60 disabled:cursor-not-allowed"
           )}
         >
@@ -161,7 +161,7 @@ export function PwaUpdatePrompt({ className }: PwaUpdatePromptProps) {
           type="button"
           onClick={handleDismiss}
           aria-label="Dispensar atualização"
-          className="shrink-0 size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all cursor-pointer -mr-1"
+          className="shrink-0 size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors duration-200 cursor-pointer -mr-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <X size={13} weight="bold" />
         </button>

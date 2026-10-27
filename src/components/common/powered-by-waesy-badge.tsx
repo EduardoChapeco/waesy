@@ -24,16 +24,16 @@ export function PoweredByWaesyBadge({
         target="_blank"
         rel="noopener noreferrer"
         className={cn(
-          "inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-medium transition-all shadow-xs",
+          "inline-flex items-center gap-2 px-3 py-1 rounded-full text-2xs font-medium transition-colors duration-200 shadow-xs",
           isDark
-            ? "bg-black/80 text-white/80 border border-white/10 hover:border-white/20 hover:text-white"
+            ? "bg-foreground/80 text-foreground/80 border border-white/10 hover:border-white/20 hover:text-foreground"
             : isLight
-            ? "bg-white text-zinc-700 border border-zinc-200 hover:border-zinc-300 hover:text-zinc-900"
+            ? "bg-card text-zinc-700 border border-zinc-200 hover:border-zinc-300 hover:text-zinc-900"
             : "bg-muted/40 text-muted-foreground border border-border/60 hover:text-foreground hover:border-border",
           className
         )}
       >
-        <span className="text-[10px] opacity-75">Criado com</span>
+        <span className="text-2xs opacity-75">Criado com</span>
         <span className="font-bold tracking-tight inline-flex items-center gap-1 text-foreground">
           <svg
             className="size-3 fill-current inline-block"
@@ -47,7 +47,7 @@ export function PoweredByWaesyBadge({
         {shortUrl && (
           <>
             <span className="opacity-40">•</span>
-            <span className="font-mono text-[10px] opacity-80">{shortUrl}</span>
+            <span className="font-mono text-2xs opacity-80">{shortUrl}</span>
           </>
         )}
       </a>
@@ -57,7 +57,7 @@ export function PoweredByWaesyBadge({
   return (
     <div
       className={cn(
-        "flex items-center justify-center gap-2 text-[10px] font-medium tracking-wide select-none py-2",
+        "flex items-center justify-center gap-2 text-2xs font-medium tracking-wide select-none py-2",
         isDark
           ? "text-zinc-400"
           : isLight

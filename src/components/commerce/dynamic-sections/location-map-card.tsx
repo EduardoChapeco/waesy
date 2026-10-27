@@ -31,7 +31,7 @@ export function LocationMapCardSection({
  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center rounded-lg border border-border/80 bg-card p-6 sm:p-10 shadow-2xs">
  <div className="lg:col-span-6 space-y-5">
  <div className="space-y-2">
- <Badge variant="outline" className="text-[11px] font-mono text-muted-foreground border-border/80">
+ <Badge variant="outline" className="text-2xs font-mono text-muted-foreground border-border/80">
  Localização
  </Badge>
  <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">{title}</h2>
@@ -51,7 +51,7 @@ export function LocationMapCardSection({
  <div className="p-4 rounded-lg bg-muted/40 border border-border/60 flex items-center gap-3">
  <Clock className="size-4 text-primary shrink-0" />
  <div>
- <span className="text-[10px] text-muted-foreground block font-mono">Horário</span>
+ <span className="text-2xs text-muted-foreground block font-mono">Horário</span>
  <span className="font-semibold text-foreground">{workingHours}</span>
  </div>
  </div>
@@ -59,7 +59,7 @@ export function LocationMapCardSection({
  <div className="p-4 rounded-lg bg-muted/40 border border-border/60 flex items-center gap-3">
  <Phone className="size-4 text-primary shrink-0" />
  <div>
- <span className="text-[10px] text-muted-foreground block font-mono">Telefone</span>
+ <span className="text-2xs text-muted-foreground block font-mono">Telefone</span>
  <span className="font-semibold text-foreground font-mono">{phone}</span>
  </div>
  </div>
@@ -88,7 +88,7 @@ export function LocationMapCardSection({
  </div>
  <div>
  <p className="font-bold text-xs text-foreground">{address}</p>
- <p className="text-[11px] text-muted-foreground">{cityState}</p>
+ <p className="text-2xs text-muted-foreground">{cityState}</p>
  </div>
  </div>
  </div>

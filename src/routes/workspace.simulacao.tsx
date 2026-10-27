@@ -359,7 +359,7 @@ function SimulacaoPage() {
                   onChange={(e) => setDescription(e.target.value)}
                   rows={4}
                   placeholder="Descreva benefícios, itens inclusos, desconto no PIX, prazo de entrega e diferenciais..."
-                  className="w-full text-xs rounded-lg border border-input bg-background p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all"
+                  className="w-full text-xs rounded-lg border border-input bg-background p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors duration-200"
                   required
                 />
               </div>
@@ -371,7 +371,7 @@ function SimulacaoPage() {
               >
                 {isRunning ? (
                   <>
-                    <Loader2 className="size-4 animate-spin" />
+                    <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                     Calculando Enxame & Econometria McFadden...
                   </>
                 ) : (
@@ -441,7 +441,7 @@ function SimulacaoPage() {
 
             {isRunning && (
               <div className="rounded-lg border border-border/80 bg-card p-8 sm:p-12 text-center flex flex-col items-center justify-center space-y-4">
-                <Loader2 className="size-10 text-primary animate-spin" />
+                <Loader2 className="size-10 text-primary animate-spin motion-reduce:animate-none" />
                 <div className="space-y-1">
                   <h3 className="text-sm font-bold text-foreground">
                     Simulando Coorte Estratificada ({municipalityFilter})...
@@ -458,7 +458,7 @@ function SimulacaoPage() {
               <div className="space-y-5 animate-in fade-in duration-200">
                 {/* Grade de Indicadores Econométricos */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="rounded-lg border border-border/80 bg-card p-3.5 space-y-1">
+                  <div className="rounded-lg border border-border/80 bg-card p-4 space-y-1">
                     <span className="text-xs text-muted-foreground">Média Ponderada / Mediana</span>
                     <p className="text-lg font-bold font-mono text-foreground">
                       {synthesis.mean_intent_percent ?? synthesis.overall_approval_rate ?? 0}%
@@ -468,7 +468,7 @@ function SimulacaoPage() {
                       {synthesis.mode_intent_percent ?? 0}%
                     </span>
                   </div>
-                  <div className="rounded-lg border border-primary/40 bg-primary/5 p-3.5 space-y-1">
+                  <div className="rounded-lg border border-primary/40 bg-primary/5 p-4 space-y-1">
                     <span className="text-xs font-semibold text-primary">
                       Preço Ótimo (P*) & Moda WTP
                     </span>
@@ -479,7 +479,7 @@ function SimulacaoPage() {
                       Moda WTP: R$ {Number(synthesis.mode_reservation_price_brl || 0).toFixed(2)}
                     </span>
                   </div>
-                  <div className="rounded-lg border border-border/80 bg-card p-3.5 space-y-1">
+                  <div className="rounded-lg border border-border/80 bg-card p-4 space-y-1">
                     <span className="text-xs text-muted-foreground">
                       NPS Sintético & Fechamento PIX
                     </span>
@@ -552,7 +552,7 @@ function SimulacaoPage() {
                           <CheckCircle2 className="size-4 text-primary" />
                           Principais Gatilhos de Compra
                         </h4>
-                        <ul className="space-y-1.5 text-xs text-muted-foreground">
+                        <ul className="space-y-2 text-xs text-muted-foreground">
                           {synthesis.top_3_buying_triggers.map((trigger, i) => (
                             <li key={i} className="flex items-start gap-2">
                               <span className="text-primary font-bold">•</span>
@@ -567,7 +567,7 @@ function SimulacaoPage() {
                           <AlertTriangle className="size-4 text-destructive" />
                           Principais Barreiras de Fricção
                         </h4>
-                        <ul className="space-y-1.5 text-xs text-muted-foreground">
+                        <ul className="space-y-2 text-xs text-muted-foreground">
                           {synthesis.top_3_friction_barriers.map((barrier, i) => (
                             <li key={i} className="flex items-start gap-2">
                               <span className="text-destructive font-bold">•</span>
@@ -593,7 +593,7 @@ function SimulacaoPage() {
                         {evaluations.map((ev, idx) => (
                           <div
                             key={idx}
-                            className="p-3.5 rounded-lg border border-border/60 bg-background text-xs space-y-2"
+                            className="p-4 rounded-lg border border-border/60 bg-background text-xs space-y-2"
                           >
                             <div className="flex flex-wrap items-center justify-between gap-2">
                               <div className="flex flex-wrap items-center gap-2">
@@ -697,7 +697,7 @@ function SimulacaoPage() {
                     <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
                       Simulação de Comentários no Feed (PersonaForge / OASIS)
                     </h4>
-                    <div className="space-y-2.5 max-h-96 overflow-y-auto pr-1">
+                    <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
                       {evaluations.map((ev, idx) => (
                         <div
                           key={idx}

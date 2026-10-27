@@ -34,6 +34,7 @@ import { getMuralFeed, type MuralFeedResponse } from "@/services/social.function
 import { getAllPublicConcursos, type RaffleDTO } from "@/services/invite.functions";
 import { HomeMobileNativeApp } from "@/components/home/HomeMobileNativeApp";
 import { HomeDesktopWebApp } from "@/components/home/HomeDesktopWebApp";
+import { useWindowSizeClass } from "@/hooks/use-mobile";
 import {
   listPublicHomePageSections,
   getUnifiedShowcasePosts,
@@ -541,10 +542,15 @@ function CommunityMarketplaceView({ data }: { data: any }) {
     formatMoney,
   };
 
+  const { isCompact } = useWindowSizeClass();
+
   return (
     <div className="w-full">
-      <HomeMobileNativeApp {...sharedViewProps} />
-      <HomeDesktopWebApp {...sharedViewProps} />
+      {isCompact ? (
+        <HomeMobileNativeApp {...sharedViewProps} />
+      ) : (
+        <HomeDesktopWebApp {...sharedViewProps} />
+      )}
     </div>
   );
 }

@@ -301,7 +301,7 @@ export default function WorkspaceTokensPage() {
  {wallet.packages.map((pkg: TokenPackage) => (
  <div
  key={pkg.id}
- className={`p-4 rounded-lg border flex flex-col justify-between transition-all bg-card ${
+ className={`p-4 rounded-lg border flex flex-col justify-between transition-colors duration-200 bg-card ${
  pkg.popular
  ? "border-primary/80 ring-1 ring-primary/30"
  : "border-border/60"
@@ -535,7 +535,7 @@ export default function WorkspaceTokensPage() {
 
  <div className="flex justify-end pt-2">
  <Button type="submit" disabled={isSavingBilling} className="text-xs h-9 font-semibold">
- {isSavingBilling && <Loader2 className="size-3.5 animate-spin mr-2" />}
+ {isSavingBilling && <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none mr-2" />}
  Salvar Preferências de Faturamento
  </Button>
  </div>
@@ -562,22 +562,22 @@ export default function WorkspaceTokensPage() {
  <button
  type="button"
  onClick={() => setPaymentMethod("pix")}
- className={`p-3 rounded-lg border text-center font-medium transition-all ${
+ className={`p-3 rounded-lg border text-center font-medium transition-colors duration-200 ${
  paymentMethod === "pix"
  ? "border-primary bg-primary/5 text-foreground font-semibold"
  : "border-border/60 text-muted-foreground"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  Pix Imediato
  </button>
  <button
  type="button"
  onClick={() => setPaymentMethod("credit_card")}
- className={`p-3 rounded-lg border text-center font-medium transition-all ${
+ className={`p-3 rounded-lg border text-center font-medium transition-colors duration-200 ${
  paymentMethod === "credit_card"
  ? "border-primary bg-primary/5 text-foreground font-semibold"
  : "border-border/60 text-muted-foreground"
- }`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  Cartão de Crédito
  </button>
@@ -593,7 +593,7 @@ export default function WorkspaceTokensPage() {
  disabled={isProcessing}
  className="w-full sm:w-auto text-xs h-9 font-semibold"
  >
- {isProcessing && <Loader2 className="size-3.5 animate-spin mr-2" />}
+ {isProcessing && <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none mr-2" />}
  Confirmar Pagamento
  </Button>
  </DialogFooter>

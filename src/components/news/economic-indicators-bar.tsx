@@ -31,7 +31,7 @@ export function EconomicIndicatorsBar({
     <section
       aria-label="Indicadores Econômicos e Financeiros do Banco Central"
       className={cn(
-        "w-full rounded-lg bg-card border border-border/60 p-3 sm:p-4 space-y-3 shadow-xs transition-all",
+        "w-full rounded-lg bg-card border border-border/60 p-3 sm:p-4 space-y-3 shadow-xs transition-colors duration-200",
         className
       )}
     >
@@ -45,7 +45,7 @@ export function EconomicIndicatorsBar({
             <span className="text-xs font-semibold text-foreground tracking-tight">
               Indicadores Financeiros
             </span>
-            <span className="text-[10px] text-muted-foreground hidden sm:inline">
+            <span className="text-2xs text-muted-foreground hidden sm:inline">
               • Banco Central do Brasil (SGS)
             </span>
           </div>
@@ -53,10 +53,10 @@ export function EconomicIndicatorsBar({
 
         <div className="flex items-center gap-2 shrink-0">
           <span className="relative flex size-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+            <span className="animate-ping motion-reduce:animate-none absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
             <span className="relative inline-flex rounded-full size-2 bg-emerald-500" />
           </span>
-          <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider font-semibold">
+          <span className="text-2xs font-mono text-muted-foreground uppercase tracking-wider font-semibold">
             Ao Vivo
           </span>
         </div>
@@ -86,13 +86,13 @@ export function EconomicIndicatorsBar({
               className="flex flex-col justify-between shrink-0 min-w-[130px] sm:min-w-[145px] p-3 rounded-lg bg-muted/40 hover:bg-muted/70 border border-border/40 transition-colors select-none"
             >
               <div className="flex items-center justify-between gap-1 mb-1">
-                <span className="text-[11px] font-medium text-muted-foreground truncate" title={ind.name}>
+                <span className="text-2xs font-medium text-muted-foreground truncate" title={ind.name}>
                   {shortName}
                 </span>
                 {hasVar && (
                   <span
                     className={cn(
-                      "flex items-center gap-1 text-[10px] font-mono font-semibold px-1 py-1 rounded",
+                      "flex items-center gap-1 text-2xs font-mono font-semibold px-1 py-1 rounded",
                       isPositive
                         ? "text-emerald-700 bg-emerald-500/10 dark:text-emerald-400"
                         : isNegative

@@ -276,7 +276,7 @@ export default function WorkspaceDashboardPage() {
             title="Status Operacional"
           >
             {isTogglingStatus ? (
-              <Loader2 className="size-3.5 animate-spin" />
+              <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
             ) : (
               <span className={`size-2 rounded-full ${isOpenNow ? "bg-emerald-500" : "bg-rose-500"}`} />
             )}
@@ -363,7 +363,7 @@ export default function WorkspaceDashboardPage() {
                   : formatMoney(dashboardMetrics?.salesMonthCents || 0)}
               </div>
               {dashboardMetrics?.growthPercentage != null && (
-                <div className={`inline-flex items-center gap-1.5 text-xs font-semibold font-mono tabular-nums ${
+                <div className={`inline-flex items-center gap-2 text-xs font-semibold font-mono tabular-nums ${
                   dashboardMetrics.growthPercentage >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
                 }`}>
                   {dashboardMetrics.growthPercentage >= 0 ? (

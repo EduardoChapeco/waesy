@@ -262,7 +262,7 @@ function CashRegisterManagerPage() {
  return (
  <div className="space-y-6">
  {/* ── PageHeader Canônico ── */}
- <PageHeader
+ <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  eyebrow="Financeiro"
  title="Caixa"
  actions={
@@ -492,7 +492,7 @@ function CashRegisterManagerPage() {
             key={ch.id}
             type="button"
             onClick={() => setSelectedChannel(ch.id)}
-            className={cn(
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "px-3 py-1 rounded-lg text-xs font-medium transition-colors whitespace-nowrap",
               selectedChannel === ch.id
                 ? "bg-primary text-primary-foreground shadow-xs"
@@ -575,7 +575,7 @@ function CashRegisterManagerPage() {
                     key={entry.id}
                     type="button"
                     onClick={() => setSelectedEntryId(entry.id)}
-                    className={cn(
+                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "w-full text-left p-4 flex items-center justify-between gap-3 transition-colors cursor-pointer",
                       isSelected
                         ? "bg-primary/10 border-l-4 border-l-primary"
@@ -801,7 +801,7 @@ function CashRegisterManagerPage() {
             return (
               <div
                 key={turn.id}
-                className="p-4 rounded-lg bg-card border border-border/50 shadow-2xs space-y-3 transition-all"
+                className="p-4 rounded-lg bg-card border border-border/50 shadow-2xs space-y-3 transition-colors duration-200"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>

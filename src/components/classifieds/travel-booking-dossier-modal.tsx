@@ -415,7 +415,7 @@ export function TravelBookingDossierModal({
                 <button
                   type="button"
                   onClick={() => setIsCompositionLocked(false)}
-                  className="text-xs font-semibold text-muted-foreground hover:text-primary inline-flex items-center gap-1 cursor-pointer"
+                  className="text-xs font-semibold text-muted-foreground hover:text-primary inline-flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <Lock className="size-3" />
                   <span>Alterar composição</span>

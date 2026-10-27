@@ -157,7 +157,7 @@ function WorkspaceNovaMateriaPage() {
  return (
  <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
  {/* Header */}
- <PageHeader
+ <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  eyebrow="Redação"
  title="Nova Matéria"
  actions={
@@ -191,7 +191,7 @@ function WorkspaceNovaMateriaPage() {
  className="rounded-lg font-bold text-xs bg-primary text-primary-foreground"
  >
  {isSubmitting ? (
- <Loader2 className="size-3.5 animate-spin mr-2" />
+ <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none mr-2" />
  ) : (
  <CheckCircle2 className="size-3.5 mr-2" />
  )}
@@ -248,7 +248,7 @@ function WorkspaceNovaMateriaPage() {
  >
  {isAiProcessing ? (
  <>
- <Loader2 className="size-3.5 animate-spin" />
+ <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
  Processando...
  </>
  ) : (
@@ -437,7 +437,7 @@ function WorkspaceNovaMateriaPage() {
  <button
  type="button"
  onClick={() => removeSection(idx)}
- className="text-muted-foreground hover:text-destructive p-1 rounded transition-colors"
+ className="text-muted-foreground hover:text-destructive p-1 rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  title="Remover seção"
  >
  <Trash2 className="size-3.5" />

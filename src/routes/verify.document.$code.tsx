@@ -152,7 +152,7 @@ function DocumentVerificationPage() {
                 <h2 className="text-base sm:text-lg font-bold text-emerald-700 dark:text-emerald-300">
                   Termo de Quitação Plena
                 </h2>
-                <Badge className="bg-emerald-600 text-white font-mono text-xs">
+                <Badge className="bg-emerald-600 text-foreground font-mono text-xs">
                   OBRIGAÇÃO EXTINTA
                 </Badge>
               </div>
@@ -160,14 +160,14 @@ function DocumentVerificationPage() {
                 Todas as parcelas e contraprestações financeiras deste contrato foram integralmente liquidadas. O credor confere quitação plena, geral e irrevogável quanto ao valor contratado.
               </p>
               {result.dischargeIssuedAt && (
-                <p className="text-[11px] text-muted-foreground pt-1 flex items-center gap-2 justify-center sm:justify-start">
+                <p className="text-2xs text-muted-foreground pt-1 flex items-center gap-2 justify-center sm:justify-start">
                   <Calendar className="size-3.5 text-emerald-600 dark:text-emerald-400" />
                   Data da Baixa de Quitação: {formatDate(result.dischargeIssuedAt)}
                 </p>
               )}
               {result.dischargeHash && (
                 <div className="pt-1">
-                  <p className="text-[10px] text-muted-foreground font-mono break-all bg-emerald-500/5 p-2 rounded-lg border border-emerald-500/20">
+                  <p className="text-2xs text-muted-foreground font-mono break-all bg-emerald-500/5 p-2 rounded-lg border border-emerald-500/20">
                     Hash SHA-256 da Quitação: {result.dischargeHash}
                   </p>
                 </div>

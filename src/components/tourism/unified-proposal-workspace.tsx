@@ -468,8 +468,16 @@ export function UnifiedProposalWorkspace({
             if (result.dates?.return) {
               setReturnDate(result.dates.return);
             }
+            const detectedHotelName = result.hotel?.name || result.companyName;
+            if (detectedHotelName) {
+              setHotelQuery(detectedHotelName);
+              setBundleOptions((prev) =>
+                prev.map((opt, i) => (i === 0 ? { ...opt, hotelName: detectedHotelName } : opt))
+              );
+            }
             if (result.financials?.totalCents && result.financials.totalCents > 0) {
-              const perAdultCents = Math.round(result.financials.totalCents / 2);
+              const paxDivisor = Math.max(1, result.participants?.length || 2);
+              const perAdultCents = Math.round(result.financials.totalCents / paxDivisor);
               setRooms((prev) =>
                 prev.map((r, i) =>
                   i === 0 ? { ...r, baseAdultPriceCents: perAdultCents } : r
@@ -480,7 +488,7 @@ export function UnifiedProposalWorkspace({
                   i === 0
                     ? {
                         ...opt,
-                        hotelName: result.companyName || opt.hotelName,
+                        hotelName: detectedHotelName || opt.hotelName,
                         adultPriceCents: perAdultCents,
                       }
                     : opt
@@ -1368,7 +1376,7 @@ export function UnifiedProposalWorkspace({
                               }`}
                             >
                               <span className="truncate">{addon.label}</span>
-                              <Badge variant="outline" className="font-mono text-[10px] shrink-0">
+                              <Badge variant="outline" className="font-mono text-2xs shrink-0">
                                 +{formatMoney(addon.priceCents)}
                               </Badge>
                             </button>
@@ -1414,10 +1422,10 @@ export function UnifiedProposalWorkspace({
                             setIsHotelDropdownOpen(false);
                             toast.success(`Hotel "${h.name}" selecionado!`);
                           }}
-                          className="w-full h-11 min-h-11 px-3 text-xs text-left hover:bg-muted/60 flex items-center justify-between border-b border-border/20 last:border-0"
+                          className="w-full h-11 min-h-11 px-3 text-xs text-left hover:bg-muted/60 flex items-center justify-between border-b border-border/20 last:border-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           <span className="font-semibold text-foreground truncate">{h.name}</span>
-                          <span className="text-[11px] text-muted-foreground">{h.city} · {h.stars}★</span>
+                          <span className="text-2xs text-muted-foreground">{h.city} · {h.stars}★</span>
                         </button>
                       ))}
                     </div>
@@ -1506,7 +1514,7 @@ export function UnifiedProposalWorkspace({
                         }`}
                       >
                         <div className="font-bold text-foreground">{camp.operatorDisplayName}</div>
-                        <div className="text-[11px] text-muted-foreground mt-1">
+                        <div className="text-2xs text-muted-foreground mt-1">
                           Até {camp.maxBoletoInstallments}x no Boleto ({camp.boletoMinDownpaymentPct}% entrada) ou {camp.maxCardInstallments}x no Cartão · {camp.pixCashDiscountPct}% desc. Pix
                         </div>
                       </button>
@@ -1606,22 +1614,22 @@ export function UnifiedProposalWorkspace({
 
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
                     <div>
-                      <span className="text-muted-foreground block text-[11px]">Tarifa Base</span>
+                      <span className="text-muted-foreground block text-2xs">Tarifa Base</span>
                       <span className="font-bold text-foreground">{formatMoney(calculation.grandBaseCents)}</span>
                     </div>
 
                     <div>
-                      <span className="text-muted-foreground block text-[11px]">Adicionais</span>
+                      <span className="text-muted-foreground block text-2xs">Adicionais</span>
                       <span className="font-bold text-foreground">{formatMoney(calculation.grandAddonsCents)}</span>
                     </div>
 
                     <div>
-                      <span className="text-muted-foreground block text-[11px]">Total da Venda</span>
+                      <span className="text-muted-foreground block text-2xs">Total da Venda</span>
                       <span className="text-sm font-extrabold text-primary">{formatMoney(calculation.grandTotalCents)}</span>
                     </div>
                   </div>
 
-                  <div className="p-3 rounded bg-muted/40 border border-border/40 text-[11px] text-muted-foreground space-y-1">
+                  <div className="p-3 rounded bg-muted/40 border border-border/40 text-2xs text-muted-foreground space-y-1">
                     <div>
                       <strong className="text-foreground">Opção Boleto:</strong> Entrada de {formatMoney(calculation.campaignSummary.boletoDownpaymentCents)} + {activeCampaign.maxBoletoInstallments - 1}x de {formatMoney(calculation.campaignSummary.boletoMonthlyInstallmentCents)}
                     </div>

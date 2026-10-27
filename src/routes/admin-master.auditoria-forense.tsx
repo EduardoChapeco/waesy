@@ -140,7 +140,7 @@ function AdminMasterAuditoriaForensePage() {
             <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
               Auditoria Forense e Ledger Criptográfico
             </h1>
-            <Badge variant="outline" className="text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 gap-1">
+            <Badge variant="outline" className="text-2xs font-mono font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 gap-1">
               <Lock className="size-3" />
               Padrão Bacen / PCI-DSS
             </Badge>
@@ -155,7 +155,7 @@ function AdminMasterAuditoriaForensePage() {
           disabled={isCheckingIntegrity}
           className="rounded-lg h-10 px-4 text-xs font-bold gap-2 cursor-pointer shadow-sm"
         >
-          <RefreshCw className={`size-3.5 ${isCheckingIntegrity ? "animate-spin" : ""}`} />
+          <RefreshCw className={`size-3.5 ${isCheckingIntegrity ? "animate-spin motion-reduce:animate-none" : ""}`} />
           <span>Auditar Cadeia Agora</span>
         </Button>
       </div>
@@ -177,7 +177,7 @@ function AdminMasterAuditoriaForensePage() {
               {integrity?.isValid ? "100% Íntegra" : "Violação Detectada"}
             </span>
           </div>
-          <p className="text-[11px] text-muted-foreground truncate">
+          <p className="text-2xs text-muted-foreground truncate">
             {integrity?.details || "Cadeia Merkle verificada matematicamente"}
           </p>
         </div>
@@ -194,7 +194,7 @@ function AdminMasterAuditoriaForensePage() {
             </span>
             <span className="text-xs text-muted-foreground">blocos</span>
           </div>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Append-only com proteção contra UPDATE/DELETE
           </p>
         </div>
@@ -209,9 +209,9 @@ function AdminMasterAuditoriaForensePage() {
             <span className="text-xl sm:text-2xl font-black font-mono text-foreground">
               DENY ALL
             </span>
-            <Badge variant="secondary" className="text-[9px] font-bold">PostgREST Client</Badge>
+            <Badge variant="secondary" className="text-3xs font-bold">PostgREST Client</Badge>
           </div>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Mutações restritas a RPCs SECURITY DEFINER
           </p>
         </div>
@@ -228,7 +228,7 @@ function AdminMasterAuditoriaForensePage() {
             </span>
             <span className="text-xs text-muted-foreground">GeoIP</span>
           </div>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             IP, país, cidade e user-agent registrados
           </p>
         </div>
@@ -240,8 +240,8 @@ function AdminMasterAuditoriaForensePage() {
           <button
             type="button"
             onClick={() => setActiveTab("ledger")}
-            className={cn(
-              "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer select-none active:scale-98 shadow-2xs",
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+              "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors duration-200 shrink-0 cursor-pointer select-none active:scale-98 shadow-2xs",
               activeTab === "ledger"
                 ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                 : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
@@ -252,8 +252,8 @@ function AdminMasterAuditoriaForensePage() {
           <button
             type="button"
             onClick={() => setActiveTab("events")}
-            className={cn(
-              "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer select-none active:scale-98 shadow-2xs",
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+              "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors duration-200 shrink-0 cursor-pointer select-none active:scale-98 shadow-2xs",
               activeTab === "events"
                 ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                 : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
@@ -264,8 +264,8 @@ function AdminMasterAuditoriaForensePage() {
           <button
             type="button"
             onClick={() => setActiveTab("defense")}
-            className={cn(
-              "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer select-none active:scale-98 shadow-2xs",
+            className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+              "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors duration-200 shrink-0 cursor-pointer select-none active:scale-98 shadow-2xs",
               activeTab === "defense"
                 ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                 : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
@@ -314,7 +314,7 @@ function AdminMasterAuditoriaForensePage() {
                       <th className="p-3 text-right">Data/Hora</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border/30 font-mono text-[11px]">
+                  <tbody className="divide-y divide-border/30 font-mono text-2xs">
                     {filteredEntries.map((e: any) => (
                       <tr key={e.id} className="hover:bg-muted/15 transition-colors">
                         <td className="p-3 text-center font-bold text-primary">
@@ -342,7 +342,7 @@ function AdminMasterAuditoriaForensePage() {
                             <button
                               type="button"
                               onClick={() => handleCopy(e.entry_hash, "Hash")}
-                              className="text-muted-foreground hover:text-foreground cursor-pointer p-1"
+                              className="text-muted-foreground hover:text-foreground cursor-pointer p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
                               <Copy className="size-3" />
                             </button>
@@ -357,7 +357,7 @@ function AdminMasterAuditoriaForensePage() {
                           <div className="flex items-center gap-1">
                             <span>{e.ip_address || "127.0.0.1"}</span>
                             {e.geo_country && (
-                              <Badge variant="outline" className="text-[9px] px-1 py-0 font-mono">
+                              <Badge variant="outline" className="text-3xs px-1 py-0 font-mono">
                                 {e.geo_country}
                               </Badge>
                             )}
@@ -398,11 +398,11 @@ function AdminMasterAuditoriaForensePage() {
                       <th className="p-3 text-right">Data/Hora</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border/30 text-[11px]">
+                  <tbody className="divide-y divide-border/30 text-2xs">
                     {filteredEvents.map((evt: any) => (
                       <tr key={evt.id} className="hover:bg-muted/15 transition-colors">
                         <td className="p-3 font-semibold text-foreground">
-                          <Badge variant="outline" className="text-[10px] font-mono">
+                          <Badge variant="outline" className="text-2xs font-mono">
                             {evt.action}
                           </Badge>
                         </td>
@@ -415,7 +415,7 @@ function AdminMasterAuditoriaForensePage() {
                         <td className="p-3 text-muted-foreground font-mono">
                           {evt.ip_address || "Cloudflare Protected"}
                         </td>
-                        <td className="p-3 font-mono text-[10px] text-muted-foreground">
+                        <td className="p-3 font-mono text-2xs text-muted-foreground">
                           {(evt.checksum_sha256 || "").slice(0, 10)}...
                         </td>
                         <td className="p-3 text-right text-muted-foreground font-mono whitespace-nowrap">
@@ -464,7 +464,7 @@ function AdminMasterAuditoriaForensePage() {
               <p>
                 As rotas de autenticação, pagamentos e propostas contam com rate limiting por IP (`extractClientIp`) e prevenção contra ataques de força bruta.
               </p>
-              <div className="p-3 rounded-lg bg-muted/25 border border-border/40 space-y-1 font-mono text-[11px] text-foreground">
+              <div className="p-3 rounded-lg bg-muted/25 border border-border/40 space-y-1 font-mono text-2xs text-foreground">
                 <p>• Auth / Login: 10 requisições / minuto por IP</p>
                 <p>• Checkout & PIX: 20 requisições / minuto por IP</p>
                 <p>• Propostas & Negociações: 30 requisições / minuto por IP</p>

@@ -233,6 +233,16 @@ function ClassifiedsMasterPage() {
           onSelectJobRegime={catalog.setSelectedJobRegime}
           onlyInstantDigital={catalog.onlyInstantDigital}
           onToggleInstantDigital={catalog.setOnlyInstantDigital}
+          agriSubcategory={catalog.agriSubcategory}
+          onSelectAgriSubcategory={catalog.setAgriSubcategory}
+          agriTraction={catalog.agriTraction}
+          onSelectAgriTraction={catalog.setAgriTraction}
+          pharmacySubniche={catalog.pharmacySubniche}
+          onSelectPharmacySubniche={catalog.setPharmacySubniche}
+          onlyPrescription={catalog.onlyPrescription}
+          onToggleOnlyPrescription={catalog.setOnlyPrescription}
+          eventType={catalog.eventType}
+          onSelectEventType={catalog.setEventType}
         />
 
         {/* 4. Grade / Feed / Lista de Itens */}

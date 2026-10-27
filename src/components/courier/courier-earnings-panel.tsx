@@ -22,7 +22,7 @@ export function CourierEarningsPanel() {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12 bg-card rounded-lg border border-border/60">
-        <Loader2 className="size-6 animate-spin text-primary" />
+        <Loader2 className="size-6 animate-spin motion-reduce:animate-none text-primary" />
       </div>
     );
   }
@@ -75,7 +75,7 @@ export function CourierEarningsPanel() {
             <p className="text-xl sm:text-2xl font-bold text-foreground font-mono">
               {formatMoney(summary.pending_cents)}
             </p>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               Split PIX programado automaticamente
             </p>
           </div>
@@ -90,7 +90,7 @@ export function CourierEarningsPanel() {
               <CreditCard className="size-3.5" />
               Tarifa Base
             </span>
-            <span className="text-[10px] font-mono">85%</span>
+            <span className="text-2xs font-mono">85%</span>
           </div>
           <p className="text-lg font-bold text-foreground font-mono">
             {formatMoney(breakdown.delivery_fees_cents)}
@@ -103,7 +103,7 @@ export function CourierEarningsPanel() {
               <Gift className="size-3.5" />
               Gorjetas Extras
             </span>
-            <span className="text-[10px] font-mono text-emerald-600">100% livre</span>
+            <span className="text-2xs font-mono text-emerald-600">100% livre</span>
           </div>
           <p className="text-lg font-bold text-emerald-600 font-mono">
             {formatMoney(breakdown.tips_cents)}
@@ -116,7 +116,7 @@ export function CourierEarningsPanel() {
               <Zap className="size-3.5" />
               Surge Pricing (Chuva/Pico)
             </span>
-            <span className="text-[10px] font-mono text-amber-600">Dinâmico</span>
+            <span className="text-2xs font-mono text-amber-600">Dinâmico</span>
           </div>
           <p className="text-lg font-bold text-amber-600 font-mono">
             {formatMoney(breakdown.surge_bonuses_cents)}
@@ -152,7 +152,7 @@ export function CourierEarningsPanel() {
                   <p className="font-semibold text-foreground">
                     Período {inv.period} • {inv.total_rides} corridas
                   </p>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-2xs text-muted-foreground">
                     {inv.paid_at ? `Pago em ${formatDate(inv.paid_at)}` : "Aguardando lote PIX"}
                   </p>
                 </div>
@@ -162,7 +162,7 @@ export function CourierEarningsPanel() {
                   </span>
                   <Badge
                     variant={inv.status === "paid" ? "default" : "secondary"}
-                    className="text-[10px] uppercase font-mono px-2 py-0"
+                    className="text-2xs uppercase font-mono px-2 py-0"
                   >
                     {inv.status === "paid" ? "Liquidado" : "Pendente"}
                   </Badge>

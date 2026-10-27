@@ -22,6 +22,7 @@ export interface EventDetailMobileProps {
   handleToggleRsvp: (status: "going" | "interested" | "not_going") => void;
   handleBuyTicket: (lot: any) => void;
   isOwner: boolean;
+  onOpenStory?: () => void;
 }
 
 export function EventDetailMobile({
@@ -38,6 +39,7 @@ export function EventDetailMobile({
   handleToggleRsvp,
   handleBuyTicket,
   isOwner,
+  onOpenStory,
 }: EventDetailMobileProps) {
   const activeLots = lots.filter((l: any) => l.status === "active");
   const ticketsSectionRef = useRef<HTMLDivElement>(null);
@@ -75,7 +77,7 @@ export function EventDetailMobile({
         {/* Botão Circular Flutuante "Voltar" (44px Apple HIG) */}
         <Link
           to="/agenda"
-          className="absolute top-3 left-3 size-11 rounded-full bg-black/50 backdrop-blur-md text-white flex items-center justify-center border border-white/20 active:scale-95 transition-transform z-20 shadow-md"
+          className="absolute top-3 left-3 size-11 rounded-full bg-foreground/50 backdrop-blur-md text-foreground flex items-center justify-center border border-foreground/20 active:scale-95 transition-transform z-20 shadow-md"
           aria-label="Voltar para Agenda"
         >
           <ArrowLeft size={20} weight="bold" />
@@ -86,13 +88,13 @@ export function EventDetailMobile({
           {isOwner && (
             <Link
               to="/workspace/eventos"
-              className="size-11 rounded-full bg-black/50 backdrop-blur-md text-amber-300 flex items-center justify-center border border-white/20 active:scale-95 transition-transform shadow-md"
+              className="size-11 rounded-full bg-foreground/50 backdrop-blur-md text-amber-300 flex items-center justify-center border border-foreground/20 active:scale-95 transition-transform shadow-md"
               aria-label="Editar Evento"
             >
               <PencilSimple size={20} weight="bold" />
             </Link>
           )}
-          <div className="size-11 rounded-full bg-black/50 backdrop-blur-md text-white flex items-center justify-center border border-white/20 shadow-md">
+          <div className="size-11 rounded-full bg-foreground/50 backdrop-blur-md text-foreground flex items-center justify-center border border-foreground/20 shadow-md">
             <ContentActionsMenu
               entityType="event"
               entityId={event.id}
@@ -104,6 +106,16 @@ export function EventDetailMobile({
             />
           </div>
         </div>
+
+        {event.story_media_url && onOpenStory && (
+          <button
+            type="button"
+            onClick={onOpenStory}
+            className="absolute bottom-3 right-3 z-20 h-11 min-h-11 px-4 rounded-full bg-purple-600/90 text-foreground text-xs font-bold flex items-center gap-2 shadow-lg backdrop-blur-md active:scale-95 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <span>Ver Story</span>
+          </button>
+        )}
 
         {/* Badge de Evento Externo sobre a mídia */}
         {event.is_external && (
@@ -164,7 +176,7 @@ export function EventDetailMobile({
         </div>
 
         {/* Título Principal */}
-        <h1 className="text-2xl font-black tracking-tight text-foreground leading-tight">
+        <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground leading-tight break-words text-wrap">
           {event.title}
         </h1>
 
@@ -175,6 +187,68 @@ export function EventDetailMobile({
             <span>Organizado por <strong className="text-foreground font-semibold">{event.organizer_name}</strong></span>
           </div>
         )}
+
+        {/* Ações Rápidas: WhatsApp & SAC */}
+        <div className="flex items-center gap-2 pt-1">
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="flex-1 h-11 min-h-11 text-xs font-bold rounded-lg gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border-border"
+          >
+            <a
+              href={'https://wa.me/?text=' + encodeURIComponent('Confira este evento: ' + event.title + (event.city ? ' em ' + event.city : ''))}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <ArrowSquareOut size={16} weight="bold" className="text-emerald-500" />
+              <span>WhatsApp</span>
+            </a>
+          </Button>
+
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="flex-1 h-11 min-h-11 text-xs font-bold rounded-lg gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border-border"
+          >
+            <Link to="/workspace/atendimento" search={{ threadId: undefined, search: undefined }}>
+              <Users size={16} weight="bold" className="text-primary" />
+              <span>SAC & Suporte</span>
+            </Link>
+          </Button>
+        </div>
+
+        {/* Ações Rápidas: WhatsApp & SAC */}
+        <div className="flex items-center gap-2 pt-1">
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="flex-1 h-11 min-h-11 text-xs font-bold rounded-lg gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border-border"
+          >
+            <a
+              href={'https://wa.me/?text=' + encodeURIComponent('Confira este evento: ' + event.title + (event.city ? ' em ' + event.city : ''))}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <ArrowSquareOut size={16} weight="bold" className="text-emerald-500" />
+              <span>WhatsApp</span>
+            </a>
+          </Button>
+
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="flex-1 h-11 min-h-11 text-xs font-bold rounded-lg gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border-border"
+          >
+            <Link to="/workspace/atendimento" search={{ threadId: undefined, search: undefined }}>
+              <Users size={16} weight="bold" className="text-primary" />
+              <span>SAC & Suporte</span>
+            </Link>
+          </Button>
+        </div>
 
         {/* ── 4. RSVP: Confirmação de Presença ── */}
         <div className="p-4 rounded-lg border border-border/70 bg-card space-y-3">
@@ -193,7 +267,7 @@ export function EventDetailMobile({
               type="button"
               onClick={() => handleToggleRsvp("going")}
               disabled={isSubmittingRsvp}
-              className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all min-h-14 active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+              className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-transform duration-200 min-h-14 active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 userRsvp === "going"
                   ? "bg-primary/10 border-primary text-primary font-bold shadow-sm"
                   : "bg-background border-border/70 text-foreground hover:bg-muted/40"
@@ -212,7 +286,7 @@ export function EventDetailMobile({
               type="button"
               onClick={() => handleToggleRsvp("interested")}
               disabled={isSubmittingRsvp}
-              className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all min-h-14 active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+              className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-transform duration-200 min-h-14 active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 userRsvp === "interested"
                   ? "bg-amber-500/10 border-amber-500 text-amber-700 dark:text-amber-400 font-bold shadow-sm"
                   : "bg-background border-border/70 text-foreground hover:bg-muted/40"
@@ -231,7 +305,7 @@ export function EventDetailMobile({
               type="button"
               onClick={() => handleToggleRsvp("not_going")}
               disabled={isSubmittingRsvp}
-              className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all min-h-14 active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+              className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-transform duration-200 min-h-14 active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 userRsvp === "not_going"
                   ? "bg-rose-500/10 border-rose-500 text-rose-700 dark:text-rose-400 font-bold shadow-sm"
                   : "bg-background border-border/70 text-foreground hover:bg-muted/40"
@@ -294,7 +368,7 @@ export function EventDetailMobile({
                 return (
                   <div
                     key={lot.id}
-                    className={`p-4 rounded-lg border transition-all ${
+                    className={`p-4 rounded-lg border transition-colors duration-200 ${
                       isSoldOut
                         ? "border-border/40 bg-muted/20 opacity-70"
                         : "border-border/70 bg-card"
@@ -352,7 +426,7 @@ export function EventDetailMobile({
             <Link
               to="/noticias/$slug"
               params={{ slug: linkedNews.slug }}
-              className="block group p-4 rounded-lg border border-border/70 bg-card active:scale-95 transition-all"
+              className="block group p-4 rounded-lg border border-border/70 bg-card active:scale-95 transition-transform duration-200"
             >
               <div className="flex gap-3 items-center">
                 {linkedNews.cover_media_url && (
@@ -414,10 +488,10 @@ export function EventDetailMobile({
                 return (
                   <div
                     key={partner.id}
-                    className="p-2.5 rounded-lg border border-border/70 bg-card space-y-1.5 flex flex-col justify-between"
+                    className="p-3 rounded-lg border border-border/70 bg-card space-y-2 flex flex-col justify-between"
                   >
                     <div className="flex items-center justify-between gap-1">
-                      <span className={`text-xs px-1.5 py-0.5 rounded font-bold border uppercase tracking-wider ${badgeClass}`}>
+                      <span className={`text-xs px-2 py-1 rounded font-bold border uppercase tracking-wider ${badgeClass}`}>
                         {nivelLabel}
                       </span>
                       {(partner.site_url || partner.siteUrl) && (
@@ -439,7 +513,7 @@ export function EventDetailMobile({
                           <img
                             src={partner.logo_url || partner.logoUrl}
                             alt={partner.nome}
-                            className="size-full object-contain p-0.5"
+                            className="size-full object-contain p-1"
                           />
                         </div>
                       ) : (
@@ -471,7 +545,7 @@ export function EventDetailMobile({
       </div>
 
       {/* ── 9. Sticky Bottom Bar Anti-Jank (Safe-Area & Thumb Zone) ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/60 p-3 pb-[calc(0.65rem+env(safe-area-inset-bottom))] mobile-nav-hide-on-keyboard flex items-center justify-between gap-3 shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 z-30 bg-background/95 backdrop-blur-md border-t border-border/60 p-3 pb-[calc(0.65rem+env(safe-area-inset-bottom))] mobile-nav-hide-on-keyboard flex items-center justify-between gap-3 shadow-lg">
         <div className="min-w-0 flex-1">
           {lowestLotPrice !== null ? (
             <div>

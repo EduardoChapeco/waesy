@@ -104,7 +104,7 @@ export function ImportCatalogModal({
  <div>
  <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
  <span>Importador de Cardápio e Catálogo (IA)</span>
- <Badge variant="outline" className="text-[10px] font-mono border-primary/40 text-primary">
+ <Badge variant="outline" className="text-2xs font-mono border-primary/40 text-primary">
  iFood / Link / Texto
  </Badge>
  </DialogTitle>
@@ -140,7 +140,7 @@ export function ImportCatalogModal({
  placeholder="https://www.ifood.com.br/delivery/cidade-uf/sua-loja/..."
  className="text-xs rounded-lg h-10 font-mono"
  />
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Suporta links de cardápios públicos do iFood, Anota AI, Goomer, InstaDelivery ou sites próprios.
  </p>
  </div>
@@ -158,7 +158,7 @@ export function ImportCatalogModal({
  rows={7}
  className="text-xs rounded-lg font-mono"
  />
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Cole o cardápio em formato de texto, tabela ou tópicos. A IA organizará automaticamente.
  </p>
  </div>
@@ -174,7 +174,7 @@ export function ImportCatalogModal({
  <h4 className="text-xs font-bold text-foreground">
  {previewData.store_name || "Cardápio Analisado"}
  </h4>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  {previewData.categories?.length || 0} categoria(s) • {totalProductsCount} produto(s)
  </p>
  </div>
@@ -197,10 +197,10 @@ export function ImportCatalogModal({
  className="p-3 rounded-lg border border-border/70 bg-card space-y-2 text-xs"
  >
  <div className="flex items-center justify-between">
- <span className="font-bold text-foreground uppercase tracking-wider text-[11px]">
+ <span className="font-bold text-foreground uppercase tracking-wider text-2xs">
  {cat.name}
  </span>
- <Badge variant="secondary" className="text-[10px] font-mono">
+ <Badge variant="secondary" className="text-2xs font-mono">
  {cat.products?.length || 0} itens
  </Badge>
  </div>
@@ -212,11 +212,11 @@ export function ImportCatalogModal({
  className="p-2 rounded-lg bg-muted/30 border border-border/40 flex items-center justify-between gap-2"
  >
  <div className="truncate">
- <p className="font-semibold text-foreground truncate text-[11px]">
+ <p className="font-semibold text-foreground truncate text-2xs">
  {prod.title}
  </p>
  {prod.description && (
- <p className="text-[10px] text-muted-foreground truncate">
+ <p className="text-2xs text-muted-foreground truncate">
  {prod.description}
  </p>
  )}
@@ -255,7 +255,7 @@ export function ImportCatalogModal({
  className="h-10 px-4 rounded-lg font-bold text-xs bg-primary text-primary-foreground gap-2 cursor-pointer shadow-xs"
  >
  {parseMutation.isPending ? (
- <Loader2 className="size-4 animate-spin" />
+ <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
  ) : (
  <Layers className="size-4" />
  )}
@@ -267,10 +267,10 @@ export function ImportCatalogModal({
  size="sm"
  disabled={commitMutation.isPending || totalProductsCount === 0}
  onClick={() => commitMutation.mutate()}
- className="h-10 px-5 rounded-lg font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white gap-2 cursor-pointer shadow-xs"
+ className="h-10 px-5 rounded-lg font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-foreground gap-2 cursor-pointer shadow-xs"
  >
  {commitMutation.isPending ? (
- <Loader2 className="size-4 animate-spin" />
+ <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
  ) : (
  <CheckCircle2 className="size-4" />
  )}

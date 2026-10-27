@@ -159,7 +159,7 @@ export const DigitalFileDropzone: React.FC<DigitalFileDropzoneProps> = ({
           </div>
         </div>
       ) : (
-        <div
+        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
           onDragOver={(e) => {
             e.preventDefault();
             setIsDragOver(true);
@@ -167,8 +167,8 @@ export const DigitalFileDropzone: React.FC<DigitalFileDropzoneProps> = ({
           onDragLeave={() => setIsDragOver(false)}
           onDrop={handleDrop}
           onClick={() => !isUploading && fileInputRef.current?.click()}
-          className={cn(
-            "relative flex flex-col items-center justify-center p-6 sm:p-8 rounded-lg border-2 border-dashed transition-all cursor-pointer text-center",
+          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+            "relative flex flex-col items-center justify-center p-6 sm:p-8 rounded-lg border-2 border-dashed transition-colors duration-200 cursor-pointer text-center",
             isDragOver
               ? "border-primary bg-primary/5"
               : "border-border/70 hover:border-border hover:bg-muted/20",
@@ -177,12 +177,12 @@ export const DigitalFileDropzone: React.FC<DigitalFileDropzoneProps> = ({
         >
           {isUploading ? (
             <div className="flex flex-col items-center gap-2">
-              <Loader2 className="size-8 text-primary animate-spin" />
+              <Loader2 className="size-8 text-primary animate-spin motion-reduce:animate-none" />
               <p className="text-xs font-semibold text-foreground">Enviando arquivo digital seguro...</p>
               {uploadProgress !== null && (
                 <div className="w-40 bg-muted rounded-full h-1.5 overflow-hidden mt-1">
                   <div
-                    className="bg-primary h-full transition-all duration-300"
+                    className="bg-primary h-full transition-colors duration-200 duration-300"
                     style={{ width: `${uploadProgress}%` }}
                   />
                 </div>

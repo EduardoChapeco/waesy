@@ -25,10 +25,10 @@ export const QuickCheckoutButton: React.FC<QuickCheckoutButtonProps> = ({
         type="button"
         onClick={onCheckout}
         style={{ backgroundColor: themeColor }}
-        className="w-full min-h-11 rounded-lg px-4 py-2 text-white font-bold text-xs flex items-center justify-between shadow-md active:scale-98 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+        className="w-full min-h-11 rounded-lg px-4 py-2 text-foreground font-bold text-xs flex items-center justify-between shadow-md active:scale-98 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
       >
         <div className="flex items-center gap-2">
-          <div className="size-6 rounded-md bg-white/20 flex items-center justify-center text-xs font-black">
+          <div className="size-6 rounded-md bg-card/20 flex items-center justify-center text-xs font-black">
             {itemCount}
           </div>
           <span>{label}</span>

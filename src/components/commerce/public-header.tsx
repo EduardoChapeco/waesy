@@ -125,7 +125,7 @@ export function PublicHeader({
  <div className="ml-auto flex items-center gap-1 flex-1 justify-end">
  {/* Expandable Search */}
  <div
- className={`flex items-center overflow-hidden transition-all duration-300 ease-in-out ${isSearchOpen ? "w-full max-w-72 opacity-100 mr-2" : "w-0 opacity-0 md:w-0 md:opacity-0"}`}
+ className={`flex items-center overflow-hidden transition-colors duration-200 duration-300 ease-in-out ${isSearchOpen ? "w-full max-w-72 opacity-100 mr-2" : "w-0 opacity-0 md:w-0 md:opacity-0"}`}
  >
  <form onSubmit={handleSearchSubmit} className="relative w-full">
  <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -140,7 +140,7 @@ export function PublicHeader({
  <button
  type="button"
  onClick={() => setIsSearchOpen(false)}
- className="absolute right-2 top-1/2 -translate-y-1/2 size-5 flex items-center justify-center text-muted-foreground hover:text-foreground rounded-full"
+ className="absolute right-2 top-1/2 -translate-y-1/2 size-5 flex items-center justify-center text-muted-foreground hover:text-foreground rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <X className="size-3.5" />
  </button>
@@ -179,7 +179,7 @@ export function PublicHeader({
  >
  <ShoppingBag className="size-5" aria-hidden />
  {totalItemCount > 0 && (
- <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+ <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-2xs font-bold text-primary-foreground">
  {totalItemCount}
  </span>
  )}

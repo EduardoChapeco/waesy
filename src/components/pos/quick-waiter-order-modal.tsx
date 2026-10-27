@@ -180,7 +180,7 @@ export function QuickWaiterOrderModal({
  ? `Comanda Rápida — Mesa ${tableNumber}`
  : `Atendimento Rápido — Ponto ${tableNumber}`}
  </span>
- <Badge variant="outline" className="text-[10px] font-mono">
+ <Badge variant="outline" className="text-2xs font-mono">
  {semantics.isFoodBusiness ? "Salão & Cozinha" : "Balcão & Pedidos"}
  </Badge>
  </SheetTitle>
@@ -211,8 +211,8 @@ export function QuickWaiterOrderModal({
  <button
  type="button"
  onClick={() => setSelectedCategory("all")}
- className={cn(
- "px-3 py-1 rounded-lg font-bold text-[11px] whitespace-nowrap transition-colors cursor-pointer",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "px-3 py-1 rounded-lg font-bold text-2xs whitespace-nowrap transition-colors cursor-pointer",
  selectedCategory === "all"
  ? "bg-primary text-primary-foreground"
  : "bg-muted text-muted-foreground hover:text-foreground",
@@ -225,8 +225,8 @@ export function QuickWaiterOrderModal({
  key={cat}
  type="button"
  onClick={() => setSelectedCategory(cat)}
- className={cn(
- "px-3 py-1 rounded-lg font-bold text-[11px] whitespace-nowrap transition-colors cursor-pointer",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "px-3 py-1 rounded-lg font-bold text-2xs whitespace-nowrap transition-colors cursor-pointer",
  selectedCategory === cat
  ? "bg-primary text-primary-foreground"
  : "bg-muted text-muted-foreground hover:text-foreground",
@@ -244,7 +244,7 @@ export function QuickWaiterOrderModal({
  <ScrollArea className="flex-1 p-4 max-h-[50vh]">
  {isLoading ? (
  <div className="flex flex-col items-center justify-center py-16 gap-2 text-muted-foreground">
- <Loader2 className="size-6 animate-spin text-primary" />
+ <Loader2 className="size-6 animate-spin motion-reduce:animate-none text-primary" />
  <span className="text-xs font-medium">Carregando cardápio...</span>
  </div>
  ) : flatProducts.length === 0 ? (
@@ -262,7 +262,7 @@ export function QuickWaiterOrderModal({
  <div
  key={prod.id}
  className={cn(
- "p-3 rounded-lg border flex items-center justify-between gap-3 transition-all",
+ "p-3 rounded-lg border flex items-center justify-between gap-3 transition-colors duration-200",
  qty > 0
  ? "border-primary/50 bg-primary/5 shadow-2xs"
  : "border-border/60 bg-card hover:border-border",
@@ -326,7 +326,7 @@ export function QuickWaiterOrderModal({
  {/* Barra de Ação Inferior — Thumb Zone (44px min-height) */}
  <div className="p-4 border-t border-border/80 bg-card flex items-center justify-between gap-3 shrink-0">
  <div className="space-y-1">
- <span className="text-[10px] uppercase font-bold text-muted-foreground block">
+ <span className="text-2xs uppercase font-bold text-muted-foreground block">
  {totalItemsCount === 1 ? "1 item selecionado" : `${totalItemsCount} itens selecionados`}
  </span>
  <span className="text-lg font-mono font-black text-foreground">
@@ -352,7 +352,7 @@ export function QuickWaiterOrderModal({
  className="h-11 px-5 rounded-lg font-bold text-xs bg-primary text-primary-foreground gap-2 cursor-pointer shadow-sm"
  >
  {sendMutation.isPending ? (
- <Loader2 className="size-4 animate-spin" />
+ <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
  ) : (
  <Send className="size-4" />
  )}

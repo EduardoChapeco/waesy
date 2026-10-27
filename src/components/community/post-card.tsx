@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { ContentActionsMenu } from "@/components/common/content-actions-menu";
 import { PostCommentsDrawer } from "@/components/community/post-comments-drawer";
 import { MediaLightboxModal } from "@/components/community/media-lightbox-modal";
+import { MediaCarousel } from "@/components/community/MediaCarousel";
 import { RichPostContent } from "@/components/community/rich-post-content";
 
 interface PostCardProps {
@@ -453,69 +454,14 @@ export function PostCard(props: PostCardProps) {
             ))}
           </div>
         ) : isCarouselMode && item.media_urls.length > 0 ? (
-          /* FORMATO: CARROSSEL PAGINADO (Quadro único com pontos e setas) */
-          <div className="relative mb-3 overflow-hidden rounded-lg bg-muted border border-border/40 aspect-square sm:aspect-post-vertical group select-none">
-            {isVideoUrl(item.media_urls[activeSlide]) ? (
-              <video
-                src={item.media_urls[activeSlide]}
-                controls
-                playsInline
-                className="size-full object-contain bg-foreground"
-              />
-            ) : (
-              <img
-                src={item.media_urls[activeSlide]}
-                alt={`Imagem ${activeSlide + 1}`}
-                className="size-full object-cover cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                onClick={() => setSelectedMediaLightboxIndex(activeSlide)}
-              />
-            )}
-
-            {item.media_urls.length > 1 && (
-              <span className="absolute top-3 right-3 px-3 py-1 rounded-full bg-foreground/80 text-background text-xs font-semibold backdrop-blur-xs">
-                {activeSlide + 1}/{item.media_urls.length}
-              </span>
-            )}
-
-            {activeSlide > 0 && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setActiveSlide((prev) => prev - 1);
-                }}
-                className="absolute left-3 top-1/2 -translate-y-1/2 size-11 min-h-11 min-w-11 rounded-full bg-foreground/80 text-background flex items-center justify-center backdrop-blur-xs hover:bg-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                aria-label="Anterior"
-              >
-                <ChevronLeft className="size-5" />
-              </button>
-            )}
-            {activeSlide < item.media_urls.length - 1 && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setActiveSlide((prev) => prev + 1);
-                }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 size-11 min-h-11 min-w-11 rounded-full bg-foreground/80 text-background flex items-center justify-center backdrop-blur-xs hover:bg-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                aria-label="Próxima"
-              >
-                <ChevronRight className="size-5" />
-              </button>
-            )}
-
-            {item.media_urls.length > 1 && (
-              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-foreground/75 px-3 py-1 rounded-full backdrop-blur-xs">
-                {item.media_urls.map((_, idx) => (
-                  <div
-                    key={idx}
-                    className={`size-1.5 rounded-full transition-colors ${
-                      idx === activeSlide ? "bg-background" : "bg-background/40"
-                    }`}
-                  />
-                ))}
-              </div>
-            )}
+          /* FORMATO: CARROSSEL CANÔNICO DE MÍDIA (Snap Scroll Anti-Jank & Lightbox) */
+          <div className="mb-3">
+            <MediaCarousel
+              mediaUrls={item.media_urls}
+              post={item}
+              aspectRatio="4/5"
+              onMediaClick={(idx) => setSelectedMediaLightboxIndex(idx)}
+            />
           </div>
         ) : isMosaicMode ? (
           /* FORMATO: MOSAICO DE FOTOS LIMPO (2 Colunas) */
@@ -557,7 +503,7 @@ export function PostCard(props: PostCardProps) {
 
           if (item.post_type === "moment" || postRatio === "9:16") {
             containerAspectClass = "aspect-post-moment max-w-xs mx-auto max-h-[580px]";
-            objectFitClass = isVideo ? "object-contain bg-black/95" : "object-cover";
+            objectFitClass = isVideo ? "object-contain bg-foreground/95" : "object-cover";
           } else if (postRatio === "1:1") {
             containerAspectClass = "aspect-square max-h-[540px]";
           } else if (postRatio === "4:5") {
@@ -566,7 +512,7 @@ export function PostCard(props: PostCardProps) {
             containerAspectClass = "aspect-video max-h-[500px]";
           } else if (isVideo) {
             containerAspectClass = "aspect-post-vertical max-h-[580px]";
-            objectFitClass = "object-contain bg-black/95";
+            objectFitClass = "object-contain bg-foreground/95";
           }
 
           return (

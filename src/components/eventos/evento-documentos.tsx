@@ -99,7 +99,7 @@ export function EventoDocumentos({ eventId }: EventoDocumentosProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12 text-muted-foreground text-sm gap-2">
-        <Layers className="size-4 animate-spin" />
+        <Layers className="size-4 animate-spin motion-reduce:animate-none" />
         <span>Carregando alvarás e documentos legais...</span>
       </div>
     );
@@ -207,7 +207,7 @@ export function EventoDocumentos({ eventId }: EventoDocumentosProps) {
         <Card className="rounded-lg border border-dashed border-border/80 p-8 text-center bg-card/40">
           <FileText className="size-8 text-muted-foreground mx-auto mb-2 opacity-50" />
           <p className="text-xs font-bold text-foreground">Nenhum documento protocolado</p>
-          <p className="text-[11px] text-muted-foreground mt-1">
+          <p className="text-2xs text-muted-foreground mt-1">
             Anexe os laudos técnicos, bombeiros e contratos para prevenir embargos.
           </p>
         </Card>
@@ -220,7 +220,7 @@ export function EventoDocumentos({ eventId }: EventoDocumentosProps) {
             return (
               <Card
                 key={d.id}
-                className="rounded-lg border border-border/80 bg-card p-4 shadow-xs space-y-3 hover:border-primary/40 transition-all flex flex-col justify-between"
+                className="rounded-lg border border-border/80 bg-card p-4 shadow-xs space-y-3 hover:border-primary/40 transition-colors duration-200 flex flex-col justify-between"
               >
                 <div className="space-y-2">
                   <div className="flex items-start justify-between gap-2">
@@ -230,13 +230,13 @@ export function EventoDocumentos({ eventId }: EventoDocumentosProps) {
                       </div>
                       <div>
                         <h4 className="text-xs font-bold text-foreground leading-snug">{d.titulo}</h4>
-                        <span className="text-[10px] text-muted-foreground">{tipoInfo.label}</span>
+                        <span className="text-2xs text-muted-foreground">{tipoInfo.label}</span>
                       </div>
                     </div>
                     <button
                       type="button"
                       onClick={() => handleDelete(d.id)}
-                      className="text-muted-foreground hover:text-destructive p-1"
+                      className="text-muted-foreground hover:text-destructive p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       title="Excluir documento"
                     >
                       <Trash2 className="size-3.5" />
@@ -244,13 +244,13 @@ export function EventoDocumentos({ eventId }: EventoDocumentosProps) {
                   </div>
 
                   {d.observacoes && (
-                    <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
+                    <p className="text-2xs text-muted-foreground line-clamp-2 leading-relaxed">
                       {d.observacoes}
                     </p>
                   )}
 
                   {d.data_validade && (
-                    <div className="flex items-center gap-2 text-[11px]">
+                    <div className="flex items-center gap-2 text-2xs">
                       {isVencido ? (
                         <span className="text-rose-600 font-bold flex items-center gap-1">
                           <AlertTriangle className="size-3" />

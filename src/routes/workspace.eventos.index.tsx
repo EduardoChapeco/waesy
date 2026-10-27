@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { ImageUpload } from "@/components/ui/image-upload";
-import { listAdminEvents, upsertEvent } from "@/services/events.functions";
+import { listAdminEvents, upsertEvent, softDeleteEvent, archiveEvent, duplicateEvent } from "@/services/events.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
@@ -37,7 +37,7 @@ export const Route = createFileRoute("/workspace/eventos/")({
 export default function WorkspaceEventosPage() {
   const { events: initialEvents, store } = ((Route.useLoaderData?.() as any) || {});
   const router = useRouter();
-  const [eventsList] = useState<any[]>(initialEvents || []);
+  const eventsList: any[] = useMemo(() => initialEvents || [], [initialEvents]);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [search, setSearch] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -438,11 +438,37 @@ export default function WorkspaceEventosPage() {
                           href: `/workspace/eventos/${event.id}/checkin`,
                         },
                       ]}
-                      onDelete={() => {
-                        toast.info("Para desativar este evento, altere o status dos lotes para encerrado.");
+                      onDelete={async () => {
+                        try {
+                          await softDeleteEvent({ data: { eventId: event.id } });
+                          toast.success(`Evento "${event.title}" excluído com sucesso.`);
+                          await router.invalidate();
+                        } catch (err: any) {
+                          toast.error(err?.message || "Erro ao excluir evento.");
+                        }
                       }}
-                      deleteConfirmTitle="Encerrar Evento?"
-                      deleteConfirmDescription={`Deseja realmente desativar as vendas de ingressos para "${event.title}"?`}
+                      onDuplicate={async () => {
+                        try {
+                          await duplicateEvent({ data: { eventId: event.id } });
+                          toast.success(`Evento "${event.title}" duplicado com sucesso.`);
+                          await router.invalidate();
+                        } catch (err: any) {
+                          toast.error(err?.message || "Erro ao duplicar evento.");
+                        }
+                      }}
+                      onArchive={async () => {
+                        try {
+                          const isArchived = Boolean(event.archived_at);
+                          await archiveEvent({ data: { eventId: event.id, archive: !isArchived } });
+                          toast.success(isArchived ? "Evento desarquivado com sucesso." : "Evento arquivado com sucesso.");
+                          await router.invalidate();
+                        } catch (err: any) {
+                          toast.error(err?.message || "Erro ao alterar arquivamento do evento.");
+                        }
+                      }}
+                      archiveLabel={event.archived_at ? "Desarquivar Evento" : "Arquivar Evento"}
+                      deleteConfirmTitle="Excluir Evento?"
+                      deleteConfirmDescription={`Deseja realmente excluir "${event.title}"? Esta ação removerá o evento do portal e cancelará novas vendas.`}
                     />
                   </div>
                 </Card>
@@ -624,7 +650,7 @@ export default function WorkspaceEventosPage() {
                       onClick={() => setForm({ ...form, is_external_ticket: !form.is_external_ticket })}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
                         form.is_external_ticket ? "bg-primary" : "bg-muted"
-                      }`}
+                      } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                     >
                       <span
                         className={`inline-block size-4 transform rounded-full bg-background shadow-sm transition-transform ${

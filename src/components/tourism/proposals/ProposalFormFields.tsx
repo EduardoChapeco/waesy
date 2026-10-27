@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { ChevronDown, ChevronRight, Trash2, Plus } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export const SMALL_INPUT =
-  "w-full h-11 sm:h-9 px-4 rounded-lg border border-border/60 bg-background text-sm sm:text-xs font-medium outline-none transition-all hover:bg-muted/30 focus:bg-background focus:border-primary/50 focus:ring-2 focus:ring-primary/20";
+  "w-full h-11 sm:h-9 px-4 rounded-lg border border-border/60 bg-background text-sm sm:text-xs font-medium outline-none transition-colors duration-200 hover:bg-muted/30 focus:bg-background focus:border-primary/50 focus:ring-2 focus:ring-primary/20";
 
 export function replaceAt<T>(arr: T[], i: number, item: T): T[] {
   const c = arr.slice();
@@ -21,7 +22,7 @@ export function Accordion({
 }) {
   const [open, setOpen] = useState(!!defaultOpen);
   return (
-    <div className="mb-4 overflow-hidden rounded-card bg-surface  ring-1 ring-border/50 transition-all">
+    <div className="mb-4 overflow-hidden rounded-card bg-surface  ring-1 ring-border/50 transition-colors duration-200">
       <Button
         variant="ghost"
         onClick={() => setOpen(!open)}
@@ -307,13 +308,13 @@ export function PhotoUpload({
   );
 }
 
-export function AddBtn({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
+export function AddBtn({ children, onClick, className }: { children: React.ReactNode; onClick: () => void; className?: string }) {
   return (
     <Button
       variant="outline"
       type="button"
       onClick={onClick}
-      className="flex h-11 sm:h-8 items-center gap-2 rounded-lg border border-border/60 bg-surface px-4 text-xs font-semibold hover:bg-surface-alt transition-colors shadow-none cursor-pointer"
+      className={cn("flex h-11 sm:h-8 items-center gap-2 rounded-lg border border-border/60 bg-surface px-4 text-xs font-semibold hover:bg-surface-alt transition-colors shadow-none cursor-pointer", className)}
     >
       <Plus className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
       {children}

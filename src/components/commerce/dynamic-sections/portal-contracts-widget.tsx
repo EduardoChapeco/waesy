@@ -119,7 +119,7 @@ export function PortalContractsWidget({ content, design_tokens }: PortalContract
         {contractsList.map((ct) => (
  <div
  key={ct.id}
- className="p-5 rounded-lg border border-border/60 bg-card hover:border-border transition-all duration-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+ className="p-5 rounded-lg border border-border/60 bg-card hover:border-border transition-colors duration-200 duration-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
  >
  <div className="space-y-2 flex-1">
  <div className="flex items-center gap-3 flex-wrap">
@@ -133,7 +133,7 @@ export function PortalContractsWidget({ content, design_tokens }: PortalContract
  <Clock className="w-3 h-3" /> Assinatura Pendente
  </Badge>
  )}
- <Badge variant="secondary" className="text-[11px] font-normal">
+ <Badge variant="secondary" className="text-2xs font-normal">
  {ct.category}
  </Badge>
  </div>
@@ -144,7 +144,7 @@ export function PortalContractsWidget({ content, design_tokens }: PortalContract
  {ct.signed_at && (
  <span>Assinado em: {new Date(ct.signed_at).toLocaleDateString("pt-BR")}</span>
  )}
- <span className="font-mono text-[10px] text-muted-foreground/80 truncate max-w-[260px]" title={ct.sha256_hash}>
+ <span className="font-mono text-2xs text-muted-foreground/80 truncate max-w-[260px]" title={ct.sha256_hash}>
  Hash: {ct.sha256_hash?.slice(0, 16)}...
  </span>
  </div>

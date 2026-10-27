@@ -474,7 +474,7 @@ function WorkspaceCandidatesPage() {
                 disabled={isSearchingHunter}
                 className="rounded-lg h-11 sm:h-9 text-xs font-semibold gap-1 shrink-0"
               >
-                {isSearchingHunter ? <Loader2 className="size-3 animate-spin" /> : <Search className="size-3" />}
+                {isSearchingHunter ? <Loader2 className="size-3 animate-spin motion-reduce:animate-none" /> : <Search className="size-3" />}
                 <span>Buscar</span>
               </Button>
             </form>
@@ -496,11 +496,11 @@ function WorkspaceCandidatesPage() {
             <button
               key={tab.id}
               onClick={() => setStatusTab(tab.id)}
-              className={`px-3 py-2 rounded-lg text-xs font-semibold transition-all shrink-0 flex items-center gap-2 min-h-9 cursor-pointer ${
+              className={`px-3 py-2 rounded-lg text-xs font-semibold transition-colors duration-200 shrink-0 flex items-center gap-2 min-h-9 cursor-pointer ${
                 statusTab === tab.id
                   ? "bg-foreground text-background"
                   : "bg-card text-muted-foreground hover:text-foreground border border-border/50"
-              }`}
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
             >
               <span>{tab.label}</span>
               <span className="opacity-70 text-xs">({tab.count})</span>
@@ -524,7 +524,7 @@ function WorkspaceCandidatesPage() {
         <div className="space-y-4">
           {isSearchingHunter ? (
             <div className="py-20 text-center space-y-3">
-              <Loader2 className="size-8 animate-spin text-primary mx-auto" />
+              <Loader2 className="size-8 animate-spin motion-reduce:animate-none text-primary mx-auto" />
               <p className="text-xs text-muted-foreground font-medium">Consultando perfis profissionais...</p>
             </div>
           ) : hunterResults.length === 0 ? (
@@ -598,10 +598,10 @@ function WorkspaceCandidatesPage() {
           {/* ── BIFURCAÇÃO: MOBILE WHATSAPP LIST EDGE-TO-EDGE (< 640px) ── */}
           <div className="block sm:hidden rounded-lg border border-border/60 bg-card divide-y divide-border/40 overflow-hidden shadow-none">
             {filteredApps.map((app) => (
-              <div
+              <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                 key={app.id}
                 onClick={() => handleOpenDossier(app)}
-                className="p-4 flex items-center justify-between gap-3 hover:bg-muted/20 active:bg-muted/30 transition-colors cursor-pointer"
+                className="p-4 flex items-center justify-between gap-3 hover:bg-muted/20 active:bg-muted/30 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <div className="flex items-center gap-3 min-w-0 flex-1">
                   <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
@@ -768,7 +768,7 @@ function WorkspaceCandidatesPage() {
                           key={star}
                           type="button"
                           onClick={() => handleUpdateRating(app.id, star)}
-                          className="text-amber-500 hover:scale-125 transition-transform cursor-pointer"
+                          className="text-amber-500 hover:scale-125 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           <Star
                             className={`size-4 ${
@@ -903,7 +903,7 @@ function WorkspaceCandidatesPage() {
                       key={star}
                       type="button"
                       onClick={() => handleUpdateRating(dossierCandidate.id, star)}
-                      className="p-1 cursor-pointer"
+                      className="p-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <Star
                         className={`size-4 ${
@@ -1113,7 +1113,7 @@ function WorkspaceCandidatesPage() {
                   <button
                     type="button"
                     onClick={() => setHirePin(String(Math.floor(1000 + Math.random() * 9000)))}
-                    className="text-xs text-primary underline cursor-pointer"
+                    className="text-xs text-primary underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     Gerar Novo
                   </button>
@@ -1135,9 +1135,9 @@ function WorkspaceCandidatesPage() {
             <Button
               onClick={handleConfirmHire}
               disabled={isProcessing}
-              className="rounded-lg font-semibold text-xs h-10 bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer"
+              className="rounded-lg font-semibold text-xs h-10 bg-emerald-600 text-foreground hover:bg-emerald-700 cursor-pointer"
             >
-              {isProcessing ? <Loader2 className="size-4 animate-spin mr-1" /> : <UserCheck className="size-4 mr-1" />}
+              {isProcessing ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none mr-1" /> : <UserCheck className="size-4 mr-1" />}
               <span>Efetivar Admissão</span>
             </Button>
           </DialogFooter>

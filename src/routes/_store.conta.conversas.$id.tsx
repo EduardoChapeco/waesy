@@ -290,7 +290,7 @@ export function CustomerChatRoom({
                 {storeData?.name || thread?.subject || "Atendimento"}
               </h2>
               {isPeerTyping ? (
-                <p className="text-xs font-semibold text-primary animate-pulse truncate">
+                <p className="text-xs font-semibold text-primary animate-pulse motion-reduce:animate-none truncate">
                   Digitando...
                 </p>
               ) : (
@@ -484,7 +484,7 @@ export function CustomerChatRoom({
             variant="ghost"
             size="icon"
             onClick={() => setRmaModalOpen(true)}
-            className="size-11 rounded-full text-muted-foreground hover:text-foreground shrink-0 cursor-pointer active:scale-95 transition-all"
+            className="size-11 rounded-full text-muted-foreground hover:text-foreground shrink-0 cursor-pointer active:scale-95 transition-transform duration-200"
             title="Anexar"
             aria-label="Anexar arquivo"
           >
@@ -495,19 +495,19 @@ export function CustomerChatRoom({
             value={text}
             onChange={(e) => handleInputChange(e.target.value)}
             placeholder="Mensagem..."
-            className="flex-1 h-11 rounded-full bg-muted/50 px-4 text-base sm:text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/20 transition-all border-none"
+            className="flex-1 h-11 rounded-full bg-muted/50 px-4 text-base sm:text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/20 transition-colors duration-200 border-none"
             disabled={isSending}
           />
 
           <button
             type="submit"
             disabled={!text.trim() || isSending}
-            className="size-11 rounded-full flex items-center justify-center text-primary disabled:opacity-30 disabled:cursor-not-allowed hover:opacity-80 active:scale-95 transition-all cursor-pointer shrink-0"
+            className="size-11 rounded-full flex items-center justify-center text-primary disabled:opacity-30 disabled:cursor-not-allowed hover:opacity-80 active:scale-95 transition-transform duration-200 cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             title="Enviar"
             aria-label="Enviar mensagem"
           >
             {isSending ? (
-              <Loader2 className="size-5 animate-spin" strokeWidth={1.75} />
+              <Loader2 className="size-5 animate-spin motion-reduce:animate-none" strokeWidth={1.75} />
             ) : (
               <Send className="size-5" strokeWidth={1.75} />
             )}

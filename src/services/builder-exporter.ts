@@ -47,12 +47,12 @@ export function exportStaticHtml(
  }
  </script>
 </head>
-<body class="bg-slate-950 text-slate-50 min-h-screen antialiased selection:bg-brand selection:text-white">
+<body class="bg-slate-950 text-slate-50 min-h-screen antialiased selection:bg-brand selection:text-foreground">
  <div id="waesy-root" class="w-full flex flex-col items-center">
  <!-- Header Standalone -->
  <header class="w-full max-w-6xl py-6 px-4 flex items-center justify-between border-b border-slate-800/80">
  <div class="flex items-center gap-2">
- <span class="w-3 h-3 rounded-full bg-sky-500 animate-pulse"></span>
+ <span class="w-3 h-3 rounded-full bg-sky-500 animate-pulse motion-reduce:animate-none"></span>
  <span class="font-heading font-extrabold text-lg tracking-tight">${storeName}</span>
  </div>
  <div class="text-xs text-slate-400 font-mono">Certificado Waesy 360</div>
@@ -64,7 +64,7 @@ export function exportStaticHtml(
  <h1 class="text-3xl sm:text-5xl font-heading font-black tracking-tight">${title}</h1>
  <p class="text-sm text-slate-400 max-w-xl mx-auto">${desc}</p>
  <div class="pt-4 flex justify-center gap-3">
- <a href="#contato" class="px-6 py-3 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs tracking-wide uppercase transition-all shadow-lg">
+ <a href="#contato" class="px-6 py-3 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs tracking-wide uppercase transition-colors duration-200 shadow-lg">
  Acessar Atendimento
  </a>
  </div>

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useRouter } from "@tanstack/react-router";
-import { CaretLeft, MagnifyingGlass, Funnel, X } from "@phosphor-icons/react";
+import { CaretLeft, MagnifyingGlass, Funnel, X, List } from "@phosphor-icons/react";
+import { drawerStore } from "@/lib/drawer-store";
 import { cn } from "@/lib/utils";
 import { useTelemetry } from "@/hooks/use-telemetry";
 
@@ -81,7 +82,7 @@ export function NativeMobileHeader({
       <div className="relative flex items-center justify-between gap-2 px-2 sm:px-4 h-11 min-h-11 w-full min-w-0">
         {/* ── Lado Esquerdo: Apenas Ícone < (44x44px, sem texto) ── */}
         <div className="flex items-center gap-1 shrink-0 min-w-11 z-10">
-          {showBack && (
+          {showBack ? (
             <button
               type="button"
               onClick={handleBack}
@@ -90,8 +91,19 @@ export function NativeMobileHeader({
             >
               <CaretLeft className="size-5" weight="bold" />
             </button>
+          ) : (
+            leftSlot || (
+              <button
+                type="button"
+                onClick={() => drawerStore.openSuperApp()}
+                className="size-11 min-h-11 min-w-11 -ml-1 rounded-lg flex items-center justify-center text-foreground/85 hover:text-foreground hover:bg-muted/50 active:bg-muted/80 active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                aria-label="Abrir catálogo do SuperApp"
+              >
+                <List className="size-6" weight="bold" />
+              </button>
+            )
           )}
-          {leftSlot}
+          {showBack && leftSlot}
         </div>
 
         {/* ── Centro: Título Centralizado ou Input de Busca Contextual ── */}

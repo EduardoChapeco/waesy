@@ -56,7 +56,7 @@ export const Route = createFileRoute("/_store/paginas/$slug")({
   component: PublicPage,
   pendingComponent: () => (
     <div className="flex flex-col items-center justify-center min-h-dvh bg-background">
-      <Loader2 className="size-10 animate-spin text-foreground/30" />
+      <Loader2 className="size-10 animate-spin motion-reduce:animate-none text-foreground/30" />
       <p className="mt-4 font-mono text-sm text-foreground/60 uppercase">Carregando página...</p>
     </div>
   ),

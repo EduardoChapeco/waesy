@@ -189,8 +189,8 @@ function ConfirmationPage() {
  <span className="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground">
  Acompanhamento do Pedido
  </span>
- <span className="text-[11px] font-medium text-primary flex items-center gap-2">
- <span className="size-1.5 rounded-full bg-primary animate-pulse" />
+ <span className="text-2xs font-medium text-primary flex items-center gap-2">
+ <span className="size-1.5 rounded-full bg-primary animate-pulse motion-reduce:animate-none" />
  Tempo real
  </span>
  </div>
@@ -230,18 +230,18 @@ function ConfirmationPage() {
  return (
  <div key={st.step} className="flex flex-col items-center text-center space-y-2">
  <div
- className={`size-10 rounded-lg flex items-center justify-center border transition-all ${
+ className={`size-10 rounded-lg flex items-center justify-center border transition-colors duration-200 ${
  st.isDone
  ? "bg-primary text-primary-foreground border-primary shadow-xs"
  : st.isActive
- ? "bg-primary/10 text-primary border-primary animate-bounce"
+ ? "bg-primary/10 text-primary border-primary animate-bounce motion-reduce:animate-none"
  : "bg-muted text-muted-foreground border-border/60 opacity-50"
  }`}
  >
  <StepIcon className="size-4" />
  </div>
  <span
- className={`text-[10px] sm:text-xs font-bold leading-tight ${
+ className={`text-2xs sm:text-xs font-bold leading-tight ${
  st.isDone || st.isActive ? "text-foreground" : "text-muted-foreground"
  }`}
  >
@@ -286,7 +286,7 @@ function ConfirmationPage() {
 
  <Button
  size="lg"
- className="w-full sm:w-auto bg-success hover:bg-success text-white gap-2 cursor-pointer"
+ className="w-full sm:w-auto bg-success hover:bg-success text-foreground gap-2 cursor-pointer"
  onClick={async () => {
  if (!whatsappPhone) {
  toast.info("Telefone de atendimento não configurado no painel da loja.");
@@ -420,7 +420,7 @@ function ConfirmationPage() {
  return (
  <span
  key={oIdx}
- className="text-[10px] font-bold bg-muted/70 text-foreground/80 border border-border/60 px-2 py-1 rounded-md"
+ className="text-2xs font-bold bg-muted/70 text-foreground/80 border border-border/60 px-2 py-1 rounded-md"
  >
  + {label}
  </span>
@@ -471,7 +471,7 @@ function ConfirmationPage() {
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
  {Object.entries(order.custom_fields).map(([k, v]: [string, any]) => (
  <div key={k} className="p-3 rounded-lg bg-card ">
- <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider block">
+ <span className="text-3xs text-muted-foreground uppercase font-bold tracking-wider block">
  {k}
  </span>
  <span className="font-semibold text-foreground">{String(v)}</span>
@@ -483,7 +483,7 @@ function ConfirmationPage() {
 
  {order.notes && (
  <div className="mt-3 p-3 rounded-lg bg-muted/20 text-xs">
- <span className="text-[10px] text-muted-foreground font-bold uppercase block">
+ <span className="text-2xs text-muted-foreground font-bold uppercase block">
  Observações para a Loja:
  </span>
  <p className="text-foreground mt-1">{order.notes}</p>
@@ -510,22 +510,22 @@ function ConfirmationPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               <div className="p-3 rounded-lg bg-muted/20 space-y-1">
-                <span className="text-[10px] font-mono uppercase text-muted-foreground block">Pacote / Roteiro</span>
+                <span className="text-2xs font-mono uppercase text-muted-foreground block">Pacote / Roteiro</span>
                 <p className="font-bold text-foreground">{order.checkout_niche_metadata.tripTitle || "Pacote Turístico Oficial"}</p>
               </div>
               <div className="p-3 rounded-lg bg-muted/20 space-y-1">
-                <span className="text-[10px] font-mono uppercase text-muted-foreground block">Embarque / Saída</span>
+                <span className="text-2xs font-mono uppercase text-muted-foreground block">Embarque / Saída</span>
                 <p className="font-bold text-foreground">{order.checkout_niche_metadata.boardingPoint || "Balcão da Agência"}</p>
               </div>
               {order.checkout_niche_metadata.departureDate && (
                 <div className="p-3 rounded-lg bg-muted/20 space-y-1">
-                  <span className="text-[10px] font-mono uppercase text-muted-foreground block">Data de Ida / Check-in</span>
+                  <span className="text-2xs font-mono uppercase text-muted-foreground block">Data de Ida / Check-in</span>
                   <p className="font-bold text-foreground">{order.checkout_niche_metadata.departureDate}</p>
                 </div>
               )}
               {order.checkout_niche_metadata.returnDate && (
                 <div className="p-3 rounded-lg bg-muted/20 space-y-1">
-                  <span className="text-[10px] font-mono uppercase text-muted-foreground block">Data de Retorno / Check-out</span>
+                  <span className="text-2xs font-mono uppercase text-muted-foreground block">Data de Retorno / Check-out</span>
                   <p className="font-bold text-foreground">{order.checkout_niche_metadata.returnDate}</p>
                 </div>
               )}
@@ -542,9 +542,9 @@ function ConfirmationPage() {
                     <div key={idx} className="p-3 flex items-center justify-between text-xs">
                       <div>
                         <p className="font-bold text-foreground">{p.name || "Passageiro"}</p>
-                        <p className="text-muted-foreground font-mono text-[11px]">Doc: {p.document || "Não informado"}</p>
+                        <p className="text-muted-foreground font-mono text-2xs">Doc: {p.document || "Não informado"}</p>
                       </div>
-                      <span className="text-[10px] font-mono text-muted-foreground">
+                      <span className="text-2xs font-mono text-muted-foreground">
                         {p.isLead ? "Titular" : `Acompanhante ${idx}`}
                       </span>
                     </div>
@@ -555,7 +555,7 @@ function ConfirmationPage() {
 
             {order.checkout_niche_metadata.specialRequests && (
               <div className="p-3 rounded-lg bg-muted/20 text-xs">
-                <span className="text-[10px] text-muted-foreground font-bold uppercase block">Solicitações de Hospedagem:</span>
+                <span className="text-2xs text-muted-foreground font-bold uppercase block">Solicitações de Hospedagem:</span>
                 <p className="text-foreground mt-1">{order.checkout_niche_metadata.specialRequests}</p>
               </div>
             )}
@@ -575,14 +575,14 @@ function ConfirmationPage() {
                   <p className="text-xs text-muted-foreground">Acesso seguro emitido com validação transacional</p>
                 </div>
               </div>
-              <Badge variant="outline" className="border-emerald-500/40 text-emerald-600 bg-emerald-500/10 text-[10px] font-bold">
+              <Badge variant="outline" className="border-emerald-500/40 text-emerald-600 bg-emerald-500/10 text-2xs font-bold">
                 Liberado
               </Badge>
             </div>
 
             {/* Chave de Licença / Senha Única */}
             <div className="p-4 rounded-lg bg-muted/30 border border-border/40 space-y-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+              <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                 <Key size={12} className="text-primary" /> Chave de Acesso / Licença Individual
               </span>
               <div className="flex items-center justify-between gap-2">
@@ -607,7 +607,7 @@ function ConfirmationPage() {
             {/* Botão de Acesso / Download */}
             <div className="pt-1 flex flex-col sm:flex-row gap-3">
               <Button asChild className="flex-1 w-full h-11 rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground cursor-pointer">
-                <a
+                <a className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   href={order.checkout_niche_metadata?.digitalDeliveryUrl || "#"}
                   target={order.checkout_niche_metadata?.digitalDeliveryUrl ? "_blank" : undefined}
                   rel="noreferrer"
@@ -624,7 +624,7 @@ function ConfirmationPage() {
               </Button>
             </div>
 
-            <p className="text-[11px] text-muted-foreground leading-relaxed">
+            <p className="text-2xs text-muted-foreground leading-relaxed">
               As instruções detalhadas de acesso e recibo foram enviadas para seu e-mail cadastrado. Guarde sua chave para suporte ou renovações.
             </p>
           </div>
@@ -647,7 +647,7 @@ function ConfirmationPage() {
         {/* Detalhes de Atendimento e Entrega do Nicho */}
  {(order.cpf_on_receipt?.requested || order.receiver_info?.isOtherPerson || order.substitution_policy || order.checkout_niche_metadata?.utensilsRequested) && (
  <div className="mt-4 p-4 rounded-lg bg-muted/20 border border-border/40 space-y-2 text-xs">
- <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider block">
+ <span className="text-2xs text-muted-foreground font-bold uppercase tracking-wider block">
  Detalhes do Pedido & Entrega:
  </span>
  {order.cpf_on_receipt?.requested && (
@@ -692,7 +692,7 @@ function ConfirmationPage() {
         <h3 className="text-sm font-bold text-foreground">Contrato Digital do Pedido</h3>
         <p className="text-xs text-muted-foreground">Documento com validade jurídica nacional e hash SHA-256</p>
       </div>
-      <span className="text-[10px] font-mono uppercase font-semibold text-emerald-600 dark:text-emerald-400">
+      <span className="text-2xs font-mono uppercase font-semibold text-emerald-600 dark:text-emerald-400">
         Lei 14.063/2020
       </span>
     </div>
@@ -701,7 +701,7 @@ function ConfirmationPage() {
       <div className="p-4 rounded-lg bg-muted/20 border border-border/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="space-y-1">
           <p className="text-xs font-bold text-foreground">Contrato Pronto para Assinatura</p>
-          <p className="text-[11px] text-muted-foreground">Assine pelo celular no WhatsApp ou diretamente na tela.</p>
+          <p className="text-2xs text-muted-foreground">Assine pelo celular no WhatsApp ou diretamente na tela.</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {contractInfo.whatsappLink && (
@@ -748,7 +748,7 @@ function ConfirmationPage() {
  </div>
  <div>
  <h4 className="text-xs font-bold text-foreground">Auditoria de Compromisso Waesy</h4>
- <p className="text-[11px] text-muted-foreground">
+ <p className="text-2xs text-muted-foreground">
  Ajude a manter o comércio local confiável validando o cumprimento de prazos e frete grátis da loja.
  </p>
  </div>
@@ -770,7 +770,7 @@ function ConfirmationPage() {
  <Button
  asChild
  size="lg"
- className="bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold rounded-lg text-sm gap-2"
+ className="bg-[#25D366] hover:bg-[#20bd5a] text-foreground font-bold rounded-lg text-sm gap-2"
  >
  <a
  href={`https://wa.me/${whatsappPhone}?text=${encodeURIComponent(

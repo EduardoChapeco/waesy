@@ -459,3 +459,278 @@ export const getClassifiedEventSurveyResults = createServerFn({ method: "GET" })
       isOwner,
     };
   });
+
+export const checkoutClassifiedEventTicket = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      classifiedId: z.string().min(1),
+      tierId: z.string().default("general"),
+      tierName: z.string().default("Ingresso Geral"),
+      quantity: z.number().int().min(1).max(20).default(1),
+      unitPriceCents: z.number().int().min(0).default(0),
+      buyerName: z.string().min(2),
+      buyerWhatsapp: z.string().min(8),
+      buyerDocument: z.string().optional(),
+      buyerEmail: z.string().optional(),
+      paymentMethod: z.enum(["pix", "card", "free"]).default("free"),
+    })
+  )
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const identity = await getIdentity().catch(() => null);
+
+    const { data: classified } = await supabase
+      .from("classifieds")
+      .select("id, title, store_id, author_profile_id, attributes")
+      .eq("id", input.classifiedId)
+      .maybeSingle();
+
+    const ownerProfileId =
+      identity?.id || classified?.author_profile_id || "00000000-0000-0000-0000-000000000000";
+    const attrs = ((classified?.attributes || {}) as Record<string, any>) || {};
+    const totalAmountCents = Math.max(0, input.unitPriceCents * input.quantity);
+
+    const issuedTickets: Array<{ id: string; code: string; qrPayload: string }> = [];
+    for (let i = 0; i < input.quantity; i++) {
+      const ticketId = crypto.randomUUID();
+      const signed = signTicketPayload({
+        ticketId,
+        eventId: input.classifiedId,
+        lotId: input.tierId,
+        ownerProfileId,
+      });
+      issuedTickets.push({
+        id: ticketId,
+        code: signed.humanCode,
+        qrPayload: signed.qrPayload,
+      });
+
+      if (classified) {
+        await supabase
+          .from("classified_applications")
+          .insert({
+            id: ticketId,
+            classified_id: input.classifiedId,
+            applicant_id: ownerProfileId,
+            name: input.buyerName.trim(),
+            phone: input.buyerWhatsapp.trim(),
+            email: input.buyerEmail?.trim() || null,
+            candidate_role: `Ingresso: ${input.tierName}`,
+            cover_letter: `Código WCTS-1: ${signed.humanCode} | QR: ${signed.qrPayload}`,
+            status: totalAmountCents > 0 ? "pending_payment" : "confirmed",
+          })
+          .then(
+            () => null,
+            () => null
+          );
+      }
+    }
+
+    // Increment sold_count on the tier in attributes.ticket_tiers and check automatic rollover
+    if (classified && Array.isArray(attrs.ticket_tiers)) {
+      const updatedTiers = attrs.ticket_tiers.map((t: any) => {
+        if (String(t.id) === String(input.tierId) || String(t.name) === String(input.tierName)) {
+          const nextSold = Number(t.sold_count || 0) + input.quantity;
+          const cap = Number(t.capacity ?? t.quantity ?? 100);
+          return {
+            ...t,
+            sold_count: nextSold,
+            status: cap > 0 && nextSold >= cap ? "sold_out" : t.status || "active",
+          };
+        }
+        return t;
+      });
+      await supabase
+        .from("classifieds")
+        .update({
+          attributes: {
+            ...attrs,
+            ticket_tiers: updatedTiers,
+          },
+        })
+        .eq("id", classified.id)
+        .then(
+          () => null,
+          () => null
+        );
+    }
+
+    const pixKey = String(attrs.pix_key || attrs.organizer_pix || "eventos@waesy.com.br");
+    const pixCopyPaste =
+      totalAmountCents > 0
+        ? buildEmvPixCopyPaste({
+            pixKey,
+            merchantName: classified?.title || "WAESY EVENTOS",
+            merchantCity: String(attrs.city || "CHAPECO"),
+            amountCents: totalAmountCents,
+            txid: issuedTickets[0]?.code.replace(/-/g, "") || "WAESYTKT",
+          })
+        : null;
+
+    return {
+      success: true,
+      tickets: issuedTickets,
+      pixCopyPaste,
+      totalAmountCents,
+    };
+  });
+
+export const voteClassifiedEventSurvey = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      classifiedId: z.string().min(1),
+      surveyId: z.string().min(1),
+      optionId: z.string().min(1),
+    })
+  )
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const { data: classified } = await supabase
+      .from("classifieds")
+      .select("id, attributes")
+      .eq("id", input.classifiedId)
+      .maybeSingle();
+
+    if (classified) {
+      const attrs = ((classified.attributes || {}) as Record<string, any>) || {};
+      const surveys = Array.isArray(attrs.surveys) ? attrs.surveys : [];
+      const updatedSurveys = surveys.map((sv: any) => {
+        if (String(sv.id) !== String(input.surveyId)) return sv;
+        const options = Array.isArray(sv.options)
+          ? sv.options.map((opt: any) =>
+              String(opt.id) === String(input.optionId)
+                ? { ...opt, votes: Number(opt.votes || 0) + 1 }
+                : opt
+            )
+          : [];
+        return { ...sv, options };
+      });
+
+      await supabase
+        .from("classifieds")
+        .update({ attributes: { ...attrs, surveys: updatedSurveys } })
+        .eq("id", classified.id)
+        .then(
+          () => null,
+          () => null
+        );
+    }
+
+    return { success: true };
+  });
+
+export const getClassifiedEventPublicWall = createServerFn({ method: "GET" })
+  .validator(z.object({ classifiedId: z.string().min(1) }))
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const { data: rows } = await supabase
+      .from("classified_applications")
+      .select("id, name, candidate_role, cover_letter, status, created_at")
+      .eq("classified_id", input.classifiedId)
+      .order("created_at", { ascending: false })
+      .limit(40);
+
+    const list = rows || [];
+    const attendees = list
+      .filter(
+        (r: any) =>
+          !String(r.candidate_role || "").startsWith("survey_vote:") &&
+          !String(r.candidate_role || "").startsWith("testimonial:")
+      )
+      .map((r: any) => ({
+        id: r.id,
+        name: r.name || "Participante",
+      }));
+
+    const testimonials = list
+      .filter((r: any) => String(r.candidate_role || "").startsWith("testimonial:"))
+      .map((r: any) => {
+        const ratingMatch = String(r.candidate_role || "").split(":")[1];
+        return {
+          id: r.id,
+          authorName: r.name || "Participante",
+          rating: Number(ratingMatch) || 5,
+          comment: r.cover_letter || "",
+        };
+      });
+
+    return {
+      attendees: attendees.slice(0, 20),
+      totalConfirmed: attendees.length,
+      testimonials: testimonials.slice(0, 10),
+    };
+  });
+
+export const submitClassifiedEventTestimonial = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      classifiedId: z.string().min(1),
+      authorName: z.string().min(2),
+      rating: z.number().int().min(1).max(5).default(5),
+      comment: z.string().min(3).max(600),
+    })
+  )
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const identity = await getIdentity().catch(() => null);
+    const { data: classified } = await supabase
+      .from("classifieds")
+      .select("author_profile_id")
+      .eq("id", input.classifiedId)
+      .maybeSingle();
+
+    await supabase.from("classified_applications").insert({
+      classified_id: input.classifiedId,
+      applicant_id: identity?.id || classified?.author_profile_id,
+      name: input.authorName.trim(),
+      candidate_role: `testimonial:${input.rating}`,
+      cover_letter: input.comment.trim(),
+      status: "published",
+    });
+
+    return { success: true };
+  });
+
+export const verifyClassifiedTicketByCode = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      ticketCode: z.string().min(4),
+      markAsCheckedIn: z.boolean().default(false),
+    })
+  )
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const cleanCode = input.ticketCode.trim().toUpperCase();
+
+    const { data: row } = await supabase
+      .from("classified_applications")
+      .select("id, name, candidate_role, cover_letter, status")
+      .ilike("cover_letter", `%${cleanCode}%`)
+      .maybeSingle();
+
+    if (!row) {
+      return {
+        valid: false,
+        checkedInNow: false,
+        message: "Credencial não localizada para este código.",
+      };
+    }
+
+    if (input.markAsCheckedIn && row.status !== "checked_in") {
+      await supabase
+        .from("classified_applications")
+        .update({ status: "checked_in" })
+        .eq("id", row.id);
+    }
+
+    return {
+      valid: true,
+      checkedInNow: input.markAsCheckedIn,
+      buyerName: row.name || "Participante",
+      tierName: String(row.candidate_role || "Ingresso Geral").replace(/^Ingresso:\s*/i, ""),
+      message:
+        row.status === "checked_in" && !input.markAsCheckedIn
+          ? "Credencial autêntica (Check-in já registrado anteriormente)."
+          : "Credencial autêntica e validada com sucesso!",
+    };
+  });
