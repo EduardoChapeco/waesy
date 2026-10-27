@@ -12,11 +12,13 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as StoreRouteImport } from './routes/_store'
 import { Route as AdminMasterRouteImport } from './routes/admin-master'
 import { Route as HomeRouteImport } from './routes/home'
+import { Route as PainelRouteImport } from './routes/painel'
 import { Route as SitemapNewsDotxmlRouteImport } from './routes/sitemap-news[.]xml'
 import { Route as SitemapProductsDotxmlRouteImport } from './routes/sitemap-products[.]xml'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as StatusRouteImport } from './routes/status'
 import { Route as ValeagoranewsRouteImport } from './routes/valeagoranews'
+import { Route as WaesynewsRouteImport } from './routes/waesynews'
 import { Route as WorkspaceRouteImport } from './routes/workspace'
 import { Route as StoreIndexRouteImport } from './routes/_store.index'
 import { Route as StoreAcougueRouteImport } from './routes/_store.acougue'
@@ -140,10 +142,12 @@ import { Route as StoreAeroportoIataRouteImport } from './routes/_store.aeroport
 import { Route as StoreAgendarIndexRouteImport } from './routes/_store.agendar.index'
 import { Route as StoreAgendarIdRouteImport } from './routes/_store.agendar.$id'
 import { Route as StoreBioSlugRouteImport } from './routes/_store.bio.$slug'
+import { Route as StoreCSlugRouteImport } from './routes/_store.c.$slug'
 import { Route as StoreCategoriaSlugRouteImport } from './routes/_store.categoria.$slug'
 import { Route as StoreClassificadosIndexRouteImport } from './routes/_store.classificados.index'
 import { Route as StoreClassificadosIdRouteImport } from './routes/_store.classificados.$id'
 import { Route as StoreColecaoSlugRouteImport } from './routes/_store.colecao.$slug'
+import { Route as StoreComunidadesIndexRouteImport } from './routes/_store.comunidades.index'
 import { Route as StoreConcursoIdRouteImport } from './routes/_store.concurso.$id'
 import { Route as StoreContaIndexRouteImport } from './routes/_store.conta.index'
 import { Route as StoreContaAgendamentosRouteImport } from './routes/_store.conta.agendamentos'
@@ -447,6 +451,11 @@ const HomeRoute = HomeRouteImport.update({
   path: '/home',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PainelRoute = PainelRouteImport.update({
+  id: '/painel',
+  path: '/painel',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapNewsDotxmlRoute = SitemapNewsDotxmlRouteImport.update({
   id: '/sitemap-news.xml',
   path: '/sitemap-news.xml',
@@ -470,6 +479,11 @@ const StatusRoute = StatusRouteImport.update({
 const ValeagoranewsRoute = ValeagoranewsRouteImport.update({
   id: '/valeagoranews',
   path: '/valeagoranews',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WaesynewsRoute = WaesynewsRouteImport.update({
+  id: '/waesynews',
+  path: '/waesynews',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WorkspaceRoute = WorkspaceRouteImport.update({
@@ -1090,6 +1104,11 @@ const StoreBioSlugRoute = StoreBioSlugRouteImport.update({
   path: '/bio/$slug',
   getParentRoute: () => StoreRoute,
 } as any)
+const StoreCSlugRoute = StoreCSlugRouteImport.update({
+  id: '/c/$slug',
+  path: '/c/$slug',
+  getParentRoute: () => StoreRoute,
+} as any)
 const StoreCategoriaSlugRoute = StoreCategoriaSlugRouteImport.update({
   id: '/categoria/$slug',
   path: '/categoria/$slug',
@@ -1108,6 +1127,11 @@ const StoreClassificadosIdRoute = StoreClassificadosIdRouteImport.update({
 const StoreColecaoSlugRoute = StoreColecaoSlugRouteImport.update({
   id: '/colecao/$slug',
   path: '/colecao/$slug',
+  getParentRoute: () => StoreRoute,
+} as any)
+const StoreComunidadesIndexRoute = StoreComunidadesIndexRouteImport.update({
+  id: '/comunidades/',
+  path: '/comunidades/',
   getParentRoute: () => StoreRoute,
 } as any)
 const StoreConcursoIdRoute = StoreConcursoIdRouteImport.update({
@@ -2688,11 +2712,13 @@ export interface FileRoutesByFullPath {
   '/': typeof StoreIndexRoute
   '/admin-master': typeof AdminMasterRouteWithChildren
   '/home': typeof HomeRoute
+  '/painel': typeof PainelRoute
   '/sitemap-news.xml': typeof SitemapNewsDotxmlRoute
   '/sitemap-products.xml': typeof SitemapProductsDotxmlRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/status': typeof StatusRoute
   '/valeagoranews': typeof ValeagoranewsRoute
+  '/waesynews': typeof WaesynewsRoute
   '/workspace': typeof WorkspaceRouteWithChildren
   '/acougue': typeof StoreAcougueRoute
   '/afiliados': typeof StoreAfiliadosRoute
@@ -2814,6 +2840,7 @@ export interface FileRoutesByFullPath {
   '/aeroporto/$iata': typeof StoreAeroportoIataRoute
   '/agendar/$id': typeof StoreAgendarIdRoute
   '/bio/$slug': typeof StoreBioSlugRoute
+  '/c/$slug': typeof StoreCSlugRoute
   '/categoria/$slug': typeof StoreCategoriaSlugRoute
   '/classificados/$id': typeof StoreClassificadosIdRoute
   '/colecao/$slug': typeof StoreColecaoSlugRoute
@@ -3015,6 +3042,7 @@ export interface FileRoutesByFullPath {
   '/workspace/whatsapp/automacoes': typeof WorkspaceWhatsappAutomacoesRoute
   '/agendar/': typeof StoreAgendarIndexRoute
   '/classificados/': typeof StoreClassificadosIndexRoute
+  '/comunidades/': typeof StoreComunidadesIndexRoute
   '/conta/': typeof StoreContaIndexRoute
   '/diretorio/': typeof StoreDiretorioIndexRoute
   '/empregos/': typeof StoreEmpregosIndexRoute
@@ -3110,11 +3138,13 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/home': typeof HomeRoute
+  '/painel': typeof PainelRoute
   '/sitemap-news.xml': typeof SitemapNewsDotxmlRoute
   '/sitemap-products.xml': typeof SitemapProductsDotxmlRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/status': typeof StatusRoute
   '/valeagoranews': typeof ValeagoranewsRoute
+  '/waesynews': typeof WaesynewsRoute
   '/acougue': typeof StoreAcougueRoute
   '/afiliados': typeof StoreAfiliadosRoute
   '/agenda': typeof StoreAgendaRoute
@@ -3230,6 +3260,7 @@ export interface FileRoutesByTo {
   '/aeroporto/$iata': typeof StoreAeroportoIataRoute
   '/agendar/$id': typeof StoreAgendarIdRoute
   '/bio/$slug': typeof StoreBioSlugRoute
+  '/c/$slug': typeof StoreCSlugRoute
   '/categoria/$slug': typeof StoreCategoriaSlugRoute
   '/classificados/$id': typeof StoreClassificadosIdRoute
   '/colecao/$slug': typeof StoreColecaoSlugRoute
@@ -3430,6 +3461,7 @@ export interface FileRoutesByTo {
   '/workspace/whatsapp/automacoes': typeof WorkspaceWhatsappAutomacoesRoute
   '/agendar': typeof StoreAgendarIndexRoute
   '/classificados': typeof StoreClassificadosIndexRoute
+  '/comunidades': typeof StoreComunidadesIndexRoute
   '/conta': typeof StoreContaIndexRoute
   '/diretorio': typeof StoreDiretorioIndexRoute
   '/empregos': typeof StoreEmpregosIndexRoute
@@ -3528,11 +3560,13 @@ export interface FileRoutesById {
   '/_store': typeof StoreRouteWithChildren
   '/admin-master': typeof AdminMasterRouteWithChildren
   '/home': typeof HomeRoute
+  '/painel': typeof PainelRoute
   '/sitemap-news.xml': typeof SitemapNewsDotxmlRoute
   '/sitemap-products.xml': typeof SitemapProductsDotxmlRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/status': typeof StatusRoute
   '/valeagoranews': typeof ValeagoranewsRoute
+  '/waesynews': typeof WaesynewsRoute
   '/workspace': typeof WorkspaceRouteWithChildren
   '/_store/acougue': typeof StoreAcougueRoute
   '/_store/afiliados': typeof StoreAfiliadosRoute
@@ -3655,6 +3689,7 @@ export interface FileRoutesById {
   '/_store/aeroporto/$iata': typeof StoreAeroportoIataRoute
   '/_store/agendar/$id': typeof StoreAgendarIdRoute
   '/_store/bio/$slug': typeof StoreBioSlugRoute
+  '/_store/c/$slug': typeof StoreCSlugRoute
   '/_store/categoria/$slug': typeof StoreCategoriaSlugRoute
   '/_store/classificados/$id': typeof StoreClassificadosIdRoute
   '/_store/colecao/$slug': typeof StoreColecaoSlugRoute
@@ -3856,6 +3891,7 @@ export interface FileRoutesById {
   '/workspace/whatsapp/automacoes': typeof WorkspaceWhatsappAutomacoesRoute
   '/_store/agendar/': typeof StoreAgendarIndexRoute
   '/_store/classificados/': typeof StoreClassificadosIndexRoute
+  '/_store/comunidades/': typeof StoreComunidadesIndexRoute
   '/_store/conta/': typeof StoreContaIndexRoute
   '/_store/diretorio/': typeof StoreDiretorioIndexRoute
   '/_store/empregos/': typeof StoreEmpregosIndexRoute
@@ -3955,11 +3991,13 @@ export interface FileRouteTypes {
     | '/'
     | '/admin-master'
     | '/home'
+    | '/painel'
     | '/sitemap-news.xml'
     | '/sitemap-products.xml'
     | '/sitemap.xml'
     | '/status'
     | '/valeagoranews'
+    | '/waesynews'
     | '/workspace'
     | '/acougue'
     | '/afiliados'
@@ -4081,6 +4119,7 @@ export interface FileRouteTypes {
     | '/aeroporto/$iata'
     | '/agendar/$id'
     | '/bio/$slug'
+    | '/c/$slug'
     | '/categoria/$slug'
     | '/classificados/$id'
     | '/colecao/$slug'
@@ -4282,6 +4321,7 @@ export interface FileRouteTypes {
     | '/workspace/whatsapp/automacoes'
     | '/agendar/'
     | '/classificados/'
+    | '/comunidades/'
     | '/conta/'
     | '/diretorio/'
     | '/empregos/'
@@ -4377,11 +4417,13 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/home'
+    | '/painel'
     | '/sitemap-news.xml'
     | '/sitemap-products.xml'
     | '/sitemap.xml'
     | '/status'
     | '/valeagoranews'
+    | '/waesynews'
     | '/acougue'
     | '/afiliados'
     | '/agenda'
@@ -4497,6 +4539,7 @@ export interface FileRouteTypes {
     | '/aeroporto/$iata'
     | '/agendar/$id'
     | '/bio/$slug'
+    | '/c/$slug'
     | '/categoria/$slug'
     | '/classificados/$id'
     | '/colecao/$slug'
@@ -4697,6 +4740,7 @@ export interface FileRouteTypes {
     | '/workspace/whatsapp/automacoes'
     | '/agendar'
     | '/classificados'
+    | '/comunidades'
     | '/conta'
     | '/diretorio'
     | '/empregos'
@@ -4794,11 +4838,13 @@ export interface FileRouteTypes {
     | '/_store'
     | '/admin-master'
     | '/home'
+    | '/painel'
     | '/sitemap-news.xml'
     | '/sitemap-products.xml'
     | '/sitemap.xml'
     | '/status'
     | '/valeagoranews'
+    | '/waesynews'
     | '/workspace'
     | '/_store/acougue'
     | '/_store/afiliados'
@@ -4921,6 +4967,7 @@ export interface FileRouteTypes {
     | '/_store/aeroporto/$iata'
     | '/_store/agendar/$id'
     | '/_store/bio/$slug'
+    | '/_store/c/$slug'
     | '/_store/categoria/$slug'
     | '/_store/classificados/$id'
     | '/_store/colecao/$slug'
@@ -5122,6 +5169,7 @@ export interface FileRouteTypes {
     | '/workspace/whatsapp/automacoes'
     | '/_store/agendar/'
     | '/_store/classificados/'
+    | '/_store/comunidades/'
     | '/_store/conta/'
     | '/_store/diretorio/'
     | '/_store/empregos/'
@@ -5220,11 +5268,13 @@ export interface RootRouteChildren {
   StoreRoute: typeof StoreRouteWithChildren
   AdminMasterRoute: typeof AdminMasterRouteWithChildren
   HomeRoute: typeof HomeRoute
+  PainelRoute: typeof PainelRoute
   SitemapNewsDotxmlRoute: typeof SitemapNewsDotxmlRoute
   SitemapProductsDotxmlRoute: typeof SitemapProductsDotxmlRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StatusRoute: typeof StatusRoute
   ValeagoranewsRoute: typeof ValeagoranewsRoute
+  WaesynewsRoute: typeof WaesynewsRoute
   WorkspaceRoute: typeof WorkspaceRouteWithChildren
   ApiOpenapiDotjsonRoute: typeof ApiOpenapiDotjsonRoute
   ApiSecurityTelemetryRoute: typeof ApiSecurityTelemetryRoute
@@ -5289,6 +5339,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HomeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/painel': {
+      id: '/painel'
+      path: '/painel'
+      fullPath: '/painel'
+      preLoaderRoute: typeof PainelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap-news.xml': {
       id: '/sitemap-news.xml'
       path: '/sitemap-news.xml'
@@ -5322,6 +5379,13 @@ declare module '@tanstack/react-router' {
       path: '/valeagoranews'
       fullPath: '/valeagoranews'
       preLoaderRoute: typeof ValeagoranewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/waesynews': {
+      id: '/waesynews'
+      path: '/waesynews'
+      fullPath: '/waesynews'
+      preLoaderRoute: typeof WaesynewsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/workspace': {
@@ -6185,6 +6249,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StoreBioSlugRouteImport
       parentRoute: typeof StoreRoute
     }
+    '/_store/c/$slug': {
+      id: '/_store/c/$slug'
+      path: '/c/$slug'
+      fullPath: '/c/$slug'
+      preLoaderRoute: typeof StoreCSlugRouteImport
+      parentRoute: typeof StoreRoute
+    }
     '/_store/categoria/$slug': {
       id: '/_store/categoria/$slug'
       path: '/categoria/$slug'
@@ -6211,6 +6282,13 @@ declare module '@tanstack/react-router' {
       path: '/colecao/$slug'
       fullPath: '/colecao/$slug'
       preLoaderRoute: typeof StoreColecaoSlugRouteImport
+      parentRoute: typeof StoreRoute
+    }
+    '/_store/comunidades/': {
+      id: '/_store/comunidades/'
+      path: '/comunidades'
+      fullPath: '/comunidades/'
+      preLoaderRoute: typeof StoreComunidadesIndexRouteImport
       parentRoute: typeof StoreRoute
     }
     '/_store/concurso/$id': {
@@ -8483,6 +8561,7 @@ interface StoreRouteChildren {
   StoreIndexRoute: typeof StoreIndexRoute
   StoreAeroportoIataRoute: typeof StoreAeroportoIataRoute
   StoreBioSlugRoute: typeof StoreBioSlugRoute
+  StoreCSlugRoute: typeof StoreCSlugRoute
   StoreCategoriaSlugRoute: typeof StoreCategoriaSlugRoute
   StoreClassificadosIdRoute: typeof StoreClassificadosIdRoute
   StoreColecaoSlugRoute: typeof StoreColecaoSlugRoute
@@ -8514,6 +8593,7 @@ interface StoreRouteChildren {
   StoreVendedoraSlugRoute: typeof StoreVendedoraSlugRoute
   StoreVoucherTokenRoute: typeof StoreVoucherTokenRoute
   StoreClassificadosIndexRoute: typeof StoreClassificadosIndexRoute
+  StoreComunidadesIndexRoute: typeof StoreComunidadesIndexRoute
   StoreGiftCardsIndexRoute: typeof StoreGiftCardsIndexRoute
   StoreMarketplaceIndexRoute: typeof StoreMarketplaceIndexRoute
   StoreNoticiasIndexRoute: typeof StoreNoticiasIndexRoute
@@ -8581,6 +8661,7 @@ const StoreRouteChildren: StoreRouteChildren = {
   StoreIndexRoute: StoreIndexRoute,
   StoreAeroportoIataRoute: StoreAeroportoIataRoute,
   StoreBioSlugRoute: StoreBioSlugRoute,
+  StoreCSlugRoute: StoreCSlugRoute,
   StoreCategoriaSlugRoute: StoreCategoriaSlugRoute,
   StoreClassificadosIdRoute: StoreClassificadosIdRoute,
   StoreColecaoSlugRoute: StoreColecaoSlugRoute,
@@ -8612,6 +8693,7 @@ const StoreRouteChildren: StoreRouteChildren = {
   StoreVendedoraSlugRoute: StoreVendedoraSlugRoute,
   StoreVoucherTokenRoute: StoreVoucherTokenRoute,
   StoreClassificadosIndexRoute: StoreClassificadosIndexRoute,
+  StoreComunidadesIndexRoute: StoreComunidadesIndexRoute,
   StoreGiftCardsIndexRoute: StoreGiftCardsIndexRoute,
   StoreMarketplaceIndexRoute: StoreMarketplaceIndexRoute,
   StoreNoticiasIndexRoute: StoreNoticiasIndexRoute,
@@ -9195,11 +9277,13 @@ const rootRouteChildren: RootRouteChildren = {
   StoreRoute: StoreRouteWithChildren,
   AdminMasterRoute: AdminMasterRouteWithChildren,
   HomeRoute: HomeRoute,
+  PainelRoute: PainelRoute,
   SitemapNewsDotxmlRoute: SitemapNewsDotxmlRoute,
   SitemapProductsDotxmlRoute: SitemapProductsDotxmlRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StatusRoute: StatusRoute,
   ValeagoranewsRoute: ValeagoranewsRoute,
+  WaesynewsRoute: WaesynewsRoute,
   WorkspaceRoute: WorkspaceRouteWithChildren,
   ApiOpenapiDotjsonRoute: ApiOpenapiDotjsonRoute,
   ApiSecurityTelemetryRoute: ApiSecurityTelemetryRoute,

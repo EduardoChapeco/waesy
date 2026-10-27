@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-10-27T12:46:38.285Z",
-  "totalFiles": 2405,
-  "totalImported": 1869,
-  "discoveredUnreferencedCount": 70,
-  "intentionalUnreferencedCount": 70,
+  "timestamp": "2026-10-27T12:31:41.890Z",
+  "totalFiles": 2410,
+  "totalImported": 1872,
+  "discoveredUnreferencedCount": 73,
+  "intentionalUnreferencedCount": 67,
   "intentionalUnreferencedFiles": [
     "src/components/ad-engine/public/listing-empty-state.tsx",
     "src/components/admin/builder/builder-add-panel-3col.tsx",
@@ -29,12 +29,10 @@
     "src/components/classifieds/create-type-picker.tsx",
     "src/components/commerce/master-squircle-hero.tsx",
     "src/components/commerce/return-modal.tsx",
-    "src/components/finance/PaymentReviewDrawer.tsx",
     "src/components/profile/month-year-select.tsx",
     "src/components/proposals/ProposalStudio.tsx",
     "src/components/studio/StudioToolbar.tsx",
     "src/components/studio/StudioUnsplashPicker.tsx",
-    "src/components/tourism/traveler/GlobalTripCompanionWidget.tsx",
     "src/components/ui/aspect-ratio.tsx",
     "src/components/ui/breadcrumb.tsx",
     "src/components/ui/chart.tsx",
@@ -60,7 +58,6 @@
     "src/lib/constants/status.ts",
     "src/lib/contracts/public-verification-projection.ts",
     "src/lib/engines/kds.engine.ts",
-    "src/lib/financial-receipt-canvas.ts",
     "src/lib/fiscal/ncm-registry.ts",
     "src/lib/loader-observability.ts",
     "src/lib/media/gallery-manager.ts",
@@ -78,8 +75,15 @@
   ],
   "allowlistUnknownCount": 0,
   "allowlistUnknownFiles": [],
-  "unreferencedCount": 0,
-  "unreferencedFiles": [],
+  "unreferencedCount": 6,
+  "unreferencedFiles": [
+    "src/components/finance/PaymentReviewDrawer.tsx",
+    "src/design-system/vitrine/vitrine-banners.tsx",
+    "src/design-system/vitrine/vitrine-carousels.tsx",
+    "src/design-system/vitrine/vitrine-navigation.tsx",
+    "src/lib/financial-receipt-canvas.ts",
+    "src/lib/news/news-studio-templates.ts"
+  ],
   "duplicateComponentsCount": 0,
   "duplicateComponents": [],
   "nameCollisionCount": 23,
@@ -270,5 +274,5 @@
       ]
     }
   ],
-  "status": "PASS"
+  "status": "FAIL"
 }

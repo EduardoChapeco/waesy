@@ -246,3 +246,152 @@ export const directoryListingSchema = z.object({
 });
 
 export type DirectoryListing = z.infer<typeof directoryListingSchema>;
+
+// ==========================================
+// THREADS-STYLE COMMUNITIES & GROUPS
+// ==========================================
+
+export const communityTypeSchema = z.enum([
+  "general",
+  "sales",
+  "news",
+  "videos",
+  "events",
+  "jobs",
+]);
+export type CommunityType = z.infer<typeof communityTypeSchema>;
+
+export const communityCoverModeSchema = z.enum(["gradient", "image"]);
+export type CommunityCoverMode = z.infer<typeof communityCoverModeSchema>;
+
+export const communityGradientPresetSchema = z.enum([
+  "blue-lime",
+  "pink-cyan",
+  "sunset",
+  "cyberpunk",
+  "obsidian",
+]);
+export type CommunityGradientPreset = z.infer<typeof communityGradientPresetSchema>;
+
+export const communityPrivacySchema = z.enum(["public", "private", "secret"]);
+export type CommunityPrivacy = z.infer<typeof communityPrivacySchema>;
+
+export const communityRuleSchema = z.object({
+  id: z.string(),
+  title: z.string().min(1),
+  description: z.string().optional(),
+});
+export type CommunityRule = z.infer<typeof communityRuleSchema>;
+
+export const communitySchema = z.object({
+  id: z.string().uuid(),
+  slug: z.string().min(2).max(60),
+  title: z.string().min(2, "O título da comunidade deve ter pelo menos 2 caracteres"),
+  description: z.string().default(""),
+  community_type: communityTypeSchema.default("general"),
+  cover_mode: communityCoverModeSchema.default("gradient"),
+  cover_gradient_preset: communityGradientPresetSchema.default("blue-lime"),
+  cover_image_url: z.string().url().nullable().optional(),
+  avatar_url: z.string().url().nullable().optional(),
+  privacy: communityPrivacySchema.default("public"),
+  rules: z.array(communityRuleSchema).default([]),
+  owner_id: z.string().uuid(),
+  member_count: z.number().int().min(0).default(1),
+  online_count: z.number().int().min(0).default(1),
+  status: z.enum(["active", "suspended", "archived"]).default("active"),
+  created_at: z.string().datetime().optional(),
+  updated_at: z.string().datetime().optional(),
+});
+export type Community = z.infer<typeof communitySchema>;
+
+export const upsertCommunitySchema = z.object({
+  id: z.string().uuid().optional(),
+  slug: z
+    .string()
+    .min(2, "O identificador deve ter pelo menos 2 caracteres")
+    .max(60)
+    .regex(/^[a-z0-9-]+$/, "O identificador deve conter apenas letras minúsculas, números e hífens"),
+  title: z.string().min(2, "O título da comunidade deve ter pelo menos 2 caracteres"),
+  description: z.string().optional().default(""),
+  community_type: communityTypeSchema.default("general"),
+  cover_mode: communityCoverModeSchema.default("gradient"),
+  cover_gradient_preset: communityGradientPresetSchema.default("blue-lime"),
+  cover_image_url: z.string().url().nullable().optional(),
+  avatar_url: z.string().url().nullable().optional(),
+  privacy: communityPrivacySchema.default("public"),
+  rules: z.array(communityRuleSchema).optional().default([]),
+});
+export type UpsertCommunityInput = z.infer<typeof upsertCommunitySchema>;
+
+export const communityMemberRoleSchema = z.enum(["owner", "moderator", "member"]);
+export type CommunityMemberRole = z.infer<typeof communityMemberRoleSchema>;
+
+export const communityMemberSchema = z.object({
+  community_id: z.string().uuid(),
+  profile_id: z.string().uuid(),
+  role: communityMemberRoleSchema.default("member"),
+  status: z.enum(["active", "pending", "banned"]).default("active"),
+  joined_at: z.string().datetime(),
+  profile: z
+    .object({
+      id: z.string().uuid(),
+      name: z.string(),
+      username: z.string().nullable().optional(),
+      avatar_url: z.string().nullable().optional(),
+    })
+    .optional(),
+});
+export type CommunityMember = z.infer<typeof communityMemberSchema>;
+
+export const COMMUNITY_TYPE_LABELS: Record<CommunityType, string> = {
+  general: "Discussões Gerais",
+  sales: "Vendas & Desapego",
+  news: "Notícias & Mídia",
+  videos: "Vídeos & Reels",
+  events: "Eventos & Encontros",
+  jobs: "Vagas & Oportunidades",
+};
+
+export interface CommunityGradientPresetConfig {
+  id: CommunityGradientPreset;
+  label: string;
+  gradientClass: string;
+  badgeBg: string;
+}
+
+export const COMMUNITY_GRADIENT_PRESETS: Record<
+  CommunityGradientPreset,
+  CommunityGradientPresetConfig
+> = {
+  "blue-lime": {
+    id: "blue-lime",
+    label: "Blue Lime (Threads Classic)",
+    gradientClass: "from-[#0284c7] via-[#06b6d4] to-[#84cc16]",
+    badgeBg: "bg-emerald-950/40 text-emerald-300",
+  },
+  "pink-cyan": {
+    id: "pink-cyan",
+    label: "Pink Cyan (Vibrant)",
+    gradientClass: "from-[#ec4899] via-[#d946ef] to-[#06b6d4]",
+    badgeBg: "bg-fuchsia-950/40 text-fuchsia-300",
+  },
+  sunset: {
+    id: "sunset",
+    label: "Sunset Glow",
+    gradientClass: "from-[#f97316] via-[#ef4444] to-[#eab308]",
+    badgeBg: "bg-amber-950/40 text-amber-300",
+  },
+  cyberpunk: {
+    id: "cyberpunk",
+    label: "Neon Cyberpunk",
+    gradientClass: "from-[#8b5cf6] via-[#ec4899] to-[#3b82f6]",
+    badgeBg: "bg-purple-950/40 text-purple-300",
+  },
+  obsidian: {
+    id: "obsidian",
+    label: "Dark Obsidian",
+    gradientClass: "from-[#09090b] via-[#18181b] to-[#27272a]",
+    badgeBg: "bg-zinc-900/60 text-zinc-300",
+  },
+};
+

@@ -47,7 +47,9 @@ Qualquer alteração deve reforçar a integridade transacional, a governança mu
 - Proibido resumo redundante do pedido do usuário ou conclusão motivacional ("Espero ter ajudado!").
 - Relatórios numéricos devem ser apresentados em formato tabular Markdown estrito.
 
-## B.7 Economia de Contexto
+## B.7 Economia de Contexto & Regra Pétrea de Mutação Cirúrgica
+- **Regra Pétrea de Mutação Cirúrgica (Anti-Reescrita):** É expressamente proibido reescrever arquivos inteiros (write_file com Overwrite=true) para aplicar correções, refinamentos de UI ou extensões em código existente. Toda manutenção DEVE utilizar edit_file com bloco contíguo delimitado (Target e Replacement). O uso de write_file é restrito a arquivos virgens (novas rotas, componentes criados do zero, novas migrações SQL ou novas specs).
+- Proibição de alucinação e quebra colateral: Refinamentos pontuais devem alterar apenas as linhas necessárias, preservando 100% das regras e lógicas adjacentes.
 - Memória persistida em disco (`docs/design/`, `auditoria/`) em vez de retenção em histórico de chat.
 - Uma sessão por módulo de trabalho; leitura cirúrgica por janela delimitada (`StartLine`/`EndLine`).
 - Handoff padronizado de no máximo 12 linhas ao final de cada fase em `docs/design/DECISIONS.md`.

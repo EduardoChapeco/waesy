@@ -17,6 +17,36 @@ const CATALOG_METADATA: Record<string, {
   copyFramework: StudioTemplateManifest["copyFramework"];
   assetSlots: string[];
 }> = {
+  template_waesy_super_vitrine: {
+    goal: "catalog",
+    tags: ["vitrine", "app-waesy", "bento", "carrossel", "completo"],
+    copyFramework: "catalog-discovery",
+    assetSlots: ["banner_hero", "bento_gallery", "logo"],
+  },
+  template_ifood_delivery_vitrine: {
+    goal: "catalog",
+    tags: ["ifood", "delivery", "mercado", "cupom", "cardapio"],
+    copyFramework: "catalog-discovery",
+    assetSlots: ["food_hero", "menu_gallery", "logo"],
+  },
+  template_ifood_delivery_showcase: {
+    goal: "catalog",
+    tags: ["ifood", "delivery", "mercado", "cupom", "cardapio"],
+    copyFramework: "catalog-discovery",
+    assetSlots: ["food_hero", "menu_gallery", "logo"],
+  },
+  template_classifieds_portal_vitrine: {
+    goal: "lead_capture",
+    tags: ["classificados", "veiculos", "imoveis", "multi-nicho", "portal"],
+    copyFramework: "catalog-discovery",
+    assetSlots: ["property_gallery", "logo"],
+  },
+  template_social_creator_store: {
+    goal: "content",
+    tags: ["creator", "reels", "stories", "social-commerce", "biolink"],
+    copyFramework: "editorial",
+    assetSlots: ["creator_portrait", "product_gallery"],
+  },
   template_legal_jus: {
     goal: "lead_capture",
     tags: ["autoridade", "consultivo", "sigilo", "juridico"],

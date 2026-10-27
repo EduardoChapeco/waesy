@@ -43,6 +43,7 @@ import { listActiveStoreFlyers, type PromotionalFlyerDTO } from "@/services/stor
 import { ClaimBusinessModal } from "@/components/commerce/claim-business-modal";
 import { ProductAiSdrChat } from "@/components/commerce/product-ai-sdr-chat";
 import { TetrisActionGrid } from "@/components/layout/tetris-action-grid";
+import { OmniPageRenderer } from "@/components/builder/OmniPageRenderer";
 import { formatCanonicalAddress } from "@/lib/format-address";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -63,6 +64,7 @@ export interface CanonicalStoreProfileViewProps {
   concursos?: any[];
   employerStats?: any;
   builderTree?: any[] | null;
+  omniPageDoc?: any | null;
   initialTab?: string;
   isOwner?: boolean;
   source?: "directory" | "storefront";
@@ -85,6 +87,7 @@ export function CanonicalStoreProfileView({
   sponsors = [],
   concursos = [],
   employerStats = null,
+  omniPageDoc = null,
   initialTab = "vitrine",
   isOwner = false,
   source = "storefront",
@@ -1305,6 +1308,24 @@ function cleanAddressSegment(text: string): string {
                     <SlidersHorizontal className="size-4 text-primary" />
                     <span>Personalizar</span>
                   </Button>
+                </div>
+              )}
+
+              {Array.isArray(omniPageDoc?.blocks) && omniPageDoc.blocks.length > 0 && (
+                <div className="rounded-2xl overflow-hidden border border-border/60 bg-background">
+                  <OmniPageRenderer
+                    document={omniPageDoc}
+                    products={catalog}
+                    categories={categories}
+                    storeData={store}
+                    classifieds={ads}
+                    posts={posts}
+                    flyers={flyersList}
+                    jobs={jobs}
+                    banners={banners}
+                    hotpages={hotpages}
+                    sponsors={sponsors}
+                  />
                 </div>
               )}
 

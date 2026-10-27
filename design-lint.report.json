@@ -1,53 +1,54 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-27T13:01:35.098Z",
-  "inspectedFiles": 2406,
-  "totalViolations": 5165,
+  "timestamp": "2026-10-27T20:41:10.042Z",
+  "inspectedFiles": 2480,
+  "totalViolations": 5587,
   "summary": {
-    "totalViolations": 5165,
+    "totalViolations": 5587,
     "bySeverity": {
-      "P0": 0,
-      "P1": 3783,
-      "P2": 1072,
-      "P3": 310
+      "P0": 29,
+      "P1": 4115,
+      "P2": 1080,
+      "P3": 363
     },
     "byRule": {
-      "DL-30": 265,
+      "DL-30": 276,
       "DL-26": 79,
-      "DL-07": 435,
-      "DL-29": 113,
-      "DL-02": 958,
-      "DL-14": 1731,
-      "DL-08": 94,
-      "DL-03": 241,
-      "DL-18": 35,
-      "DL-01": 655,
+      "DL-07": 436,
+      "DL-29": 117,
+      "DL-02": 984,
+      "DL-14": 1732,
+      "DL-08": 105,
+      "DL-12": 28,
+      "DL-01": 648,
+      "DL-03": 373,
       "DL-25": 21,
-      "DL-23": 323,
+      "DL-23": 315,
       "DL-24": 2,
-      "DL-27": 45,
+      "DL-27": 87,
       "DL-05": 104,
       "DL-13": 9,
-      "DL-12": 28,
+      "DL-18": 206,
       "DL-11": 19,
-      "DL-28": 3,
+      "DL-15": 29,
+      "DL-28": 12,
       "DL-06": 3,
       "DL-09": 2
     },
     "byModule": {
       "components/app": {
-        "total": 2070,
-        "P0": 0,
-        "P1": 1402,
-        "P2": 557,
-        "P3": 111
+        "total": 2379,
+        "P0": 22,
+        "P1": 1652,
+        "P2": 551,
+        "P3": 154
       },
       "components/builder": {
-        "total": 59,
+        "total": 24,
         "P0": 0,
-        "P1": 50,
-        "P2": 4,
-        "P3": 5
+        "P1": 16,
+        "P2": 5,
+        "P3": 3
       },
       "components/chat": {
         "total": 27,
@@ -57,17 +58,17 @@
         "P3": 6
       },
       "components/tourism": {
-        "total": 362,
+        "total": 440,
         "P0": 0,
-        "P1": 271,
-        "P2": 88,
-        "P3": 3
+        "P1": 335,
+        "P2": 97,
+        "P3": 8
       },
       "components/ui": {
-        "total": 206,
-        "P0": 0,
+        "total": 208,
+        "P0": 1,
         "P1": 172,
-        "P2": 18,
+        "P2": 19,
         "P3": 16
       },
       "hooks": {
@@ -85,10 +86,10 @@
         "P3": 0
       },
       "routes/admin": {
-        "total": 330,
+        "total": 342,
         "P0": 0,
-        "P1": 232,
-        "P2": 50,
+        "P1": 243,
+        "P2": 51,
         "P3": 48
       },
       "routes/api": {
@@ -106,23 +107,23 @@
         "P3": 1
       },
       "routes/workspace": {
-        "total": 1122,
+        "total": 1116,
         "P0": 0,
-        "P1": 966,
+        "P1": 960,
         "P2": 86,
         "P3": 70
       },
       "routes/store": {
-        "total": 538,
-        "P0": 0,
-        "P1": 351,
-        "P2": 138,
-        "P3": 49
+        "total": 606,
+        "P0": 6,
+        "P1": 404,
+        "P2": 140,
+        "P3": 56
       },
       "services": {
-        "total": 242,
+        "total": 206,
         "P0": 0,
-        "P1": 180,
+        "P1": 144,
         "P2": 61,
         "P3": 1
       },
@@ -134,15 +135,15 @@
         "P3": 0
       },
       "core": {
-        "total": 2,
+        "total": 32,
         "P0": 0,
-        "P1": 2,
+        "P1": 32,
         "P2": 0,
         "P3": 0
       }
     },
-    "filesWithViolations": 793,
-    "filesCount": 2406
+    "filesWithViolations": 828,
+    "filesCount": 2480
   },
   "config": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -369,6 +370,14 @@
         "date": "2026-10-20",
         "expiry": "2028-12-31",
         "approvedBy": "design-system-architect"
+      },
+      {
+        "id": "DL-01",
+        "file": "src/services/hotpage.functions.ts",
+        "reason": "Seed canonica de configuracao de modulos do drawer lateral mobile no banco",
+        "date": "2026-10-27",
+        "expiry": "2027-12-31",
+        "approvedBy": "design-system-architect"
       }
     ]
   },
@@ -376,7 +385,7 @@
     {
       "id": "DL-30",
       "rule": "DL-30",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/ad-engine/public/canonical-listing-view.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/ad-engine/public/canonical-listing-view.tsx",
       "module": "components/app",
       "line": 339,
       "column": 55,
@@ -387,7 +396,7 @@
     {
       "id": "DL-26",
       "rule": "DL-26",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/builder/animation-inspector-phase7.test.ts",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
       "module": "components/app",
       "line": 11,
       "column": 58,
@@ -398,7 +407,7 @@
     {
       "id": "DL-26",
       "rule": "DL-26",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/builder/animation-inspector-phase7.test.ts",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
       "module": "components/app",
       "line": 13,
       "column": 46,
@@ -409,7 +418,7 @@
     {
       "id": "DL-26",
       "rule": "DL-26",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/builder/animation-inspector-phase7.test.ts",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
       "module": "components/app",
       "line": 15,
       "column": 56,
@@ -420,7 +429,7 @@
     {
       "id": "DL-26",
       "rule": "DL-26",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/builder/animation-inspector-phase7.test.ts",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
       "module": "components/app",
       "line": 17,
       "column": 70,
@@ -431,7 +440,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/builder/animation-inspector-phase7.test.ts",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
       "module": "components/app",
       "line": 21,
       "column": 45,
@@ -442,7 +451,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/builder/animation-inspector-phase7.test.ts",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
       "module": "components/app",
       "line": 23,
       "column": 57,
@@ -453,7 +462,7 @@
     {
       "id": "DL-26",
       "rule": "DL-26",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/builder/animation-inspector-phase7.test.ts",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
       "module": "components/app",
       "line": 41,
       "column": 35,
@@ -464,7 +473,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/builder/animation-inspector-phase7.test.ts",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/animation-inspector-phase7.test.ts",
       "module": "components/app",
       "line": 54,
       "column": 44,
@@ -475,7 +484,7 @@
     {
       "id": "DL-29",
       "rule": "DL-29",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/builder/builder-docking-matrix.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-docking-matrix.tsx",
       "module": "components/app",
       "line": 45,
       "column": 22,
@@ -486,7 +495,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/builder/builder-floating-action-bar.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-floating-action-bar.tsx",
       "module": "components/app",
       "line": 35,
       "column": 111,
@@ -497,7 +506,7 @@
     {
       "id": "DL-30",
       "rule": "DL-30",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/builder/builder-inspector.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
       "module": "components/app",
       "line": 307,
       "column": 120,
@@ -508,7 +517,7 @@
     {
       "id": "DL-29",
       "rule": "DL-29",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/builder/builder-inspector.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-inspector.tsx",
       "module": "components/app",
       "line": 1049,
       "column": 22,
@@ -519,7 +528,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/builder/builder-top-bar.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-top-bar.tsx",
       "module": "components/app",
       "line": 75,
       "column": 62,
@@ -530,7 +539,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/builder/builder-top-bar.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-top-bar.tsx",
       "module": "components/app",
       "line": 75,
       "column": 79,
@@ -541,7 +550,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/builder/builder-top-bar.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-top-bar.tsx",
       "module": "components/app",
       "line": 65,
       "column": 13,
@@ -552,7 +561,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/builder/builder-top-bar.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-top-bar.tsx",
       "module": "components/app",
       "line": 103,
       "column": 3,
@@ -563,7 +572,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/builder/builder-top-bar.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-top-bar.tsx",
       "module": "components/app",
       "line": 118,
       "column": 3,
@@ -574,7 +583,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/builder/builder-top-bar.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-top-bar.tsx",
       "module": "components/app",
       "line": 138,
       "column": 13,
@@ -585,7 +594,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/builder/builder-top-bar.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-top-bar.tsx",
       "module": "components/app",
       "line": 147,
       "column": 13,
@@ -596,7 +605,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/builder/builder-top-bar.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-top-bar.tsx",
       "module": "components/app",
       "line": 159,
       "column": 13,
@@ -607,7 +616,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/builder/builder-top-bar.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-top-bar.tsx",
       "module": "components/app",
       "line": 170,
       "column": 13,
@@ -618,7 +627,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/builder/builder-top-bar.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-top-bar.tsx",
       "module": "components/app",
       "line": 185,
       "column": 13,
@@ -629,7 +638,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/builder/builder-top-bar.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-top-bar.tsx",
       "module": "components/app",
       "line": 201,
       "column": 13,
@@ -640,7 +649,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/builder/guided-section-picker.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/guided-section-picker.tsx",
       "module": "components/app",
       "line": 53,
       "column": 84,
@@ -651,7 +660,7 @@
     {
       "id": "DL-30",
       "rule": "DL-30",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/builder/guided-section-picker.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/guided-section-picker.tsx",
       "module": "components/app",
       "line": 90,
       "column": 38,
@@ -662,7 +671,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/builder/guided-section-picker.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/guided-section-picker.tsx",
       "module": "components/app",
       "line": 97,
       "column": 145,
@@ -673,7 +682,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/builder/guided-section-picker.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/guided-section-picker.tsx",
       "module": "components/app",
       "line": 72,
       "column": 35,
@@ -684,7 +693,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/catalog/import-catalog-modal.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/import-catalog-modal.tsx",
       "module": "components/app",
       "line": 98,
       "column": 114,
@@ -695,7 +704,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/catalog/import-catalog-modal.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/import-catalog-modal.tsx",
       "module": "components/app",
       "line": 192,
       "column": 25,
@@ -706,7 +715,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/catalog/import-catalog-modal.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/import-catalog-modal.tsx",
       "module": "components/app",
       "line": 186,
       "column": 21,
@@ -717,7 +726,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/catalog/import-catalog-modal.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/import-catalog-modal.tsx",
       "module": "components/app",
       "line": 255,
       "column": 13,
@@ -728,7 +737,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/catalog/import-catalog-modal.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/import-catalog-modal.tsx",
       "module": "components/app",
       "line": 270,
       "column": 13,
@@ -739,7 +748,7 @@
     {
       "id": "DL-30",
       "rule": "DL-30",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/catalog/master-catalog-search-dialog.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
       "module": "components/app",
       "line": 132,
       "column": 51,
@@ -750,7 +759,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/catalog/master-catalog-search-dialog.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
       "module": "components/app",
       "line": 173,
       "column": 140,
@@ -761,7 +770,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/catalog/master-catalog-search-dialog.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/master-catalog-search-dialog.tsx",
       "module": "components/app",
       "line": 259,
       "column": 41,
@@ -772,7 +781,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/catalog/product-bom-card.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-bom-card.tsx",
       "module": "components/app",
       "line": 321,
       "column": 13,
@@ -783,7 +792,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/catalog/product-bom-card.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-bom-card.tsx",
       "module": "components/app",
       "line": 321,
       "column": 24,
@@ -794,7 +803,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/catalog/product-editor/product-edit-media-manager.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-editor/product-edit-media-manager.tsx",
       "module": "components/app",
       "line": 172,
       "column": 36,
@@ -805,7 +814,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/catalog/product-editor/product-edit-media-manager.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-editor/product-edit-media-manager.tsx",
       "module": "components/app",
       "line": 181,
       "column": 36,
@@ -816,7 +825,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/catalog/product-editor/product-edit-media-manager.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-editor/product-edit-media-manager.tsx",
       "module": "components/app",
       "line": 198,
       "column": 36,
@@ -827,7 +836,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/catalog/product-editor/product-edit-media-manager.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-editor/product-edit-media-manager.tsx",
       "module": "components/app",
       "line": 211,
       "column": 36,
@@ -838,7 +847,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/catalog/product-editor/product-editor-header.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-editor/product-editor-header.tsx",
       "module": "components/app",
       "line": 37,
       "column": 30,
@@ -849,7 +858,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/catalog/product-editor/product-editor-header.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-editor/product-editor-header.tsx",
       "module": "components/app",
       "line": 48,
       "column": 31,
@@ -860,7 +869,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/catalog/product-editor/product-editor-header.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-editor/product-editor-header.tsx",
       "module": "components/app",
       "line": 60,
       "column": 31,
@@ -871,7 +880,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/catalog/product-editor/product-editor-header.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-editor/product-editor-header.tsx",
       "module": "components/app",
       "line": 75,
       "column": 36,
@@ -882,7 +891,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/catalog/product-editor/product-editor-header.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-editor/product-editor-header.tsx",
       "module": "components/app",
       "line": 89,
       "column": 37,
@@ -893,7 +902,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/catalog/product-editor/product-editor-header.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-editor/product-editor-header.tsx",
       "module": "components/app",
       "line": 94,
       "column": 42,
@@ -904,7 +913,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/catalog/product-food-specs-card.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
       "module": "components/app",
       "line": 337,
       "column": 30,
@@ -915,7 +924,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/catalog/product-food-specs-card.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-food-specs-card.tsx",
       "module": "components/app",
       "line": 337,
       "column": 41,
@@ -926,7 +935,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/catalog/product-modifiers-card.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-modifiers-card.tsx",
       "module": "components/app",
       "line": 225,
       "column": 26,
@@ -937,7 +946,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/catalog/product-modifiers-card.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-modifiers-card.tsx",
       "module": "components/app",
       "line": 91,
       "column": 13,
@@ -948,7 +957,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/catalog/product-modifiers-card.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-modifiers-card.tsx",
       "module": "components/app",
       "line": 137,
       "column": 82,
@@ -959,7 +968,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/catalog/product-modifiers-card.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/product-modifiers-card.tsx",
       "module": "components/app",
       "line": 245,
       "column": 13,
@@ -970,7 +979,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/catalog/quick-option-group-dialog.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/quick-option-group-dialog.tsx",
       "module": "components/app",
       "line": 570,
       "column": 25,
@@ -981,7 +990,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/catalog/quick-option-group-dialog.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/quick-option-group-dialog.tsx",
       "module": "components/app",
       "line": 520,
       "column": 13,
@@ -992,7 +1001,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/catalog/quick-option-group-dialog.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/quick-option-group-dialog.tsx",
       "module": "components/app",
       "line": 597,
       "column": 13,
@@ -1003,7 +1012,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/catalog/quick-option-group-dialog.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/quick-option-group-dialog.tsx",
       "module": "components/app",
       "line": 631,
       "column": 13,
@@ -1014,7 +1023,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/catalog/quick-option-group-dialog.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/catalog/quick-option-group-dialog.tsx",
       "module": "components/app",
       "line": 639,
       "column": 13,
@@ -1025,7 +1034,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/gmaps-scraper-panel.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/gmaps-scraper-panel.tsx",
       "module": "components/app",
       "line": 258,
       "column": 45,
@@ -1036,7 +1045,7 @@
     {
       "id": "DL-30",
       "rule": "DL-30",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/marketing/seasonal-marketing-calendar-widget.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/marketing/seasonal-marketing-calendar-widget.tsx",
       "module": "components/app",
       "line": 135,
       "column": 58,
@@ -1047,7 +1056,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/orders/order-edit-wizard.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/orders/order-edit-wizard.tsx",
       "module": "components/app",
       "line": 101,
       "column": 13,
@@ -1058,7 +1067,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/orders/order-edit-wizard.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/orders/order-edit-wizard.tsx",
       "module": "components/app",
       "line": 111,
       "column": 13,
@@ -1069,7 +1078,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/orders/order-edit-wizard.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/orders/order-edit-wizard.tsx",
       "module": "components/app",
       "line": 119,
       "column": 13,
@@ -1080,7 +1089,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/orders/picking-wizard.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/orders/picking-wizard.tsx",
       "module": "components/app",
       "line": 130,
       "column": 41,
@@ -1091,7 +1100,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/orders/rma-request-wizard.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/orders/rma-request-wizard.tsx",
       "module": "components/app",
       "line": 114,
       "column": 41,
@@ -1102,7 +1111,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/product-editor/product-editor-layout.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/product-editor/product-editor-layout.tsx",
       "module": "components/app",
       "line": 124,
       "column": 24,
@@ -1113,7 +1122,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/product-editor/product-editor-layout.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/product-editor/product-editor-layout.tsx",
       "module": "components/app",
       "line": 156,
       "column": 28,
@@ -1124,7 +1133,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/product-editor/product-editor-sticky-bar.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/product-editor/product-editor-sticky-bar.tsx",
       "module": "components/app",
       "line": 28,
       "column": 112,
@@ -1135,7 +1144,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/product-editor/variant-options-builder.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/product-editor/variant-options-builder.tsx",
       "module": "components/app",
       "line": 168,
       "column": 13,
@@ -1146,7 +1155,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/product-editor/variant-options-builder.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/product-editor/variant-options-builder.tsx",
       "module": "components/app",
       "line": 203,
       "column": 60,
@@ -1157,7 +1166,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/professions/profession-search-dialog.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/professions/profession-search-dialog.tsx",
       "module": "components/app",
       "line": 80,
       "column": 98,
@@ -1168,7 +1177,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/professions/profession-search-dialog.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/professions/profession-search-dialog.tsx",
       "module": "components/app",
       "line": 112,
       "column": 115,
@@ -1179,7 +1188,7 @@
     {
       "id": "DL-30",
       "rule": "DL-30",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/professions/profession-search-dialog.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/professions/profession-search-dialog.tsx",
       "module": "components/app",
       "line": 126,
       "column": 51,
@@ -1190,7 +1199,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/professions/profession-search-dialog.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/professions/profession-search-dialog.tsx",
       "module": "components/app",
       "line": 133,
       "column": 59,
@@ -1201,7 +1210,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/professions/profession-search-dialog.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/professions/profession-search-dialog.tsx",
       "module": "components/app",
       "line": 171,
       "column": 180,
@@ -1212,7 +1221,7 @@
     {
       "id": "DL-30",
       "rule": "DL-30",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/professions/profession-search-dialog.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/professions/profession-search-dialog.tsx",
       "module": "components/app",
       "line": 247,
       "column": 59,
@@ -1223,7 +1232,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/services/service-search-dialog.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/services/service-search-dialog.tsx",
       "module": "components/app",
       "line": 78,
       "column": 98,
@@ -1234,7 +1243,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/services/service-search-dialog.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/services/service-search-dialog.tsx",
       "module": "components/app",
       "line": 110,
       "column": 115,
@@ -1245,7 +1254,7 @@
     {
       "id": "DL-30",
       "rule": "DL-30",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/services/service-search-dialog.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/services/service-search-dialog.tsx",
       "module": "components/app",
       "line": 124,
       "column": 51,
@@ -1256,7 +1265,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/services/service-search-dialog.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/services/service-search-dialog.tsx",
       "module": "components/app",
       "line": 131,
       "column": 59,
@@ -1267,7 +1276,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/services/service-search-dialog.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/services/service-search-dialog.tsx",
       "module": "components/app",
       "line": 169,
       "column": 180,
@@ -1278,7 +1287,7 @@
     {
       "id": "DL-30",
       "rule": "DL-30",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/services/service-search-dialog.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/services/service-search-dialog.tsx",
       "module": "components/app",
       "line": 222,
       "column": 59,
@@ -1289,7 +1298,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/stock-audit-dialog.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/stock-audit-dialog.tsx",
       "module": "components/app",
       "line": 80,
       "column": 35,
@@ -1300,7 +1309,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/admin/stock-audit-dialog.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/stock-audit-dialog.tsx",
       "module": "components/app",
       "line": 111,
       "column": 27,
@@ -1311,7 +1320,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/adtech/campaign-draft-card.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/adtech/campaign-draft-card.tsx",
       "module": "components/app",
       "line": 157,
       "column": 34,
@@ -1322,7 +1331,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/adtech/campaign-draft-card.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/adtech/campaign-draft-card.tsx",
       "module": "components/app",
       "line": 161,
       "column": 78,
@@ -1333,7 +1342,7 @@
     {
       "id": "DL-29",
       "rule": "DL-29",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/adtech/campaign-draft-card.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/adtech/campaign-draft-card.tsx",
       "module": "components/app",
       "line": 330,
       "column": 86,
@@ -1344,7 +1353,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/adtech/campaign-draft-card.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/adtech/campaign-draft-card.tsx",
       "module": "components/app",
       "line": 386,
       "column": 158,
@@ -1355,7 +1364,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/adtech/campaign-draft-card.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/adtech/campaign-draft-card.tsx",
       "module": "components/app",
       "line": 236,
       "column": 26,
@@ -1366,7 +1375,7 @@
     {
       "id": "DL-29",
       "rule": "DL-29",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/booking/booking-detail-desktop.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-detail-desktop.tsx",
       "module": "components/app",
       "line": 50,
       "column": 27,
@@ -1377,7 +1386,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/booking/booking-detail-desktop.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-detail-desktop.tsx",
       "module": "components/app",
       "line": 54,
       "column": 27,
@@ -1388,7 +1397,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/booking/booking-detail-desktop.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-detail-desktop.tsx",
       "module": "components/app",
       "line": 203,
       "column": 84,
@@ -1399,7 +1408,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/booking/booking-detail-desktop.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-detail-desktop.tsx",
       "module": "components/app",
       "line": 217,
       "column": 123,
@@ -1410,7 +1419,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/booking/booking-detail-desktop.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-detail-desktop.tsx",
       "module": "components/app",
       "line": 190,
       "column": 94,
@@ -1421,7 +1430,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/booking/booking-detail-mobile.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-detail-mobile.tsx",
       "module": "components/app",
       "line": 31,
       "column": 28,
@@ -1432,7 +1441,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/booking/booking-detail-mobile.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-detail-mobile.tsx",
       "module": "components/app",
       "line": 33,
       "column": 55,
@@ -1443,7 +1452,7 @@
     {
       "id": "DL-08",
       "rule": "DL-08",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/booking/booking-detail-mobile.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-detail-mobile.tsx",
       "module": "components/app",
       "line": 47,
       "column": 55,
@@ -1454,7 +1463,7 @@
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/booking/booking-detail-mobile.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-detail-mobile.tsx",
       "module": "components/app",
       "line": 213,
       "column": 103,
@@ -1465,7 +1474,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/booking/booking-detail-mobile.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-detail-mobile.tsx",
       "module": "components/app",
       "line": 213,
       "column": 218,
@@ -1476,7 +1485,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/booking/booking-detail-mobile.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-detail-mobile.tsx",
       "module": "components/app",
       "line": 225,
       "column": 102,
@@ -1487,7 +1496,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/booking/booking-drawer-sheet.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-drawer-sheet.tsx",
       "module": "components/app",
       "line": 71,
       "column": 120,
@@ -1498,7 +1507,7 @@
     {
       "id": "DL-29",
       "rule": "DL-29",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/booking/booking-drawer-sheet.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-drawer-sheet.tsx",
       "module": "components/app",
       "line": 119,
       "column": 37,
@@ -1509,7 +1518,7 @@
     {
       "id": "DL-30",
       "rule": "DL-30",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/booking/booking-drawer-sheet.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-drawer-sheet.tsx",
       "module": "components/app",
       "line": 153,
       "column": 59,
@@ -1520,7 +1529,7 @@
     {
       "id": "DL-29",
       "rule": "DL-29",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/booking/booking-drawer-sheet.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-drawer-sheet.tsx",
       "module": "components/app",
       "line": 212,
       "column": 39,
@@ -1531,7 +1540,7 @@
     {
       "id": "DL-07",
       "rule": "DL-07",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/booking/booking-drawer-sheet.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-drawer-sheet.tsx",
       "module": "components/app",
       "line": 331,
       "column": 115,
@@ -1542,7 +1551,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/booking/booking-drawer-sheet.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-drawer-sheet.tsx",
       "module": "components/app",
       "line": 102,
       "column": 66,
@@ -1553,7 +1562,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/booking/booking-drawer-sheet.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-drawer-sheet.tsx",
       "module": "components/app",
       "line": 108,
       "column": 59,
@@ -1564,7 +1573,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/booking/booking-drawer-sheet.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-drawer-sheet.tsx",
       "module": "components/app",
       "line": 161,
       "column": 26,
@@ -1575,7 +1584,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/booking/booking-drawer-sheet.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-drawer-sheet.tsx",
       "module": "components/app",
       "line": 180,
       "column": 30,
@@ -1586,7 +1595,7 @@
     {
       "id": "DL-14",
       "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/booking/booking-drawer-sheet.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/booking/booking-drawer-sheet.tsx",
       "module": "components/app",
       "line": 226,
       "column": 30,
@@ -1595,405 +1604,20 @@
       "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-9\"). Exige min-h-11 (44px)."
     },
     {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
+      "id": "DL-12",
+      "rule": "DL-12",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/blocks/vitrine-app-blocks.tsx",
       "module": "components/builder",
-      "line": 314,
-      "column": 61,
+      "line": 1,
+      "column": 1,
       "severity": "P1",
-      "match": "gap-1.5",
-      "message": "Espaçamento \"gap-1.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 373,
-      "column": 57,
-      "severity": "P1",
-      "match": "gap-1.5",
-      "message": "Espaçamento \"gap-1.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-30",
-      "rule": "DL-30",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 373,
-      "column": 65,
-      "severity": "P3",
-      "match": "overflow-x-auto",
-      "message": "Overflow horizontal \"overflow-x-auto\" em superfície de aplicação fora de tabela/carrossel."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 381,
-      "column": 47,
-      "severity": "P1",
-      "match": "px-3.5",
-      "message": "Espaçamento \"px-3.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 381,
-      "column": 134,
-      "severity": "P1",
-      "match": "gap-1.5",
-      "message": "Espaçamento \"gap-1.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 397,
-      "column": 98,
-      "severity": "P1",
-      "match": "px-3.5",
-      "message": "Espaçamento \"px-3.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-30",
-      "rule": "DL-30",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 422,
-      "column": 48,
-      "severity": "P3",
-      "match": "overflow-x-auto",
-      "message": "Overflow horizontal \"overflow-x-auto\" em superfície de aplicação fora de tabela/carrossel."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 428,
-      "column": 42,
-      "severity": "P1",
-      "match": "px-3.5",
-      "message": "Espaçamento \"px-3.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 428,
-      "column": 162,
-      "severity": "P1",
-      "match": "gap-1.5",
-      "message": "Espaçamento \"gap-1.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 443,
-      "column": 45,
-      "severity": "P1",
-      "match": "px-3.5",
-      "message": "Espaçamento \"px-3.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 464,
-      "column": 34,
-      "severity": "P1",
-      "match": "px-2.5",
-      "message": "Espaçamento \"px-2.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-30",
-      "rule": "DL-30",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 476,
-      "column": 40,
-      "severity": "P3",
-      "match": "overflow-x-auto",
-      "message": "Overflow horizontal \"overflow-x-auto\" em superfície de aplicação fora de tabela/carrossel."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 484,
-      "column": 40,
-      "severity": "P1",
-      "match": "px-2.5",
-      "message": "Espaçamento \"px-2.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 484,
-      "column": 47,
-      "severity": "P1",
-      "match": "py-0.5",
-      "message": "Espaçamento \"py-0.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 570,
-      "column": 109,
-      "severity": "P1",
-      "match": "px-3.5",
-      "message": "Espaçamento \"px-3.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-18",
-      "rule": "DL-18",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 570,
-      "column": 80,
-      "severity": "P1",
-      "match": "bg-black",
-      "message": "Cor literal hardcoded \"bg-black\". Use tokens semânticos text-foreground/bg-background."
-    },
-    {
-      "id": "DL-18",
-      "rule": "DL-18",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 570,
-      "column": 141,
-      "severity": "P1",
-      "match": "text-white",
-      "message": "Cor literal hardcoded \"text-white\". Use tokens semânticos text-foreground/bg-background."
-    },
-    {
-      "id": "DL-18",
-      "rule": "DL-18",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 573,
-      "column": 80,
-      "severity": "P1",
-      "match": "bg-black",
-      "message": "Cor literal hardcoded \"bg-black\". Use tokens semânticos text-foreground/bg-background."
-    },
-    {
-      "id": "DL-18",
-      "rule": "DL-18",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 573,
-      "column": 139,
-      "severity": "P1",
-      "match": "text-white",
-      "message": "Cor literal hardcoded \"text-white\". Use tokens semânticos text-foreground/bg-background."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 581,
-      "column": 145,
-      "severity": "P1",
-      "match": "gap-1.5",
-      "message": "Espaçamento \"gap-1.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-18",
-      "rule": "DL-18",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 581,
-      "column": 57,
-      "severity": "P1",
-      "match": "bg-black",
-      "message": "Cor literal hardcoded \"bg-black\". Use tokens semânticos text-foreground/bg-background."
-    },
-    {
-      "id": "DL-18",
-      "rule": "DL-18",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 581,
-      "column": 116,
-      "severity": "P1",
-      "match": "text-white",
-      "message": "Cor literal hardcoded \"text-white\". Use tokens semânticos text-foreground/bg-background."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 626,
-      "column": 55,
-      "severity": "P1",
-      "match": "px-2.5",
-      "message": "Espaçamento \"px-2.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 626,
-      "column": 113,
-      "severity": "P1",
-      "match": "gap-1.5",
-      "message": "Espaçamento \"gap-1.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 640,
-      "column": 54,
-      "severity": "P1",
-      "match": "px-2.5",
-      "message": "Espaçamento \"px-2.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 640,
-      "column": 112,
-      "severity": "P1",
-      "match": "gap-1.5",
-      "message": "Espaçamento \"gap-1.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 673,
-      "column": 51,
-      "severity": "P1",
-      "match": "py-0.5",
-      "message": "Espaçamento \"py-0.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 749,
-      "column": 43,
-      "severity": "P1",
-      "match": "py-0.5",
-      "message": "Espaçamento \"py-0.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-18",
-      "rule": "DL-18",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 783,
-      "column": 41,
-      "severity": "P1",
-      "match": "bg-black",
-      "message": "Cor literal hardcoded \"bg-black\". Use tokens semânticos text-foreground/bg-background."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 788,
-      "column": 34,
-      "severity": "P1",
-      "match": "px-2.5",
-      "message": "Espaçamento \"px-2.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 830,
-      "column": 71,
-      "severity": "P1",
-      "match": "mt-0.5",
-      "message": "Espaçamento \"mt-0.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 834,
-      "column": 39,
-      "severity": "P1",
-      "match": "py-1.5",
-      "message": "Espaçamento \"py-1.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-18",
-      "rule": "DL-18",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 849,
-      "column": 41,
-      "severity": "P1",
-      "match": "bg-black",
-      "message": "Cor literal hardcoded \"bg-black\". Use tokens semânticos text-foreground/bg-background."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 876,
-      "column": 40,
-      "severity": "P1",
-      "match": "px-3.5",
-      "message": "Espaçamento \"px-3.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 912,
-      "column": 35,
-      "severity": "P1",
-      "match": "p-3.5",
-      "message": "Espaçamento \"p-3.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-14",
-      "rule": "DL-14",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/blocks/PrometheeNewsPortalBlock.tsx",
-      "module": "components/builder",
-      "line": 410,
-      "column": 30,
-      "severity": "P1",
-      "match": "size-8",
-      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"size-8\"). Exige min-h-11 (44px)."
+      "match": ".map() sem verificação vazia",
+      "message": "Listagem de dados sem renderização condicional de estado vazio (Empty State)."
     },
     {
       "id": "DL-02",
       "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/HostingDomainConnectModal.tsx",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/HostingDomainConnectModal.tsx",
       "module": "components/builder",
       "line": 261,
       "column": 45,
@@ -2004,7 +1628,7 @@
     {
       "id": "DL-01",
       "rule": "DL-01",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/omni-builder.test.ts",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/omni-builder.test.ts",
       "module": "components/builder",
       "line": 54,
       "column": 27,
@@ -2015,13 +1639,398 @@
     {
       "id": "DL-01",
       "rule": "DL-01",
-      "file": "C:/Users/Excelência Tour SMO/.gemini/antigravity/brain/da213fd4-67d7-4902-933a-c55d13c963d9/scratch/wt/src/components/builder/omni-builder.test.ts",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/omni-builder.test.ts",
       "module": "components/builder",
       "line": 65,
       "column": 66,
       "severity": "P1",
       "match": "#f4f4f5",
       "message": "Cor hexadecimal literal \"#f4f4f5\" fora da camada de token."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/omni-builder.test.ts",
+      "module": "components/builder",
+      "line": 156,
+      "column": 25,
+      "severity": "P1",
+      "match": "#0f172a",
+      "message": "Cor hexadecimal literal \"#0f172a\" fora da camada de token."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/omni-builder.test.ts",
+      "module": "components/builder",
+      "line": 157,
+      "column": 19,
+      "severity": "P1",
+      "match": "#f8fafc",
+      "message": "Cor hexadecimal literal \"#f8fafc\" fora da camada de token."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/omni-builder.test.ts",
+      "module": "components/builder",
+      "line": 162,
+      "column": 53,
+      "severity": "P1",
+      "match": "#0f172a",
+      "message": "Cor hexadecimal literal \"#0f172a\" fora da camada de token."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/omni-builder.test.ts",
+      "module": "components/builder",
+      "line": 163,
+      "column": 43,
+      "severity": "P1",
+      "match": "#f8fafc",
+      "message": "Cor hexadecimal literal \"#f8fafc\" fora da camada de token."
+    },
+    {
+      "id": "DL-03",
+      "rule": "DL-03",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/OmniEditor.tsx",
+      "module": "components/builder",
+      "line": 2101,
+      "column": 32,
+      "severity": "P1",
+      "match": "px-2.5",
+      "message": "Espaçamento \"px-2.5\" viola a grade estrita de múltiplos de 4px."
+    },
+    {
+      "id": "DL-03",
+      "rule": "DL-03",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/OmniEditor.tsx",
+      "module": "components/builder",
+      "line": 2123,
+      "column": 32,
+      "severity": "P1",
+      "match": "p-1.5",
+      "message": "Espaçamento \"p-1.5\" viola a grade estrita de múltiplos de 4px."
+    },
+    {
+      "id": "DL-07",
+      "rule": "DL-07",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/OmniEditor.tsx",
+      "module": "components/builder",
+      "line": 2801,
+      "column": 178,
+      "severity": "P2",
+      "match": "shadow-sm",
+      "message": "Sombra decorativa \"shadow-sm\" em superfície de aplicação. Sombras restritas a overlays."
+    },
+    {
+      "id": "DL-30",
+      "rule": "DL-30",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/OmniEditor.tsx",
+      "module": "components/builder",
+      "line": 2839,
+      "column": 59,
+      "severity": "P3",
+      "match": "overflow-x-auto",
+      "message": "Overflow horizontal \"overflow-x-auto\" em superfície de aplicação fora de tabela/carrossel."
+    },
+    {
+      "id": "DL-07",
+      "rule": "DL-07",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/OmniEditor.tsx",
+      "module": "components/builder",
+      "line": 2945,
+      "column": 46,
+      "severity": "P2",
+      "match": "shadow-2xl",
+      "message": "Sombra decorativa \"shadow-2xl\" em superfície de aplicação. Sombras restritas a overlays."
+    },
+    {
+      "id": "DL-07",
+      "rule": "DL-07",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/OmniEditor.tsx",
+      "module": "components/builder",
+      "line": 2946,
+      "column": 37,
+      "severity": "P2",
+      "match": "shadow-sm",
+      "message": "Sombra decorativa \"shadow-sm\" em superfície de aplicação. Sombras restritas a overlays."
+    },
+    {
+      "id": "DL-07",
+      "rule": "DL-07",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/OmniEditor.tsx",
+      "module": "components/builder",
+      "line": 3221,
+      "column": 125,
+      "severity": "P2",
+      "match": "shadow-xl",
+      "message": "Sombra decorativa \"shadow-xl\" em superfície de aplicação. Sombras restritas a overlays."
+    },
+    {
+      "id": "DL-30",
+      "rule": "DL-30",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/OmniEditor.tsx",
+      "module": "components/builder",
+      "line": 3273,
+      "column": 51,
+      "severity": "P3",
+      "match": "overflow-x-auto",
+      "message": "Overflow horizontal \"overflow-x-auto\" em superfície de aplicação fora de tabela/carrossel."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/OmniEditor.tsx",
+      "module": "components/builder",
+      "line": 2101,
+      "column": 28,
+      "severity": "P1",
+      "match": "h-8",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-8\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/OmniEditor.tsx",
+      "module": "components/builder",
+      "line": 2693,
+      "column": 26,
+      "severity": "P1",
+      "match": "size-8",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"size-8\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/OmniEditor.tsx",
+      "module": "components/builder",
+      "line": 2917,
+      "column": 38,
+      "severity": "P1",
+      "match": "h-7",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-7\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/OmniEditor.tsx",
+      "module": "components/builder",
+      "line": 2926,
+      "column": 38,
+      "severity": "P1",
+      "match": "h-7",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-7\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/OmniEditor.tsx",
+      "module": "components/builder",
+      "line": 2953,
+      "column": 116,
+      "severity": "P1",
+      "match": "h-8",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-8\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/OmniEditor.tsx",
+      "module": "components/builder",
+      "line": 3164,
+      "column": 26,
+      "severity": "P1",
+      "match": "h-9",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-9\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-29",
+      "rule": "DL-29",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/vitrine-blocks.test.tsx",
+      "module": "components/builder",
+      "line": 144,
+      "column": 34,
+      "severity": "P2",
+      "match": "\"grid-cols-4",
+      "message": "Grid de 3 ou mais colunas \"\"grid-cols-4\" aplicado sem prefixo responsivo (sm:/md:/lg:), quebrando telas móveis."
+    },
+    {
+      "id": "DL-30",
+      "rule": "DL-30",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/vitrine-blocks.test.tsx",
+      "module": "components/builder",
+      "line": 149,
+      "column": 36,
+      "severity": "P3",
+      "match": "overflow-x-auto",
+      "message": "Overflow horizontal \"overflow-x-auto\" em superfície de aplicação fora de tabela/carrossel."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/chat/ai-activity-trail.tsx",
+      "module": "components/chat",
+      "line": 202,
+      "column": 47,
+      "severity": "P1",
+      "match": "left-[1.3125rem]",
+      "message": "Classe arbitrária com colchetes \"left-[1.3125rem]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-14",
+      "rule": "DL-14",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/chat/ai-activity-trail.tsx",
+      "module": "components/chat",
+      "line": 145,
+      "column": 26,
+      "severity": "P1",
+      "match": "h-6",
+      "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-6\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-30",
+      "rule": "DL-30",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/chat/ai-chat-shell.tsx",
+      "module": "components/chat",
+      "line": 376,
+      "column": 138,
+      "severity": "P3",
+      "match": "overflow-x-auto",
+      "message": "Overflow horizontal \"overflow-x-auto\" em superfície de aplicação fora de tabela/carrossel."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/chat/chat-artifact-card.tsx",
+      "module": "components/chat",
+      "line": 399,
+      "column": 43,
+      "severity": "P1",
+      "match": "max-h-[85vh]",
+      "message": "Classe arbitrária com colchetes \"max-h-[85vh]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/chat/chat-list-item.tsx",
+      "module": "components/chat",
+      "line": 139,
+      "column": 58,
+      "severity": "P1",
+      "match": "w-[148px]",
+      "message": "Classe arbitrária com colchetes \"w-[148px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/chat/chat-list-item.tsx",
+      "module": "components/chat",
+      "line": 241,
+      "column": 64,
+      "severity": "P1",
+      "match": "stroke-[2.2]",
+      "message": "Classe arbitrária com colchetes \"stroke-[2.2]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/chat/chat-list-item.tsx",
+      "module": "components/chat",
+      "line": 244,
+      "column": 69,
+      "severity": "P1",
+      "match": "stroke-[2.2]",
+      "message": "Classe arbitrária com colchetes \"stroke-[2.2]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/chat/chat-list-item.tsx",
+      "module": "components/chat",
+      "line": 247,
+      "column": 68,
+      "severity": "P1",
+      "match": "stroke-[2.4]",
+      "message": "Classe arbitrária com colchetes \"stroke-[2.4]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-07",
+      "rule": "DL-07",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/chat/copilot-analytics-dashboard.tsx",
+      "module": "components/chat",
+      "line": 210,
+      "column": 70,
+      "severity": "P2",
+      "match": "shadow-sm",
+      "message": "Sombra decorativa \"shadow-sm\" em superfície de aplicação. Sombras restritas a overlays."
+    },
+    {
+      "id": "DL-26",
+      "rule": "DL-26",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/chat/copilot-analytics-dashboard.tsx",
+      "module": "components/chat",
+      "line": 258,
+      "column": 92,
+      "severity": "P2",
+      "match": "duration-500",
+      "message": "Duração de animação superior a 300ms: \"duration-500\"."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/chat/copilot-background-tasks-drawer.tsx",
+      "module": "components/chat",
+      "line": 252,
+      "column": 51,
+      "severity": "P1",
+      "match": "max-w-[240px]",
+      "message": "Classe arbitrária com colchetes \"max-w-[240px]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-03",
+      "rule": "DL-03",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/chat/copilot-connectors-center.tsx",
+      "module": "components/chat",
+      "line": 327,
+      "column": 35,
+      "severity": "P1",
+      "match": "space-y-0.5",
+      "message": "Espaçamento \"space-y-0.5\" viola a grade estrita de múltiplos de 4px."
+    },
+    {
+      "id": "DL-07",
+      "rule": "DL-07",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/chat/copilot-message-renderer.tsx",
+      "module": "components/chat",
+      "line": 56,
+      "column": 95,
+      "severity": "P2",
+      "match": "shadow-lg",
+      "message": "Sombra decorativa \"shadow-lg\" em superfície de aplicação. Sombras restritas a overlays."
+    },
+    {
+      "id": "DL-30",
+      "rule": "DL-30",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/chat/copilot-message-renderer.tsx",
+      "module": "components/chat",
+      "line": 89,
+      "column": 27,
+      "severity": "P3",
+      "match": "overflow-x-auto",
+      "message": "Overflow horizontal \"overflow-x-auto\" em superfície de aplicação fora de tabela/carrossel."
+    },
+    {
+      "id": "DL-03",
+      "rule": "DL-03",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/chat/copilot-message-renderer.tsx",
+      "module": "components/chat",
+      "line": 111,
+      "column": 21,
+      "severity": "P1",
+      "match": "my-2.5",
+      "message": "Espaçamento \"my-2.5\" viola a grade estrita de múltiplos de 4px."
     }
   ]
 }

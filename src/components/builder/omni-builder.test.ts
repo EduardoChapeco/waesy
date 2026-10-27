@@ -164,7 +164,7 @@ describe("Omni-Block Engine & State Tree Audit (MASTER PROMPT V129)", () => {
   });
 
   it("9. Deve conter a matriz canônica expandida com 9 templates de nicho (V137 Niche Matrix)", () => {
-    expect(NICHE_TEMPLATE_MATRIX.length).toBe(9);
+    expect(NICHE_TEMPLATE_MATRIX.length).toBe(15);
 
     const templateIds = NICHE_TEMPLATE_MATRIX.map((t) => t.id);
     expect(templateIds).toContain("template_legal_jus");
@@ -177,6 +177,11 @@ describe("Omni-Block Engine & State Tree Audit (MASTER PROMPT V129)", () => {
     expect(templateIds).toContain("template_creator_biolink");
     expect(templateIds).toContain("template_clinic_premium");
     expect(templateIds).toContain("template_dark_kitchen");
+    expect(templateIds).toContain("template_editorial_news");
+    expect(templateIds).toContain("template_waesy_super_vitrine");
+    expect(templateIds).toContain("template_ifood_delivery_vitrine");
+    expect(templateIds).toContain("template_classifieds_portal_vitrine");
+    expect(templateIds).toContain("template_social_creator_store");
   });
 
   it("10. Deve garantir validação estrita via OmniPageDocumentSchema para páginas geradas por templates", () => {

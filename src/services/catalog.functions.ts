@@ -939,11 +939,44 @@ export const getPublicStoreProfile = createServerFn({ method: "GET" })
  query = query.eq("slug", storeIdToUse);
  }
 
- const { data: store, error } = await query.maybeSingle();
+ let { data: store, error } = await query.maybeSingle();
 
  if (error || !store) {
- return null;
- }
+ const { data: dirListing } = await db
+ .from("directory_listings")
+ .select("*, stores:stores!directory_listings_store_id_fkey(id, name, slug, settings)")
+ .or(isUuid ? `id.eq.${storeIdToUse},store_id.eq.${storeIdToUse}` : `slug.eq.${storeIdToUse},id.eq.${storeIdToUse}`)
+ .limit(1)
+ .maybeSingle();
+
+ if (dirListing) {
+    const dirSettings = (dirListing.stores?.settings ?? {}) as Record<string, any>;
+    return {
+      id: dirListing.store_id || dirListing.id,
+      name: dirListing.business_name || dirListing.stores?.name || "Empresa Local",
+      slug: dirListing.stores?.slug || dirListing.slug || storeIdToUse,
+      description: dirListing.description ?? null,
+      phone: dirListing.contact_phone ?? null,
+      email: dirListing.contact_email ?? null,
+      address: dirListing.address ?? null,
+      city: dirListing.city ?? null,
+      state: dirListing.state ?? null,
+      logoUrl: dirListing.avatar_url ?? null,
+      bannerUrl: dirListing.banner_url ?? null,
+      banner_url: dirListing.banner_url ?? null,
+      coverUrl: dirListing.banner_url ?? null,
+      cover_url: dirListing.banner_url ?? null,
+      instagramHandle: (dirListing as any).social_links?.instagram ?? null,
+      businessHours: typeof dirListing.working_hours === "string" ? dirListing.working_hours : null,
+      settings: dirSettings,
+      type: "directory_listing",
+      category: dirListing.category ?? null,
+      pixKey: null,
+      paymentInstructions: null,
+    };
+  }
+  return null;
+  }
 
  const settings = (store.settings ?? {}) as Record<string, any>;
 

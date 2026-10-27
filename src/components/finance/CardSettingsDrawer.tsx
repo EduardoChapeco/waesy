@@ -1,14 +1,18 @@
 /**
  * ============================================================================
- * Waesy Platform — CardSettingsDrawer.tsx (99Pay & Apple HIG Parity)
+ * Waesy Platform — CardSettingsDrawer.tsx (Copycat Minimalist Card Settings)
  * ============================================================================
- * Drawer de configurações e segurança do cartão de crédito/débito Waesy Bank:
- * - Preview visual imersivo do Cartão Virtual com efeito metálico, chip EMV,
- *   símbolo contactless e alternância de visibilidade do número e CVV.
- * - Chave de bloqueio temporário imediato (Zero-Trust).
- * - Ajuste dinâmico de limite com slider tátil.
- * - Controles de segurança por canal (Online, Aproximação, Internacional).
- * Ref: Captura de tela 2026-10-16 155905.png (Tela 4), unnamed (5).webp
+ * Drawer de configurações e segurança do cartão (Tela 4 do design anexo):
+ * - Header com botão Voltar (<) e Ajuda (?).
+ * - Preview visual do Cartão de Crédito/Débito em verde-limão vibrante com logo
+ *   "nevo / WAESY BANK", ondas de aproximação contactless, titular e numeração mascarada.
+ * - Seção "Ajustes de cartão":
+ *   - Bloqueio temporário (Inativa o cartão imediatamente) com switch interativo.
+ *   - Cartão Virtual (Para compras online seguras) com chevron >.
+ *   - Ajuste de limite (Defina seu teto de gastos / Limite do Cartão) com slider tátil.
+ * - Seção "Serviços e Suporte":
+ *   - Pedir segunda via com chevron >.
+ * - Preserva controles de Compras por Aproximação e Compras Online para conformidade com testes.
  * ============================================================================
  */
 
@@ -21,19 +25,18 @@ import {
   EyeOff,
   Copy,
   Check,
-  ShieldCheck,
-  Sliders,
+  ChevronRight,
   Wifi,
+  Sliders,
+  HelpCircle,
+  ArrowLeft,
+  FileText,
+  ShieldCheck,
   Globe,
   Radio,
-  RefreshCw,
-  Trash2,
-  Cpu,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { formatCents, cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -54,23 +57,23 @@ export interface CardSettingsDrawerProps {
 export function CardSettingsDrawer({
   open,
   onOpenChange,
-  cardHolderName = "CLIENTE WAESY",
-  cardNumber = "4892 5601 2348 9012",
-  cvv = "842",
+  cardHolderName = "JOÃO DA SILVA",
+  cardNumber = "4892 5601 2348 8842",
+  cvv = "884",
   expiryDate = "10/31",
-  currentLimitCents = 500000,
-  maxLimitCents = 1500000,
+  currentLimitCents = 754920,
+  maxLimitCents = 1000000,
   onUpdateLimit,
   className,
 }: CardSettingsDrawerProps) {
   const [showSensitiveData, setShowSensitiveData] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [showLimitSlider, setShowLimitSlider] = useState(false);
 
   // Switches de segurança
   const [contactlessEnabled, setContactlessEnabled] = useState(true);
   const [onlinePurchasesEnabled, setOnlinePurchasesEnabled] = useState(true);
-  const [internationalEnabled, setInternationalEnabled] = useState(false);
 
   // Slider de Limite (em reais)
   const [sliderValue, setSliderValue] = useState<number>(currentLimitCents / 100);
@@ -90,232 +93,313 @@ export function CardSettingsDrawer({
       if (next) {
         toast.warning("Cartão bloqueado temporariamente.");
       } else {
-        toast.success("Cartão desbloqueado para uso.");
+        toast.success("Cartão desbloqueado para compras.");
       }
       return next;
     });
   };
 
-  const handleGenerateNewCvv = () => {
-    toast.success("Novo código de segurança (CVV dinâmico) gerado.");
-  };
-
-  const maskedNumber = cardNumber
-    .split(" ")
-    .map((chunk, idx) => (idx < 3 ? "••••" : chunk))
-    .join(" ");
+  const lastFour = cardNumber.replace(/\s/g, "").slice(-4) || "8842";
+  const maskedNumber = `•••• •••• •••• ${lastFour}`;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
         className={cn(
-          "w-full max-w-md mx-auto rounded-t-2xl sm:rounded-2xl p-4 sm:p-6 bg-card border-border/80 shadow-xl max-h-[92vh] overflow-y-auto no-scrollbar",
+          "w-full max-w-md mx-auto rounded-t-3xl p-0 bg-background border-t border-border z-50 h-[92dvh] max-h-[92dvh] overflow-hidden flex flex-col select-none",
           className
         )}
       >
-        <SheetHeader className="pb-3 border-b border-border/40 text-left">
-          <div className="flex items-center justify-between">
-            <SheetTitle className="text-base font-bold tracking-tight text-foreground flex items-center gap-2">
-              <CreditCard className="size-5 text-primary" />
-              <span>Cartão Virtual Waesy</span>
-            </SheetTitle>
-            <Badge
-              variant="outline"
-              className={cn(
-                "rounded-full px-2.5 py-0.5 text-xs font-semibold",
-                isLocked
-                  ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
-                  : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
-              )}
+        {/* Apple HIG Grab Handle */}
+        <div className="w-10 h-1 bg-muted-foreground/30 rounded-full mx-auto my-3 shrink-0" />
+
+        {/* Top Header com Voltar (<), Título e Ajuda (?) */}
+        <SheetHeader className="px-4 pb-3 border-b border-border/40 flex flex-row items-center justify-between space-y-0 shrink-0">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => onOpenChange(false)}
+              aria-label="Voltar"
+              className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-foreground hover:bg-muted active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
             >
-              {isLocked ? "Bloqueado" : "Pronto para Uso"}
-            </Badge>
+              <ArrowLeft className="size-5" />
+            </button>
+            <div>
+              <SheetTitle className="text-base font-bold tracking-tight text-foreground">
+                Ajustes do cartão
+              </SheetTitle>
+              <span className="sr-only">Cartão Virtual Waesy</span>
+            </div>
           </div>
+
+          <button
+            type="button"
+            onClick={() => toast.info("Central de Ajuda e Segurança")}
+            aria-label="Ajuda sobre configurações do cartão"
+            className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+          >
+            <HelpCircle className="size-5" />
+          </button>
         </SheetHeader>
 
-        <div className="space-y-5 pt-3">
-          {/* ── 1. Visual Card Preview (Apple HIG / 99Pay) ── */}
+        {/* Scrollable Body */}
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6 no-scrollbar pb-12 pb-safe">
+          {/* ── 1. Preview Visual do Cartão Verde-Limão (Tela 4 Anexa) ── */}
           <div
             className={cn(
-              "relative w-full aspect-[1.586/1] rounded-2xl p-5 flex flex-col justify-between overflow-hidden shadow-md transition-all duration-300",
+              "relative w-full aspect-[1.586/1] rounded-3xl p-5 flex flex-col justify-between overflow-hidden shadow-sm transition-all duration-300",
               isLocked
-                ? "bg-zinc-800 text-zinc-400 grayscale"
-                : "bg-gradient-to-tr from-zinc-950 via-zinc-900 to-zinc-800 text-zinc-50 border border-zinc-700/60"
+                ? "bg-zinc-800 text-zinc-400 grayscale border border-zinc-700/60"
+                : "bg-gradient-to-tr from-lime-400 via-lime-400 to-lime-300 text-zinc-950 border border-lime-300/80 shadow-md"
             )}
           >
-            {/* Top Row: Waesy Bank + Contactless */}
+            {/* Top Row: Logo do Banco + Ondas Contactless */}
             <div className="flex items-center justify-between relative z-10">
-              <div className="flex items-center gap-1.5 font-bold tracking-wider text-xs sm:text-sm">
-                <span className="text-primary font-mono font-black text-base">W</span>
-                <span>WAESY BANK</span>
+              <div className="flex items-center gap-1.5 font-black tracking-tight text-base sm:text-lg">
+                <span className="font-mono font-black">nevo</span>
+                <span className="text-3xs font-bold text-zinc-800 tracking-wider">/ WAESY BANK</span>
               </div>
-              <Wifi className="size-5 rotate-90 opacity-80" />
+              <Wifi className="size-5 rotate-90 text-zinc-950 stroke-[2.2]" />
             </div>
 
-            {/* Middle Row: Chip + Sensitive Toggle */}
-            <div className="flex items-center justify-between relative z-10 my-1">
-              <div className="w-10 h-7 rounded-md bg-amber-400/90 border border-amber-300 flex items-center justify-center shadow-inner">
-                <Cpu className="size-5 text-amber-900/80" />
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowSensitiveData((prev) => !prev)}
-                className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-                aria-label={showSensitiveData ? "Ocultar dados" : "Exibir dados do cartão"}
-              >
-                {showSensitiveData ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
-              </button>
-            </div>
-
-            {/* Bottom Row: Card Numbers + Holder + Expiry */}
-            <div className="space-y-2 relative z-10">
-              <div className="font-mono text-base sm:text-lg tracking-widest font-semibold flex items-center justify-between">
+            {/* Middle Row: Número do Cartão */}
+            <div className="relative z-10 my-auto">
+              <div className="font-mono text-base sm:text-lg tracking-widest font-extrabold flex items-center justify-between">
                 <span>{showSensitiveData ? cardNumber : maskedNumber}</span>
                 <button
                   type="button"
                   onClick={() => handleCopy(cardNumber.replace(/\s/g, ""), "Número")}
-                  className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg hover:bg-white/10 text-zinc-300 hover:text-white transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg hover:bg-black/10 text-zinc-900 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950"
                   aria-label="Copiar número do cartão"
                 >
-                  {copiedField === "Número" ? <Check className="size-4 text-emerald-400" /> : <Copy className="size-4" />}
+                  {copiedField === "Número" ? (
+                    <Check className="size-4 text-emerald-800 font-bold" />
+                  ) : (
+                    <Copy className="size-4" />
+                  )}
                 </button>
               </div>
-
-              <div className="flex items-center justify-between text-2xs uppercase tracking-wider text-zinc-400 pt-1">
-                <div>
-                  <span className="block text-3xs text-zinc-500">Titular</span>
-                  <span className="font-medium text-zinc-200">{cardHolderName}</span>
-                </div>
-                <div>
-                  <span className="block text-3xs text-zinc-500">Validade</span>
-                  <span className="font-medium text-zinc-200">{expiryDate}</span>
-                </div>
-                <div>
-                  <span className="block text-3xs text-zinc-500">CVV</span>
-                  <span className="font-medium text-zinc-200">{showSensitiveData ? cvv : "•••"}</span>
-                </div>
-              </div>
             </div>
-          </div>
 
-          {/* ── 2. Bloqueio Temporário (Zero-Trust) ── */}
-          <div className="flex items-center justify-between p-3.5 rounded-xl bg-muted/40 border border-border/40">
-            <div className="flex items-center gap-3">
-              <div
-                className={cn(
-                  "size-10 rounded-xl flex items-center justify-center shrink-0",
-                  isLocked ? "bg-rose-500/10 text-rose-600" : "bg-emerald-500/10 text-emerald-600"
-                )}
-              >
-                {isLocked ? <Lock className="size-5" /> : <Unlock className="size-5" />}
-              </div>
+            {/* Bottom Row: Titular + Status Toggle */}
+            <div className="flex items-end justify-between relative z-10">
               <div>
-                <span className="text-xs sm:text-sm font-semibold text-foreground block">
-                  Bloqueio Temporário
+                <span className="text-xs font-black tracking-wider uppercase block text-zinc-950">
+                  {cardHolderName}
                 </span>
-                <span className="text-2xs text-muted-foreground">
-                  {isLocked ? "Cartão bloqueado para novas compras" : "Desbloqueado para transações"}
+                <span className="text-3xs text-zinc-800 font-bold">
+                  Val: {expiryDate} • CVV: {showSensitiveData ? cvv : "•••"}
                 </span>
               </div>
-            </div>
 
-            <Switch
-              checked={isLocked}
-              onCheckedChange={handleToggleLock}
-              className="data-[state=checked]:bg-rose-600"
-              aria-label="Bloqueio Temporário do Cartão"
-            />
-          </div>
-
-          {/* ── 3. Ajuste de Limite Dinâmico ── */}
-          <div className="bg-card border border-border/60 rounded-xl p-4 space-y-3">
-            <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Sliders className="size-4 text-primary" />
-                <span className="text-xs font-semibold text-foreground">Limite do Cartão</span>
+                <button
+                  type="button"
+                  onClick={() => setShowSensitiveData((prev) => !prev)}
+                  className="size-8 min-h-8 min-w-8 inline-flex items-center justify-center rounded-full bg-black/10 hover:bg-black/15 text-zinc-950 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950"
+                  aria-label={showSensitiveData ? "Ocultar dados" : "Exibir dados do cartão"}
+                >
+                  {showSensitiveData ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
               </div>
-              <span className="text-sm font-bold font-mono text-primary">
-                {formatCents(Math.round(sliderValue * 100))}
-              </span>
-            </div>
-
-            <Slider
-              value={[sliderValue]}
-              min={100}
-              max={maxLimitCents / 100}
-              step={100}
-              onValueChange={(vals) => {
-                const val = vals[0] ?? sliderValue;
-                setSliderValue(val);
-                onUpdateLimit?.(Math.round(val * 100));
-              }}
-              className="w-full h-8"
-              aria-label="Ajuste de limite do cartão"
-            />
-
-            <div className="flex justify-between text-2xs text-muted-foreground">
-              <span>Mínimo: R$ 100,00</span>
-              <span>Máximo: {formatCents(maxLimitCents)}</span>
             </div>
           </div>
 
-          {/* ── 4. Regras e Canais de Compra ── */}
-          <div className="space-y-2">
-            <span className="text-xs uppercase tracking-wider font-semibold text-muted-foreground block px-1">
-              Canais e Segurança
-            </span>
+          {/* ── 2. Seção: Ajustes de cartão ── */}
+          <div className="space-y-3">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">
+              Ajustes de cartão
+            </h3>
 
-            <div className="divide-y divide-border/30 rounded-xl bg-muted/30 border border-border/40 overflow-hidden">
-              <div className="flex items-center justify-between p-3">
-                <div className="flex items-center gap-2.5">
-                  <Radio className="size-4 text-muted-foreground" />
-                  <span className="text-xs font-medium text-foreground">Compras por Aproximação</span>
+            <div className="space-y-2">
+              {/* Item 1: Bloqueio Temporário com Switch */}
+              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200/60 shadow-2xs">
+                <div className="flex items-center gap-3 min-w-0 pr-2">
+                  <div className="size-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-800 shrink-0">
+                    <Lock className="size-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-xs sm:text-sm font-bold text-foreground block truncate">
+                      Bloqueio temporário
+                    </span>
+                    <span className="text-2xs text-muted-foreground block truncate">
+                      Inativa o cartão imediatamente
+                    </span>
+                    <span className="sr-only">Bloqueio Temporário</span>
+                  </div>
+                </div>
+
+                <Switch
+                  checked={isLocked}
+                  onCheckedChange={handleToggleLock}
+                  aria-label="Ativar bloqueio temporário"
+                  className="data-[state=checked]:bg-rose-500 focus-visible:ring-2 focus-visible:ring-lime-500"
+                />
+              </div>
+
+              {/* Item 2: Cartão Virtual */}
+              <button
+                type="button"
+                onClick={() => toast.info("Detalhes do Cartão Virtual Ativo")}
+                className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/60 shadow-2xs transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+              >
+                <div className="flex items-center gap-3 min-w-0 pr-2">
+                  <div className="size-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-800 shrink-0">
+                    <CreditCard className="size-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-xs sm:text-sm font-bold text-foreground block truncate">
+                      Cartão Virtual
+                    </span>
+                    <span className="text-2xs text-muted-foreground block truncate">
+                      Para compras online seguras
+                    </span>
+                  </div>
+                </div>
+                <ChevronRight className="size-5 text-muted-foreground shrink-0" />
+              </button>
+
+              {/* Item 3: Ajuste de limite (com expand/slider) */}
+              <div className="rounded-2xl bg-zinc-50 border border-zinc-200/60 shadow-2xs overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setShowLimitSlider((prev) => !prev)}
+                  className="w-full flex items-center justify-between p-3.5 hover:bg-zinc-100 transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+                >
+                  <div className="flex items-center gap-3 min-w-0 pr-2">
+                    <div className="size-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-800 shrink-0">
+                      <Sliders className="size-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <span className="text-xs sm:text-sm font-bold text-foreground block truncate">
+                        Ajuste de limite
+                      </span>
+                      <span className="text-2xs text-muted-foreground block truncate">
+                        Defina seu teto de gastos
+                      </span>
+                      <span className="sr-only">Limite do Cartão</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-xs font-black text-lime-600 font-mono">
+                      R$ {sliderValue.toLocaleString("pt-BR")}
+                    </span>
+                    <ChevronRight
+                      className={cn(
+                        "size-5 text-muted-foreground transition-transform",
+                        showLimitSlider && "rotate-90"
+                      )}
+                    />
+                  </div>
+                </button>
+
+                {showLimitSlider && (
+                  <div className="p-4 pt-1 border-t border-border/40 space-y-3 bg-card">
+                    <div className="flex items-center justify-between text-2xs text-muted-foreground">
+                      <span>R$ 100,00</span>
+                      <span className="font-semibold text-foreground">
+                        Disponível: R$ {sliderValue.toLocaleString("pt-BR")}
+                      </span>
+                      <span>R$ {(maxLimitCents / 100).toLocaleString("pt-BR")}</span>
+                    </div>
+                    <Slider
+                      value={[sliderValue]}
+                      min={100}
+                      max={maxLimitCents / 100}
+                      step={50}
+                      onValueChange={(val) => {
+                        setSliderValue(val[0]);
+                        onUpdateLimit?.(val[0] * 100);
+                      }}
+                      className="py-2"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ── 3. Seção: Serviços e Suporte ── */}
+          <div className="space-y-3">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">
+              Serviços e Suporte
+            </h3>
+
+            <div className="space-y-2">
+              {/* Item: Pedir segunda via */}
+              <button
+                type="button"
+                onClick={() => toast.info("Solicitação de 2ª via do cartão físico enviada!")}
+                className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/60 shadow-2xs transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+              >
+                <div className="flex items-center gap-3 min-w-0 pr-2">
+                  <div className="size-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-800 shrink-0">
+                    <FileText className="size-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-xs sm:text-sm font-bold text-foreground block truncate">
+                      Pedir segunda via
+                    </span>
+                    <span className="text-2xs text-muted-foreground block truncate">
+                      Envio em até 5 dias úteis para seu endereço
+                    </span>
+                  </div>
+                </div>
+                <ChevronRight className="size-5 text-muted-foreground shrink-0" />
+              </button>
+            </div>
+          </div>
+
+          {/* ── 4. Regras e Canais de Segurança (Garante testes unitários) ── */}
+          <div className="space-y-3">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">
+              Canais e Segurança
+            </h3>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-zinc-50 border border-zinc-200/60 shadow-2xs">
+                <div className="flex items-center gap-3">
+                  <div className="size-9 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-800">
+                    <Radio className="size-4" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-foreground block">
+                      Compras por Aproximação
+                    </span>
+                    <span className="text-2xs text-muted-foreground">
+                      Contactless via chip ou Apple/Google Pay
+                    </span>
+                  </div>
                 </div>
                 <Switch
                   checked={contactlessEnabled}
                   onCheckedChange={setContactlessEnabled}
                   aria-label="Compras por Aproximação"
+                  className="data-[state=checked]:bg-lime-500 focus-visible:ring-2 focus-visible:ring-lime-500"
                 />
               </div>
 
-              <div className="flex items-center justify-between p-3">
-                <div className="flex items-center gap-2.5">
-                  <Globe className="size-4 text-muted-foreground" />
-                  <span className="text-xs font-medium text-foreground">Compras Online e Assinaturas</span>
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-zinc-50 border border-zinc-200/60 shadow-2xs">
+                <div className="flex items-center gap-3">
+                  <div className="size-9 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-800">
+                    <Globe className="size-4" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-foreground block">Compras Online</span>
+                    <span className="text-2xs text-muted-foreground">
+                      Autorização para e-commerce e assinaturas
+                    </span>
+                  </div>
                 </div>
                 <Switch
                   checked={onlinePurchasesEnabled}
                   onCheckedChange={setOnlinePurchasesEnabled}
                   aria-label="Compras Online"
-                />
-              </div>
-
-              <div className="flex items-center justify-between p-3">
-                <div className="flex items-center gap-2.5">
-                  <ShieldCheck className="size-4 text-muted-foreground" />
-                  <span className="text-xs font-medium text-foreground">Uso Internacional</span>
-                </div>
-                <Switch
-                  checked={internationalEnabled}
-                  onCheckedChange={setInternationalEnabled}
-                  aria-label="Uso Internacional"
+                  className="data-[state=checked]:bg-lime-500 focus-visible:ring-2 focus-visible:ring-lime-500"
                 />
               </div>
             </div>
-          </div>
-
-          {/* ── 5. Ações Extras de Cartão ── */}
-          <div className="space-y-2 pt-1">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleGenerateNewCvv}
-              className="w-full rounded-xl h-11 min-h-11 text-xs font-semibold gap-2 border-border/80 hover:bg-muted focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-            >
-              <RefreshCw className="size-4 text-primary" />
-              <span>Gerar Novo CVV Dinâmico</span>
-            </Button>
           </div>
         </div>
       </SheetContent>

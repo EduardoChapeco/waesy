@@ -223,6 +223,14 @@
       "date": "2026-10-20",
       "expiry": "2028-12-31",
       "approvedBy": "design-system-architect"
+    },
+    {
+      "id": "DL-01",
+      "file": "src/services/hotpage.functions.ts",
+      "reason": "Seed canonica de configuracao de modulos do drawer lateral mobile no banco",
+      "date": "2026-10-27",
+      "expiry": "2027-12-31",
+      "approvedBy": "design-system-architect"
     }
   ]
 }

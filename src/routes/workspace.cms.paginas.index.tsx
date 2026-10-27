@@ -23,6 +23,7 @@ import {
   ChevronDown,
   Layers,
   ClipboardList,
+  Newspaper,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
@@ -70,6 +71,7 @@ import {
   provisionCommerceWixAppSuiteFn,
   provisionServicesWixAppSuiteFn,
   provisionFormLeadWixAppSuiteFn,
+  provisionNewsWixAppSuiteFn,
 } from "@/services/builder.functions";
 import {
   NICHE_TEMPLATE_MATRIX,
@@ -77,6 +79,7 @@ import {
   COMMERCE_WIX_APP_PAGES,
   SERVICES_WIX_APP_PAGES,
   FORM_LEAD_WIX_APP_PAGES,
+  NEWS_WIX_APP_PAGES,
 } from "@/lib/builder/omni-templates";
 
 export const Route = createFileRoute("/workspace/cms/paginas/")({
@@ -107,6 +110,7 @@ const TEMPLATE_OPTIONS = [
     ...COMMERCE_WIX_APP_PAGES,
     ...SERVICES_WIX_APP_PAGES,
     ...FORM_LEAD_WIX_APP_PAGES,
+    ...NEWS_WIX_APP_PAGES,
   ].map((t) => {
     let icon = LayoutTemplate;
     if (t.niche === "legal") icon = Scale;
@@ -117,6 +121,7 @@ const TEMPLATE_OPTIONS = [
     if (t.niche === "real_estate") icon = Building2;
     if (t.niche === "services") icon = HeartPulse;
     if (t.niche === "general" || t.id.startsWith("wix_lead")) icon = ClipboardList;
+    if (t.niche === "media" || t.id.startsWith("wix_news")) icon = Newspaper;
     return {
       id: t.id,
       name: t.name,
@@ -139,7 +144,7 @@ function CmsPagesPage() {
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [provisioningSuite, setProvisioningSuite] = useState<"tourism" | "commerce" | "services" | "form_lead" | null>(null);
+  const [provisioningSuite, setProvisioningSuite] = useState<"tourism" | "commerce" | "services" | "form_lead" | "news_portal" | null>(null);
   const [isDuplicating, setIsDuplicating] = useState<string | null>(null);
   const [pageToDelete, setPageToDelete] = useState<{ id: string; title: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -165,7 +170,7 @@ function CmsPagesPage() {
     setSlug(generatedSlug);
   };
 
-  const handleProvisionSuite = async (suite: "tourism" | "commerce" | "services" | "form_lead") => {
+  const handleProvisionSuite = async (suite: "tourism" | "commerce" | "services" | "form_lead" | "news_portal") => {
     setProvisioningSuite(suite);
     try {
       if (suite === "tourism") {
@@ -182,6 +187,11 @@ function CmsPagesPage() {
         const res = await provisionServicesWixAppSuiteFn();
         toast.success(
           `App Serviços & Clínicas instalado (${res?.pagesCount || 4} páginas interligadas provisionadas).`,
+        );
+      } else if (suite === "news_portal") {
+        const res = await provisionNewsWixAppSuiteFn();
+        toast.success(
+          `App Portal de Notícias instalado (${res?.pagesCount || 4} páginas modulares provisionadas).`,
         );
       } else if (suite === "form_lead") {
         const res = await provisionFormLeadWixAppSuiteFn();
@@ -299,6 +309,8 @@ function CmsPagesPage() {
                       ? "Instalando E-Commerce..."
                       : provisioningSuite === "services"
                       ? "Instalando Serviços..."
+                      : provisioningSuite === "news_portal"
+                      ? "Instalando Portal..."
                       : "Instalar Suíte Wix App"}
                   </span>
                   <ChevronDown className="size-4 text-muted-foreground ml-1" />
@@ -347,6 +359,17 @@ function CmsPagesPage() {
                   <div className="flex flex-col">
                     <span className="font-semibold text-foreground">App Formulários, Quizzes & RH</span>
                     <span className="text-muted-foreground text-xs">3 páginas com quiz, NPS e talentos</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleProvisionSuite("news_portal")}
+                  disabled={Boolean(provisioningSuite)}
+                  className="text-xs gap-2 cursor-pointer p-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <Newspaper className="size-4 text-primary shrink-0" />
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-foreground">App Portal de Notícias</span>
+                    <span className="text-muted-foreground text-xs">4 páginas modulares com feed e leitor</span>
                   </div>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -428,6 +451,16 @@ function CmsPagesPage() {
               >
                 <ClipboardList className="size-4 mr-2 text-primary" />
                 App Formulários (3 Páginas)
+              </Button>
+              <Button
+                type="button"
+                onClick={() => handleProvisionSuite("news_portal")}
+                disabled={Boolean(provisioningSuite)}
+                variant="outline"
+                className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold"
+              >
+                <Newspaper className="size-4 mr-2 text-primary" />
+                App Notícias (4 Páginas)
               </Button>
               <Button
                 type="button"

@@ -106,6 +106,22 @@ export interface MarketplaceSurfaceDTO {
  store_id?: string | null;
 }
 
+export function ensureCanonicalSurfaces(existing: MarketplaceSurfaceDTO[]): MarketplaceSurfaceDTO[] {
+	const copy = [...existing];
+	const hasTurismo = copy.some((s) => s.slug === "turismo");
+	if (!hasTurismo) {
+		copy.push({
+			id: "canonical-surface-turismo",
+			slug: "turismo",
+			title: "Turismo & Viagens",
+			description: "Vitrine oficial de pacotes, aéreos, hotéis, rodoviário e corporativo",
+			is_global: true,
+			store_id: null,
+		});
+	}
+	return copy;
+}
+
 // ─── 1. LISTAR TODAS AS SUPERFÍCIES (ADMIN MASTER) ─────────────────────────
 export const listAllSurfaces = createServerFn({ method: "GET" }).handler(async () => {
  const supabase = getServerClient();
@@ -120,7 +136,7 @@ export const listAllSurfaces = createServerFn({ method: "GET" }).handler(async (
  return [];
  }
 
- return (data || []) as MarketplaceSurfaceDTO[];
+	return ensureCanonicalSurfaces((data || []) as MarketplaceSurfaceDTO[]);
 });
 
 // ─── 2. LISTAR SEÇÕES DE UMA SUPERFÍCIE (PARA O EDITOR DO ADMIN/WORKSPACE) ──
@@ -135,6 +151,19 @@ export const listSurfaceSections = createServerFn({ method: "GET" })
  const supabase = getServerClient();
  let targetSurfaceSlug = surfaceSlug;
  let targetStoreId = storeId;
+	if (surfaceSlug === "turismo") {
+		try {
+			const { data: turCheck } = await supabase.from("marketplace_surfaces").select("id, slug, title").eq("slug", "turismo").maybeSingle();
+			if (!turCheck) {
+				await supabase.from("marketplace_surfaces").insert({
+					slug: "turismo",
+					title: "Turismo & Viagens",
+					description: "Vitrine oficial de turismo e viagens",
+					is_global: true,
+				});
+			}
+		} catch {}
+	}
 
  if (surfaceSlug === "store_private") {
  const { getServerIdentity } = await import("@/lib/server-access");
@@ -234,6 +263,9 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
  surface = fallbackSurf;
  }
 
+	if (!surface && (surfaceSlug === "turismo" || surfaceSlug === "viagens")) {
+		surface = { id: "canonical-surface-turismo", slug: "turismo", title: "Turismo & Viagens" } as any;
+	}
  if (!surface) {
  return { sections: [], allProducts: [] };
  }

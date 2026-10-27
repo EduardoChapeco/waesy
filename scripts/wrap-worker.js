@@ -28,13 +28,18 @@ if (fs.existsSync(secretsPath)) {
   }
 }
 
+const targetSupabaseUrl = secrets.VITE_SUPABASE_URL || secrets.SUPABASE_URL || process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || "https://jfuebqmltksyznovhlwa.supabase.co";
+const targetAnonKey = secrets.VITE_SUPABASE_ANON_KEY || secrets.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || "";
+const targetServiceRoleKey = secrets.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+const targetSiteUrl = secrets.VITE_SITE_URL || process.env.VITE_SITE_URL || "https://usewaesy.pages.dev";
+
 const fallbackEnv = {
-  VITE_SUPABASE_URL: secrets.VITE_SUPABASE_URL || process.env.VITE_SUPABASE_URL || "https://jfuebqmltksyznovhlwa.supabase.co",
-  SUPABASE_URL: secrets.SUPABASE_URL || process.env.SUPABASE_URL || "https://jfuebqmltksyznovhlwa.supabase.co",
-  VITE_SUPABASE_ANON_KEY: secrets.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || "",
-  SUPABASE_ANON_KEY: secrets.SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || "",
-  SUPABASE_SERVICE_ROLE_KEY: secrets.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || "",
-  VITE_SITE_URL: secrets.VITE_SITE_URL || process.env.VITE_SITE_URL || "https://usewaesy.pages.dev",
+  VITE_SUPABASE_URL: targetSupabaseUrl,
+  SUPABASE_URL: targetSupabaseUrl,
+  VITE_SUPABASE_ANON_KEY: targetAnonKey,
+  SUPABASE_ANON_KEY: targetAnonKey,
+  SUPABASE_SERVICE_ROLE_KEY: targetServiceRoleKey,
+  VITE_SITE_URL: targetSiteUrl,
 };
 
 const injection = `async fetch(cfReq, env, context) {

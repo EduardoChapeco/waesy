@@ -1176,7 +1176,7 @@ function CustomerPaymentsCenterPage() {
             className="fixed inset-0 bg-background/80 backdrop-blur-sm cursor-pointer focus-visible:outline-none"
           />
 
-          <div className="relative w-full max-w-lg rounded-lg bg-card border border-border/60 p-6 space-y-5 z-10 animate-in fade-in zoom-in-95 duration-150">
+          <div className="relative w-full max-w-md rounded-3xl bg-card border border-border/80 p-6 space-y-4 z-10 shadow-xl animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between border-b border-border/40 pb-3">
               <div>
                 <h3 className="text-base font-bold text-foreground">Detalhe da Transação</h3>
@@ -1195,7 +1195,7 @@ function CustomerPaymentsCenterPage() {
             <div className="space-y-4">
               <div className="p-4 rounded-lg bg-muted/20 space-y-1 text-center">
                 <span className="text-xs text-muted-foreground">Valor da Operação</span>
-                <p className="text-2xl font-bold font-mono text-foreground">
+                <p className="text-3xl font-black font-mono text-foreground tracking-tight">
                   {formatMoney(selectedTx.amount_cents)}
                 </p>
                 <Badge variant="outline" className="text-xs">
@@ -1267,7 +1267,7 @@ function CustomerPaymentsCenterPage() {
             className="fixed inset-0 bg-background/80 backdrop-blur-sm cursor-pointer focus-visible:outline-none"
           />
 
-          <div className="relative w-full max-w-lg rounded-lg bg-card border border-border/60 p-6 space-y-5 z-10 animate-in fade-in zoom-in-95 duration-150">
+          <div className="relative w-full max-w-md rounded-3xl bg-card border border-border/80 p-6 space-y-4 z-10 shadow-xl animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between border-b border-border/40 pb-3">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="size-5 text-primary" weight="bold" />
@@ -1284,9 +1284,9 @@ function CustomerPaymentsCenterPage() {
             </div>
 
             <div className="space-y-4">
-              <div className="p-4 rounded-lg bg-muted/20 text-center space-y-1">
+              <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200/60 text-center space-y-1">
                 <span className="text-xs text-muted-foreground uppercase">{selectedReceipt.emitterName}</span>
-                <p className="text-2xl font-bold font-mono text-foreground">
+                <p className="text-3xl font-black font-mono text-foreground tracking-tight">
                   {formatMoney(selectedReceipt.amountCents)}
                 </p>
                 <p className="text-xs text-muted-foreground">{formatDate(selectedReceipt.issuedAt)}</p>
@@ -1318,7 +1318,7 @@ function CustomerPaymentsCenterPage() {
               <div className="pt-2 flex items-center justify-end">
                 <Button
                   onClick={() => setReceiptModalOpen(false)}
-                  className="h-11 min-h-11 px-6 text-xs font-bold rounded-lg bg-primary text-primary-foreground focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                  className="h-12 min-h-12 px-6 text-xs font-bold rounded-xl bg-lime-400 hover:bg-lime-500 active:bg-lime-600 text-zinc-950 focus-visible:ring-2 focus-visible:ring-lime-500 focus-visible:outline-none shadow-xs"
                 >
                   Concluir
                 </Button>

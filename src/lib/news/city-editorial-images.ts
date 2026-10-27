@@ -26,13 +26,21 @@ export function resolveCityNewsCover(params?: ResolveCityNewsCoverParams | null)
   const rawCover = params.coverUrl ? String(params.coverUrl).trim() : null;
   if (!rawCover) return null;
 
-  // Sanitiza URLs inválidas ou de estoque sintético (Unsplash)
+  // Sanitiza URLs inválidas, miniaturas de avatar/ícone ou estoque sintético (Unsplash/Pexels)
+  const lowerCover = rawCover.toLowerCase();
   const isInvalid =
     rawCover === "undefined" ||
     rawCover === "null" ||
     rawCover.includes("1511707171634-5f897ff02560") ||
-    rawCover.includes("images.unsplash.com") ||
-    rawCover.includes("unsplash.com");
+    lowerCover.includes("images.unsplash.com") ||
+    lowerCover.includes("unsplash.com") ||
+    lowerCover.includes("images.pexels.com") ||
+    lowerCover.includes("pexels.com") ||
+    lowerCover.includes("-150x150.") ||
+    lowerCover.includes("-100x100.") ||
+    lowerCover.includes("icon_pdf") ||
+    lowerCover.includes("pixel.gif") ||
+    lowerCover.includes("spacer.gif");
 
   if (isInvalid) {
     return null;

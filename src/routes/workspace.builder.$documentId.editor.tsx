@@ -25,7 +25,7 @@ export const Route = createFileRoute("/workspace/builder/$documentId/editor")({
         : ((productsRes as any)?.products || (productsRes as any)?.data || []);
 
       return {
-        ...docData.data,
+        ...((docData as any)?.data || {}),
         categories: categories || [],
         collections: collections || [],
         products: realProducts,
@@ -114,6 +114,14 @@ function BuilderEditorPage() {
         products={initialData.products}
         categories={initialData.categories}
         collections={initialData.collections}
+        classifieds={initialData.classifieds}
+        posts={initialData.posts}
+        flyers={initialData.flyers}
+        events={initialData.events}
+        jobs={initialData.jobs}
+        stores={initialData.stores}
+        banners={initialData.banners}
+        hotpages={initialData.hotpages}
       />
     </div>
   );

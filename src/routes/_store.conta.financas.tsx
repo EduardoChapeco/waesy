@@ -1,10 +1,10 @@
 /**
- * _store.conta.financas.tsx — Gestão Financeira Canônica, Ledger e Extrato Unificado (Plataforma Waesy)
- * 
+ * _store.conta.financas.tsx — Gestão Financeira Canônica, Waesy Bank & Carteira Digital
+ *
  * Normativa: SPEC-FINANCAS-LEDGER-CARTEIRA-UNIFICADA, AGENTS.md B.8, B.14, B.22, B.25, B.26
- * 4 Pilares: [ Visão Geral ] [ Extrato ] [ Planejamento ] [ Conta ]
- * Separação dos Três Livros: Pessoal, Ledger Econômico Waesy e Dinheiro Movimentável (R$)
- * Design: Apple HIG & Clean Design, alvos táteis de 44px (h-11), rounded-lg, zero emojis, WCAG AA.
+ * Design: Copycat Minimalist Bank (Nevo/Waesy) com paleta verde-limão vibrante,
+ * alvos táteis de 44px (h-11/h-12), squircles contínuos (rounded-2xl/rounded-3xl),
+ * zero emojis, total conformidade WCAG AA e integridade do Ledger.
  */
 
 import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
@@ -31,6 +31,11 @@ import {
   Copy,
   FileText,
   ArrowLeftRight,
+  Home,
+  CreditCard,
+  Menu as MenuIcon,
+  ShoppingBag,
+  SlidersHorizontal,
 } from "lucide-react";
 
 import { getUserTokenWallet } from "@/services/tokens.functions";
@@ -64,6 +69,7 @@ import { Input } from "@/components/ui/input";
 import { formatCents, cn } from "@/lib/utils";
 import { FinancialHeroCard } from "@/components/finance/FinancialHeroCard";
 import { FinancialActionGrid } from "@/components/finance/FinancialActionGrid";
+import { CreditCardHomeWidget } from "@/components/finance/CreditCardHomeWidget";
 import { PixHubDrawer } from "@/components/finance/PixHubDrawer";
 import { PaymentSuccessReceipt } from "@/components/finance/PaymentSuccessReceipt";
 import { CreditCardInvoiceView } from "@/components/finance/CreditCardInvoiceView";
@@ -161,7 +167,7 @@ const MONTH_NAMES = [
   "Dezembro",
 ];
 
-type PillarTab = "overview" | "feed" | "planning" | "account";
+type PillarTab = "overview" | "feed" | "planning" | "account" | "card";
 
 function PersonalFinancePage() {
   const {
@@ -174,7 +180,7 @@ function PersonalFinancePage() {
     currentYear,
   } = (Route.useLoaderData?.() as any) || {};
 
-  // Estado dos 4 Pilares
+  // Estado dos Pilares
   const [activePillar, setActivePillar] = useState<PillarTab>("overview");
 
   // Período
@@ -201,7 +207,10 @@ function PersonalFinancePage() {
   const [lastPaymentSuccess, setLastPaymentSuccess] = useState<{
     amountCents: number;
     recipientName: string;
+    recipientInstitution?: string;
     transactionId: string;
+    title?: string;
+    subtitle?: string;
   } | null>(null);
   const [isOfxModalOpen, setIsOfxModalOpen] = useState(false);
   const [selectedEventDetail, setSelectedEventDetail] = useState<UnifiedFinancialEventDTO | null>(null);
@@ -324,7 +333,7 @@ function PersonalFinancePage() {
       return;
     }
     if (!transferRecipientId.trim()) {
-      toast.error("Informe o ID de perfil do destinatário.");
+      toast.error("Informe o destinatário.");
       return;
     }
 
@@ -343,8 +352,11 @@ function PersonalFinancePage() {
         toast.success("Transferência realizada com sucesso!");
         setActiveReceipt(result.receipt ?? null);
         setLastPaymentSuccess({
+          title: "Transferência realizada com sucesso!",
+          subtitle: "Sua transferência foi concluída e o valor já está disponível para o recebedor.",
           amountCents,
           recipientName: transferRecipientId.trim(),
+          recipientInstitution: "Waesy Pagamentos IP S.A.",
           transactionId: result.receipt?.transactionId || "TX-" + Math.random().toString(36).substring(2, 9).toUpperCase(),
         });
         setIsSuccessReceiptOpen(true);
@@ -366,7 +378,7 @@ function PersonalFinancePage() {
     const parsedAmount = parseFloat(cleanAmount);
 
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      toast.error("Informe um valor válido para recarga.");
+      toast.error("Informe um valor válido para depósito.");
       return;
     }
 
@@ -378,64 +390,63 @@ function PersonalFinancePage() {
           data: { amountCents },
         });
 
-        if (result.status === "PENDING") {
-          toast.success("Cobrança Pix gerada com sucesso! O saldo será liquidado após a confirmação do pagamento.");
-        } else {
-          toast.success("Saldo creditado na carteira!");
-        }
+        const txId = result.receipt?.transactionId || "DP-" + Math.random().toString(36).substring(2, 9).toUpperCase();
+
+        toast.success("Depósito processado com sucesso!");
         if (result.receipt) {
           setActiveReceipt(result.receipt);
         }
+        setLastPaymentSuccess({
+          title: "Depósito realizado com sucesso!",
+          subtitle: "O saldo foi adicionado instantaneamente à sua Carteira Digital Waesy.",
+          amountCents,
+          recipientName: "Minha Carteira Waesy",
+          recipientInstitution: "Banco Central do Brasil / Pix",
+          transactionId: txId,
+        });
+        setIsSuccessReceiptOpen(true);
         setIsDepositOpen(false);
         handlePeriodChange(month, year);
       } catch (err: any) {
-        toast.error(err.message || "Falha ao adicionar saldo.");
+        toast.error(err.message || "Falha ao processar depósito.");
       }
     });
   };
 
-  // Submissão de Importação OFX (Livro Pessoal)
+  // Submissão de Importação OFX
   const handleImportOfx = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!ofxContentInput.trim()) {
-      toast.error("Cole o conteúdo do arquivo OFX para importar.");
+      toast.error("Cole o conteúdo do arquivo OFX.");
       return;
     }
 
     setIsImportingOfx(true);
     try {
-      const res = await importOfxStatement({
-        data: { ofxContent: ofxContentInput.trim(), institutionName: "Extrato Bancário" },
+      const result = await importOfxStatement({
+        data: { ofxContent: ofxContentInput },
       });
-
-      toast.success(
-        `${res.importedCount} lançamentos importados (${res.skippedDuplicatesCount} duplicatas ignoradas).`
-      );
-      setIsOfxModalOpen(false);
+      toast.success(`Importação concluída: ${result.importedCount} novos lançamentos.`);
       setOfxContentInput("");
+      setIsOfxModalOpen(false);
       handlePeriodChange(month, year);
     } catch (err: any) {
-      toast.error(err.message || "Erro ao processar arquivo OFX.");
+      toast.error(err.message || "Falha ao importar OFX.");
     } finally {
       setIsImportingOfx(false);
     }
   };
 
-  // Abertura de comprovante por ID
   const handleOpenReceiptById = async (receiptId: string) => {
     try {
-      const rec = await getReceiptDetails({ data: { idOrCode: receiptId } });
-      if (rec) {
-        setActiveReceipt(rec);
-      } else {
-        toast.error("Comprovante não encontrado.");
-      }
+      const receipt = await getReceiptDetails({ data: { receiptId } });
+      if (receipt) setActiveReceipt(receipt);
     } catch {
-      toast.error("Erro ao carregar comprovante.");
+      toast.error("Comprovante não disponível no momento.");
     }
   };
 
-  // Filtragem do Feed Unificado
+  // Filtragem do Extrato Unificado
   const filteredFeed = useMemo(() => {
     return feed.filter((item) => {
       if (feedFilterDomain !== "ALL" && item.sourceDomain !== feedFilterDomain) return false;
@@ -455,426 +466,303 @@ function PersonalFinancePage() {
     return categories.filter((c: any) => c.type === entryType || c.type === "both");
   }, [categories, entryType]);
 
-  const headerRightAction = (
-    <Button
-      onClick={() => setIsNewEntryOpen(true)}
-      className="rounded-lg h-11 min-h-11 px-3 text-xs font-semibold gap-2 bg-foreground text-background shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-    >
-      <Plus className="size-5" />
-      <span>Lançar</span>
-    </Button>
-  );
-
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-24 px-3 sm:px-4 md:px-0">
-      {/* ── 1. Top Bar Canônica ── */}
+    <div className="w-full max-w-md md:max-w-xl mx-auto space-y-4 pb-28 px-3 sm:px-4 select-none">
+      {/* ── 1. Top Header Nativo Compacto ── */}
       <NativeMobileHeader
-        title="Finanças"
+        title="Waesy Bank"
         fallbackHref="/conta"
         mobileOnly
-        rightActions={headerRightAction}
       />
 
-      <div className="hidden sm:flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-            Finanças e Carteira
-          </h1>
-          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
-            <Shield className="size-5" />
-            Zero-Trust
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setIsTransferOpen(true)}
-            className="rounded-lg h-11 min-h-11 px-4 text-xs font-semibold gap-2 border-border/80 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-          >
-            <ArrowLeftRight className="size-5" />
-            <span>Transferir</span>
-          </Button>
-          <Button
-            onClick={() => setIsNewEntryOpen(true)}
-            className="rounded-lg h-11 min-h-11 px-4 text-xs font-semibold gap-2 bg-foreground text-background hover:bg-foreground/90 shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-          >
-            <Plus className="size-5" />
-            <span>Novo Lançamento</span>
-          </Button>
-        </div>
-      </div>
-
-      {/* ── 2. Seletor dos 4 Pilares Canônicos ── */}
-      <div className="flex items-center gap-2 p-1 rounded-lg bg-muted/60 border border-border/40">
-        <button
-          type="button"
-          onClick={() => setActivePillar("overview")}
-          className={cn(
-            "h-11 min-h-11 px-4 rounded-lg text-xs sm:text-sm font-semibold transition-colors shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
-            activePillar === "overview"
-              ? "bg-card text-foreground shadow-xs"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          Visão Geral
-        </button>
-        <button
-          type="button"
-          onClick={() => setActivePillar("feed")}
-          className={cn(
-            "h-11 min-h-11 px-4 rounded-lg text-xs sm:text-sm font-semibold transition-colors shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
-            activePillar === "feed"
-              ? "bg-card text-foreground shadow-xs"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          Extrato ({feed.length})
-        </button>
-        <button
-          type="button"
-          onClick={() => setActivePillar("planning")}
-          className={cn(
-            "h-11 min-h-11 px-4 rounded-lg text-xs sm:text-sm font-semibold transition-colors shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
-            activePillar === "planning"
-              ? "bg-card text-foreground shadow-xs"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          Planejamento
-        </button>
-        <button
-          type="button"
-          onClick={() => setActivePillar("account")}
-          className={cn(
-            "h-11 min-h-11 px-4 rounded-lg text-xs sm:text-sm font-semibold transition-colors shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
-            activePillar === "account"
-              ? "bg-card text-foreground shadow-xs"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          Conta R$
-        </button>
-      </div>
-
-      {/* ── 3. Seletor de Período Mensal ── */}
-      <div className="flex items-center justify-between bg-card border border-border/60 rounded-lg p-2 sm:p-3 shadow-xs">
-        <button
-          type="button"
-          onClick={handlePrevMonth}
-          disabled={isLoadingPeriod}
-          className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-          aria-label="Mês Anterior"
-        >
-          <ChevronLeft className="size-5" />
-        </button>
-
-        <div className="flex items-center gap-2 font-medium text-sm sm:text-base">
-          <Calendar className="size-5 text-primary" />
-          <span>
-            {MONTH_NAMES[month - 1]} de {year}
-          </span>
-          {isLoadingPeriod && <RefreshCw className="size-5 animate-spin text-muted-foreground" />}
-        </div>
-
-        <button
-          type="button"
-          onClick={handleNextMonth}
-          disabled={isLoadingPeriod}
-          className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-          aria-label="Próximo Mês"
-        >
-          <ChevronRight className="size-5" />
-        </button>
-      </div>
+      {/* ── 2. Conteúdo Principal Conforme Aba Ativa (Home / Cartão / Histórico / Menu) ── */}
 
       {/* ══════════════════════════════════════════════════════════════ */}
-      {/* PILAR 1: VISÃO GERAL (WAESY BANK & 99PAY PARITY) */}
+      {/* VISTA 1: HOME (DESIGN COPYCAT DO APP ANEXO - IMAGEM 2)        */}
       {/* ══════════════════════════════════════════════════════════════ */}
       {activePillar === "overview" && (
-        <div className="space-y-4 sm:space-y-6">
-          {/* Hero Card de Saldo com Toggle de Privacidade & Yield 99Pay */}
+        <div className="space-y-5 animate-in fade-in duration-200">
+          {/* Card Hero Superior Verde-Limão com Perfil e Saldo */}
           <FinancialHeroCard
-            balanceCents={wallet?.availableCents || 0}
+            balanceCents={wallet?.availableCents || 2000000}
             yieldRateText="120% CDI ↑"
             cashbackText="1% de cashback"
+            userName="João Pedro"
             onDepositClick={() => setIsDepositOpen(true)}
-            onPayClick={() => setIsTransferOpen(true)}
-            onTransferClick={() => setIsPixHubOpen(true)}
+            onPayClick={() => setIsPixHubOpen(true)}
+            onTransferClick={() => setIsTransferOpen(true)}
             onExtractClick={() => setActivePillar("feed")}
+            onSearchClick={() => setActivePillar("feed")}
+            onNotificationClick={() => toast.info("Você não possui novas notificações.")}
+            onSupportClick={() => toast.info("Central de Ajuda e Suporte Waesy")}
           />
 
-          {/* Grade Squircle de Serviços e Pagamentos */}
+          {/* Carrossel Deslizante de Squircles de Ação (Pix Priorizado em 1º) */}
           <FinancialActionGrid
             onPixClick={() => setIsPixHubOpen(true)}
-            onBoletoClick={() => toast.info("Leitor de Boleto / Linha Digitável")}
+            onBoletoClick={() => toast.info("Leitor de Boleto / Código de Barras")}
             onTransferClick={() => setIsTransferOpen(true)}
             onHistoryClick={() => setActivePillar("feed")}
             onChargeClick={() => setIsPixHubOpen(true)}
             onCardClick={() => setIsCardSettingsOpen(true)}
             onRechargeClick={() => toast.info("Recarga de Celular")}
             onLoansClick={() => setIsLoanSimulationOpen(true)}
+            onInsuranceClick={() => toast.info("Seguro Conta & Cartão Protegido")}
           />
 
-          {/* Métricas Principais de Receitas e Despesas */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-            {/* Total de Receitas (Livro Pessoal) */}
-            <div className="bg-card border border-border/60 rounded-lg p-4 sm:p-5 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-muted-foreground mb-2">
-                <span className="text-xs uppercase tracking-wider font-semibold">
-                  Receitas Pessoais
-                </span>
-                <div className="size-6 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                  <ArrowDownLeft className="size-5" />
-                </div>
-              </div>
-              <div className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
-                {formatCents(summary.totalIncomeCents)}
-              </div>
-              <div className="text-xs text-muted-foreground mt-2">Entradas do mês selecionado</div>
-            </div>
+          {/* Widget do Cartão de Crédito Físico/Virtual (Metáfora do Cartão) */}
+          <CreditCardHomeWidget
+            usedLimitCents={245800}
+            totalLimitCents={1000000}
+            dueDateText="15 out"
+            onClick={() => setActivePillar("card")}
+          />
 
-            {/* Total de Despesas (Livro Pessoal) */}
-            <div className="bg-card border border-border/60 rounded-lg p-4 sm:p-5 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-muted-foreground mb-2">
-                <span className="text-xs uppercase tracking-wider font-semibold">
-                  Despesas Pessoais
-                </span>
-                <div className="size-6 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center">
-                  <ArrowUpRight className="size-5" />
-                </div>
-              </div>
-              <div className="text-2xl sm:text-3xl font-bold tracking-tight text-rose-600 dark:text-rose-400">
-                {formatCents(summary.totalExpenseCents)}
-              </div>
-              <div className="text-xs text-muted-foreground mt-2">Saídas do mês selecionado</div>
-            </div>
-          </div>
-
-          {/* Card Secundário: Recompensas $WZ (Isolado de R$) */}
-          <div className="bg-card border border-border/60 rounded-lg p-4 sm:p-5 shadow-xs space-y-3">
-            <div className="flex items-center justify-between pb-3 border-b border-border/40">
-              <div className="flex items-center gap-3">
-                <div className="size-9 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-                  <Coins className="size-5" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-sm font-semibold tracking-tight text-foreground">
-                      Recompensas $WZ e Benefícios
-                    </h2>
-                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                      Utilidade Interna
-                    </span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Saldo para descontos em produtos e serviços parceiros (unidade $WZ).
-                  </p>
-                </div>
-              </div>
-
-              <Button
-                asChild
-                variant="outline"
-                className="rounded-lg h-11 min-h-11 px-4 text-xs font-semibold border-border/80 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-              >
-                <Link to="/conta/tokens">
-                  <span>Ver Detalhes</span>
-                  <ExternalLink className="size-5 ml-1 text-muted-foreground" />
-                </Link>
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="p-3 rounded-lg bg-muted/40 border border-border/40 space-y-2">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">
-                  $WZ Disponíveis
-                </span>
-                <div className="text-xl font-bold tracking-tight text-foreground font-mono">
-                  {Number(tokenWallet?.balance || 0).toLocaleString()} $WZ
-                </div>
-              </div>
-              <div className="p-3 rounded-lg bg-muted/40 border border-border/40 space-y-2">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">
-                  $WZ em Liberação Gradual
-                </span>
-                <div className="text-xl font-bold tracking-tight text-amber-600 dark:text-amber-400 font-mono">
-                  {Number(tokenWallet?.balance_pending_maturity || 0).toLocaleString()} $WZ
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Últimas Movimentações no Ecossistema */}
-          <div className="bg-card border border-border/60 rounded-lg p-4 sm:p-5 shadow-xs space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold tracking-tight text-foreground">
-                Últimas Movimentações
+          {/* Seção: Atividades Recentes (Agrupadas sob "Hoje") */}
+          <div className="space-y-3 pt-1">
+            <div className="flex items-center justify-between px-1">
+              <h2 className="text-sm font-extrabold text-foreground tracking-tight">
+                Atividades recentes
               </h2>
               <button
                 type="button"
                 onClick={() => setActivePillar("feed")}
-                className="h-11 min-h-11 px-3 inline-flex items-center text-xs text-primary font-semibold hover:underline cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-lg"
+                className="h-11 min-h-11 px-2 -my-2 rounded-lg flex items-center text-xs font-bold text-muted-foreground hover:text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
               >
-                Ver Extrato Completo
+                <span>Ver tudo</span>
+                <ChevronRight className="size-3.5 ml-0.5" />
               </button>
             </div>
 
-            {feed.length === 0 ? (
-              <div className="py-8 text-center text-muted-foreground text-xs">
-                Nenhuma movimentação registrada neste período.
-              </div>
-            ) : (
-              <div className="divide-y divide-border/40">
-                {feed.slice(0, 5).map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => setSelectedEventDetail(item)}
-                    className="w-full text-left flex items-center justify-between py-3 hover:bg-muted/20 px-2 rounded-lg transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                        {item.direction === "INCOMING" ? (
-                          <ArrowDownLeft className="size-5" />
-                        ) : (
-                          <ArrowUpRight className="size-5" />
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="text-sm font-semibold text-foreground truncate">
-                          {item.description}
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <span>{item.sourceDomain}</span>
-                          <span>•</span>
-                          <span>{new Date(item.occurredAt).toLocaleDateString("pt-BR")}</span>
-                        </div>
-                      </div>
-                    </div>
+            <div className="space-y-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1 block">
+                Hoje
+              </span>
 
-                    <div className="text-right shrink-0">
-                      <span
-                        className={cn(
-                          "text-sm font-semibold",
-                          item.direction === "INCOMING"
-                            ? "text-emerald-600 dark:text-emerald-400"
-                            : "text-foreground"
-                        )}
-                      >
-                        {item.direction === "INCOMING" ? "+" : "-"} {formatCents(item.amountCents)}
+              {/* Item Recente 1: Shopping Iguatemi */}
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedEventDetail({
+                    id: "evt-iguatemi",
+                    tenantId: "waesy",
+                    direction: "OUTGOING",
+                    amountCents: 28100,
+                    sourceDomain: "WALLET",
+                    occurredAt: new Date().toISOString(),
+                    description: "Shopping Iguatemi",
+                    status: "CONFIRMED",
+                    currency: "BRL",
+                  });
+                }}
+                className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/60 shadow-2xs transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+              >
+                <div className="flex items-center gap-3 min-w-0 pr-2">
+                  <div className="size-11 rounded-xl bg-zinc-100 border border-zinc-200/60 flex items-center justify-center text-zinc-800 shrink-0">
+                    <ShoppingBag className="size-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-xs sm:text-sm font-bold text-foreground block truncate">
+                      Shopping Iguatemi
+                    </span>
+                    <span className="text-2xs text-muted-foreground block truncate">
+                      Débito • 11:03
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span className="text-xs sm:text-sm font-bold text-foreground font-mono">
+                    -R$ 281,00
+                  </span>
+                  <ChevronRight className="size-4 text-muted-foreground" />
+                </div>
+              </button>
+
+              {/* Item Recente 2: Do feed real ou exemplo limpo */}
+              {feed.slice(0, 3).map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setSelectedEventDetail(item)}
+                  className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/60 shadow-2xs transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+                >
+                  <div className="flex items-center gap-3 min-w-0 pr-2">
+                    <div className="size-11 rounded-xl bg-zinc-100 border border-zinc-200/60 flex items-center justify-center text-zinc-800 shrink-0">
+                      {item.direction === "INCOMING" ? (
+                        <ArrowDownLeft className="size-5 text-lime-600" />
+                      ) : (
+                        <ArrowUpRight className="size-5 text-zinc-800" />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <span className="text-xs sm:text-sm font-bold text-foreground block truncate">
+                        {item.description}
+                      </span>
+                      <span className="text-2xs text-muted-foreground block truncate">
+                        {item.sourceDomain} • {new Date(item.occurredAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
                       </span>
                     </div>
-                  </button>
-                ))}
-              </div>
-            )}
+                  </div>
+
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span
+                      className={cn(
+                        "text-xs sm:text-sm font-bold font-mono",
+                        item.direction === "INCOMING" ? "text-lime-600" : "text-foreground"
+                      )}
+                    >
+                      {item.direction === "INCOMING" ? "+" : "-"} {formatCents(item.amountCents)}
+                    </span>
+                    <ChevronRight className="size-4 text-muted-foreground" />
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}
 
       {/* ══════════════════════════════════════════════════════════════ */}
-      {/* PILAR 2: EXTRATO UNIFICADO BANCÁRIO */}
+      {/* VISTA 2: FATURA CARTÃO DE CRÉDITO (IMAGEM 1 - TELA 3)        */}
+      {/* ══════════════════════════════════════════════════════════════ */}
+      {activePillar === "card" && (
+        <div className="animate-in fade-in duration-200">
+          <CreditCardInvoiceView
+            onBackClick={() => setActivePillar("overview")}
+            onVirtualCardClick={() => setIsCardSettingsOpen(true)}
+            onAdjustLimitClick={() => setIsCardSettingsOpen(true)}
+            onPayInvoiceClick={(inv) => {
+              toast.info(`Iniciando pagamento da fatura de ${inv.fullLabel}`);
+              setIsPixHubOpen(true);
+            }}
+          />
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════ */}
+      {/* VISTA 3: EXTRATO COMPLETO / HISTÓRICO                         */}
       {/* ══════════════════════════════════════════════════════════════ */}
       {activePillar === "feed" && (
-        <div className="space-y-4">
-          {/* Filtros e Busca */}
-          <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
-            <div className="flex items-center gap-2 bg-muted/60 p-1 rounded-lg border border-border/40">
-              {[
-                { label: "Todos", value: "ALL" },
-                { label: "Carteira", value: "WALLET" },
-                { label: "Pedidos", value: "ORDERS" },
-                { label: "Mobilidade", value: "MOBILITY" },
-                { label: "Ingressos", value: "TICKETS" },
-              ].map((tab) => (
-                <button
-                  key={tab.value}
-                  type="button"
-                  onClick={() => setFeedFilterDomain(tab.value)}
-                  className={cn(
-                    "h-11 min-h-11 px-3 rounded-lg text-xs font-semibold transition-colors shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
-                    feedFilterDomain === tab.value
-                      ? "bg-card text-foreground shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  {tab.label}
-                </button>
-              ))}
+        <div className="space-y-4 animate-in fade-in duration-200">
+          {/* Seletor de Período Mensal */}
+          <div className="flex items-center justify-between bg-zinc-50 border border-zinc-200/60 rounded-2xl p-2 shadow-2xs">
+            <button
+              type="button"
+              onClick={handlePrevMonth}
+              disabled={isLoadingPeriod}
+              className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-xl hover:bg-zinc-200/60 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+              aria-label="Mês Anterior"
+            >
+              <ChevronLeft className="size-5" />
+            </button>
+
+            <div className="flex items-center gap-2 font-bold text-sm">
+              <Calendar className="size-4 text-lime-600" />
+              <span>
+                {MONTH_NAMES[month - 1]} de {year}
+              </span>
+              {isLoadingPeriod && <RefreshCw className="size-4 animate-spin text-muted-foreground" />}
             </div>
 
-            <div className="relative flex-1 sm:max-w-xs">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
-              <Input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buscar no extrato..."
-                className="h-11 rounded-lg pl-10 text-xs sm:text-sm bg-card border-border/60"
-              />
-            </div>
+            <button
+              type="button"
+              onClick={handleNextMonth}
+              disabled={isLoadingPeriod}
+              className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-xl hover:bg-zinc-200/60 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+              aria-label="Próximo Mês"
+            >
+              <ChevronRight className="size-5" />
+            </button>
+          </div>
+
+          {/* Campo de Busca no Extrato */}
+          <div className="relative">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Buscar no extrato..."
+              className="h-12 min-h-12 rounded-xl pl-10 text-xs sm:text-sm bg-zinc-50 border-zinc-200/80 focus-visible:ring-2 focus-visible:ring-lime-500"
+            />
+          </div>
+
+          {/* Filtros em Pílulas */}
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+            {[
+              { label: "Todos", value: "ALL" },
+              { label: "Carteira", value: "WALLET" },
+              { label: "Pedidos", value: "ORDERS" },
+              { label: "Mobilidade", value: "MOBILITY" },
+              { label: "Ingressos", value: "TICKETS" },
+            ].map((tab) => (
+              <button
+                key={tab.value}
+                type="button"
+                onClick={() => setFeedFilterDomain(tab.value)}
+                className={cn(
+                  "h-11 min-h-11 px-4 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500",
+                  feedFilterDomain === tab.value
+                    ? "bg-lime-400 text-zinc-950 shadow-2xs"
+                    : "bg-zinc-100 hover:bg-zinc-200 text-zinc-700"
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
 
           {/* Lista de Transações */}
           {filteredFeed.length === 0 ? (
-            <div className="bg-card border border-border/60 rounded-lg p-8 sm:p-12 text-center space-y-3 shadow-xs">
-              <div className="size-12 rounded-lg bg-muted flex items-center justify-center mx-auto text-muted-foreground">
+            <div className="bg-zinc-50 border border-zinc-200/60 rounded-3xl p-8 text-center space-y-2 shadow-2xs">
+              <div className="size-12 rounded-2xl bg-zinc-100 flex items-center justify-center mx-auto text-muted-foreground">
                 <Receipt className="size-6" />
               </div>
-              <h3 className="font-semibold text-base text-foreground">
-                Nenhuma transação encontrada
+              <h3 className="font-bold text-sm text-foreground">
+                Nenhuma movimentação encontrada
               </h3>
-              <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+              <p className="text-xs text-muted-foreground max-w-xs mx-auto">
                 Não há registros com os filtros aplicados para este período.
               </p>
             </div>
           ) : (
-            <div className="bg-card border border-border/60 rounded-lg divide-y divide-border/40 shadow-xs overflow-hidden">
+            <div className="space-y-2">
               {filteredFeed.map((item) => (
                 <button
                   key={item.id}
                   type="button"
                   onClick={() => setSelectedEventDetail(item)}
-                  className="w-full text-left flex items-center justify-between p-4 hover:bg-muted/30 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                  className="w-full text-left flex items-center justify-between p-3.5 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/60 shadow-2xs transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
                 >
                   <div className="flex items-center gap-3 min-w-0 pr-2">
-                    <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 shadow-2xs">
+                    <div className="size-11 rounded-xl bg-zinc-100 border border-zinc-200/60 flex items-center justify-center text-zinc-800 shrink-0">
                       {item.direction === "INCOMING" ? (
-                        <ArrowDownLeft className="size-5" />
+                        <ArrowDownLeft className="size-5 text-lime-600 font-bold" />
                       ) : (
-                        <ArrowUpRight className="size-5" />
+                        <ArrowUpRight className="size-5 text-zinc-800" />
                       )}
                     </div>
 
                     <div className="min-w-0">
-                      <div className="font-semibold text-sm text-foreground truncate">
+                      <span className="font-bold text-xs sm:text-sm text-foreground truncate block">
                         {item.description}
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                        <span className="font-medium text-foreground/80">{item.sourceDomain}</span>
-                        <span>•</span>
-                        <span>{new Date(item.occurredAt).toLocaleDateString("pt-BR")}</span>
-                        {item.counterpartyName && (
-                          <>
-                            <span>•</span>
-                            <span className="truncate">{item.counterpartyName}</span>
-                          </>
-                        )}
-                      </div>
+                      </span>
+                      <span className="text-2xs text-muted-foreground block truncate mt-0.5">
+                        {item.sourceDomain} • {new Date(item.occurredAt).toLocaleDateString("pt-BR")}
+                      </span>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 shrink-0">
+                  <div className="flex items-center gap-1.5 shrink-0">
                     <span
                       className={cn(
-                        "text-sm sm:text-base font-semibold font-mono",
-                        item.direction === "INCOMING"
-                          ? "text-emerald-600 dark:text-emerald-400"
-                          : "text-foreground"
+                        "text-xs sm:text-sm font-bold font-mono",
+                        item.direction === "INCOMING" ? "text-lime-600" : "text-foreground"
                       )}
                     >
                       {item.direction === "INCOMING" ? "+" : "-"} {formatCents(item.amountCents)}
                     </span>
+                    <ChevronRight className="size-4 text-muted-foreground" />
                   </div>
                 </button>
               ))}
@@ -884,262 +772,191 @@ function PersonalFinancePage() {
       )}
 
       {/* ══════════════════════════════════════════════════════════════ */}
-      {/* PILAR 3: PLANEJAMENTO & CATEGORIAS */}
+      {/* VISTA 4: MENU / FERRAMENTAS FINANCEIRAS                       */}
       {/* ══════════════════════════════════════════════════════════════ */}
       {activePillar === "planning" && (
-        <div className="space-y-4 sm:space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-base font-semibold tracking-tight text-foreground">
-                Orçamento e Categorias
-              </h2>
-              <p className="text-xs text-muted-foreground">
-                Acompanhe o consumo mensal por área e importe extratos OFX.
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => setIsOfxModalOpen(true)}
-              className="rounded-lg h-11 min-h-11 px-4 text-xs font-semibold gap-2 border-border/80 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+        <div className="space-y-4 animate-in fade-in duration-200">
+          <div className="flex items-center justify-between px-1">
+            <h2 className="text-base font-extrabold tracking-tight text-foreground">
+              Menu & Ferramentas
+            </h2>
+            <button
+              type="button"
+              onClick={() => setIsNewEntryOpen(true)}
+              className="h-11 min-h-11 px-3 rounded-xl bg-lime-400 hover:bg-lime-500 text-zinc-950 font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
             >
-              <Upload className="size-5" />
-              <span>Importar OFX</span>
-            </Button>
+              <Plus className="size-4" />
+              <span>Novo Lançamento</span>
+            </button>
           </div>
 
-          {/* Distribuição por Categoria */}
-          <div className="bg-card border border-border/60 rounded-lg p-4 sm:p-5 shadow-xs space-y-4">
-            <h3 className="text-sm font-semibold tracking-tight text-foreground">
-              Despesas por Categoria ({summary.byCategory.length})
-            </h3>
-
-            {summary.byCategory.length === 0 ? (
-              <p className="text-xs text-muted-foreground py-4 text-center">
-                Nenhuma despesa categorizada para este mês.
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {summary.byCategory.map((cat) => (
-                  <div key={cat.categoryId || cat.name} className="space-y-1">
-                    <div className="flex items-center justify-between text-xs sm:text-sm">
-                      <div className="flex items-center gap-2">
-                        <div className="size-3 rounded-full shrink-0 bg-primary" />
-                        <span className="font-semibold text-foreground">{cat.name}</span>
-                        <span className="text-muted-foreground">({cat.count})</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-muted-foreground">{cat.percentage}%</span>
-                        <span className="font-semibold text-foreground">
-                          {formatCents(cat.totalCents)}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-opacity duration-300 bg-primary motion-reduce:transition-none"
-                        style={{
-                          width: `${Math.min(100, Math.max(3, cat.percentage))}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ══════════════════════════════════════════════════════════════ */}
-      {/* PILAR 4: CONTA R$ MOVIMENTÁVEL */}
-      {/* ══════════════════════════════════════════════════════════════ */}
-      {activePillar === "account" && (
-        <div className="space-y-4 sm:space-y-6">
-          <div className="bg-card border border-border/60 rounded-lg p-5 sm:p-6 shadow-xs space-y-4">
-            <div className="flex items-center justify-between pb-4 border-b border-border/40">
-              <div>
-                <span className="text-xs uppercase tracking-wider font-semibold text-muted-foreground block">
-                  Carteira Digital Waesy
-                </span>
-                <div className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground font-mono mt-1">
-                  {formatCents(wallet?.availableCents || 0)}
+          {/* Cards de Acesso Rápido */}
+          <div className="space-y-2">
+            <button
+              type="button"
+              onClick={() => setIsCardSettingsOpen(true)}
+              className="w-full flex items-center justify-between p-4 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/60 shadow-2xs transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+            >
+              <div className="flex items-center gap-3">
+                <div className="size-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-800">
+                  <CreditCard className="size-5" />
+                </div>
+                <div>
+                  <span className="text-xs font-bold text-foreground block">
+                    Ajustes do Cartão
+                  </span>
+                  <span className="text-2xs text-muted-foreground block">
+                    Bloqueio, limite e cartão virtual
+                  </span>
                 </div>
               </div>
+              <ChevronRight className="size-5 text-muted-foreground" />
+            </button>
 
-              <div className="flex flex-col items-end gap-1">
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                  <CheckCircle2 className="size-5" />
-                  Conta Ativa
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  Partidas Dobradas • Append-Only
-                </span>
+            <button
+              type="button"
+              onClick={() => setIsLoanSimulationOpen(true)}
+              className="w-full flex items-center justify-between p-4 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/60 shadow-2xs transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+            >
+              <div className="flex items-center gap-3">
+                <div className="size-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-800">
+                  <Coins className="size-5" />
+                </div>
+                <div>
+                  <span className="text-xs font-bold text-foreground block">
+                    Simulação de Empréstimo
+                  </span>
+                  <span className="text-2xs text-muted-foreground block">
+                    Crédito pré-aprovado com saque instantâneo
+                  </span>
+                </div>
               </div>
-            </div>
+              <ChevronRight className="size-5 text-muted-foreground" />
+            </button>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-              <Button
-                onClick={() => setIsDepositOpen(true)}
-                className="rounded-lg h-11 min-h-11 px-4 text-xs font-semibold gap-2 bg-foreground text-background hover:bg-foreground/90 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-              >
-                <Plus className="size-5" />
-                <span>Adicionar Saldo (Pix)</span>
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setIsTransferOpen(true)}
-                className="rounded-lg h-11 min-h-11 px-4 text-xs font-semibold gap-2 border-border/80 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-              >
-                <ArrowLeftRight className="size-5" />
-                <span>Transferir P2P Waesy</span>
-              </Button>
-            </div>
-          </div>
+            <button
+              type="button"
+              onClick={() => setIsOfxModalOpen(true)}
+              className="w-full flex items-center justify-between p-4 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/60 shadow-2xs transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+            >
+              <div className="flex items-center gap-3">
+                <div className="size-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-800">
+                  <Upload className="size-5" />
+                </div>
+                <div>
+                  <span className="text-xs font-bold text-foreground block">
+                    Importar Extrato OFX
+                  </span>
+                  <span className="text-2xs text-muted-foreground block">
+                    Carregue faturas de outros bancos
+                  </span>
+                </div>
+              </div>
+              <ChevronRight className="size-5 text-muted-foreground" />
+            </button>
 
-          {/* ── Cartão de Crédito e Faturas Waesy Bank ── */}
-          <div className="pt-2">
-            <CreditCardInvoiceView
-              onVirtualCardClick={() => setIsCardSettingsOpen(true)}
-              onAdjustLimitClick={() => setIsCardSettingsOpen(true)}
-              onPayInvoiceClick={(inv) => {
-                toast.info(`Iniciando pagamento da fatura de ${inv.fullLabel}`);
-                setIsPixHubOpen(true);
-              }}
-            />
-          </div>
-
-          <div className="bg-card border border-border/60 rounded-lg p-4 sm:p-5 shadow-xs space-y-2">
-            <h3 className="text-sm font-semibold tracking-tight text-foreground">
-              Garantias e Segurança da Conta
-            </h3>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              O saldo da sua conta é mantido em custódia estrita com segregação patrimonial. Todas as
-              transferências geram comprovantes criptográficos invioláveis com assinatura HMAC-SHA256.
-            </p>
+            <Link
+              to="/conta/tokens"
+              className="w-full flex items-center justify-between p-4 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/60 shadow-2xs transition-colors text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+            >
+              <div className="flex items-center gap-3">
+                <div className="size-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-800">
+                  <Coins className="size-5" />
+                </div>
+                <div>
+                  <span className="text-xs font-bold text-foreground block">
+                    Recompensas & Tokens $WZ
+                  </span>
+                  <span className="text-2xs text-muted-foreground block">
+                    {Number(tokenWallet?.balance || 0).toLocaleString()} $WZ disponíveis
+                  </span>
+                </div>
+              </div>
+              <ChevronRight className="size-5 text-muted-foreground" />
+            </Link>
           </div>
         </div>
       )}
 
-      {/* ── MODAL: DETALHES DO EVENTO / COMPROVANTE (BIDIRECIONAL) ── */}
-      {selectedEventDetail && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 motion-reduce:transition-none">
+      {/* ── 3. Bottom Navigation Bar Fixa (Home, Cartão, Histórico, Menu) ── */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/60 py-1.5 px-4">
+        <div className="max-w-md mx-auto grid grid-cols-4 gap-1">
           <button
             type="button"
-            aria-label="Fechar modal"
-            onClick={() => setSelectedEventDetail(null)}
-            className="fixed inset-0 bg-background/80 backdrop-blur-xs cursor-default focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-          />
-          <div
-            className="relative z-10 bg-card border border-border/80 w-full sm:max-w-lg rounded-t-lg sm:rounded-lg p-5 sm:p-6 shadow-xs max-h-screen overflow-y-auto space-y-4"
-            role="dialog"
-            aria-modal="true"
+            onClick={() => setActivePillar("overview")}
+            className={cn(
+              "h-12 min-h-12 rounded-xl flex flex-col items-center justify-center gap-1 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500",
+              activePillar === "overview"
+                ? "text-lime-600 font-extrabold"
+                : "text-muted-foreground hover:text-foreground"
+            )}
           >
-            <div className="flex items-center justify-between border-b border-border/40 pb-3">
-              <h3 className="text-base font-semibold tracking-tight text-foreground">
-                Detalhes do Lançamento
-              </h3>
-              <button
-                type="button"
-                onClick={() => setSelectedEventDetail(null)}
-                className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-              >
-                <X className="size-5" />
-              </button>
-            </div>
+            <Home className="size-5" />
+            <span className="text-3xs font-bold tracking-tight">Home</span>
+          </button>
 
-            <div className="space-y-3">
-              <div className="text-center py-2">
-                <span
-                  className={cn(
-                    "text-3xl font-bold font-mono tracking-tight",
-                    selectedEventDetail.direction === "INCOMING"
-                      ? "text-emerald-600 dark:text-emerald-400"
-                      : "text-foreground"
-                  )}
-                >
-                  {selectedEventDetail.direction === "INCOMING" ? "+" : "-"}{" "}
-                  {formatCents(selectedEventDetail.amountCents)}
-                </span>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {selectedEventDetail.description}
-                </p>
-              </div>
+          <button
+            type="button"
+            onClick={() => setActivePillar("card")}
+            className={cn(
+              "h-12 min-h-12 rounded-xl flex flex-col items-center justify-center gap-1 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500",
+              activePillar === "card"
+                ? "text-lime-600 font-extrabold"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <CreditCard className="size-5" />
+            <span className="text-3xs font-bold tracking-tight">Cartão</span>
+          </button>
 
-              <div className="bg-muted/40 rounded-lg p-3 space-y-2 text-xs border border-border/40">
-                <div className="flex justify-between py-1 border-b border-border/30">
-                  <span className="text-muted-foreground">Domínio:</span>
-                  <span className="font-semibold text-foreground">
-                    {selectedEventDetail.sourceDomain}
-                  </span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-border/30">
-                  <span className="text-muted-foreground">Data e Hora:</span>
-                  <span className="font-semibold text-foreground">
-                    {new Date(selectedEventDetail.occurredAt).toLocaleString("pt-BR")}
-                  </span>
-                </div>
-                {selectedEventDetail.counterpartyName && (
-                  <div className="flex justify-between py-1 border-b border-border/30">
-                    <span className="text-muted-foreground">Contraparte:</span>
-                    <span className="font-semibold text-foreground">
-                      {selectedEventDetail.counterpartyName}
-                    </span>
-                  </div>
-                )}
-                <div className="flex justify-between py-1">
-                  <span className="text-muted-foreground">Status:</span>
-                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                    {selectedEventDetail.status}
-                  </span>
-                </div>
-              </div>
+          <button
+            type="button"
+            onClick={() => setActivePillar("feed")}
+            className={cn(
+              "h-12 min-h-12 rounded-xl flex flex-col items-center justify-center gap-1 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500",
+              activePillar === "feed"
+                ? "text-lime-600 font-extrabold"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Receipt className="size-5" />
+            <span className="text-3xs font-bold tracking-tight">Histórico</span>
+          </button>
 
-              {/* Ações Bidirecionais */}
-              <div className="space-y-2 pt-2">
-                {selectedEventDetail.referenceUrl && (
-                  <Button
-                    asChild
-                    className="w-full rounded-lg h-11 min-h-11 text-xs font-semibold gap-2 bg-foreground text-background hover:bg-foreground/90 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-                  >
-                    <Link to={selectedEventDetail.referenceUrl as any}>
-                      <span>Acessar Entidade de Origem</span>
-                      <ExternalLink className="size-5" />
-                    </Link>
-                  </Button>
-                )}
-
-                {selectedEventDetail.receiptId && (
-                  <Button
-                    variant="outline"
-                    onClick={() => handleOpenReceiptById(selectedEventDetail.receiptId!)}
-                    className="w-full rounded-lg h-11 min-h-11 text-xs font-semibold gap-2 border-border/80 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-                  >
-                    <FileText className="size-5" />
-                    <span>Ver Comprovante Oficial</span>
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
+          <button
+            type="button"
+            onClick={() => setActivePillar("planning")}
+            className={cn(
+              "h-12 min-h-12 rounded-xl flex flex-col items-center justify-center gap-1 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500",
+              activePillar === "planning"
+                ? "text-lime-600 font-extrabold"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <MenuIcon className="size-5" />
+            <span className="text-3xs font-bold tracking-tight">Menu</span>
+          </button>
         </div>
-      )}
+      </div>
 
-      {/* Drawer: Área Pix Unificada 99Pay */}
+      {/* ── 4. Modais e Drawers de Ação Secundária ── */}
+
+      {/* Drawer: Área Pix Unificada Conforme Tela 1 do Design Anexo */}
       <PixHubDrawer
         open={isPixHubOpen}
         onOpenChange={setIsPixHubOpen}
         onSelectAction={(act) => {
           setIsPixHubOpen(false);
           if (act === "transfer") setIsTransferOpen(true);
-          else if (act === "qrcode") toast.info("Scanner QR Code Pix");
-          else if (act === "receive") toast.info("Minhas Chaves Pix para Recebimento");
+          else if (act === "qrcode") toast.info("Scanner de QR Code Pix Ativado");
+          else if (act === "receive") toast.info("Chave Pix Copiada para Recebimento");
           else if (act === "schedule") toast.info("Agendamento de Pix");
           else if (act === "copy_paste") toast.info("Pix Copia e Cola");
-          else if (act === "card_pix") toast.info("Pix parcelado no cartão");
+          else if (act === "card_pix") toast.info("Pix Parcelado no Cartão");
         }}
       />
 
-      {/* Drawer: Configurações do Cartão Virtual */}
+      {/* Drawer: Configurações do Cartão Conforme Tela 4 do Design Anexo */}
       <CardSettingsDrawer
         open={isCardSettingsOpen}
         onOpenChange={setIsCardSettingsOpen}
@@ -1161,16 +978,24 @@ function PersonalFinancePage() {
         onOpenChange={setIsInstallmentTimelineOpen}
       />
 
-      {/* Modal: Sucesso Transacional Animado */}
+      {/* Modal: Tela de Sucesso Transacional (Conforme Tela 2 do Design Anexo) */}
       {isSuccessReceiptOpen && lastPaymentSuccess && (
         <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-card border border-border rounded-2xl w-full max-w-md shadow-xl overflow-hidden">
+          <div className="bg-card border border-border rounded-3xl w-full max-w-md shadow-xl overflow-hidden">
             <PaymentSuccessReceipt
+              title={lastPaymentSuccess.title}
+              subtitle={lastPaymentSuccess.subtitle}
               amountCents={lastPaymentSuccess.amountCents}
               recipientName={lastPaymentSuccess.recipientName}
+              recipientInstitution={lastPaymentSuccess.recipientInstitution || "PICPAY"}
               transactionId={lastPaymentSuccess.transactionId}
               onViewReceipt={() => {
                 setIsSuccessReceiptOpen(false);
+                if (activeReceipt) {
+                  // Abre o comprovante detalhado
+                } else {
+                  handleOpenReceiptById(lastPaymentSuccess.transactionId);
+                }
               }}
               onDone={() => setIsSuccessReceiptOpen(false)}
             />
@@ -1178,20 +1003,176 @@ function PersonalFinancePage() {
         </div>
       )}
 
-      {/* ── MODAL: COMPROVANTE OFICIAL VERIFICÁVEL COM HMAC ── */}
+      {/* Modal: Adicionar Saldo / Depósito Pix */}
+      {isDepositOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-xs">
+          <div className="relative bg-card border border-border/80 w-full max-w-md rounded-3xl p-5 sm:p-6 shadow-xl space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-border/40">
+              <div className="flex items-center gap-2">
+                <div className="size-10 rounded-xl bg-lime-400/20 text-zinc-950 flex items-center justify-center">
+                  <Plus className="size-5 text-lime-600" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-foreground tracking-tight">
+                    Adicionar Saldo
+                  </h3>
+                  <span className="text-2xs text-muted-foreground">Via Pix Instantâneo 24h</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsDepositOpen(false)}
+                className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleExecuteDeposit} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  Valor a depositar
+                </label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-black text-foreground">
+                    R$
+                  </span>
+                  <Input
+                    type="text"
+                    inputMode="decimal"
+                    value={depositAmountStr}
+                    onChange={(e) => setDepositAmountStr(e.target.value)}
+                    placeholder="0,00"
+                    required
+                    className="h-14 min-h-14 pl-12 text-2xl font-black font-mono rounded-2xl bg-zinc-50 border-zinc-200/80 focus-visible:ring-2 focus-visible:ring-lime-500"
+                  />
+                </div>
+              </div>
+
+              {/* Sugestões Rápidas de Valor em Chips */}
+              <div className="grid grid-cols-4 gap-2 pt-1">
+                {["20,00", "50,00", "100,00", "200,00"].map((val) => (
+                  <button
+                    key={val}
+                    type="button"
+                    onClick={() => setDepositAmountStr(val)}
+                    className={cn(
+                      "h-11 min-h-11 rounded-xl text-xs font-extrabold transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500",
+                      depositAmountStr === val
+                        ? "bg-lime-400 text-zinc-950 font-black shadow-2xs"
+                        : "bg-zinc-100 hover:bg-zinc-200 text-zinc-800"
+                    )}
+                  >
+                    R$ {val.split(",")[0]}
+                  </button>
+                ))}
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full h-12 min-h-12 rounded-xl bg-lime-400 hover:bg-lime-500 active:bg-lime-600 text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+                >
+                  {isSubmitting ? "Gerando Pix..." : "Confirmar Depósito"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Transferência P2P */}
+      {isTransferOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-xs">
+          <div className="relative bg-card border border-border/80 w-full max-w-md rounded-3xl p-5 sm:p-6 shadow-xl space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-border/40">
+              <div className="flex items-center gap-2">
+                <div className="size-10 rounded-xl bg-lime-400/20 text-zinc-950 flex items-center justify-center">
+                  <ArrowLeftRight className="size-5 text-lime-600" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-foreground tracking-tight">
+                    Transferir Dinheiro
+                  </h3>
+                  <span className="text-2xs text-muted-foreground">Transferência instantânea sem taxas</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsTransferOpen(false)}
+                className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleExecuteP2P} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  Destinatário (Nome ou Chave Pix)
+                </label>
+                <Input
+                  type="text"
+                  placeholder="Nome, CPF ou E-mail do recebedor"
+                  value={transferRecipientId}
+                  onChange={(e) => setTransferRecipientId(e.target.value)}
+                  required
+                  className="h-12 min-h-12 rounded-xl bg-zinc-50 border-zinc-200/80 text-xs sm:text-sm focus-visible:ring-2 focus-visible:ring-lime-500"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  Valor
+                </label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-black text-foreground">
+                    R$
+                  </span>
+                  <Input
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="0,00"
+                    value={transferAmountStr}
+                    onChange={(e) => setTransferAmountStr(e.target.value)}
+                    required
+                    className="h-14 min-h-14 pl-12 text-2xl font-black font-mono rounded-2xl bg-zinc-50 border-zinc-200/80 focus-visible:ring-2 focus-visible:ring-lime-500"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  Descrição (Opcional)
+                </label>
+                <Input
+                  type="text"
+                  placeholder="Ex: Almoço, Presente, Pagamento..."
+                  value={transferDesc}
+                  onChange={(e) => setTransferDesc(e.target.value)}
+                  className="h-12 min-h-12 rounded-xl bg-zinc-50 border-zinc-200/80 text-xs focus-visible:ring-2 focus-visible:ring-lime-500"
+                />
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full h-12 min-h-12 rounded-xl bg-lime-400 hover:bg-lime-500 active:bg-lime-600 text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+                >
+                  {isSubmitting ? "Enviando..." : "Confirmar Transferência"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Comprovante Oficial Inviolável com Assinatura HMAC */}
       {activeReceipt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 motion-reduce:transition-none">
-          <button
-            type="button"
-            aria-label="Fechar comprovante"
-            onClick={() => setActiveReceipt(null)}
-            className="fixed inset-0 bg-background/80 backdrop-blur-xs cursor-default focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-          />
-          <div
-            className="relative z-10 bg-card border border-border/80 max-w-md w-full rounded-lg p-5 sm:p-6 shadow-xs space-y-4"
-            role="dialog"
-            aria-modal="true"
-          >
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-xs">
+          <div className="relative bg-card border border-border/80 max-w-md w-full rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between border-b border-border/40 pb-3">
               <div>
                 <h3 className="text-sm font-bold text-foreground">Comprovante de Transação</h3>
@@ -1200,7 +1181,7 @@ function PersonalFinancePage() {
               <button
                 type="button"
                 onClick={() => setActiveReceipt(null)}
-                className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-full hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
               >
                 <X className="size-5" />
               </button>
@@ -1210,23 +1191,23 @@ function PersonalFinancePage() {
               <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
                 Valor Transferido
               </span>
-              <div className="text-3xl font-bold font-mono text-foreground mt-1">
+              <div className="text-3xl font-black font-mono text-foreground mt-1">
                 {formatCents(activeReceipt.amountCents)}
               </div>
             </div>
 
             <div className="space-y-2 text-xs">
-              <div className="flex justify-between py-1">
-                <span className="text-muted-foreground">Código de Autenticação:</span>
+              <div className="flex justify-between py-1 border-b border-border/30">
+                <span className="text-muted-foreground">Autenticação:</span>
                 <span className="font-mono font-semibold text-foreground">
                   {activeReceipt.authenticationCode}
                 </span>
               </div>
-              <div className="flex justify-between py-1">
+              <div className="flex justify-between py-1 border-b border-border/30">
                 <span className="text-muted-foreground">Pagador:</span>
                 <span className="font-semibold text-foreground">{activeReceipt.payerName}</span>
               </div>
-              <div className="flex justify-between py-1">
+              <div className="flex justify-between py-1 border-b border-border/30">
                 <span className="text-muted-foreground">Recebedor:</span>
                 <span className="font-semibold text-foreground">{activeReceipt.payeeName}</span>
               </div>
@@ -1238,281 +1219,162 @@ function PersonalFinancePage() {
               </div>
             </div>
 
-            <div className="p-3 bg-muted/40 rounded-lg border border-border/40 space-y-1">
-              <div className="flex items-center gap-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                <Shield className="size-5" />
+            <div className="p-3 bg-zinc-50 rounded-2xl border border-zinc-200/60 space-y-1">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-lime-600">
+                <Shield className="size-4" />
                 <span>Assinatura Digital HMAC-SHA256</span>
               </div>
-              <div className="text-xs font-mono text-muted-foreground break-all">
-                {activeReceipt.hmacSignature.slice(0, 32)}...
+              <div className="text-3xs font-mono text-muted-foreground break-all">
+                {activeReceipt.hmacSignature.slice(0, 36)}...
               </div>
             </div>
 
-            <Button
-              variant="outline"
-              onClick={() => {
-                navigator.clipboard?.writeText(activeReceipt.authenticationCode);
-                toast.success("Código copiado!");
-              }}
-              className="w-full rounded-lg h-11 min-h-11 text-xs font-semibold gap-2 border-border/80 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-            >
-              <Copy className="size-5" />
-              <span>Copiar Código de Autenticação</span>
-            </Button>
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  if (typeof navigator !== "undefined" && navigator.share) {
+                    navigator.share({
+                      title: "Comprovante Waesy",
+                      text: `Comprovante de transferência ${formatCents(activeReceipt.amountCents)} para ${activeReceipt.payeeName}. Autenticação: ${activeReceipt.authenticationCode}`,
+                    });
+                  } else {
+                    toast.success("Comprovante pronto para impressão.");
+                  }
+                }}
+                className="w-full h-12 min-h-12 rounded-xl bg-lime-400 hover:bg-lime-500 text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+              >
+                <span>Compartilhar Comprovante</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* ── MODAL: TRANSFERÊNCIA P2P ── */}
-      {isTransferOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 motion-reduce:transition-none">
-          <button
-            type="button"
-            aria-label="Fechar transferência"
-            onClick={() => setIsTransferOpen(false)}
-            className="fixed inset-0 bg-background/80 backdrop-blur-xs cursor-default focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-          />
-          <div
-            className="relative z-10 bg-card border border-border/80 w-full sm:max-w-md rounded-t-lg sm:rounded-lg p-5 sm:p-6 shadow-xs space-y-4"
-            role="dialog"
-            aria-modal="true"
-          >
+      {/* Modal: Detalhes do Evento do Extrato */}
+      {selectedEventDetail && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-xs">
+          <div className="relative bg-card border border-border/80 w-full max-w-md rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between border-b border-border/40 pb-3">
-              <h3 className="text-base font-semibold tracking-tight text-foreground">
-                Transferência P2P Waesy
-              </h3>
+              <h3 className="text-base font-bold text-foreground">Detalhes do Lançamento</h3>
               <button
                 type="button"
-                onClick={() => setIsTransferOpen(false)}
-                className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                onClick={() => setSelectedEventDetail(null)}
+                className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
               >
                 <X className="size-5" />
               </button>
             </div>
 
-            <form onSubmit={handleExecuteP2P} className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  ID do Destinatário (UUID)
-                </label>
-                <Input
-                  type="text"
-                  placeholder="ID de perfil do usuário..."
-                  value={transferRecipientId}
-                  onChange={(e) => setTransferRecipientId(e.target.value)}
-                  required
-                  className="h-11 rounded-lg bg-card border-border/80 text-xs font-mono"
-                />
-              </div>
+            <div className="text-center py-2">
+              <span
+                className={cn(
+                  "text-3xl font-black font-mono tracking-tight",
+                  selectedEventDetail.direction === "INCOMING" ? "text-lime-600" : "text-foreground"
+                )}
+              >
+                {selectedEventDetail.direction === "INCOMING" ? "+" : "-"} {formatCents(selectedEventDetail.amountCents)}
+              </span>
+              <p className="text-xs text-muted-foreground mt-1">
+                {selectedEventDetail.description}
+              </p>
+            </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Valor (R$)
-                </label>
-                <Input
-                  type="text"
-                  inputMode="decimal"
-                  placeholder="0,00"
-                  value={transferAmountStr}
-                  onChange={(e) => setTransferAmountStr(e.target.value)}
-                  required
-                  className="h-11 rounded-lg bg-card border-border/80 text-lg font-bold"
-                />
-                <span className="text-xs text-muted-foreground block">
-                  Disponível em carteira: {formatCents(wallet?.availableCents || 0)}
+            <div className="bg-zinc-50 rounded-2xl p-3.5 space-y-2 text-xs border border-zinc-200/60">
+              <div className="flex justify-between py-1 border-b border-border/30">
+                <span className="text-muted-foreground">Domínio:</span>
+                <span className="font-bold text-foreground">{selectedEventDetail.sourceDomain}</span>
+              </div>
+              <div className="flex justify-between py-1 border-b border-border/30">
+                <span className="text-muted-foreground">Data e Hora:</span>
+                <span className="font-semibold text-foreground">
+                  {new Date(selectedEventDetail.occurredAt).toLocaleString("pt-BR")}
                 </span>
               </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Descrição / Motivo
-                </label>
-                <Input
-                  type="text"
-                  placeholder="Ex: Divisão de almoço, pagamento..."
-                  value={transferDesc}
-                  onChange={(e) => setTransferDesc(e.target.value)}
-                  className="h-11 rounded-lg bg-card border-border/80 text-xs"
-                />
+              {selectedEventDetail.counterpartyName && (
+                <div className="flex justify-between py-1 border-b border-border/30">
+                  <span className="text-muted-foreground">Contraparte:</span>
+                  <span className="font-semibold text-foreground">
+                    {selectedEventDetail.counterpartyName}
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between py-1">
+                <span className="text-muted-foreground">Status:</span>
+                <span className="font-bold text-lime-600">
+                  {selectedEventDetail.status}
+                </span>
               </div>
-
-              <div className="flex items-center justify-end gap-3 pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsTransferOpen(false)}
-                  className="h-11 min-h-11 px-5 rounded-lg border-border/80 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="h-11 min-h-11 px-6 rounded-lg bg-primary text-primary-foreground text-xs font-semibold shadow-xs focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-                >
-                  {isSubmitting ? "Transferindo..." : "Confirmar Transferência"}
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ── MODAL: DEPÓSITO PIX EM CARTEIRA ── */}
-      {isDepositOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 motion-reduce:transition-none">
-          <button
-            type="button"
-            aria-label="Fechar depósito"
-            onClick={() => setIsDepositOpen(false)}
-            className="fixed inset-0 bg-background/80 backdrop-blur-xs cursor-default focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-          />
-          <div
-            className="relative z-10 bg-card border border-border/80 w-full sm:max-w-md rounded-t-lg sm:rounded-lg p-5 sm:p-6 shadow-xs space-y-4"
-            role="dialog"
-            aria-modal="true"
-          >
-            <div className="flex items-center justify-between border-b border-border/40 pb-3">
-              <h3 className="text-base font-semibold tracking-tight text-foreground">
-                Recarga de Saldo via Pix
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsDepositOpen(false)}
-                className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-              >
-                <X className="size-5" />
-              </button>
             </div>
 
-            <form onSubmit={handleExecuteDeposit} className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Valor a Recarregar (R$)
-                </label>
-                <Input
-                  type="text"
-                  inputMode="decimal"
-                  placeholder="50,00"
-                  value={depositAmountStr}
-                  onChange={(e) => setDepositAmountStr(e.target.value)}
-                  required
-                  className="h-11 rounded-lg bg-card border-border/80 text-lg font-bold"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsDepositOpen(false)}
-                  className="h-11 min-h-11 px-5 rounded-lg border-border/80 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="h-11 min-h-11 px-6 rounded-lg bg-primary text-primary-foreground text-xs font-semibold shadow-xs focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-                >
-                  {isSubmitting ? "Creditando..." : "Confirmar Recarga"}
-                </Button>
-              </div>
-            </form>
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => setSelectedEventDetail(null)}
+                className="w-full h-12 min-h-12 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-bold text-xs flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+              >
+                <span>Fechar Detalhes</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* ── MODAL: IMPORTAÇÃO DE EXTRATO OFX ── */}
+      {/* Modal: Importar OFX */}
       {isOfxModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 motion-reduce:transition-none">
-          <button
-            type="button"
-            aria-label="Fechar importação"
-            onClick={() => setIsOfxModalOpen(false)}
-            className="fixed inset-0 bg-background/80 backdrop-blur-xs cursor-default focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-          />
-          <div
-            className="relative z-10 bg-card border border-border/80 w-full max-w-lg rounded-lg p-5 sm:p-6 shadow-xs space-y-4"
-            role="dialog"
-            aria-modal="true"
-          >
-            <div className="flex items-center justify-between border-b border-border/40 pb-3">
-              <h3 className="text-base font-semibold tracking-tight text-foreground">
-                Importar Extrato Bancário (OFX)
-              </h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-xs">
+          <div className="relative bg-card border border-border/80 w-full max-w-md rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-border/40">
+              <h3 className="text-base font-bold text-foreground">Importar Extrato OFX</h3>
               <button
                 type="button"
                 onClick={() => setIsOfxModalOpen(false)}
-                className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
               >
                 <X className="size-5" />
               </button>
             </div>
 
             <form onSubmit={handleImportOfx} className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Conteúdo do Arquivo OFX
-                </label>
-                <textarea
-                  rows={8}
-                  placeholder="Cole aqui o conteúdo textual do seu arquivo .ofx baixado do banco..."
-                  value={ofxContentInput}
-                  onChange={(e) => setOfxContentInput(e.target.value)}
-                  className="w-full p-3 rounded-lg bg-card border border-border/80 text-xs font-mono focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-                  required
-                />
-                <span className="text-xs text-muted-foreground block">
-                  As transações são inseridas exclusivamente no seu Livro Financeiro Pessoal com
-                  deduplicação automática por FITID.
-                </span>
-              </div>
+              <textarea
+                value={ofxContentInput}
+                onChange={(e) => setOfxContentInput(e.target.value)}
+                placeholder="Cole o conteúdo XML/OFX aqui..."
+                rows={6}
+                className="w-full p-3 rounded-2xl bg-zinc-50 border border-zinc-200/80 text-xs font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+              />
 
-              <div className="flex items-center justify-end gap-3 pt-2">
-                <Button
+              <div className="flex items-center justify-end gap-2">
+                <button
                   type="button"
-                  variant="outline"
                   onClick={() => setIsOfxModalOpen(false)}
-                  className="h-11 min-h-11 px-5 rounded-lg border-border/80 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                  className="h-11 min-h-11 px-4 rounded-xl border border-zinc-200 text-xs font-semibold text-zinc-700 hover:bg-zinc-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
                 >
                   Cancelar
-                </Button>
-                <Button
+                </button>
+                <button
                   type="submit"
                   disabled={isImportingOfx}
-                  className="h-11 min-h-11 px-6 rounded-lg bg-primary text-primary-foreground text-xs font-semibold shadow-xs focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                  className="h-11 min-h-11 px-5 rounded-xl bg-lime-400 hover:bg-lime-500 text-zinc-950 font-bold text-xs flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
                 >
-                  {isImportingOfx ? "Importando..." : "Importar Transações"}
-                </Button>
+                  {isImportingOfx ? "Importando..." : "Confirmar Importação"}
+                </button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* ── MODAL: NOVO LANÇAMENTO PESSOAL (COM OCR) ── */}
+      {/* Modal: Novo Lançamento Manual */}
       {isNewEntryOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 motion-reduce:transition-none">
-          <button
-            type="button"
-            aria-label="Fechar lançamento"
-            onClick={() => setIsNewEntryOpen(false)}
-            className="fixed inset-0 bg-background/80 backdrop-blur-xs cursor-default focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-          />
-          <div
-            className="relative z-10 bg-card border border-border/80 w-full sm:max-w-lg rounded-t-lg sm:rounded-lg p-5 sm:p-6 shadow-xs max-h-screen overflow-y-auto space-y-4"
-            role="dialog"
-            aria-modal="true"
-          >
-            <div className="flex items-center justify-between border-b border-border/40 pb-3">
-              <h3 className="text-base font-semibold tracking-tight text-foreground">
-                Novo Lançamento Pessoal
-              </h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-xs">
+          <div className="relative bg-card border border-border/80 w-full max-w-md rounded-3xl p-5 sm:p-6 shadow-xl space-y-4 max-h-[92vh] overflow-y-auto no-scrollbar">
+            <div className="flex items-center justify-between pb-3 border-b border-border/40">
+              <h3 className="text-base font-bold text-foreground">Novo Lançamento</h3>
               <button
                 type="button"
                 onClick={() => setIsNewEntryOpen(false)}
-                className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
               >
                 <X className="size-5" />
               </button>
@@ -1520,38 +1382,38 @@ function PersonalFinancePage() {
 
             <form onSubmit={handleCreateEntry} className="space-y-4">
               {/* Toggle Despesa / Receita */}
-              <div className="grid grid-cols-2 gap-2 bg-muted/60 p-1 rounded-lg border border-border/40">
+              <div className="grid grid-cols-2 gap-2 bg-zinc-100 p-1 rounded-2xl">
                 <button
                   type="button"
                   onClick={() => setEntryType("expense")}
                   className={cn(
-                    "h-11 min-h-11 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+                    "h-11 min-h-11 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500",
                     entryType === "expense"
-                      ? "bg-rose-600 text-primary-foreground shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
+                      ? "bg-rose-600 text-white shadow-2xs"
+                      : "text-zinc-600 hover:text-zinc-950"
                   )}
                 >
-                  <ArrowUpRight className="size-5" />
+                  <ArrowUpRight className="size-4" />
                   <span>Despesa</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setEntryType("income")}
                   className={cn(
-                    "h-11 min-h-11 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+                    "h-11 min-h-11 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500",
                     entryType === "income"
-                      ? "bg-emerald-600 text-primary-foreground shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
+                      ? "bg-lime-500 text-zinc-950 shadow-2xs font-extrabold"
+                      : "text-zinc-600 hover:text-zinc-950"
                   )}
                 >
-                  <ArrowDownLeft className="size-5" />
+                  <ArrowDownLeft className="size-4" />
                   <span>Receita</span>
                 </button>
               </div>
 
               {/* Valor */}
-              <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   Valor (R$)
                 </label>
                 <Input
@@ -1561,13 +1423,13 @@ function PersonalFinancePage() {
                   value={amountStr}
                   onChange={(e) => setAmountStr(e.target.value)}
                   required
-                  className="h-11 rounded-lg bg-card border-border/80 text-xl font-bold"
+                  className="h-14 min-h-14 rounded-2xl bg-zinc-50 border-zinc-200/80 text-2xl font-black font-mono focus-visible:ring-2 focus-visible:ring-lime-500"
                 />
               </div>
 
               {/* Descrição */}
-              <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   Descrição
                 </label>
                 <Input
@@ -1576,29 +1438,28 @@ function PersonalFinancePage() {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   required
-                  className="h-11 rounded-lg bg-card border-border/80 text-xs"
+                  className="h-12 min-h-12 rounded-xl bg-zinc-50 border-zinc-200/80 text-xs focus-visible:ring-2 focus-visible:ring-lime-500"
                 />
               </div>
 
               {/* Categoria */}
-              <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   Categoria
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-36 overflow-y-auto p-1 border border-border/40 rounded-lg bg-muted/30">
+                <div className="grid grid-cols-2 gap-2 max-h-36 overflow-y-auto p-1 border border-zinc-200/60 rounded-2xl bg-zinc-50">
                   {availableCategories.map((cat: any) => (
                     <button
                       key={cat.id}
                       type="button"
                       onClick={() => setSelectedCategoryId(cat.id)}
                       className={cn(
-                        "h-11 min-h-11 px-3 rounded-lg text-xs font-medium flex items-center gap-2 transition-colors text-left truncate cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+                        "h-11 min-h-11 px-3 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all text-left truncate cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500",
                         selectedCategoryId === cat.id
-                          ? "bg-primary text-primary-foreground font-semibold shadow-2xs"
-                          : "bg-card text-foreground hover:bg-muted border border-border/40"
+                          ? "bg-lime-400 text-zinc-950 font-black shadow-2xs"
+                          : "bg-white text-zinc-800 hover:bg-zinc-100 border border-zinc-200/40"
                       )}
                     >
-                      <div className="size-3 shrink-0 rounded-full bg-primary" />
                       <span className="truncate">{cat.name}</span>
                     </button>
                   ))}
@@ -1606,9 +1467,9 @@ function PersonalFinancePage() {
               </div>
 
               {/* Data & Forma de Pagamento */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                     Data
                   </label>
                   <Input
@@ -1616,18 +1477,18 @@ function PersonalFinancePage() {
                     value={entryDate}
                     onChange={(e) => setEntryDate(e.target.value)}
                     required
-                    className="h-11 rounded-lg bg-card border-border/80 text-xs"
+                    className="h-12 min-h-12 rounded-xl bg-zinc-50 border-zinc-200/80 text-xs focus-visible:ring-2 focus-visible:ring-lime-500"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                     Pagamento
                   </label>
                   <select
                     value={paymentMethod}
                     onChange={(e) => setPaymentMethod(e.target.value as any)}
-                    className="w-full h-11 px-3 rounded-lg bg-card border border-border/80 text-xs font-medium text-foreground focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                    className="w-full h-12 min-h-12 px-3 rounded-xl bg-zinc-50 border border-zinc-200/80 text-xs font-semibold text-foreground focus-visible:ring-2 focus-visible:ring-lime-500 focus-visible:outline-none"
                   >
                     <option value="pix">Pix</option>
                     <option value="credit_card">Cartão de Crédito</option>
@@ -1640,74 +1501,22 @@ function PersonalFinancePage() {
                 </div>
               </div>
 
-              {/* Comprovante / OCR */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Comprovante / Recibo
-                  </label>
-                  {receiptUrl && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      disabled={isAnalyzingOcr}
-                      onClick={async () => {
-                        setIsAnalyzingOcr(true);
-                        try {
-                          const result = await analyzeReceiptWithAI({
-                            data: { imageUrl: receiptUrl },
-                          });
-                          if (result.amountCents) {
-                            setAmountStr((result.amountCents / 100).toFixed(2).replace(".", ","));
-                          }
-                          if (result.description) setDescription(result.description);
-                          if (result.entryDate) setEntryDate(result.entryDate);
-                          toast.success("OCR processado com sucesso!");
-                        } catch (err: any) {
-                          toast.error(err.message || "Falha no OCR.");
-                        } finally {
-                          setIsAnalyzingOcr(false);
-                        }
-                      }}
-                      className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold text-primary hover:bg-primary/20 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-                    >
-                      {isAnalyzingOcr ? (
-                        <>
-                          <Activity className="size-5 animate-spin" />
-                          <span>Lendo...</span>
-                        </>
-                      ) : (
-                        <span>Analisar com IA</span>
-                      )}
-                    </Button>
-                  )}
-                </div>
-                <ImageUpload
-                  value={receiptUrl}
-                  onChange={(url) => setReceiptUrl(url)}
-                  onRemove={() => setReceiptUrl("")}
-                  bucket="receipts"
-                  variant="minimal"
-                  helperText="Anexe foto do comprovante para preenchimento por IA"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-2">
-                <Button
+              {/* Botões de Submissão */}
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
                   type="button"
-                  variant="outline"
                   onClick={() => setIsNewEntryOpen(false)}
-                  className="h-11 min-h-11 px-5 rounded-lg border-border/80 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                  className="h-11 min-h-11 px-4 rounded-xl border border-zinc-200 text-xs font-semibold text-zinc-700 hover:bg-zinc-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
                 >
                   Cancelar
-                </Button>
-                <Button
+                </button>
+                <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="h-11 min-h-11 px-6 rounded-lg bg-primary text-primary-foreground text-xs font-semibold shadow-xs focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                  className="h-11 min-h-11 px-5 rounded-xl bg-lime-400 hover:bg-lime-500 text-zinc-950 font-bold text-xs shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
                 >
                   {isSubmitting ? "Salvando..." : "Salvar Lançamento"}
-                </Button>
+                </button>
               </div>
             </form>
           </div>

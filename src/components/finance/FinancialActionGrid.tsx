@@ -1,17 +1,17 @@
 /**
  * ============================================================================
- * Waesy Platform — FinancialActionGrid.tsx (Waesy Bank & 99Pay Parity)
+ * Waesy Platform — FinancialActionGrid.tsx (Copycat Minimalist Bank Parity)
  * ============================================================================
- * Grade squircle de ações financeiras rápidas:
- * 1. Pix (Área Pix unificada com transferências e QR Code)
- * 2. Boleto (Pagamento de contas, concessionárias e boletos)
- * 3. Transferir (Transferências instantâneas P2P entre contas Waesy)
- * 4. Extrato (Histórico unificado de transações)
- * 5. Cobrar (Geração de QR Code e chave Pix Copia e Cola)
- * 6. Cartões (Gestão de fatura, limite e cartão virtual)
- * 7. Recargas (Recarga de celular e cartões de transporte)
- * 8. Empréstimos (Simulação de crédito e parcelamento em até 36x)
- * Ref: Prints Captura de tela 2026-10-16 155858.png, images (14).jpg, unnamed (2).webp
+ * Grade e carrossel de ações financeiras rápidas em formato squircle (Nevo/Waesy):
+ * 1. Pix (Priorizado como 1ª opção do carrossel, badge Instantâneo)
+ * 2. Boleto (Pagamento de contas e concessionárias)
+ * 3. Recargas (Recarga de celular e transporte)
+ * 4. Seguros (Proteção da conta e cartão)
+ * 5. Empréstimos (Simulação de crédito pessoal até 36x)
+ * 6. Transferir (Transferências imediatas P2P)
+ * 7. Extrato (Histórico unificado)
+ * 8. Cobrar (Geração de QR Code e chave Pix)
+ * 9. Cartões (Faturas, limite e cartão virtual)
  * ============================================================================
  */
 
@@ -25,7 +25,7 @@ import {
   Smartphone,
   Coins,
   BadgePercent,
-  Sparkles,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -47,6 +47,7 @@ export interface FinancialActionGridProps {
   onCardClick?: () => void;
   onRechargeClick?: () => void;
   onLoansClick?: () => void;
+  onInsuranceClick?: () => void;
   className?: string;
 }
 
@@ -59,6 +60,7 @@ export function FinancialActionGrid({
   onCardClick,
   onRechargeClick,
   onLoansClick,
+  onInsuranceClick,
   className,
 }: FinancialActionGridProps) {
   const actions: FinancialActionItem[] = [
@@ -74,6 +76,25 @@ export function FinancialActionGrid({
       label: "Boleto",
       icon: Barcode,
       onClick: onBoletoClick,
+    },
+    {
+      id: "recargas",
+      label: "Recargas",
+      icon: Smartphone,
+      onClick: onRechargeClick,
+    },
+    {
+      id: "seguros",
+      label: "Seguros",
+      icon: ShieldCheck,
+      onClick: onInsuranceClick,
+    },
+    {
+      id: "emprestimos",
+      label: "Empréstimos",
+      icon: Coins,
+      onClick: onLoansClick,
+      badge: "Até 36x",
     },
     {
       id: "transferir",
@@ -99,61 +120,42 @@ export function FinancialActionGrid({
       icon: CreditCard,
       onClick: onCardClick,
     },
-    {
-      id: "recargas",
-      label: "Recargas",
-      icon: Smartphone,
-      onClick: onRechargeClick,
-    },
-    {
-      id: "emprestimos",
-      label: "Empréstimos",
-      icon: Coins,
-      onClick: onLoansClick,
-      badge: "Até 36x",
-    },
   ];
 
   return (
-    <div className={cn("w-full space-y-2 select-none", className)}>
-      <div className="flex items-center justify-between px-1">
-        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          Serviços de Pagamento
-        </span>
-      </div>
-
-      <div className="grid grid-cols-4 gap-2 sm:gap-3">
+    <div className={cn("w-full space-y-3 select-none", className)}>
+      {/* Trilho Deslizante com Snap Scroll e Ergonomia Tátil Contínua */}
+      <div className="flex items-start gap-3 sm:gap-4 overflow-x-auto no-scrollbar py-1 px-0.5">
         {actions.map((item) => {
           const Icon = item.icon;
           return (
-            <button
+            <div
               key={item.id}
-              type="button"
-              onClick={item.onClick}
-              disabled={item.disabled}
-              className={cn(
-                "relative flex flex-col items-center justify-center p-2 rounded-2xl border border-border/70 bg-card hover:bg-muted/40 active:bg-muted/70 active:scale-95 transition-all text-center group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-xs",
-                "h-20 min-h-20 sm:h-22 sm:min-h-22",
-                item.disabled && "opacity-50 pointer-events-none"
-              )}
+              className="flex flex-col items-center gap-2 shrink-0 w-18 sm:w-20 group"
             >
-              {/* Badge opcional de destaque */}
-              {item.badge && (
-                <span className="absolute -top-1.5 inset-x-auto px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground text-3xs font-extrabold tracking-tight leading-none shadow-xs">
-                  {item.badge}
-                </span>
-              )}
+              <button
+                type="button"
+                onClick={item.onClick}
+                disabled={item.disabled}
+                aria-label={`Acessar ${item.label}`}
+                className={cn(
+                  "size-16 sm:size-18 min-h-16 min-w-16 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 active:bg-zinc-200 border border-zinc-200/60 flex items-center justify-center text-zinc-900 shadow-2xs active:scale-95 transition-all relative cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500",
+                  item.id === "pix" && "ring-1 ring-lime-400 bg-lime-400/10 hover:bg-lime-400/20"
+                )}
+              >
+                <Icon className="size-6 text-zinc-900 stroke-[1.8]" />
 
-              {/* Ícone squircle interior */}
-              <div className="size-9 rounded-xl bg-muted/60 group-hover:bg-muted flex items-center justify-center text-foreground transition-colors shrink-0">
-                <Icon className="size-4 sm:size-5" />
-              </div>
+                {item.badge && (
+                  <span className="absolute -top-1.5 px-1.5 py-0.5 rounded-full bg-lime-400 text-zinc-950 font-black text-3xs uppercase tracking-tighter leading-none shadow-xs border border-lime-300">
+                    {item.badge}
+                  </span>
+                )}
+              </button>
 
-              {/* Rótulo Anti-Truncate */}
-              <span className="text-2xs sm:text-xs font-bold text-foreground mt-1.5 line-clamp-1 leading-tight">
+              <span className="text-xs font-semibold text-zinc-700 text-center truncate w-full group-hover:text-zinc-950">
                 {item.label}
               </span>
-            </button>
+            </div>
           );
         })}
       </div>

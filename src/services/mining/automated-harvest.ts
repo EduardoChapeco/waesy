@@ -22,6 +22,7 @@ export interface AutomatedHarvestOptions {
   storeId?: string;
   city?: string;
   state?: string;
+  regionPreset?: "santa_catarina" | "vale_do_paraiba" | "nacional";
   maxItems?: number;
   feedUrls?: string[];
   forceRefresh?: boolean;
@@ -47,12 +48,67 @@ export interface AutomatedHarvestReport {
 }
 
 /** Feeds canônicos de notícias regionais e estaduais com alto índice de factualidade */
-const CANONICAL_NEWS_FEEDS = [
-  "https://g1.globo.com/dynamo/sc/santa-catarina/rss2.xml",
-  "https://agenciabrasil.ebc.com.br/rss/ultimasnoticias/feed.xml",
-  "https://clicrdc.com.br/feed/",
-  "https://www.diariodigital.com.br/rss",
+export const REGIONAL_NEWS_FEED_PRESETS: Record<"santa_catarina" | "vale_do_paraiba" | "nacional", string[]> = {
+  santa_catarina: [
+    "https://g1.globo.com/dynamo/sc/santa-catarina/rss2.xml",
+    "https://agenciabrasil.ebc.com.br/rss/ultimasnoticias/feed.xml",
+    "https://clicrdc.com.br/feed/",
+    "https://www.diariodigital.com.br/rss",
+  ],
+  vale_do_paraiba: [
+    "https://g1.globo.com/dynamo/sp/vale-do-paraiba-regiao/rss2.xml",
+    "https://agenciabrasil.ebc.com.br/rss/ultimasnoticias/feed.xml",
+    "https://olhardigital.com.br/feed/",
+    "https://www.canalrural.com.br/feed/",
+  ],
+  nacional: [
+    "https://agenciabrasil.ebc.com.br/rss/ultimasnoticias/feed.xml",
+    "https://olhardigital.com.br/feed/",
+    "https://www.canalrural.com.br/feed/",
+  ],
+};
+
+const CANONICAL_NEWS_FEEDS = REGIONAL_NEWS_FEED_PRESETS.santa_catarina;
+
+const KNOWN_MUNICIPALITIES_FOR_INFERENCE: Array<{ name: string; state: string; aliases: string[] }> = [
+  { name: "São José dos Campos", state: "SP", aliases: ["sao jose dos campos", "sjc", "s. jose dos campos"] },
+  { name: "Taubaté", state: "SP", aliases: ["taubate"] },
+  { name: "Jacareí", state: "SP", aliases: ["jacarei"] },
+  { name: "Pindamonhangaba", state: "SP", aliases: ["pindamonhangaba", "moreira cesar"] },
+  { name: "Guaratinguetá", state: "SP", aliases: ["guaratingueta"] },
+  { name: "Caçapava", state: "SP", aliases: ["cacapava"] },
+  { name: "Lorena", state: "SP", aliases: ["lorena"] },
+  { name: "Aparecida", state: "SP", aliases: ["aparecida"] },
+  { name: "Cruzeiro", state: "SP", aliases: ["cruzeiro"] },
+  { name: "Caraguatatuba", state: "SP", aliases: ["caraguatatuba", "caragua"] },
+  { name: "Ubatuba", state: "SP", aliases: ["ubatuba"] },
+  { name: "São Sebastião", state: "SP", aliases: ["sao sebastiao", "maresias"] },
+  { name: "Ilhabela", state: "SP", aliases: ["ilhabela"] },
+  { name: "Campos do Jordão", state: "SP", aliases: ["campos do jordao", "mantiqueira"] },
+  { name: "Chapecó", state: "SC", aliases: ["chapeco"] },
+  { name: "Florianópolis", state: "SC", aliases: ["florianopolis"] },
+  { name: "Joinville", state: "SC", aliases: ["joinville"] },
+  { name: "Blumenau", state: "SC", aliases: ["blumenau"] },
 ];
+
+export function inferArticleMunicipality(
+  textSample: string,
+  fallbackCity: string,
+  fallbackState: string,
+): { city: string; state: string } {
+  const normalized = (textSample || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
+  for (const item of KNOWN_MUNICIPALITIES_FOR_INFERENCE) {
+    if (item.aliases.some((alias) => normalized.includes(alias))) {
+      return { city: item.name, state: item.state };
+    }
+  }
+
+  return { city: fallbackCity, state: fallbackState };
+}
 
 /**
  * Normaliza e gera hash determinístico SHA-256 para URL canônica
@@ -88,7 +144,8 @@ export async function executeAutomatedNewsHarvest(
   const geo = resolveCityAndState(options.city, options.state);
   const targetCity = geo.city || options.city || getDefaultCity();
   const targetState = geo.state || normalizeStateUf(options.state) || getDefaultState();
-  const feedsToScrape = options.feedUrls && options.feedUrls.length > 0 ? options.feedUrls : CANONICAL_NEWS_FEEDS;
+  const presetFeeds = options.regionPreset ? REGIONAL_NEWS_FEED_PRESETS[options.regionPreset] : CANONICAL_NEWS_FEEDS;
+  const feedsToScrape = options.feedUrls && options.feedUrls.length > 0 ? options.feedUrls : presetFeeds;
 
   const report: AutomatedHarvestReport = {
     success: true,
@@ -237,6 +294,12 @@ export async function executeAutomatedNewsHarvest(
         ? extraction.coverImageUrl
         : null;
 
+      const inferredGeo = inferArticleMunicipality(
+        `${extraction.title} ${extraction.lead || ""} ${extraction.bodyText.slice(0, 600)}`,
+        targetCity,
+        targetState,
+      );
+
       const { data: publishedArticle, error: pubError } = await supabase
         .from("news_articles")
         .insert({
@@ -254,8 +317,8 @@ export async function executeAutomatedNewsHarvest(
           cover_media_type: "image",
           category: curatedArticle.category,
           tags: curatedArticle.tags,
-          city: targetCity,
-          state: targetState,
+          city: inferredGeo.city,
+          state: inferredGeo.state,
           reading_time_minutes: curatedArticle.reading_time_minutes || 3,
           source_url: candidate.url,
           author_name: extraction.author || candidate.feedSource,

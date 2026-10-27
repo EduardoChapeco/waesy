@@ -86,7 +86,7 @@ export const listChatThreads = createServerFn({ method: "GET" })
  if (!identity?.store_id) {
  return {
  threads: [],
- metrics: { total: 0, open: 0, closed: 0, avg_rating: 5.0, sla_first_response_min: 0 },
+ metrics: { total: 0, open: 0, closed: 0, avg_rating: null, sla_first_response_min: null },
  };
  }
 
@@ -136,7 +136,7 @@ export const listChatThreads = createServerFn({ method: "GET" })
  console.warn("[chat.functions] Erro ao consultar chat_threads:", error.message);
  return {
  threads: [],
- metrics: { total: 0, open: 0, closed: 0, avg_rating: 5.0, sla_first_response_min: 0 },
+ metrics: { total: 0, open: 0, closed: 0, avg_rating: null, sla_first_response_min: null },
  };
  }
 
@@ -205,13 +205,26 @@ export const listChatThreads = createServerFn({ method: "GET" })
  };
  });
 
- // Métricas de Governança
+ const ratedThreads = threadsList.filter(
+  (t: any) => typeof t.satisfaction_rating === "number" && t.satisfaction_rating > 0,
+ );
+ const avg_rating =
+  ratedThreads.length > 0
+   ? Number(
+     (
+      ratedThreads.reduce((acc: number, t: any) => acc + t.satisfaction_rating, 0) /
+      ratedThreads.length
+     ).toFixed(1),
+    )
+   : null;
+
+ // Métricas de Governança Autênticas (Zero Mocks / Invariante B.33)
  const metrics = {
  total: threadsList.length,
  open: threadsList.filter((t) => t.status === "open").length,
  closed: threadsList.filter((t) => t.status === "closed" || t.status === "resolved").length,
- avg_rating: 4.8,
- sla_first_response_min: 3.5,
+ avg_rating,
+ sla_first_response_min: null,
  };
 
  return {
@@ -222,7 +235,7 @@ export const listChatThreads = createServerFn({ method: "GET" })
  console.warn("[chat.functions] Falha inesperada ao listar threads:", error?.message || error);
  return {
  threads: [],
- metrics: { total: 0, open: 0, closed: 0, avg_rating: 5.0, sla_first_response_min: 0 },
+ metrics: { total: 0, open: 0, closed: 0, avg_rating: null, sla_first_response_min: null },
  };
  }
  });

@@ -250,6 +250,7 @@ function StoreSlugCanonicalPage() {
         sponsors={data.sponsors}
         employerStats={data.employerStats}
         builderTree={data.experienceDoc?.nodes || null}
+        omniPageDoc={data.experienceDoc?.settings?.omni_page || null}
         isOwner={isOwner}
         source="storefront"
       />

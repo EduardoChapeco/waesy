@@ -27,7 +27,8 @@ import { NewsCard } from "@/components/news/news-card";
 import { PlacesHighlightBadge } from "@/components/shell/places-highlight-badge";
 import { AdTelemetryBeacon } from "@/components/commerce/ad-telemetry-beacon";
 import { ProceduralInfiniteFeed } from "@/components/commerce/procedural-infinite-feed";
-import { TopGreetingSearchBar } from "@/components/home/TopGreetingSearchBar";
+import { IFoodHeader } from "@/components/commerce/ifood/IFoodHeader";
+import { IFoodFloatingCartBar } from "@/components/commerce/ifood/IFoodFloatingCartBar";
 import { PromoCouponBanner } from "@/components/home/PromoCouponBanner";
 import { DualLineFilterPills } from "@/components/home/DualLineFilterPills";
 import { CuratedVerticalRails } from "@/components/home/CuratedVerticalRails";
@@ -90,6 +91,7 @@ export interface HomeDiscoveryViewProps {
   filteredEvents: any[];
   unifiedItems: UnifiedDiscoveryItem[];
   formatMoney: (cents?: number | null) => string | null;
+  session?: any;
 }
 
 export function HomeMobileNativeApp({
@@ -119,15 +121,18 @@ export function HomeMobileNativeApp({
   filteredEvents,
   unifiedItems,
   formatMoney,
+  session,
 }: HomeDiscoveryViewProps) {
   const navigate = useNavigate();
 
   return (
-    <div className="block md:hidden w-full space-y-3 pb-16" data-testid="home-mobile-native-app">
-      {/* ── 0. TOP GREETING & CLUSTER DE BUSCA NATIVO iFOOD ── */}
-      <TopGreetingSearchBar
+    <div className="w-full space-y-3 pb-32 pb-safe" data-testid="home-mobile-native-app">
+      {/* ── 0. CABEÇALHO CANÔNICO iFOOD / SUPERAPP (Piso 44px HIG com Busca Integrada e Drawer) ── */}
+      <IFoodHeader
+        userName={session?.profile?.full_name || session?.user?.user_metadata?.full_name || null}
         searchValue={search}
         onSearchChange={onSearchChange}
+        showSearch={true}
       />
 
       {/* ── 0.1 ALERTA / BANNER DE CUPONS iFOOD ── */}
@@ -934,6 +939,8 @@ export function HomeMobileNativeApp({
           </div>
         )}
       </section>
+      {/* ── BARRA FLUTUANTE DA SACOLA iFOOD ── */}
+      <IFoodFloatingCartBar />
     </div>
   );
 }

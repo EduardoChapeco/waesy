@@ -3672,3 +3672,119 @@ export const saveEventTicketAffiliate = createServerFn({ method: "POST" })
       return inserted;
     }
   });
+
+
+// ---------------------------------------------------------------------------
+// ORGANIZADORES & PRODUTORAS REAIS DE EVENTOS (SEM DADOS FAKE - REGRA B.33)
+// ---------------------------------------------------------------------------
+
+export interface EventOrganizerDTO {
+  id: string;
+  name: string;
+  slug?: string | null;
+  logoUrl?: string | null;
+  rating?: number | null;
+  reviewCount?: number | null;
+  activeEventsCount: number;
+  city?: string | null;
+  isVerified: boolean;
+}
+
+export const getPublicEventOrganizers = createServerFn({ method: "GET" })
+  .validator(
+    z
+      .object({
+        city: z.string().optional(),
+        limit: z.number().int().min(1).max(50).default(20).optional(),
+      })
+      .optional()
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const city = data?.city;
+    const limit = data?.limit || 20;
+
+    let eventsQuery = supabase
+      .from("events")
+      .select("store_id, organizer_name, city")
+      .eq("status", "published")
+      .is("deleted_at", null)
+      .gte("event_date", new Date().toISOString())
+      .limit(100);
+
+    if (city && city !== "Global" && city !== "all") {
+      eventsQuery = eventsQuery.ilike("city", `%${city}%`);
+    }
+
+    const { data: rawEvents } = await eventsQuery;
+
+    const countMap = new Map<string, { count: number; storeId?: string; city?: string }>();
+    if (rawEvents) {
+      for (const ev of rawEvents) {
+        const name = (ev.organizer_name || "").trim();
+        if (name) {
+          const prev = countMap.get(name) || {
+            count: 0,
+            storeId: ev.store_id || undefined,
+            city: ev.city || undefined,
+          };
+          prev.count += 1;
+          if (ev.store_id) prev.storeId = ev.store_id;
+          countMap.set(name, prev);
+        }
+      }
+    }
+
+    let directoryQuery = supabase
+      .from("directory_listings")
+      .select("id, name, slug, logo_url, rating, review_count, is_verified, city, category")
+      .eq("status", "active")
+      .in("category", ["entretenimento", "cultura", "eventos", "lazer", "festas", "musica"])
+      .limit(limit);
+
+    if (city && city !== "Global" && city !== "all") {
+      directoryQuery = directoryQuery.ilike("city", `%${city}%`);
+    }
+
+    const { data: directoryStores } = await directoryQuery;
+
+    const results: EventOrganizerDTO[] = [];
+    const seenNames = new Set<string>();
+
+    if (directoryStores && directoryStores.length > 0) {
+      for (const store of directoryStores) {
+        seenNames.add(store.name.toLowerCase());
+        const eventCount = countMap.get(store.name)?.count || 0;
+        results.push({
+          id: store.id,
+          name: store.name,
+          slug: store.slug || null,
+          logoUrl: store.logo_url || null,
+          rating: typeof store.rating === "number" && store.rating > 0 ? store.rating : null,
+          reviewCount: typeof store.review_count === "number" && store.review_count > 0 ? store.review_count : null,
+          activeEventsCount: eventCount,
+          city: store.city || null,
+          isVerified: Boolean(store.is_verified),
+        });
+      }
+    }
+
+    for (const [name, info] of countMap.entries()) {
+      if (!seenNames.has(name.toLowerCase())) {
+        seenNames.add(name.toLowerCase());
+        results.push({
+          id: `org-${name.toLowerCase().replace(/[^a-z0-9]/g, "-")}`,
+          name,
+          slug: null,
+          logoUrl: null,
+          rating: null,
+          reviewCount: null,
+          activeEventsCount: info.count,
+          city: info.city || null,
+          isVerified: false,
+        });
+      }
+    }
+
+    return results.slice(0, limit);
+  });
