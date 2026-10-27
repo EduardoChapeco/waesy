@@ -161,10 +161,7 @@ export function SmartTravelBookingModal({
       const res = await bookGroupTourReservation({
         data: {
           tourId,
-          primaryCustomerName: contactName,
-          primaryCustomerEmail: contactEmail || undefined,
-          primaryCustomerPhone: contactPhone || undefined,
-          primaryCustomerDocument: contactDoc,
+          primaryContact: { name: contactName, email: contactEmail || "", phone: contactPhone || "", document: contactDoc || undefined },
           adultsCount,
           childrenAges,
           roomPreference,
@@ -175,7 +172,7 @@ export function SmartTravelBookingModal({
       });
 
       if (!res.success) {
-        throw new Error(res.error || "Falha ao processar reserva");
+        throw new Error(res.message || "Falha ao processar reserva");
       }
 
       setBookingResult(res);

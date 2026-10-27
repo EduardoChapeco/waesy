@@ -228,7 +228,7 @@ export function CartSheet() {
                 <button
                   key={c.id}
                   type="button"
-                  onClick={() => setSelectedStoreId(c.storeId)}
+                  onClick={() => setSelectedStoreId(c.storeId || "all")}
                   className={cn(
                     "h-11 min-h-11 px-3 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                     selectedStoreId === c.storeId

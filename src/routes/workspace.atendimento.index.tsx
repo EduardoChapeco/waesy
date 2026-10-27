@@ -1995,10 +1995,11 @@ function WorkspaceAtendimentoPage() {
       {/* MODAIS DE OPERAÇÕES AVANÇADAS WHATICKET / OMNICHANNEL */}
       {activeThread && (
         <TransferChatThreadModal
-          open={transferModalOpen}
-          onOpenChange={setTransferModalOpen}
+          isOpen={transferModalOpen}
+          onClose={() => setTransferModalOpen(false)}
           threadId={activeThread.id}
           currentDepartment={activeThread.department || "geral"}
+          departmentLabels={{ geral: "Geral", vendas: "Vendas", suporte: "Suporte", financeiro: "Financeiro" }}
           teamMembers={teamMembers}
           onSuccess={() => {
             listChatThreads().then((res) => {
@@ -2008,16 +2009,16 @@ function WorkspaceAtendimentoPage() {
         />
       )}
       <QuickAnswersManagerModal
-        open={quickAnswersModalOpen}
-        onOpenChange={setQuickAnswersModalOpen}
+        isOpen={quickAnswersModalOpen}
+        onClose={() => setQuickAnswersModalOpen(false)}
       />
       {activeThread && (
         <ScheduleWhatsAppMessageModal
-          open={scheduleModalOpen}
-          onOpenChange={setScheduleModalOpen}
+          isOpen={scheduleModalOpen}
+          onClose={() => setScheduleModalOpen(false)}
           threadId={activeThread.id}
-          customerPhone={activeThread.customer?.phone || ""}
-          customerName={activeThread.customer?.full_name || "Cliente"}
+          recipientPhone={activeThread.customer?.phone || ""}
+          recipientName={activeThread.customer?.full_name || "Cliente"}
         />
       )}
     </div>

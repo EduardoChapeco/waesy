@@ -2036,7 +2036,7 @@ export interface ActiveTravelerTripDTO {
 export const getMyActiveOrUpcomingTrip = createServerFn({ method: "GET" }).handler(
   async (): Promise<ActiveTravelerTripDTO> => {
     const supabase = getServerClient();
-    const identity = await getIdentity();
+    const identity = await getServerIdentity();
     if (!identity?.id) {
       return { hasActiveTrip: false };
     }

@@ -7,7 +7,7 @@ import React from "react";
 import { Zap, ShieldCheck } from "lucide-react";
 import type { SocialTemplateProps } from "../types";
 
-export function RetailSupermarketClassicFlyer({ data, className = "" }: SocialTemplateProps) {
+export function RetailSupermarketClassicFlyer({ data, scale = 1, className = "" }: SocialTemplateProps) {
   const isNineSixteen = data.aspectRatio === "9:16";
   const canvasWidth = isNineSixteen ? 1080 : data.aspectRatio === "4:5" ? 1080 : 1080;
   const canvasHeight = isNineSixteen ? 1920 : data.aspectRatio === "4:5" ? 1350 : 1080;
@@ -21,7 +21,9 @@ export function RetailSupermarketClassicFlyer({ data, className = "" }: SocialTe
       style={{
         width: `${canvasWidth}px`,
         height: `${canvasHeight}px`,
-              }}
+        transform: `scale(${scale})`,
+        transformOrigin: "top left",
+      }}
       className={`relative bg-[#FFDF00] text-slate-950 overflow-hidden font-sans select-none flex flex-col justify-between p-12 border-[24px] border-[#CC0000] ${className}`}
     >
       {/* Moldura Clássica Interna de Linha Fina */}

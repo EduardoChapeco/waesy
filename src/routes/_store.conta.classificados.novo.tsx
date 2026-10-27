@@ -11036,6 +11036,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                           <Link
                             to="/f/$slug"
                             params={{ slug: storeForms.find((f: any) => f.id === selectedFormId)?.slug || selectedFormId }}
+                            search={{ leadId: undefined, nome: undefined, tel: undefined, email: undefined }}
                             target="_blank"
                             className="text-xs text-primary hover:underline flex items-center gap-1 font-medium"
                           >

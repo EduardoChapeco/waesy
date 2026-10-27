@@ -104,6 +104,7 @@ export async function renderFinancialReceiptCanvas(
   let curY = 330;
 
   function drawSection(title: string, rows: Array<[string, string]>) {
+    if (!ctx) return;
     ctx.fillStyle = "#0F172A";
     ctx.font = "bold 16px system-ui, -apple-system, sans-serif";
     ctx.fillText(title, 60, curY);

@@ -20,11 +20,11 @@ import {
 } from "lucide-react";
 import {
   getMyActiveOrUpcomingTrip,
-  type ActiveTripDTO,
+  type ActiveTravelerTripDTO,
 } from "@/services/travel-lifecycle.functions";
 
 export function GlobalTripCompanionWidget() {
-  const [trip, setTrip] = useState<ActiveTripDTO | null>(null);
+  const [trip, setTrip] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -33,9 +33,9 @@ export function GlobalTripCompanionWidget() {
     async function loadTrip() {
       try {
         setIsLoading(true);
-        const res = await getMyActiveOrUpcomingTrip({});
-        if (mounted && res.success && res.data) {
-          setTrip(res.data);
+        const res: any = await getMyActiveOrUpcomingTrip();
+        if (mounted && res?.hasActiveTrip) {
+          setTrip(res);
         }
       } catch {
         // Silently fail if not authenticated or no active trips
@@ -207,7 +207,7 @@ export function GlobalTripCompanionWidget() {
           {/* LINK CENTRAL "MINHA VIAGEM" COMPLETO */}
           <div className="pt-2">
             <Link
-              to="/minha-viagem"
+              to="/viajante/carteira"
               onClick={() => setDrawerOpen(false)}
               className="w-full h-11 min-h-11 px-4 rounded-lg bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >

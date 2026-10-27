@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "@tanstack/react-router";
-import { ArrowRight, Grid, Building2, Calendar, Compass, ArrowLeft, Share2, CheckCircle2, Plane, MapPin, MessageCircle, Maximize2, Edit3, Settings, CreditCard, QrCode, Truck, ShieldCheck, Star, Award, HeartHandshake, ImagePlus, Clock, Utensils, Car, Home as HomeIcon, Briefcase, Wrench, FileArchive, Tag, BadgePercent, Check, Info, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Handshake, Landmark, Coins, Receipt, FileSpreadsheet, BookOpenCheck, ShieldAlert, Bus, Ship, Train, Navigation, Route as RouteIcon, X, Users, Phone, Mail, MessageSquare, Send, Store as StoreIcon, User, Download, Loader2, FileText, Smartphone, Laptop, Tv, Gamepad2, Armchair, Shirt, GraduationCap, Crown, Bed, Play } from "lucide-react";
+import { Grid, Building2, Calendar, Compass, ArrowLeft, Share2, CheckCircle2, Plane, MapPin, MessageCircle, Maximize2, Edit3, Settings, CreditCard, QrCode, Truck, ShieldCheck, Star, Award, HeartHandshake, ImagePlus, Clock, Utensils, Car, Home as HomeIcon, Briefcase, Wrench, FileArchive, Tag, BadgePercent, Check, Info, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Handshake, Landmark, Coins, Receipt, FileSpreadsheet, BookOpenCheck, ShieldAlert, Bus, Ship, Train, Navigation, Route as RouteIcon, X, Users, Phone, Mail, MessageSquare, Send, Store as StoreIcon, User, Download, Loader2, FileText, Smartphone, Laptop, Tv, Gamepad2, Armchair, Shirt, GraduationCap, Crown, Bed, Play } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -700,7 +700,7 @@ export function EditorialShowcaseView({
           <ArrowLeft className="size-5" />
         </button>
 
-        <div className="flex items-center gap-2 max-w-48 sm:max-w-md min-w-0">
+        <div className="flex items-center gap-2 max-w-[200px] sm:max-w-md min-w-0">
           <span className="font-extrabold text-xs tracking-tight text-foreground line-clamp-1 break-words">
             {classified.title || "Vitrine Imersiva"}
           </span>
@@ -758,7 +758,7 @@ export function EditorialShowcaseView({
               entityId={classified.id}
               entityType="classified"
               title={classified.title}
-              className="size-11 min-h-11"
+              className="size-9"
             />
           )}
         </div>
@@ -795,7 +795,7 @@ export function EditorialShowcaseView({
                 variant="outline"
                 size="sm"
                 onClick={handleEditClick}
-                className="h-11 min-h-11 gap-2 rounded-lg border-primary/30 text-primary hover:bg-primary/5 font-semibold text-xs cursor-pointer"
+                className="h-8 gap-2 rounded-lg border-primary/30 text-primary hover:bg-primary/5 font-semibold text-xs cursor-pointer"
               >
                 <Edit3 className="size-3.5" />
                 <span>Editar Anúncio</span>
@@ -807,7 +807,7 @@ export function EditorialShowcaseView({
                 variant="outline"
                 size="sm"
                 onClick={onOpenCompanionCard}
-                className="h-11 min-h-11 gap-2 rounded-lg border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 font-semibold text-xs cursor-pointer"
+                className="h-8 gap-2 rounded-lg border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 font-semibold text-xs cursor-pointer"
                 title="Guia Digital WhatsApp"
               >
                 <Smartphone className="size-3.5" />
@@ -820,7 +820,7 @@ export function EditorialShowcaseView({
                 variant="outline"
                 size="sm"
                 onClick={() => setIsPromoFlyerOpen(true)}
-                className="h-11 min-h-11 gap-2 rounded-lg border-primary/30 text-primary hover:bg-primary/5 font-semibold text-xs cursor-pointer"
+                className="h-8 gap-2 rounded-lg border-primary/30 text-primary hover:bg-primary/5 font-semibold text-xs cursor-pointer"
                 title="Gerar Flyer 9:16"
               >
                 <Star className="size-3.5" />
@@ -832,7 +832,7 @@ export function EditorialShowcaseView({
               variant="ghost"
               size="sm"
               onClick={handleShare}
-              className="h-11 min-h-11 gap-2 rounded-lg text-muted-foreground hover:text-foreground font-semibold text-xs cursor-pointer"
+              className="h-8 gap-2 rounded-lg text-muted-foreground hover:text-foreground font-semibold text-xs cursor-pointer"
             >
               <Share2 className="size-3.5" />
               <span>Compartilhar</span>
@@ -842,7 +842,7 @@ export function EditorialShowcaseView({
                 entityId={classified.id}
                 entityType="classified"
                 title={classified.title}
-                className="size-11 min-h-11"
+                className="size-8"
               />
             )}
           </div>
@@ -890,7 +890,7 @@ export function EditorialShowcaseView({
                           className={cn(
                             "relative aspect-square size-14 sm:size-16 rounded-lg overflow-hidden border bg-muted shrink-0 group cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                             isActive
-                              ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background scale-105"
+                              ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background scale-[1.02]"
                               : "border-border/50 hover:border-primary/50 opacity-80 hover:opacity-100"
                           )}
                           title={`Ver imagem ${idx + 1}`}
@@ -931,7 +931,7 @@ export function EditorialShowcaseView({
                   <span className="font-bold text-foreground">{departureCity}</span>
                   {destinationCity && destinationCity.toLowerCase() !== departureCity.toLowerCase() && (
                     <>
-                      <ArrowRight className="size-3 text-muted-foreground mx-1 shrink-0" />
+                      <span className="text-muted-foreground/60 mx-1">➔</span>
                       <span className="inline-flex items-center gap-1 text-primary">
                         <span>Destino:</span>
                       </span>
@@ -1005,7 +1005,7 @@ export function EditorialShowcaseView({
 
           <div className="flex items-center gap-2 shrink-0">
             {storeProfileUrl ? (
-              <Button asChild size="sm" variant="outline" className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold border-border/80 hover:bg-background">
+              <Button asChild size="sm" variant="outline" className="h-8 px-3 rounded-lg text-xs font-bold border-border/80 hover:bg-background">
                 <Link to={storeProfileUrl}>
                   <span>{isCompany ? "Ver Loja" : "Ver Perfil"}</span>
                   <ChevronRight className="size-3 ml-1" />
@@ -1029,7 +1029,7 @@ export function EditorialShowcaseView({
                 onClick={() => setActiveStoryModal(hl)}
                 className="flex flex-col items-center gap-2 shrink-0 group active:scale-95 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <div className="size-16 rounded-lg p-1 bg-border hover:bg-primary/40 transition-colors">
+                <div className="size-16 rounded-lg p-1 bg-border hover:bg-gradient-to-tr hover:from-amber-500 hover:via-rose-500 hover:to-purple-600 transition-colors">
                   <img
                     src={hl.image || images[0]}
                     alt={hl.title}
@@ -1046,7 +1046,7 @@ export function EditorialShowcaseView({
 
         {/* ── Abas Canônicas em Linha Única Horizontal Contínua (Invariante B.39) ── */}
         <div className="border-t border-border/40 pt-1 px-4 sm:px-0">
-          <div className="flex flex-nowrap items-center border-b border-border/40 overflow-x-auto carousel no-scrollbar gap-1 pb-px w-full">
+          <div className="flex flex-nowrap items-center border-b border-border/40 overflow-x-auto no-scrollbar gap-1 pb-px w-full">
             {availableTabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -1074,7 +1074,7 @@ export function EditorialShowcaseView({
           {activeTab === "grid" && (
             <div className="pt-3">
               {feedImages.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 rounded-lg overflow-hidden">
+                <div className="grid grid-cols-3 gap-2 rounded-lg overflow-hidden">
                   {feedImages.slice(0, 12).map((item, i) => {
                     const rawUrl = typeof item === "string" ? item : (item?.url || item?.src || "");
                     const isVideo = /\.(mp4|webm|mov|m4v|ogg)(\?.*)?$/i.test(rawUrl) || item?.type === "video";
@@ -1464,7 +1464,7 @@ export function EditorialShowcaseView({
           {activeTab === "itinerary" && (
             <div className="pt-4 space-y-4">
               {itineraryDays.length > 0 ? (
-                <div className="relative pl-7 space-y-6 before:absolute before:left-3 before:top-3 before:bottom-3 before:w-0.5 before:bg-border/80">
+                <div className="relative pl-7 space-y-6 before:absolute before:left-3 before:top-3 before:bottom-3 before:w-[2px] before:bg-border/80">
                     {itineraryDays.map((item: any, idx: number) => (
                     <div key={idx} className="relative space-y-3">
                       <div className="absolute -left-7 top-0.5 size-7 rounded-lg bg-card border-2 border-primary/90 flex items-center justify-center text-xs font-bold text-foreground">
@@ -2205,7 +2205,6 @@ export function EditorialShowcaseView({
                       return (
                         <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                           key={opt.id || i}
-                          tabIndex={0}
                           onClick={() => setSelectedDepartureId(selectedDepartureId === optId ? null : optId)}
                           className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                             "flex items-center justify-between p-2 rounded-lg border transition-colors cursor-pointer text-left",
@@ -2290,7 +2289,7 @@ export function EditorialShowcaseView({
                   <span className="font-bold text-foreground">{departureCity}</span>
                   {destinationCity && destinationCity.toLowerCase() !== departureCity.toLowerCase() && (
                     <>
-                      <ArrowRight className="size-3 text-muted-foreground mx-1 shrink-0" />
+                      <span className="text-muted-foreground/60 mx-1">➔</span>
                       <span className="inline-flex items-center gap-1 text-primary">
                         <span>Destino:</span>
                       </span>
@@ -2543,7 +2542,7 @@ export function EditorialShowcaseView({
             </div>
 
             {storeProfileUrl && (
-              <Button asChild size="sm" variant="outline" className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold border-border/80 hover:bg-background shrink-0">
+              <Button asChild size="sm" variant="outline" className="h-8 px-3 rounded-lg text-xs font-bold border-border/80 hover:bg-background shrink-0">
                 <Link to={storeProfileUrl}>
                   <span>{isCompany ? "Ver Loja" : "Ver Perfil"}</span>
                   <ChevronRight className="size-3 ml-1" />
@@ -2558,7 +2557,6 @@ export function EditorialShowcaseView({
       {/* close lg:grid-cols-12 */}
       </div>
 
-      <div className="h-24 w-full lg:hidden" aria-hidden="true" />
       {/* ── Barra Inferior Flutuante Fixa (Apenas no Mobile) ── */}
       <div className={cn(isForcedMobile ? "hidden" : "md:hidden", "fixed bottom-0 inset-x-0 z-30 bg-background/95 backdrop-blur-xl border-t border-border/60 pb-[max(0.75rem,env(safe-area-inset-bottom))]")}>
         <div className="max-w-3xl lg:max-w-4xl mx-auto px-4 sm:px-6 md:px-8 py-2 sm:py-3 flex items-center justify-between gap-3">
@@ -2604,7 +2602,7 @@ export function EditorialShowcaseView({
                       {formatMoney(priceCents)}
                     </span>
                   )}
-                  <ChevronUp className="size-3.5 text-muted-foreground shrink-0 group-hover:-translate-y-0.5 transition-transform" />
+                  <ChevronUp className="size-3.5 text-muted-foreground shrink-0 group-hover:translate-y-[-1px] transition-transform" />
                 </div>
                 <div className="flex items-center gap-2 text-xs sm:text-xs text-muted-foreground flex-wrap gap-1">
                   {maxInstallments > 1 ? (
@@ -2685,7 +2683,7 @@ export function EditorialShowcaseView({
             </div>
 
             {/* Imagem Principal Centralizada */}
-            <div className="relative w-full max-h-screen sm:max-h-screen flex items-center justify-center p-4">
+            <div className="relative w-full h-[70vh] sm:h-[80vh] flex items-center justify-center p-4">
               <img
                 src={fullscreenImage}
                 alt={`Foto ${activeImageIndex + 1}`}
@@ -2757,7 +2755,7 @@ export function EditorialShowcaseView({
 
       {/* ── Modal de Opções de Pagamento, Atendimento & Negociação (Apple HIG List Format) ── */}
       <Dialog open={isContactModalOpen} onOpenChange={setIsContactModalOpen}>
-        <DialogContent className="max-w-md p-5 rounded-lg bg-background/98 backdrop-blur-xl border border-border/60 max-h-sheet overflow-y-auto no-scrollbar">
+        <DialogContent className="max-w-md p-5 rounded-lg bg-background/98 backdrop-blur-xl border border-border/60 max-h-[90vh] overflow-y-auto no-scrollbar">
           <DialogHeader className="pb-1">
             <DialogTitle className="text-base font-bold text-foreground">
               {classified.title || "Opções & Atendimento"}
@@ -2911,14 +2909,14 @@ export function EditorialShowcaseView({
                     type="button"
                     onClick={handleSendAppMessage}
                     disabled={isSendingMessage || !contactMessage.trim()}
-                    className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2"
+                    className="w-full h-10 rounded-lg text-xs font-bold gap-2"
                   >
                     {isSendingMessage ? "Enviando..." : "Enviar Mensagem pelo Chat"}
                   </Button>
                 </div>
               )}
 
-
+              
               {/* Botão PIX Direto */}
               {effectivePixKey && (
                 <button
@@ -3011,7 +3009,7 @@ export function EditorialShowcaseView({
         </DialogContent>
       </Dialog>
 
-
+      
       {/* ── Modal Player de Vídeo do Feed ── */}
       <Dialog open={!!selectedVideoUrl} onOpenChange={(open) => !open && setSelectedVideoUrl(null)}>
         <DialogContent className="max-w-2xl p-2 sm:p-4 rounded-lg bg-foreground/95 border border-white/10 text-foreground">
@@ -3089,7 +3087,7 @@ export function EditorialShowcaseView({
                   setIsPixPaymentModalOpen(false);
                   handleWhatsAppDirect();
                 }}
-                className="w-full h-11 min-h-11 rounded-lg border-emerald-500/30 text-emerald-600 font-semibold text-xs gap-2"
+                className="w-full h-10 rounded-lg border-emerald-500/30 text-emerald-600 font-semibold text-xs gap-2"
               >
                 <MessageCircle className="size-4" />
                 <span>Enviar Comprovante pelo WhatsApp</span>

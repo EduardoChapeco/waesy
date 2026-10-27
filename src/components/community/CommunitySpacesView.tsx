@@ -444,7 +444,7 @@ export function CommunitySpacesView({
             <div
               key={p.id}
               onClick={() => onProductClick?.(p.id)}
-              className="rounded-2xl bg-card border border-border/80 p-3 space-y-2 hover:border-foreground/30 transition-all cursor-pointer shadow-xs"
+              className="rounded-2xl bg-card border border-border/80 p-3 space-y-2 hover:border-foreground/30 transition-all cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <div className="w-full aspect-square rounded-xl bg-muted/40 flex items-center justify-center overflow-hidden">
                 {p.coverUrl ? (

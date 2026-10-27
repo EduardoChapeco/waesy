@@ -187,7 +187,7 @@ export function LoanSimulationSheet({
             <span className="text-xs text-muted-foreground block">Quanto você precisa?</span>
             <div
               onClick={() => setShowKeypad(true)}
-              className="text-3xl sm:text-4xl font-extrabold font-mono tracking-tight text-foreground cursor-pointer hover:opacity-80 transition-opacity py-1"
+              className="text-3xl sm:text-4xl font-extrabold font-mono tracking-tight text-foreground cursor-pointer hover:opacity-80 transition-opacity py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               {formatCents(amountCents)}
             </div>
@@ -215,7 +215,7 @@ export function LoanSimulationSheet({
             <button
               type="button"
               onClick={() => setShowKeypad((prev) => !prev)}
-              className="text-xs text-primary hover:underline font-medium inline-block mt-1 cursor-pointer"
+              className="text-xs text-primary hover:underline font-medium inline-block mt-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               {showKeypad ? "Ocultar teclado numérico" : "Digitar outro valor no teclado"}
             </button>

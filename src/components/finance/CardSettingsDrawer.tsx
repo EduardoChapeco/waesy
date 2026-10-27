@@ -175,7 +175,7 @@ export function CardSettingsDrawer({
                 <button
                   type="button"
                   onClick={() => handleCopy(cardNumber.replace(/\s/g, ""), "Número")}
-                  className="size-9 inline-flex items-center justify-center rounded-lg hover:bg-white/10 text-zinc-300 hover:text-white transition-colors cursor-pointer"
+                  className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg hover:bg-white/10 text-zinc-300 hover:text-white transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   aria-label="Copiar número do cartão"
                 >
                   {copiedField === "Número" ? <Check className="size-4 text-emerald-400" /> : <Copy className="size-4" />}

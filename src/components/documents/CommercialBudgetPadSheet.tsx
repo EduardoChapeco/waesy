@@ -413,7 +413,7 @@ export function CommercialBudgetPadSheet({
       status: "draft",
       issueDate: new Intl.DateTimeFormat("pt-BR").format(new Date()),
       validUntilDate: new Intl.DateTimeFormat("pt-BR").format(validUntilDate),
-      issuer: savedInvoice?.issuer_snapshot || {
+      issuer: (savedInvoice?.issuer_snapshot as any) || {
         companyName: "Minha Empresa Parceira",
         cnpjOrCpf: "00.000.000/0001-00",
         address: "Av. Brasil, Centro",
@@ -923,7 +923,7 @@ export function CommercialBudgetPadSheet({
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={handleOpenWhatsAppMenu}
+                onClick={handleSendWhatsApp}
                 className="h-11 min-h-11 px-4 text-xs font-medium text-emerald-600 hover:text-emerald-700"
               >
                 <WhatsappLogo className="size-4 mr-2" />
@@ -957,124 +957,6 @@ export function CommercialBudgetPadSheet({
       </Sheet>
 
       
-      {/* ── DIÁLOGO DE LIQUIDAÇÃO FINANCEIRA & SPLIT DE COMISSÃO ── */}
-      <Dialog open={settleModalOpen} onOpenChange={setSettleModalOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <div className="size-10 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center mb-2">
-              <DollarSign className="size-5" />
-            </div>
-            <DialogTitle className="text-lg font-bold">Liquidar Fatura & Divisão Financeira</DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
-              Confirme o recebimento do valor bruto, informe o custo líquido de repasse ao fornecedor/operadora e defina o split de comissão do consultor. O valor entrará imediatamente no Caixa Geral da empresa.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-2">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold">Valor Bruto Recebido</Label>
-                <div className="h-11 min-h-11 px-3 bg-muted rounded-lg flex items-center font-mono font-bold text-foreground text-xs">
-                  {formatMoney(totalCents)}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold">Forma de Pagamento</Label>
-                <Select
-                  value={settlementMethod}
-                  onValueChange={(val: any) => setSettlementMethod(val)}
-                >
-                  <SelectTrigger className="h-11 min-h-11 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pix">PIX Instantâneo</SelectItem>
-                    <SelectItem value="credit_card">Cartão de Crédito</SelectItem>
-                    <SelectItem value="debit_card">Cartão de Débito</SelectItem>
-                    <SelectItem value="bank_slip">Boleto Bancário</SelectItem>
-                    <SelectItem value="bank_transfer">Transferência Bancária</SelectItem>
-                    <SelectItem value="cash">Dinheiro em Espécie</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold">Custo Fornecedor / Operadora (R$)</Label>
-                <Input
-                  value={operatorCostStr}
-                  onChange={(e) => setOperatorCostStr(e.target.value)}
-                  placeholder="0,00"
-                  className="h-11 min-h-11 text-xs font-mono"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold">% Comissão do Consultor</Label>
-                <Input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={consultantCommissionPercent}
-                  onChange={(e) => setConsultantCommissionPercent(Number(e.target.value) || 0)}
-                  className="h-11 min-h-11 text-xs font-mono"
-                />
-              </div>
-            </div>
-
-            {/* Quadro Resumo do Split */}
-            <div className="p-4 rounded-lg bg-muted/40 border border-border/70 space-y-2 text-xs">
-              <div className="flex justify-between text-muted-foreground">
-                <span>Margem Bruta da Agência:</span>
-                <span className="font-mono font-bold text-foreground">{formatMoney(agencyMarginCents)}</span>
-              </div>
-              <div className="flex justify-between text-muted-foreground">
-                <span>Comissão do Consultor ({consultantCommissionPercent}%):</span>
-                <span className="font-mono font-bold text-amber-600 dark:text-amber-400">{formatMoney(consultantCommissionCents)}</span>
-              </div>
-              <div className="pt-2 border-t border-border flex justify-between items-baseline">
-                <span className="font-bold text-foreground">Retenção Líquida Agência:</span>
-                <span className="text-base font-black font-mono text-emerald-600 dark:text-emerald-400">
-                  {formatMoney(agencyNetRetentionCents)}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setSettleModalOpen(false)}
-              disabled={isSettling}
-              className="h-11 min-h-11 text-xs"
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="button"
-              onClick={handleConfirmSettlement}
-              disabled={isSettling}
-              className="h-11 min-h-11 px-5 text-xs font-bold gap-2"
-            >
-              {isSettling ? (
-                <>
-                  <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
-                  Liquidando...
-                </>
-              ) : (
-                <>
-                  <CheckCircle2 className="size-4" />
-                  Confirmar e Injetar no Caixa
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-  
       {/* ── DIÁLOGO DE SELEÇÃO DE MINUTA JURÍDICA PARA GERAR CONTRATO ── */}
       <Dialog open={contractModalOpen} onOpenChange={setContractModalOpen}>
         <DialogContent className="max-w-lg">

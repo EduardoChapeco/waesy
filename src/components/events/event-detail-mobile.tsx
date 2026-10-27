@@ -212,7 +212,7 @@ export function EventDetailMobile({
             size="sm"
             className="flex-1 h-11 min-h-11 text-xs font-bold rounded-lg gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border-border"
           >
-            <Link to="/workspace/atendimento" search={{}} as any>
+            <Link to="/workspace/atendimento" search={{ threadId: undefined, search: undefined }}>
               <Users size={16} weight="bold" className="text-primary" />
               <span>SAC & Suporte</span>
             </Link>
@@ -243,7 +243,7 @@ export function EventDetailMobile({
             size="sm"
             className="flex-1 h-11 min-h-11 text-xs font-bold rounded-lg gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border-border"
           >
-            <Link to="/workspace/atendimento" search={{}} as any>
+            <Link to="/workspace/atendimento" search={{ threadId: undefined, search: undefined }}>
               <Users size={16} weight="bold" className="text-primary" />
               <span>SAC & Suporte</span>
             </Link>

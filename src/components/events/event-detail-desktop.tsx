@@ -158,7 +158,7 @@ export function EventDetailDesktop({
             size="sm"
             className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border-border hover:bg-muted/40 cursor-pointer"
           >
-            <Link to="/workspace/atendimento" search={{}} as any>
+            <Link to="/workspace/atendimento" search={{ threadId: undefined, search: undefined }}>
               <Users size={15} weight="bold" className="text-primary" />
               <span>SAC & Suporte ao Participante</span>
             </Link>

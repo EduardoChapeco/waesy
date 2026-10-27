@@ -5,7 +5,6 @@ import { LocationMasterPill } from "@/components/location/location-master-pill";
 import { UtilityCluster } from "@/components/shell/utility-cluster";
 import { MagnifyingGlass, List } from "@phosphor-icons/react";
 import { drawerStore } from "@/lib/drawer-store";
-import { GlobalTripCompanionWidget } from "@/components/tourism/traveler/GlobalTripCompanionWidget";
 import { BetaExplanationModal } from "@/components/shell/beta-explanation-modal";
 
 export interface TopBarProps {
@@ -114,7 +113,6 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
             <MagnifyingGlass size={20} weight="bold" />
           </Link>
 
-          <GlobalTripCompanionWidget />
           <UtilityCluster session={session} embedded={true} />
         </div>
       </div>

@@ -22,7 +22,7 @@ describe("financial-settlement.functions", () => {
     // Verificação de lógica de margem:
     // Margem bruta = 500.000 - 420.000 = 80.000 centavos (R$ 800)
     // Comissão (30%) = 80.000 * 0.30 = 24.000 centavos (R$ 240)
-    const margin = parsed.paidAmountCents - (parsed.operatorNetCents || 0);
+    const margin = (parsed.paidAmountCents || 0) - (parsed.operatorNetCents || 0);
     const comm = Math.round(margin * ((parsed.consultantPercent || 0) / 100));
     expect(margin).toBe(80000);
     expect(comm).toBe(24000);

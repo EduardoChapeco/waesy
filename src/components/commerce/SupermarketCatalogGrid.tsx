@@ -255,7 +255,7 @@ export function SupermarketCatalogGrid({
                     key={item}
                     type="button"
                     onClick={() => handleScanSimulate(item)}
-                    className="h-11 min-h-11 px-3 rounded-xl bg-muted/60 hover:bg-muted text-xs font-semibold text-foreground border border-border/40 transition-colors cursor-pointer"
+                    className="h-11 min-h-11 px-3 rounded-xl bg-muted/60 hover:bg-muted text-xs font-semibold text-foreground border border-border/40 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     Escanear {item}
                   </button>
