@@ -70,6 +70,8 @@ import {
 } from "@/components/mobility";
 import { ModularSurfaceFeed } from "@/components/commerce/modular-surface-feed";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { RideBookingBottomSheet, type SheetSnapPoint, type RideOptionItem } from "@/components/mobility/RideBookingBottomSheet";
 
 export const Route = createFileRoute("/_store/mobilidade")({
   head: () => ({
@@ -211,6 +213,7 @@ function MobilityPage() {
   const [destinationText, setDestinationText] = useState("");
   const [isLocatingGPS, setIsLocatingGPS] = useState(false);
   const [pinMode, setPinMode] = useState<"origin" | "destination" | null>(null);
+  const [bottomSheetSnap, setBottomSheetSnap] = useState<SheetSnapPoint>("medium");
 
   // 4. Subfluxo de Entrega
   const [deliveryAction, setDeliveryAction] = useState<"send" | "receive">("send");
@@ -395,6 +398,23 @@ function MobilityPage() {
 
   const currentSelectedOption =
     availableOptions.find((o) => o.id === selectedOptionId) || availableOptions[0];
+
+  const mappedRideOptions = useMemo<RideOptionItem[]>(() => {
+    return availableOptions.map((opt) => ({
+      id: opt.id,
+      name: opt.name,
+      category:
+        opt.canonical_service_type === "moto_taxi" || opt.icon_name === "bike"
+          ? "moto"
+          : opt.service_level === "comfort"
+          ? "comfort"
+          : "car",
+      etaMinutes: opt.eta_minutes,
+      priceCents: opt.estimated_price_cents,
+      description: opt.description,
+      seats: parseInt(opt.capacity_label) || (opt.icon_name === "bike" ? 1 : 4),
+    }));
+  }, [availableOptions]);
 
   // Inscrição Realtime para Status e Telemetria do Motorista
   useEffect(() => {
@@ -661,14 +681,14 @@ function MobilityPage() {
         )}
       </div>
 
-      {/* ── 2. PAINEL DE SOLICITAÇÃO (DRAWER MOBILE / CARD LATERAL DESKTOP) ── */}
+            {/* ── 2. PAINEL DE SOLICITAÇÃO (DRAWER MOBILE / CARD LATERAL DESKTOP) ── */}
       <div
-        className="
-          absolute z-30
-          bottom-0 left-0 right-0 max-h-screen rounded-t-lg border-t
-          sm:bottom-4 sm:top-4 sm:left-4 sm:right-auto sm:w-96 sm:max-w-md sm:max-h-none sm:rounded-lg sm:border
-          overflow-y-auto no-scrollbar bg-card/95 backdrop-blur-2xl p-5 text-foreground border-border/80 space-y-4 animate-in slide-in-from-bottom-4 sm:slide-in-from-left-4 duration-300
-        "
+        className={cn(
+          "absolute z-30 overflow-y-auto no-scrollbar bg-card/95 backdrop-blur-2xl p-5 text-foreground border-border/80 space-y-4 animate-in duration-300",
+          selectedCategory === "ride" && scheduleMode === "now" && requestStatus === "idle"
+            ? "hidden sm:block sm:bottom-4 sm:top-4 sm:left-4 sm:right-auto sm:w-96 sm:max-w-md sm:max-h-none sm:rounded-lg sm:border sm:slide-in-from-left-4"
+            : "bottom-0 left-0 right-0 max-h-screen rounded-t-lg border-t sm:bottom-4 sm:top-4 sm:left-4 sm:right-auto sm:w-96 sm:max-w-md sm:max-h-none sm:rounded-lg sm:border slide-in-from-bottom-4 sm:slide-in-from-left-4"
+        )}
       >
         {/* Cabeçalho */}
         <div className="flex items-center justify-between pb-1 border-b border-border/50">
@@ -1593,6 +1613,26 @@ function MobilityPage() {
             Instalar App
           </Button>
         </div>
+      )}
+
+      {/* ── 2.1 BOTTOM SHEET NATIVO MOBILE BLABLACAR / IFOOD COM 3 SNAP POINTS ── */}
+      {selectedCategory === "ride" && scheduleMode === "now" && requestStatus === "idle" && (
+        <RideBookingBottomSheet
+          snapPoint={bottomSheetSnap}
+          onSnapPointChange={setBottomSheetSnap}
+          originText={originText || origin.label || "Origem atual"}
+          destinationText={destinationText || destination?.label || ""}
+          walkingDistanceMeters={180}
+          walkingMinutes={2}
+          options={mappedRideOptions}
+          selectedOptionId={selectedOptionId}
+          onSelectOption={(id) => setSelectedOptionId(id)}
+          paymentMethod={paymentMethod}
+          onSelectPaymentMethod={(m) => setPaymentMethod(m)}
+          onConfirmRide={handleSubmit}
+          isConfirming={createMutation.isPending}
+          className="sm:hidden"
+        />
       )}
 
       {/* Modais de Ação e Segurança */}

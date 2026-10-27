@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
-import { IFoodSquareCategoryButton } from "./IFoodSquareCategoryButton";
+import { IFoodSquareCategoryButton, resolveCategoryIcon } from "./IFoodSquareCategoryButton";
 import {
   type HomeSectionItemDTO,
   isHealthyImageUrl,
@@ -18,11 +18,11 @@ export function NoorNativeCategoryDock({
   className,
   variant = "square",
 }: NoorNativeCategoryDockProps) {
-  // Invariante de Omissão Estrita: Filtrar apenas itens com imagem válida
+  // Permite itens com imagem saudável OU título configurado no CMS com fallback vetorial
   const validItems = (items || []).filter(
     (item) =>
       item.is_active !== false &&
-      isHealthyImageUrl(item.image_desktop_url || item.image_mobile_url || item.image_url),
+      (Boolean(item.title?.trim()) || isHealthyImageUrl(item.image_desktop_url || item.image_mobile_url || item.image_url)),
   );
   if (validItems.length === 0) return null;
 
@@ -62,30 +62,35 @@ function CompactCategoryPill({ item }: { item: HomeSectionItemDTO }) {
   const imageUrl = item.image_desktop_url || item.image_url || item.image_mobile_url;
   const hasValidImage = Boolean(imageUrl && !imageError && isHealthyImageUrl(imageUrl));
 
-  // Invariante de Omissão Estrita: Se não possui imagem saudável, OMITIR
-  if (!hasValidImage) {
+  // Se não possui imagem saudável nem título, omitir
+  if (!hasValidImage && !item.title?.trim()) {
     return null;
   }
 
-  const isShowTitle = item.show_text === true && Boolean(item.title && item.title.trim().length > 0);
+  const isShowTitle = (item.show_text === true || !hasValidImage) && Boolean(item.title && item.title.trim().length > 0);
+  const IconComponent = resolveCategoryIcon(item.title);
 
   return (
     <Link
       to={item.target_url as any}
       className={cn(
-        "snap-start shrink-0 min-h-11 min-w-11 px-3 py-2 rounded-lg bg-card hover:bg-muted/50 border border-border/50",
+        "snap-start shrink-0 min-h-11 min-w-11 px-3 py-2 rounded-2xl bg-card hover:bg-muted/50 border border-border/60",
         "flex items-center gap-2 active:scale-95 transition-transform duration-150",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
       )}
       aria-label={item.title || "Categoria"}
     >
-      <img
-        src={imageUrl!}
-        alt={isShowTitle ? (item.title || "") : ""}
-        loading="lazy"
-        className="size-7 object-contain"
-        onError={() => setImageError(true)}
-      />
+      {hasValidImage ? (
+        <img
+          src={imageUrl!}
+          alt={isShowTitle ? (item.title || "") : ""}
+          loading="lazy"
+          className="size-7 object-contain rounded-lg"
+          onError={() => setImageError(true)}
+        />
+      ) : (
+        <IconComponent className="size-5 text-primary shrink-0" />
+      )}
       {isShowTitle && (
         <span className="text-xs font-semibold text-foreground whitespace-nowrap">
           {item.title}

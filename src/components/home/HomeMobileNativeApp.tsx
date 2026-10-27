@@ -151,6 +151,7 @@ export function HomeMobileNativeApp({
         onViewModeChange={onViewModeChange}
         allowedViewModes={["feed", "grid", "list"]}
         stickyMode="none"
+        hideMobileSearch={true}
       />
 
       {/* ── 2.1 FILTROS PILLS EM 2 LINHAS (iFood Native Filters) ── */}
@@ -160,8 +161,7 @@ export function HomeMobileNativeApp({
       {(() => {
         const validHeroItems = (heroSection?.items || []).filter(
           (it) =>
-            it.is_active !== false &&
-            isHealthyImageUrl(it.image_desktop_url || it.image_mobile_url || it.image_url),
+            it.is_active !== false && (Boolean(it.title?.trim()) || isHealthyImageUrl(it.image_desktop_url || it.image_mobile_url || it.image_url)),
         );
         if (validHeroItems.length > 0) {
           return (
@@ -197,8 +197,7 @@ export function HomeMobileNativeApp({
       {(() => {
         const validQuickItems = (quickCategoriesSection?.items || []).filter(
           (it) =>
-            it.is_active !== false &&
-            isHealthyImageUrl(it.image_desktop_url || it.image_mobile_url || it.image_url),
+            it.is_active !== false && (Boolean(it.title?.trim()) || isHealthyImageUrl(it.image_desktop_url || it.image_mobile_url || it.image_url)),
         );
         if (validQuickItems.length === 0) return null;
 
@@ -242,8 +241,7 @@ export function HomeMobileNativeApp({
       {customSections.map((sec: HomePageSectionDTO) => {
         const activeSecItems = (sec.items || []).filter(
           (it) =>
-            it.is_active !== false &&
-            isHealthyImageUrl(it.image_desktop_url || it.image_mobile_url || it.image_url),
+            it.is_active !== false && (Boolean(it.title?.trim()) || isHealthyImageUrl(it.image_desktop_url || it.image_mobile_url || it.image_url)),
         );
         if (activeSecItems.length === 0) return null;
 

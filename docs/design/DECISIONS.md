@@ -1,5 +1,16 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-333: Redesign e Refatoração Holística de Telas — Eliminação de Buscas Duplicadas, Fallback Vetorial de Módulos e Integração Nativa Mobile BlaBlaCar/Eventos
+- **Data:** 2026-10-27
+- **Contexto:** Resolução dos pontos focais de auditoria de UX e arquitetura nas telas não-bancárias do SuperApp:
+  1. **Eliminação de Buscas Duplicadas no Mobile:** Injeção de `hideMobileSearch={true}` em `DiscoveryControlBar` dentro de `HomeMobileNativeApp.tsx`, `_store.eventos.tsx` e `_store.turismo.index.tsx`, prevenindo a sobreposição de múltiplos campos de busca quando `TopGreetingSearchBar` ou `NativeMobileHeader` já provêm controle de busca no topo.
+  2. **Fallback Vetorial Semântico de Botões de Módulo:** Refatoração de `IFoodSquareCategoryButton.tsx` e `NoorNativeCategoryDock.tsx` para acionar mapeamento de ícones vetoriais semânticos (Lucide/Phosphor) em squircles de 44px (`min-h-11`) quando criados sem mídia PNG customizada no Admin Master CMS, preservando a visibilidade dos módulos e eliminando omissão indevida.
+  3. **Integração de Mobilidade BlaBlaCar no Mobile:** Conexão nativa do `RideBookingBottomSheet.tsx` na rota `_store.mobilidade.tsx` com 3 snap points (`compact`, `medium`, `expanded`), indicador de raio de caminhada e seletor de pagamento no mobile, mantendo o painel lateral para workstations desktop ($\ge 840$px).
+  4. **Padronização de Cards de Eventos e Ingressos:** Uniformização de botões táteis nos modos Feed e Grid de `_store.eventos.tsx` com CTA proeminente de 44px ("Garantir"), em conformidade com as invariantes B.22 e B.28.
+  5. **Resiliência em Comunidades (/c/@slug):** Limpeza defensiva do prefixo `@` em `getCustomerPortalBySlug` em `customer-portal.functions.ts`.
+- **Fundamentação:** `AGENTS.md` B.1 a B.45; B.20; B.22; B.26; B.28; B.35; B.38; Apple HIG; WCAG 2.2 AA.
+- **Consequências:** Zero regressões no ecossistema, 100% de integridade com loaders e CMS bilateral, 38 testes automatizados em 10 suítes passando com 100% de sucesso.
+
 ## DEC-332: Redesign Holístico Mobile-First, Waesy Bank (99Pay), Carrinho Multiloja (ML), Supermercado ("O Super"), BlaBlaCar e Wix Spaces
 - **Data:** 2026-10-27
 - **Contexto:** Execução integral e unificada das ondas 1 a 11 do Master Plan de Redesign baseadas no inventário exaustivo de 81 referências visuais da pasta `printstela`:

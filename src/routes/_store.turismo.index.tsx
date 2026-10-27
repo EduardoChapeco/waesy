@@ -288,6 +288,7 @@ function TourismMasterPage() {
         onSelectCategory={(id) => setSelectedCategory(id)}
         viewMode={layoutMode === "rails" ? "feed" : layoutMode === "compact" ? "list" : "grid"}
         onViewModeChange={(m) => setLayoutMode(m === "feed" ? "rails" : m === "list" ? "compact" : "cards")}
+        hideMobileSearch={true}
         allowedViewModes={["feed", "grid", "list"]}
       />
 
