@@ -1,4 +1,5 @@
-import { Plane, Hotel, MapPin } from "lucide-react";
+import React from "react";
+import { Plane, Hotel, MapPin, CheckCircle2 } from "lucide-react";
 import { type Voucher } from "@/services/vouchers";
 import { type BrandKit } from "@/lib/agency-context";
 
@@ -14,155 +15,104 @@ interface Props {
 }
 
 export default function TemplateVoucherStory({ voucher: v, agency, brandKit }: Props) {
-  const primaryColor =
-    brandKit?.primary_color || brandKit?.brand_color || agency.brand_color || "#4f46e5";
-  const secondaryColor = brandKit?.secondary_color || "#ec4899";
-  const bgColor = brandKit?.background_color || "#FFFFFF";
-  const textColor = brandKit?.text_color || "#111827";
-  const fontHeading = brandKit?.font_heading || "Outfit";
-  const fontBody = brandKit?.font_body || "Inter";
-
-  const brand = primaryColor;
   const logoUrl = brandKit?.logo_white_url || brandKit?.logo_url || agency.logo_url;
-
-  const styleVars = {
-    "--brand-primary": primaryColor,
-    "--brand-secondary": secondaryColor,
-    "--brand-heading-font": `"${fontHeading}", sans-serif`,
-    "--brand-body-font": `"${fontBody}", sans-serif`,
-  } as React.CSSProperties;
-
-  const fontHeadingUrl = fontHeading.replace(/\s+/g, "+");
-  const fontBodyUrl = fontBody.replace(/\s+/g, "+");
 
   return (
     <div
-      className="relative flex flex-col w-full h-full overflow-hidden text-foreground"
-      style={{
-        ...styleVars,
-        background: `linear-gradient(135deg, ${primaryColor}4D, #030712)`,
-        fontFamily: "var(--brand-body-font, sans-serif)",
-      }}
+      id="story-canvas"
+      className="relative flex flex-col w-full h-full min-h-full overflow-hidden bg-card text-card-foreground select-none"
     >
-      <link
-        href={`https://fonts.googleapis.com/css2?family=${fontHeadingUrl}:wght@400;600;700;800&family=${fontBodyUrl}:wght@400;500;700&display=swap`}
-        rel="stylesheet"
-      />
-      {/* Decorative blobs */}
-      <div
-        className="absolute top-[-80px] right-[-80px] w-64 h-64 rounded-full opacity-25 blur-[80px]"
-        style={{ backgroundColor: primaryColor }}
-      />
-      <div
-        className="absolute bottom-[-80px] left-[-80px] w-64 h-64 rounded-full opacity-20 blur-[80px]"
-        style={{ backgroundColor: secondaryColor }}
-      />
-
-      {/* Content */}
-      <div className="relative z-10 flex flex-col h-full p-8">
-        {/* Agency logo */}
-        <div className="flex items-center gap-3 mb-auto">
-          {logoUrl ? (
-            <img
-              src={logoUrl}
-              alt={agency.name}
-              crossOrigin="anonymous"
-              className="h-10 w-auto object-contain glass backdrop-blur-sm rounded-full p-1"
-            />
-          ) : (
-            <span
-              className="font-black text-xl tracking-tighter"
-              style={{ fontFamily: "var(--brand-heading-font, sans-serif)", color: primaryColor }}
-            >
-              {agency.name}
-            </span>
-          )}
+      {/* ── 1. Topo: Logo & Identificação da Agência ── */}
+      <div className="relative z-10 flex flex-col h-full p-6 sm:p-8 justify-between">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {logoUrl ? (
+              <img
+                src={logoUrl}
+                alt={agency.name}
+                crossOrigin="anonymous"
+                className="h-10 w-auto object-contain rounded-full p-1 bg-muted/60 border border-border"
+              />
+            ) : (
+              <span className="font-extrabold text-lg tracking-tight text-primary">
+                {agency.name}
+              </span>
+            )}
+          </div>
+          <span className="px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
+            Voucher 9:16
+          </span>
         </div>
 
-        {/* Destination hero */}
-        <div className="mt-8 mb-4">
-          <div className="flex items-center gap-2 mb-2">
-            <MapPin className="h-4 w-4 text-foreground/60" />
-            <span className="text-xs font-semibold uppercase tracking-widest text-foreground/60">
-              Próximo destino
+        {/* ── 2. Hero do Destino ── */}
+        <div className="my-auto py-6 space-y-3">
+          <div className="flex items-center gap-2">
+            <MapPin className="size-4 text-primary" />
+            <span className="text-xs font-mono font-bold uppercase tracking-widest text-muted-foreground">
+              Próximo Destino
             </span>
           </div>
-          <h1
-            className="text-4xl font-black leading-none tracking-tighter"
-            style={{ fontFamily: "var(--brand-heading-font, sans-serif)" }}
-          >
-            {v.destination ?? "Sua Viagem!"}
+
+          <h1 className="text-3xl sm:text-4xl font-black leading-tight tracking-tight text-foreground">
+            {v.destination ?? "Sua Viagem dos Sonhos"}
           </h1>
+
           {v.general_locator && (
-            <div className="mt-2 text-xs font-mono text-foreground/50">
-              LOC: <span className="text-foreground/70">{v.general_locator}</span>
+            <div className="inline-block px-3 py-1 rounded-lg bg-muted text-xs font-mono text-foreground border border-border">
+              LOCALIZADOR: <span className="font-bold text-primary">{v.general_locator}</span>
             </div>
           )}
         </div>
 
-        {/* Info cards */}
-        <div className="flex flex-col gap-3 mt-4">
+        {/* ── 3. Cards Informativos (Voo / Hotel) ── */}
+        <div className="space-y-3">
           {v.flights && v.flights.length > 0 && (
-            <div className="rounded-lg glass-dark border border-white/15 backdrop-blur-sm p-4">
-              <div className="flex justify-between items-center ds-label-caps text-foreground/60 mb-2">
-                <span>Voo Confirmado</span>
-                <Plane className="w-4 h-4" />
+            <div className="rounded-lg bg-muted/40 border border-border/80 p-4 space-y-2">
+              <div className="flex justify-between items-center text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                <span className="flex items-center gap-2">
+                  <Plane className="size-3.5 text-primary" /> Voo Confirmado
+                </span>
+                <span className="font-mono text-foreground">{v.flights[0].flight_number || "Aéreo"}</span>
               </div>
-              <div
-                className="flex justify-between items-center text-lg font-bold"
-                style={{ fontFamily: "var(--brand-heading-font, sans-serif)" }}
-              >
+              <div className="flex justify-between items-center text-base sm:text-lg font-bold text-foreground">
                 <span>{v.flights[0].origin ?? "—"}</span>
-                <div className="flex items-center gap-1 text-foreground/40">
-                  <div className="h-px w-8 bg-card/30" />
-                  <Plane className="w-3 h-3" />
-                  <div className="h-px w-8 bg-card/30" />
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <div className="h-px w-6 bg-border" />
+                  <Plane className="size-3 text-primary" />
+                  <div className="h-px w-6 bg-border" />
                 </div>
                 <span>{v.flights[0].destination ?? "—"}</span>
               </div>
-              <div className="ds-meta mt-1 text-foreground/50 text-center">
-                {v.flights[0].airline}{" "}
-                {v.flights[0].flight_number && `· ${v.flights[0].flight_number}`}
-                {v.flights[0].date && ` · ${v.flights[0].date}`}
+              <div className="text-xs text-muted-foreground text-center font-mono">
+                {v.flights[0].airline} {v.flights[0].date && ` · ${v.flights[0].date}`}
               </div>
             </div>
           )}
 
           {v.accommodation && v.accommodation.length > 0 && (
-            <div className="rounded-lg glass-dark border border-white/15 backdrop-blur-sm p-4">
-              <div className="flex justify-between items-center ds-label-caps text-foreground/60 mb-1">
-                <span>Hospedagem</span>
-                <Hotel className="w-4 h-4" />
+            <div className="rounded-lg bg-muted/40 border border-border/80 p-4 space-y-1">
+              <div className="flex justify-between items-center text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                <span className="flex items-center gap-2">
+                  <Hotel className="size-3.5 text-emerald-600" /> Hospedagem
+                </span>
+                <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
+                  <CheckCircle2 className="size-3" /> Confirmado
+                </span>
               </div>
-              <div
-                className="text-base font-bold truncate"
-                style={{ fontFamily: "var(--brand-heading-font, sans-serif)" }}
-              >
-                {v.accommodation[0].name}
+              <div className="text-sm font-bold text-foreground truncate">
+                {v.accommodation[0].name || "Hospedagem Selecionada"}
               </div>
-              {v.accommodation[0].city && (
-                <div className="ds-meta text-foreground/50 mt-1 truncate">
-                  {v.accommodation[0].city}
-                </div>
-              )}
+              <div className="text-xs text-muted-foreground">
+                {v.accommodation[0].city} · Check-in: {v.accommodation[0].checkin || "A combinar"}
+              </div>
             </div>
           )}
-        </div>
 
-        {/* Passengers summary */}
-        {v.passengers && v.passengers.length > 0 && (
-          <div className="mt-4 ds-meta text-foreground/50 text-center">
-            {v.passengers.length} passageiro{v.passengers.length !== 1 ? "s" : ""} ·{" "}
-            {v.passengers.map((p: any) => p.name.split(" ")[0]).join(", ")}
+          {/* ── 4. Rodapé do Story ── */}
+          <div className="pt-3 border-t border-border/60 flex items-center justify-between text-xs text-muted-foreground font-mono">
+            <span>{agency.name}</span>
+            <span>Apresentação Digital</span>
           </div>
-        )}
-
-        {/* Footer */}
-        <div className="mt-auto pt-6 text-center">
-          <p className="ds-meta uppercase tracking-widest text-foreground/40 mb-1">
-            Planejado com perfeição por
-          </p>
-          <p className="text-xs font-bold text-foreground/70">@{agency.slug}</p>
         </div>
       </div>
     </div>

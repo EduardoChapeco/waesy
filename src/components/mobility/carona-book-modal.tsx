@@ -146,7 +146,7 @@ export function CaronaBookModal({
                   </span>
                 </div>
                 <Badge variant="outline" className="font-mono text-xs">
-                  ★ {corridor.driverRating.toFixed(1)}
+                  Nota {corridor.driverRating.toFixed(1)}
                 </Badge>
               </div>
 

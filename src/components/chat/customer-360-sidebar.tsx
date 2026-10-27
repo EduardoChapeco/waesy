@@ -79,12 +79,12 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
  <h4 className="font-bold text-foreground truncate text-sm">
  {profile?.full_name || "Cliente Waesy"}
  </h4>
- <p className="text-muted-foreground text-2xs truncate flex items-center gap-1">
+ <p className="text-muted-foreground text-xs truncate flex items-center gap-1">
  <Mail className="size-3" />
  {profile?.email || "Sem e-mail"}
  </p>
  {profile?.phone && (
- <p className="text-muted-foreground text-2xs truncate flex items-center gap-1">
+ <p className="text-muted-foreground text-xs truncate flex items-center gap-1">
  <Phone className="size-3" />
  {profile.phone}
  </p>
@@ -95,7 +95,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
  {/* Métricas do Cliente (LTV, Pedidos, Tickets) */}
  <div className="grid grid-cols-2 gap-2">
  <div className="p-3 rounded-lg bg-card border border-border/80 space-y-1">
- <span className="text-2xs text-muted-foreground uppercase font-bold flex items-center gap-1">
+ <span className="text-xs text-muted-foreground uppercase font-bold flex items-center gap-1">
  <DollarSign className="size-3 text-success" />
  LTV Total
  </span>
@@ -105,7 +105,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
  </div>
 
  <div className="p-3 rounded-lg bg-card border border-border/80 space-y-1">
- <span className="text-2xs text-muted-foreground uppercase font-bold flex items-center gap-1">
+ <span className="text-xs text-muted-foreground uppercase font-bold flex items-center gap-1">
  <ShoppingBag className="size-3 text-primary" />
  Pedidos
  </span>
@@ -119,7 +119,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
  {tickets.length > 0 && (
  <div className="space-y-2">
  <div className="flex items-center justify-between">
- <span className="text-2xs font-bold text-foreground flex items-center gap-2">
+ <span className="text-xs font-bold text-foreground flex items-center gap-2">
  <ShieldAlert className="size-3.5 text-destructive" />
  Ocorrências & SAC ({tickets.length})
  </span>
@@ -127,14 +127,14 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
 
  <div className="space-y-2 max-h-36 overflow-y-auto no-scrollbar pr-1">
  {tickets.map((t: any) => (
- <div key={t.id} className="p-2 rounded-lg bg-muted/40 border border-border/60 text-2xs space-y-1">
+ <div key={t.id} className="p-2 rounded-lg bg-muted/40 border border-border/60 text-xs space-y-1">
  <div className="flex items-center justify-between">
- <span className="font-bold text-foreground truncate max-w-[140px]">{t.title}</span>
- <Badge variant={t.status === "resolved" ? "default" : "destructive"} className="text-3xs px-2 py-0 h-4">
+ <span className="font-bold text-foreground truncate max-w-36">{t.title}</span>
+ <Badge variant={t.status === "resolved" ? "default" : "destructive"} className="text-xs px-2 py-0 h-4">
  {t.status}
  </Badge>
  </div>
- <p className="text-2xs text-muted-foreground line-clamp-1">{t.description}</p>
+ <p className="text-xs text-muted-foreground line-clamp-1">{t.description}</p>
  </div>
  ))}
  </div>
@@ -144,14 +144,14 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
  {/* Histórico Recente de Compras */}
  <div className="space-y-2">
  <div className="flex items-center justify-between">
- <span className="text-2xs font-bold text-foreground flex items-center gap-2">
+ <span className="text-xs font-bold text-foreground flex items-center gap-2">
  <ShoppingBag className="size-3.5 text-primary" />
  Últimos Pedidos
  </span>
  </div>
 
  {orders.length === 0 ? (
- <p className="text-2xs text-muted-foreground italic">Nenhum pedido anterior na loja.</p>
+ <p className="text-xs text-muted-foreground italic">Nenhum pedido anterior na loja.</p>
  ) : (
  <div className="space-y-2 max-h-48 overflow-y-auto no-scrollbar pr-1">
  {orders.map((o: any) => (
@@ -160,7 +160,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
  <span className="font-bold text-foreground text-xs block">
  #{o.id.slice(0, 8)}
  </span>
- <span className="text-2xs text-muted-foreground">
+ <span className="text-xs text-muted-foreground">
  {formatDate(o.created_at)}
  </span>
  </div>
@@ -168,7 +168,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
  <span className="font-extrabold text-xs text-foreground block">
  {formatBRL((o.total_amount_cents || 0) / 100)}
  </span>
- <Badge variant="outline" className="text-3xs px-1 py-0 h-4 uppercase">
+ <Badge variant="outline" className="text-xs px-1 py-0 h-4 uppercase">
  {o.status}
  </Badge>
  </div>
@@ -176,7 +176,36 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
  ))}
  </div>
  )}
- </div>
- </div>
- );
+ 
+  </div>
+
+  {/* Ações Rápidas de Integração CRM & SAC */}
+  <div className="pt-2 border-t border-border/50 space-y-2">
+    <Button
+      asChild
+      variant="outline"
+      className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      <Link to="/workspace/clientes/$id" params={{ id: customerId }}>
+        <User className="size-4 text-primary" />
+        <span>Abrir Dossiê no CRM</span>
+        <ArrowUpRight className="size-3.5 ml-auto text-muted-foreground" />
+      </Link>
+    </Button>
+
+    <Button
+      asChild
+      variant="ghost"
+      className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      <Link to="/workspace/suporte">
+        <ShieldAlert className="size-4 text-amber-500" />
+        <span>Abrir Chamado no SAC</span>
+        <ArrowUpRight className="size-3.5 ml-auto text-muted-foreground" />
+      </Link>
+    </Button>
+  </div>
+</div>
+
+);
 };

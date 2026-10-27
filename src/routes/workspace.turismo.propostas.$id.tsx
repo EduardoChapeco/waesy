@@ -2,7 +2,8 @@ import { ProposalShareWhatsappModal } from "@/components/tourism/studio/proposal
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useState, useCallback } from "react";
 import { useMutation } from "@tanstack/react-query";
-import {  ArrowLeft, Download, Image as ImageIcon, Send, Check, Loader2, Copy, FileCheck2, Compass, Maximize2, SlidersHorizontal , LayoutTemplate, Moon, Briefcase, Monitor, FileText, Tag } from "lucide-react";
+import { ArrowLeft, Download, Image as ImageIcon, Send, Check, Loader2, Copy, FileCheck2, Compass, Maximize2, SlidersHorizontal, LayoutTemplate, Moon, Briefcase, Monitor, FileText, Tag, Receipt } from "lucide-react";
+import { CommercialBudgetPadSheet } from "@/components/documents/CommercialBudgetPadSheet";
 import { Button } from "@/components/ui/button";
 import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Badge } from "@/components/ui/badge";
@@ -56,6 +57,7 @@ function WorkspaceProposalStudioPage() {
  const [isSaving, setIsSaving] = useState(false);
  const [whatsappModalOpen, setWhatsappModalOpen] = useState(false);
  const [isMobileEditorOpen, setIsMobileEditorOpen] = useState(false);
+ const [isBudgetPadOpen, setIsBudgetPadOpen] = useState(false);
 
  // Zoom controls state
  const [zoomScale, setZoomScale] = useState<number | null>(null);
@@ -384,6 +386,18 @@ function WorkspaceProposalStudioPage() {
  type="button"
  size="sm"
  variant="outline"
+ onClick={() => setIsBudgetPadOpen(true)}
+ className="rounded-lg text-xs font-bold gap-2 h-11 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+ title="Emitir Bloco de Orçamento / Fatura A4"
+ >
+ <Receipt className="size-3.5 text-primary" />
+ <span className="hidden waesy-expanded-flex">Bloco / Fatura</span>
+ </Button>
+
+ <Button
+ type="button"
+ size="sm"
+ variant="outline"
  disabled={isCreatingContract}
  onClick={handleGenerateContract}
  className="rounded-lg text-xs font-bold gap-2 h-11 px-3 cursor-pointer"
@@ -461,6 +475,27 @@ function WorkspaceProposalStudioPage() {
  </div>
  </SheetContent>
  </Sheet>
+ <CommercialBudgetPadSheet
+ open={isBudgetPadOpen}
+ onOpenChange={setIsBudgetPadOpen}
+ initialClientData={{
+ name: proposal?.client_name || "",
+ phone: proposal?.client_whatsapp || "",
+ email: proposal?.client_email || "",
+ cityState: proposal?.destination_city || "",
+ }}
+ initialItems={[
+ {
+ id: "proposal-item",
+ title: `Proposta: ${proposal?.title || proposal?.destination_city || "Pacote de Viagem"}`,
+ unit: "pct",
+ quantity: 1,
+ unitPriceStr: (Number(proposal?.pricing?.total_price_cents || proposal?.pricing?.total_cents || 0) / 100).toFixed(2),
+ discountStr: "0,00",
+ },
+ ]}
+ />
+
  <ProposalShareWhatsappModal
    isOpen={whatsappModalOpen}
    onClose={() => setWhatsappModalOpen(false)}

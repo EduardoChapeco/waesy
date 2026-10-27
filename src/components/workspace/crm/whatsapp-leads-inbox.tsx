@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { MessageCircle, UserCheck, Search, Clock, ExternalLink, RefreshCw, Phone } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { MessageCircle, MessageSquare, UserCheck, Search, Clock, ExternalLink, RefreshCw, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -131,10 +132,15 @@ export function WhatsAppLeadsInbox() {
                   </Button>
                 )}
 
-                <Button type="button" variant="default" size="sm" onClick={() => handleOpenWhatsApp(lead.phone, lead.name)} className="min-h-11 px-4 rounded-md text-xs font-semibold gap-2 flex-1 sm:flex-none cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-hidden">
-                  <MessageCircle className="size-3.5" />
-                  <span>WhatsApp</span>
-                  <ExternalLink className="size-3 opacity-70" />
+                <Button asChild variant="default" size="sm" className="min-h-11 px-4 rounded-md text-xs font-semibold gap-2 flex-1 sm:flex-none cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-hidden">
+                  <Link to="/workspace/atendimento" search={{ search: lead.phone || undefined, threadId: undefined }}>
+                    <MessageSquare className="size-3.5" />
+                    <span>Atender no SAC</span>
+                  </Link>
+                </Button>
+                <Button type="button" variant="outline" size="sm" onClick={() => handleOpenWhatsApp(lead.phone, lead.name)} className="min-h-11 px-3 rounded-md text-xs font-semibold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-hidden" title="Abrir no WhatsApp Web externo">
+                  <ExternalLink className="size-3.5" />
+                  <span className="hidden sm:inline">WhatsApp Web</span>
                 </Button>
               </div>
             </Card>

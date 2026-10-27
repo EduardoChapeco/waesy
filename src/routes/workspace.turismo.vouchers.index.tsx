@@ -129,51 +129,87 @@ export default function WorkspaceVouchersPage() {
 
   const handleSaveExtractedVoucherToDb = async (extracted: any) => {
     try {
+      const flightSegments = Array.isArray(extracted.flightSegments) && extracted.flightSegments.length > 0
+        ? extracted.flightSegments
+        : [];
       const flights = (extracted.sections || []).filter((s: any) => s.type === "flight");
       const hotels = (extracted.sections || []).filter((s: any) => s.type === "hotel");
       const transfers = (extracted.sections || []).filter((s: any) => s.type === "transport");
 
       const voucherType =
-        flights.length > 0
+        flightSegments.length > 0 || flights.length > 0
           ? "flight"
-          : hotels.length > 0
+          : extracted.hotel || hotels.length > 0
             ? "hotel"
             : transfers.length > 0
               ? "transfer"
               : "other";
 
-      await createTravelVoucher({
-        data: {
-          store_id: storeId,
-          voucher_type: voucherType as any,
-          title: extracted.title || "Voucher Importado via OCR",
-          passenger_name: extracted.participants?.[0] || "Passageiro Principal",
-          flight_data: flights[0]
-            ? {
-                airline: flights[0].title?.split("·")[0]?.trim() || "Cia Aérea",
-                flightNumber: flights[0].title?.split("·")[1]?.trim() || "",
-                origin: flights[0].subtitle?.split("->")[0]?.trim() || "",
-                destination: flights[0].subtitle?.split("->")[1]?.trim() || "",
-                locator: extracted.code || "",
-              }
-            : {},
-          hotel_data: hotels[0]
-            ? {
-                hotelName: hotels[0].title,
-                address: hotels[0].subtitle,
-                confirmationCode: extracted.code || "",
-              }
-            : {},
-          transfer_data: transfers[0]
-            ? {
-                pickupLocation: transfers[0].title?.split("->")[0]?.trim() || "",
-                dropoffLocation: transfers[0].title?.split("->")[1]?.trim() || "",
-              }
-            : {},
-        },
-      });
+      const primarySegment = flightSegments[0];
+      const flightPayload = primarySegment
+        ? {
+            airline: primarySegment.airline || "Cia Aérea",
+            flightNumber: primarySegment.flightNumber || "",
+            origin: primarySegment.origin || "",
+            destination: primarySegment.destination || "",
+            departureTime: primarySegment.departureTime || "",
+            arrivalTime: primarySegment.arrivalTime || "",
+            locator: primarySegment.locator || extracted.code || "",
+            segments: flightSegments.length > 1 ? flightSegments : undefined,
+          }
+        : flights[0]
+          ? {
+              airline: flights[0].title?.split("·")[0]?.trim() || "Cia Aérea",
+              flightNumber: flights[0].title?.split("·")[1]?.trim() || "",
+              origin: flights[0].subtitle?.split("->")[0]?.trim() || "",
+              destination: flights[0].subtitle?.split("->")[1]?.trim() || "",
+              locator: extracted.code || "",
+            }
+          : {};
 
-      toast.success("Voucher registrado no banco de dados com sucesso!");
+      const hotelPayload = extracted.hotel
+        ? {
+            hotelName: extracted.hotel.name || extracted.title,
+            address: extracted.hotel.address,
+            checkIn: extracted.hotel.checkIn,
+            checkOut: extracted.hotel.checkOut,
+            confirmationCode: extracted.code || "",
+          }
+        : hotels[0]
+          ? {
+              hotelName: hotels[0].title,
+              address: hotels[0].subtitle,
+              confirmationCode: extracted.code || "",
+            }
+          : {};
+
+      const transferPayload = transfers[0]
+        ? {
+            pickupLocation: transfers[0].title?.split("->")[0]?.trim() || "",
+            dropoffLocation: transfers[0].title?.split("->")[1]?.trim() || "",
+          }
+        : {};
+
+      const passengers = Array.isArray(extracted.participants) && extracted.participants.length > 0
+        ? extracted.participants.filter(Boolean)
+        : [extracted.clientName || "Passageiro Principal"];
+
+      for (const pax of passengers) {
+        await createTravelVoucher({
+          data: {
+            store_id: storeId,
+            voucher_type: voucherType as any,
+            title: `${extracted.title || "Voucher de Viagem"} — ${pax}`,
+            passenger_name: pax,
+            passenger_document: extracted.clientDocument || null,
+            flight_data: flightPayload,
+            hotel_data: hotelPayload,
+            transfer_data: transferPayload,
+          },
+        });
+      }
+
+      toast.success(`${passengers.length} voucher(s) processado(s) e registrado(s) sem duplicidades!`);
       refetch();
       setIsUniversalOcrOpen(false);
     } catch (err: any) {

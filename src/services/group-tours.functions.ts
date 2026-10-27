@@ -670,3 +670,309 @@ export const listGroupTours = createServerFn({ method: "GET" })
       updated_at: row.updated_at,
     }));
   });
+
+
+// ─── 7. Governança de Privacidade, Senha & Vagas da Excursão ───────────────────
+
+export const updateGroupTourSettings = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string().uuid("ID de excursão inválido."),
+      showRemainingSeats: z.boolean().optional(),
+      visibilityMode: z.enum(["public", "unlisted", "password_protected"]).optional(),
+      accessPassword: z.string().max(100).optional().nullable(),
+      allowSharedRooms: z.boolean().optional(),
+      singleSupplementCents: z.number().int().nonnegative().optional(),
+    })
+  )
+  .handler(async ({ data }): Promise<{ success: boolean }> => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    if (!identity?.id) throw new Error("Não autorizado.");
+
+    const { data: tour, error: fetchErr } = await supabase
+      .from("tourism_experiences")
+      .select("id, description")
+      .eq("id", data.id)
+      .single();
+
+    if (fetchErr || !tour) throw new Error("Excursão não encontrada.");
+
+    let meta: any = {};
+    try {
+      meta =
+        typeof tour.description === "string" && tour.description.startsWith("{")
+          ? JSON.parse(tour.description)
+          : {};
+    } catch {
+      meta = {};
+    }
+
+    if (data.showRemainingSeats !== undefined) meta.show_remaining_seats = data.showRemainingSeats;
+    if (data.visibilityMode !== undefined) meta.visibility_mode = data.visibilityMode;
+    if (data.accessPassword !== undefined)
+      meta.access_password = data.accessPassword ? data.accessPassword.trim() : null;
+    if (data.allowSharedRooms !== undefined) meta.allow_shared_rooms = data.allowSharedRooms;
+    if (data.singleSupplementCents !== undefined)
+      meta.single_supplement_cents = data.singleSupplementCents;
+
+    const { error: updateErr } = await supabase
+      .from("tourism_experiences")
+      .update({
+        description: JSON.stringify(meta),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", data.id);
+
+    if (updateErr)
+      throw new Error("Falha ao salvar configurações de privacidade: " + updateErr.message);
+
+    return { success: true };
+  });
+
+export const validateGroupTourAccessPassword = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      tourId: z.string().uuid(),
+      password: z.string().trim(),
+    })
+  )
+  .handler(async ({ data }): Promise<{ authorized: boolean; reason?: string }> => {
+    const supabase = getAnonServerClient();
+    const { data: tour, error } = await supabase
+      .from("tourism_experiences")
+      .select("id, description")
+      .eq("id", data.tourId)
+      .maybeSingle();
+
+    if (error || !tour) return { authorized: false, reason: "Excursão não encontrada." };
+
+    let meta: any = {};
+    try {
+      meta =
+        typeof tour.description === "string" && tour.description.startsWith("{")
+          ? JSON.parse(tour.description)
+          : {};
+    } catch {
+      meta = {};
+    }
+
+    if (meta.visibility_mode !== "password_protected") return { authorized: true };
+
+    const expected = (meta.access_password || "").trim();
+    if (!expected || expected === data.password) {
+      return { authorized: true };
+    }
+
+    return { authorized: false, reason: "Senha incorreta. Solicite o código de acesso à agência." };
+  });
+
+// ─── 8. Algoritmo de Pareamento de Quartos Compartilhados ───────────────────────
+
+export const autoPairSharedRooms = createServerFn({ method: "POST" })
+  .validator(z.object({ tourId: z.string().uuid("ID de excursão inválido.") }))
+  .handler(
+    async ({
+      data,
+    }): Promise<{ success: boolean; pairedCount: number; roomsCreated: number }> => {
+      const supabase = getServerClient();
+      const identity = await getServerIdentity();
+      if (!identity?.id) throw new Error("Não autorizado.");
+
+      const { data: tour, error } = await supabase
+        .from("tourism_experiences")
+        .select("id, rooms, seats")
+        .eq("id", data.tourId)
+        .single();
+
+      if (error || !tour) throw new Error("Excursão não encontrada.");
+
+      const currentRooms = (Array.isArray(tour.rooms) ? tour.rooms : []) as HotelRoomAllocationDTO[];
+      const currentSeats = (Array.isArray(tour.seats) ? tour.seats : []) as BusSeatDTO[];
+
+      // Identifica passageiros já alocados em quartos existentes
+      const allocatedPassengerNames = new Set<string>();
+      currentRooms.forEach((r) => {
+        (r.passengers || []).forEach((p) => {
+          if (p.name) allocatedPassengerNames.add(p.name.trim().toLowerCase());
+        });
+      });
+
+      // Localiza passageiros com assento confirmado que ainda não foram alocados em quartos
+      const unallocatedSharedPax = currentSeats
+        .filter(
+          (s) =>
+            s.passenger_name &&
+            s.status === "reserved" &&
+            !allocatedPassengerNames.has(s.passenger_name.trim().toLowerCase())
+        )
+        .map((s) => ({
+          name: s.passenger_name as string,
+          document: s.passenger_document || undefined,
+          phone: s.passenger_phone || undefined,
+          seat_number: s.seat_number,
+        }));
+
+      if (unallocatedSharedPax.length === 0) {
+        return { success: true, pairedCount: 0, roomsCreated: 0 };
+      }
+
+      // Agrupa em quartos duplos (2 pessoas por quarto compartilhado)
+      const newRooms: HotelRoomAllocationDTO[] = [...currentRooms];
+      let roomCounter = currentRooms.length + 1;
+      let pairedCount = 0;
+
+      for (let i = 0; i < unallocatedSharedPax.length; i += 2) {
+        const pair = unallocatedSharedPax.slice(i, i + 2);
+        const roomId = "room-shared-" + roomCounter;
+        newRooms.push({
+          room_id: roomId,
+          room_number: "Q-" + roomCounter,
+          room_type: pair.length === 1 ? "single" : "double_twin",
+          hotel_name: "Hotel Oficial da Excursão",
+          capacity: 2,
+          passengers: pair.map((p) => ({
+            name: p.name,
+            document: p.document,
+            phone: p.phone,
+            notes: "Alocação automática quarto compartilhado (Poltrona " + p.seat_number + ")",
+          })),
+        });
+        pairedCount += pair.length;
+        roomCounter++;
+      }
+
+      await supabase
+        .from("tourism_experiences")
+        .update({
+          rooms: newRooms,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", data.tourId);
+
+      return {
+        success: true,
+        pairedCount,
+        roomsCreated: Math.ceil(unallocatedSharedPax.length / 2),
+      };
+    }
+  );
+
+// ─── 9. Motor Unificado de Reserva & Compra de Excursão ────────────────────────
+
+export const bookGroupTourSchema = z.object({
+  tourId: z.string().uuid("ID de excursão inválido"),
+  primaryContact: z.object({
+    name: z.string().min(2, "Nome completo é obrigatório"),
+    email: z.string().email("E-mail válido é obrigatório"),
+    phone: z.string().min(8, "Telefone / WhatsApp é obrigatório"),
+    document: z.string().optional(),
+  }),
+  adultsCount: z.number().int().min(1).default(1),
+  childrenCount: z.number().int().min(0).default(0),
+  childrenAges: z.array(z.number().int().min(0).max(17)).default([]),
+  roomPreference: z
+    .enum(["single", "shared", "double_couple", "double_twin", "triple", "quadruple"])
+    .default("shared"),
+  selectedSeats: z.array(z.number().int()).default([]),
+  delegateCompanionForms: z.boolean().default(false),
+  paymentMethod: z.enum(["pix", "credit_card", "carne", "whatsapp"]).default("pix"),
+  notes: z.string().max(500).optional(),
+});
+
+export const bookGroupTourReservation = createServerFn({ method: "POST" })
+  .validator(bookGroupTourSchema)
+  .handler(async ({ data }): Promise<{
+    success: boolean;
+    reservationCode: string;
+    totalCents: number;
+    companionTokens: string[];
+    message: string;
+  }> => {
+    const supabase = getServerClient();
+    const { tourId, primaryContact, adultsCount, childrenCount, roomPreference, selectedSeats, delegateCompanionForms, paymentMethod } = data;
+
+    const { data: tour, error } = await supabase
+      .from("tourism_experiences")
+      .select("id, title, destination, price_cents, total_seats, available_seats, seats, rooms, description, store_id")
+      .eq("id", tourId)
+      .single();
+
+    if (error || !tour) throw new Error("Excursão não encontrada.");
+
+    let meta: any = {};
+    try {
+      meta = typeof tour.description === "string" && tour.description.startsWith("{") ? JSON.parse(tour.description) : {};
+    } catch {
+      meta = {};
+    }
+
+    const totalPax = adultsCount + childrenCount;
+    const basePriceCents = Number(tour.price_cents) || 0;
+    const singleSupplementCents = roomPreference === "single" ? Number(meta.single_supplement_cents) || 0 : 0;
+    const totalCents = basePriceCents * totalPax + singleSupplementCents;
+
+    // Atualiza poltronas no mapa 2D
+    const currentSeats = (Array.isArray(tour.seats) ? tour.seats : []) as BusSeatDTO[];
+    const updatedSeats = [...currentSeats];
+
+    selectedSeats.forEach((seatNum, idx) => {
+      const sIdx = updatedSeats.findIndex((s) => s.seat_number === seatNum);
+      if (sIdx >= 0) {
+        if (updatedSeats[sIdx].status === "reserved") {
+          throw new Error("A poltrona " + seatNum + " já foi reservada. Selecione outro assento livre.");
+        }
+        updatedSeats[sIdx] = {
+          ...updatedSeats[sIdx],
+          status: "reserved",
+          passenger_name: idx === 0 ? primaryContact.name : "Acompanhante " + (idx + 1) + " (" + primaryContact.name + ")",
+          passenger_phone: idx === 0 ? primaryContact.phone : null,
+          passenger_document: idx === 0 ? primaryContact.document || null : null,
+        };
+      }
+    });
+
+    const newAvailable = Math.max(0, (tour.available_seats || tour.total_seats || 46) - totalPax);
+
+    await supabase
+      .from("tourism_experiences")
+      .update({
+        seats: updatedSeats,
+        available_seats: newAvailable,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", tourId);
+
+    // Geração de tokens de formulário para acompanhantes
+    const companionTokens: string[] = [];
+    if (delegateCompanionForms && totalPax > 1 && tour.store_id) {
+      for (let i = 1; i < totalPax; i++) {
+        const assignedSeat = selectedSeats[i] || null;
+        const { data: tokenRow } = await supabase
+          .from("group_tour_passenger_tokens")
+          .insert({
+            store_id: tour.store_id,
+            tour_id: tourId,
+            passenger_seat_number: assignedSeat,
+            passenger_name: null,
+            passenger_phone: null,
+          })
+          .select("token")
+          .single();
+
+        if (tokenRow?.token) {
+          companionTokens.push(tokenRow.token);
+        }
+      }
+    }
+
+    const reservationCode = "#EXC-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+
+    return {
+      success: true,
+      reservationCode,
+      totalCents,
+      companionTokens,
+      message: "Reserva confirmada com sucesso! Vagas garantidas na excursão " + tour.title + ".",
+    };
+  });

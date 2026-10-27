@@ -54,10 +54,10 @@ const DEFAULT_RETRY_OPTIONS: Required<RetryOptions> = {
 const USER_AGENTS = [
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.0.0",
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) Gecko/20100101 Firefox/135.0",
   "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
   "Mozilla/5.0 (iPhone; CPU iPhone OS 18_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3 Mobile/15E148 Safari/604.1",
-  "Mozilla/5.0 (compatible; WaesyBot/2.0; +https://waesy.com.br/bot)",
 ];
 
 let userAgentIndex = 0;
@@ -72,6 +72,8 @@ export function getRealisticBrowserHeaders(customHeaders: HeadersInit = {}): Rec
   const isWindows = ua.includes("Windows");
   const isMac = ua.includes("Macintosh");
   const isMobile = ua.includes("iPhone") || ua.includes("Mobile");
+  const isFirefox = ua.includes("Firefox");
+  const isEdge = ua.includes("Edg/");
   const platform = isWindows ? '"Windows"' : isMac ? '"macOS"' : '"Linux"';
 
   const defaultHeaders: Record<string, string> = {
@@ -80,9 +82,6 @@ export function getRealisticBrowserHeaders(customHeaders: HeadersInit = {}): Rec
     'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
     'Cache-Control': 'no-cache',
     'Pragma': 'no-cache',
-    'sec-ch-ua': '"Chromium";v="134", "Not:A-Brand";v="24", "Google Chrome";v="134"',
-    'sec-ch-ua-mobile': isMobile ? '?1' : '?0',
-    'sec-ch-ua-platform': platform,
     'sec-fetch-dest': 'document',
     'sec-fetch-mode': 'navigate',
     'sec-fetch-site': 'none',
@@ -90,6 +89,21 @@ export function getRealisticBrowserHeaders(customHeaders: HeadersInit = {}): Rec
     'upgrade-insecure-requests': '1',
     'priority': 'u=0, i',
   };
+
+  if (!isFirefox) {
+    defaultHeaders['sec-ch-ua-mobile'] = isMobile ? '?1' : '?0';
+    defaultHeaders['sec-ch-ua-platform'] = platform;
+    if (isEdge) {
+      defaultHeaders['sec-ch-ua'] = '"Microsoft Edge";v="134", "Chromium";v="134", "Not:A-Brand";v="24"';
+    } else {
+      defaultHeaders['sec-ch-ua'] = '"Chromium";v="134", "Not:A-Brand";v="24", "Google Chrome";v="134"';
+    }
+  } else {
+    // Client Hints fallback canônico para garantir que sec-ch-ua sempre esteja definido
+    defaultHeaders['sec-ch-ua-mobile'] = isMobile ? '?1' : '?0';
+    defaultHeaders['sec-ch-ua-platform'] = platform;
+    defaultHeaders['sec-ch-ua'] = '"Chromium";v="134", "Not:A-Brand";v="24", "Google Chrome";v="134"';
+  }
 
   if (customHeaders instanceof Headers) {
     customHeaders.forEach((v, k) => { defaultHeaders[k] = v; });
@@ -459,7 +473,7 @@ const HTML_ENTITY_MAP: Record<string, string> = {
   lsquo: "'", rsquo: "'", ldquo: '"', rdquo: '"',
   ndash: "—", mdash: "—", hellip: "...",
   lt: "<", gt: ">",
-  ordm: "º", orda: "ª", deg: "°",
+  ordm: "º", ordf: "ª", orda: "ª", deg: "°",
   copy: "©", reg: "®", trade: "™",
   bull: "•", middot: "·",
   euro: "€", pound: "£", yen: "¥", cent: "¢",
@@ -525,4 +539,75 @@ export function calculateDataQualityScore(
   }
 
   return totalWeight > 0 ? Math.round((earnedWeight / totalWeight) * 100) : 0;
+}
+
+
+// =============================================================================
+// VALIDAÇÃO E NORMALIZAÇÃO ESTRITA DE TELEFONES BRASILEIROS (ANATEL E.164)
+// =============================================================================
+
+export const VALID_BR_DDDS = new Set([
+  "11", "12", "13", "14", "15", "16", "17", "18", "19",
+  "21", "22", "24", "27", "28",
+  "31", "32", "33", "34", "35", "37", "38",
+  "41", "42", "43", "44", "45", "46", "47", "48", "49",
+  "51", "53", "54", "55",
+  "61", "62", "63", "64", "65", "66", "67", "68", "69",
+  "71", "73", "74", "75", "77", "79",
+  "81", "82", "83", "84", "85", "86", "87", "88", "89",
+  "91", "92", "93", "94", "95", "96", "97", "98", "99",
+]);
+
+/**
+ * Decodifica URL-encoding (%20 -> espaço), remove lixo e valida contra DDDs reais da ANATEL,
+ * barrando falsos positivos de timestamps Unix (ex: 17921943044) ou datas (ex: 2026091812).
+ */
+export function normalizeAndValidateBrPhone(raw?: string | null): string | null {
+  if (!raw || typeof raw !== "string") return null;
+  let decoded = raw;
+  try {
+    decoded = decodeURIComponent(raw);
+  } catch {
+    decoded = raw.replace(/%20/g, " ");
+  }
+
+  let digits = decoded.replace(/\D/g, "");
+  if (digits.startsWith("0800") && digits.length >= 10 && digits.length <= 11) {
+    return `0800 ${digits.slice(4, 7)} ${digits.slice(7)}`;
+  }
+
+  if (digits.startsWith("55") && (digits.length === 12 || digits.length === 13)) {
+    digits = digits.slice(2);
+  }
+  if (digits.startsWith("0") && (digits.length === 11 || digits.length === 12)) {
+    digits = digits.slice(1);
+  }
+
+  if (digits.length !== 10 && digits.length !== 11) {
+    return null;
+  }
+
+  // Barra anos/datas (ex: 2024..., 2025..., 2026...) e epoch timestamps (1700000000+)
+  if (/^20[12]\d/.test(digits)) return null;
+  if (/^1[678]\d{8,9}$/.test(digits) && !decoded.includes("(") && !decoded.includes("-")) return null;
+
+  const ddd = digits.slice(0, 2);
+  if (!VALID_BR_DDDS.has(ddd)) return null;
+
+  const subscriber = digits.slice(2);
+  // Números repetidos inválidos (ex: 999999999)
+  if (/^(\d)\1+$/.test(subscriber)) return null;
+
+  if (subscriber.length === 8) {
+    const first = subscriber[0];
+    if (!["2", "3", "4", "5"].includes(first)) return null;
+    return `(${ddd}) ${subscriber.slice(0, 4)}-${subscriber.slice(4)}`;
+  }
+
+  if (subscriber.length === 9) {
+    if (subscriber[0] !== "9" || subscriber[1] === "0") return null;
+    return `(${ddd}) ${subscriber.slice(0, 5)}-${subscriber.slice(5)}`;
+  }
+
+  return null;
 }

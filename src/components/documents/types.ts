@@ -64,10 +64,13 @@ export interface CommercialDocumentData {
   totalCents: number;
   
   paymentTerms: {
-    method: "pix" | "boleto" | "cartao" | "transferencia";
+    method: string;
+    methodLabel?: string;
     installmentsCount?: number;
     installmentValueCents?: number;
     notes?: string;
+    pixKey?: string;
+    paymentInstructions?: string;
   };
   
   legalNotes?: string;

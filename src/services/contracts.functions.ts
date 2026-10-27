@@ -1892,3 +1892,109 @@ export const generateContractDocument = createServerFn({ method: "POST" })
       generatedAt: new Date().toISOString(),
     };
   });
+
+
+// ─── Preparação de Envelope de Assinatura Presencial em Balcão (Tablet) ────────
+
+export const getOrPrepareCountertopEnvelope = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      contractId: z.string().uuid(),
+      signerName: z.string().trim().optional(),
+      signerCpf: z.string().trim().optional(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const { contractId, signerName, signerCpf } = data;
+    const supabase = getServerClient();
+    const identity = await getIdentity();
+    if (!identity?.id) throw new Error("Acesso não autenticado.");
+
+    // Busca o contrato e sua versão ativa
+    const { data: contract, error: cErr } = await supabase
+      .from("contracts")
+      .select(
+        `
+        id, title, category, status, verification_code,
+        versions:contract_versions (
+          id, version_number, title, content_markdown, clauses,
+          envelopes:signature_envelopes (*)
+        )
+      `
+      )
+      .eq("id", contractId)
+      .single();
+
+    if (cErr || !contract) throw new Error("Contrato não encontrado.");
+
+    const versions = (contract.versions || []).sort(
+      (a: any, b: any) => (b.version_number || 0) - (a.version_number || 0)
+    );
+    const latestVersion = versions[0];
+    if (!latestVersion) throw new Error("O contrato não possui nenhuma versão de texto.");
+
+    // Se já existe envelope pendente para assinatura, reutiliza o token
+    const existingEnvelopes = latestVersion.envelopes || [];
+    const pendingEnv = existingEnvelopes.find(
+      (e: any) => e.status === "pending" || e.status === "sent"
+    );
+
+    if (pendingEnv?.signing_token) {
+      return {
+        contractId: contract.id,
+        versionId: latestVersion.id,
+        envelopeId: pendingEnv.id,
+        signingToken: pendingEnv.signing_token,
+        contractTitle: contract.title,
+        contentMarkdown: latestVersion.content_markdown || "",
+        signerName: pendingEnv.signer_name || signerName || "Signatário Presencial",
+        signerCpf: pendingEnv.signer_cpf || signerCpf || "",
+      };
+    }
+
+    // Caso não exista envelope prévio, emite envelope presencial imediato
+    const signingToken =
+      Math.random().toString(36).substring(2, 15) +
+      Math.random().toString(36).substring(2, 15) +
+      Date.now().toString(36);
+
+    const { data: newEnv, error: envErr } = await supabase
+      .from("signature_envelopes")
+      .insert({
+        contract_version_id: latestVersion.id,
+        signer_name: signerName || "Signatário Presencial",
+        signer_email: "balcao@presencial.waesy.com",
+        signer_cpf: signerCpf || null,
+        signer_role: "client",
+        auth_level: "biometric",
+        dispatch_channel: "in_person",
+        signing_token: signingToken,
+        status: "pending",
+      })
+      .select()
+      .single();
+
+    if (envErr || !newEnv) {
+      throw new Error(
+        `Falha ao preparar envelope de balcão: ${envErr?.message || "Erro desconhecido"}`
+      );
+    }
+
+    if (contract.status === "draft") {
+      await supabase
+        .from("contracts")
+        .update({ status: "signing", updated_at: new Date().toISOString() })
+        .eq("id", contract.id);
+    }
+
+    return {
+      contractId: contract.id,
+      versionId: latestVersion.id,
+      envelopeId: newEnv.id,
+      signingToken: newEnv.signing_token,
+      contractTitle: contract.title,
+      contentMarkdown: latestVersion.content_markdown || "",
+      signerName: newEnv.signer_name,
+      signerCpf: newEnv.signer_cpf || "",
+    };
+  });

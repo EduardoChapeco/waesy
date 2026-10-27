@@ -22,6 +22,10 @@ interface LeadFormRendererProps {
   onStartSdrChat?: (payload: { answers: Record<string, any>; name: string; phone: string }) => void;
   initialProfile?: { full_name?: string | null; phone?: string | null; email?: string | null } | null;
   isStandalone?: boolean;
+  initialLeadId?: string | null;
+  initialName?: string | null;
+  initialPhone?: string | null;
+  initialEmail?: string | null;
 }
 
 export function LeadFormRenderer({
@@ -32,11 +36,15 @@ export function LeadFormRenderer({
   onStartSdrChat,
   initialProfile,
   isStandalone = false,
+  initialLeadId,
+  initialName,
+  initialPhone,
+  initialEmail,
 }: LeadFormRendererProps) {
   // Estados de identificação básica com preenchimento opcional de perfil
-  const [name, setName] = useState(initialProfile?.full_name || "");
-  const [phone, setPhone] = useState(initialProfile?.phone ? formatPhone(initialProfile.phone) : "");
-  const [email, setEmail] = useState(initialProfile?.email || "");
+  const [name, setName] = useState(initialName || initialProfile?.full_name || "");
+  const [phone, setPhone] = useState(initialPhone || (initialProfile?.phone ? formatPhone(initialProfile.phone) : ""));
+  const [email, setEmail] = useState(initialEmail || initialProfile?.email || "");
 
   useEffect(() => {
     if (initialProfile) {
@@ -181,9 +189,13 @@ export function LeadFormRenderer({
           },
         });
       } else {
+        const urlParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+        const leadIdToPass = initialLeadId || urlParams?.get("leadId") || null;
+
         res = await submitPublicLeadForm({
           data: {
             formSlug: form.slug,
+            leadId: leadIdToPass,
             classifiedId: classifiedId || null,
             contactName: name.trim(),
             contactPhone: phone.trim(),

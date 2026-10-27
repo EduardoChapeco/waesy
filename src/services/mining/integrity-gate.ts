@@ -1,6 +1,6 @@
 /**
  * integrity-gate.ts — Gateway Automático de Validação de Integridade e Clusterização Multi-Fonte
- * 
+ *
  * Missão:
  * 1. Erradicar o bug crônico de "importar apenas título e corpo vazio"
  * 2. Barrar páginas bloqueadas (HTTP 403, Cloudflare, Paywall) antes de gastar tokens de IA
@@ -89,14 +89,14 @@ export function calculateTitleSimilarity(titleA: string, titleB: string): number
 
 // Títulos inválidos extraídos da engine canônica (Brain Continuous Crawler)
 export const INVALID_TITLES = new Set([
-  "portal", "home", "index", "untitled", "page", "document", "error", 
+  "portal", "home", "index", "untitled", "page", "document", "error",
   "404", "not found", "forbidden", "access denied", "loading", "please wait",
   "sem titulo", "sem título", "pagina inicial", "página inicial", "carregando"
 ]);
 
 // Padrões de poluição (captchas, desafios Cloudflare, erros HTTP)
 export const POLLUTION_PATTERNS = [
-  /recaptcha/i, /cloudflare/i, /captcha/i, /robot/i, 
+  /recaptcha/i, /cloudflare/i, /captcha/i, /robot/i,
   /access denied/i, /verify you are human/i, /please wait/i,
   /loading\.\.\./i, /javascript required/i, /enable javascript/i,
   /403 forbidden/i, /404 not found/i, /500 internal/i,
@@ -152,6 +152,23 @@ export function getFallbackThematicImage(_category?: string | null): string {
   return "";
 }
 
+// Padrões de Conteúdo Promocional, Reviews Comerciais e Links de Afiliados
+export const COMMERCIAL_AFFILIATE_PATTERNS = [
+  /\b(em promoç[ãa]o na amazon|ofertas? na amazon|comprar na amazon|seleç[ãa]o na amazon)\b/i,
+  /\b(em promoç[ãa]o no mercado livre|ofertas? no mercado livre)\b/i,
+  /\b(cupom de desconto|cupons de desconto|compre com desconto)\b/i,
+  /\b(os melhores (?:notebooks|smartphones|celulares|fones|roteadores|mouses|teclados) para comprar em)\b/i,
+  /\b(veja uma seleç[ãa]o de .* em promoç[ãa]o)\b/i,
+  /\b(upgrade no setup: veja|renove seu setup com|hora de colocar um smartwatch)\b/i,
+  /\/(?:reviews|publieditorial|afiliados|guia-de-compras|compras)\//i,
+];
+
+export function isCommercialAffiliateContent(title: string, url?: string): boolean {
+  if (COMMERCIAL_AFFILIATE_PATTERNS.some((p) => p.test(title))) return true;
+  if (url && COMMERCIAL_AFFILIATE_PATTERNS.some((p) => p.test(url))) return true;
+  return false;
+}
+
 const NON_NEWS_STUB_PATTERNS = [
   /\bao vivo\b/i,
   /assista à programação/i,
@@ -184,6 +201,19 @@ export function validateMechanicalCompleteness(result: MechanicalExtractionResul
       paragraphCount: paragraphs,
       hasCoverImage: !!result.coverImageUrl,
       flags: ["TITLE_MISSING_OR_GENERIC"],
+    };
+  }
+
+  // 1.1 Barragem Imediata de Conteúdo Promocional / Reviews Comerciais de Afiliados
+  if (isCommercialAffiliateContent(result.title, (result as any).sourceUrl)) {
+    return {
+      isValid: false,
+      reason: `Artigo descartado: identificado como link patrocinado, review comercial ou lista de afiliados ("${result.title}").`,
+      qualityScore: 0,
+      wordCount: words,
+      paragraphCount: paragraphs,
+      hasCoverImage: !!result.coverImageUrl,
+      flags: ["COMMERCIAL_AFFILIATE_SPAM"],
     };
   }
 

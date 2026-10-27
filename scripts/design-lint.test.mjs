@@ -174,17 +174,17 @@ runTest('DL-08: Detecta gradiente decorativo bg-gradient-to-r', () => {
   assert.strictEqual(dl08[0].severity, 'P2');
 });
 
-// 9. DL-09: Raios não-canônicos
-runTest('DL-09: Detecta rounded-xl, rounded-2xl e rounded-[14px]', () => {
-  const code = `<div className="rounded-xl">1</div><div className="rounded-2xl">2</div><div className="rounded-[14px]">3</div>`;
+// 9. DL-09: Raios não-canônicos (harmonizado com tokens.json e B.44)
+runTest('DL-09: Detecta raios arbitrários rounded-[14px] e rounded-[22px]', () => {
+  const code = '<div className="rounded-[14px]">1</div><div className="rounded-[22px]">2</div>';
   const violations = lintSource(code, 'src/components/app/badge.tsx', testConfig);
   const dl09 = violations.filter(v => v.id === 'DL-09');
-  assert.strictEqual(dl09.length, 3);
+  assert.strictEqual(dl09.length, 2);
   assert.strictEqual(dl09[0].severity, 'P2');
 });
 
-runTest('DL-09: Permite raios canônicos: none, sm, md, lg, full', () => {
-  const code = `<div className="rounded-none rounded-sm rounded-md rounded-lg rounded-full">OK</div>`;
+runTest('DL-09: Permite raios canônicos do tokens.json: none, sm, md, lg, xl, 2xl, full', () => {
+  const code = '<div className="rounded-none rounded-sm rounded-md rounded-lg rounded-xl rounded-2xl rounded-full">OK</div>';
   const violations = lintSource(code, 'src/components/app/badge.tsx', testConfig);
   const dl09 = violations.filter(v => v.id === 'DL-09');
   assert.strictEqual(dl09.length, 0);

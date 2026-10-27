@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, Plus, Search, CheckCircle2, Clock, Send, ShieldAlert, FileText, Utensils, Hotel, RefreshCw, PhoneCall, ExternalLink, Loader2, User, Plane, Hash } from 'lucide-react';
+import { AlertTriangle, Plus, Search, CheckCircle2, Clock, Send, ShieldAlert, FileText, Utensils, Hotel, RefreshCw, PhoneCall, ExternalLink, Loader2, User, Plane, Hash, Upload, Copy } from 'lucide-react';
+import { parseUniversalDocumentOCR } from '@/services/multimodal-ocr.functions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -52,6 +53,7 @@ export default function ReaccommodationPage() {
   const [delayHours, setDelayHours] = useState(5);
   const [passengerNotes, setPassengerNotes] = useState('');
   const [internalNotes, setInternalNotes] = useState('');
+  const [isOcrLoading, setIsOcrLoading] = useState(false);
 
   const previewRights = calculateAnacRights(changeReason, delayHours);
 
@@ -363,7 +365,19 @@ export default function ReaccommodationPage() {
               )}
 
               {/* Ações Rápidas */}
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/40">
+              <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-border/40">
+                <Button
+                  variant="outline"
+                  className="h-11 min-h-11 px-4 text-xs font-bold gap-2 rounded-lg cursor-pointer w-full sm:w-auto focus-visible:ring-2 focus-visible:ring-ring"
+                  onClick={() => {
+                    const approvalUrl = `${window.location.origin}/viajante/${c.id}`;
+                    navigator.clipboard.writeText(approvalUrl);
+                    toast.success('Link de análise e aceite da reacomodação copiado!');
+                  }}
+                >
+                  <Copy className="size-4 text-primary" />
+                  Copiar Link de Aceite
+                </Button>
                 <Button
                   variant="outline"
                   size="sm"
@@ -402,6 +416,92 @@ export default function ReaccommodationPage() {
           </SheetHeader>
 
           <div className="flex-1 p-6 space-y-6 overflow-y-auto no-scrollbar">
+            {/* Extração Inteligente via OCR (Voo / Hotel / Transfer de Reacomodação) */}
+            <div className="p-4 rounded-lg border border-primary/30 bg-primary/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="space-y-1">
+                <span className="text-xs font-bold text-foreground flex items-center gap-2">
+                  <Plane className="size-4 text-primary" />
+                  Leitura OCR de Reacomodação (Malha Aérea, Hotel ou Transfer)
+                </span>
+                <p className="text-xs text-muted-foreground">
+                  Envie o PDF ou print da companhia aérea/operadora para preencher automaticamente os novos horários, voos, hotel e transfer para aceite do passageiro.
+                </p>
+              </div>
+              <div>
+                <input
+                  type="file"
+                  id="reacc-ocr-input"
+                  accept="application/pdf,image/*"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    setIsOcrLoading(true);
+                    try {
+                      const reader = new FileReader();
+                      reader.onload = async () => {
+                        try {
+                          const base64Data = String(reader.result || '');
+                          const ocrRes = await parseUniversalDocumentOCR({
+                            data: {
+                              files: [
+                                {
+                                  base64: base64Data,
+                                  mimeType: (file.type as any) || 'application/pdf',
+                                  name: file.name,
+                                },
+                              ],
+                              nicheHint: 'tourism',
+                            },
+                          });
+                          if (ocrRes) {
+                            const paxName = ocrRes.participants?.[0] || ocrRes.clientName || '';
+                            if (paxName && !passengerManualName) setPassengerManualName(paxName);
+                            const flightsText = (ocrRes.flightSegments || [])
+                              .map((f: any) => `${f.airline || 'CIA'} ${f.flightNumber || ''} (${f.origin || ''} -> ${f.destination || ''} ${f.departureTime || ''})`.trim())
+                              .join(' | ');
+                            const hotelText = ocrRes.hotel?.name
+                              ? `Hotel Reacomodado: ${ocrRes.hotel.name}`
+                              : '';
+                            const summaryParts = [
+                              ocrRes.code || ocrRes.flightSegments?.[0]?.locator ? `PNR: ${ocrRes.code || ocrRes.flightSegments?.[0]?.locator}` : '',
+                              flightsText ? `Nova Malha: ${flightsText}` : '',
+                              hotelText,
+                              ocrRes.observations || '',
+                            ].filter(Boolean);
+                            setPassengerNotes((prev) => [prev, ...summaryParts].filter(Boolean).join(' — '));
+                            setInternalNotes((prev) =>
+                              [prev, `Extraído via OCR (${file.name})`].filter(Boolean).join(' | ')
+                            );
+                            toast.success('Dados de voo/hotel de reacomodação extraídos via OCR!');
+                          }
+                        } catch (innerErr: any) {
+                          toast.error(innerErr?.message || 'Não foi possível extrair dados do arquivo.');
+                        } finally {
+                          setIsOcrLoading(false);
+                        }
+                      };
+                      reader.readAsDataURL(file);
+                    } catch {
+                      setIsOcrLoading(false);
+                    } finally {
+                      e.target.value = '';
+                    }
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={isOcrLoading}
+                  onClick={() => document.getElementById('reacc-ocr-input')?.click()}
+                  className="h-11 min-h-11 px-4 text-xs font-bold gap-2 border-primary/40 text-primary hover:bg-primary/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  {isOcrLoading ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
+                  <span>{isOcrLoading ? 'Extraindo OCR...' : 'Importar Voo/Hotel (OCR)'}</span>
+                </Button>
+              </div>
+            </div>
+
             {/* Vínculo de Passageiro e Voo */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">

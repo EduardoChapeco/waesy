@@ -2,140 +2,139 @@ import React from "react";
 import { SocialTemplateProps } from "../types";
 import { MapPin, Sun, Check, ArrowRight, ShieldCheck, Star } from "lucide-react";
 
-export const TravelImmersiveStory: React.FC<SocialTemplateProps> = ({ data, scale = 1, className = "" }) => {
-  const isNineSixteen = data.aspectRatio === "9:16";
-  const canvasWidth = isNineSixteen ? 1080 : data.aspectRatio === "4:5" ? 1080 : 1080;
-  const canvasHeight = isNineSixteen ? 1920 : data.aspectRatio === "4:5" ? 1350 : 1080;
+export const TravelImmersiveStory: React.FC<SocialTemplateProps> = ({ data, className = "" }) => {
+ const isNineSixteen = data.aspectRatio === "9:16";
+ const isOneOne = data.aspectRatio === "1:1";
+ const canvasWidth = 1080;
+ const canvasHeight = isNineSixteen ? 1920 : data.aspectRatio === "4:5" ? 1350 : 1080;
 
-  const priceFormatted = data.priceCents
-    ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(data.priceCents / 100)
-    : null;
+ const priceFormatted = data.priceCents
+ ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(data.priceCents / 100)
+ : null;
 
-  const installmentFormatted = data.installmentCents
-    ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(data.installmentCents / 100)
-    : data.priceCents && data.maxInstallments
-    ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
-        Math.round(data.priceCents / data.maxInstallments) / 100
-      )
-    : null;
+ const installmentFormatted = data.installmentCents
+ ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(data.installmentCents / 100)
+ : data.priceCents && data.maxInstallments
+ ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
+ Math.round(data.priceCents / data.maxInstallments) / 100
+ )
+ : null;
 
-  return (
-    <div
-      style={{
-        width: `${canvasWidth}px`,
-        height: `${canvasHeight}px`,
-        transform: `scale(${scale})`,
-        transformOrigin: "top left",
-      }}
-      className={`relative bg-foreground text-foreground overflow-hidden font-sans select-none flex flex-col justify-between ${className}`}
-    >
-      {/* 100% Background Fotográfico Full-Bleed */}
-      <img
-        src={data.backgroundImageUrl}
-        alt={data.title}
-        crossOrigin={data.backgroundImageUrl?.startsWith("data:") ? undefined : "anonymous"}
-        className="absolute inset-0 w-full h-full object-cover"
-      />
+ return (
+ <div
+ style={{
+ width: `${canvasWidth}px`,
+ height: `${canvasHeight}px`,
+ }}
+ className={`relative bg-black text-white overflow-hidden font-sans select-none flex flex-col justify-between ${className}`}
+ >
+ {/* 100% Background Fotográfico Full-Bleed */}
+ <img
+ src={data.backgroundImageUrl}
+ alt={data.title}
+ crossOrigin={data.backgroundImageUrl?.startsWith("data:") ? undefined : "anonymous"}
+ className="absolute inset-0 w-full h-full object-cover"
+ />
 
-      {/* Gradientes de Profundidade Cinematográfica (Anti-Jank / Legibilidade) */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-black/90 pointer-events-none" />
+ {/* Gradientes de Profundidade Cinematográfica */}
+ <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black/95 pointer-events-none" />
 
-      {/* Safe Zone Superior: Identidade da Agência & Widget de Clima/Destino */}
-      <div className="relative z-10 px-12 pt-16 flex items-center justify-between">
-        {/* Pílula da Agência */}
-        <div className="flex items-center gap-3 bg-foreground/40 backdrop-blur-xl border border-white/20 px-5 py-3 rounded-full">
-          {data.logoUrl ? (
-            <img
-              src={data.logoUrl}
-              alt={data.storeName || "Agência"}
-              crossOrigin={data.logoUrl?.startsWith("data:") ? undefined : "anonymous"}
-              className="w-7 h-7 rounded-full object-cover"
-            />
-          ) : (
-            <Star className="w-5 h-5 text-amber-400" />
-          )}
-          <span className="text-foreground text-lg font-bold tracking-wide">
-            {data.storeName || "Waesy Experience"}
-          </span>
-          {data.verifiedPartner && (
-            <ShieldCheck className="w-5 h-5 text-sky-400" />
-          )}
-        </div>
+ {/* Safe Zone Superior: Identidade da Agência & Widget de Clima/Destino */}
+ <div className={`relative z-10 px-12 ${isOneOne ? "pt-10" : "pt-16"} flex items-center justify-between`}>
+ {/* Pílula da Agência */}
+ <div className="flex items-center gap-4 bg-black/50 backdrop-blur-xl border border-white/25 px-6 py-4 rounded-full ">
+ {data.logoUrl ? (
+ <img
+ src={data.logoUrl}
+ alt={data.storeName || "Agência"}
+ crossOrigin={data.logoUrl?.startsWith("data:") ? undefined : "anonymous"}
+ className="w-9 h-9 rounded-full object-cover"
+ />
+ ) : (
+ <Star className="size-7 text-amber-400 fill-amber-400" />
+ )}
+ <span className="text-white text-2xl font-black tracking-wide">
+ {data.storeName || "Waesy Experience"}
+ </span>
+ {data.verifiedPartner && (
+ <ShieldCheck className="size-7 text-sky-400" />
+ )}
+ </div>
 
-        {/* Pílula Climática / Destino */}
-        <div className="flex items-center gap-3 bg-foreground/40 backdrop-blur-xl border border-white/20 px-5 py-3 rounded-full text-amber-300">
-          <Sun className="w-5 h-5 text-amber-400" />
-          <span className="text-foreground text-base font-semibold">
-            {data.destinationOrLocation ? `Destino Solar • ${data.destinationOrLocation}` : "Melhor Época do Ano"}
-          </span>
-        </div>
-      </div>
+ {/* Pílula Climática / Destino */}
+ <div className="flex items-center gap-3 bg-black/50 backdrop-blur-xl border border-white/25 px-6 py-4 rounded-full text-amber-300 ">
+ <Sun className="size-7 text-amber-400" />
+ <span className="text-white text-xl font-bold">
+ {data.destinationOrLocation ? `Destino Solar • ${data.destinationOrLocation}` : "Melhor Época do Ano"}
+ </span>
+ </div>
+ </div>
 
-      {/* Centro: Espaço Negativo Respirável (Anti-AI Clean Design) */}
-      <div className="flex-1" />
+ {/* Centro: Espaço Negativo Respirável */}
+ <div className="flex-1 min-h-8" />
 
-      {/* Safe Zone Inferior: Cartão Flutuante de Vidro Fosco Profundo */}
-      <div className="relative z-10 px-10 pb-16">
-        <div className="bg-foreground/55 backdrop-blur-2xl border border-white/20 rounded-lg p-10 shadow-2xl">
-          {/* Badge de Oferta & Local */}
-          <div className="flex items-center justify-between mb-4">
-            {data.destinationOrLocation && (
-              <div className="flex items-center gap-2 text-emerald-400 text-sm font-bold uppercase tracking-widest">
-                <MapPin className="w-4 h-4 shrink-0" />
-                <span>{data.destinationOrLocation}</span>
-              </div>
-            )}
-            {data.promoBadge && (
-              <span className="bg-amber-400 text-foreground px-4 py-1 rounded-full text-xs font-black uppercase tracking-wider">
-                {data.promoBadge}
-              </span>
-            )}
-          </div>
+ {/* Safe Zone Inferior: Cartão Flutuante de Vidro Fosco Profundo */}
+ <div className={`relative z-10 px-12 ${isOneOne ? "pb-10" : "pb-16"}`}>
+ <div className={`bg-black/65 backdrop-blur-2xl border border-white/25 rounded-3xl ${isOneOne ? "p-8" : "p-12"} `}>
+ {/* Badge de Oferta & Local */}
+ <div className="flex items-center justify-between mb-4">
+ {data.destinationOrLocation && (
+ <div className="flex items-center gap-3 text-emerald-400 text-xl font-black uppercase tracking-widest">
+ <MapPin className="size-7 shrink-0" />
+ <span>{data.destinationOrLocation}</span>
+ </div>
+ )}
+ {data.promoBadge && (
+ <span className="bg-amber-400 text-slate-950 px-6 py-2 rounded-full text-xl font-black uppercase tracking-wider shadow">
+ {data.promoBadge}
+ </span>
+ )}
+ </div>
 
-          {/* Título Principal */}
-          <h1 className="text-4xl lg:text-[44px] font-black text-foreground leading-tight tracking-tight mb-4 drop-shadow-sm">
-            {data.title}
-          </h1>
+ {/* Título Principal */}
+ <h1 className={`font-black text-white leading-tight tracking-tight line-clamp-2 ${isOneOne ? "text-4xl mb-4" : "text-5xl mb-6"} drop-`}>
+ {data.title}
+ </h1>
 
-          {/* Highlights em Pílulas Translúcidas */}
-          {data.highlights && data.highlights.length > 0 && (
-            <div className="flex flex-wrap gap-3 mb-6">
-              {data.highlights.slice(0, 3).map((item, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center gap-2 bg-card/10 border border-white/15 px-4 py-2 rounded-lg text-foreground/90 text-sm font-medium"
-                >
-                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>{item}</span>
-                </div>
-              ))}
-            </div>
-          )}
+ {/* Highlights em Pílulas Translúcidas */}
+ {data.highlights && data.highlights.length > 0 && (
+ <div className={`flex flex-wrap gap-4 ${isOneOne ? "mb-6" : "mb-8"}`}>
+ {data.highlights.slice(0, 3).map((item, idx) => (
+ <div
+ key={idx}
+ className="flex items-center gap-3 bg-white/15 border border-white/20 px-6 py-3 rounded-2xl text-white text-xl font-bold "
+ >
+ <Check className="size-6 text-emerald-400 shrink-0" strokeWidth={3} />
+ <span>{item}</span>
+ </div>
+ ))}
+ </div>
+ )}
 
-          {/* Divisão Financeira e Botão Primário */}
-          <div className="flex items-end justify-between gap-6 pt-6 border-t border-white/15">
-            <div>
-              <span className="text-xs uppercase tracking-widest text-foreground/60 font-semibold block mb-1">
-                {data.pricingMode === "per_person" ? "Pacote por Pessoa" : "Total do Pacote"}
-              </span>
-              <div className="text-4xl lg:text-5xl font-black text-foreground tracking-tight">
-                {priceFormatted || "Sob Consulta"}
-              </div>
-              {installmentFormatted && data.maxInstallments && data.maxInstallments > 1 && (
-                <span className="text-emerald-400 text-base font-bold block mt-1">
-                  ou {data.maxInstallments}x de {installmentFormatted}
-                </span>
-              )}
-            </div>
+ {/* Divisão Financeira e Botão Primário */}
+ <div className="flex items-end justify-between gap-6 pt-6 border-t border-white/20">
+ <div>
+ <span className="text-xl uppercase tracking-widest text-white/70 font-bold block mb-1">
+ {data.pricingMode === "per_person" ? "Pacote por Pessoa" : "Total do Pacote"}
+ </span>
+ <div className={`font-black text-white tracking-tight leading-none ${isOneOne ? "text-5xl" : "text-7xl"}`}>
+ {priceFormatted || "Sob Consulta"}
+ </div>
+ {installmentFormatted && data.maxInstallments && data.maxInstallments > 1 && (
+ <span className="text-emerald-400 text-2xl font-black block mt-2">
+ ou {data.maxInstallments}x de {installmentFormatted}
+ </span>
+ )}
+ </div>
 
-            {/* Botão de Ação com Alto Contraste */}
-            <div className="bg-card hover:bg-slate-100 text-slate-950 px-8 py-5 rounded-lg font-black text-xl flex items-center gap-3 shadow-2xl shrink-0 transition-transform active:scale-95">
-              <span>{data.ctaLabel || "Reservar Vaga"}</span>
-              <ArrowRight className="w-6 h-6 text-slate-950" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+ {/* Botão de Ação com Alto Contraste */}
+ <div className={`bg-white hover:bg-slate-100 text-slate-950 ${isOneOne ? "px-8 py-5 text-xl" : "px-10 py-6 text-2xl"} rounded-2xl font-black flex items-center gap-4 shrink-0 transition-transform active:scale-95`}>
+ <span>{data.ctaLabel || "Reservar Vaga"}</span>
+ <ArrowRight className="size-8 text-slate-950" strokeWidth={2.5} />
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ );
 };

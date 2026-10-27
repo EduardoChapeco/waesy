@@ -19,6 +19,7 @@ import { FileAttachmentUpload } from '@/components/ui/file-attachment-upload';
 import { toast } from 'sonner';
 import { humanizeErrorMessage } from '@/lib/humanize-error';
 import { getStoreSettings } from '@/services/store.functions';
+import { exportElementAsPdf } from '@/lib/pdf-export';
 import { listDepartureCards, getDepartureWithChecklist, createDepartureCard, updateDepartureStage, updateDepartureDetails, toggleChecklistItem, addChecklistItem, uploadBoardingDocument, deleteDepartureCard, AIRLINE_CHECKIN_LINKS, type DepartureWithChecklist, type ChecklistItem, type BoardingDocument, type ChecklistCategory, type DocumentType } from '@/services/travel-departures.functions';
 import { DEPARTURE_STAGES, type DepartureStage } from '@/types/travel-departures';
 import { useWorkspaceStore } from '@/lib/store-context';
@@ -127,6 +128,7 @@ function WorkspaceBoardingPage() {
 
   // Detail sheet
   const [selectedDepartureId, setSelectedDepartureId] = useState<string | null>(null);
+  const [exportingGuiaObj, setExportingGuiaObj] = useState<any>(null);
   const [detailTab, setDetailTab] = useState<'checklist' | 'documents' | 'flight'>('checklist');
 
   // New departure sheet
@@ -271,88 +273,16 @@ function WorkspaceBoardingPage() {
   async function exportGuiaPdf(detailObj: any) {
     const toastId = toast.loading("Gerando Guia de Embarque PDF...");
     try {
-      const html2canvas = (await import("html2canvas")).default;
-      const { jsPDF } = await import("jspdf");
-
-      const printContainer = document.createElement("div");
-      printContainer.style.position = "fixed";
-      printContainer.style.left = "-9999px";
-      printContainer.style.top = "-9999px";
-      printContainer.style.width = "800px";
-      printContainer.style.backgroundColor = "var(--card)";
-      printContainer.style.fontFamily = "sans-serif";
-      printContainer.style.color = "var(--foreground)";
-      printContainer.style.padding = "40px";
-
+      setExportingGuiaObj(detailObj);
+      await new Promise((r) => setTimeout(r, 200));
       const pnr = detailObj.airline_locator || detailObj.pnr || "PENDENTE";
-      const depDate = detailObj.departure_date ? new Date(detailObj.departure_date).toLocaleDateString("pt-BR") : "Pendente";
-      const retDate = detailObj.return_date ? new Date(detailObj.return_date).toLocaleDateString("pt-BR") : "—";
-
-      printContainer.innerHTML = `
-        <div style="border: 1px solid var(--border); padding: 30px; background-color: var(--card); font-family: sans-serif;">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--foreground); padding-bottom: 20px; margin-bottom: 25px;">
-            <div>
-              <h1 style="font-size: 22px; font-weight: 800; margin: 0; color: var(--foreground); letter-spacing: -0.5px; text-transform: uppercase;">GUIA DE EMBARQUE e ROTEIRO</h1>
-              <p style="font-size: 11px; color: var(--muted-foreground); margin: 5px 0 0 0; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Waesy Turismo e Inteligência Operacional</p>
-            </div>
-            <div style="text-align: right;">
-              <span style="font-size: 14px; font-weight: 800; color: var(--foreground); font-family: monospace;">LOCALIZADOR: ${pnr}</span>
-              <p style="font-size: 10px; color: var(--muted-foreground); margin: 4px 0 0 0;">Passageiro: ${detailObj.client_name}</p>
-            </div>
-          </div>
-
-          <div style="margin-bottom: 20px;">
-            <h2 style="font-size: 11px; font-weight: 700; border-bottom: 1px solid var(--border); padding-bottom: 4px; color: var(--muted-foreground); text-transform: uppercase; margin-bottom: 10px;">Dados do Roteiro</h2>
-            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px;">
-              <div>
-                <p style="margin: 0; font-size: 14px; font-weight: 700; color: var(--foreground);">${detailObj.destination}</p>
-                <p style="margin: 4px 0 0 0; font-size: 11px; color: var(--muted-foreground);">Passageiros: ${detailObj.passengers_count} pax</p>
-              </div>
-              <div style="text-align: right;">
-                <p style="margin: 0; font-size: 12px; font-weight: 600;">Embarque: ${depDate}</p>
-                <p style="margin: 4px 0 0 0; font-size: 11px; color: var(--muted-foreground);">Retorno: ${retDate}</p>
-              </div>
-            </div>
-          </div>
-
-          ${detailObj.airline_code ? `
-          <div style="margin-bottom: 20px; background-color: var(--muted); padding: 12px; border: 1px solid var(--border); border-radius: 6px;">
-            <h2 style="font-size: 11px; font-weight: 700; color: var(--muted-foreground); text-transform: uppercase; margin: 0 0 8px 0;">Voo e Companhia Aérea</h2>
-            <p style="margin: 0; font-size: 12px; font-weight: bold; color: var(--foreground);">${detailObj.airline_code} ${detailObj.flight_number || ""} — Localizador: ${pnr}</p>
-          </div>` : ""}
-
-          ${detailObj.hotel_name ? `
-          <div style="margin-bottom: 20px; background-color: var(--muted); padding: 12px; border: 1px solid var(--border); border-radius: 6px;">
-            <h2 style="font-size: 11px; font-weight: 700; color: var(--muted-foreground); text-transform: uppercase; margin: 0 0 8px 0;">Hospedagem Confirmada</h2>
-            <p style="margin: 0; font-size: 12px; font-weight: bold; color: var(--foreground);">${detailObj.hotel_name}</p>
-          </div>` : ""}
-
-          <div style="margin-top: 25px; border-top: 1px solid var(--border); padding-top: 15px;">
-            <h2 style="font-size: 11px; font-weight: 700; color: var(--muted-foreground); text-transform: uppercase; margin-bottom: 8px;">Recomendações Importantes de Embarque</h2>
-            <ul style="font-size: 10px; color: var(--muted-foreground); line-height: 1.6; margin: 0; padding-left: 16px;">
-              <li>Apresente-se com no mínimo 2h de antecedência para voos nacionais e 3h para internacionais.</li>
-              <li>Mantenha em mãos documento oficial de identificação com foto e bilhetes de embarque.</li>
-              <li>Verifique o limite de peso de bagagem de mão (máx. 10kg) e itens permitidos na cabine.</li>
-            </ul>
-          </div>
-        </div>
-      `;
-
-      document.body.appendChild(printContainer);
-      const canvas = await html2canvas(printContainer, { scale: 2, useCORS: true });
-      document.body.removeChild(printContainer);
-
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4");
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`Guia_Embarque_${pnr}.pdf`);
-
+      await exportElementAsPdf("boarding-guide-target", `Guia_Embarque_${pnr}.pdf`, "p");
       toast.success("Guia de Embarque PDF exportado!", { id: toastId });
     } catch (err: any) {
       console.error(err);
       toast.error("Erro ao gerar Guia de Embarque PDF.", { id: toastId });
+    } finally {
+      setExportingGuiaObj(null);
     }
   }
 
@@ -959,6 +889,76 @@ function WorkspaceBoardingPage() {
           </div>
         </DialogContent>
       </Dialog>
+      {/* ── GUIA DE EMBARQUE CANÔNICO PARA EXPORTAÇÃO PDF ── */}
+      {exportingGuiaObj && (
+        <div className="waesy-offscreen-render">
+          <div
+            id="boarding-guide-target"
+            className="a4-page w-full max-w-3xl min-h-screen bg-card text-card-foreground p-10 font-sans flex flex-col justify-between border border-border/80"
+          >
+            <div className="space-y-6">
+              <div className="border-b-2 border-foreground/80 pb-5 flex items-start justify-between">
+                <div>
+                  <h1 className="text-2xl font-black uppercase tracking-tight text-foreground">
+                    Guia de Embarque e Roteiro
+                  </h1>
+                  <p className="text-xs text-muted-foreground uppercase font-mono tracking-widest mt-1">
+                    Waesy Turismo & Inteligência Operacional
+                  </p>
+                </div>
+                <div className="text-right">
+                  <span className="text-sm font-mono font-bold text-foreground block">
+                    LOCALIZADOR: {exportingGuiaObj.airline_locator || exportingGuiaObj.pnr || "PENDENTE"}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    Passageiro: {exportingGuiaObj.client_name}
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-lg bg-muted/30 border border-border/60 text-xs space-y-2">
+                <span className="text-xs font-mono font-bold uppercase text-muted-foreground">Dados do Roteiro</span>
+                <div className="flex justify-between items-center text-sm font-bold text-foreground">
+                  <span>{exportingGuiaObj.destination}</span>
+                  <span className="text-xs font-normal text-muted-foreground">
+                    Passageiros: {exportingGuiaObj.passengers_count} pax
+                  </span>
+                </div>
+              </div>
+
+              {exportingGuiaObj.airline_code && (
+                <div className="p-4 rounded-lg bg-muted/20 border border-border/40 text-xs space-y-1">
+                  <span className="text-xs font-mono font-bold uppercase text-muted-foreground">Voo e Companhia Aérea</span>
+                  <p className="font-bold text-foreground">
+                    {exportingGuiaObj.airline_code} {exportingGuiaObj.flight_number || ""}
+                  </p>
+                </div>
+              )}
+
+              {exportingGuiaObj.hotel_name && (
+                <div className="p-4 rounded-lg bg-muted/20 border border-border/40 text-xs space-y-1">
+                  <span className="text-xs font-mono font-bold uppercase text-muted-foreground">Hospedagem Confirmada</span>
+                  <p className="font-bold text-foreground">{exportingGuiaObj.hotel_name}</p>
+                </div>
+              )}
+
+              <div className="border-t border-border/60 pt-4 space-y-2 text-xs">
+                <span className="font-bold uppercase text-muted-foreground">Recomendações Importantes de Embarque</span>
+                <ul className="list-disc list-inside space-y-1 text-muted-foreground leading-relaxed">
+                  <li>Apresente-se com no mínimo 2h de antecedência para voos nacionais e 3h para internacionais.</li>
+                  <li>Mantenha em mãos documento oficial de identificação com foto e bilhetes de embarque.</li>
+                  <li>Verifique o limite de peso de bagagem de mão (máx. 10kg) e itens permitidos na cabine.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="border-t border-border/60 pt-4 text-xs text-muted-foreground flex justify-between">
+              <span>Waesy Travel Operations</span>
+              <span className="font-mono">Documento Autenticado</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

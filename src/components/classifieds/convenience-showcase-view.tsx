@@ -14,6 +14,7 @@ import { linkClassifiedToStore } from "@/services/classifieds.functions";
 import { GroceryFreshPricing, GroceryRipenessConfig, ProgressiveDiscountTier, OrderBumpOffer, RipenessStage, DEFAULT_RIPENESS_LABELS, calculateProgressiveDiscount } from "@/lib/classifieds/canonical-taxonomy";
 import { NicheSpecificationsDisplay } from "@/components/common/niche-specifications-display";
 import { resolveClassifiedDetailedSpecs } from "@/lib/classifieds/canonical-specs-resolver";
+import { useWindowSizeClass } from "@/hooks/use-mobile";
 
 export interface ConveniencePreviewData {
   title: string;
@@ -81,6 +82,8 @@ export function ConvenienceShowcaseView({
   compact = false,
 }: ConvenienceShowcaseViewProps) {
   const isForcedMobile = previewDevice === "mobile" || compact;
+  const { isCompact } = useWindowSizeClass();
+  const isMobile = isForcedMobile || isCompact;
   const [quantity, setQuantity] = useState(1);
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
@@ -654,15 +657,15 @@ export function ConvenienceShowcaseView({
           <div>
             <div className="flex items-baseline gap-2">
               {discountResult.activeTier && (
-                <span className="text-sm sm:text-base text-muted-foreground line-through font-mono whitespace-nowrap tabular-nums">
+                <span className="text-sm sm:text-base text-muted-foreground line-through font-mono">
                   {formatMoney(baseUnitPriceCents)}
                 </span>
               )}
-              <span className="text-2xl sm:text-3xl font-black text-foreground font-mono tracking-tight whitespace-nowrap tabular-nums">
+              <span className="text-2xl sm:text-3xl font-black text-foreground font-mono tracking-tight">
                 {effectiveUnitPriceCents > 0 ? formatMoney(effectiveUnitPriceCents) : "Preço sob consulta"}
               </span>
             </div>
-            <span className="text-xs text-muted-foreground font-mono whitespace-nowrap">
+            <span className="text-xs text-muted-foreground font-mono">
               {isFreshPricingActive && pricingMode === "weight"
                 ? `/ ${weightGrams >= 1000 ? `${(weightGrams / 1000).toFixed(1)}kg` : `${weightGrams}g`}`
                 : unitSuffix
@@ -672,13 +675,13 @@ export function ConvenienceShowcaseView({
           </div>
 
           {discountResult.activeTier ? (
-            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
+            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
               {discountResult.activeTier.discount_type === "percentage"
                 ? `${discountResult.activeTier.discount_value}% OFF`
                 : `${formatMoney(discountResult.activeTier.discount_value)} OFF`}
             </span>
           ) : acceptsPix && pixDiscountPercent > 0 && effectiveUnitPriceCents > 0 ? (
-            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
+            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
               {pixDiscountPercent}% OFF no Pix
             </span>
           ) : null}
@@ -687,14 +690,14 @@ export function ConvenienceShowcaseView({
         {acceptsPix && pixDiscountPercent > 0 && effectiveUnitPriceCents > 0 && (
           <div className="text-xs text-emerald-700 dark:text-emerald-400 font-medium flex items-center gap-2">
             <span>
-              Sai por <strong className="whitespace-nowrap tabular-nums">{formatMoney(pixPriceCents)}</strong> à vista no Pix
+              Sai por <strong>{formatMoney(pixPriceCents)}</strong> à vista no Pix
             </span>
           </div>
         )}
 
         {discountResult.totalSavedCents > 0 && (
           <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-            Economia de <strong className="whitespace-nowrap tabular-nums">{formatMoney(discountResult.totalSavedCents)}</strong> com desconto progressivo
+            Economia de <strong>{formatMoney(discountResult.totalSavedCents)}</strong> com desconto progressivo
           </div>
         )}
 
@@ -707,7 +710,7 @@ export function ConvenienceShowcaseView({
                   <span>Pagamento <strong>à vista</strong> no cartão</span>
                 ) : (
                   <span>
-                    ou até <strong>{maxInstallments}x de <span className="whitespace-nowrap tabular-nums">{formatMoney(installmentCents)}</span></strong>{" "}
+                    ou até <strong>{maxInstallments}x de {formatMoney(installmentCents)}</strong>{" "}
                     {cardInterestFree ? "(sem juros)" : ""}
                   </span>
                 )}
@@ -758,8 +761,8 @@ export function ConvenienceShowcaseView({
               <button
                 type="button"
                 onClick={() => setPricingMode("unit")}
-                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "py-2 px-3 text-center rounded-lg font-semibold text-xs transition-colors duration-200 cursor-pointer flex items-center justify-center gap-2",
+                className={cn(
+                  "py-2 px-3 min-h-11 text-center rounded-lg font-semibold text-xs transition-colors duration-150 cursor-pointer flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                   pricingMode === "unit"
                     ? "bg-background text-foreground  font-bold ring-1 ring-border/80"
                     : "text-muted-foreground hover:text-foreground"
@@ -770,8 +773,8 @@ export function ConvenienceShowcaseView({
               <button
                 type="button"
                 onClick={() => setPricingMode("weight")}
-                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "py-2 px-3 text-center rounded-lg font-semibold text-xs transition-colors duration-200 cursor-pointer flex items-center justify-center gap-2",
+                className={cn(
+                  "py-2 px-3 min-h-11 text-center rounded-lg font-semibold text-xs transition-colors duration-150 cursor-pointer flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                   pricingMode === "weight"
                     ? "bg-background text-foreground  font-bold ring-1 ring-border/80"
                     : "text-muted-foreground hover:text-foreground"
@@ -790,8 +793,8 @@ export function ConvenienceShowcaseView({
                       key={g}
                       type="button"
                       onClick={() => setWeightGrams(g)}
-                      className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                        "px-2 py-1 rounded-lg text-xs font-mono font-medium border transition-colors duration-200 cursor-pointer",
+                      className={cn(
+                        "px-3 py-2 h-11 min-h-11 rounded-lg text-xs font-mono font-medium border transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                         weightGrams === g
                           ? "bg-primary text-primary-foreground border-primary font-bold "
                           : "bg-background text-muted-foreground border-border/60 hover:text-foreground"
@@ -812,7 +815,7 @@ export function ConvenienceShowcaseView({
             <span className="text-xs font-bold text-foreground block">
               Ponto de Maturação (Hortifrúti Fresco):
             </span>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {(["menos_maduro", "maduro", "mais_maduro"] as RipenessStage[]).map((stage) => {
                 const info = DEFAULT_RIPENESS_LABELS[stage];
                 const isSelected = selectedRipeness === stage;
@@ -821,8 +824,8 @@ export function ConvenienceShowcaseView({
                     key={stage}
                     type="button"
                     onClick={() => setSelectedRipeness(stage)}
-                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                      "p-3 rounded-lg text-center border transition-colors duration-200 cursor-pointer flex flex-col items-center justify-center gap-1",
+                    className={cn(
+                      "p-3 min-h-11 rounded-lg text-center border transition-colors duration-150 cursor-pointer flex flex-col items-center justify-center gap-1 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                       isSelected
                         ? "border-primary bg-primary/10 text-primary font-bold  ring-1 ring-primary/30"
                         : "border-border/60 bg-background text-muted-foreground hover:text-foreground hover:bg-muted/30"
@@ -878,7 +881,7 @@ export function ConvenienceShowcaseView({
               <div
                 key={idx}
                 className={cn(
-                  "flex items-center justify-between p-3 rounded-lg border text-xs transition-colors duration-200",
+                  "flex items-center justify-between p-3 rounded-lg border text-xs transition-colors duration-150",
                   isUnlocked
                     ? "border-emerald-500/40 text-foreground font-semibold"
                     : "bg-muted/15 border-border/50 text-muted-foreground"
@@ -942,7 +945,7 @@ export function ConvenienceShowcaseView({
         {previewNotice}
       </span>
       {/* Top Header com Botão de Voltar, Compartilhar e Botão Leve de Editar (Sem faixa amarela invasiva!) */}
-      <header className="sticky top-0 z-30 bg-background/85 backdrop-blur-md border-b border-border/40 px-3 sm:px-6 h-12 flex items-center justify-between">
+      <header className="sticky top-0 z-20 bg-background border-b border-border/40 px-3 sm:px-6 h-12 flex items-center justify-between">
         <div className="flex items-center gap-2 min-w-0">
           {!isPreview ? (
             <Button asChild variant="ghost" size="icon" className="size-11 min-h-11 min-w-11 rounded-lg shrink-0 flex items-center justify-center text-foreground hover:bg-muted active:scale-95 transition-colors">
@@ -990,7 +993,7 @@ export function ConvenienceShowcaseView({
       </header>
 
       {/* Container Principal: Desktop em 2 Colunas Widescreen (50/50 balanceado) | Mobile em Ordem Sequencial Natural */}
-      <main className={cn(isForcedMobile ? "w-full max-w-full px-0 pt-0" : "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-0 sm:pt-6")}>
+      <div className={cn(isForcedMobile ? "w-full max-w-full px-0 pt-0" : "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-0 sm:pt-6")}>
         <div className={cn(isForcedMobile ? "flex flex-col gap-3" : "grid grid-cols-1 md:grid-cols-12 gap-0 sm:gap-8 lg:gap-10 items-start")}>
           
           {/* ═══════════════════════════════════════════════════════════════════
@@ -1005,19 +1008,19 @@ export function ConvenienceShowcaseView({
             
             {/* Box da Foto: Grande, proporção controlada e cantos suaves */}
             <div className="space-y-2 sm:space-y-3">
-              <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
-                className="relative aspect-square w-full rounded-none sm:rounded-lg overflow-hidden bg-muted/20 border-b sm:border border-border/60 flex items-center justify-center group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              <div
+                className="relative aspect-square w-full max-h-128 rounded-none sm:rounded-2xl overflow-hidden bg-muted/20 border-b sm:border border-border/60 flex items-center justify-center shadow-none sm:shadow-2xs group cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                 onClick={() => images.length > 0 && setFullscreenImage(images[activePhotoIdx] || images[0])}
               >
                 {images.length > 0 ? (
                   <img
                     src={images[activePhotoIdx] || images[0]}
                     alt={title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-200 motion-reduce:transition-none group-hover:scale-105"
                   />
                 ) : (
                   <div className="flex flex-col items-center gap-2 text-muted-foreground p-8 text-center">
-                    <ShoppingBag className="size-12 stroke-[1.2] text-primary/40" />
+                    <ShoppingBag className="size-12 stroke-1 text-primary/40" />
                     <p className="text-xs">Foto do produto</p>
                   </div>
                 )}
@@ -1033,14 +1036,14 @@ export function ConvenienceShowcaseView({
 
               {/* Galeria de Miniaturas (se houver mais de 1 foto) */}
               {images.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto no-scrollbar px-3 sm:px-0 pb-1">
+                <div className="flex gap-2 overflow-x-auto carousel no-scrollbar px-3 sm:px-0 pb-1">
                   {images.map((img, idx) => (
                     <button
                       key={idx}
                       type="button"
                       onClick={() => setActivePhotoIdx(idx)}
-                      className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                        "size-14 rounded-lg overflow-hidden border shrink-0 bg-muted/20 transition-colors duration-200 cursor-pointer",
+                      className={cn(
+                        "size-14 rounded-lg overflow-hidden border shrink-0 bg-muted/20 transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                         activePhotoIdx === idx
                           ? "border-primary ring-2 ring-primary/20"
                           : "border-border/60 opacity-60 hover:opacity-100"
@@ -1057,9 +1060,10 @@ export function ConvenienceShowcaseView({
                 BLOCO DE CABEÇALHO DO PRODUTO NO MOBILE (MD:HIDDEN OU FORCED MOBILE)
                 Aparece imediatamente abaixo da foto no smartphone!
                ═════════════════════════════════════════════════════════════════ */}
-            <div className={cn("px-4 space-y-3", isForcedMobile ? "block" : "md:hidden")}>
+            {isMobile && (
+            <div className="px-4 space-y-3">
               {/* Card Canônico de Resumo do Produto (Identificação + Preço Integrados Padrão Apple HIG) */}
-              <div className="py-4 sm:p-5 border-b border-border/40 sm:rounded-lg sm:bg-card sm:border sm:border-border/60 space-y-3">
+              <div className="p-4 sm:p-5 rounded-lg bg-card border border-border/60 space-y-3 shadow-xs">
                 <div className="space-y-1">
                   <div className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap">
                     <span className="font-semibold text-foreground/90">{advertiserName}</span>
@@ -1104,8 +1108,8 @@ export function ConvenienceShowcaseView({
                           key={opt}
                           type="button"
                           onClick={() => setSelectedPrepOption(isSelected ? "" : opt)}
-                          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                            "px-3 py-2 rounded-lg text-xs font-medium border transition-colors duration-200 cursor-pointer",
+                          className={cn(
+                            "px-3 py-2 min-h-11 rounded-lg text-xs font-medium border transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                             isSelected
                               ? "bg-primary text-primary-foreground border-primary font-bold "
                               : "bg-background text-muted-foreground border-border/70 hover:text-foreground hover:bg-muted/40"
@@ -1119,12 +1123,13 @@ export function ConvenienceShowcaseView({
                 </div>
               )}
             </div>
+            )}
 
             {/* ─────────────────────────────────────────────────────────────
                 SEÇÃO: DETALHES DO PRODUTO (DESCRIÇÃO SEMPRE ABAIXO DA FOTO)
                ───────────────────────────────────────────────────────────── */}
             {description && (
-              <div className="mx-4 sm:mx-0 py-4 sm:p-6 border-t border-border/40 sm:rounded-lg sm:bg-card sm:border sm:border-border/60 space-y-3">
+              <div className="mx-4 sm:mx-0 p-4 sm:p-6 rounded-lg bg-card border border-border/60 space-y-3">
                 <h2 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
                   <FileText className="size-4 text-primary" />
                   <span>Detalhes do Produto</span>
@@ -1142,11 +1147,12 @@ export function ConvenienceShowcaseView({
               <NicheSpecificationsDisplay
                 items={resolveClassifiedDetailedSpecs(classified || { attributes: attrs, title, category: "grocery" })}
                 title="Especificações e Características"
+                columns={2}
               />
             </div>
 
             {ingredients && (
-              <div className="mx-4 sm:mx-0 py-4 sm:p-5 border-t border-border/40 sm:rounded-lg sm:bg-card sm:border sm:border-border/60 space-y-2">
+              <div className="mx-4 sm:mx-0 p-4 sm:p-5 rounded-lg border border-border/60 bg-card space-y-2 shadow-2xs">
                 <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">Ingredientes / Composição:</span>
                 <p className="text-xs sm:text-sm text-foreground/85 leading-relaxed break-words text-wrap">{ingredients}</p>
               </div>
@@ -1166,9 +1172,11 @@ export function ConvenienceShowcaseView({
             )}
 
             {/* Card do Anunciante / Loja no Mobile */}
-            <div className="md:hidden mx-4">
-              <AdvertiserCard />
-            </div>
+            {isMobile && (
+              <div className="mx-4">
+                <AdvertiserCard />
+              </div>
+            )}
           </div>
 
           {/* ═══════════════════════════════════════════════════════════════════
@@ -1183,7 +1191,8 @@ export function ConvenienceShowcaseView({
               8. BOTÃO PEDIR AGORA (ABRE O CHECKOUT DRAWER)
               9. CARD DA LOJA
              ═══════════════════════════════════════════════════════════════════ */}
-          <div className={cn(isForcedMobile ? "hidden" : "hidden md:block md:col-span-6 lg:col-span-6 space-y-4 md:sticky md:top-16")}>
+          {!isMobile && (
+          <div className="md:col-span-6 lg:col-span-6 space-y-4">
             
             {/* Header de Categoria / Loja */}
             <div className="space-y-2">
@@ -1227,8 +1236,8 @@ export function ConvenienceShowcaseView({
                         key={opt}
                         type="button"
                         onClick={() => setSelectedPrepOption(isSelected ? "" : opt)}
-                        className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                          "px-3 py-2 rounded-lg text-xs font-medium border transition-colors duration-200 cursor-pointer",
+                        className={cn(
+                          "px-3 py-2 min-h-11 rounded-lg text-xs font-medium border transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                           isSelected
                             ? "bg-primary text-primary-foreground border-primary font-bold "
                             : "bg-background text-muted-foreground border-border/70 hover:text-foreground hover:bg-muted/40"
@@ -1297,7 +1306,7 @@ export function ConvenienceShowcaseView({
               <div className="space-y-2 pt-1">
                 <Button
                   onClick={() => setIsOrderModalOpen(true)}
-                  className="w-full h-12 rounded-lg text-xs sm:text-sm font-bold gap-2 bg-foreground text-background hover:bg-foreground/90 cursor-pointer transition-transform duration-200 active:scale-[0.99]"
+                  className="w-full h-12 rounded-lg text-xs sm:text-sm font-bold gap-2 bg-foreground text-background hover:bg-foreground/90 cursor-pointer transition-colors duration-150 active:scale-95"
                 >
                   <ShoppingBag className="size-4" />
                   <span>
@@ -1309,7 +1318,7 @@ export function ConvenienceShowcaseView({
                   <Button
                     onClick={handleDirectWhatsApp}
                     variant="outline"
-                    className="w-full h-10 rounded-lg text-xs font-semibold gap-2 border-border/70 hover:bg-muted/40 text-foreground cursor-pointer"
+                    className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 border-border/70 hover:bg-muted/40 text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     <MessageCircle className="size-3.5 text-emerald-600" />
                     <span>Pedir via WhatsApp Direto</span>
@@ -1320,22 +1329,23 @@ export function ConvenienceShowcaseView({
 
             {/* Card Resumo do Anunciante / Loja no Desktop */}
             <AdvertiserCard />
-
           </div>
+          )}
         </div>
 
         {/* Clearance spacer para a barra flutuante mobile */}
-        <div className="h-24 w-full md:hidden" aria-hidden="true" />
-      </main>
+        {isMobile && <div className="h-24 w-full" aria-hidden="true" />}
+      </div>
 
       {/* ═══════════════════════════════════════════════════════════════════════
           FLOATING BOTTOM BAR NO MOBILE (THUMB ZONE ERGONOMICS)
          ═══════════════════════════════════════════════════════════════════════ */}
+      {isMobile && (
       <div className={cn(
         "z-30 bg-background border-t border-border/60 p-3 pb-safe flex items-center gap-3",
         isForcedMobile || isPreview
           ? "sticky bottom-0 inset-x-0 block rounded-none sm:rounded-b-lg pb-safe"
-          : "md:hidden fixed bottom-0 inset-x-0 pb-safe"
+          : "fixed bottom-0 inset-x-0 pb-safe"
       )}>
         <div className="flex items-center border border-border/70 rounded-lg bg-card p-1 shrink-0">
           <Button
@@ -1381,6 +1391,7 @@ export function ConvenienceShowcaseView({
           <span>Pedir Agora</span>
         </Button>
       </div>
+      )}
 
       {/* ═══════════════════════════════════════════════════════════════════════
           MODAL / SHEET DE FINALIZAÇÃO DE PEDIDO (CHECKOUT DE CONVENIÊNCIA)
@@ -1397,7 +1408,7 @@ export function ConvenienceShowcaseView({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="p-4 sm:p-5 space-y-4 max-h-[75vh] overflow-y-auto">
+          <div className="p-4 sm:p-5 space-y-4 max-h-128 overflow-y-auto">
             {/* Resumo do Item */}
             <div className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border/60">
               {images[0] ? (
@@ -1502,7 +1513,7 @@ export function ConvenienceShowcaseView({
                     variant={isOrderBumpAdded ? "default" : "outline"}
                     onClick={() => setIsOrderBumpAdded(!isOrderBumpAdded)}
                     className={cn(
-                      "h-11 min-h-11 px-4 rounded-lg text-xs font-bold cursor-pointer shrink-0 transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-ring",
+                      "h-11 min-h-11 px-4 rounded-lg text-xs font-bold cursor-pointer shrink-0 transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-ring",
                       isOrderBumpAdded
                         ? "bg-foreground text-background hover:bg-foreground/90"
                         : "border-amber-500/40 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10"
@@ -1530,12 +1541,12 @@ export function ConvenienceShowcaseView({
                 </span>
               </Label>
 
-              <div className="grid grid-cols-3 gap-2 p-1 bg-muted/30 rounded-lg border border-border/50">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-1 bg-muted/30 rounded-lg border border-border/50">
                 <button
                   type="button"
                   onClick={() => setOrderDeliveryMode("immediate")}
-                  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                    "py-2 px-1 text-center rounded-lg font-semibold text-xs transition-colors duration-200 cursor-pointer",
+                  className={cn(
+                    "py-2 px-1 min-h-11 text-center rounded-lg font-semibold text-xs transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                     orderDeliveryMode === "immediate"
                       ? "bg-background text-foreground  font-bold ring-1 ring-border/80"
                       : "text-muted-foreground hover:text-foreground"
@@ -1546,8 +1557,8 @@ export function ConvenienceShowcaseView({
                 <button
                   type="button"
                   onClick={() => setOrderDeliveryMode("scheduled")}
-                  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                    "py-2 px-1 text-center rounded-lg font-semibold text-xs transition-colors duration-200 cursor-pointer",
+                  className={cn(
+                    "py-2 px-1 min-h-11 text-center rounded-lg font-semibold text-xs transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                     orderDeliveryMode === "scheduled"
                       ? "bg-background text-foreground  font-bold ring-1 ring-border/80"
                       : "text-muted-foreground hover:text-foreground"
@@ -1558,8 +1569,8 @@ export function ConvenienceShowcaseView({
                 <button
                   type="button"
                   onClick={() => setOrderDeliveryMode("pickup")}
-                  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                    "py-2 px-1 text-center rounded-lg font-semibold text-xs transition-colors duration-200 cursor-pointer",
+                  className={cn(
+                    "py-2 px-1 min-h-11 text-center rounded-lg font-semibold text-xs transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                     orderDeliveryMode === "pickup"
                       ? "bg-background text-foreground  font-bold ring-1 ring-border/80"
                       : "text-muted-foreground hover:text-foreground"
@@ -1593,8 +1604,8 @@ export function ConvenienceShowcaseView({
                         key={win.id}
                         type="button"
                         onClick={() => setOrderScheduledWindow(win.id)}
-                        className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                          "p-2 rounded-lg text-xs font-medium border text-left cursor-pointer transition-colors duration-200",
+                        className={cn(
+                          "p-2 min-h-11 rounded-lg text-xs font-medium border text-left cursor-pointer transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                           orderScheduledWindow === win.id
                             ? "bg-primary/10 border-primary text-primary font-bold"
                             : "bg-background border-border/60 text-foreground/80 hover:bg-muted/40"
@@ -1639,13 +1650,13 @@ export function ConvenienceShowcaseView({
               <Label className="text-xs font-bold text-foreground">
                 Forma de Pagamento
               </Label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 {acceptsPix && (
                   <button
                     type="button"
                     onClick={() => setOrderPaymentMethod("pix")}
-                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                      "p-3 rounded-lg border text-center transition-colors duration-200 cursor-pointer flex flex-col items-center gap-1 min-h-[58px]",
+                    className={cn(
+                      "p-3 rounded-lg border text-center transition-colors duration-150 cursor-pointer flex flex-col items-center gap-1 min-h-16 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                       orderPaymentMethod === "pix"
                         ? "border-emerald-600 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold"
                         : "border-border/60 bg-background text-muted-foreground hover:text-foreground"
@@ -1665,8 +1676,8 @@ export function ConvenienceShowcaseView({
                   <button
                     type="button"
                     onClick={() => setOrderPaymentMethod("card")}
-                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                      "p-3 rounded-lg border text-center transition-colors duration-200 cursor-pointer flex flex-col items-center gap-1 min-h-[58px]",
+                    className={cn(
+                      "p-3 rounded-lg border text-center transition-colors duration-150 cursor-pointer flex flex-col items-center gap-1 min-h-16 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                       orderPaymentMethod === "card"
                         ? "border-primary bg-primary/10 text-primary font-bold"
                         : "border-border/60 bg-background text-muted-foreground hover:text-foreground"
@@ -1682,8 +1693,8 @@ export function ConvenienceShowcaseView({
                   <button
                     type="button"
                     onClick={() => setOrderPaymentMethod("cash")}
-                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                      "p-3 rounded-lg border text-center transition-colors duration-200 cursor-pointer flex flex-col items-center gap-1 min-h-[58px]",
+                    className={cn(
+                      "p-3 rounded-lg border text-center transition-colors duration-150 cursor-pointer flex flex-col items-center gap-1 min-h-16 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                       orderPaymentMethod === "cash"
                         ? "border-amber-600 bg-amber-500/10 text-amber-700 dark:text-amber-300 font-bold"
                         : "border-border/60 bg-background text-muted-foreground hover:text-foreground"
@@ -1790,7 +1801,7 @@ export function ConvenienceShowcaseView({
           <div className="space-y-3 py-2">
             {isLoadingStores ? (
               <div className="flex items-center justify-center py-6 gap-2 text-xs text-muted-foreground">
-                <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-primary" />
+                <Loader2 className="size-4 animate-spin text-primary" />
                 <span>Buscando suas empresas...</span>
               </div>
             ) : userStoresList.length === 0 ? (
@@ -1844,7 +1855,7 @@ export function ConvenienceShowcaseView({
                           onClick={() => handleSelectStoreLink(st.id)}
                           className="h-11 min-h-11 px-4 text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                         >
-                          {isLinkingStore ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : "Vincular"}
+                          {isLinkingStore ? <Loader2 className="size-3.5 animate-spin" /> : "Vincular"}
                         </Button>
                       )}
                     </div>
@@ -1875,7 +1886,7 @@ export function ConvenienceShowcaseView({
             <DialogTitle>Foto do Produto</DialogTitle>
           </DialogHeader>
           {fullscreenImage && (
-            <div className="relative aspect-square sm:aspect-[4/3] w-full max-h-[85vh] rounded-lg overflow-hidden flex items-center justify-center bg-foreground/5">
+            <div className="relative aspect-square sm:aspect-4/3 w-full max-h-screen rounded-lg overflow-hidden flex items-center justify-center bg-muted/40">
               <img
                 src={fullscreenImage}
                 alt={title}

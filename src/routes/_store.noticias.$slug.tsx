@@ -10,12 +10,69 @@ import { recordAdTelemetry } from "@/services/telemetry.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_store/noticias/$slug")({
-  head: ({ loaderData }: any) => ({
-    meta: [
-      { title: loaderData?.article ? `${decodeHtmlEntities(loaderData.article.title)} | Waesy Notícias` : "Notícia | Waesy" },
-      { name: "description", content: decodeHtmlEntities(loaderData?.article?.subtitle) || "Notícia local no Waesy." },
-    ],
-  }),
+  head: ({ loaderData }: any) => {
+    const art = loaderData?.article;
+    const title = art ? `${decodeHtmlEntities(art.title)} | Waesy Notícias` : "Notícia | Waesy";
+    const description = decodeHtmlEntities(art?.subtitle) || decodeHtmlEntities(art?.ai_summary) || "Notícia apurada e verificada no ecossistema Waesy.";
+    const canonicalUrl = art?.slug ? `https://usewaesy.com/noticias/${art.slug}` : "https://usewaesy.com/noticias";
+    const coverUrl = art?.cover_media_url || "https://usewaesy.com/icons/icon-512.png";
+    const publishedAt = art?.published_at || new Date().toISOString();
+
+    const jsonLd = art ? {
+      "@context": "https://schema.org",
+      "@type": "NewsArticle",
+      headline: decodeHtmlEntities(art.title),
+      description,
+      image: [coverUrl],
+      datePublished: publishedAt,
+      dateModified: art.updated_at || publishedAt,
+      author: [{
+        "@type": "Organization",
+        name: art.author_name || "Redação Waesy",
+        url: "https://usewaesy.com"
+      }],
+      publisher: {
+        "@type": "Organization",
+        name: "Waesy",
+        logo: {
+          "@type": "ImageObject",
+          url: "https://usewaesy.com/icons/icon-512.png"
+        }
+      },
+      mainEntityOfPage: {
+        "@type": "WebPage",
+        "@id": canonicalUrl
+      }
+    } : null;
+
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { name: "keywords", content: (art?.tags || ["noticias", "chapeco", "sc"]).join(", ") },
+        { property: "og:type", content: "article" },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:url", content: canonicalUrl },
+        { property: "og:image", content: coverUrl },
+        { property: "og:site_name", content: "Waesy Notícias" },
+        { property: "article:published_time", content: publishedAt },
+        { property: "article:section", content: art?.category || "Geral" },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
+        { name: "twitter:image", content: coverUrl },
+        { name: "webmcp-endpoint", content: "/api/webmcp.json" },
+        { name: "webmcp-type", content: "news_article" }
+      ],
+      scripts: jsonLd ? [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify(jsonLd)
+        }
+      ] : []
+    };
+  },
   loader: async ({ params }) => {
     try {
       const data = await getArticleDetail({ data: { slug: params.slug } }).catch(() => null);

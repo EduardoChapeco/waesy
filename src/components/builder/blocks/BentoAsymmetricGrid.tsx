@@ -20,7 +20,7 @@ export const BentoAsymmetricGrid: React.FC<BentoAsymmetricGridProps> = ({ id, da
       className={`w-full bg-muted/20 border-b border-border/40 ${sectionStyle.className} ${className}`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Cabeçalho da Seção */}
         {(data.sectionTitle || data.sectionSubtitle) && (
           <div className="max-w-2xl mx-auto text-center mb-16">
@@ -39,7 +39,7 @@ export const BentoAsymmetricGrid: React.FC<BentoAsymmetricGridProps> = ({ id, da
 
         {/* Grade Bento 3 Colunas com Layout Assimétrico */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          
+
           {/* Célula 1: Destaque Dominante (2 Colunas, Linha 1) */}
           <div className="md:col-span-2 bg-card border border-border/80 rounded-lg p-8 sm:p-10 flex flex-col justify-between shadow-xs relative overflow-hidden group hover:border-border transition-colors">
             <div className="relative z-10 mb-8">
@@ -65,7 +65,7 @@ export const BentoAsymmetricGrid: React.FC<BentoAsymmetricGridProps> = ({ id, da
                 </span>
               </div>
               <div className="flex items-center justify-between text-sm py-1">
-                <span className="font-semibold text-foreground">Pedido #9842 — Balcão & Retirada</span>
+                <span className="font-semibold text-foreground">Pedido N. 9842 — Balcão & Retirada</span>
                 <span className="font-mono font-bold text-foreground">R$ 142,50</span>
               </div>
               <div className="flex items-center justify-between text-sm py-1 text-muted-foreground">

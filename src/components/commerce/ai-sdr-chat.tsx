@@ -163,7 +163,7 @@ export function AiSdrChat({ classifiedId, storeId, sellerProfileId, storeName, s
 
       {/* Botão flutuante */}
       {!isOpen && (
-        <div className="fixed bottom-24 right-4 z-50 flex flex-col items-end gap-2">
+        <div className="fixed bottom-24 right-4 sm:bottom-6 sm:right-6 z-40 flex flex-col items-end gap-2">
           {/* Botão "Instruções" */}
           <button
             onClick={() => setIsInfoOpen(true)}

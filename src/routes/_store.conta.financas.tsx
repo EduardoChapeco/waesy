@@ -1,6 +1,6 @@
 /**
  * _store.conta.financas.tsx — Gestão Financeira Canônica, Ledger e Extrato Unificado (Plataforma Waesy)
- * 
+ *
  * Normativa: SPEC-FINANCAS-LEDGER-CARTEIRA-UNIFICADA, AGENTS.md B.8, B.14, B.22, B.25, B.26
  * 4 Pilares: [ Visão Geral ] [ Extrato ] [ Planejamento ] [ Conta ]
  * Separação dos Três Livros: Pessoal, Ledger Econômico Waesy e Dinheiro Movimentável (R$)
@@ -1660,9 +1660,20 @@ function PersonalFinancePage() {
                           if (result.amountCents) {
                             setAmountStr((result.amountCents / 100).toFixed(2).replace(".", ","));
                           }
-                          if (result.description) setDescription(result.description);
+                          if (result.description) {
+                            const enrichedDesc = result.establishmentName && !result.description.includes(result.establishmentName)
+                              ? `${result.description} — ${result.establishmentName}`
+                              : result.description;
+                            setDescription(enrichedDesc);
+                          }
                           if (result.entryDate) setEntryDate(result.entryDate);
-                          toast.success("OCR processado com sucesso!");
+                          if (result.suggestedCategory && availableCategories.length > 0) {
+                            const matchedCat = availableCategories.find(
+                              (c: any) => String(c.name || "").toLowerCase() === String(result.suggestedCategory || "").toLowerCase()
+                            );
+                            if (matchedCat) setSelectedCategoryId(matchedCat.id);
+                          }
+                          toast.success("Comprovante e categoria preenchidos com IA!");
                         } catch (err: any) {
                           toast.error(err.message || "Falha no OCR.");
                         } finally {

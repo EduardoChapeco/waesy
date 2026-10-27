@@ -10,7 +10,10 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { getGroupTourById, updateGroupTourAllocations, type GroupTourDTO, type BusSeatDTO, type HotelRoomAllocationDTO } from "@/services/group-tours.functions";
+import { getGroupTourById, updateGroupTourAllocations, updateGroupTourSettings, autoPairSharedRooms, type GroupTourDTO, type BusSeatDTO, type HotelRoomAllocationDTO } from "@/services/group-tours.functions";
+import { Switch } from "@/components/ui/switch";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Sparkles, Eye, Lock } from "lucide-react";
 import { BusSeatMap } from "@/components/tourism/groups/bus-seat-map";
 import { RoomingListManager } from "@/components/tourism/groups/rooming-list-manager";
 import { GroupTourBudgetManager } from "@/components/tourism/groups/group-tour-budget";
@@ -40,11 +43,17 @@ function WorkspaceGroupTourDetailPage() {
  const [magicLinkModalOpen, setMagicLinkModalOpen] = useState(false);
  const [fleetModalOpen, setFleetModalOpen] = useState(false);
 
- // Operacional do Ã”nibus
- const [busCompany, setBusCompany] = useState(tour?.bus_company_name || "");
- const [busPlate, setBusPlate] = useState(tour?.bus_plate || "");
- const [driverName, setDriverName] = useState(tour?.driver_name || "");
- const [driverPhone, setDriverPhone] = useState(tour?.driver_phone || "");
+   // Operacional do Transporte, Aéreo e Guia
+  const [transportType, setTransportType] = useState<"bus" | "air" | "cruise" | "multimodal">(tour?.transport_type || "bus");
+  const [busCompany, setBusCompany] = useState(tour?.bus_company_name || "");
+  const [busPlate, setBusPlate] = useState(tour?.bus_plate || "");
+  const [driverName, setDriverName] = useState(tour?.driver_name || "");
+  const [driverPhone, setDriverPhone] = useState(tour?.driver_phone || "");
+  const [guideName, setGuideName] = useState(tour?.guide_name || "");
+  const [guidePhone, setGuidePhone] = useState(tour?.guide_phone || "");
+  const [whatsappGroupUrl, setWhatsappGroupUrl] = useState(tour?.whatsapp_group_url || "");
+  const [airlineName, setAirlineName] = useState(tour?.airline_name || "");
+  const [flightPnr, setFlightPnr] = useState(tour?.flight_pnr || "");
 
  const saveMutation = useMutation({
  mutationFn: (patch: any) =>
@@ -102,15 +111,21 @@ function WorkspaceGroupTourDetailPage() {
  toast.success('Ã”nibus vinculado da Frota 2D e mapa de poltronas atualizado!');
  };
  
- const handleSaveOperational = () => {
- saveMutation.mutate({
- busCompanyName: busCompany || null,
- busPlate: busPlate || null,
- driverName: driverName || null,
- driverPhone: driverPhone || null,
- });
- toast.success("Dados operacionais do transporte salvos!");
- };
+   const handleSaveOperational = () => {
+    saveMutation.mutate({
+      busCompanyName: busCompany || null,
+      busPlate: busPlate || null,
+      driverName: driverName || null,
+      driverPhone: driverPhone || null,
+      guideName: guideName || null,
+      guidePhone: guidePhone || null,
+      whatsappGroupUrl: whatsappGroupUrl || null,
+      airlineName: airlineName || null,
+      flightPnr: flightPnr || null,
+      transportType,
+    });
+    toast.success("Dados operacionais e de guia salvos com sucesso!");
+  };
 
  if (!tour) {
  return (
@@ -141,7 +156,7 @@ function WorkspaceGroupTourDetailPage() {
  };
 
  return (
- <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+ <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-20 animate-in fade-in duration-200 motion-reduce:animate-none">
  {/* â”€â”€ 1. TOP HEADER DA VIAGEM â”€â”€ */}
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-lg bg-card border border-border/80">
  <div className="flex items-center gap-3">
@@ -157,7 +172,7 @@ function WorkspaceGroupTourDetailPage() {
  </Badge>
  {isSaving ? (
  <span className="flex items-center gap-1 text-xs text-muted-foreground font-mono">
- <Loader2 className="size-3 animate-spin motion-reduce:animate-none text-primary" /> Salvando...
+ <Loader2 className="size-3 animate-spin text-primary" /> Salvando...
  </span>
  ) : (
  <span className="flex items-center gap-1 text-xs text-emerald-600 font-mono">
@@ -187,14 +202,14 @@ function WorkspaceGroupTourDetailPage() {
  </Button>
 
  <Button
- type="button"
- variant="outline"
- onClick={() => setMagicLinkModalOpen(true)}
- className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-11 px-4 sm:px-3 cursor-pointer"
- >
- <Link2 className="size-4 sm:size-3.5" />
- <span>Link MÃ¡gico</span>
- </Button>
+            type="button"
+            variant="outline"
+            onClick={() => setMagicLinkModalOpen(true)}
+            className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-11 px-4 sm:px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <FileText className="size-4 sm:size-3.5" />
+            <span>Formulário de Inscrição</span>
+          </Button>
 
  <Button
  type="button"
@@ -260,68 +275,191 @@ function WorkspaceGroupTourDetailPage() {
  </TabsContent>
 
  {/* ABA 5: DADOS OPERACIONAIS DO TRANSPORTE */}
- <TabsContent value="transporte" className="space-y-4">
- <div className="p-6 rounded-lg bg-card border border-border/80 space-y-4 max-w-xl">
- <h3 className="text-sm font-bold text-foreground">
- IdentificaÃ§Ã£o do Transporte RodoviÃ¡rio
- </h3>
+ <TabsContent value="transporte" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Bloco 1: Guia / Tour Leader & Comunicação do Grupo */}
+            <div className="p-5 rounded-lg bg-card border border-border/80 space-y-4">
+              <div className="flex items-center justify-between border-b border-border/60 pb-2">
+                <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                  <UserCheck className="size-4 text-primary" />
+                  <span>Guia / Tour Leader & Grupo Oficial</span>
+                </h3>
+                <Badge variant="outline" className="text-xs font-mono">
+                  Líder do Grupo
+                </Badge>
+              </div>
 
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
- <div className="space-y-1">
- <Label className="text-xs font-bold">Empresa de Fretamento</Label>
- <Input
- placeholder="Ex: ViaÃ§Ã£o Catarinense"
- value={busCompany}
- onChange={(e) => setBusCompany(e.target.value)}
- className="h-10 text-xs rounded-lg"
- />
- </div>
+              <div className="space-y-3 text-xs">
+                <div className="space-y-1">
+                  <Label className="text-xs font-bold">Nome do Guia / Responsável</Label>
+                  <Input
+                    placeholder="Ex: Carlos Silva"
+                    value={guideName}
+                    onChange={(e) => setGuideName(e.target.value)}
+                    className="h-10 text-xs rounded-lg focus-visible:ring-2 focus-visible:ring-ring"
+                  />
+                </div>
 
- <div className="space-y-1">
- <Label className="text-xs font-bold">Placa do Ã”nibus</Label>
- <Input
- placeholder="ABC-1D23"
- value={busPlate}
- onChange={(e) => setBusPlate(e.target.value)}
- className="h-10 text-xs rounded-lg font-mono uppercase"
- />
- </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-bold">Telefone / WhatsApp do Guia</Label>
+                  <Input
+                    placeholder="(49) 99999-8888"
+                    value={guidePhone}
+                    onChange={(e) => setGuidePhone(e.target.value)}
+                    className="h-10 text-xs rounded-lg font-mono focus-visible:ring-2 focus-visible:ring-ring"
+                  />
+                </div>
 
- <div className="space-y-1">
- <Label className="text-xs font-bold">Nome do Motorista Principal</Label>
- <Input
- placeholder="Nome completo"
- value={driverName}
- onChange={(e) => setDriverName(e.target.value)}
- className="h-10 text-xs rounded-lg"
- />
- </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-bold">Link do Grupo Oficial de WhatsApp (Passageiros)</Label>
+                  <Input
+                    placeholder="https://chat.whatsapp.com/..."
+                    value={whatsappGroupUrl}
+                    onChange={(e) => setWhatsappGroupUrl(e.target.value)}
+                    className="h-10 text-xs rounded-lg font-mono focus-visible:ring-2 focus-visible:ring-ring"
+                  />
+                  <p className="text-xs text-muted-foreground pt-1">
+                    Este link aparece no portal Minha Viagem do viajante para acesso com 1 toque.
+                  </p>
+                </div>
+              </div>
+            </div>
 
- <div className="space-y-1">
- <Label className="text-xs font-bold">Telefone do Motorista</Label>
- <Input
- placeholder="(49) 99999-9999"
- value={driverPhone}
- onChange={(e) => setDriverPhone(e.target.value)}
- className="h-10 text-xs rounded-lg"
- />
- </div>
- </div>
+            {/* Bloco 2: Modalidade de Transporte & Logística */}
+            <div className="p-5 rounded-lg bg-card border border-border/80 space-y-4">
+              <div className="flex items-center justify-between border-b border-border/60 pb-2">
+                <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                  <ShieldCheck className="size-4 text-primary" />
+                  <span>Transporte & Logística da Viagem</span>
+                </h3>
+                <div className="flex items-center gap-1">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={transportType === "bus" ? "default" : "outline"}
+                    onClick={() => setTransportType("bus")}
+                    className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    Ônibus
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={transportType === "air" ? "default" : "outline"}
+                    onClick={() => setTransportType("air")}
+                    className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    Aéreo
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={transportType === "multimodal" ? "default" : "outline"}
+                    onClick={() => setTransportType("multimodal")}
+                    className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    Multimodal
+                  </Button>
+                </div>
+              </div>
 
-            <Button
-              type="button"
-              onClick={handleSaveOperational}
-              className="h-11 sm:h-10 px-5 rounded-lg text-xs font-bold bg-foreground text-background cursor-pointer shadow-xs"
-            >
-              Salvar Dados do Transporte
-            </Button>
- </div>
- </TabsContent>
+              {/* Campos Rodoviários */}
+              {(transportType === "bus" || transportType === "multimodal") && (
+                <div className="space-y-3 text-xs">
+                  <span className="font-bold text-foreground font-mono uppercase text-xs block">
+                    Transporte Rodoviário / Fretamento ANTT
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs font-bold">Empresa de Fretamento</Label>
+                      <Input
+                        placeholder="Ex: Viação Catarinense"
+                        value={busCompany}
+                        onChange={(e) => setBusCompany(e.target.value)}
+                        className="h-10 text-xs rounded-lg focus-visible:ring-2 focus-visible:ring-ring"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <Label className="text-xs font-bold">Placa do Ônibus</Label>
+                      <Input
+                        placeholder="ABC-1D23"
+                        value={busPlate}
+                        onChange={(e) => setBusPlate(e.target.value)}
+                        className="h-10 text-xs rounded-lg font-mono uppercase focus-visible:ring-2 focus-visible:ring-ring"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <Label className="text-xs font-bold">Nome do Motorista Principal</Label>
+                      <Input
+                        placeholder="Nome completo"
+                        value={driverName}
+                        onChange={(e) => setDriverName(e.target.value)}
+                        className="h-10 text-xs rounded-lg focus-visible:ring-2 focus-visible:ring-ring"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <Label className="text-xs font-bold">Telefone do Motorista</Label>
+                      <Input
+                        placeholder="(49) 99999-9999"
+                        value={driverPhone}
+                        onChange={(e) => setDriverPhone(e.target.value)}
+                        className="h-10 text-xs rounded-lg focus-visible:ring-2 focus-visible:ring-ring"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Campos de Bloqueio Aéreo */}
+              {(transportType === "air" || transportType === "multimodal") && (
+                <div className="space-y-3 text-xs pt-2 border-t border-border/40">
+                  <span className="font-bold text-foreground font-mono uppercase text-xs block">
+                    Bloqueio Aéreo de Grupo
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs font-bold">Companhia Aérea</Label>
+                      <Input
+                        placeholder="Ex: LATAM Airlines / Gol"
+                        value={airlineName}
+                        onChange={(e) => setAirlineName(e.target.value)}
+                        className="h-10 text-xs rounded-lg focus-visible:ring-2 focus-visible:ring-ring"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <Label className="text-xs font-bold">PNR do Grupo (Localizador Mãe)</Label>
+                      <Input
+                        placeholder="Ex: GRP9482X"
+                        value={flightPnr}
+                        onChange={(e) => setFlightPnr(e.target.value)}
+                        className="h-10 text-xs rounded-lg font-mono uppercase focus-visible:ring-2 focus-visible:ring-ring"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="pt-2">
+                <Button
+                  type="button"
+                  onClick={handleSaveOperational}
+                  className="h-11 min-h-11 px-5 rounded-lg text-xs font-bold bg-foreground text-background cursor-pointer shadow-xs focus-visible:ring-2 focus-visible:ring-ring w-full sm:w-auto"
+                >
+                  Salvar Dados Operacionais & Guia
+                </Button>
+              </div>
+            </div>
+          </div>
+        </TabsContent>
  </Tabs>
 
  {/* â”€â”€ 3. VISUALIZADOR OCULTO PARA EXPORTAÃ‡ÃƒO DO MANIFESTO ANTT â”€â”€ */}
  <div className="hidden">
- <div id="manifesto-antt-view" className="p-10 bg-card text-slate-900 font-sans space-y-6">
+ <div id="manifesto-antt-view" className="p-10 bg-background text-foreground font-sans space-y-6">
  <div className="text-center pb-4 border-b-2 border-slate-900 space-y-1">
  <span className="text-xs font-mono font-bold uppercase tracking-widest text-slate-500">
  AgÃªncia Nacional de Transportes Terrestres (ANTT) / DER

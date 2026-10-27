@@ -44,6 +44,8 @@ function PublicTravelProposalPage() {
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [isAccepted, setIsAccepted] = useState(proposal?.acceptance_status === "accepted");
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
+  const [pinInput, setPinInput] = useState("");
+  const [isPinUnlocked, setIsPinUnlocked] = useState(() => !proposal?.access_pin);
   const [selectedOptionIndex, setSelectedOptionIndex] = useState(() => {
     const acceptedIndex = proposal?.options?.findIndex((option: { id?: string }) => option.id === proposal?.accepted_option_id) ?? -1;
     return acceptedIndex >= 0 ? acceptedIndex : 0;
@@ -124,11 +126,11 @@ function PublicTravelProposalPage() {
           {loadError ? "Não foi possível carregar esta proposta. Tente novamente." : "A proposta pode ter expirado ou o link informado está incorreto."}
         </p>
         {loadError ? (
-          <Button type="button" size="sm" variant="outline" className="h-11 min-h-11 focus-visible:ring-2 focus-visible:ring-ring" onClick={() => window.location.reload()}>
+          <Button type="button" variant="outline" className="h-11 min-h-11 focus-visible:ring-2 focus-visible:ring-ring" onClick={() => window.location.reload()}>
             Tentar novamente
           </Button>
         ) : (
-          <Button asChild size="sm" variant="outline" className="h-11 min-h-11 rounded-lg focus-visible:ring-2 focus-visible:ring-ring">
+          <Button asChild variant="outline" className="h-11 min-h-11 rounded-lg focus-visible:ring-2 focus-visible:ring-ring">
             <Link to="/turismo">Explorar outros destinos</Link>
           </Button>
         )}
@@ -158,6 +160,45 @@ function PublicTravelProposalPage() {
 
   const activeOption = options[selectedOptionIndex] || null;
 
+  if (proposal.access_pin && !isPinUnlocked) {
+    return (
+      <div className="max-w-md mx-auto py-20 px-4 space-y-4">
+        <div className="p-6 rounded-lg border border-border bg-card space-y-4 text-center">
+          <ShieldCheck className="size-10 text-primary mx-auto" />
+          <div className="space-y-1">
+            <h2 className="text-base font-bold text-foreground">Proposta Protegida por Senha</h2>
+            <p className="text-xs text-muted-foreground">
+              Informe a senha enviada pelo seu consultor da {proposal.agency_name} para acessar os orçamentos.
+            </p>
+          </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (pinInput.trim() === proposal.access_pin) {
+                setIsPinUnlocked(true);
+                toast.success("Acesso liberado!");
+              } else {
+                toast.error("Senha incorreta. Solicite ao seu consultor.");
+              }
+            }}
+            className="space-y-3"
+          >
+            <Input
+              type="password"
+              placeholder="Digite a senha da proposta..."
+              value={pinInput}
+              onChange={(e) => setPinInput(e.target.value)}
+              className="h-11 text-center font-mono text-sm"
+            />
+            <Button type="submit" className="w-full h-11 min-h-11 font-bold text-xs focus-visible:ring-2 focus-visible:ring-ring">
+              Desbloquear Proposta
+            </Button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-5xl mx-auto py-4 sm:py-6 px-2 sm:px-4 space-y-4 sm:space-y-6 pb-28 sm:pb-8 animate-in fade-in duration-200">
       
@@ -165,14 +206,14 @@ function PublicTravelProposalPage() {
       {options.length > 1 && (
         <div className="bg-card/90 backdrop-blur-md border border-border/80 rounded-lg p-3">
           <div className="flex items-center justify-between gap-2 mb-2 px-1">
-            <span className="text-2xs font-bold tracking-tight text-foreground uppercase flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none" />
+            <span className="text-[11px] font-bold tracking-tight text-foreground uppercase flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
               Opções de Cotação Preparadas para Você ({options.length})
             </span>
-            <span className="text-2xs text-muted-foreground">Toque para alternar</span>
+            <span className="text-[11px] text-muted-foreground">Toque para alternar</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+          <div className="carousel flex flex-nowrap overflow-x-auto no-scrollbar gap-2 pb-1" role="tablist" aria-label="Opções de orçamento agrupadas">
             {options.map((opt, idx) => {
               const isSelected = selectedOptionIndex === idx;
               const optPrice = opt.pricing?.total_price_cents || 0;
@@ -184,33 +225,35 @@ function PublicTravelProposalPage() {
                   key={opt.id || idx}
                   type="button"
                   onClick={() => setSelectedOptionIndex(idx)}
-                  className={`relative text-left p-3 rounded-lg border transition-colors duration-200 duration-150 cursor-pointer ${
+                  role="tab"
+                  aria-selected={isSelected}
+                  className={`relative shrink-0 min-w-64 text-left p-3 rounded-lg border transition-all duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring ${
                     isSelected
                       ? "border-emerald-600 bg-emerald-500/10 "
                       : "border-border/60 bg-background hover:bg-muted/40"
-                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+                  }`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <span className="text-xs font-bold text-foreground line-clamp-1">{opt.name || `Opção ${idx + 1}`}</span>
                     {opt.is_recommended && (
-                      <Badge className="bg-amber-500 text-foreground text-3xs px-2 py-0 shrink-0 font-bold">
+                      <Badge className="bg-amber-500 text-white text-[9px] px-2 py-0 shrink-0 font-bold">
                         Recomendada
                       </Badge>
                     )}
                     {opt.badge && !opt.is_recommended && (
-                      <Badge variant="outline" className="text-3xs px-2 py-0 shrink-0 font-medium">
+                      <Badge variant="outline" className="text-[9px] px-2 py-0 shrink-0 font-medium">
                         {opt.badge}
                       </Badge>
                     )}
                   </div>
 
-                  <p className="text-2xs text-muted-foreground mt-1 line-clamp-1">
+                  <p className="text-[11px] text-muted-foreground mt-1 line-clamp-1">
                     {opt.hotel_name || opt.hotels?.[0]?.hotel_name || "Hospedagem Selecionada"}
                   </p>
 
                   <div className="mt-2 flex items-baseline justify-between">
                     <span className="text-xs font-bold text-foreground">{formatMoney(optPrice)}</span>
-                    <span className="text-2xs text-muted-foreground">
+                    <span className="text-[10px] text-muted-foreground">
                       {installmentsCount}x {formatMoney(installmentVal)}
                     </span>
                   </div>
@@ -229,16 +272,16 @@ function PublicTravelProposalPage() {
               {activeOption ? `${activeOption.name} · ${proposal.destination_city}` : proposal.title}
             </span>
             {isAccepted ? (
-              <Badge variant="secondary" className="text-2xs font-bold">
+              <Badge variant="secondary" className="text-[10px] font-bold">
                 Aceite registrado
               </Badge>
             ) : (
-              <Badge variant="outline" className="text-2xs font-mono font-bold">
+              <Badge variant="outline" className="text-[10px] font-mono font-bold">
                 {isProposalExpired ? "Validade encerrada" : proposal.status !== "sent" ? "Aguardando agência" : proposal.snapshot_hash ? "Aguardando decisão" : "Revisão necessária"}
               </Badge>
             )}
           </div>
-          <p className="text-2xs text-muted-foreground">
+          <p className="text-[11px] text-muted-foreground">
             Consultoria por: <span className="font-bold text-foreground">{proposal.agency_name}</span>
           </p>
         </div>
@@ -317,7 +360,7 @@ function PublicTravelProposalPage() {
       )}
 
       {/* ── 3. RENDERIZAÇÃO DA LÂMINA EDITORIAL DA PROPOSTA ── */}
-      <div id="public-proposal-canvas" className="rounded-lg border border-border/80 overflow-hidden bg-card">
+      <div id="public-proposal-canvas" className="rounded-lg border border-border/80 overflow-hidden bg-white">
         <ProposalCanvasRenderer proposal={effectiveProposal} />
       </div>
 
@@ -372,7 +415,7 @@ function PublicTravelProposalPage() {
               </div>
               <div>
                 <SheetTitle className="text-sm font-bold text-foreground">Consultor de Viagens IA</SheetTitle>
-                <SheetDescription className="text-2xs text-muted-foreground">
+                <SheetDescription className="text-[11px] text-muted-foreground">
                   Especialista da {proposal.agency_name} para {proposal.destination_city}
                 </SheetDescription>
               </div>
@@ -406,7 +449,7 @@ function PublicTravelProposalPage() {
             {advisorMutation.isPending && (
               <div className="flex gap-3 justify-start">
                 <div className="h-7 w-7 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0 text-amber-600">
-                  <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
+                  <Loader2 className="size-4 animate-spin" />
                 </div>
                 <div className="p-3 rounded-lg bg-muted/50 border border-border/60 text-xs text-muted-foreground">
                   Consultando base de turismo e analisando as opções cotadas...
@@ -417,7 +460,7 @@ function PublicTravelProposalPage() {
 
           {/* Quick Suggestions Chips */}
           <div className="p-3 border-t border-border/40 bg-muted/10 shrink-0 space-y-2">
-            <span className="text-2xs font-bold text-muted-foreground uppercase tracking-wider block px-1">
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block px-1">
               Perguntas Frequentes
             </span>
             <div className="flex flex-wrap gap-2">
@@ -425,7 +468,7 @@ function PublicTravelProposalPage() {
                 <button
                   type="button"
                   onClick={() => handleSendMessage("Qual a diferença principal entre as opções cotadas e qual vale mais a pena?")}
-                  className="text-2xs px-3 py-1 rounded-lg border border-border/60 bg-background hover:bg-muted text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="text-[11px] px-3 py-1 rounded-lg border border-border/60 bg-background hover:bg-muted text-foreground cursor-pointer transition-colors"
                 >
                   Comparar as Opções
                 </button>
@@ -433,14 +476,14 @@ function PublicTravelProposalPage() {
               <button
                 type="button"
                 onClick={() => handleSendMessage("Como é a localização do hotel e a distância da praia ou centro?")}
-                className="text-2xs px-3 py-1 rounded-lg border border-border/60 bg-background hover:bg-muted text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="text-[11px] px-3 py-1 rounded-lg border border-border/60 bg-background hover:bg-muted text-foreground cursor-pointer transition-colors"
               >
                 Localização do Hotel
               </button>
               <button
                 type="button"
                 onClick={() => handleSendMessage("Como é o clima nesta época do ano no destino e o que levar?")}
-                className="text-2xs px-3 py-1 rounded-lg border border-border/60 bg-background hover:bg-muted text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="text-[11px] px-3 py-1 rounded-lg border border-border/60 bg-background hover:bg-muted text-foreground cursor-pointer transition-colors"
               >
                 Clima e Bagagem
               </button>

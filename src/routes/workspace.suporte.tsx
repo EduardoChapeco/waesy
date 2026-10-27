@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { LifeBuoy, Plus, MessageSquare, Clock, CheckCircle2, AlertCircle, Send, Link as LinkIcon, Paperclip, ChevronRight, ShieldCheck, Headphones } from "lucide-react";
@@ -204,7 +204,7 @@ function WorkspaceSupportPage() {
   }, [tickets, activeTab, categoryFilter, searchQuery]);
 
   return (
-    <div className="flex flex-col gap-4 min-h-[calc(100dvh-8.5rem)] max-w-7xl mx-auto px-0 sm:px-4 md:px-0 w-full">
+    <div className="flex flex-col gap-4 min-h-96 max-w-7xl mx-auto px-0 sm:px-4 md:px-0 w-full">
       {/* ── 1. Barra Canônica de Operação Silenciosa ── */}
       <WorkspaceCanonicalToolbar
         tabs={[
@@ -249,10 +249,10 @@ function WorkspaceSupportPage() {
         {filteredTickets.map((t) => {
           const st = STATUS_LABELS[t.status] || STATUS_LABELS.open;
           return (
-            <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
+            <div
               key={t.id}
               onClick={() => handleOpenTicketDetails(t.id)}
-              className="flex items-center justify-between p-4 sm:p-4 rounded-lg border border-border/70 bg-card hover:bg-muted/30 cursor-pointer transition-colors duration-200 shadow-2xs group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex items-center justify-between p-4 sm:p-4 rounded-lg border border-border/70 bg-card hover:bg-muted/30 cursor-pointer transition-colors shadow-2xs group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleOpenTicketDetails(t.id); }}
             >
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
@@ -532,14 +532,14 @@ function WorkspaceSupportPage() {
                 type="button"
                 variant="outline"
                 onClick={() => setNewModalOpen(false)}
-                className="h-10 px-4 rounded-lg text-xs font-semibold cursor-pointer"
+                className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold cursor-pointer"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 disabled={submitting || !subject.trim() || !message.trim()}
-                className="h-10 px-5 rounded-lg text-xs font-bold cursor-pointer"
+                className="h-11 min-h-11 px-5 rounded-lg text-xs font-bold cursor-pointer"
               >
                 {submitting ? "Abrindo chamado..." : "Enviar Solicitação"}
               </Button>
@@ -592,13 +592,27 @@ function WorkspaceSupportPage() {
                   )}
                 </div>
 
+                
+                {activeTicket.customer_name && (
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="h-11 min-h-11 px-3 text-xs font-semibold gap-1 text-primary cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <Link to="/workspace/atendimento" search={{ search: activeTicket.customer_name || undefined, threadId: undefined }}>
+                      <Headphones className="size-3.5" />
+                      <span>Atender no SAC</span>
+                    </Link>
+                  </Button>
+                )}
+
                 {activeTicket.status !== "resolved" && (
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     onClick={() => handleUpdateStatus("resolved")}
-                    className="h-7 px-3 text-xs font-semibold gap-1 text-emerald-600 hover:text-emerald-700 cursor-pointer"
+                    className="h-11 min-h-11 px-3 text-xs font-semibold gap-1 text-emerald-600 hover:text-emerald-700 cursor-pointer"
                   >
                     <CheckCircle2 className="size-3" /> Marcar como Resolvido
                   </Button>
@@ -611,7 +625,7 @@ function WorkspaceSupportPage() {
             {threadMessages.map((m) => (
               <div
                 key={m.id}
-                className={`p-4 rounded-lg text-xs space-y-1 max-w-[85%] ${
+                className={`p-4 rounded-lg text-xs space-y-1 max-w-xs sm:max-w-md ${
                   m.is_staff_reply
                     ? "bg-primary/10 text-foreground border border-primary/20 ml-0 mr-auto"
                     : "bg-muted/40 text-foreground border border-border/60 ml-auto mr-0"

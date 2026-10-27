@@ -169,39 +169,64 @@ export const submitPassengerForm = createServerFn({ method: "POST" })
  if (updateErr) throw updateErr;
 
  // 3. Se havia poltrona vinculada, atualizar no mapa da excursão em tourism_experiences
- if (record.passenger_seat_number && record.tour_id) {
- const serverDb = getServerClient();
- const { data: tourRow } = await serverDb
- .from("tourism_experiences")
- .select("description")
- .eq("id", record.tour_id)
- .maybeSingle();
+  if (record.passenger_seat_number && record.tour_id) {
+    const serverDb = getServerClient();
+    const { data: tourRow } = await serverDb
+      .from("tourism_experiences")
+      .select("description, seats")
+      .eq("id", record.tour_id)
+      .maybeSingle();
 
- if (tourRow?.description) {
- try {
- const meta = JSON.parse(tourRow.description);
- if (Array.isArray(meta.seats)) {
- const seatIdx = meta.seats.findIndex(
- (s: any) => s.seat_number === record.passenger_seat_number
- );
- if (seatIdx >= 0) {
- meta.seats[seatIdx].status = "reserved";
- meta.seats[seatIdx].passenger_name = data.passenger_name.trim();
- meta.seats[seatIdx].passenger_document = data.passenger_document.trim();
- meta.seats[seatIdx].passenger_phone = data.passenger_phone.trim();
- meta.seats[seatIdx].boarding_point = data.boarding_point?.trim() || null;
+    const patch: Record<string, any> = { updated_at: new Date().toISOString() };
 
- await serverDb
- .from("tourism_experiences")
- .update({ description: JSON.stringify(meta) })
- .eq("id", record.tour_id);
- }
- }
- } catch {
- // parse silencioso
- }
- }
- }
+    // Atualiza coluna nativa seats caso exista
+    if (tourRow && Array.isArray(tourRow.seats)) {
+      const updatedColSeats = [...tourRow.seats];
+      const sIdx = updatedColSeats.findIndex(
+        (s: any) => s.seat_number === record.passenger_seat_number
+      );
+      if (sIdx >= 0) {
+        updatedColSeats[sIdx] = {
+          ...updatedColSeats[sIdx],
+          status: "reserved",
+          passenger_name: data.passenger_name.trim(),
+          passenger_document: data.passenger_document.trim(),
+          passenger_phone: data.passenger_phone.trim(),
+          boarding_point: data.boarding_point?.trim() || null,
+        };
+        patch.seats = updatedColSeats;
+      }
+    }
 
- return { success: true };
+    // Atualiza JSON em description caso exista
+    if (tourRow?.description) {
+      try {
+        const meta = JSON.parse(tourRow.description);
+        if (Array.isArray(meta.seats)) {
+          const seatIdx = meta.seats.findIndex(
+            (s: any) => s.seat_number === record.passenger_seat_number
+          );
+          if (seatIdx >= 0) {
+            meta.seats[seatIdx].status = "reserved";
+            meta.seats[seatIdx].passenger_name = data.passenger_name.trim();
+            meta.seats[seatIdx].passenger_document = data.passenger_document.trim();
+            meta.seats[seatIdx].passenger_phone = data.passenger_phone.trim();
+            meta.seats[seatIdx].boarding_point = data.boarding_point?.trim() || null;
+            patch.description = JSON.stringify(meta);
+          }
+        }
+      } catch {
+        // parse silencioso
+      }
+    }
+
+    if (patch.seats || patch.description) {
+      await serverDb
+        .from("tourism_experiences")
+        .update(patch)
+        .eq("id", record.tour_id);
+    }
+  }
+
+  return { success: true };
  });

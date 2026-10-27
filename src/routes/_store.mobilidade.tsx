@@ -751,7 +751,7 @@ function MobilityPage() {
           <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
             O que você precisa?
           </Label>
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 scroll-area-carousel">
             {PRODUCT_TABS.map((tab) => {
               const Icon = tab.icon;
               const isSelected = selectedCategory === tab.id;
@@ -890,7 +890,7 @@ function MobilityPage() {
           </div>
 
           {/* Atalhos Rápidos de Destino */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 scroll-area-carousel">
             {PRESET_PLACES.slice(0, 4).map((p, idx) => (
               <button
                 key={idx}
@@ -1006,7 +1006,7 @@ function MobilityPage() {
           <div className="p-4 rounded-lg bg-muted/30 border border-border/60 space-y-3 animate-in fade-in">
             <div className="space-y-1">
               <Label className="text-xs font-bold uppercase text-muted-foreground">Tipo de Imóvel</Label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 {[
                   { id: "house", label: "Casa" },
                   { id: "apartment", label: "Apartamento" },
@@ -1030,7 +1030,7 @@ function MobilityPage() {
 
             <div className="space-y-1">
               <Label className="text-xs font-bold uppercase text-muted-foreground">Acesso / Escadas</Label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <button
                   type="button"
                   onClick={() => setPropertyType("ground")}
@@ -1384,7 +1384,7 @@ function MobilityPage() {
                           {corridor.driverName}
                         </span>
                         <span className="text-xs text-muted-foreground">
-                          {corridor.vehicleModel} • ★ {corridor.driverRating.toFixed(1)}
+                          {corridor.vehicleModel} • Avaliação {corridor.driverRating.toFixed(1)}
                         </span>
                       </div>
 

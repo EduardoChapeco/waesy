@@ -11,6 +11,12 @@ import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_store/f/$slug")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    leadId: (search.leadId as string) || undefined,
+    nome: (search.nome as string) || (search.name as string) || undefined,
+    tel: (search.tel as string) || (search.phone as string) || undefined,
+    email: (search.email as string) || undefined,
+  }),
   head: ({ loaderData }: { loaderData?: { form: LeadFormDTO | null } }) => ({
     meta: [
       {
@@ -41,6 +47,7 @@ export const Route = createFileRoute("/_store/f/$slug")({
 
 function LeadLandingPage() {
   const { form } = Route.useLoaderData();
+  const search = Route.useSearch();
 
   if (!form) {
     return (
@@ -126,6 +133,10 @@ function LeadLandingPage() {
             form={form}
             fields={form.fields}
             isStandalone={true}
+            initialLeadId={search.leadId}
+            initialName={search.nome}
+            initialPhone={search.tel}
+            initialEmail={search.email}
           />
         </div>
 

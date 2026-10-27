@@ -1,16 +1,17 @@
 /**
  * places-cnpj-cross-enricher.ts — Motor de Enriquecimento Cruzado (OSM Geodata + BrasilAPI CNPJ)
- * 
+ *
  * Cruza nós geográficos do OpenStreetMap/Overpass (que fornecem coordenadas e nomes comerciais)
  * com a base da Receita Federal via BrasilAPI, associando CNPJ, CNAE, telefones e quadro societário (QSA).
  * Eleva o score de qualidade de dados (data_quality_score) de 70 para 95+.
- * 
+ *
  * Regra: ZERO MOCKS. Dados 100% autênticos validados pelo Cadastro Nacional da Pessoa Jurídica.
  */
 
 import { getServerClient } from "@/lib/supabase";
 import { fetchBrasilApiCnpj } from "@/lib/mining/cnpj-enrichment.engine";
 import { sleep, fetchWithRetry, validators } from "@/lib/mining/scraper-utils";
+import { extractOpenGraph, extractJsonLd, extractBusinessData } from "@/lib/mining/continuous-crawler.engine";
 
 export interface CrossEnrichmentOptions {
   city?: string;
@@ -125,14 +126,19 @@ export async function crossEnrichListingsWithCnpj(
               }
             }
 
-            // 2.2 Deriva avatar de alta resolução via favicon do domínio
+            // 2.2 Extrai metadados completos de negócio (OpenGraph, Schema.org, Telefones e Redes)
+            const dom = new URL(item.website_url).hostname.replace(/^www\./, "");
+            const og = extractOpenGraph(html);
+            const jsonLd = extractJsonLd(html);
+            const biz = extractBusinessData(html, jsonLd, og, dom);
+
             let avatarUrl = item.avatar_url;
             if (!avatarUrl) {
-              try {
-                const dom = new URL(item.website_url).hostname.replace(/^www\./, "");
-                avatarUrl = `https://www.google.com/s2/favicons?domain=${dom}&sz=128`;
-              } catch {}
+              avatarUrl = og.image || `https://www.google.com/s2/favicons?domain=${dom}&sz=128`;
             }
+
+            const discoveredPhone = biz?.phones?.[0];
+            const discoveredWhatsapp = biz?.socialLinks?.whatsapp;
 
             if (validCnpj) {
               const enriched = await fetchBrasilApiCnpj(validCnpj);
@@ -142,9 +148,10 @@ export async function crossEnrichListingsWithCnpj(
                   .update({
                     cnpj: validCnpj,
                     cnae: enriched.cnae_principal?.codigo || null,
-                    contact_phone: enriched.telefones?.[0] || undefined,
-                    contact_email: enriched.email || undefined,
-                    address: [enriched.endereco?.logradouro, enriched.endereco?.numero, enriched.endereco?.bairro].filter(Boolean).join(", ") || undefined,
+                    contact_phone: enriched.telefones?.[0] || discoveredPhone || undefined,
+                    contact_whatsapp: discoveredWhatsapp || undefined,
+                    contact_email: enriched.email || biz?.emails?.[0] || undefined,
+                    address: [enriched.endereco?.logradouro, enriched.endereco?.numero, enriched.endereco?.bairro].filter(Boolean).join(", ") || biz?.address || undefined,
                     avatar_url: avatarUrl,
                     photos: avatarUrl ? [avatarUrl] : item.photos,
                     data_quality_score: Math.max(90, enriched.dataQualityScore || 90),
@@ -156,6 +163,7 @@ export async function crossEnrichListingsWithCnpj(
                       socios: enriched.socios,
                       cnaes_secundarios: enriched.cnaes_secundarios,
                       capital_social: enriched.capital_social,
+                      social_links: biz?.socialLinks || {},
                       enriched_at: new Date().toISOString(),
                       enrichment_engine: "website_cnpj_discovery",
                     },
@@ -164,15 +172,29 @@ export async function crossEnrichListingsWithCnpj(
 
                 enrichedCount++;
               }
-            } else if (avatarUrl && avatarUrl !== item.avatar_url) {
-              await supabase
-                .from("directory_listings")
-                .update({
-                  avatar_url: avatarUrl,
-                  photos: [avatarUrl],
-                  updated_at: new Date().toISOString(),
-                })
-                .eq("id", item.id);
+            } else {
+              // Mesmo sem CNPJ no site, enriquece telefones, WhatsApp e avatar
+              const updatePayload: Record<string, any> = {
+                updated_at: new Date().toISOString(),
+              };
+              if (avatarUrl && avatarUrl !== item.avatar_url) {
+                updatePayload.avatar_url = avatarUrl;
+                updatePayload.photos = [avatarUrl];
+              }
+              if (discoveredPhone) updatePayload.contact_phone = discoveredPhone;
+              if (discoveredWhatsapp) updatePayload.contact_whatsapp = discoveredWhatsapp;
+              if (biz?.socialLinks && Object.keys(biz.socialLinks).length > 0) {
+                updatePayload.metadata = {
+                  ...(item.metadata || {}),
+                  social_links: biz.socialLinks,
+                  enriched_at: new Date().toISOString(),
+                };
+              }
+
+              if (Object.keys(updatePayload).length > 1) {
+                await supabase.from("directory_listings").update(updatePayload).eq("id", item.id);
+                enrichedCount++;
+              }
             }
           }
         } catch (crawlErr) {

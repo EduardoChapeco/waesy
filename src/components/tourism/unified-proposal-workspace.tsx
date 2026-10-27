@@ -468,8 +468,16 @@ export function UnifiedProposalWorkspace({
             if (result.dates?.return) {
               setReturnDate(result.dates.return);
             }
+            const detectedHotelName = result.hotel?.name || result.companyName;
+            if (detectedHotelName) {
+              setHotelQuery(detectedHotelName);
+              setBundleOptions((prev) =>
+                prev.map((opt, i) => (i === 0 ? { ...opt, hotelName: detectedHotelName } : opt))
+              );
+            }
             if (result.financials?.totalCents && result.financials.totalCents > 0) {
-              const perAdultCents = Math.round(result.financials.totalCents / 2);
+              const paxDivisor = Math.max(1, result.participants?.length || 2);
+              const perAdultCents = Math.round(result.financials.totalCents / paxDivisor);
               setRooms((prev) =>
                 prev.map((r, i) =>
                   i === 0 ? { ...r, baseAdultPriceCents: perAdultCents } : r
@@ -480,7 +488,7 @@ export function UnifiedProposalWorkspace({
                   i === 0
                     ? {
                         ...opt,
-                        hotelName: result.companyName || opt.hotelName,
+                        hotelName: detectedHotelName || opt.hotelName,
                         adultPriceCents: perAdultCents,
                       }
                     : opt

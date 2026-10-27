@@ -3,6 +3,44 @@ import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
+import { inflateSync } from "node:zlib";
+function extractPdfTextPureNode(pdfBuffer: Buffer): string {
+  const chunks: string[] = [];
+  const rawLatin = pdfBuffer.toString("latin1");
+  const streamRegex = /stream[\r\n]+([\s\S]*?)[\r\n]+endstream/g;
+  let match: RegExpExecArray | null;
+
+  const extractStringsFromContent = (content: string) => {
+    const tjRegex = /\(([^()\\]*(?:\\.[^()\\]*)*)\)\s*Tj/g;
+    let m: RegExpExecArray | null;
+    while ((m = tjRegex.exec(content)) !== null) {
+      chunks.push(m[1].replace(/\\([nrtbf()\\])/g, "$1"));
+    }
+    const tjArrRegex = /\[([^\]]+)\]\s*TJ/g;
+    while ((m = tjArrRegex.exec(content)) !== null) {
+      const inner = m[1];
+      const strRegex = /\(([^()\\]*(?:\\.[^()\\]*)*)\)/g;
+      let sm: RegExpExecArray | null;
+      const lineParts: string[] = [];
+      while ((sm = strRegex.exec(inner)) !== null) {
+        lineParts.push(sm[1].replace(/\\([nrtbf()\\])/g, "$1"));
+      }
+      if (lineParts.length > 0) chunks.push(lineParts.join(""));
+    }
+  };
+
+  while ((match = streamRegex.exec(rawLatin)) !== null) {
+    const streamBinary = Buffer.from(match[1], "latin1");
+    try {
+      const decompressed = inflateSync(streamBinary).toString("latin1");
+      extractStringsFromContent(decompressed);
+    } catch {
+      extractStringsFromContent(match[1]);
+    }
+  }
+  return normalizeText(chunks.join(" ").replace(/\s+/g, " "));
+}
+
 
 const execFileAsync = promisify(execFile);
 
@@ -66,6 +104,15 @@ export async function extractDocumentMechanically(input: {
           needsVisionModel: text.length < 40,
         };
       } catch (error) {
+        const fallbackText = extractPdfTextPureNode(bytes);
+        if (fallbackText.length >= 40) {
+          return {
+            method: "pdftotext",
+            text: fallbackText,
+            metadata: { fileName: input.name, mimeType: input.mimeType, extractedCharacters: fallbackText.length, engine: "pure_node_zlib" },
+            needsVisionModel: false,
+          };
+        }
         return {
           method: "unavailable",
           text: "",

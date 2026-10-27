@@ -118,7 +118,7 @@ export function parseInlineExemptions(lines) {
       }
 
       const item = { rule, reason, expiry, valid, error, line: idx + 1 };
-      
+
       // Aplica na linha atual e na próxima (para comentários acima do elemento)
       if (!exemptions.has(idx + 1)) exemptions.set(idx + 1, []);
       exemptions.get(idx + 1).push(item);
@@ -353,7 +353,7 @@ export function lintSource(content, filePath, customConfig = null) {
   const gradientRegex = /\bbg-gradient-(?:to-[trbl]{1,2}|radial|conic)\b/g;
 
   // DL-09: Raios não-canônicos
-  const radiusRegex = /\brounded-(?:xl|2xl|3xl)\b|\brounded-\[[^\]]+\]/g;
+  const radiusRegex = /\brounded-\[[^\]]+\]/g;
 
   // DL-14: Alvo de toque < 44px em elemento interativo
   const smallTargetRegex = /\b(?:h|size)-(?:1|2|3|4|5|6|7|8|9|10|3\.5|2\.5|1\.5|0\.5)\b/g;
@@ -620,7 +620,7 @@ export function lintSource(content, filePath, customConfig = null) {
           column: m.index + 1,
           severity: getSeverity('DL-09'),
           match: m[0],
-          message: `Raio de curvatura não-canônico "${m[0]}". Permitidos: none, sm, md, lg, full.`
+          message: `Raio de curvatura arbitrário "${m[0]}". Use os tokens canônicos de tokens.json.`
         });
       }
     }

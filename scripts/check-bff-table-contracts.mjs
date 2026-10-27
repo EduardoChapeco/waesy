@@ -1,9 +1,27 @@
 #!/usr/bin/env node
-import { readFile } from "node:fs/promises";
-import { glob } from "glob";
+import { readFile, readdir } from "node:fs/promises";
+import path from "node:path";
 
-const migrationFiles = await glob("supabase/migrations/**/*.sql", { nodir: true });
-const serviceFiles = await glob("src/services/**/*.functions.ts", { nodir: true });
+async function getFiles(dir, ext) {
+  const results = [];
+  async function scan(current) {
+    try {
+      const entries = await readdir(current, { withFileTypes: true });
+      for (const e of entries) {
+        const full = path.join(current, e.name);
+        if (e.isDirectory()) await scan(full);
+        else if (e.isFile() && e.name.endsWith(ext)) results.push(full.replace(/\\/g, "/"));
+      }
+    } catch {
+      // diretório não encontrado
+    }
+  }
+  await scan(dir);
+  return results;
+}
+
+const migrationFiles = await getFiles("supabase/migrations", ".sql");
+const serviceFiles = await getFiles("src/services", ".functions.ts");
 
 const relationPattern = /create\s+(?:or\s+replace\s+)?(?:table|view)\s+(?:if\s+not\s+exists\s+)?(?:public\.)?["`]?([a-zA-Z_][a-zA-Z0-9_]*)["`]?/gi;
 // `supabase.storage.from(...)` aponta para bucket, não para uma relação SQL.

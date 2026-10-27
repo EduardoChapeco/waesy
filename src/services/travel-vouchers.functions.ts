@@ -70,21 +70,27 @@ export const createTravelVoucher = createServerFn({ method: 'POST' })
     const effectiveType = voucher_type || 'flight';
     const db = getServerClient();
 
-    // Idempotência Atômica / Deduplicação: Evita emissão concorrente de duplicatas
-    if (trip_id) {
-      const { data: existing } = await db
-        .from('travel_vouchers')
-        .select('*')
-        .eq('store_id', storeId)
-        .eq('trip_id', trip_id)
-        .eq('voucher_type', effectiveType)
-        .eq('passenger_name', passenger_name)
-        .eq('status', 'issued')
-        .maybeSingle();
+    // Idempotência Atômica / Deduplicação Estrita: Previne duplicatas concorrentes com ou sem trip_id
+    const locator = (flight_data?.locator || hotel_data?.confirmationCode || transfer_data?.confirmationCode || "") as string;
+    let existingQuery = db
+      .from('travel_vouchers')
+      .select('*')
+      .eq('store_id', storeId)
+      .eq('voucher_type', effectiveType)
+      .eq('passenger_name', passenger_name)
+      .eq('status', 'issued');
 
-      if (existing) {
-        return existing as TravelVoucherDTO;
-      }
+    if (trip_id) {
+      existingQuery = existingQuery.eq('trip_id', trip_id);
+    } else if (locator && typeof locator === 'string' && locator.trim().length >= 3) {
+      existingQuery = existingQuery.or(`flight_data->>locator.eq.${locator.trim()},hotel_data->>confirmationCode.eq.${locator.trim()}`);
+    } else {
+      existingQuery = existingQuery.eq('title', title);
+    }
+
+    const { data: existing } = await existingQuery.maybeSingle();
+    if (existing) {
+      return existing as TravelVoucherDTO;
     }
 
     // Geração Criptográfica Canônica de Código e Hash (Zero Math.random)

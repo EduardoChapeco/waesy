@@ -26,6 +26,14 @@ export interface InlinePostComposerProps {
   onSuccess?: () => void;
 }
 
+const ASPECT_RATIO_OPTIONS: { id: "auto" | "1:1" | "4:5" | "16:9" | "9:16"; label: string; ratio: string }[] = [
+  { id: "auto", label: "Original", ratio: "Auto" },
+  { id: "1:1", label: "Quadrado", ratio: "1:1" },
+  { id: "4:5", label: "Retrato", ratio: "4:5" },
+  { id: "16:9", label: "Cinema", ratio: "16:9" },
+  { id: "9:16", label: "Story", ratio: "9:16" },
+];
+
 const TEMPLATE_OPTIONS: { id: PostType; label: string; icon: React.ElementType }[] = [
   { id: "simple", label: "Publicação", icon: ChatCircleText },
   { id: "trilho_horizontal", label: "Galeria Deslizante", icon: Slideshow },
@@ -44,6 +52,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
   const [mediaUrls, setMediaUrls] = useState<string[]>([]);
   const [mediaPreviews, setMediaPreviews] = useState<MediaPreviewItem[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<PostType>("simple");
+  const [selectedAspectRatio, setSelectedAspectRatio] = useState<"auto" | "1:1" | "4:5" | "16:9" | "9:16">("auto");
 
   // Template-specific fields
   const [travelOrigin, setTravelOrigin] = useState("");
@@ -333,6 +342,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
         data: {
           content_text: trimmedContent || undefined,
           media_urls: mediaUrls,
+          aspect_ratio: selectedAspectRatio,
           layout_style:
             selectedTemplate === "carrossel_unico" || selectedTemplate === "instagram_carousel"
               ? "carrossel_unico"
@@ -388,6 +398,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
       setMediaUrls([]);
       setMediaPreviews([]);
       setSelectedTemplate("simple");
+      setSelectedAspectRatio("auto");
       if (fileInputRef.current) fileInputRef.current.value = "";
       setIsExpanded(false);
 
@@ -491,8 +502,8 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
               <button
                 type="button"
                 onClick={() => setPostAsCreator(false)}
-                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "h-7 px-3 rounded-lg text-xs font-semibold transition-colors duration-200 cursor-pointer",
+                className={cn(
+                  "h-11 min-h-11 px-4 rounded-lg text-xs font-semibold transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   !postAsCreator
                     ? "bg-background text-foreground shadow-2xs font-bold"
                     : "text-muted-foreground hover:text-foreground"
@@ -503,14 +514,14 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
               <button
                 type="button"
                 onClick={() => setPostAsCreator(true)}
-                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "h-7 px-3 rounded-lg text-xs font-semibold transition-colors duration-200 cursor-pointer flex items-center gap-1",
+                className={cn(
+                  "h-11 min-h-11 px-4 rounded-lg text-xs font-semibold transition-colors motion-reduce:transition-none cursor-pointer flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   postAsCreator
                     ? "bg-background text-foreground shadow-2xs font-bold"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <Star className="size-3 text-primary" weight="fill" />
+                <Star className="size-4 text-primary" weight="fill" />
                 <span>@{activeCreatorHandle}</span>
               </button>
             </div>
@@ -524,16 +535,16 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
                 setIsExpanded(false);
               }
             }}
-            className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="size-11 min-h-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             title="Fechar editor"
           >
-            <X size={16} />
+            <X size={18} />
           </button>
         </div>
       </div>
 
       {/* ── 2. Seletor de Formato Social (Chips Apple HIG) ────────────────── */}
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 scroll-area-carousel">
         {TEMPLATE_OPTIONS.map((opt) => {
           const Icon = opt.icon;
           const isActive = selectedTemplate === opt.id;
@@ -542,14 +553,14 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
               key={opt.id}
               type="button"
               onClick={() => setSelectedTemplate(opt.id)}
-              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                "h-8 px-3 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors duration-200 cursor-pointer flex items-center gap-2 select-none",
+              className={cn(
+                "h-11 min-h-11 px-4 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors motion-reduce:transition-none cursor-pointer flex items-center gap-2 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 isActive
                   ? "bg-foreground text-background font-bold shadow-2xs"
                   : "bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted"
               )}
             >
-              <Icon size={14} weight={isActive ? "fill" : "bold"} />
+              <Icon size={16} weight={isActive ? "fill" : "bold"} />
               <span>{opt.label}</span>
             </button>
           );
@@ -560,7 +571,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
       {selectedTemplate === "travel" && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-lg bg-muted/30 border border-border/60">
           <div className="space-y-1">
-            <label className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">Origem</label>
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Origem</label>
             <Input
               value={travelOrigin}
               onChange={(e) => setTravelOrigin(e.target.value)}
@@ -569,7 +580,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
             />
           </div>
           <div className="space-y-1">
-            <label className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">Destino</label>
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Destino</label>
             <Input
               value={travelDestination}
               onChange={(e) => setTravelDestination(e.target.value)}
@@ -651,21 +662,21 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
         value={content}
         onChange={(e) => setContent(e.target.value)}
         onPaste={handleClipboardPaste}
-        className="min-h-24 text-sm sm:text-base border border-border/40 rounded-lg bg-muted/20 focus:bg-background focus:border-primary/40 p-4 text-foreground transition-colors duration-200 resize-none focus-visible:ring-1 focus-visible:ring-primary/20 placeholder:text-muted-foreground/70"
+        className="min-h-24 text-sm sm:text-base border border-border/40 rounded-lg bg-muted/20 focus:bg-background focus:border-primary/40 p-4 text-foreground transition-colors motion-reduce:transition-none resize-none focus-visible:ring-1 focus-visible:ring-primary/20 placeholder:text-muted-foreground/70"
       />
 
       {/* ── 5. Previews de Mídia com Upload Múltiplo (Até 10) ────────────────── */}
       {mediaPreviews.length > 0 && (
-        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
+        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1 scroll-area-carousel">
           {mediaPreviews.map((preview, index) => (
             <div
               key={index}
-              className="relative overflow-hidden rounded-lg bg-foreground inline-block size-24 shrink-0 border border-border/50"
+              className="relative overflow-hidden rounded-lg bg-muted inline-block size-24 shrink-0 border border-border/50"
             >
               {isUploadingMedia && index >= mediaUrls.length && (
-                <div className="absolute inset-0 bg-foreground/70 backdrop-blur-xs flex flex-col items-center justify-center z-20 gap-1 text-foreground">
+                <div className="absolute inset-0 bg-background/80 backdrop-blur-xs flex flex-col items-center justify-center z-20 gap-1 text-foreground">
                   <CircleNotch className="size-5 animate-spin motion-reduce:animate-none text-primary" />
-                  <span className="text-2xs font-bold">Enviando...</span>
+                  <span className="text-xs font-bold">Enviando...</span>
                 </div>
               )}
 
@@ -687,8 +698,8 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
               )}
 
               {preview.type === "video" && (
-                <div className="absolute bottom-1.5 left-1.5 bg-foreground/70 text-foreground px-2 py-1 rounded-md text-3xs flex items-center gap-1 font-bold">
-                  <FilmStrip size={10} weight="bold" />
+                <div className="absolute bottom-1.5 left-1.5 bg-background/90 text-foreground px-2 py-1 rounded-md text-xs flex items-center gap-1 font-bold border border-border/60">
+                  <FilmStrip size={12} weight="bold" />
                   <span>Vídeo</span>
                 </div>
               )}
@@ -696,19 +707,52 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
               <button
                 type="button"
                 onClick={() => removeMedia(index)}
-                className="absolute top-1.5 right-1.5 size-6 bg-foreground/80 text-foreground rounded-lg flex items-center justify-center hover:bg-foreground z-30 transition-transform duration-200 hover:scale-110 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="absolute top-1 right-1 size-11 min-h-11 bg-background/90 text-foreground rounded-lg flex items-center justify-center hover:bg-background z-30 transition-colors motion-reduce:transition-none border border-border/60 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label="Remover mídia"
               >
-                <X size={12} weight="bold" />
+                <X size={16} weight="bold" />
               </button>
             </div>
           ))}
         </div>
       )}
 
+      {/* ── 5.1 Seletor de Aspect Ratio / Enquadramento (CMS-04: Apple HIG / Anti-Jank) ── */}
+      {mediaPreviews.length > 0 && (
+        <div className="p-3 rounded-lg bg-muted/30 border border-border/50 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-muted-foreground">Proporção da Mídia</span>
+            <span className="text-xs font-mono font-bold text-foreground">
+              {ASPECT_RATIO_OPTIONS.find((o) => o.id === selectedAspectRatio)?.ratio || "Auto"}
+            </span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+            {ASPECT_RATIO_OPTIONS.map((opt) => {
+              const isSelected = selectedAspectRatio === opt.id;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setSelectedAspectRatio(opt.id)}
+                  className={cn(
+                    "h-11 min-h-11 px-3 rounded-lg text-xs font-semibold transition-colors motion-reduce:transition-none flex items-center justify-between sm:justify-center sm:flex-col border cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    isSelected
+                      ? "bg-foreground text-background border-foreground font-bold shadow-2xs"
+                      : "bg-background text-muted-foreground border-border/60 hover:text-foreground hover:bg-muted"
+                  )}
+                >
+                  <span className="leading-tight">{opt.label}</span>
+                  <span className="text-xs opacity-70 leading-tight font-mono">{opt.ratio}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* ── 5.5 Painel de Opções Avançadas (Parceria Paga, Cidade, Colaborador, Tags) ── */}
       {showAdvanced && (
-        <div className="p-4 rounded-lg bg-muted/20 border border-border/50 space-y-3 animate-in fade-in duration-200">
+        <div className="p-4 rounded-lg bg-muted/20 border border-border/50 space-y-3 animate-in fade-in duration-200 motion-reduce:animate-none motion-reduce:animate-none">
           {/* Parceria Comercial / Collab */}
           <div className="p-3 rounded-lg bg-card border border-border/40 space-y-2">
             <div className="flex items-center justify-between">
@@ -721,7 +765,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
                 variant={isPaidPartnership ? "default" : "outline"}
                 size="sm"
                 onClick={() => setIsPaidPartnership(!isPaidPartnership)}
-                className="h-7 px-3 rounded-lg text-2xs font-semibold"
+                className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
               >
                 {isPaidPartnership ? "Parceria Paga Ativa" : "Marcar Parceria"}
               </Button>
@@ -836,11 +880,11 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
             isUploadingMedia ||
             (!content.trim() && mediaUrls.length === 0 && !newsTitle.trim() && !travelDestination.trim())
           }
-          className="h-11 px-7 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:opacity-90 active:scale-98 transition-transform duration-200 cursor-pointer shadow-xs"
+          className="h-11 px-7 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:opacity-90 active:scale-98 transition-colors motion-reduce:transition-none cursor-pointer shadow-xs"
         >
           {isSubmitting ? (
             <>
-              <CircleNotch size={14} className="animate-spin motion-reduce:animate-none mr-2" />
+              <CircleNotch size={14} className="animate-spin mr-2" />
               Publicando...
             </>
           ) : (

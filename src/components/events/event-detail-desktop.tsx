@@ -57,7 +57,7 @@ export function EventDetailDesktop({
             asChild
             size="sm"
             variant="outline"
-            className="h-7 text-xs font-bold rounded-lg border-amber-500/40 hover:bg-amber-500/15"
+            className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg border-amber-500/40 hover:bg-amber-500/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <Link to="/workspace/eventos">
               <PencilSimple size={14} className="mr-2" />
@@ -67,7 +67,7 @@ export function EventDetailDesktop({
         </div>
       )}
 
-      {/* ── Breadcrumb & Ações Topo ── */}
+      {/* ── Top Bar: Breadcrumb & Ações Topo ── */}
       <div className="flex items-center justify-between">
         <NativeBackButton fallbackHref="/agenda" />
         <div className="flex items-center gap-2">
@@ -76,7 +76,7 @@ export function EventDetailDesktop({
               asChild
               size="sm"
               variant="outline"
-              className="h-8 text-xs font-bold rounded-lg gap-2"
+              className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <Link to="/workspace/eventos">
                 <PencilSimple size={14} weight="bold" />
@@ -88,7 +88,7 @@ export function EventDetailDesktop({
             entityType="event"
             entityId={event.id}
             isOwner={isOwner}
-            canonicalUrl={`/evento/${event.id}`}
+            canonicalUrl={'/evento/' + event.id}
             title={event.title}
             description={event.description || ""}
             mediaUrl={event.cover_image}
@@ -96,65 +96,96 @@ export function EventDetailDesktop({
         </div>
       </div>
 
-      {/* ── Grid Principal Split: Esquerda (7 cols) / Direita (5 cols Sticky) ── */}
-      <div className="grid grid-cols-12 gap-8 items-start">
-        {/* Coluna Esquerda: Banner, Detalhes & Cobertura Cruzada */}
-        <div className="col-span-7 space-y-6">
+      {/* ── 2. CABEÇALHO HERO FULL-WIDTH: Proporção Ampla & Título Sem Estrangulamento ── */}
+      <div className="w-full space-y-4 pt-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge
+            variant="secondary"
+            className="px-3 py-1 text-xs font-semibold rounded-lg gap-2"
+          >
+            <CalendarBlank size={14} weight="bold" />
+            {new Date(event.event_date).toLocaleString("pt-BR", {
+              dateStyle: "long",
+              timeStyle: "short",
+            })}
+          </Badge>
+          {(event.venue || event.location || event.location_name) && (
+            <Badge
+              variant="outline"
+              className="px-3 py-1 text-xs font-semibold rounded-lg gap-2"
+            >
+              <MapPin size={14} weight="bold" className="text-foreground" />
+              {event.venue || event.location || event.location_name}
+            </Badge>
+          )}
+          {event.city && (
+            <Badge variant="outline" className="px-3 py-1 text-xs font-semibold rounded-lg text-muted-foreground">
+              {event.city}{event.state ? ' - ' + event.state : ''}
+            </Badge>
+          )}
+          {event.is_external && (
+            <Badge className="bg-muted text-foreground text-xs font-bold border border-border/50 uppercase tracking-wider">
+              {event.external_source ? 'Via ' + event.external_source : 'Evento Externo'}
+            </Badge>
+          )}
+        </div>
+
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-foreground leading-tight break-words text-wrap">
+          {event.title}
+        </h1>
+
+        {/* Barra de Ações & Suporte Omnichannel WhatsApp/SAC */}
+        <div className="flex items-center flex-wrap gap-2 pt-1">
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border-border hover:bg-muted/40 cursor-pointer"
+          >
+            <a
+              href={'https://wa.me/?text=' + encodeURIComponent('Confira este evento: ' + event.title + (event.city ? ' em ' + event.city : ''))}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <ArrowSquareOut size={15} weight="bold" className="text-emerald-500" />
+              <span>Compartilhar via WhatsApp</span>
+            </a>
+          </Button>
+
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border-border hover:bg-muted/40 cursor-pointer"
+          >
+            <Link to="/workspace/atendimento" search={{}} as any>
+              <Users size={15} weight="bold" className="text-primary" />
+              <span>SAC & Suporte ao Participante</span>
+            </Link>
+          </Button>
+        </div>
+      </div>
+
+      {/* ── 3. Grid Principal Split: 8 Colunas Conteúdo / 4 Colunas Sticky Sidebar ── */}
+      <div className="grid grid-cols-12 gap-8 items-start pt-2">
+        {/* Coluna Principal (8 cols): Banner Panorâmico, Descrição & Seções */}
+        <div className="col-span-8 space-y-6">
           {event.cover_image && (
-            <div className="w-full aspect-[16/9] overflow-hidden rounded-lg border border-border/60 bg-muted relative shadow-sm">
+            <div className="w-full aspect-video sm:aspect-21/9 overflow-hidden rounded-2xl border border-border/60 bg-muted relative">
               <img src={event.cover_image} alt={event.title} className="w-full h-full object-cover" />
-              {event.is_external && (
-                <div className="absolute top-3 left-3">
-                  <Badge className="bg-background/90 text-foreground text-xs font-bold border border-border/50 uppercase tracking-wider backdrop-blur-md">
-                    {event.external_source ? `Via ${event.external_source}` : "Evento Externo"}
-                  </Badge>
-                </div>
-              )}
             </div>
           )}
 
-          <div className="space-y-4">
-            <div className="flex flex-wrap gap-2">
-              <Badge
-                variant="secondary"
-                className="px-3 py-1 text-xs font-semibold rounded-lg gap-2"
-              >
-                <CalendarBlank size={14} weight="bold" />
-                {new Date(event.event_date).toLocaleString("pt-BR", {
-                  dateStyle: "long",
-                  timeStyle: "short",
-                })}
-              </Badge>
-              {(event.venue || event.location || event.location_name) && (
-                <Badge
-                  variant="outline"
-                  className="px-3 py-1 text-xs font-semibold rounded-lg gap-2"
-                >
-                  <MapPin size={14} weight="bold" className="text-foreground" />
-                  {event.venue || event.location || event.location_name}
-                </Badge>
-              )}
-              {event.city && (
-                <Badge variant="outline" className="px-3 py-1 text-xs font-semibold rounded-lg text-muted-foreground">
-                  {event.city}{event.state ? ` - ${event.state}` : ""}
-                </Badge>
-              )}
+          {event.description && (
+            <div className="pt-2 border-t border-border/40 space-y-2">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Sobre o Evento</h2>
+              <p className="text-base text-foreground/90 leading-relaxed whitespace-pre-line">
+                {event.description}
+              </p>
             </div>
+          )}
 
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-foreground leading-tight">
-              {event.title}
-            </h1>
-
-            {event.description && (
-              <div className="pt-3 border-t border-border/40 space-y-2">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Sobre o Evento</h2>
-                <p className="text-sm md:text-base text-foreground/85 leading-relaxed whitespace-pre-line">
-                  {event.description}
-                </p>
-              </div>
-            )}
-
-            {/* ── Cobertura Jornalística Oficial Vinculada ── */}
+          {/* ── Cobertura Jornalística Oficial Vinculada ── */}
             {linkedNews && (
               <div className="pt-4 border-t border-border/40 space-y-3">
                 <div className="flex items-center gap-2">
@@ -293,11 +324,10 @@ export function EventDetailDesktop({
               eventId={event.id}
               surveys={surveys}
             />
-          </div>
         </div>
 
         {/* Coluna Direita: Ingressos & RSVP (Sticky) */}
-        <div className="col-span-5 space-y-5 sticky top-24">
+        <div className="col-span-4 space-y-5 sticky top-24">
           {/* ── Card 1: Confirmação de Presença (RSVP) ── */}
           <div className="p-6 rounded-lg border border-border/80 bg-card space-y-4 shadow-sm">
             <div className="flex items-center justify-between pb-3 border-b border-border/40">

@@ -230,5 +230,54 @@ describe("Industrial Crawler & Mining Engine Test Suite", () => {
         globalThis.fetch = originalFetch;
       }
     });
+    it("Anti-News Gate: rejects journalistic news articles even if slug mentions show or festa", async () => {
+      const { harvestAndPersistEvent } = await import("./event-harvester");
+      const newsUrl = "https://g1.globo.com/sc/santa-catarina/noticia/2026/10/show-de-rock-movimenta-arena-em-chapeco.ghtml";
+      const newsHtml = `
+        <html>
+          <head>
+            <title>Show de rock movimenta arena em Chapecó - G1</title>
+            <meta property="og:type" content="article" />
+            <script type="application/ld+json">
+              {
+                "@context": "https://schema.org",
+                "@type": "NewsArticle",
+                "headline": "Show de rock movimenta arena em Chapecó"
+              }
+            </script>
+          </head>
+          <body>
+            <p>Publicado em 24/10/2026. A reportagem acompanhou a festa na cidade.</p>
+          </body>
+        </html>`;
+      const originalFetch = globalThis.fetch;
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        text: async () => newsHtml,
+        headers: new Headers({ "content-type": "text/html" }),
+      });
+      try {
+        const res = await harvestAndPersistEvent({
+          url: newsUrl,
+          city: "Chapecó",
+          state: "SC",
+        });
+        expect(res.success).toBe(false);
+        expect(res.error).toMatch(/artigo\/notícia|Anti-News Gate|editorial/i);
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
+    });
+
+    it("Intent Classifier: classifies news article with festa or show in path as news, not event", async () => {
+      const { classifyMinedEntity } = await import("@/lib/mining/intent-classifier.engine");
+      const classification = await classifyMinedEntity(
+        "https://www.diariodoiguacu.com.br/noticia/festa-tradicional-reune-milhares-no-oeste",
+        { openGraph: { type: "article" } }
+      );
+      expect(classification.entityType).toBe("news");
+      expect(classification.confidence).toBeGreaterThanOrEqual(0.9);
+    });
   });
 });

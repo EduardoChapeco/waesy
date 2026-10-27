@@ -81,31 +81,33 @@ export const MediaGalleryMosaic: React.FC<MediaGalleryMosaicProps> = ({
           {items.map((item, index) => {
             const isFeatured = index === 0;
             return (
-              <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
+              <button
+                type="button"
                 key={item.id}
                 onClick={() => setSelectedImage(item.imageUrl)}
-                className={`group relative overflow-hidden ${radiusClass} border border-border/60 bg-muted/20 cursor-pointer transition-colors duration-200 duration-300 hover:shadow-lg hover:border-foreground/20 ${
-                  isFeatured ? "sm:col-span-2 lg:col-span-2 aspect-[16/9]" : "aspect-square"
-                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+                aria-label={item.title || "Ampliar imagem da galeria"}
+                className={`group relative overflow-hidden ${radiusClass} border border-border/60 bg-muted/20 cursor-pointer transition-colors duration-300 hover:border-foreground/20 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none ${
+                  isFeatured ? "sm:col-span-2 lg:col-span-2 aspect-16/10" : "aspect-square"
+                }`}
               >
                 <img
                   src={item.imageUrl}
                   alt={item.title || "Imagem da galeria"}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:transform-none"
                   loading="lazy"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5 text-foreground">
+                <div className="absolute inset-x-0 bottom-0 bg-background/90 backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300 motion-reduce:transition-none flex flex-col justify-end p-4 border-t border-border/40 text-foreground">
                   {item.title && (
-                    <span className="text-base font-bold tracking-tight">{item.title}</span>
+                    <span className="text-sm sm:text-base font-bold tracking-tight text-foreground">{item.title}</span>
                   )}
                   {item.caption && (
-                    <span className="text-xs text-foreground/80 mt-1">{item.caption}</span>
+                    <span className="text-xs text-muted-foreground mt-1">{item.caption}</span>
                   )}
-                  <div className="absolute top-4 right-4 size-8 rounded-full bg-foreground/40 backdrop-blur-md flex items-center justify-center text-foreground/90">
+                  <div className="absolute top-4 right-4 size-8 rounded-full bg-muted/80 backdrop-blur-md flex items-center justify-center text-foreground">
                     <ZoomIn className="size-4" />
                   </div>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
@@ -115,18 +117,31 @@ export const MediaGalleryMosaic: React.FC<MediaGalleryMosaicProps> = ({
       {/* Lightbox Modal */}
       {selectedImage && (
         <div
-          role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Escape" || e.key === "Enter" || e.key === " ") setSelectedImage(null); }} onClick={() => setSelectedImage(null)} className="fixed inset-0 z-50 bg-background/90 backdrop-blur-md flex items-center justify-center p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Visualização ampliada"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
         >
+          {/* Backdrop Button */}
           <button
+            type="button"
             onClick={() => setSelectedImage(null)}
-            className="absolute top-6 right-6 size-11 min-h-11 min-w-11 rounded-full bg-muted/80 hover:bg-muted text-foreground flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label="Fechar visualização ampliada"
+            className="fixed inset-0 bg-background/90 backdrop-blur-md cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          />
+
+          <button
+            type="button"
+            onClick={() => setSelectedImage(null)}
+            aria-label="Fechar visualização ampliada"
+            className="absolute top-6 right-6 z-10 size-11 min-h-11 rounded-full bg-muted/80 hover:bg-muted text-foreground flex items-center justify-center transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             <X className="size-5" />
           </button>
           <img
             src={selectedImage}
             alt="Visualização ampliada"
-            className="max-w-full max-h-screen rounded-lg object-contain shadow-2xl"
+            className="relative z-10 max-w-full max-h-screen-dvh rounded-lg object-contain cursor-default"
           />
         </div>
       )}
