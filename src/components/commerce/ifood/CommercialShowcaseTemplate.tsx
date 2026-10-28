@@ -35,6 +35,75 @@ export interface CommercialShowcaseTemplateProps {
   children?: React.ReactNode;
 }
 
+export function mapSurfaceFeedToCommercialShowcase(
+  marketplaceFeed: any,
+  nicheId: string,
+  defaultStoreLabel = "Estabelecimento Parceiro",
+): {
+  stores: IFoodStoreCardData[];
+  recentStores: RecentStoreItem[];
+  spotlightStores: IFoodStoreCardData[];
+  featureMiniBanners: FeatureMiniBannerItem[];
+} {
+  const storeSection = marketplaceFeed?.sections?.find((s: any) => s.type === "store_rail");
+  const rawStores = storeSection?.items || [];
+
+  const bannerSection = marketplaceFeed?.sections?.find(
+    (s: any) => s.type === "mini_banners" || s.type === "feature_banners",
+  );
+  const featureMiniBanners: FeatureMiniBannerItem[] = bannerSection?.items?.length
+    ? bannerSection.items.map((b: any, idx: number) => ({
+        id: b.id || `mini-${nicheId}-${idx}`,
+        title: b.title || "",
+        subtitle: b.subtitle || null,
+        targetUrl: b.targetUrl || b.link || `/${nicheId}`,
+        badgeText: b.badgeText || b.tag || null,
+        actionText: b.actionText || null,
+        imageUrl: b.imageUrl || b.image_url || null,
+      }))
+    : [];
+
+  const stores: IFoodStoreCardData[] = rawStores.map((st: any, idx: number) => ({
+    id: st.id || `${nicheId}-${idx}`,
+    name: st.name || st.title || defaultStoreLabel,
+    slug: st.slug || st.id || "",
+    logoUrl: st.logo_url || st.imageUrl || null,
+    coverUrl: st.cover_url || st.banner_url || null,
+    isAd: Boolean(st.is_featured || st.is_ad),
+    rating: typeof st.rating === "number" && st.rating > 0 ? st.rating : undefined,
+    reviewCount: typeof st.review_count === "number" && st.review_count > 0 ? st.review_count : undefined,
+    deliveryTime: st.delivery_time || undefined,
+    deliveryFee:
+      typeof st.delivery_fee === "number"
+        ? st.delivery_fee === 0
+          ? "Grátis"
+          : `R$ ${st.delivery_fee.toFixed(2)}`
+        : typeof st.delivery_fee === "string"
+          ? st.delivery_fee
+          : undefined,
+    couponBadge: st.coupon_badge || undefined,
+    secondaryBadges: Array.isArray(st.badges) ? st.badges : undefined,
+    hasHighlightCrown: Boolean(st.has_highlight_crown),
+  }));
+
+  const recentStores: RecentStoreItem[] = stores.slice(0, 6).map((s) => ({
+    id: s.id,
+    name: s.name,
+    slug: s.slug,
+    logoUrl: s.logoUrl,
+    badge: s.deliveryFee === "Grátis" ? "Grátis" : (s.couponBadge || undefined),
+  }));
+
+  const spotlightStores = stores.filter((s) => Boolean(s.couponBadge));
+
+  return {
+    stores,
+    recentStores,
+    spotlightStores,
+    featureMiniBanners,
+  };
+}
+
 export function CommercialShowcaseTemplate({
   nicheId,
   nicheTitle,

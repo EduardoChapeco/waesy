@@ -13,16 +13,14 @@
  */
 
 import { useState, useEffect } from "react";
-import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { Home, Search, Plus, MessageCircle, Menu, ShoppingCart, ArrowRight, User } from "lucide-react";
-import { useSuperAppDrawer, useAccountSwitcherDrawer } from "@/lib/drawer-store";
+import { Link, useLocation } from "@tanstack/react-router";
+import { Home, Search, FileText, ShoppingBag, User } from "lucide-react";
+import { useAccountSwitcherDrawer } from "@/lib/drawer-store";
 import { AccountSwitcherDrawer } from "@/components/shell/AccountSwitcherDrawer";
-import { QuickCreateModal } from "@/components/commerce/quick-create-modal";
 import { useCartContext } from "@/lib/cart-context";
 import { listCustomerOrders } from "@/services/order.functions";
 import { formatCents } from "@/lib/utils";
 import { cn } from "@/lib/utils";
-import { useWindowSizeClass } from "@/hooks/use-mobile";
 
 export interface MobileNavProps {
   session?: any;
@@ -31,10 +29,8 @@ export interface MobileNavProps {
 
 export function MobileNav({ session, userRole }: MobileNavProps) {
   const location = useLocation();
-  const navigate = useNavigate();
   const pathname = location.pathname || "";
 
-  const { isOpen: isSuperAppOpen, setOpen: setIsSuperAppOpen } = useSuperAppDrawer();
   const { isOpen: isAccountSwitcherOpen, toggle: toggleAccountSwitcher } = useAccountSwitcherDrawer();
 
   // Páginas onde a barra deve ser suprimida (formulários densos)
@@ -59,6 +55,11 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
   const cartSubtotal =
     globalCarts.reduce((acc, c) => acc + (c.subtotalCents || 0), 0) ||
     (cart?.subtotalCents ?? 0);
+
+  const activeCartStoreLogo =
+    (cart as any)?.storeLogoUrl ||
+    (globalCarts[0] as any)?.storeLogoUrl ||
+    null;
 
   // Estado de pedidos ativos para rastreamento
   const [activeOrdersCount, setActiveOrdersCount] = useState<number>(0);
@@ -93,16 +94,16 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
     };
   }, [isAuthenticated, pathname]);
 
-  // ── Active States das 5 Tabs ───────────────────────────────────────────────
-  const isHomeActive = pathname === "/" || pathname === "/home" || pathname === "/feed";
+  // ── Active States das 4 Tabs Canônicas (Padrão iFood SuperApp) ────────────
+  const isHomeActive = pathname === "/" || pathname === "/home";
   const isSearchActive =
     pathname.startsWith("/buscar") ||
     pathname.startsWith("/explorar") ||
-    pathname.startsWith("/mercado") ||
-    pathname.startsWith("/turismo") ||
     pathname.startsWith("/diretorio");
-  const isMessagesActive =
-    pathname.startsWith("/conta/conversas") || pathname.startsWith("/conta/suporte");
+  const isOrdersActive = pathname.startsWith("/conta/pedidos");
+  const isProfileActive =
+    isAccountSwitcherOpen ||
+    (pathname.startsWith("/conta") && !pathname.startsWith("/conta/pedidos"));
 
   // ── Keyboard Resilience (Esconde nav quando teclado virtual abre) ─────────
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
@@ -166,113 +167,120 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
 
   return (
     <>
-      {/* ── 2. BOTTOM NAVIGATION DOCK (APPLE HIG - SAFE AREA RESILIENT) ── */}
-      <div className="md:hidden fixed bottom-0 inset-x-0 z-40 pb-safe select-none pointer-events-none mobile-nav-hide-on-keyboard">
-        <div className="px-2 pb-2 pointer-events-auto max-w-lg mx-auto space-y-2">
-          {/* ── 1. SMART FLOATING CART BUTTON (Discreto acima da TabBar) ── */}
+      {/* ── BOTTOM NAVIGATION DOCK (PADRÃO IFOOD 4 TABS + FLOATING SACOLA) ── */}
+      <div className="md:hidden fixed bottom-0 inset-x-0 z-30 pb-safe select-none pointer-events-none mobile-nav-hide-on-keyboard bg-background border-t border-border/80">
+        <div className="pointer-events-auto max-w-lg mx-auto">
+          {/* ── 1. BARRA FLUTUANTE DE SACOLA (Acima das 4 Tabs quando há itens) ── */}
           {hasCartItems && (
-            <button
-              type="button"
-              onClick={() => setIsCartOpen(true)}
-              aria-label={`Ver carrinho com ${totalCartItems} itens`}
-              className="w-full h-12 rounded-lg bg-primary text-primary-foreground px-4 flex items-center justify-between border border-primary/20 active:scale-95 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 motion-reduce:transition-none"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <span className="size-6 rounded-full bg-primary-foreground text-primary text-xs font-black flex items-center justify-center shrink-0">
-                  {totalCartItems > 99 ? "99+" : totalCartItems}
-                </span>
-                <span className="text-xs sm:text-sm font-bold truncate">
-                  Ver Sacola / Carrinho
-                </span>
+            <div className="px-4 py-2 border-b border-border/60 bg-card flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="size-10 rounded-full overflow-hidden border border-border/80 bg-muted flex items-center justify-center shrink-0">
+                  {activeCartStoreLogo ? (
+                    <img src={activeCartStoreLogo} alt="" className="size-full object-cover" />
+                  ) : (
+                    <ShoppingBag className="size-5 text-primary" />
+                  )}
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-2xs text-muted-foreground font-medium leading-tight">
+                    Total sem a entrega
+                  </span>
+                  <div className="flex items-center gap-1 leading-tight">
+                    <span className="text-sm font-black text-foreground">
+                      {formatCents(cartSubtotal)}
+                    </span>
+                    <span className="text-xs text-muted-foreground font-medium">
+                      / {totalCartItems} {totalCartItems === 1 ? "item" : "itens"}
+                    </span>
+                  </div>
+                </div>
               </div>
 
-              <div className="flex items-center gap-2 shrink-0 text-xs sm:text-sm font-black">
-                {cartSubtotal > 0 && <span>{formatCents(cartSubtotal)}</span>}
-                <ArrowRight className="size-4" />
-              </div>
-            </button>
+              <button
+                type="button"
+                onClick={() => setIsCartOpen(true)}
+                aria-label={`Ver sacola com ${totalCartItems} itens`}
+                className="h-11 min-h-11 px-5 rounded-xl bg-primary hover:bg-primary/90 active:scale-95 text-primary-foreground text-xs font-extrabold flex items-center justify-center transition-all cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                Ver sacola
+              </button>
+            </div>
           )}
 
+          {/* ── 2. NAVEGAÇÃO 4 ABAS CANÔNICAS: INÍCIO | BUSCA | PEDIDOS | PERFIL ── */}
           <nav
             aria-label="Navegação principal móvel"
-            className="flex items-center justify-between p-2 bg-background border border-border rounded-lg"
+            className="grid grid-cols-4 items-center px-2 py-1 bg-background"
           >
             {/* TAB 1: INÍCIO */}
             <Link
               to="/"
               aria-label="Início"
               className={cn(
-                "flex-1 h-12 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+                "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 isHomeActive
-                  ? "text-primary font-bold"
+                  ? "text-foreground font-bold"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Home className="size-5" strokeWidth={isHomeActive ? 2.5 : 2} />
-              <span className="text-xs font-semibold tracking-tight leading-none">Início</span>
+              <Home className="size-5" strokeWidth={isHomeActive ? 2.5 : 1.75} />
+              <span className="text-2xs font-semibold tracking-tight leading-none">Início</span>
             </Link>
 
-            {/* TAB 2: EXPLORAR / BUSCA */}
+            {/* TAB 2: BUSCA */}
             <Link
-              to="/explorar"
-              aria-label="Explorar"
+              to="/buscar"
+              aria-label="Busca"
               className={cn(
-                "flex-1 h-12 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+                "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 isSearchActive
-                  ? "text-primary font-bold"
+                  ? "text-foreground font-bold"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Search className="size-5" strokeWidth={isSearchActive ? 2.5 : 2} />
-              <span className="text-xs font-semibold tracking-tight leading-none">Explorar</span>
+              <Search className="size-5" strokeWidth={isSearchActive ? 2.5 : 1.75} />
+              <span className="text-2xs font-semibold tracking-tight leading-none">Busca</span>
             </Link>
 
-            {/* TAB 3: BOTÃO CENTRAL [+] DE CRIAÇÃO RÁPIDA (FAB CONTEXTUAL) */}
-            <div className="flex-1 flex items-center justify-center">
-              <QuickCreateModal
-                isAuthenticated={isAuthenticated}
-                session={session}
-                asNavButton={true}
-              />
-            </div>
-
-            {/* TAB 4: MENSAGENS / ATENDIMENTO */}
+            {/* TAB 3: PEDIDOS */}
             <Link
-              to={isAuthenticated ? "/conta/conversas" : "/entrar"}
-              aria-label="Mensagens"
+              to={isAuthenticated ? "/conta/pedidos" : "/entrar"}
+              aria-label="Pedidos"
               className={cn(
-                "flex-1 h-12 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
-                isMessagesActive
-                  ? "text-primary font-bold"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <MessageCircle className="size-5" strokeWidth={isMessagesActive ? 2.5 : 2} />
-              <span className="text-xs font-semibold tracking-tight leading-none">Mensagens</span>
-            </Link>
-
-            {/* TAB 5: MINHA CONTA / ALTERNADOR DE PERFIS (APPLE HIG & 99PAY) */}
-            <button
-              type="button"
-              onClick={toggleAccountSwitcher}
-              aria-label="Minha conta e perfis"
-              className={cn(
-                "flex-1 h-12 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
-                isAccountSwitcherOpen || pathname.startsWith("/conta")
-                  ? "text-primary font-bold"
+                "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                isOrdersActive
+                  ? "text-foreground font-bold"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
               <div className="relative">
-                <User className="size-5" strokeWidth={isAccountSwitcherOpen || pathname.startsWith("/conta") ? 2.5 : 2} />
+                <FileText className="size-5" strokeWidth={isOrdersActive ? 2.5 : 1.75} />
                 {activeOrdersCount > 0 && (
-                  <span className="absolute -top-1 -right-1 size-2 rounded-full bg-amber-500 animate-ping" />
-                )}
-                {activeOrdersCount > 0 && (
-                  <span className="absolute -top-1 -right-1 size-2 rounded-full bg-amber-500" />
+                  <span className="absolute -top-1 -right-2 min-w-4 h-4 px-1 rounded-full bg-primary text-primary-foreground text-3xs font-black flex items-center justify-center">
+                    {activeOrdersCount}
+                  </span>
                 )}
               </div>
-              <span className="text-xs font-semibold tracking-tight leading-none">Conta</span>
+              <span className="text-2xs font-semibold tracking-tight leading-none">Pedidos</span>
+            </Link>
+
+            {/* TAB 4: PERFIL */}
+            <button
+              type="button"
+              onClick={toggleAccountSwitcher}
+              aria-label="Perfil e conta"
+              className={cn(
+                "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                isProfileActive
+                  ? "text-foreground font-bold"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <div className="relative">
+                <User className="size-5" strokeWidth={isProfileActive ? 2.5 : 1.75} />
+                <span className="absolute -top-0.5 -right-0.5 size-2 rounded-full bg-primary" />
+              </div>
+              <span className="text-2xs font-semibold tracking-tight leading-none">Perfil</span>
             </button>
           </nav>
         </div>

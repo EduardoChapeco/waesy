@@ -214,15 +214,40 @@ function CommunityMarketplaceView({ data }: { data: any }) {
     );
   }, [homeSections]);
 
+  const CANONICAL_MANAGED_KEYS = useMemo(
+    () =>
+      new Set([
+        "promo_coupon_banner",
+        "quick_categories_ifood",
+        "hero_banners",
+        "recent_stores_rail",
+        "feature_mini_banners",
+        "spotlight_restaurants",
+        "spotlight_pharmacies",
+        "filter_chips_bar",
+        "stores_feed_list",
+        "marketplace_products_rail",
+        "classifieds_rail",
+        "jobs_rail",
+        "vitrine_engine_selector",
+        "discovery_control_bar",
+        "dual_line_filter_pills",
+        "hotpages_grid",
+        "marketplace_categories",
+        "places_directory_rail",
+        "social_posts_vitrine",
+        "news_rail",
+        "events_rail",
+        "procedural_infinite_feed",
+      ]),
+    [],
+  );
+
   const customSections = useMemo(() => {
     return (homeSections as HomePageSectionDTO[]).filter(
-      (s) =>
-        s.is_active &&
-        s.section_key !== "hero_banners" &&
-        s.section_key !== "quick_categories_ifood" &&
-        s.section_key !== "social_posts_vitrine",
+      (s) => s.is_active && !CANONICAL_MANAGED_KEYS.has(s.section_key),
     );
-  }, [homeSections]);
+  }, [homeSections, CANONICAL_MANAGED_KEYS]);
 
   const socialPostsSection = useMemo(() => {
     return (homeSections as HomePageSectionDTO[]).find(
@@ -518,6 +543,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
   ]);
 
   const sharedViewProps = {
+    homeSections: homeSections as HomePageSectionDTO[],
     heroSection,
     quickCategoriesSection,
     socialPostsSection,

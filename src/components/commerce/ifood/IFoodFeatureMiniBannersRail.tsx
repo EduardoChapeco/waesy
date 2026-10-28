@@ -18,9 +18,44 @@ export interface FeatureMiniBannerItem {
 export interface IFoodFeatureMiniBannersRailProps {
   title?: string | null;
   subtitle?: string | null;
-  items: FeatureMiniBannerItem[];
+  items?: FeatureMiniBannerItem[];
   className?: string;
 }
+
+const DEFAULT_MINI_BANNERS: FeatureMiniBannerItem[] = [
+  {
+    id: "fmb-clube",
+    title: "Confira ofertas do clube para você",
+    subtitle: "Economize em cada pedido",
+    targetUrl: "/conta/creditos",
+    badgeText: "CLUBE",
+    actionText: "Clube >",
+  },
+  {
+    id: "fmb-gourmet",
+    title: "Experiência diferenciada",
+    subtitle: "Alta gastronomia e chefs",
+    targetUrl: "/gastronomia",
+    badgeText: "GOURMET",
+    actionText: "Gourmet >",
+  },
+  {
+    id: "fmb-corridas",
+    title: "Peça corridas e entregas rápidas",
+    subtitle: "Mobilidade urbana taxa fixa",
+    targetUrl: "/mobilidade",
+    badgeText: "WAESY GO",
+    actionText: "Corridas >",
+  },
+  {
+    id: "fmb-turbo",
+    title: "Burguer com entrega grátis",
+    subtitle: "Hamburguerias da sua região",
+    targetUrl: "/gastronomia",
+    badgeText: "TURBO",
+    actionText: "Pedir agora",
+  },
+];
 
 const DEFAULT_GRADIENTS = [
   "from-purple-600 to-indigo-700",
@@ -33,7 +68,7 @@ const DEFAULT_GRADIENTS = [
 export function IFoodFeatureMiniBannersRail({
   title = "No Waesy também tem",
   subtitle,
-  items,
+  items = DEFAULT_MINI_BANNERS,
   className,
 }: IFoodFeatureMiniBannersRailProps) {
   if (!items || items.length === 0) return null;

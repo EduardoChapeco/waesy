@@ -609,7 +609,8 @@ export const VitrineButtonItemSchema = z.object({
   imageDesktopUrl: z.string().optional(),
   highlight: z.boolean().optional(),
 });
-export type VitrineButtonItem = z.infer<typeof VitrineButtonItemSchema>;
+type OmniVitrineButtonItem = z.infer<typeof VitrineButtonItemSchema>;
+export type { OmniVitrineButtonItem as VitrineButtonItem };
 
 export const VitrineButtonsDockBlockDataSchema = z.object({
   sectionTitle: z.string().default(""),
@@ -691,7 +692,8 @@ export const VitrineProductItemSchema = z.object({
   slug: z.string().optional(),
   ctaLabel: z.string().optional(),
 });
-export type VitrineProductItem = z.infer<typeof VitrineProductItemSchema>;
+type OmniVitrineProductItem = z.infer<typeof VitrineProductItemSchema>;
+export type { OmniVitrineProductItem as VitrineProductItem };
 
 export const VitrineProductShelfBlockDataSchema = z.object({
   sectionTitle: z.string().default("Ofertas & Destaques"),
@@ -733,7 +735,8 @@ export const VitrineClassifiedItemSchema = z.object({
   href: z.string().optional(),
   ctaLabel: z.string().optional(),
 });
-export type VitrineClassifiedItem = z.infer<typeof VitrineClassifiedItemSchema>;
+type OmniVitrineClassifiedItem = z.infer<typeof VitrineClassifiedItemSchema>;
+export type { OmniVitrineClassifiedItem as VitrineClassifiedItem };
 
 export const VitrineClassifiedsRailBlockDataSchema = z.object({
   sectionTitle: z.string().default("Anúncios & Oportunidades"),
@@ -765,7 +768,8 @@ export const VitrineSocialPostItemSchema = z.object({
   commentsCount: z.number().int().nonnegative().optional(),
   href: z.string().optional(),
 });
-export type VitrineSocialPostItem = z.infer<typeof VitrineSocialPostItemSchema>;
+type OmniVitrineSocialPostItem = z.infer<typeof VitrineSocialPostItemSchema>;
+export type { OmniVitrineSocialPostItem as VitrineSocialPostItem };
 
 export const VitrineSocialStreamBlockDataSchema = z.object({
   sectionTitle: z.string().default("Novidades da Comunidade"),
@@ -794,7 +798,8 @@ export const VitrineEcosystemItemSchema = z.object({
   ctaLabel: z.string().optional(),
   verified: z.boolean().optional(),
 });
-export type VitrineEcosystemItem = z.infer<typeof VitrineEcosystemItemSchema>;
+type OmniVitrineEcosystemItem = z.infer<typeof VitrineEcosystemItemSchema>;
+export type { OmniVitrineEcosystemItem as VitrineEcosystemItem };
 
 export const VitrineEcosystemRailBlockDataSchema = z.object({
   entityType: z.enum(["events", "jobs", "stores", "hotpages"]).default("events"),

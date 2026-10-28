@@ -6,12 +6,14 @@ import type {
 } from "@/types/omni-builder";
 import { getSectionStyle } from "../utils";
 import { PrometheePortalProvider } from "@/components/news/promethee-portal-store";
-import { PrometheeNewsHeaderBlock } from "./PrometheeNewsHeaderBlock";
+import { PrometheeNewsHeaderBlock, PrometheeWireframeDomeLogo } from "./PrometheeNewsHeaderBlock";
 import { PrometheeNewsNavBlock } from "./PrometheeNewsNavBlock";
 import { PrometheeNewsBreakingBlock } from "./PrometheeNewsBreakingBlock";
 import { PrometheeNewsFeedBlock } from "./PrometheeNewsFeedBlock";
 import { PrometheeNewsArticleReaderBlock } from "./PrometheeNewsArticleReaderBlock";
 import { PrometheeNewsFooterBlock } from "./PrometheeNewsFooterBlock";
+
+export { PrometheeWireframeDomeLogo };
 
 export interface PrometheeNewsPortalBlockProps extends BaseSiteBlockProps {
   data: PrometheeNewsPortalBlockData;
@@ -19,43 +21,6 @@ export interface PrometheeNewsPortalBlockProps extends BaseSiteBlockProps {
   products?: any[];
   newsArticles?: any[];
   sponsors?: any[];
-}
-
-export function PrometheeWireframeDomeLogo({ className = "size-8" }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 64 64"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-      aria-hidden="true"
-    >
-      <path
-        d="M8 52H56M12 52V36C12 22.7452 20.9543 12 32 12C43.0457 12 52 22.7452 52 36V52"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-      />
-      <path
-        d="M32 6V12M20 52V36C20 24.9543 25.3726 12 32 12C38.6274 12 44 24.9543 44 36V52"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-      <path
-        d="M28 52V36C28 24.9543 29.7909 12 32 12C34.2091 12 36 24.9543 36 36V52"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-      <path
-        d="M14 28H50M12 38H52M12 46H52"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
 }
 
 const DEFAULT_FALLBACK_ARTICLES: PrometheeNewsArticleItem[] = [

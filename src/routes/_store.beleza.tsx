@@ -25,6 +25,11 @@ import { listPublicStorePackages } from "@/services/service-packages.functions";
 import { listPublishedProducts } from "@/services/catalog.functions";
 import type { ProductCardDTO } from "@/types/catalog";
 import { resolveNicheDepartments } from "@/lib/niche-helpers";
+import { useWindowSizeClass } from "@/hooks/use-mobile";
+import {
+  CommercialShowcaseTemplate,
+  mapSurfaceFeedToCommercialShowcase,
+} from "@/components/commerce/ifood/CommercialShowcaseTemplate";
 
 const SearchSchema = z.object({
  q: z.string().optional(),
@@ -184,6 +189,45 @@ function BelezaVerticalPage() {
  );
  });
  }, [marketplaceFeed]);
+
+ const { isCompact } = useWindowSizeClass();
+ const [activeFilters, setActiveFilters] = useState<string[]>([]);
+ const showcaseData = useMemo(
+   () => mapSurfaceFeedToCommercialShowcase(marketplaceFeed, "beleza", "Perfumaria & Cosméticos"),
+   [marketplaceFeed],
+ );
+
+ if (isCompact) {
+   return (
+     <CommercialShowcaseTemplate
+       nicheId="beleza"
+       nicheTitle="Beleza & Perfumaria"
+       subcategories={BELEZA_DEPARTMENTS.map((d) => ({ id: d.id, label: d.label, icon: d.icon as any }))}
+       activeSubcategoryId={activeDepartment}
+       onSelectSubcategory={handleDepartmentChange}
+       banners={banners || []}
+       featureMiniBanners={showcaseData.featureMiniBanners}
+       recentStores={showcaseData.recentStores}
+       stores={showcaseData.stores}
+       spotlightStores={showcaseData.spotlightStores}
+       products={filteredProducts}
+       activeFilters={activeFilters}
+       onToggleFilter={(id) =>
+         setActiveFilters((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
+       }
+     >
+       {packages && packages.length > 0 && (
+         <section aria-label="Pacotes de Estética" className="px-3 sm:px-4">
+           <ServicePackagesRail
+             packages={packages}
+             title="Pacotes de Estética"
+             subtitle="Adquira combos de sessões e cuidados com desconto garantido."
+           />
+         </section>
+       )}
+     </CommercialShowcaseTemplate>
+   );
+ }
 
  return (
  <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 space-y-6 pb-24">

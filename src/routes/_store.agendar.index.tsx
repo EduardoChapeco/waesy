@@ -256,6 +256,7 @@ function BookingIndexPage() {
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         allowedViewModes={["feed", "grid", "list"]}
+        hideMobileSearch={true}
       />
 
       {/* ── ESTADOS DE CARREGAMENTO E VAZIO ── */}

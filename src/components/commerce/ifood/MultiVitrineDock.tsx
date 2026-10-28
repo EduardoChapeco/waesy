@@ -8,7 +8,13 @@ import {
   Flame,
   PawPrint,
   SquaresFour,
+  TShirt,
+  Laptop,
+  Couch,
+  Hammer,
   Sparkle,
+  Broom,
+  BookOpen,
 } from "@phosphor-icons/react";
 import { useSuperAppDrawer } from "@/lib/drawer-store";
 import { cn } from "@/lib/utils";
@@ -28,6 +34,13 @@ export const CANONICAL_COMMERCIAL_VITRINES: VitrineDockItem[] = [
   { id: "bebidas", label: "Bebidas", to: "/bebidas", icon: BeerBottle },
   { id: "acougue", label: "Açougue", to: "/acougue", icon: Flame },
   { id: "pet", label: "Pet Shop", to: "/pet", icon: PawPrint },
+  { id: "moda", label: "Moda", to: "/moda", icon: TShirt },
+  { id: "eletronicos", label: "Eletrônicos", to: "/eletronicos", icon: Laptop },
+  { id: "casa", label: "Casa", to: "/casa", icon: Couch },
+  { id: "construcao", label: "Construção", to: "/construcao", icon: Hammer },
+  { id: "beleza", label: "Beleza", to: "/beleza", icon: Sparkle },
+  { id: "limpeza", label: "Limpeza", to: "/limpeza", icon: Broom },
+  { id: "livros", label: "Papelaria", to: "/livros", icon: BookOpen },
 ];
 
 export interface MultiVitrineDockProps {
@@ -54,7 +67,7 @@ export function MultiVitrineDock({
     <nav
       aria-label="Vitrines Comerciais"
       className={cn(
-        "w-full flex items-center gap-2 overflow-x-auto no-scrollbar py-2 px-3 sm:px-4 snap-x snap-mandatory [mask-image:linear-gradient(to_right,black_92%,transparent_100%)]",
+        "w-full flex items-center gap-2 overflow-x-auto no-scrollbar py-2 px-3 sm:px-4 snap-x snap-mandatory",
         className,
       )}
       data-testid="multi-vitrine-dock"
@@ -64,7 +77,7 @@ export function MultiVitrineDock({
         type="button"
         onClick={openSuperApp}
         aria-label="Ver todas as categorias"
-        className="h-11 min-h-11 px-3 rounded-xl border border-border/70 bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground flex items-center justify-center shrink-0 snap-start transition-colors cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring gap-1.5 shadow-xs"
+        className="h-11 min-h-11 px-3 rounded-xl border border-border/70 bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground flex items-center justify-center shrink-0 snap-start transition-colors cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring gap-2"
       >
         <SquaresFour size={18} weight="bold" />
         <span className="text-xs font-bold leading-none hidden xs:inline">Categorias</span>
@@ -80,7 +93,7 @@ export function MultiVitrineDock({
             key={item.id}
             to={item.to}
             className={cn(
-              "h-11 min-h-11 px-3.5 rounded-xl border flex items-center gap-2 shrink-0 snap-start transition-all cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring relative shadow-xs",
+              "h-11 min-h-11 px-3 rounded-xl border flex items-center gap-2 shrink-0 snap-start transition-all cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring relative",
               isActive
                 ? "bg-foreground text-background border-foreground font-bold"
                 : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50 font-medium",
@@ -100,7 +113,7 @@ export function MultiVitrineDock({
             </span>
 
             {item.badge && (
-              <span className="absolute -top-1.5 -right-1 px-1.5 py-0.2 rounded-full bg-destructive text-destructive-foreground text-3xs font-black uppercase tracking-wider">
+              <span className="absolute -top-1 -right-1 px-1 py-0.5 rounded-full bg-destructive text-destructive-foreground text-3xs font-black uppercase tracking-wider">
                 {item.badge}
               </span>
             )}

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { AirplaneTilt, Sparkle, ArrowRight, ShieldCheck, Tag } from "@phosphor-icons/react";
+import { AirplaneTilt, Sparkle, ArrowRight, ArrowLeft, Tag } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
@@ -58,15 +58,25 @@ export function TourismHeroBanner({
       )}
 
       {/* Conteúdo do Topo (Hero + Parceria) */}
-      <div className="relative z-10 px-4 sm:px-8 pt-8 pb-4 text-center sm:text-left space-y-4 max-w-2xl">
-        {/* Badge de Parceria Oficial */}
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-background/80 backdrop-blur-md border border-white/10 text-xs font-semibold text-foreground">
-          <span className="font-black tracking-tight text-primary">Waesy</span>
-          <span className="opacity-40">+</span>
-          <span className="font-black tracking-tight text-foreground">Excelência Tour</span>
-          <span className="text-3xs px-1.5 py-0.5 rounded-full bg-primary/20 text-primary font-bold uppercase tracking-wider">
-            GDS & Wooba
-          </span>
+      <div className="relative z-10 px-4 sm:px-8 pt-4 sm:pt-8 pb-4 text-center sm:text-left space-y-4 max-w-2xl">
+        {/* Barra Superior Mobile (Botão Voltar + Selo de Parceria Oficial) */}
+        <div className="flex items-center justify-between sm:justify-start gap-2">
+          <Link
+            to="/"
+            aria-label="Voltar para o início"
+            className="md:hidden size-11 min-h-11 min-w-11 rounded-full bg-background/80 backdrop-blur-md border border-border/40 text-foreground flex items-center justify-center hover:bg-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
+          >
+            <ArrowLeft size={20} weight="bold" />
+          </Link>
+
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-background/80 backdrop-blur-md border border-border/40 text-xs font-semibold text-foreground">
+            <span className="font-black tracking-tight text-primary">Waesy</span>
+            <span className="opacity-40">+</span>
+            <span className="font-black tracking-tight text-foreground">Excelência Tour</span>
+            <span className="text-3xs px-1.5 py-0.5 rounded-full bg-primary/20 text-primary font-bold uppercase tracking-wider">
+              GDS & Wooba
+            </span>
+          </div>
         </div>
 
         {/* Título e Subtítulo */}

@@ -571,6 +571,7 @@ function AgendaPadronizadaPage() {
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         allowedViewModes={["feed", "grid", "list"]}
+        hideMobileSearch={true}
       />
 
       {/* ── 5. Estados de Carregamento e Vazio ── */}

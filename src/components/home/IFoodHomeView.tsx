@@ -294,12 +294,12 @@ export function IFoodHomeView({
                 <div className="size-14 sm:size-16 rounded-2xl bg-muted/40 hover:bg-muted border border-border/60 flex items-center justify-center transition-transform group-hover:scale-105 shadow-2xs relative">
                   <Icon size={26} weight="bold" className="text-primary" />
                   {cat.badge && (
-                    <span className="absolute -top-1.5 -right-1.5 px-1.5 py-0.2 rounded-full bg-red-600 text-white text-3xs font-black uppercase tracking-wider shadow-xs">
+                    <span className="absolute -top-1.5 -right-1 px-1.5 py-0.5 rounded-full bg-destructive text-destructive-foreground text-3xs font-black uppercase tracking-wider">
                       {cat.badge}
                     </span>
                   )}
                 </div>
-                <span className="text-2xs font-semibold text-foreground text-center leading-tight truncate max-w-16">
+                <span className="text-2xs font-semibold text-foreground text-center leading-tight break-words text-wrap">
                   {cat.label}
                 </span>
               </Link>
@@ -315,15 +315,15 @@ export function IFoodHomeView({
         </section>
       ) : (
         <section aria-label="Banner Promocional" className="px-3 sm:px-4">
-          <div className="w-full h-44 sm:h-56 rounded-3xl bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-800 p-5 text-white flex flex-col justify-between relative overflow-hidden shadow-sm">
+          <div className="w-full h-44 sm:h-56 rounded-3xl bg-primary p-5 text-primary-foreground flex flex-col justify-between relative overflow-hidden">
             <div className="z-10 space-y-1 max-w-xs">
-              <span className="inline-block px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-xs text-3xs font-black tracking-wider uppercase">
+              <span className="inline-block px-2.5 py-0.5 rounded-full bg-background/20 text-3xs font-black tracking-wider uppercase">
                 Clube Waesy
               </span>
               <h2 className="text-lg sm:text-2xl font-black tracking-tight leading-tight">
-                Peça com cupons de até <span className="text-amber-300">R$ 21,90</span>
+                Peça com cupons de até R$ 21,90
               </h2>
-              <p className="text-xs text-white/80 line-clamp-1">
+              <p className="text-xs text-primary-foreground/85 line-clamp-1">
                 Descontos exclusivos nos restaurantes parceiros da cidade.
               </p>
             </div>
@@ -335,14 +335,11 @@ export function IFoodHomeView({
                   key={idx}
                   className={cn(
                     "h-1 rounded-full transition-all duration-300",
-                    idx === currentSlideIndex ? "w-6 bg-white" : "w-3 bg-white/40",
+                    idx === currentSlideIndex ? "w-6 bg-primary-foreground" : "w-3 bg-primary-foreground/40",
                   )}
                 />
               ))}
             </div>
-
-            {/* Círculo Decorativo */}
-            <div className="absolute -right-10 -bottom-10 size-48 rounded-full bg-white/10 blur-xl pointer-events-none" />
           </div>
         </section>
       )}
@@ -611,14 +608,8 @@ export function IFoodHomeView({
         </div>
       </section>
 
-      {/* ── 13. BARRA FLUTUANTE DA SACOLA ── */}
-      <IFoodFloatingCartBar
-        storeName="Alexandre Delivery"
-        totalCents={2500}
-        savingsCents={800}
-        itemCount={1}
-        includesDelivery={true}
-      />
+      {/* ── 13. BARRA FLUTUANTE DA SACOLA (Dinâmica e Conectada ao CartContext Real) ── */}
+      <IFoodFloatingCartBar />
     </div>
   );
 }

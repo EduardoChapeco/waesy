@@ -33,6 +33,7 @@ import { CvcNavigationDock, type CvcMenuItem } from "@/components/tourism/cvc-na
 import { TourismDynamicSearchPanel } from "@/components/tourism/tourism-dynamic-search-panel";
 import { CorporateVollConciergeView } from "@/components/tourism/corporate-voll-concierge-view";
 import { WeekendIdeasRail } from "@/components/tourism/weekend-ideas-rail";
+import { useWindowSizeClass } from "@/hooks/use-mobile";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
@@ -198,50 +199,44 @@ function TourismMasterPage() {
     setIsQuoteModalOpen(true);
   };
 
+  const { isCompact } = useWindowSizeClass();
+
   return (
     <div className="w-full max-w-5xl mx-auto space-y-6 pb-24 px-3 sm:px-4">
-      {/* ── Cabeçalho Nativo Mobile com Busca Integrada ── */}
-      <NativeMobileHeader
-        title="Turismo & Viagens"
-        centerTitle
-        backTo="/"
-        searchValue={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Buscar pacotes, hotéis, destinos..."
-      />
-
       {/* ── Cabeçalho Inpage Desktop (Apple HIG) ── */}
-      <div className="hidden md:flex items-center justify-between pt-2 pb-3 border-b border-border/40">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <span>Turismo & Viagens</span>
-            <span className="text-3xs font-extrabold uppercase px-2 py-0.5 rounded-full bg-primary/10 text-primary font-mono">
-              Excelência Tour
-            </span>
-          </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Pacotes completos, passagens aéreas, hotéis e gestão corporativa B2B
-          </p>
-        </div>
+      {!isCompact && (
+        <div className="flex items-center justify-between pt-2 pb-3 border-b border-border/40">
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+              <span>Turismo & Viagens</span>
+              <span className="text-3xs font-extrabold uppercase px-2 py-0.5 rounded-full bg-primary/10 text-primary font-mono">
+                Excelência Tour
+              </span>
+            </h1>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Pacotes completos, passagens aéreas, hotéis e gestão corporativa B2B
+            </p>
+          </div>
 
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => handleOpenQuote()}
-            className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            Atendimento WhatsApp
-          </Button>
-          <Button
-            type="button"
-            onClick={() => setSelectedCategory("corporativo")}
-            className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg bg-orange-600 hover:bg-orange-700 text-white cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            Área Corporativa
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => handleOpenQuote()}
+              className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              Atendimento WhatsApp
+            </Button>
+            <Button
+              type="button"
+              onClick={() => setSelectedCategory("corporativo")}
+              className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              Área Corporativa
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* ── 1. Capa de Topo / Hero Estilo iFood & Decolar (Uploadable via Admin Master) ── */}
       <TourismHeroBanner
@@ -249,8 +244,8 @@ function TourismMasterPage() {
         onOpenQuote={handleOpenQuote}
       />
 
-      {/* ── Stories Contextuais do Nicho de Turismo ── */}
-      <ContextualStoriesRail niche="turismo" className="py-0.5" />
+      {/* ── Stories Contextuais do Nicho de Turismo (Desktop) ── */}
+      {!isCompact && <ContextualStoriesRail niche="turismo" className="py-0.5" />}
 
       {/* ── 2. Menu Canônico CVC / Decolar (Squircles com Ícones em Duas Cores) ── */}
       <section aria-label="Menu de Navegação CVC" className="w-full">
@@ -285,8 +280,8 @@ function TourismMasterPage() {
         />
       )}
 
-      {/* ── Coleções e Hotpages de Viagem ── */}
-      {hotpages && hotpages.length > 0 && selectedCategory !== "corporativo" && (
+      {/* ── Coleções e Hotpages de Viagem (Desktop) ── */}
+      {!isCompact && hotpages && hotpages.length > 0 && selectedCategory !== "corporativo" && (
         <section aria-label="Coleções de Viagens">
           <HotpagesRail
             hotpages={hotpages}
@@ -296,8 +291,8 @@ function TourismMasterPage() {
         </section>
       )}
 
-      {/* ── 6. Barra de Controle de Descoberta & Filtros Rápidos ── */}
-      {selectedCategory !== "corporativo" && (
+      {/* ── 6. Barra de Controle de Descoberta & Alternador de Visão (Desktop) ── */}
+      {!isCompact && selectedCategory !== "corporativo" && (
         <DiscoveryControlBar
           search={search}
           onSearchChange={setSearch}
@@ -308,6 +303,7 @@ function TourismMasterPage() {
           viewMode={layoutMode === "rails" ? "feed" : layoutMode === "compact" ? "list" : "grid"}
           onViewModeChange={(m) => setLayoutMode(m === "feed" ? "rails" : m === "list" ? "compact" : "cards")}
           hideMobileSearch={true}
+          hideCategoryPills={true}
           allowedViewModes={["feed", "grid", "list"]}
         />
       )}

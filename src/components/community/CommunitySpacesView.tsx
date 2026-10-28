@@ -157,6 +157,11 @@ export function CommunitySpacesView({
 }: CommunitySpacesViewProps) {
   const [activeTab, setActiveTab] = useState<"threads" | "sessions" | "shop" | "members">("threads");
   const [isMember, setIsMember] = useState(Boolean(community.isMember));
+  const [likedThreads, setLikedThreads] = useState<Record<string, boolean>>({});
+
+  const handleToggleLike = (threadId: string) => {
+    setLikedThreads((prev) => ({ ...prev, [threadId]: !prev[threadId] }));
+  };
 
   const handleToggleJoin = () => {
     const next = !isMember;
@@ -375,21 +380,28 @@ export function CommunitySpacesView({
                 <div className="flex items-center gap-4 pt-1 text-muted-foreground text-xs border-t border-border/30">
                   <button
                     type="button"
-                    className="flex items-center gap-1.5 hover:text-rose-600 transition-colors cursor-pointer py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    onClick={() => handleToggleLike(t.id)}
+                    className={cn(
+                      "h-11 min-h-11 px-2 flex items-center gap-2 hover:text-destructive transition-colors cursor-pointer rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      likedThreads[t.id] && "text-destructive font-bold",
+                    )}
                   >
                     <Heart className="size-4" />
-                    <span>{t.likesCount}</span>
+                    <span>{t.likesCount + (likedThreads[t.id] ? 1 : 0)}</span>
                   </button>
                   <button
                     type="button"
-                    className="flex items-center gap-1.5 hover:text-foreground transition-colors cursor-pointer py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    onClick={() => onNewThreadClick?.()}
+                    className="h-11 min-h-11 px-2 flex items-center gap-2 hover:text-foreground transition-colors cursor-pointer rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     <MessageSquare className="size-4" />
                     <span>{t.repliesCount}</span>
                   </button>
                   <button
                     type="button"
-                    className="flex items-center gap-1.5 hover:text-foreground transition-colors cursor-pointer py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    onClick={handleShare}
+                    aria-label="Compartilhar discussão"
+                    className="size-11 min-h-11 flex items-center justify-center hover:text-foreground transition-colors cursor-pointer rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     <Repeat2 className="size-4" />
                   </button>
@@ -462,8 +474,13 @@ export function CommunitySpacesView({
                   {formatMoney(p.priceCents)}
                 </span>
                 <Button
+                  type="button"
                   size="sm"
-                  className="rounded-xl h-9 px-3 text-2xs font-bold bg-foreground text-background"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onProductClick?.(p.id);
+                  }}
+                  className="rounded-xl h-11 min-h-11 px-4 text-2xs font-bold bg-foreground text-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   Ver
                 </Button>

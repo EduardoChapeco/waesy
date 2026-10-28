@@ -12,6 +12,7 @@ import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
 import { EventsShowcaseMobileView } from "@/components/events/EventsShowcaseMobileView";
 import { EventsShowcaseDesktopView } from "@/components/events/EventsShowcaseDesktopView";
 import { EventSubvitrineView } from "@/components/events/EventSubvitrineView";
+import { useWindowSizeClass } from "@/hooks/use-mobile";
 import type { EventFeatureMiniBannerItem } from "@/components/events/EventFeatureMiniBannersRail";
 
 const SearchSchema = z.object({
@@ -442,6 +443,8 @@ function EventosPage() {
     return [];
   }, [loaderData?.miniBannersPool, surfaceSections]);
 
+  const { isCompact } = useWindowSizeClass();
+
   return (
     <div className="w-full min-h-screen bg-background">
       {/* ── BIFURCAÇÃO 1: SUBVITRINE QUANDO UMA CATEGORIA ESPECÍFICA FOR SELECIONADA ── */}
@@ -453,48 +456,46 @@ function EventosPage() {
           onBackToAll={() => setSelectedCategory("todos")}
           producers={realOrganizers}
         />
+      ) : isCompact ? (
+        /* ── BIFURCAÇÃO 2: EXPERIÊNCIA NATIVA MOBILE (iFood + Sympla) ── */
+        <EventsShowcaseMobileView
+          activeCity={activeCity}
+          coverImageUrl={heroCoverConfig.background_image_url}
+          themeColor={heroCoverConfig.theme_color || "#0284c7"}
+          calloutTitle={heroCoverConfig.callout_title || "Aqui tem desconto pra quem é Clube!"}
+          partnerLogoUrl={heroCoverConfig.partner_logo_url}
+          activeCategory={selectedCategory}
+          onSelectCategory={setSelectedCategory}
+          categoryCounts={eventsCountBySubcategory}
+          eventsForYou={eventsForYou}
+          trendingEvents={trendingEvents}
+          producers={realOrganizers}
+          miniBanners={configuredMiniBanners}
+          thematicRails={thematicRails}
+          allFilteredEvents={filteredEvents}
+          selectedDateFilter={selectedDateFilter}
+          onSelectDateFilter={setSelectedDateFilter}
+          isLoading={isLoading}
+          isError={isError}
+        />
       ) : (
-        <>
-          {/* ── BIFURCAÇÃO 2: EXPERIÊNCIA NATIVA MOBILE (iFood + Sympla) ── */}
-          <EventsShowcaseMobileView
-            activeCity={activeCity}
-            coverImageUrl={heroCoverConfig.background_image_url}
-            themeColor={heroCoverConfig.theme_color || "#0284c7"}
-            calloutTitle={heroCoverConfig.callout_title || "Aqui tem desconto pra quem é Clube!"}
-            partnerLogoUrl={heroCoverConfig.partner_logo_url}
-            activeCategory={selectedCategory}
-            onSelectCategory={setSelectedCategory}
-            categoryCounts={eventsCountBySubcategory}
-            eventsForYou={eventsForYou}
-            trendingEvents={trendingEvents}
-            producers={realOrganizers}
-            miniBanners={configuredMiniBanners}
-            thematicRails={thematicRails}
-            allFilteredEvents={filteredEvents}
-            selectedDateFilter={selectedDateFilter}
-            onSelectDateFilter={setSelectedDateFilter}
-            isLoading={isLoading}
-            isError={isError}
-          />
-
-          {/* ── BIFURCAÇÃO 3: EXPERIÊNCIA EXPANDIDA DESKTOP (Widescreen + Carrosséis Instagram) ── */}
-          <EventsShowcaseDesktopView
-            activeCity={activeCity}
-            banners={displayBanners}
-            activeCategory={selectedCategory}
-            onSelectCategory={setSelectedCategory}
-            categoryCounts={eventsCountBySubcategory}
-            eventsForYou={eventsForYou}
-            trendingEvents={trendingEvents}
-            producers={realOrganizers}
-            miniBanners={configuredMiniBanners}
-            thematicRails={thematicRails}
-            allFilteredEvents={filteredEvents}
-            selectedDateFilter={selectedDateFilter}
-            onSelectDateFilter={setSelectedDateFilter}
-            isLoading={isLoading}
-          />
-        </>
+        /* ── BIFURCAÇÃO 3: EXPERIÊNCIA EXPANDIDA DESKTOP (Widescreen + Carrosséis Instagram) ── */
+        <EventsShowcaseDesktopView
+          activeCity={activeCity}
+          banners={displayBanners}
+          activeCategory={selectedCategory}
+          onSelectCategory={setSelectedCategory}
+          categoryCounts={eventsCountBySubcategory}
+          eventsForYou={eventsForYou}
+          trendingEvents={trendingEvents}
+          producers={realOrganizers}
+          miniBanners={configuredMiniBanners}
+          thematicRails={thematicRails}
+          allFilteredEvents={filteredEvents}
+          selectedDateFilter={selectedDateFilter}
+          onSelectDateFilter={setSelectedDateFilter}
+          isLoading={isLoading}
+        />
       )}
     </div>
   );

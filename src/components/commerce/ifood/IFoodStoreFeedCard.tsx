@@ -144,15 +144,17 @@ export function IFoodStoreFeedCard({
 
   // Padrão Lista Horizontal
   return (
-    <Link
-      to={`/loja/${store.slug}` as any}
+    <div
       className={cn(
-        "w-full p-3 rounded-2xl bg-card hover:bg-muted/30 border border-border/60 flex items-center justify-between gap-3 transition-colors select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-xs group",
+        "w-full p-3 rounded-2xl bg-card hover:bg-muted/30 border border-border/60 flex items-center justify-between gap-3 transition-colors select-none shadow-xs group",
         className,
       )}
       data-testid="ifood-store-list-card"
     >
-      <div className="flex items-center gap-3 min-w-0 flex-1">
+      <Link
+        to={`/loja/${store.slug}` as any}
+        className="flex items-center gap-3 min-w-0 flex-1 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      >
         {/* Logo Redondo da Loja */}
         <div className="size-14 sm:size-16 rounded-full overflow-hidden border border-border/80 bg-background flex items-center justify-center shrink-0 shadow-2xs relative">
           {displayLogo ? (
@@ -164,29 +166,29 @@ export function IFoodStoreFeedCard({
               onError={() => setLogoFailed(true)}
             />
           ) : (
-            <div className="size-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center text-primary font-black text-base">
+            <div className="size-full bg-primary/10 flex items-center justify-center text-primary font-black text-base">
               {initial}
             </div>
           )}
         </div>
 
         {/* Detalhes da Loja */}
-        <div className="flex flex-col min-w-0 gap-0.5">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-sm font-bold text-foreground leading-tight truncate">
+        <div className="flex flex-col min-w-0 gap-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-bold text-foreground leading-tight break-words">
               {store.name}
             </span>
             {store.isAd && (
-              <span className="px-1.5 py-0.2 rounded-xs border border-border/80 text-3xs font-semibold text-muted-foreground uppercase">
+              <span className="px-2 py-1 rounded-xs border border-border/80 text-3xs font-semibold text-muted-foreground uppercase">
                 Ad
               </span>
             )}
           </div>
 
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground leading-none flex-wrap">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground leading-none flex-wrap">
             {/* Avaliação Real ou Omissão Total */}
             {hasRealRating && (
-              <span className="inline-flex items-center gap-0.5 font-bold text-amber-500">
+              <span className="inline-flex items-center gap-1 font-bold text-warning">
                 <Star size={12} weight="fill" />
                 <span>{store.rating!.toFixed(1)}</span>
                 {hasRealReviews && (
@@ -198,7 +200,7 @@ export function IFoodStoreFeedCard({
             {store.deliveryTime && <span>{store.deliveryTime}</span>}
             {store.deliveryTime && store.deliveryFee && <span>•</span>}
             {store.deliveryFee && (
-              <span className={cn(store.deliveryFee === "Grátis" && "text-emerald-600 dark:text-emerald-400 font-bold")}>
+              <span className={cn(store.deliveryFee === "Grátis" && "text-success font-bold")}>
                 {store.deliveryFee}
               </span>
             )}
@@ -206,9 +208,9 @@ export function IFoodStoreFeedCard({
 
           {/* Badges de Cupons */}
           {(store.couponBadge || (store.secondaryBadges && store.secondaryBadges.length > 0)) && (
-            <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
               {store.couponBadge && (
-                <span className="px-1.5 py-0.5 rounded-sm bg-purple-500/10 text-purple-600 dark:text-purple-400 text-3xs font-extrabold flex items-center gap-0.5">
+                <span className="px-2 py-1 rounded-sm bg-primary/10 text-primary text-3xs font-extrabold flex items-center gap-1">
                   <Tag size={10} weight="bold" />
                   <span>{store.couponBadge}</span>
                 </span>
@@ -216,7 +218,7 @@ export function IFoodStoreFeedCard({
               {store.secondaryBadges?.map((b, i) => (
                 <span
                   key={i}
-                  className="px-1.5 py-0.5 rounded-sm bg-muted text-muted-foreground text-3xs font-semibold"
+                  className="px-2 py-1 rounded-sm bg-muted text-muted-foreground text-3xs font-semibold"
                 >
                   {b}
                 </span>
@@ -224,7 +226,7 @@ export function IFoodStoreFeedCard({
             </div>
           )}
         </div>
-      </div>
+      </Link>
 
       {/* Botão de Favoritar com Alvo de Toque de 44px */}
       <button
@@ -239,6 +241,6 @@ export function IFoodStoreFeedCard({
       >
         <Heart size={20} weight={store.isFavorite ? "fill" : "bold"} className={store.isFavorite ? "text-destructive" : ""} />
       </button>
-    </Link>
+    </div>
   );
 }

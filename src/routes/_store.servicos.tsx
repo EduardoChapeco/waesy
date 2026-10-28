@@ -323,6 +323,7 @@ function ServicosVerticalPage() {
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         allowedViewModes={["feed", "grid", "list"]}
+        hideMobileSearch={true}
       />
 
       {/* ── 5. Renderização Conforme o Modo de Visualização ── */}

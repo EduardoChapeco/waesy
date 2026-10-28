@@ -68,16 +68,17 @@ export function EventProducersRail({
           const targetUrl = prod.slug ? `/places/${prod.slug}` : `/buscar?q=${encodeURIComponent(prod.name)}`;
 
           return (
-            <Link
+            <div
               key={prod.id}
-              to={targetUrl as any}
               className={cn(
                 "w-72 sm:w-80 rounded-2xl border border-border/60 bg-card p-3 flex items-center justify-between gap-3 shrink-0 snap-start select-none",
-                "hover:border-foreground/30 hover:bg-muted/20 transition-all duration-200 shadow-2xs group cursor-pointer",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "hover:border-foreground/30 hover:bg-muted/20 transition-colors duration-200 group",
               )}
             >
-              <div className="flex items-center gap-3 min-w-0 flex-1">
+              <Link
+                to={targetUrl as any}
+                className="flex items-center gap-3 min-w-0 flex-1 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
                 {/* Avatar Circular da Produtora */}
                 <div className="size-12 rounded-full border border-border/80 bg-muted overflow-hidden flex items-center justify-center shrink-0">
                   {prod.logoUrl ? (
@@ -87,9 +88,9 @@ export function EventProducersRail({
                   )}
                 </div>
 
-                <div className="min-w-0 flex-1 space-y-0.5">
+                <div className="min-w-0 flex-1 space-y-1">
                   <div className="flex items-center gap-1">
-                    <h3 className="text-xs font-bold text-foreground truncate group-hover:text-primary transition-colors">
+                    <h3 className="text-xs font-bold text-foreground break-words group-hover:text-primary transition-colors">
                       {prod.name}
                     </h3>
                     {prod.isVerified && (
@@ -100,7 +101,7 @@ export function EventProducersRail({
                   <div className="flex items-center gap-2 text-2xs text-muted-foreground">
                     {/* Regra B.33: Só exibe estrelas se houver review real registrada */}
                     {typeof prod.rating === "number" && prod.rating > 0 && (
-                      <span className="flex items-center gap-0.5 font-bold text-amber-500 font-mono">
+                      <span className="flex items-center gap-1 font-bold text-warning font-mono">
                         <Star size={11} weight="fill" />
                         <span>{prod.rating.toFixed(1)}</span>
                       </span>
@@ -111,12 +112,12 @@ export function EventProducersRail({
                   </div>
 
                   {prod.city && (
-                    <p className="text-3xs text-muted-foreground/80 truncate">
+                    <p className="text-3xs text-muted-foreground/80 break-words">
                       {prod.city}
                     </p>
                   )}
                 </div>
-              </div>
+              </Link>
 
               {/* Botão de Favoritar com Alvo de Toque de 44px */}
               <button
@@ -127,7 +128,7 @@ export function EventProducersRail({
               >
                 <Heart size={18} weight={isFav ? "fill" : "bold"} className={isFav ? "text-destructive" : ""} />
               </button>
-            </Link>
+            </div>
           );
         })}
       </div>

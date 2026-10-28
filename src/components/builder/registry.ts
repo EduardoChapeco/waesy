@@ -37,6 +37,11 @@ import {
   VitrineEcosystemRailBlock,
   VitrineLateralDrawerBlock,
   VitrineVisualSpotlightRailBlock,
+  VitrineIFoodHeaderBlock,
+  VitrineSubcategoryPillsBlock,
+  VitrineRecentStoresRailBlock,
+  VitrineFeatureMiniBannersBlock,
+  VitrineStoresFeedListBlock,
 } from "./blocks/vitrine-app-blocks";
 
 import { createClassicOmniBlock } from "./ClassicBlockAdapter";
@@ -1966,6 +1971,72 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
       items: [],
     },
   },
+  {
+    id: "vitrine_ifood_header",
+    name: "Cabeçalho SuperApp (Endereço + Notificações)",
+    category: "vitrine_app",
+    description:
+      "Cabeçalho nativo padrão iFood/SuperApp com seletor de endereço centralizado, sino de notificações com badge e busca integrada opcional.",
+    capabilities: ["responsive", "cms"],
+    component: VitrineIFoodHeaderBlock as any,
+    defaultProps: {
+      showSearch: false,
+      searchPlaceholder: "Buscar lojas, pratos ou produtos...",
+    },
+  },
+  {
+    id: "vitrine_subcategory_pills",
+    name: "Pílulas de Subcategorias Visuais",
+    category: "vitrine_app",
+    description:
+      "Trilho horizontal de subnichos com foto/ícone, selo de destaque e texto posicionado dentro ou abaixo do card.",
+    capabilities: ["responsive", "cms", "commerce"],
+    component: VitrineSubcategoryPillsBlock as any,
+    defaultProps: {
+      showText: true,
+      textPosition: "below",
+      items: [],
+    },
+  },
+  {
+    id: "vitrine_recent_stores_rail",
+    name: "Trilho de Últimas Lojas (Avatares Circulares)",
+    category: "vitrine_app",
+    description:
+      "Carrossel horizontal de estabelecimentos visitados ou comprados recentemente com avatares circulares e link Ver mais.",
+    capabilities: ["responsive", "cms", "commerce"],
+    component: VitrineRecentStoresRailBlock as any,
+    defaultProps: {
+      title: "Últimas lojas",
+      viewMoreTo: "/diretorio",
+    },
+  },
+  {
+    id: "vitrine_feature_mini_banners",
+    name: "Mini-Banners Verticais (No Waesy também tem)",
+    category: "vitrine_app",
+    description:
+      "Trilho de mini-banners promocionais verticais com badge superior, chamada de desconto e imagem de produto.",
+    capabilities: ["responsive", "cms", "media"],
+    component: VitrineFeatureMiniBannersBlock as any,
+    defaultProps: {
+      title: "No Waesy também tem",
+      items: [],
+    },
+  },
+  {
+    id: "vitrine_stores_feed_list",
+    name: "Lista de Lojas + Chips de Filtro Rápidos",
+    category: "vitrine_app",
+    description:
+      "Régua de chips de filtro (Ordenar, Entrega Grátis, Super, Promoções) integrada ao feed vertical de estabelecimentos com avaliação, tempo, frete e cupom.",
+    capabilities: ["responsive", "cms", "commerce"],
+    component: VitrineStoresFeedListBlock as any,
+    defaultProps: {
+      title: "Lojas",
+      showFilterChips: true,
+    },
+  },
 ];
 
 export function getSiteBlocksByCategory(category: string): SiteBuilderBlockDefinition[] {
@@ -2142,4 +2213,9 @@ export const BLOCK_TO_WIX_CATEGORY: Record<string, WixBlockCategory> = {
   vitrine_ecosystem_rail: "vitrine_app",
   vitrine_lateral_drawer: "vitrine_app",
   vitrine_visual_spotlight_rail: "vitrine_app",
+  vitrine_ifood_header: "vitrine_app",
+  vitrine_subcategory_pills: "vitrine_app",
+  vitrine_recent_stores_rail: "vitrine_app",
+  vitrine_feature_mini_banners: "vitrine_app",
+  vitrine_stores_feed_list: "vitrine_app",
 };

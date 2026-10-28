@@ -27,6 +27,12 @@ import {
   type VitrineVerticalCarouselProps,
 } from "@/design-system";
 import { IFoodVisualSpotlightRail } from "@/components/commerce/ifood/IFoodVisualSpotlightRail";
+import { IFoodHeader } from "@/components/commerce/ifood/IFoodHeader";
+import { IFoodSubcategoryPillRail, type SubcategoryItem } from "@/components/commerce/ifood/IFoodSubcategoryPillRail";
+import { IFoodRecentStoresRail, type RecentStoreItem } from "@/components/commerce/ifood/IFoodRecentStoresRail";
+import { IFoodFeatureMiniBannersRail, type FeatureMiniBannerItem } from "@/components/commerce/ifood/IFoodFeatureMiniBannersRail";
+import { IFoodFilterChipsBar } from "@/components/commerce/ifood/IFoodFilterChipsBar";
+import { IFoodStoreFeedCard, type IFoodStoreCardData } from "@/components/commerce/ifood/IFoodStoreFeedCard";
 
 export interface OmniVitrineRuntimeContextProps {
   id: string;
@@ -364,11 +370,11 @@ export function VitrineVisualSpotlightRailBlock({
       logoUrl: s.logoUrl || s.logo_url || s.avatar_url || null,
       coverUrl: s.coverUrl || s.cover_url || s.banner_url || null,
       isAd: Boolean(s.isAd ?? s.is_ad),
-      rating: s.rating || 4.8,
-      reviewCount: s.reviewCount || 24,
-      deliveryTime: s.deliveryTime || "30-40 min",
-      deliveryFee: s.deliveryFee || "Grátis",
-      couponBadge: s.couponBadge || "Cupom de R$ 5",
+      rating: typeof s.rating === "number" && s.rating > 0 ? s.rating : undefined,
+      reviewCount: typeof s.reviewCount === "number" && s.reviewCount > 0 ? s.reviewCount : undefined,
+      deliveryTime: s.deliveryTime || s.delivery_time || undefined,
+      deliveryFee: s.deliveryFee || s.delivery_fee || "Grátis",
+      couponBadge: s.couponBadge || s.coupon_badge || undefined,
       hasHighlightCrown: Boolean(s.hasHighlightCrown ?? idx % 2 === 0),
     }));
   }, [stores]);
@@ -383,6 +389,191 @@ export function VitrineVisualSpotlightRailBlock({
         viewMoreLabel={data?.viewMoreLabel || "Ver mais"}
         stores={spotlightStores}
       />
+    </VitrineBlockShell>
+  );
+}
+
+export function VitrineIFoodHeaderBlock({
+  id,
+  data,
+  styling,
+  className,
+}: OmniVitrineRuntimeContextProps & {
+  data?: {
+    showSearch?: boolean;
+    searchPlaceholder?: string;
+  };
+}) {
+  return (
+    <VitrineBlockShell id={id} styling={styling} className={className}>
+      <IFoodHeader
+        showSearch={data?.showSearch ?? false}
+        searchPlaceholder={data?.searchPlaceholder || "Buscar lojas, pratos ou produtos..."}
+      />
+    </VitrineBlockShell>
+  );
+}
+
+export function VitrineSubcategoryPillsBlock({
+  id,
+  data,
+  styling,
+  className,
+  categories = [],
+}: OmniVitrineRuntimeContextProps & {
+  data?: {
+    showText?: boolean;
+    textPosition?: "below" | "inside";
+    items?: SubcategoryItem[];
+  };
+}) {
+  const [activeId, setActiveId] = React.useState<string>("todos");
+
+  const resolvedItems: SubcategoryItem[] = React.useMemo(() => {
+    if (Array.isArray(data?.items) && data.items.length > 0) {
+      return data.items;
+    }
+    return (categories || []).map((c: any, idx: number) => ({
+      id: String(c.id || c.slug || `cat-${idx}`),
+      label: String(c.label || c.title || c.name || "Categoria"),
+      imageUrl: typeof c.image_url === "string" ? c.image_url : typeof c.imageUrl === "string" ? c.imageUrl : null,
+      badge: typeof c.badge === "string" ? c.badge : undefined,
+    }));
+  }, [data?.items, categories]);
+
+  return (
+    <VitrineBlockShell id={id} styling={styling} className={className}>
+      <IFoodSubcategoryPillRail
+        items={resolvedItems}
+        activeId={activeId}
+        onSelect={setActiveId}
+        showText={data?.showText !== false}
+        textPosition={data?.textPosition === "inside" ? "right" : (data?.textPosition || "below")}
+      />
+    </VitrineBlockShell>
+  );
+}
+
+export function VitrineRecentStoresRailBlock({
+  id,
+  data,
+  styling,
+  className,
+  stores = [],
+}: OmniVitrineRuntimeContextProps & {
+  data?: {
+    title?: string;
+    viewMoreTo?: string;
+  };
+}) {
+  const recentStores: RecentStoreItem[] = React.useMemo(() => {
+    return (stores || []).slice(0, 10).map((s: any, idx: number) => ({
+      id: String(s.id || `rec-${idx}`),
+      name: String(s.name || s.business_name || s.title || "Estabelecimento"),
+      slug: String(s.slug || s.id || ""),
+      logoUrl: typeof s.logoUrl === "string" ? s.logoUrl : typeof s.avatar_url === "string" ? s.avatar_url : null,
+      badge: typeof s.badge === "string" ? s.badge : undefined,
+    }));
+  }, [stores]);
+
+  return (
+    <VitrineBlockShell id={id} styling={styling} className={className}>
+      <IFoodRecentStoresRail
+        title={data?.title || "Últimas lojas"}
+        viewMoreTo={data?.viewMoreTo || "/diretorio"}
+        stores={recentStores}
+      />
+    </VitrineBlockShell>
+  );
+}
+
+export function VitrineFeatureMiniBannersBlock({
+  id,
+  data,
+  styling,
+  className,
+}: OmniVitrineRuntimeContextProps & {
+  data?: {
+    title?: string;
+    items?: FeatureMiniBannerItem[];
+  };
+}) {
+  return (
+    <VitrineBlockShell id={id} styling={styling} className={className}>
+      <IFoodFeatureMiniBannersRail
+        title={data?.title || "No Waesy também tem"}
+        items={data?.items}
+      />
+    </VitrineBlockShell>
+  );
+}
+
+export function VitrineStoresFeedListBlock({
+  id,
+  data,
+  styling,
+  className,
+  stores = [],
+}: OmniVitrineRuntimeContextProps & {
+  data?: {
+    title?: string;
+    showFilterChips?: boolean;
+  };
+}) {
+  const [activeFilters, setActiveFilters] = React.useState<string[]>([]);
+  const [favorites, setFavorites] = React.useState<Record<string, boolean>>({});
+
+  const handleToggleFilter = (filterId: string) => {
+    setActiveFilters((prev) =>
+      prev.includes(filterId) ? prev.filter((f) => f !== filterId) : [...prev, filterId],
+    );
+  };
+
+  const handleFavoriteToggle = (storeId: string) => {
+    setFavorites((prev) => ({ ...prev, [storeId]: !prev[storeId] }));
+  };
+
+  const mappedStores: IFoodStoreCardData[] = React.useMemo(() => {
+    return (stores || []).map((s: any, idx: number) => ({
+      id: String(s.id || `feed-st-${idx}`),
+      name: String(s.name || s.business_name || s.title || "Estabelecimento Local"),
+      slug: String(s.slug || s.id || ""),
+      logoUrl: typeof s.logoUrl === "string" ? s.logoUrl : typeof s.avatar_url === "string" ? s.avatar_url : null,
+      category: typeof s.category === "string" ? s.category : "Comércio Local",
+      rating: typeof s.rating === "number" && s.rating > 0 ? s.rating : undefined,
+      reviewCount: typeof s.reviews_count === "number" && s.reviews_count > 0 ? s.reviews_count : undefined,
+      deliveryTime: typeof s.delivery_time === "string" ? s.delivery_time : undefined,
+      deliveryFee: s.delivery_fee === 0 ? "Grátis" : typeof s.delivery_fee === "string" ? s.delivery_fee : undefined,
+      couponBadge: typeof s.coupon_badge === "string" ? s.coupon_badge : undefined,
+      isFavorite: Boolean(favorites[String(s.id || `feed-st-${idx}`)]),
+    }));
+  }, [stores, favorites]);
+
+  return (
+    <VitrineBlockShell id={id} styling={styling} className={className}>
+      <div className="space-y-3">
+        {data?.showFilterChips !== false && (
+          <IFoodFilterChipsBar
+            activeFilters={activeFilters}
+            onToggleFilter={handleToggleFilter}
+          />
+        )}
+        <div className="space-y-2 px-3 sm:px-4">
+          <h2 className="text-base font-bold text-foreground tracking-tight">
+            {data?.title || "Lojas"}
+          </h2>
+          <div className="divide-y divide-border/50">
+            {mappedStores.map((st) => (
+              <IFoodStoreFeedCard
+                key={st.id}
+                store={st}
+                variant="list"
+                onFavoriteToggle={handleFavoriteToggle}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
     </VitrineBlockShell>
   );
 }

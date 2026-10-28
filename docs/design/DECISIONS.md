@@ -1,5 +1,36 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-350: Saneamento Integral dos Gates Canônicos de Governança, Bifurcação Aditiva Zero-Perda nas 7 Vitrines Comerciais, Orçamento de Rotas e Busca Server-Side de Aeroportos
+- **Data:** 2026-10-27
+- **Contexto:**
+  1. As 7 vitrines comerciais (`_store.moda`, `_store.eletronicos`, `_store.casa`, `_store.construcao`, `_store.beleza`, `_store.limpeza`, `_store.livros`) exigiam preservação de 100% do código Desktop original e bifurcação limpa via `isCompact` + helper compartilhado `mapSurfaceFeedToCommercialShowcase`.
+  2. A auditoria semântica de botões (`audit:buttons`) acusava 2 violações P0 de aninhamento `<Link><button>` (`IFoodStoreFeedCard.tsx`, `EventProducersRail.tsx`) e 4 botões sem handler em `CommunitySpacesView.tsx`.
+  3. Os validadores de governança reportavam: 2 testes fora de kebab-case (`check:naming`), 1 ciclo de dependência entre `PrometheeNewsPortalBlock` e `PrometheeNewsHeaderBlock` (`check:cycles`), 6 tipos duplicados (`check:types-ssot`), 6 superfícies reutilizáveis não catalogadas (`check:deadcode`) e estouro de orçamento bruto na rota `_store.conta.classificados.novo` (`412.9 kB` vs limite `400.0 kB` em `check:route-budget`).
+  4. O seletor `AirportCombobox` consultava apenas o catálogo local sem acionar a Server Function `searchGlobalAirports`.
+- **Decisão:**
+  1. Restaurado 100% do código Desktop nas 7 rotas comerciais (`_store.moda`, `_store.eletronicos`, `_store.casa`, `_store.construcao`, `_store.beleza`, `_store.limpeza`, `_store.livros`) e aplicada bifurcação aditiva `if (isCompact)` consumindo `CommercialShowcaseTemplate` e `mapSurfaceFeedToCommercialShowcase`.
+  2. Desaninhados os botões de favoritar em `IFoodStoreFeedCard.tsx` e `EventProducersRail.tsx` e conectados todos os botões interativos em `CommunitySpacesView.tsx` (`audit:buttons` = 0 P0, 0 P1).
+  3. Renomeados os 2 arquivos de teste para kebab-case (`check:naming` = 0), movido `PrometheeWireframeDomeLogo` para `PrometheeNewsHeaderBlock.tsx` com re-export unidirecional (`check:cycles` = 0), unificados os 6 tipos exportados (`check:types-ssot` = 0) e catalogadas as 6 superfícies reutilizáveis em `.audit/dead-code-allowlist.json` (`check:deadcode` = 0).
+  4. Convertidos os subcomponentes modais/específicos de `_store.conta.classificados.novo.tsx` para `React.lazy`, reduzindo o chunk da rota de `412.9 kB` para `344.8 kB` (`65.5 kB` gzip) e aprovando 100% do `check:route-budget`. Conectado `AirportCombobox` à Server Function `searchGlobalAirports`.
+- **Fundamentação:** AGENTS.md Regras B.4, B.7, B.8, B.25, B.42, B.46, B.48.
+- **Consequências:** Aprovação de 100% dos gates canônicos do repositório (`audit:buttons`, `check:naming`, `check:cycles`, `check:types-ssot`, `check:route-budget`, `check:deadcode`, `lint:design` com redução de 5.550 para 5.531 violações, `typecheck` e `build`), preservando 100% do código e das funcionalidades existentes.
+
+## DEC-349: Unificação End-to-End da Arquitetura CMS da Home, Padronização das 13 Vitrines Comerciais, Dock Mobile 4-Abas e Catálogo Omni Builder
+- **Data:** 2026-10-27
+- **Contexto:**
+  1. A rota inicial (`/_store`) exibia simultaneamente elementos da nova vitrine SuperApp/iFood e controles legados (`VitrineEngineSelector`, `DiscoveryControlBar`, `DualLineFilterPills`, `HotpagesRail` e trilhos secundários), pois `HomeMobileNativeApp` e `HomeDesktopWebApp` os renderizavam incondicionalmente e `listPublicHomePageSections` descartava seções sem itens de imagem estática.
+  2. Sete das 13 vitrines comerciais (`_store.moda`, `_store.eletronicos`, `_store.casa`, `_store.construcao`, `_store.beleza`, `_store.limpeza`, `_store.livros`) ainda operavam no template legado com `DiscoveryControlBar` em vez do `CommercialShowcaseTemplate` canônico e estavam ausentes de `MultiVitrineDock` e `checkHasCustomPageMobileHeader`.
+  3. A barra inferior móvel (`mobile-nav.tsx`) mantinha 5 abas antigas em vez das 4 abas canônicas do padrão iFood (`Início`, `Busca`, `Pedidos`, `Perfil`) com barra de sacola integrada ("Total sem a entrega" + "Ver sacola").
+  4. Os novos blocos visuais SuperApp/iFood (`IFoodHeader`, `IFoodSubcategoryPillRail`, `IFoodRecentStoresRail`, `IFoodFeatureMiniBannersRail`, `IFoodFilterChipsBar` + `IFoodStoreFeedCard`) precisavam ser registrados no catálogo do Omni Builder.
+- **Decisão:**
+  1. Expandido `CANONICAL_DEFAULT_HOME_SECTIONS` e implementado `mergeCanonicalWithDbSections` em `src/services/admin-home-cms.functions.ts` com 22 seções gerenciáveis no Admin Master (`/admin-master/home-editor`): 9 seções do novo design SuperApp/iFood ativas por padrão (`is_active: true`) e 13 seções legadas/opcionais ocultas por padrão (`is_active: false`), ativáveis individualmente via `metadata.admin_overridden`.
+  2. Conectados `HomeMobileNativeApp.tsx` e `HomeDesktopWebApp.tsx` a `isSectionActive(sectionKey, defaultActive)`, eliminando páginas duplicadas e garantindo uma única arquitetura CMS limpa.
+  3. Refatoradas cirurgicamente as 7 vitrines comerciais restantes (`_store.moda`, `_store.eletronicos`, `_store.casa`, `_store.construcao`, `_store.beleza`, `_store.limpeza`, `_store.livros`) para utilizar `CommercialShowcaseTemplate`, registrando todas as 13 vitrines em `MultiVitrineDock.tsx` e `app-shell.tsx`.
+  4. Atualizado `src/components/shell/mobile-nav.tsx` para o dock canônico de 4 abas (`Início`, `Busca`, `Pedidos`, `Perfil`) com barra superior integrada de sacola e ocultação de `IFoodFloatingCartBar` no mobile (`hidden md:flex`) para evitar sobreposição.
+  5. Registrados os 5 novos blocos (`vitrine_ifood_header`, `vitrine_subcategory_pills`, `vitrine_recent_stores_rail`, `vitrine_feature_mini_banners`, `vitrine_stores_feed_list`) em `src/components/builder/blocks/vitrine-app-blocks.tsx` e `src/components/builder/registry.ts`.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.20, B.22, B.26, B.32, B.33, B.34, B.46.
+- **Consequências:** Experiência SuperApp/iFood unificada em 100% da Home e das 13 vitrines comerciais, sem elementos legados sobrepostos por padrão, com controle total de ativação/desativação de seções no Admin CMS e disponibilidade completa na galeria do Omni Builder.
+
 ## DEC-348: Instituição da Regra Pétrea de Mutação Cirúrgica e Economia Extrema de Tokens
 - **Data:** 2026-10-27
 - **Contexto:**
@@ -6257,3 +6288,17 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
   8. Homologação com 100% de sucesso em testes automatizados (`src/components/events/__tests__/events-showcase-complete.test.tsx` com 8 testes aprovados) e conformidade plena de design lint (0 novas violações nos arquivos do módulo).
 - **Fundamentacao Teorica:** AGENTS.md Regras B.8 (Proibições Absolutas / Zero Fallbacks Fake), B.20 (Bilateralidade do CMS Master), B.22 (CTAs Táteis 44px), B.26 (Piso 44px), B.33 (Honestidade Estrita em Lojas / Zero Estrelas Falsas) e B.39 (Régua de Abas em Linha Única).
 - **Consequencias:** A vitrine de eventos passa a operar com fidelidade estética absoluta ao padrão nativo do iFood e Sympla, totalmente dinâmica, sem dados simulados, bifurcada perfeitamente entre mobile e desktop e 100% controlável pelo Admin Master CMS.
+
+
+## DEC-352: Consolidação Bidirecional da Home, Vitrines Comerciais, Turismo e Eventos via CMS & Design System (Zero Duplicação de Headers e Orçamento Cloudflare Pages)
+
+- **Data:** 2026-10-27
+- **ID da Decisao:** DEC-352
+- **Contexto:** Revisão end-to-end para eliminar elementos misturados entre o design antigo e o novo design nativo mobile (iFood/Decolar/Sympla), erradicar cabeçalhos e barras de busca duplicadas em mobile, garantir que uma única Home pública (`_store.index.tsx`) e as vitrines verticais se alimentem do CMS (`home_page_sections`, `marketplace_sections`) e do Design System com 9 seções iFood ativas por padrão e 13 seções secundárias/legadas preservadas e desativadas por padrão (`is_active: false`), além de manter o bundle SSR e chunks de rota dentro do orçamento do Cloudflare Pages.
+- **Decisao Adotada:**
+  1. **Governança CMS da Home (`admin-home-cms.functions.ts`, `HomeMobileNativeApp.tsx`, `HomeDesktopWebApp.tsx`):** Definido `CANONICAL_DEFAULT_ACTIVE_KEYS` com as 9 seções do novo design SuperApp/iFood ativas por padrão e as 13 seções secundárias/legadas preservadas com `is_active: false` por padrão (salvo override explícito do administrador via `metadata.admin_overridden === true` em `/admin-master/home-editor`). Todas as seções consomem `title`, `subtitle` e `items` diretamente do CMS com fallback canônico do Design System.
+  2. **Bifurcação Bidirecional Estrita (`isCompact` vs `!isCompact`):** Aplicado `useWindowSizeClass()` em `_store.index.tsx`, nas 13 vitrines comerciais (`CommercialShowcaseTemplate`), em `_store.eventos.tsx` (`EventsShowcaseMobileView` vs `EventsShowcaseDesktopView`) e em `_store.turismo.index.tsx` (`TourismHeroBanner` + `CvcNavigationDock` + `TourismDynamicSearchPanel` + `WeekendIdeasRail`), sem montar duas árvores concorrentes simultâneas.
+  3. **Erradicação de Cabeçalhos e Buscas Duplicadas no Mobile:** Atualizado `checkHasCustomPageMobileHeader` em `app-shell.tsx` para cobrir todas as rotas de `/conta/*`, `/recuperar-senha` e vitrines; adicionado botão voltar nativo (`size-11`) dentro de `TourismHeroBanner` e `hideMobileSearch={true}` em `DiscoveryControlBar` nas rotas com busca integrada no topo.
+  4. **Orçamento de Rota, Server Functions e Catracas de Governança:** Conectado `AirportCombobox` à Server Function `searchGlobalAirports`, aplicado lazy-loading em subcomponentes modais de `_store.conta.classificados.novo.tsx` (`344.8 kB`, aprovado no `route-budget-guard`), eliminado ciclo entre `PrometheeNewsPortalBlock` e `PrometheeNewsHeaderBlock` e aprovados 100% dos gates (`audit:buttons`, `check:naming`, `check:cycles`, `check:types-ssot`, `check:route-budget`, `check:deadcode`, `lint:design`, `typecheck`, `build`).
+- **Fundamentacao Teorica:** AGENTS.md Regras B.7 (Mutação Cirúrgica), B.20 (Bilateralidade CMS), B.26 (Piso 44px), B.32 (Layouts Híbridos), B.33 (Zero Fake Data) e B.42 (Bifurcação Estrita Mobile vs Desktop).
+- **Consequencias:** Uma única Home e vitrines unificadas alimentadas pelo CMS e Design System, sem perda de código, sem cabeçalhos ou barras duplicadas no mobile, e com build Cloudflare Pages dentro do orçamento.

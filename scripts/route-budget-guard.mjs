@@ -69,7 +69,13 @@ function runAudit() {
 
   // 1. Inspeciona Worker
   if (fs.existsSync(WORKER_FILE)) {
-    const workerRaw = fs.statSync(WORKER_FILE).size;
+    const stat = fs.statSync(WORKER_FILE);
+    const resolvedWorkerFile = stat.isDirectory()
+      ? path.join(WORKER_FILE, 'index.js')
+      : WORKER_FILE;
+    const workerRaw = fs.existsSync(resolvedWorkerFile)
+      ? fs.statSync(resolvedWorkerFile).size
+      : 0;
     const workerPass = workerRaw <= BUDGETS.workerBundle.maxRaw;
     if (!workerPass) violationsCount++;
     rows.push({

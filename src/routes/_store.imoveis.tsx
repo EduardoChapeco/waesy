@@ -211,6 +211,7 @@ function ImoveisVerticalPage() {
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         allowedViewModes={["feed", "grid", "list"]}
+        hideMobileSearch={true}
       />
 
       {/* ── 4. Imobiliárias & Correspondentes da Cidade ── */}
