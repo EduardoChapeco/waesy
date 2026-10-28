@@ -1412,7 +1412,7 @@ export function TravelPromoFlyerModal({
                     <Label className="text-xs font-semibold">
                       Viajantes, Ocupação & Base do Preço
                     </Label>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                       <div className="space-y-1">
                         <Label className="text-xs text-muted-foreground">Adultos</Label>
                         <Input
@@ -1493,7 +1493,7 @@ export function TravelPromoFlyerModal({
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-4 gap-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                       {[10, 12, 15, 16].map((cnt) => (
                         <button
                           key={cnt}
@@ -1906,7 +1906,7 @@ export function TravelPromoFlyerModal({
                         alt="Preview de Fundo"
                         className="w-full h-full object-cover"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-3">
+                      <div className="absolute inset-0 bg-black/50 flex items-end p-3">
                         <span className="text-xs text-foreground/90 font-mono truncate">
                           {bgImageUrl.startsWith("data:")
                             ? "Imagem local carregada"

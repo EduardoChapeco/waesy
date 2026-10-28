@@ -62,9 +62,9 @@ export function TravelHotelSlider({
               <img
                 src={hotel.coverPhotoUrl}
                 alt={hotel.name}
-                className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
+                className="size-full object-cover group-hover:scale-105 transition-transform duration-200"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent pointer-events-none" />
+              <div className="absolute inset-0 bg-background/60 pointer-events-none" />
 
               <div className="absolute top-3 left-3 flex items-center gap-1 px-2 py-1 rounded-full bg-background/80 backdrop-blur-md text-warning text-xs">
                 {Array.from({ length: hotel.stars || 4 }).map((_, i) => (

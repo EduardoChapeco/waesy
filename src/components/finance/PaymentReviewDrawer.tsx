@@ -84,7 +84,7 @@ export function PaymentReviewDrawer({
             <div className="text-3xl font-black text-foreground font-mono">
               {formatCents(amountCents)}
             </div>
-            <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-2xs font-bold">
+            <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-2xs font-bold">
               <ShieldCheck className="size-3" />
               <span>Tarifa Zero (R$ 0,00)</span>
             </div>
@@ -97,7 +97,7 @@ export function PaymentReviewDrawer({
             </span>
 
             <div className="flex items-start gap-3">
-              <div className="size-9 rounded-xl bg-muted flex items-center justify-center text-foreground shrink-0 mt-0.5">
+              <div className="size-9 rounded-xl bg-muted flex items-center justify-center text-foreground shrink-0 mt-1">
                 <User className="size-4" />
               </div>
               <div className="min-w-0 flex-1">
@@ -126,7 +126,7 @@ export function PaymentReviewDrawer({
           </div>
 
           {/* Origem do Pagamento */}
-          <div className="rounded-2xl border border-border/70 bg-muted/30 p-3.5 flex items-center justify-between gap-3 text-xs">
+          <div className="rounded-2xl border border-border/70 bg-muted/30 p-4 flex items-center justify-between gap-3 text-xs">
             <div>
               <span className="text-muted-foreground text-2xs font-semibold block uppercase">
                 Forma de Pagamento

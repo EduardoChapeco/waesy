@@ -41,7 +41,7 @@ export function PrometheeLocationSheet({
     if (presetCities.length > 0) {
       const resolvedPresets: CityRecord[] = [];
       for (const name of presetCities) {
-        if (!name || name === allCitiesLabel || name === "Notícias do Vale") continue;
+        if (!name || name === allCitiesLabel) continue;
         const found = findCityByLabel(name);
         if (found) {
           resolvedPresets.push(found);
@@ -67,7 +67,7 @@ export function PrometheeLocationSheet({
 
   const commitCity = (cityName: string, stateUf = "", lat?: number, lng?: number, source: LocationState["source"] = "manual") => {
     onSelectCity(cityName);
-    if (typeof window !== "undefined" && cityName !== allCitiesLabel && cityName !== "Notícias do Vale") {
+    if (typeof window !== "undefined" && cityName !== allCitiesLabel) {
       const loc: LocationState = {
         city: cityName,
         state: stateUf,
@@ -122,7 +122,7 @@ export function PrometheeLocationSheet({
     );
   };
 
-  const isAllActive = selectedCity === allCitiesLabel || selectedCity === "Notícias do Vale";
+  const isAllActive = selectedCity === allCitiesLabel;
 
   return (
     <div

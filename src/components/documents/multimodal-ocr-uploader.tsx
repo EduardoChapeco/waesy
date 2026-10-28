@@ -320,7 +320,7 @@ export function MultimodalOcrUploader({
       {/* ── MODAL DE PREVIEW INSTANTÂNEO 9:16 (SE ATIVADO) ── */}
       {showPreviewModal && (
         <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-lg bg-background border border-border shadow-2xl">
+          <DialogContent className="max-w-4xl max-h-(--spacing-screen-90,90vh) overflow-y-auto p-4 sm:p-6 rounded-lg bg-background border border-border shadow-2xl">
             <DialogHeader className="sr-only">
               <DialogTitle>Documento Digital Reconhecido</DialogTitle>
             </DialogHeader>

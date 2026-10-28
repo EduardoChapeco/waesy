@@ -717,7 +717,7 @@ function WorkspaceSitesHubPage() {
  <img
  src={tpl.imageUrl}
  alt={tpl.title}
- className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+ className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
  />
  <div className="absolute top-2.5 right-2.5">
  <Badge variant="secondary" className="text-xs font-semibold bg-background/90 backdrop-blur-md">

@@ -51,6 +51,7 @@ import { PageHeader } from "@/components/commerce/page-header";
 import { EmptyState } from "@/components/state/states";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { AiCurationUpgradeModal } from "@/components/commerce/ai-curation-upgrade-modal";
+import { ImageUpload } from "@/components/ui/image-upload";
 
 export const Route = createFileRoute("/workspace/noticias/")({
   head: () => ({ meta: [{ title: "Notícias & Automação Editorial | Workspace Waesy" }] }),
@@ -731,16 +732,18 @@ function WorkspaceNoticiasIndexPage() {
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="settings-ending-img" className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Lâmina Final Fixa Padrão (URL Arte/Assinatura)
+                <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Lâmina Final Fixa Padrão (Arte/Assinatura de Fechamento)
                 </label>
-                <input
-                  id="settings-ending-img"
-                  type="url"
+                <ImageUpload
                   value={settings.fixed_ending_slide_url || ""}
-                  onChange={(e) => setSettings({ ...settings, fixed_ending_slide_url: e.target.value })}
-                  placeholder="https://.../assinatura-padrao.png"
-                  className="h-11 min-h-11 w-full rounded-2xl border border-border bg-card px-4 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  onChange={(url) => setSettings({ ...settings, fixed_ending_slide_url: url })}
+                  onRemove={() => setSettings({ ...settings, fixed_ending_slide_url: "" })}
+                  bucket="post-media"
+                  folder="editorial-stories"
+                  aspectPreset="portrait"
+                  helperText="Envie a arte final dos stories (9:16) com sua marca e assinatura"
+                  showExternalUrlOption={false}
                 />
               </div>
 

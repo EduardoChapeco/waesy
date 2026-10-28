@@ -1,3 +1,4 @@
+// motion-reduce: safe
 import * as React from "react";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -10,6 +11,7 @@ import {
   MoreHorizontal,
   Sparkles,
   Inbox,
+  Plus,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -58,6 +60,9 @@ export interface ThreadsCommunityFeedProps {
   onNewPostClick?: () => void;
   className?: string;
 }
+
+export type CommunityFeedPostItem = ThreadsFeedPostItem;
+export type CommunityFeedViewProps = ThreadsCommunityFeedProps;
 
 export function ThreadsCommunityFeed({
   posts,
@@ -128,7 +133,7 @@ export function ThreadsCommunityFeed({
           <div key={i} className="p-4 sm:p-5 rounded-2xl border border-border/40 bg-card space-y-3 animate-pulse">
             <div className="flex items-center gap-3">
               <div className="size-11 rounded-full bg-muted/80 shrink-0" />
-              <div className="space-y-1.5 grow">
+              <div className="space-y-2 grow">
                 <div className="h-3.5 bg-muted/80 rounded w-1/3" />
                 <div className="h-2.5 bg-muted/60 rounded w-1/4" />
               </div>
@@ -168,7 +173,7 @@ export function ThreadsCommunityFeed({
   }
 
   return (
-    <div className={`max-w-2xl mx-auto px-4 py-2 space-y-3 sm:space-y-4 ${className}`}>
+    <div className={`max-w-3xl mx-auto px-2 sm:px-4 py-2 space-y-3 sm:space-y-4 ${className}`}>
       {posts.map((post) => {
         const authorName = post.author?.name || "Membro";
         const authorInitial = authorName.charAt(0).toUpperCase();
@@ -192,16 +197,24 @@ export function ThreadsCommunityFeed({
                   className="rounded-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   aria-label={`Ver perfil de ${authorName}`}
                 >
-                  <Avatar className="size-11 min-h-11 min-w-11 border border-border/40">
-                    {authorAvatar && (
-                      <AvatarImage src={authorAvatar} alt={authorName} className="object-cover" />
-                    )}
-                    <AvatarFallback className="text-xs font-bold bg-primary/10 text-primary">
-                      {authorInitial}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div className="relative">
+                    <Avatar className="size-11 min-h-11 min-w-11 border border-border/40">
+                      {authorAvatar && (
+                        <AvatarImage src={authorAvatar} alt={authorName} className="object-cover" />
+                      )}
+                      <AvatarFallback className="text-xs font-bold bg-primary/10 text-primary">
+                        {authorInitial}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div
+                      className="absolute bottom-0 right-0 size-4 rounded-full bg-foreground text-background flex items-center justify-center border border-background shadow-2xs"
+                      aria-hidden="true"
+                    >
+                      <Plus className="size-3 stroke-2" />
+                    </div>
+                  </div>
                 </button>
-                {/* Linha vertical conectora estilo Threads */}
+                {/* Linha vertical conectora de publicação contínua */}
                 <div className="w-0.5 grow min-h-6 bg-muted/40 rounded-full mt-2" />
               </div>
 
@@ -209,7 +222,7 @@ export function ThreadsCommunityFeed({
               <div className="grow min-w-0 space-y-3">
                 {/* Header do Autor */}
                 <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5 flex-wrap min-w-0 text-xs sm:text-sm">
+                  <div className="flex items-center gap-2 flex-wrap min-w-0 text-xs sm:text-sm">
                     <button
                       type="button"
                       onClick={() => setProfilePeekUser(post.author)}
@@ -279,7 +292,7 @@ export function ThreadsCommunityFeed({
                     <button
                       type="button"
                       onClick={() => likeMutation.mutate(post.id)}
-                      className={`h-11 min-h-11 px-3 rounded-full flex items-center gap-1.5 text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                      className={`h-11 min-h-11 px-3 rounded-full flex items-center gap-2 text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                         post.user_liked
                           ? "text-rose-500 bg-rose-500/10"
                           : "hover:text-foreground hover:bg-muted/40"
@@ -298,7 +311,7 @@ export function ThreadsCommunityFeed({
                     <button
                       type="button"
                       onClick={() => setActiveCommentsPostId(post.id)}
-                      className="h-11 min-h-11 px-3 rounded-full flex items-center gap-1.5 text-xs font-semibold hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="h-11 min-h-11 px-3 rounded-full flex items-center gap-2 text-xs font-semibold hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       aria-label="Comentários"
                     >
                       <MessageCircle className="size-4" />
@@ -342,3 +355,5 @@ export function ThreadsCommunityFeed({
     </div>
   );
 }
+
+export const CommunityFeedView = ThreadsCommunityFeed;

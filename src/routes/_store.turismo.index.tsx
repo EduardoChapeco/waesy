@@ -209,11 +209,11 @@ function TourismMasterPage() {
           <div>
             <h1 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
               <span>Turismo & Viagens</span>
-              <span className="text-3xs font-extrabold uppercase px-2 py-0.5 rounded-full bg-primary/10 text-primary font-mono">
+              <span className="text-3xs font-extrabold uppercase px-2 py-1 rounded-full bg-primary/10 text-primary font-mono">
                 Excelência Tour
               </span>
             </h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted-foreground mt-1">
               Pacotes completos, passagens aéreas, hotéis e gestão corporativa B2B
             </p>
           </div>
@@ -245,7 +245,7 @@ function TourismMasterPage() {
       />
 
       {/* ── Stories Contextuais do Nicho de Turismo (Desktop) ── */}
-      {!isCompact && <ContextualStoriesRail niche="turismo" className="py-0.5" />}
+      {!isCompact && <ContextualStoriesRail niche="turismo" className="py-1" />}
 
       {/* ── 2. Menu Canônico CVC / Decolar (Squircles com Ícones em Duas Cores) ── */}
       <section aria-label="Menu de Navegação CVC" className="w-full">

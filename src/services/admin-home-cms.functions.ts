@@ -808,24 +808,17 @@ function mergeCanonicalWithDbSections(
     const resolvedItems =
       dbItemsForSec.length > 0 ? dbItemsForSec : canonical?.items || [];
 
-    const isAdminOverridden = sec.metadata?.admin_overridden === true;
-    const isDefaultActiveKey = CANONICAL_DEFAULT_ACTIVE_KEYS.has(sec.section_key);
-
     byKey.set(sec.section_key, {
       id: sec.id,
       section_key: sec.section_key,
-      title: isAdminOverridden ? (sec.title ?? canonical?.title ?? null) : (canonical?.title ?? sec.title ?? null),
-      subtitle: isAdminOverridden ? (sec.subtitle ?? canonical?.subtitle ?? null) : (canonical?.subtitle ?? sec.subtitle ?? null),
-      show_title: isAdminOverridden ? (sec.show_title ?? canonical?.show_title ?? false) : (canonical?.show_title ?? sec.show_title ?? false),
-      show_subtitle: isAdminOverridden ? (sec.show_subtitle ?? canonical?.show_subtitle ?? false) : (canonical?.show_subtitle ?? sec.show_subtitle ?? false),
-      layout_variant: (isAdminOverridden
-        ? sec.layout_variant || canonical?.layout_variant || "carousel"
-        : canonical?.layout_variant || sec.layout_variant || "carousel") as HomeLayoutVariant,
-      aspect_ratio: (isAdminOverridden
-        ? sec.aspect_ratio || canonical?.aspect_ratio || "auto"
-        : canonical?.aspect_ratio || sec.aspect_ratio || "auto") as HomeAspectRatio,
-      is_active: isAdminOverridden ? sec.is_active !== false : isDefaultActiveKey,
-      sort_order: isAdminOverridden ? (sec.sort_order ?? canonical?.sort_order ?? 99) : (canonical?.sort_order ?? sec.sort_order ?? 99),
+      title: sec.title ?? canonical?.title ?? null,
+      subtitle: sec.subtitle ?? canonical?.subtitle ?? null,
+      show_title: sec.show_title ?? canonical?.show_title ?? false,
+      show_subtitle: sec.show_subtitle ?? canonical?.show_subtitle ?? false,
+      layout_variant: (sec.layout_variant || canonical?.layout_variant || "carousel") as HomeLayoutVariant,
+      aspect_ratio: (sec.aspect_ratio || canonical?.aspect_ratio || "auto") as HomeAspectRatio,
+      is_active: sec.is_active !== false,
+      sort_order: sec.sort_order ?? canonical?.sort_order ?? 99,
       city_filter: sec.city_filter || null,
       starts_at: sec.starts_at || null,
       ends_at: sec.ends_at || null,

@@ -111,7 +111,7 @@ export function CvcNavigationDock({
       aria-label="Canais de Viagem e Turismo (CVC & Decolar)"
       className={cn("w-full py-1", className)}
     >
-      <div className="flex items-center gap-2.5 sm:gap-3 overflow-x-auto no-scrollbar py-2 px-1 snap-x snap-mandatory">
+      <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto no-scrollbar py-2 px-1 snap-x snap-mandatory">
         {menuList.map((item) => {
           const isActive = activeId === item.id;
           const conf = ICON_MAP[item.iconName] || ICON_MAP.SuitcaseRolling;
@@ -123,7 +123,7 @@ export function CvcNavigationDock({
               type="button"
               onClick={() => onSelect(item.id)}
               className={cn(
-                "relative group flex flex-col items-center justify-between p-2.5 rounded-2xl border text-center transition-all cursor-pointer select-none snap-start shrink-0 min-w-20 sm:min-w-24 h-24 sm:h-28 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                "relative group flex flex-col items-center justify-between p-2 rounded-2xl border text-center transition-colors cursor-pointer select-none snap-start shrink-0 min-w-20 sm:min-w-24 h-24 sm:h-28 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 isActive
                   ? "bg-foreground text-background border-foreground shadow-sm scale-102"
                   : "bg-card text-foreground border-border/70 hover:border-foreground/30 hover:bg-muted/40"
@@ -133,10 +133,10 @@ export function CvcNavigationDock({
               {item.badge && (
                 <span
                   className={cn(
-                    "absolute -top-1.5 px-2 py-0.5 rounded-full text-3xs font-extrabold uppercase tracking-wider shadow-2xs whitespace-nowrap",
+                    "absolute -top-1.5 px-2 py-1 rounded-full text-3xs font-extrabold uppercase tracking-wider shadow-2xs whitespace-nowrap",
                     isActive
                       ? "bg-primary text-primary-foreground"
-                      : "bg-amber-500 text-white"
+                      : "bg-amber-500 text-primary-foreground"
                   )}
                 >
                   {item.badge}
@@ -154,12 +154,12 @@ export function CvcNavigationDock({
               </div>
 
               {/* Rótulo e Subtítulo */}
-              <div className="min-w-0 w-full px-0.5 mt-1">
+              <div className="min-w-0 w-full px-1 mt-1">
                 <span className="text-xs font-bold block truncate leading-tight">
                   {item.label}
                 </span>
                 {item.subtitle && (
-                  <span className="text-3xs opacity-70 block truncate leading-tight mt-0.5 hidden sm:block">
+                  <span className="text-3xs opacity-70 block truncate leading-tight mt-1 hidden sm:block">
                     {item.subtitle}
                   </span>
                 )}

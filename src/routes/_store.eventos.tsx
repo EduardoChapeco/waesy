@@ -266,6 +266,10 @@ function EventosPage() {
         if (eventDate.getMonth() !== now.getMonth() || eventDate.getFullYear() !== now.getFullYear()) {
           return false;
         }
+      } else if (selectedDateFilter && selectedDateFilter !== "all") {
+        if (selectedDateFilter.includes("-") && eventIso !== selectedDateFilter) {
+          return false;
+        }
       }
 
       // 3. Filtro de Busca por Texto

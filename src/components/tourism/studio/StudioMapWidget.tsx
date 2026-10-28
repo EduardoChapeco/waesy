@@ -222,7 +222,7 @@ export function StudioMapWidget({
               className="flex items-center gap-2 bg-muted/70 text-foreground text-xs px-3 py-1 rounded-lg border border-border/60"
             >
               <span className="font-bold text-primary">{i + 1}.</span>
-              <span className="truncate max-w-[140px]">{wp.label}</span>
+              <span className="truncate max-w-35">{wp.label}</span>
               <button
                 type="button"
                 onClick={() => removeWaypoint(wp.id)}

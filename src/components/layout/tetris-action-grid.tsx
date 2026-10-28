@@ -54,7 +54,7 @@ export function TetrisActionGrid({ children, className }: TetrisActionGridProps)
   // CASO 3: 3 Ações -> 3 colunas em tela confortável, ou flex balanceado
   if (count === 3) {
     return (
-      <div className={cn("w-full grid grid-cols-3 gap-2 pt-2", className)}>
+      <div className={cn("w-full grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2", className)}>
         {validChildren.map((child, idx) => (
           <div key={idx} className="w-full min-w-0 flex items-center">
             {child}
@@ -96,7 +96,7 @@ export function TetrisActionGrid({ children, className }: TetrisActionGridProps)
         </div>
 
         {/* Linha 2: Ações Secundárias / Consulta / Compartilhamento */}
-        <div className="w-full grid grid-cols-3 gap-2">
+        <div className="w-full grid grid-cols-1 sm:grid-cols-3 gap-2">
           {row2.map((child, idx) => (
             <div key={idx + 2} className="w-full min-w-0 flex items-center">
               {child}
@@ -125,7 +125,7 @@ export function TetrisActionGrid({ children, className }: TetrisActionGridProps)
           key={rowIdx}
           className={cn(
             "w-full grid gap-2",
-            rowItems.length === 2 ? "grid-cols-2" : "grid-cols-3"
+            rowItems.length === 2 ? "grid-cols-2" : "grid-cols-1 sm:grid-cols-3"
           )}
         >
           {rowItems.map((child, idx) => (

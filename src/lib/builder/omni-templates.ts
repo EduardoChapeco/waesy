@@ -1939,10 +1939,10 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
     ],
   },
 
-  // 10. JORNALISMO E PORTAL DE NOTÍCIAS (OMNI NEWS PORTAL / VALE AGORA NEWS)
+  // 10. JORNALISMO E PORTAL DE NOTÍCIAS (OMNI NEWS PORTAL / WAESY NEWS)
   {
     id: "template_editorial_news",
-    name: "Portal de Noticias Promethee (Jornal Regional)",
+    name: "Portal de Notícias Editorial (Jornal Regional)",
     niche: "news",
     description: "Template jornalistico completo estilo Promethee com masthead editorial, filtro por cidades, abas de editorias, botao + de pauta cidada, carrossel horizontal de plantao, feed vertical squircle, espacos para ADS e vinculo com noticias mineradas aprovadas.",
     badge: "Jornal & Portal News",
@@ -1950,7 +1950,7 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
       {
         type: "news_promethee_portal",
         config: {
-          mastheadTitle: "Vale Agora",
+          mastheadTitle: "Waesy News",
           mastheadSubtitle: "Jornalismo Regional & Curadoria Editorial",
           logoStyle: "promethee_dome",
           logoUrl: "",

@@ -244,7 +244,7 @@ function PublicRecipesPage() {
         open={Boolean(selectedRecipe)}
         onOpenChange={(open) => !open && setSelectedRecipe(null)}
       >
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg bg-card border border-border/60 p-0">
+        <DialogContent className="max-w-2xl max-h-(--spacing-screen-90,90vh) overflow-y-auto rounded-lg bg-card border border-border/60 p-0">
           {selectedRecipe && (
             <div>
               {/* Capa */}
@@ -261,7 +261,7 @@ function PublicRecipesPage() {
                     <span className="text-xs font-mono">Receita da Comunidade</span>
                   </div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
+                <div className="absolute inset-0 bg-background/80" />
                 <div className="absolute bottom-3 left-4 right-4">
                   <Badge variant="outline" className="text-xs uppercase font-mono py-0 px-2 text-primary border-primary/30 bg-background/80 mb-2">
                     {selectedRecipe.category}

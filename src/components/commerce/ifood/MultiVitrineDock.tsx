@@ -93,7 +93,7 @@ export function MultiVitrineDock({
             key={item.id}
             to={item.to}
             className={cn(
-              "h-11 min-h-11 px-3 rounded-xl border flex items-center gap-2 shrink-0 snap-start transition-all cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring relative",
+              "h-11 min-h-11 px-3 rounded-xl border flex items-center gap-2 shrink-0 snap-start transition-colors cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring relative",
               isActive
                 ? "bg-foreground text-background border-foreground font-bold"
                 : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50 font-medium",
@@ -113,7 +113,7 @@ export function MultiVitrineDock({
             </span>
 
             {item.badge && (
-              <span className="absolute -top-1 -right-1 px-1 py-0.5 rounded-full bg-destructive text-destructive-foreground text-3xs font-black uppercase tracking-wider">
+              <span className="absolute -top-1 -right-1 px-1 py-1 rounded-full bg-destructive text-destructive-foreground text-3xs font-black uppercase tracking-wider">
                 {item.badge}
               </span>
             )}

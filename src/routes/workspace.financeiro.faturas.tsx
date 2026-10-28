@@ -589,7 +589,7 @@ function WorkspaceFaturasPage() {
                             {item.entry_type === "ORDER_MICROFEE_RANDOM" ? (
                               <Badge variant="outline" className="text-xs font-mono">Microtaxa</Badge>
                             ) : item.entry_type === "SUBSCRIPTION_MONTHLY" ? (
-                              <Badge variant="default" className="text-xs font-mono">Assinatura</Badge>
+                              <Badge variant="outline" className="text-xs font-mono">Assinatura</Badge>
                             ) : (
                               <Badge variant="secondary" className="text-xs font-mono">{item.entry_type}</Badge>
                             )}
@@ -814,7 +814,7 @@ function WorkspaceFaturasPage() {
                 </a>
               </Button>
             )}
-            <Button variant="default" size="sm" onClick={() => setPreviewReceiptUrl(null)} className="text-xs font-bold rounded-lg">
+            <Button variant="outline" size="sm" onClick={() => setPreviewReceiptUrl(null)} className="text-xs font-bold rounded-lg">
               Fechar
             </Button>
           </DialogFooter>

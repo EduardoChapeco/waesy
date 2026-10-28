@@ -117,7 +117,7 @@ function CasaVerticalPage() {
  const filteredProducts = useMemo(() => {
  const allProducts = marketplaceFeed?.allProducts || [];
  return allProducts.filter((p: any) => {
- const titleLower = p.title.toLowerCase();
+ const titleLower = (p.title || "").toLowerCase();
  const descLower = (p.description || "").toLowerCase();
  const tags = (p.tags || []).map((t: string) => t.toLowerCase());
 
@@ -134,11 +134,13 @@ function CasaVerticalPage() {
  titleLower.includes("toalha") ||
  titleLower.includes("tapete") ||
  titleLower.includes("vaso") ||
- titleLower.includes("copo") ||
- titleLower.includes("prato") ||
+ titleLower.includes("faqueiro") ||
+ titleLower.includes("louça") ||
+ titleLower.includes("aparelho de jantar") ||
+ titleLower.includes("jogo de copos") ||
  tags.some((t: string) => ["casa", "decoracao", "moveis", "utilidades"].includes(t));
 
- if (activeDepartment === "todos") return isHomeItem || allProducts.length <= 12;
+ if (activeDepartment === "todos") return isHomeItem;
  if (activeDepartment === "moveis")
  return titleLower.includes("mesa") || titleLower.includes("cadeira") || titleLower.includes("sofá") || titleLower.includes("poltrona") || titleLower.includes("estante");
  if (activeDepartment === "decoracao")
@@ -148,7 +150,7 @@ function CasaVerticalPage() {
  if (activeDepartment === "cama_mesa_banho")
  return titleLower.includes("lençol") || titleLower.includes("toalha") || titleLower.includes("edredom") || titleLower.includes("travesseiro") || titleLower.includes("jogo de cama");
  if (activeDepartment === "utilidades")
- return titleLower.includes("panela") || titleLower.includes("copo") || titleLower.includes("prato") || titleLower.includes("faqueiro") || titleLower.includes("pote");
+ return titleLower.includes("panela") || titleLower.includes("faqueiro") || titleLower.includes("pote") || titleLower.includes("louça") || titleLower.includes("aparelho de jantar");
  if (activeDepartment === "organizacao")
  return titleLower.includes("cesto") || titleLower.includes("organizador") || titleLower.includes("cabide") || titleLower.includes("caixa");
  return true;

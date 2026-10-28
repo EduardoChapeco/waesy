@@ -1046,7 +1046,7 @@ export function BuilderInspector({
  {/* Duração & Velocidade */}
  <div className="space-y-2 p-3 rounded-lg bg-muted/20 border border-border/50">
  <Label className="text-xs font-semibold">Velocidade da Transição</Label>
- <div className="grid grid-cols-3 gap-2">
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
  {[
  { id: "fast", label: "Rápida (0.3s)" },
  { id: "normal", label: "Apple (0.6s)" },

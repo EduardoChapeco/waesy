@@ -5,6 +5,7 @@
  */
 
 import { getServerClient } from "@/lib/supabase";
+import { searchWoobaFlights } from "@/services/travel-wooba-connector.service";
 import type {
   TravelOfferDTO,
   TravelOfferPricing,
@@ -15,7 +16,9 @@ import type {
 export interface NormalizedSearchQuery {
   agencyId: string;
   companyId?: string;
-  productType: "flight" | "hotel" | "car" | "package";
+  productType: "flight" | "hotel" | "car" | "package" | "bus";
+  originTerminalId?: string;
+  destinationTerminalId?: string;
   originIata?: string;
   destinationIata?: string;
   departureDate: string;
@@ -102,6 +105,18 @@ export async function executeMultiProviderSearch(
         providersResponded.push("infotravel");
       } else if (provider.provider_code === "wooba") {
         // Chamada ao conector Wooba Travellink
+        if (query.productType === "flight" && query.originIata && query.destinationIata) {
+          const woobaOffers = await searchWoobaFlights({
+            agencyId: query.agencyId,
+            originIata: query.originIata,
+            destinationIata: query.destinationIata,
+            departureDate: query.departureDate,
+            returnDate: query.returnDate,
+            adultsCount: query.adultsCount,
+            cabinClass: query.cabinClass as any,
+          });
+          offers.push(...woobaOffers);
+        }
         providersResponded.push("wooba");
       } else if (provider.provider_code === "rexturadvance") {
         // Chamada ao conector RexturAdvance / RAIAX
@@ -120,7 +135,7 @@ export async function executeMultiProviderSearch(
 }
 
 export interface SagaBookingItem {
-  type: "flight" | "hotel" | "car";
+  type: "flight" | "hotel" | "car" | "bus";
   providerCode: string;
   offerId: string;
   details: Record<string, any>;
@@ -146,6 +161,8 @@ export async function executeMultiProviderBookingSaga(params: {
         ? "flight_reservation"
         : item.type === "hotel"
         ? "hotel_reservation"
+        : item.type === "bus"
+        ? "bus_reservation"
         : "car_reservation";
 
     try {

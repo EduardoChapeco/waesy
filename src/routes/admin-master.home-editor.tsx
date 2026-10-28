@@ -859,17 +859,47 @@ function AdminMasterHomeEditorPage() {
                 <Input
                   value={itemBgColor}
                   onChange={(e) => setItemBgColor(e.target.value)}
-                  placeholder="ex: #1e293b ou bg-primary/10"
+                  placeholder="ex: bg-primary/10 ou bg-purple-600"
                   className="font-mono text-xs"
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs font-bold">Nome do Ícone (Opcional)</Label>
+                <Label className="text-xs font-bold">Rótulo da Minifaixa / Badge</Label>
+                <Input
+                  value={itemBadgeText}
+                  onChange={(e) => setItemBadgeText(e.target.value)}
+                  placeholder="ex: Clube, Gourmet, Corridas, NOVO"
+                  className="text-xs"
+                />
+              </div>
+            </div>
+
+            {/* Ícone da Minifaixa (Upload de Mídia ou Nome do Ícone) */}
+            <div className="space-y-2 p-3 rounded-lg bg-muted/20 border border-border/40">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-xs font-bold">Ícone / Mídia da Minifaixa Inferior (Opcional)</Label>
+                  <p className="text-3xs text-muted-foreground">
+                    Faça upload do ícone ou digite o nome Phosphor (Ticket, CookingPot, Car, Hamburger).
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
                 <Input
                   value={itemIconName}
                   onChange={(e) => setItemIconName(e.target.value)}
-                  placeholder="ex: Storefront, Sparkle, Tag"
-                  className="font-mono text-xs"
+                  placeholder="URL do ícone ou nome (ex: Ticket, CookingPot, Car)"
+                  className="font-mono text-xs flex-1"
+                />
+                <MediaUploader
+                  value={itemIconName.startsWith("http") || itemIconName.startsWith("/") ? [itemIconName] : []}
+                  onChange={(urls) => setItemIconName(Array.isArray(urls) ? (urls[0] || "") : String(urls || ""))}
+                  maxFiles={1}
+                  bucket="home-banners"
+                  folder="home-icons"
+                  label="Upload Ícone"
+                  aspect={1}
+                  enableCrop={true}
                 />
               </div>
             </div>
@@ -934,15 +964,6 @@ function AdminMasterHomeEditorPage() {
                       value={itemSubtitle}
                       onChange={(e) => setItemSubtitle(e.target.value)}
                       placeholder="ex: Os melhores lanches e refeições"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <Label className="text-xs font-bold">Texto do Badge (Opcional)</Label>
-                    <Input
-                      value={itemBadgeText}
-                      onChange={(e) => setItemBadgeText(e.target.value)}
-                      placeholder="ex: NOVO, 40% OFF, VERIFICADO"
                     />
                   </div>
                 </div>

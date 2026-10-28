@@ -436,7 +436,7 @@ export interface TravelOfferDTO {
   raw_snapshot_ref?: string;
 }
 
-export type SagaStepName = "flight_reservation" | "hotel_reservation" | "car_reservation";
+export type SagaStepName = "flight_reservation" | "hotel_reservation" | "car_reservation" | "bus_reservation";
 
 export interface SagaStepState {
   step: SagaStepName;

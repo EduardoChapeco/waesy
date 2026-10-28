@@ -105,7 +105,7 @@ export function CompanyReputationCard({
                   <span className="text-muted-foreground w-20 text-2xs shrink-0">{bar.label}</span>
                   <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
                     <div
-                      className="h-full bg-amber-400 rounded-full transition-colors duration-200 duration-500"
+                      className="h-full bg-amber-400 rounded-full transition-colors duration-200 duration-200"
                       style={{ width: `${pct}%` }}
                     />
                   </div>

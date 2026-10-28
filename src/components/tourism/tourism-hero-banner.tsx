@@ -51,9 +51,9 @@ export function TourismHeroBanner({
             <div className="w-24 h-0.5 bg-linear-to-l from-sky-400/80 to-transparent -translate-x-16 -translate-y-4" />
           </div>
           {/* Estrelas / Pontos de Luz decorativos com tokens semânticos */}
-          <div className="absolute top-12 left-16 size-1.5 rounded-full bg-white/40" />
-          <div className="absolute top-20 right-32 size-2 rounded-full bg-white/30" />
-          <div className="absolute top-8 left-1/3 size-1 rounded-full bg-white/50" />
+          <div className="absolute top-12 left-16 size-1.5 rounded-full bg-card/40" />
+          <div className="absolute top-20 right-32 size-2 rounded-full bg-card/30" />
+          <div className="absolute top-8 left-1/3 size-1 rounded-full bg-card/50" />
         </div>
       )}
 
@@ -69,19 +69,19 @@ export function TourismHeroBanner({
             <ArrowLeft size={20} weight="bold" />
           </Link>
 
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-background/80 backdrop-blur-md border border-border/40 text-xs font-semibold text-foreground">
+          <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-background/80 backdrop-blur-md border border-border/40 text-xs font-semibold text-foreground">
             <span className="font-black tracking-tight text-primary">Waesy</span>
             <span className="opacity-40">+</span>
             <span className="font-black tracking-tight text-foreground">Excelência Tour</span>
-            <span className="text-3xs px-1.5 py-0.5 rounded-full bg-primary/20 text-primary font-bold uppercase tracking-wider">
+            <span className="text-3xs px-2 py-1 rounded-full bg-primary/20 text-primary font-bold uppercase tracking-wider">
               GDS & Wooba
             </span>
           </div>
         </div>
 
         {/* Título e Subtítulo */}
-        <div className="space-y-1.5">
-          <h1 className="text-xl sm:text-3xl font-black tracking-tight text-white leading-tight">
+        <div className="space-y-2">
+          <h1 className="text-xl sm:text-3xl font-black tracking-tight text-primary-foreground leading-tight">
             {heroTitle}
           </h1>
           <p className="text-xs sm:text-sm text-slate-200/90 leading-relaxed font-medium">
@@ -124,7 +124,7 @@ export function TourismHeroBanner({
 
           {/* Saldo de Pontos & Conversão */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="space-y-0.5">
+            <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <span className="text-base sm:text-lg font-black font-mono text-red-600">
                   1.000 pts
@@ -161,7 +161,7 @@ export function TourismHeroBanner({
             <Button
               type="button"
               onClick={() => onOpenQuote?.()}
-              className="w-full h-11 min-h-11 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold text-xs sm:text-sm shadow-sm transition-transform active:scale-98 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring gap-2"
+              className="w-full h-11 min-h-11 rounded-lg bg-red-600 hover:bg-red-700 text-primary-foreground font-bold text-xs sm:text-sm shadow-sm transition-transform active:scale-98 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring gap-2"
             >
               <Sparkle size={16} weight="fill" />
               <span>Ganhe 250 pontos grátis na primeira reserva</span>

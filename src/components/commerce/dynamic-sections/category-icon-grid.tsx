@@ -31,57 +31,13 @@ export interface CategoryIconGridProps {
   onCategorySelect?: (item: CategoryIconItem) => void;
 }
 
-const DEFAULT_CATEGORIES: CategoryIconItem[] = [
-  {
-    id: "flights",
-    title: "Passagens",
-    subtitle: "Nacionais & Internacionais",
-    iconName: "plane",
-    badge: "Melhores Tarifas",
-  },
-  {
-    id: "hotels",
-    title: "Hospedagens",
-    subtitle: "Hotéis, Resorts & Pousadas",
-    iconName: "hotel",
-    discountPercentage: "-25%",
-  },
-  {
-    id: "packages",
-    title: "Pacotes",
-    subtitle: "Aéreo + Hospedagem",
-    iconName: "luggage",
-    badge: "Mais Vendidos",
-  },
-  {
-    id: "insurance",
-    title: "Seguros",
-    subtitle: "Assistência Médica 24h",
-    iconName: "shield",
-    discountPercentage: "-25%",
-  },
-  {
-    id: "activities",
-    title: "Passeios",
-    subtitle: "Tours, Ingressos & Guias",
-    iconName: "compass",
-    badge: "Exclusivo",
-  },
-  {
-    id: "cars",
-    title: "Aluguel",
-    subtitle: "Carros com KM Livre",
-    iconName: "car",
-    discountPercentage: "-15%",
-  },
-];
-
 export const CategoryIconGrid: React.FC<CategoryIconGridProps> = ({
   headline = "Descubra Todos os Serviços Para Sua Viagem",
   subheadline = "Selecione a categoria desejada para encontrar condições e descontos imperdíveis",
-  categories = DEFAULT_CATEGORIES,
+  categories,
   onCategorySelect,
 }) => {
+  if (!categories || categories.length === 0) return null;
   const getIcon = (name?: string) => {
     switch (name) {
       case "plane":
@@ -156,7 +112,7 @@ export const CategoryIconGrid: React.FC<CategoryIconGridProps> = ({
                 </div>
 
                 {/* Título & Subtítulo */}
-                <div className="space-y-0.5">
+                <div className="space-y-1">
                   <span className="text-xs font-bold text-foreground block group-hover:text-primary transition-colors">
                     {cat.title}
                   </span>

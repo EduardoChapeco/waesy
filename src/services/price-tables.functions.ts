@@ -354,6 +354,9 @@ export const resolveCustomerPrice = createServerFn({ method: "POST" })
  productId: z.string().uuid(),
  customerCpfCnpj: z.string().optional(),
  requestedTableCode: z.string().optional(),
+ isClubMember: z.boolean().optional(),
+ hasCnpj: z.boolean().optional(),
+ context: z.enum(["civil_store", "workspace_b2b"]).default("civil_store").optional(),
  quantity: z.number().int().min(1).default(1),
  }),
  )
@@ -388,6 +391,40 @@ export const resolveCustomerPrice = createServerFn({ method: "POST" })
  tableAdjustment = {
  type: table.adjustment_type,
  value: Number(table.adjustment_value || 0),
+ };
+ }
+ } else if (data.isClubMember) {
+ // Prioridade 1: Tabela de Clube de Vantagens da Loja (Válido para público civil e workspace)
+ const { data: clubTable } = await supabase
+ .from("price_tables")
+ .select("id, adjustment_type, adjustment_value")
+ .eq("store_id", data.storeId)
+ .in("code", ["clube", "club", "vip", "fidelidade"])
+ .eq("active", true)
+ .maybeSingle();
+
+ if (clubTable) {
+ activeTableId = clubTable.id;
+ tableAdjustment = {
+ type: clubTable.adjustment_type,
+ value: Number(clubTable.adjustment_value || 0),
+ };
+ }
+ } else if (data.hasCnpj && data.context === "workspace_b2b") {
+ // Prioridade 2: Tabela de Atacado / B2B para CNPJ — EXCLUSIVO para Vitrine B2B do Workspace!
+ const { data: atacadoTable } = await supabase
+ .from("price_tables")
+ .select("id, adjustment_type, adjustment_value")
+ .eq("store_id", data.storeId)
+ .in("code", ["atacado", "cnpj", "b2b", "revenda"])
+ .eq("active", true)
+ .maybeSingle();
+
+ if (atacadoTable) {
+ activeTableId = atacadoTable.id;
+ tableAdjustment = {
+ type: atacadoTable.adjustment_type,
+ value: Number(atacadoTable.adjustment_value || 0),
  };
  }
  } else if (data.customerCpfCnpj) {

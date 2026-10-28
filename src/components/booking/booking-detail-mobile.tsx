@@ -28,7 +28,7 @@ export function BookingDetailMobile({
   onStartBooking,
 }: BookingDetailMobileProps) {
   return (
-    <div className="w-full min-h-[100dvh] bg-background text-foreground pb-24 font-sans select-none antialiased">
+    <div className="w-full min-h-dvh bg-background text-foreground pb-24 font-sans select-none antialiased">
       {/* ── 1. Hero Edge-to-Edge com Ações Flutuantes ── */}
       <div className="relative w-full aspect-video sm:aspect-[16/9] bg-muted overflow-hidden">
         {service.image_url ? (
@@ -44,7 +44,7 @@ export function BookingDetailMobile({
         )}
 
         {/* Gradiente superior para contraste dos botões */}
-        <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/60 via-black/25 to-transparent pointer-events-none z-10" />
+        <div className="absolute inset-x-0 top-0 h-24 bg-black/40 pointer-events-none z-10" />
 
         {/* Botão Circular Flutuante "Voltar" (44px Apple HIG) */}
         <Link

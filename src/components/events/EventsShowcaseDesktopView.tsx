@@ -16,7 +16,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
-import { ProceduralInfiniteFeed } from "@/components/commerce/procedural-infinite-feed";
 import { EmptyState } from "@/components/state/states";
 import { formatDate } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
@@ -83,7 +82,7 @@ export function EventsShowcaseDesktopView({
       <div className="flex items-center justify-between pb-4 border-b border-border/40">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-2xs font-mono font-bold uppercase tracking-wider">
+            <span className="px-2 py-1 rounded-full bg-primary/10 text-primary text-2xs font-mono font-bold uppercase tracking-wider">
               {activeCity}
             </span>
             <span className="text-2xs text-muted-foreground font-mono">
@@ -93,7 +92,7 @@ export function EventsShowcaseDesktopView({
           <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-foreground mt-1">
             Agenda de Eventos e Festivais
           </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Descubra os principais shows, festas, gastronomia e garanta seus ingressos oficiais.
           </p>
         </div>
@@ -130,7 +129,7 @@ export function EventsShowcaseDesktopView({
                 type="button"
                 onClick={() => onSelectCategory && onSelectCategory(cat.id)}
                 className={cn(
-                  "h-11 px-4 rounded-xl text-xs font-semibold flex items-center gap-2 border transition-all cursor-pointer whitespace-nowrap shrink-0",
+                  "h-11 px-4 rounded-xl text-xs font-semibold flex items-center gap-2 border transition-colors cursor-pointer whitespace-nowrap shrink-0",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-95",
                   isSelected
                     ? "bg-foreground text-background border-foreground font-bold shadow-xs"
@@ -142,7 +141,7 @@ export function EventsShowcaseDesktopView({
                 {typeof count === "number" && count > 0 && (
                   <span
                     className={cn(
-                      "text-3xs font-mono font-bold px-1.5 py-0.5 rounded-full ml-1",
+                      "text-3xs font-mono font-bold px-2 py-1 rounded-full ml-1",
                       isSelected ? "bg-background/20 text-background" : "bg-muted text-muted-foreground",
                     )}
                   >
@@ -175,7 +174,7 @@ export function EventsShowcaseDesktopView({
                 key={ev.id}
                 to="/evento/$id"
                 params={{ id: ev.id }}
-                className="h-28 rounded-2xl border border-border/60 bg-card p-3 flex items-center gap-3.5 hover:border-foreground/30 hover:shadow-xs transition-all duration-200 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="h-28 rounded-2xl border border-border/60 bg-card p-3 flex items-center gap-4 hover:border-foreground/30 hover:shadow-xs transition-colors duration-200 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <div className="w-28 h-full rounded-xl overflow-hidden bg-muted relative shrink-0">
                   <img
@@ -185,25 +184,25 @@ export function EventsShowcaseDesktopView({
                   />
                 </div>
 
-                <div className="flex-1 min-w-0 flex flex-col justify-between h-full py-0.5">
+                <div className="flex-1 min-w-0 flex flex-col justify-between h-full py-1">
                   <h3 className="text-sm font-bold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">
                     {ev.title}
                   </h3>
 
-                  <div className="space-y-0.5">
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-mono">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
                       <CalendarBlank size={13} weight="bold" className="text-primary" />
                       <span>{formatDate(ev.event_date)}</span>
                     </div>
 
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground truncate">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground truncate">
                       <MapPin size={13} weight="bold" />
                       <span className="truncate">{ev.venue || ev.location || "Local a confirmar"}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="shrink-0 flex flex-col items-end justify-between h-full py-0.5">
+                <div className="shrink-0 flex flex-col items-end justify-between h-full py-1">
                   <span className="text-xs font-bold font-mono text-foreground">
                     {ev.is_free ? "Grátis" : ev.price_min_cents ? `R$ ${(ev.price_min_cents / 100).toFixed(2)}` : "Grátis"}
                   </span>
@@ -257,7 +256,7 @@ export function EventsShowcaseDesktopView({
                 key={ev.id}
                 to="/evento/$id"
                 params={{ id: ev.id }}
-                className="w-68 shrink-0 snap-start rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover:shadow-md transition-all duration-200 group cursor-pointer flex flex-col justify-between focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="w-68 shrink-0 snap-start rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover:shadow-md transition-colors duration-200 group cursor-pointer flex flex-col justify-between focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 {/* Imagem Quadrada Estilo Post Instagram (Aspect Square) */}
                 <div className="aspect-square relative overflow-hidden bg-muted">
@@ -267,18 +266,18 @@ export function EventsShowcaseDesktopView({
                     className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                   <div className="absolute top-3 left-3 z-10">
-                    <span className="bg-black/70 text-white backdrop-blur-xs text-xs font-mono font-bold px-2.5 py-1 rounded-lg border border-white/20">
+                    <span className="bg-background/70 text-primary-foreground backdrop-blur-xs text-xs font-mono font-bold px-2 py-1 rounded-lg border border-white/20">
                       {formatDate(ev.event_date)}
                     </span>
                   </div>
                 </div>
 
-                <div className="p-3.5 space-y-2 flex-1 flex flex-col justify-between">
+                <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
                   <div className="space-y-1">
                     <h3 className="text-sm font-bold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">
                       {ev.title}
                     </h3>
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground truncate">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground truncate">
                       <MapPin size={13} weight="bold" />
                       <span className="truncate">{ev.venue || ev.location || "Local a confirmar"}</span>
                     </div>
@@ -311,7 +310,7 @@ export function EventsShowcaseDesktopView({
               <Link
                 key={item.id}
                 to={item.targetUrl as any}
-                className="h-48 rounded-2xl p-4 flex flex-col justify-between text-white relative overflow-hidden select-none shadow-xs hover:opacity-95 active:scale-98 transition-all group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="h-48 rounded-2xl p-4 flex flex-col justify-between text-primary-foreground relative overflow-hidden select-none shadow-xs hover:opacity-95 active:scale-98 transition-colors group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 style={{
                   background: item.imageUrl
                     ? undefined
@@ -321,11 +320,11 @@ export function EventsShowcaseDesktopView({
                 {item.imageUrl && (
                   <img src={item.imageUrl} alt={item.title} className="absolute inset-0 size-full object-cover" />
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30 pointer-events-none" />
+                <div className="absolute inset-0 bg-black/50 pointer-events-none" />
 
                 <div className="relative z-10">
                   {item.badgeText && (
-                    <span className="text-3xs font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-xs border border-white/30 text-white inline-block">
+                    <span className="text-3xs font-black uppercase tracking-wider px-2 py-1 rounded-full bg-card/20 backdrop-blur-xs border border-white/30 text-primary-foreground inline-block">
                       {item.badgeText}
                     </span>
                   )}
@@ -337,13 +336,13 @@ export function EventsShowcaseDesktopView({
                       {item.title}
                     </h3>
                     {item.subtitle && (
-                      <p className="text-xs text-white/80 line-clamp-1 mt-0.5 drop-shadow-xs">
+                      <p className="text-xs text-primary-foreground/80 line-clamp-1 mt-1 drop-shadow-xs">
                         {item.subtitle}
                       </p>
                     )}
                   </div>
 
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white text-xs font-bold group-hover:bg-white/30 transition-colors">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-card/20 backdrop-blur-md text-primary-foreground text-xs font-bold group-hover:bg-card/30 transition-colors">
                     <span>{item.actionText || "Conferir"}</span>
                     <CaretRight size={12} weight="bold" />
                   </div>
@@ -362,7 +361,7 @@ export function EventsShowcaseDesktopView({
               <h2 className="text-xl font-bold tracking-tight text-foreground">
                 Produtoras e Casas de Show
               </h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="text-xs text-muted-foreground mt-1">
                 Organizadores oficiais e espaços culturais certificados
               </p>
             </div>
@@ -381,7 +380,7 @@ export function EventsShowcaseDesktopView({
               <Link
                 key={prod.id}
                 to={prod.slug ? `/places/${prod.slug}` : `/buscar?q=${encodeURIComponent(prod.name)}` as any}
-                className="rounded-2xl border border-border/60 bg-card p-4 flex items-center gap-3.5 hover:border-foreground/30 hover:shadow-xs transition-all group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="rounded-2xl border border-border/60 bg-card p-4 flex items-center gap-4 hover:border-foreground/30 hover:shadow-xs transition-colors group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <div className="size-12 rounded-full border border-border/80 bg-muted overflow-hidden flex items-center justify-center shrink-0">
                   {prod.logoUrl ? (
@@ -391,7 +390,7 @@ export function EventsShowcaseDesktopView({
                   )}
                 </div>
 
-                <div className="min-w-0 flex-1 space-y-0.5">
+                <div className="min-w-0 flex-1 space-y-1">
                   <div className="flex items-center gap-1">
                     <h3 className="text-xs font-bold text-foreground truncate group-hover:text-primary transition-colors">
                       {prod.name}
@@ -400,9 +399,9 @@ export function EventsShowcaseDesktopView({
                       <CheckCircle size={13} weight="fill" className="text-primary shrink-0" />
                     )}
                   </div>
-                  <div className="flex items-center gap-1.5 text-2xs text-muted-foreground">
+                  <div className="flex items-center gap-2 text-2xs text-muted-foreground">
                     {prod.rating && (
-                      <span className="flex items-center gap-0.5 font-bold text-amber-500 font-mono">
+                      <span className="flex items-center gap-1 font-bold text-amber-500 font-mono">
                         <Star size={11} weight="fill" />
                         <span>{prod.rating.toFixed(1)}</span>
                       </span>
@@ -417,11 +416,6 @@ export function EventsShowcaseDesktopView({
           </div>
         </section>
       )}
-
-      {/* ── 8. MOTOR DE DESCOBERTA INFINITA PROCEDURAL ── */}
-      <div className="pt-6 border-t border-border/40">
-        <ProceduralInfiniteFeed city={activeCity} pageSize={6} />
-      </div>
     </div>
   );
 }

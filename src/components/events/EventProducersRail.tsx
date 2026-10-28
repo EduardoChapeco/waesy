@@ -48,14 +48,14 @@ export function EventProducersRail({
           <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight leading-tight">
             {title}
           </h2>
-          <p className="text-3xs text-muted-foreground mt-0.5">
+          <p className="text-3xs text-muted-foreground mt-1">
             Organizadores oficiais e espaços culturais certificados
           </p>
         </div>
         <Link
           to="/places"
           search={{ categoria: "entretenimento" }}
-          className="text-xs font-bold text-primary hover:underline flex items-center gap-0.5"
+          className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
         >
           <span>Ver todos</span>
           <CaretRight size={12} weight="bold" />

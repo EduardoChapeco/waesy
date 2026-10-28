@@ -259,7 +259,7 @@ export default function WorkspaceTendersPage() {
 
             <div className="flex items-center gap-2 w-full md:w-auto">
               <Select value={selectedCity} onValueChange={setSelectedCity}>
-                <SelectTrigger className="w-[140px] h-9 text-xs">
+                <SelectTrigger className="w-35 h-9 text-xs">
                   <SelectValue placeholder="Cidade" />
                 </SelectTrigger>
                 <SelectContent>

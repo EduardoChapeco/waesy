@@ -673,7 +673,7 @@ function ContasPagarPage() {
                       </TableCell>
 
                       <TableCell className="text-xs font-medium text-foreground">
-                        <div className="truncate max-w-[180px]" title={ob.supplier_name}>
+                        <div className="truncate max-w-45" title={ob.supplier_name}>
                           {ob.supplier_name}
                         </div>
                       </TableCell>

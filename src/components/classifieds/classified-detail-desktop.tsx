@@ -434,7 +434,7 @@ export function ClassifiedDetailDesktop({
       data-active-template={templateStyle}
       data-active-niche={niche.id}
       data-render-mode="desktop-native"
-      className="w-full min-h-[100dvh] bg-background text-foreground pb-16"
+      className="w-full min-h-dvh bg-background text-foreground pb-16"
     >
       {/* ── BREADCRUMBS & TOP BAR ACTIONS (Desktop) ── */}
       <div className="w-full max-w-7xl mx-auto px-6 pt-5 pb-4 flex items-center justify-between gap-4">
@@ -521,7 +521,7 @@ export function ClassifiedDetailDesktop({
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-12 gap-3 aspect-[16/9] max-h-[500px] rounded-lg overflow-hidden border border-border/40 bg-muted/20 relative group">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 aspect-[16/9] max-h-[500px] rounded-lg overflow-hidden border border-border/40 bg-muted/20 relative group">
             {/* Foto Principal Hero (8 colunas) */}
             <div className="col-span-8 relative overflow-hidden bg-muted/30 h-full">
               <img
@@ -572,7 +572,7 @@ export function ClassifiedDetailDesktop({
       </div>
 
       {/* ── SPLIT-SCREEN GRID (Desktop 2-Column: 7 cols esquerda + 5 cols direita) ── */}
-      <div className="w-full max-w-7xl mx-auto px-6 grid grid-cols-12 gap-8 items-start">
+      <div className="w-full max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
         {/* ══ COLUNA ESQUERDA: Detalhes, Especificações, Vendedor, Mapa (7 Colunas) ══ */}
         <div className="col-span-7 space-y-6">
           {/* Cabeçalho do Anúncio */}
@@ -1244,7 +1244,7 @@ export function ClassifiedDetailDesktop({
                       <div>
                         <span className="text-muted-foreground block font-medium">Avaliação da Empresa</span>
                         <span className="font-semibold text-foreground">
-                          {Number(classified.rating).toFixed(1)} ★ {classified.review_count ? `(${classified.review_count} avaliações)` : ""}
+                          {Number(classified.rating).toFixed(1)}  {classified.review_count ? `(${classified.review_count} avaliações)` : ""}
                         </span>
                       </div>
                     </div>
@@ -1511,14 +1511,14 @@ export function ClassifiedDetailDesktop({
     controls
     playsInline
     autoPlay
-    className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg focus-visible:outline-none"
+    className="max-h-(--spacing-screen-90,90vh) max-w-[90vw] object-contain rounded-lg focus-visible:outline-none"
     onClick={(e) => e.stopPropagation()}
   />
           ) : (
             <img
     src={fullscreenImage}
     alt="Tela cheia"
-    className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg focus-visible:outline-none"
+    className="max-h-(--spacing-screen-90,90vh) max-w-[90vw] object-contain rounded-lg focus-visible:outline-none"
     onClick={(e) => e.stopPropagation()}
   />
           )}

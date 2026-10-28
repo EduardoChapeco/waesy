@@ -55,9 +55,9 @@ export function TravelPackageHero({
  <img
  src={coverImageUrl}
  alt={title}
- className="absolute inset-0 size-full object-cover group-hover:scale-103 transition-transform duration-700 brightness-95"
+ className="absolute inset-0 size-full object-cover group-hover:scale-103 transition-transform duration-200 brightness-95"
  />
- <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10 pointer-events-none" />
+ <div className="absolute inset-0 bg-black/60 pointer-events-none" />
 
  {/* Conteúdo Sobreposto */}
  <div className="relative z-10 space-y-4 max-w-3xl text-foreground">

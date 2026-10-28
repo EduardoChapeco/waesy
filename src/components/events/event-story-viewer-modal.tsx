@@ -64,9 +64,9 @@ export function EventStoryViewerModal({
       className="fixed inset-0 z-50 bg-foreground flex items-center justify-center select-none"
     >
       {/* 9:16 Container */}
-      <div className="relative w-full h-full max-w-md max-h-[100dvh] aspect-[9/16] bg-foreground overflow-hidden flex flex-col justify-between">
+      <div className="relative w-full h-full max-w-md max-h-dvh aspect-[9/16] bg-foreground overflow-hidden flex flex-col justify-between">
         {/* Progress Bar & Top Header */}
-        <div className="absolute top-0 inset-x-0 z-30 pt-safe px-4 pt-3 pb-6 bg-gradient-to-b from-black/80 via-black/40 to-transparent space-y-2">
+        <div className="absolute top-0 inset-x-0 z-30 pt-safe px-4 pt-3 pb-6 bg-black/50 space-y-2">
           {/* Progress Bar */}
           <div className="w-full h-1 bg-card/30 rounded-full overflow-hidden">
             <div
@@ -165,7 +165,7 @@ export function EventStoryViewerModal({
         </div>
 
         {/* Bottom CTA / Action */}
-        <div className="absolute bottom-0 inset-x-0 z-30 pb-safe px-4 pb-4 pt-8 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex items-center justify-center">
+        <div className="absolute bottom-0 inset-x-0 z-30 pb-safe px-4 pb-4 pt-8 bg-black/50 flex items-center justify-center">
           <Button
             type="button"
             onClick={onClose}

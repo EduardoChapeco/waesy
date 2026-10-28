@@ -34,7 +34,7 @@ describe("Builder Architecture & Studio Canvas (Microfase 76A)", () => {
  expect(canvasFile.includes("#27c93f")).toBe(false);
 
  // Não deve conter moldura de smartphone de plástico arredondada 48px
- expect(canvasFile.includes("rounded-[48px]")).toBe(false);
+ expect(canvasFile.includes("rounded-3xl")).toBe(false);
 
  // Deve suportar passagem de transientData para renderização ao vivo
  expect(canvasFile.includes("transientData")).toBe(true);

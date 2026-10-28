@@ -136,7 +136,7 @@ function LivrosVerticalPage() {
  titleLower.includes("pincel") ||
  tags.some((t: string) => ["livros", "papelaria", "presentes", "jogos"].includes(t));
 
- if (activeDepartment === "todos") return isBookItem || allProducts.length <= 12;
+ if (activeDepartment === "todos") return isBookItem;
  if (activeDepartment === "livros")
  return titleLower.includes("livro") || titleLower.includes("romance") || titleLower.includes("box") || titleLower.includes("hq") || titleLower.includes("manga");
  if (activeDepartment === "papelaria")

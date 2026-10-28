@@ -1,3 +1,4 @@
+// pb-24 clearance for fixed bottom
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
 import { getCustomerChatThread, sendCustomerChatMessage } from "@/services/chat.functions";

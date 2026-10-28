@@ -470,7 +470,7 @@ function ExchangesDashboardPage() {
         {exchange.status === "approved" && (
           <Button
             size="sm"
-            variant="default"
+            variant="outline"
             className="rounded-lg h-8 text-xs font-semibold bg-emerald-600 text-foreground hover:bg-emerald-700 cursor-pointer"
             onClick={() => setResolvingExchange(exchange)}
             disabled={processingId === exchange.id}

@@ -73,7 +73,7 @@ export function InAppNumericKeypad({
       )}
     >
       {keys.map((row, rowIndex) => (
-        <div key={`row-${rowIndex}`} className="grid grid-cols-3 gap-2">
+        <div key={`row-${rowIndex}`} className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           {row.map((k) => {
             if (k === "clear") {
               return (
@@ -82,7 +82,7 @@ export function InAppNumericKeypad({
                   type="button"
                   onClick={handleClear}
                   aria-label="Limpar valor"
-                  className="h-14 min-h-14 rounded-2xl border border-transparent hover:border-border/60 hover:bg-muted/40 active:bg-muted/80 active:scale-95 text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-center transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="h-14 min-h-14 rounded-2xl border border-transparent hover:border-border/60 hover:bg-muted/40 active:bg-muted/80 active:scale-95 text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   Limpar
                 </button>
@@ -96,7 +96,7 @@ export function InAppNumericKeypad({
                   type="button"
                   onClick={handleBackspace}
                   aria-label="Apagar dígito"
-                  className="h-14 min-h-14 rounded-2xl border border-transparent hover:border-border/60 hover:bg-muted/40 active:bg-muted/80 active:scale-95 text-foreground flex items-center justify-center transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="h-14 min-h-14 rounded-2xl border border-transparent hover:border-border/60 hover:bg-muted/40 active:bg-muted/80 active:scale-95 text-foreground flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   <Delete className="size-6 text-foreground/80" />
                 </button>
@@ -109,7 +109,7 @@ export function InAppNumericKeypad({
                 type="button"
                 onClick={() => handlePress(k)}
                 aria-label={`Dígito ${k}`}
-                className="h-14 min-h-14 rounded-2xl border border-border/50 bg-card hover:bg-muted/40 active:bg-muted/80 active:scale-95 shadow-xs text-xl font-bold font-mono text-foreground flex items-center justify-center transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="h-14 min-h-14 rounded-2xl border border-border/50 bg-card hover:bg-muted/40 active:bg-muted/80 active:scale-95 shadow-xs text-xl font-bold font-mono text-foreground flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 {k}
               </button>

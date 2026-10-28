@@ -346,7 +346,7 @@ export function formatPreOperationPreview(plan: BatchOrganizationPlan): string {
  * Formats canonical post-operation summary text.
  */
 export function formatPostOperationSummary(result: PostOperationResult): string {
-  const lines: string[] = ['✓ Complete'];
+  const lines: string[] = [' Complete'];
 
   lines.push(`  - Moved: ${result.moved} files`);
   lines.push(`  - Skipped: ${result.skipped} files`);

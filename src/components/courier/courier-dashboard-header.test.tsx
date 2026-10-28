@@ -26,7 +26,7 @@ describe("Courier — CourierDashboardHeader (iFood Entregador Parity)", () => {
     );
 
     expect(html).toContain("CARLOS EDUARDO");
-    expect(html).toContain("4.99 ★");
+    expect(html).toContain("4.99 ");
     expect(html).toContain("512 entregas concluídas");
     expect(html).toContain("Online");
     expect(html).toContain("Ganhos de Hoje");

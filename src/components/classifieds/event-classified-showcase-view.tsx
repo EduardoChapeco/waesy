@@ -1220,7 +1220,7 @@ export function EventClassifiedShowcaseView({
                                   }`}
                                 >
                                   <div
-                                    className="absolute inset-y-0 left-0 bg-primary/10 transition-transform duration-500 motion-reduce:transition-none"
+                                    className="absolute inset-y-0 left-0 bg-primary/10 transition-transform duration-200 motion-reduce:transition-none"
                                     style={{ width: `${pct}%` }}
                                   />
                                   <div className="relative flex items-center justify-between gap-3 text-xs sm:text-sm">
@@ -1833,7 +1833,7 @@ export function EventClassifiedShowcaseView({
 
       {/* DIALOG: CHECKOUT & EMISSÃO DE INGRESSO QR */}
       <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
-        <DialogContent className="sm:max-w-lg rounded-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-lg rounded-lg max-h-(--spacing-screen-90,90vh) overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-lg font-black">
               <Ticket className="size-5 text-primary" />

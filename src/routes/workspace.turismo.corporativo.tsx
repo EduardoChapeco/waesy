@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -14,6 +14,9 @@ import {
   Settings,
   Plus,
   RefreshCw,
+  MessageSquare,
+  Bot,
+  Send,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -42,7 +45,7 @@ export const Route = createFileRoute("/workspace/turismo/corporativo")({
   component: AgencyCorporateCockpitPage,
 });
 
-type TabType = "contas" | "pendencias" | "faturamento" | "conciliacao" | "creditos";
+type TabType = "contas" | "pendencias" | "faturamento" | "conciliacao" | "creditos" | "whatsapp_ia";
 
 export default function AgencyCorporateCockpitPage() {
   const { currentStore } = useWorkspaceStore();
@@ -268,6 +271,44 @@ export default function AgencyCorporateCockpitPage() {
       </WorkspaceCanonicalToolbar>
 
       <div className="p-4 sm:p-6 max-w-7xl w-full mx-auto space-y-6">
+        {/* Régua de Navegação Multimodal da Agência (Submódulos de Turismo) */}
+        <div className="flex flex-nowrap items-center gap-2 overflow-x-auto no-scrollbar border-b border-border/60 pb-3 tab-list">
+          <Link
+            to="/workspace/turismo"
+            className="h-11 min-h-11 px-4 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 flex items-center gap-2 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <span>Funil Geral</span>
+          </Link>
+          <Link
+            to="/workspace/turismo/cotacoes"
+            className="h-11 min-h-11 px-4 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 flex items-center gap-2 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <span>Cotações Rápidas</span>
+          </Link>
+          <Link
+            to="/workspace/turismo/aereos"
+            className="h-11 min-h-11 px-4 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 flex items-center gap-2 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <span>Aéreos & GDS</span>
+          </Link>
+          <div className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold bg-primary/10 text-primary border border-primary/20 flex items-center gap-2 shrink-0">
+            <Building2 className="size-4" />
+            <span>Viagens Corporativas B2B</span>
+          </div>
+          <Link
+            to="/workspace/turismo/reacomodacao"
+            className="h-11 min-h-11 px-4 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 flex items-center gap-2 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <span>Reacomodação ANAC</span>
+          </Link>
+          <Link
+            to="/workspace/turismo/grupos"
+            className="h-11 min-h-11 px-4 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 flex items-center gap-2 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <span>Excursões & Frota</span>
+          </Link>
+        </div>
+
         {/* Métricas Principais (Tufte Data-Ink / Sem Card Soup) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           <div className="p-4 rounded-lg border border-border bg-card space-y-1">
@@ -299,6 +340,8 @@ export default function AgencyCorporateCockpitPage() {
             { id: "pendencias", label: "Fila 'Precisa de Você'", icon: AlertTriangle },
             { id: "faturamento", label: `Faturamento (${invoices.length})`, icon: CreditCard },
             { id: "conciliacao", label: `Conciliação (${reconciliationCases.length})`, icon: RefreshCw },
+            { id: "creditos", label: "Créditos Aéreos (EMD)", icon: FileText },
+            { id: "whatsapp_ia", label: "Suporte & WhatsApp IA", icon: MessageSquare },
           ].map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -481,6 +524,150 @@ export default function AgencyCorporateCockpitPage() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* ABA 6: SUPORTE & WHATSAPP IA (BLIS.AI ARCHITECTURE) */}
+        {activeTab === "whatsapp_ia" && (
+          <div className="space-y-6">
+            <div className="p-5 rounded-xl border border-border bg-card space-y-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="size-10 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+                    <Bot className="size-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
+                      <span>Concierge Corporativo Inteligente (Blis.ai + WhatsApp)</span>
+                      <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-500/30 bg-emerald-500/10 font-mono">
+                        Ativo · 24/7
+                      </Badge>
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      Atendimento conversacional oficial da Excelência Tour integrado ao Wooba e às regras de política das empresas.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => toast.success("Webhook e motor de IA operacional em tempo real.")}
+                  variant="outline"
+                  className="h-11 min-h-11 px-4 text-xs font-semibold rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
+                >
+                  <RefreshCw className="size-4 mr-2" />
+                  Sincronizar Canal
+                </Button>
+              </div>
+            </div>
+
+            {/* Painel de Métricas da IA no WhatsApp */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="p-4 rounded-xl border border-border bg-card space-y-1">
+                <span className="text-xs text-muted-foreground">Cotações Aéreas por IA</span>
+                <p className="text-2xl font-bold text-foreground">100% Wooba</p>
+                <p className="text-xs text-muted-foreground">Respostas em linguagem natural</p>
+              </div>
+              <div className="p-4 rounded-xl border border-border bg-card space-y-1">
+                <span className="text-xs text-muted-foreground">Aprovações Interativas</span>
+                <p className="text-2xl font-bold text-foreground">Disparo Direto</p>
+                <p className="text-xs text-muted-foreground">Botões Aprovar/Recusar no WhatsApp</p>
+              </div>
+              <div className="p-4 rounded-xl border border-border bg-card space-y-1">
+                <span className="text-xs text-muted-foreground">Reacomodação ANAC 400</span>
+                <p className="text-2xl font-bold text-foreground">Monitor Ativo</p>
+                <p className="text-xs text-muted-foreground">Alerta proativo de cancelamentos</p>
+              </div>
+              <div className="p-4 rounded-xl border border-border bg-card space-y-1">
+                <span className="text-xs text-muted-foreground">Prestação de Contas OCR</span>
+                <p className="text-2xl font-bold text-foreground">Via Foto WhatsApp</p>
+                <p className="text-xs text-muted-foreground">Lançamento automático na fatura</p>
+              </div>
+            </div>
+
+            {/* Fila de Ações Recentes de Suporte */}
+            <div className="p-5 rounded-xl border border-border bg-card space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="font-bold text-xs text-foreground uppercase tracking-wider">
+                  Fila Unificada de Interações Corporativas
+                </h4>
+                <span className="text-xs text-muted-foreground font-mono">
+                  Atendimento Excelência Tour
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                <div className="p-4 rounded-lg border border-border/80 bg-muted/20 flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-xs font-semibold text-sky-600 bg-sky-500/10 border-sky-500/20">
+                        Cotação Aérea
+                      </Badge>
+                      <span className="font-bold text-foreground">Viajante: Carlos Eduardo (Indústria Vale)</span>
+                    </div>
+                    <p className="text-muted-foreground">
+                      &quot;Preciso de voo para Congonhas na próxima terça pela manhã e retorno na quarta&quot;
+                    </p>
+                    <span className="text-xs text-emerald-600 font-medium block">
+                      Opções Wooba enviadas via WhatsApp · Dentro da política da empresa
+                    </span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => toast.info("Consultor Excelência Tour acionado no chat")}
+                    className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    Assumir Atendimento
+                  </Button>
+                </div>
+
+                <div className="p-4 rounded-lg border border-border/80 bg-muted/20 flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-xs font-semibold text-amber-600 bg-amber-500/10 border-amber-500/20">
+                        Aprovação de Gestor
+                      </Badge>
+                      <span className="font-bold text-foreground">Gestor: Rodrigo Mendes · Projeto Expansão PR</span>
+                    </div>
+                    <p className="text-muted-foreground">
+                      Solicitação enviada com botões interativos [Aprovar / Recusar] via template oficial WhatsApp.
+                    </p>
+                    <span className="text-xs text-muted-foreground font-mono block">
+                      Tarifa protegida por 4 horas via Wooba Travellink
+                    </span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => toast.info("Reenviando lembrete de aprovação")}
+                    className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    Reenviar WhatsApp
+                  </Button>
+                </div>
+
+                <div className="p-4 rounded-lg border border-border/80 bg-muted/20 flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-xs font-semibold text-purple-600 bg-purple-500/10 border-purple-500/20">
+                        Comprovante OCR
+                      </Badge>
+                      <span className="font-bold text-foreground">Viajante: Luciana Silva · Hotel Ibis Curitiba</span>
+                    </div>
+                    <p className="text-muted-foreground">
+                      Foto de recibo recebida no WhatsApp: R$ 340,00 conciliado no projeto de viagem.
+                    </p>
+                    <span className="text-xs text-muted-foreground font-mono block">
+                      Nota fiscal validada sem pendências
+                    </span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => toast.info("Comprovante visualizado")}
+                    className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    Ver Comprovante
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 

@@ -102,7 +102,7 @@ export function SlimActionBanner({
 
  {/* Sobreposição de Cor / Gradiente para Leitura */}
  {isOverlayVisible && (
- <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/30 backdrop-blur-[1px]" />
+ <div className="absolute inset-0 bg-black/70 backdrop-blur-xs" />
  )}
  </div>
  )}

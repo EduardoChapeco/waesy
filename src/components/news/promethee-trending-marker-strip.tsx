@@ -10,28 +10,28 @@ export interface TrendingTopicItem {
   category: string;
 }
 
-export const CANONICAL_VALE_TRENDING_TOPICS: TrendingTopicItem[] = [
+export const CANONICAL_TRENDING_TOPICS: TrendingTopicItem[] = [
   {
     id: "topic-1",
     tag: "ParqueTecnológico",
     label: "#ParqueTecnológico",
-    context: "Aeroespacial & IA em SJC",
+    context: "Inovação Regional & IA",
     readsCountLabel: "14,2k leituras",
     category: "Tecnologia",
   },
   {
     id: "topic-2",
-    tag: "InvestimentosVale",
-    label: "#InvestimentosVale",
-    context: "Indústria & Empregos",
+    tag: "EconomiaRegional",
+    label: "#EconomiaRegional",
+    context: "Indústria, Agro & Empregos",
     readsCountLabel: "9,8k leituras",
     category: "Economia",
   },
   {
     id: "topic-3",
-    tag: "SerraDaMantiqueira",
-    label: "#SerraDaMantiqueira",
-    context: "Turismo & Gastronomia",
+    tag: "TurismoLocal",
+    label: "#TurismoLocal",
+    context: "Gastronomia & Roteiros",
     readsCountLabel: "8,5k leituras",
     category: "Turismo",
   },
@@ -39,27 +39,29 @@ export const CANONICAL_VALE_TRENDING_TOPICS: TrendingTopicItem[] = [
     id: "topic-4",
     tag: "SegurançaIntegrada",
     label: "#SegurançaIntegrada",
-    context: "Muralha Paulista & CSI",
+    context: "Monitoramento Urbano & CCO",
     readsCountLabel: "12,1k leituras",
     category: "Segurança",
   },
   {
     id: "topic-5",
-    tag: "EmbraerDefesa",
-    label: "#EmbraerDefesa",
-    context: "Contratos Globais C-390",
+    tag: "InfraestruturaRegional",
+    label: "#InfraestruturaRegional",
+    context: "Obras & Desenvolvimento",
     readsCountLabel: "7,6k leituras",
-    category: "Tecnologia",
+    category: "Cidades",
   },
   {
     id: "topic-6",
-    tag: "RodoviasDoVale",
-    label: "#RodoviasDoVale",
-    context: "Dutra & Carvalho Pinto",
+    tag: "MobilidadeUrbana",
+    label: "#MobilidadeUrbana",
+    context: "Trânsito, Rodovias & Acessos",
     readsCountLabel: "6,9k leituras",
     category: "Cidades",
   },
 ];
+
+export const CANONICAL_VALE_TRENDING_TOPICS = CANONICAL_TRENDING_TOPICS;
 
 export interface PrometheeTrendingMarkerStripProps {
   topics?: TrendingTopicItem[];
@@ -69,10 +71,10 @@ export interface PrometheeTrendingMarkerStripProps {
 }
 
 export function PrometheeTrendingMarkerStrip({
-  topics = CANONICAL_VALE_TRENDING_TOPICS,
+  topics = CANONICAL_TRENDING_TOPICS,
   onSelectTopic,
   className = "",
-  title = "Tópicos do Momento no Vale",
+  title = "Tópicos do Momento",
 }: PrometheeTrendingMarkerStripProps) {
   return (
     <aside

@@ -4,7 +4,7 @@ import { Tag } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useState, useMemo } from "react";
-import { Heartbeat, Scissors, Drop, Sun, HandSoap, FirstAid, Smiley } from "@phosphor-icons/react";
+import { Heartbeat, Scissors, Drop, Sun, HandSoap, FirstAid, Smiley, Sparkle } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -41,14 +41,18 @@ const SearchSchema = z.object({
 type BelezaSearch = z.infer<typeof SearchSchema>;
 
 const BELEZA_DEPARTMENTS: FilterChipOption[] = [
- { id: "todos", label: "Tudo em Beleza e Saúde", icon: Tag },
- { id: "perfumaria", label: "Perfumaria e Fragrâncias", icon: Drop },
- { id: "cabelos", label: "Cuidados com Cabelos", icon: Scissors },
- { id: "skincare", label: "Skincare e Rosto", icon: Sun },
- { id: "corpo-banho", label: "Corpo e Banho", icon: HandSoap },
- { id: "maquiagem", label: "Maquiagem e Unhas", icon: Smiley },
- { id: "dermocosmeticos", label: "Dermocosméticos e Farmácia", icon: FirstAid },
- { id: "suplementos", label: "Suplementos e Bem-Estar", icon: Heartbeat },
+  { id: "todos", label: "Tudo em Beleza e Saúde", icon: Tag },
+  { id: "barbearia", label: "Barbearias (Masculino)", icon: Scissors },
+  { id: "salao", label: "Salões & Cabelereiros", icon: Scissors },
+  { id: "estetica", label: "Estética & SPA", icon: Sparkle },
+  { id: "saude", label: "Saúde & Terapias", icon: Heartbeat },
+  { id: "perfumaria", label: "Perfumaria e Fragrâncias", icon: Drop },
+  { id: "cabelos", label: "Cuidados com Cabelos", icon: Scissors },
+  { id: "skincare", label: "Skincare e Rosto", icon: Sun },
+  { id: "corpo-banho", label: "Corpo e Banho", icon: HandSoap },
+  { id: "maquiagem", label: "Maquiagem e Unhas", icon: Smiley },
+  { id: "dermocosmeticos", label: "Dermocosméticos e Farmácia", icon: FirstAid },
+  { id: "suplementos", label: "Suplementos e Bem-Estar", icon: Heartbeat },
 ];
 
 export const Route = createFileRoute("/_store/beleza")({
@@ -137,24 +141,23 @@ function BelezaVerticalPage() {
  const isBeautyItem =
  titleLower.includes("shampoo") ||
  titleLower.includes("perfume") ||
- titleLower.includes("creme") ||
- titleLower.includes("máscara") ||
+ titleLower.includes("hidratante") ||
+ titleLower.includes("máscara facial") ||
+ titleLower.includes("máscara capilar") ||
  titleLower.includes("maquiagem") ||
  titleLower.includes("batom") ||
  titleLower.includes("sérum") ||
- titleLower.includes("hidratante") ||
- titleLower.includes("protetor") ||
+ titleLower.includes("protetor solar") ||
  titleLower.includes("condicionador") ||
- titleLower.includes("vitamina") ||
  titleLower.includes("esmalte") ||
  titleLower.includes("loção") ||
  tags.some((t: string) => ["beleza", "cosmeticos", "perfumaria", "cabelo", "skincare", "saude"].includes(t));
 
- if (activeDepartment === "todos") return isBeautyItem || allProducts.length <= 12;
+ if (activeDepartment === "todos") return isBeautyItem;
  if (activeDepartment === "perfumaria")
  return titleLower.includes("perfume") || titleLower.includes("colônia") || titleLower.includes("fragrância") || titleLower.includes("desodorante");
  if (activeDepartment === "cabelos")
- return titleLower.includes("shampoo") || titleLower.includes("condicionador") || titleLower.includes("máscara") || titleLower.includes("óleo");
+ return titleLower.includes("shampoo") || titleLower.includes("condicionador") || titleLower.includes("capilar") || titleLower.includes("cabelo");
  if (activeDepartment === "skincare")
  return titleLower.includes("sérum") || titleLower.includes("protetor") || titleLower.includes("facial") || titleLower.includes("limpeza facial");
  if (activeDepartment === "corpo-banho")

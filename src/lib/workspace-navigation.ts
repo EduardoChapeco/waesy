@@ -438,6 +438,7 @@ const GROUP_WHOLESALE: NavGroup = {
   items: [
     { path: "/workspace/catalogo/produtos", label: "Atacado", icon: Package },
     { path: "/workspace/catalogo/tabelas", label: "Tabelas PJ", icon: FileSpreadsheet },
+    { path: "/workspace/b2b", label: "Central B2B (CNPJ)", icon: Building2 },
     { path: "/workspace/orcamentos", label: "Cotações", icon: FileText },
     { path: "/workspace/pedidos", label: "Faturamento", icon: ShoppingBag },
     { path: "/workspace/clientes", label: "Distribuidores", icon: Users },

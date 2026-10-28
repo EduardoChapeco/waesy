@@ -18,6 +18,8 @@ export interface IFoodSubcategoryPillRailProps {
   className?: string;
 }
 
+export type SubcategoryPillRailProps = IFoodSubcategoryPillRailProps;
+
 export function IFoodSubcategoryPillRail({
   items,
   activeId,
@@ -49,10 +51,10 @@ export function IFoodSubcategoryPillRail({
             type="button"
             onClick={() => onSelect(item.id)}
             className={cn(
-              "shrink-0 snap-start transition-all cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl relative group",
+              "shrink-0 snap-start transition-colors cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl relative group",
               isHorizontal
-                ? "h-12 min-h-11 px-3 border flex items-center gap-2.5"
-                : "flex flex-col items-center gap-1.5 p-1 w-20 sm:w-22",
+                ? "h-12 min-h-11 px-3 border flex items-center gap-2"
+                : "flex flex-col items-center gap-2 p-1 w-20 sm:w-22",
               isActive && isHorizontal && "bg-foreground text-background border-foreground font-bold shadow-xs",
               !isActive && isHorizontal && "bg-card text-muted-foreground hover:text-foreground border-border/80 hover:bg-muted/50",
             )}
@@ -103,7 +105,7 @@ export function IFoodSubcategoryPillRail({
 
             {/* Badge de Destaque */}
             {item.badge && (
-              <span className="absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full bg-red-600 text-white text-3xs font-black uppercase tracking-wider shadow-xs">
+              <span className="absolute -top-1 -right-1 px-2 py-0.2 rounded-full bg-red-600 text-primary-foreground text-3xs font-black uppercase tracking-wider shadow-xs">
                 {item.badge}
               </span>
             )}
@@ -113,3 +115,5 @@ export function IFoodSubcategoryPillRail({
     </nav>
   );
 }
+
+export const SubcategoryPillRail = IFoodSubcategoryPillRail;

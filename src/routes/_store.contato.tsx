@@ -72,7 +72,7 @@ function ContatoPage() {
  const cleanWhatsapp = brand?.support_whatsapp?.replace(/\D/g, "");
 
  return (
- <div className="mx-auto max-w-5xl px-0 sm:px-4 md:px-0 py-2 sm:py-6 md:py-14 space-y-6 sm:space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+ <div className="mx-auto max-w-5xl px-0 sm:px-4 md:px-0 py-2 sm:py-6 md:py-14 space-y-6 sm:space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-200">
  {/* Mobile Header com botão Voltar Apple HIG */}
  <div className="flex sm:hidden items-center justify-between px-3 pt-2">
  <button

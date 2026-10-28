@@ -379,7 +379,7 @@ export function generateCustomTheme(
  */
 export function formatThemeShowcaseMarkdown(): string {
   const lines: string[] = [
-    '## 🎨 Vitrine de Temas da Fábrica (Theme Showcase)',
+    '##  Vitrine de Temas da Fábrica (Theme Showcase)',
     '',
     '| # | ID | Nome | Descrição | Título | Corpo | Primária | Fundo |',
     '|---|---|---|---|---|---|---|---|',

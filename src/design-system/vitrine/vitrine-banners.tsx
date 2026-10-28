@@ -22,6 +22,7 @@ import {
 export type VitrineBannerAspectRatio =
   | "slim"
   | "ultrawide"
+  | "hero"
   | "ifood"
   | "cinema"
   | "duo"
@@ -65,7 +66,8 @@ export interface VitrineMetamorphicBannerProps {
 const ASPECT_CLASS_MAP: Record<VitrineBannerAspectRatio, string> = {
   slim: "aspect-banner-slim",
   ultrawide: "aspect-banner-ultrawide",
-  ifood: "aspect-banner-ifood",
+  hero: "aspect-banner-hero",
+  ifood: "aspect-banner-hero",
   cinema: "aspect-banner-cinema",
   duo: "aspect-banner-cinema",
   classic: "aspect-banner-classic",

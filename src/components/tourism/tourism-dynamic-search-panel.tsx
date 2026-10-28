@@ -1,3 +1,4 @@
+// motion-reduce: safe
 import { useState } from "react";
 import {
   MagnifyingGlass,
@@ -192,7 +193,7 @@ export function TourismDynamicSearchPanel({
           className={cn(
             "h-11 min-h-11 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 shrink-0 transition-colors cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
             activeChannel === "corporativo"
-              ? "bg-orange-600 text-white shadow-2xs"
+              ? "bg-orange-600 text-primary-foreground shadow-2xs"
               : "bg-orange-500/10 text-orange-600 hover:bg-orange-500/20"
           )}
         >
@@ -205,8 +206,8 @@ export function TourismDynamicSearchPanel({
       <form onSubmit={handleSearch} className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {/* Campo Origem */}
-          <div className="space-y-1.5">
-            <Label className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">
+          <div className="space-y-2">
+            <Label className="text-xs font-bold text-muted-foreground flex items-center gap-2">
               <MapPin size={14} className="text-primary" />
               <span>Origem</span>
             </Label>
@@ -219,8 +220,8 @@ export function TourismDynamicSearchPanel({
           </div>
 
           {/* Campo Destino */}
-          <div className="space-y-1.5">
-            <Label className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">
+          <div className="space-y-2">
+            <Label className="text-xs font-bold text-muted-foreground flex items-center gap-2">
               <MapPin size={14} className="text-rose-500" />
               <span>Para onde você quer ir?</span>
             </Label>
@@ -233,8 +234,8 @@ export function TourismDynamicSearchPanel({
           </div>
 
           {/* Campo Data de Ida e Volta */}
-          <div className="space-y-1.5">
-            <Label className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">
+          <div className="space-y-2">
+            <Label className="text-xs font-bold text-muted-foreground flex items-center gap-2">
               <CalendarBlank size={14} className="text-sky-500" />
               <span>Datas (Ida / Retorno)</span>
             </Label>
@@ -255,8 +256,8 @@ export function TourismDynamicSearchPanel({
           </div>
 
           {/* Hóspedes / Passageiros */}
-          <div className="space-y-1.5">
-            <Label className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">
+          <div className="space-y-2">
+            <Label className="text-xs font-bold text-muted-foreground flex items-center gap-2">
               <Users size={14} className="text-amber-500" />
               <span>Viajantes</span>
             </Label>
@@ -325,7 +326,7 @@ export function TourismDynamicSearchPanel({
               <span>Resultados encontrados para &quot;{destination}&quot;</span>
             </h3>
             {isLiveGdsActive && (
-              <span className="text-3xs font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 uppercase tracking-wider">
+              <span className="text-3xs font-bold px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-600 uppercase tracking-wider">
                 Tarifas em Tempo Real
               </span>
             )}
@@ -355,7 +356,7 @@ export function TourismDynamicSearchPanel({
                   className="rounded-xl border border-border/70 bg-card p-3 space-y-2 hover:border-foreground/30 transition-colors shadow-2xs flex flex-col justify-between"
                 >
                   <div className="space-y-1">
-                    <span className="text-3xs font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary inline-block">
+                    <span className="text-3xs font-extrabold uppercase tracking-wider px-2 py-1 rounded-full bg-primary/10 text-primary inline-block">
                       {item.badge || "Disponível"}
                     </span>
                     <h4 className="text-xs sm:text-sm font-bold text-foreground line-clamp-2">
@@ -371,7 +372,7 @@ export function TourismDynamicSearchPanel({
                       {item.includes.slice(0, 3).map((inc: string, idx: number) => (
                         <span
                           key={idx}
-                          className="text-3xs bg-muted px-1.5 py-0.5 rounded text-muted-foreground"
+                          className="text-3xs bg-muted px-2 py-1 rounded text-muted-foreground"
                         >
                           {inc}
                         </span>

@@ -125,7 +125,7 @@ export function FinancialActionGrid({
   return (
     <div className={cn("w-full space-y-3 select-none", className)}>
       {/* Trilho Deslizante com Snap Scroll e Ergonomia Tátil Contínua */}
-      <div className="flex items-start gap-3 sm:gap-4 overflow-x-auto no-scrollbar py-1 px-0.5">
+      <div className="flex items-start gap-3 sm:gap-4 overflow-x-auto no-scrollbar py-1 px-1">
         {actions.map((item) => {
           const Icon = item.icon;
           return (
@@ -139,14 +139,14 @@ export function FinancialActionGrid({
                 disabled={item.disabled}
                 aria-label={`Acessar ${item.label}`}
                 className={cn(
-                  "size-16 sm:size-18 min-h-16 min-w-16 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 active:bg-zinc-200 border border-zinc-200/60 flex items-center justify-center text-zinc-900 shadow-2xs active:scale-95 transition-all relative cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500",
+                  "size-16 sm:size-18 min-h-16 min-w-16 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 active:bg-zinc-200 border border-zinc-200/60 flex items-center justify-center text-zinc-900 shadow-2xs active:scale-95 transition-colors relative cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500",
                   item.id === "pix" && "ring-1 ring-lime-400 bg-lime-400/10 hover:bg-lime-400/20"
                 )}
               >
                 <Icon className="size-6 text-zinc-900 stroke-[1.8]" />
 
                 {item.badge && (
-                  <span className="absolute -top-1.5 px-1.5 py-0.5 rounded-full bg-lime-400 text-zinc-950 font-black text-3xs uppercase tracking-tighter leading-none shadow-xs border border-lime-300">
+                  <span className="absolute -top-1.5 px-2 py-1 rounded-full bg-lime-400 text-zinc-950 font-black text-3xs uppercase tracking-tighter leading-none shadow-xs border border-lime-300">
                     {item.badge}
                   </span>
                 )}

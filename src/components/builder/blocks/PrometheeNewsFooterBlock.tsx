@@ -14,7 +14,7 @@ export function PrometheeNewsFooterBlock({
   data,
   isEditing = false,
 }: PrometheeNewsFooterBlockProps) {
-  const brandName = data?.brandName || "Vale Agora News";
+  const brandName = data?.brandName || "Waesy News";
   const tagline = data?.tagline || "Jornalismo regional independente";
   const links =
     Array.isArray(data?.links) && data.links.length > 0

@@ -115,7 +115,7 @@ describe("Design System Vitrine & Omni Builder App-Parity Suite", () => {
     expect(videoHtml).toContain("https://cdn.waesy.test/hero.mp4");
   });
 
-  it("bifurca o carrossel/grade de botões editáveis entre grade 4x2 mobile (iFood) e dock deslizante desktop (Noor)", () => {
+  it("bifurca o carrossel/grade de botões editáveis entre grade 4x2 mobile e dock deslizante desktop", () => {
     const def = getSiteBlockByIdStrict("vitrine_buttons_dock")!;
     const DockComp = def.component as any;
 
@@ -141,7 +141,7 @@ describe("Design System Vitrine & Omni Builder App-Parity Suite", () => {
       </BuilderViewportProvider>,
     );
 
-    expect(mobileHtml).toContain("grid-cols-4");
+    expect(mobileHtml).toContain("grid-cols-2 sm:grid-cols-4");
     expect(mobileHtml).toContain("Promoções");
     expect(mobileHtml).toContain("Bebidas");
 

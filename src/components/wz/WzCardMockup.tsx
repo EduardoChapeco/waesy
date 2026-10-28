@@ -64,23 +64,23 @@ export function WzCardMockup({
     switch (cardDesignId) {
       case "aniversario":
         return {
-          bg: "bg-gradient-to-br from-rose-950 via-slate-900 to-amber-950",
+          bg: "bg-slate-900 border border-amber-900/40",
           border: "border-amber-500/30",
           accent: "text-amber-400",
           badge: "bg-amber-500/20 text-amber-300 border-amber-500/30",
-          badgeText: "Feliz Aniversário 🎂",
+          badgeText: "Feliz Aniversário ",
         };
       case "natal":
         return {
-          bg: "bg-gradient-to-br from-emerald-950 via-slate-900 to-red-950",
+          bg: "bg-slate-900 border border-emerald-900/40",
           border: "border-emerald-500/30",
           accent: "text-emerald-400",
           badge: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
-          badgeText: "Boas Festas 🎄",
+          badgeText: "Boas Festas ",
         };
       case "minimal_dark":
         return {
-          bg: "bg-gradient-to-br from-neutral-900 via-neutral-950 to-black",
+          bg: "bg-neutral-900 border border-neutral-800",
           border: "border-neutral-700/50",
           accent: "text-foreground",
           badge: "bg-card/10 text-neutral-200 border-white/20",
@@ -88,7 +88,7 @@ export function WzCardMockup({
         };
       case "neon_pulse":
         return {
-          bg: "bg-gradient-to-br from-violet-950 via-slate-900 to-indigo-950",
+          bg: "bg-slate-900 border border-violet-900/40",
           border: "border-violet-500/40",
           accent: "text-violet-400",
           badge: "bg-violet-500/20 text-violet-300 border-violet-500/30",
@@ -97,7 +97,7 @@ export function WzCardMockup({
       case "classic_gold":
       default:
         return {
-          bg: "bg-gradient-to-br from-slate-900 via-zinc-950 to-stone-900",
+          bg: "bg-zinc-900 border border-zinc-800",
           border: "border-amber-400/40",
           accent: "text-amber-400",
           badge: "bg-amber-400/10 text-amber-300 border-amber-400/30",
@@ -110,7 +110,7 @@ export function WzCardMockup({
     <div className={cn("relative w-full max-w-sm mx-auto select-none perspective-1000", className)}>
       <div
         className={cn(
-          "relative w-full aspect-[16/10] rounded-2xl transition-colors duration-200 duration-500 transform-style-3d shadow-xl",
+          "relative w-full aspect-[16/10] rounded-2xl transition-colors duration-200 duration-200 transform-style-3d shadow-xl",
           isFlipped ? "rotate-y-180" : ""
         )}
       >
@@ -160,9 +160,9 @@ export function WzCardMockup({
                 <video src={mediaUrl} className="w-full h-full object-cover" autoPlay muted loop playsInline />
               </div>
             ) : (
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 <p className="text-2xs text-foreground/60 font-medium">
-                  {recipientName ? `Para: ${recipientName}` : "Para você com carinho ❤️"}
+                  {recipientName ? `Para: ${recipientName}` : "Para você com carinho ️"}
                 </p>
                 {personalMessage ? (
                   <p className="text-xs text-foreground/90 italic line-clamp-2 font-serif">

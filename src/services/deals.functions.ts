@@ -131,8 +131,8 @@ export const createDealProposal = createServerFn({ method: "POST" })
  (input.totalPriceCents || input.proposedPriceCents) / 100
  );
  const msgText = isDirect
- ? `✅ Reserva confirmada — ${priceFmt}${input.nightsCount ? ` · ${input.nightsCount} noites` : ""}${input.startDate ? ` · Check-in: ${input.startDate}` : ""}`
- : `🤝 Proposta enviada — ${priceFmt}${input.installmentsCount && input.installmentsCount > 1 ? ` em ${input.installmentsCount}x` : " à vista"}${input.terms ? `\n"${input.terms.slice(0, 120)}"` : ""}`;
+ ? ` Reserva confirmada — ${priceFmt}${input.nightsCount ? ` · ${input.nightsCount} noites` : ""}${input.startDate ? ` · Check-in: ${input.startDate}` : ""}`
+ : ` Proposta enviada — ${priceFmt}${input.installmentsCount && input.installmentsCount > 1 ? ` em ${input.installmentsCount}x` : " à vista"}${input.terms ? `\n"${input.terms.slice(0, 120)}"` : ""}`;
 
  await supabase.from("chat_messages").insert({
  thread_id: threadId,
@@ -276,15 +276,15 @@ export const respondToDealProposal = createServerFn({ method: "POST" })
         const formatted = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
           input.counterPriceCents / 100
         );
-        notifText = `⚡ Contraproposta: ${formatted}${input.message ? ` — "${input.message}"` : ""}`;
+        notifText = ` Contraproposta: ${formatted}${input.message ? ` — "${input.message}"` : ""}`;
       } else if (input.action === "accept" || input.action === "confirm_dates") {
-        notifText = `🎉 Proposta aceita! O acordo foi formalizado na plataforma.`;
+        notifText = ` Proposta aceita! O acordo foi formalizado na plataforma.`;
       } else if (input.action === "reject") {
-        notifText = `❌ Proposta recusada.`;
+        notifText = ` Proposta recusada.`;
       } else if (input.action === "complete") {
-        notifText = `📦 Recebimento confirmado! Negociação concluída com sucesso.`;
+        notifText = ` Recebimento confirmado! Negociação concluída com sucesso.`;
       } else if (input.action === "cancel") {
-        notifText = `⚠️ Proposta cancelada.`;
+        notifText = `️ Proposta cancelada.`;
       }
 
       if (notifText) {

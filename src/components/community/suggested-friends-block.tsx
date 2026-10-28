@@ -69,7 +69,7 @@ export function SuggestedFriendsBlock({ friends = [] }: SuggestedFriendsBlockPro
  return (
  <div
  key={friend.id}
- className="flex flex-col items-center justify-between w-[140px] p-3 squircle-soft squircle-hover bg-background text-center shrink-0"
+ className="flex flex-col items-center justify-between w-35 p-3 squircle-soft squircle-hover bg-background text-center shrink-0"
  >
  <Avatar className="size-14 ring-2 ring-primary/20 mb-2">
  <AvatarImage src={friend.avatar_url ?? ""} />

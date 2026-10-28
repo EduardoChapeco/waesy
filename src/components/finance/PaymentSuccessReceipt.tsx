@@ -36,7 +36,7 @@ export interface PaymentSuccessReceiptProps {
 export function PaymentSuccessReceipt({
   amountCents,
   recipientName,
-  recipientInstitution = "PICPAY",
+  recipientInstitution = "Waesy Pagamentos e Tecnologia",
   transactionId = "TX-" + Math.random().toString(36).substring(2, 10).toUpperCase(),
   dateText = "Agora",
   title = "Pix enviado com sucesso!",
@@ -79,7 +79,7 @@ export function PaymentSuccessReceipt({
         <h2 className="text-xl sm:text-2xl font-black text-foreground tracking-tight mt-5">
           {title}
         </h2>
-        <p className="text-xs text-muted-foreground mt-1.5 max-w-xs mx-auto leading-relaxed">
+        <p className="text-xs text-muted-foreground mt-2 max-w-xs mx-auto leading-relaxed">
           {subtitle}
         </p>
 
@@ -89,16 +89,16 @@ export function PaymentSuccessReceipt({
         </div>
 
         {/* Nome do Destinatário */}
-        <p className="text-xs font-semibold text-foreground/80 mt-1.5">
+        <p className="text-xs font-semibold text-foreground/80 mt-2">
           Para {recipientName}
         </p>
       </div>
 
       {/* ── Cartão de Metadados da Transação ── */}
-      <div className="w-full rounded-2xl bg-zinc-50 border border-zinc-200/60 p-4 space-y-2.5 text-xs text-left shadow-2xs my-4">
+      <div className="w-full rounded-2xl bg-zinc-50 border border-zinc-200/60 p-4 space-y-2 text-xs text-left shadow-2xs my-4">
         <div className="flex items-center justify-between py-1 border-b border-border/40">
           <span className="text-muted-foreground font-medium">Instituição</span>
-          <span className="font-bold text-foreground truncate max-w-[200px]">
+          <span className="font-bold text-foreground truncate max-w-50">
             {recipientInstitution}
           </span>
         </div>
@@ -110,18 +110,18 @@ export function PaymentSuccessReceipt({
 
         <div className="flex items-center justify-between py-1">
           <span className="text-muted-foreground font-medium">ID da Transação</span>
-          <span className="font-mono text-2xs text-foreground/80 truncate max-w-[180px]">
+          <span className="font-mono text-2xs text-foreground/80 truncate max-w-45">
             {transactionId}
           </span>
         </div>
       </div>
 
       {/* ── Botões de Ação Inferiores (Ver comprovante & Compartilhar) ── */}
-      <div className="w-full space-y-2.5 pt-2">
+      <div className="w-full space-y-2 pt-2">
         <button
           type="button"
           onClick={onViewReceipt || onDone}
-          className="w-full h-12 min-h-12 rounded-xl bg-lime-400 hover:bg-lime-500 active:bg-lime-600 text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+          className="w-full h-12 min-h-12 rounded-xl bg-lime-400 hover:bg-lime-500 active:bg-lime-600 text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
         >
           <FileText className="size-4" />
           <span>Ver comprovante</span>
@@ -140,7 +140,7 @@ export function PaymentSuccessReceipt({
               }
             })
           }
-          className="w-full h-12 min-h-12 rounded-xl bg-zinc-100 hover:bg-zinc-200 active:bg-zinc-300 text-zinc-800 font-semibold text-xs flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+          className="w-full h-12 min-h-12 rounded-xl bg-zinc-100 hover:bg-zinc-200 active:bg-zinc-300 text-zinc-800 font-semibold text-xs flex items-center justify-center gap-2 active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
         >
           <Share2 className="size-4" />
           <span>Compartilhar</span>

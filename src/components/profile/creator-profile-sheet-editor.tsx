@@ -79,10 +79,9 @@ export function CreatorProfileSheetEditor({
 
   // Estados de Recorte de Imagem (Idêntico a _store.conta.perfil.tsx)
   const avatarInputRef = useRef<HTMLInputElement>(null);
-  const coverInputRef = useRef<HTMLInputElement>(null);
   const [cropperOpen, setCropperOpen] = useState(false);
   const [cropperSrc, setCropperSrc] = useState<string | null>(null);
-  const [cropperType, setCropperType] = useState<"avatar" | "cover">("avatar");
+  const [cropperType, setCropperType] = useState<"avatar">("avatar");
   const [isUploadingMedia, setIsUploadingMedia] = useState(false);
 
   useEffect(() => {
@@ -376,53 +375,14 @@ export function CreatorProfileSheetEditor({
                     />
                   </div>
 
-                  {/* Capa Panorâmica Canônica 21:9 ao lado */}
-                  <div className="flex-1 min-w-0 h-20 sm:h-24 rounded-lg bg-muted/20 relative overflow-hidden flex items-center group border border-border/40">
-                    {coverUrl ? (
-                      <img
-                        src={coverUrl}
-                        alt="Capa"
-                        className="size-full object-cover select-none"
-                      />
-                    ) : (
-                      <div className="size-full bg-muted/40 flex items-center justify-center text-muted-foreground p-3 text-center">
-                        <span className="text-xs font-medium">
-                          {isAffiliate ? "Capa do parceiro (21:9)" : "Sem capa (21:9)"}
-                        </span>
-                      </div>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={() => coverInputRef.current?.click()}
-                      disabled={isUploadingMedia}
-                      className="absolute top-2.5 right-2.5 bg-background/90 hover:bg-background border border-border/80 text-foreground px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-xs transition-transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      title="Alterar Capa (21:9)"
-                    >
-                      <Camera className="size-3.5" />
-                      <span className="hidden sm:inline">Alterar Capa (21:9)</span>
-                    </button>
-                    <input
-                      ref={coverInputRef}
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => handleFileSelected(e, "cover")}
-                    />
+                  {/* Diretriz Canônica de Perfil do Criador */}
+                  <div className="flex-1 min-w-0 rounded-xl bg-muted/20 border border-border/40 p-4 space-y-2 text-xs">
+                    <p className="font-bold text-foreground">Avatar Oficial do Criador / Parceiro</p>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Perfis de criadores e afiliados operam com identidade unificada 1:1 sem capas panorâmicas no cabeçalho. A capa oficial para vitrines e cards é padronizada diretamente no Brand Kit.
+                    </p>
                   </div>
                 </div>
-
-                {coverUrl && (
-                  <div className="flex justify-end pt-1">
-                    <button
-                      type="button"
-                      onClick={() => setCoverUrl("")}
-                      className="text-2xs text-destructive hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      Remover Capa
-                    </button>
-                  </div>
-                )}
               </div>
 
               {/* Card 2: Dados Básicos & Nicho Estruturado */}
@@ -649,7 +609,7 @@ export function CreatorProfileSheetEditor({
         open={cropperOpen}
         onOpenChange={setCropperOpen}
         imageSrc={cropperSrc}
-        aspect={cropperType === "avatar" ? 1 : 21 / 9}
+        aspect={1}
         cropShape="rect"
         lockAspect={true}
         title={

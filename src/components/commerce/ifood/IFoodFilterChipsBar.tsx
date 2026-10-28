@@ -9,7 +9,7 @@ export interface FilterChipItem {
   icon?: React.ComponentType<any>;
 }
 
-export const CANONICAL_IFOOD_FILTERS: FilterChipItem[] = [
+export const CANONICAL_COMMERCE_FILTERS: FilterChipItem[] = [
   { id: "ordenar", label: "Ordenar", hasDropdown: true },
   { id: "turbo", label: "Turbo", icon: Lightning },
   { id: "entrega_gratis", label: "Entrega grátis" },
@@ -19,6 +19,10 @@ export const CANONICAL_IFOOD_FILTERS: FilterChipItem[] = [
   { id: "rastreavel", label: "Entrega Rastreável", icon: ShieldCheck },
   { id: "distancia", label: "Perto de mim" },
 ];
+
+export const CANONICAL_IFOOD_FILTERS = CANONICAL_COMMERCE_FILTERS;
+export type CommerceFilterChipsBarProps = IFoodFilterChipsBarProps;
+export const CommerceFilterChipsBar = IFoodFilterChipsBar;
 
 export interface IFoodFilterChipsBarProps {
   activeFilters?: string[];
@@ -50,7 +54,7 @@ export function IFoodFilterChipsBar({
             type="button"
             onClick={() => onToggleFilter?.(chip.id)}
             className={cn(
-              "h-9 min-h-9 px-3 rounded-full border text-xs font-semibold flex items-center gap-1.5 shrink-0 snap-start transition-colors cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-2xs",
+              "h-9 min-h-9 px-3 rounded-full border text-xs font-semibold flex items-center gap-2 shrink-0 snap-start transition-colors cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-2xs",
               isActive
                 ? "bg-foreground text-background border-foreground font-bold"
                 : "bg-card text-muted-foreground hover:text-foreground border-border/80 hover:bg-muted/50",

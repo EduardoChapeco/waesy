@@ -159,7 +159,7 @@ export function MediaCarousel({
             </button>
           )}
 
-          {/* ─── Indicador de Pontos Estilo Threads / Apple ────────────── */}
+          {/* ─── Indicador de Pontos Canônico ────────────── */}
           <div className="absolute bottom-3 inset-x-0 flex items-center justify-center gap-2 pointer-events-none z-10">
             <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-background/70 backdrop-blur-md border border-border/40 shadow-2xs">
               {mediaUrls.map((_, dotIdx) => {

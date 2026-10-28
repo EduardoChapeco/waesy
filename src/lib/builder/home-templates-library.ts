@@ -461,7 +461,7 @@ export const HOME_TEMPLATES_LIBRARY: Record<string, HomeTemplatePreset> = {
  parent_id: c1,
  sort_order: 0,
  content: {
- text: "⚡ OFERTA LIMITADA: Até 40% OFF + Frete Grátis nas próximas horas!",
+ text: " OFERTA LIMITADA: Até 40% OFF + Frete Grátis nas próximas horas!",
  bg_color: "#ef4444",
  text_color: "#ffffff",
  },

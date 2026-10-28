@@ -107,7 +107,8 @@ export default function TripPortalPage() {
   }
 
   const { trip, passengers, confirmationItems, vouchers, boletos, officialDocuments, incidents, flightChanges, agency } = dossier;
-  const hotel = trip.hotels?.[0] || {};
+  const hotel = (trip.hotels && trip.hotels.length > 0 && trip.hotels[0]?.name) ? trip.hotels[0] : null;
+  const hasHotel = Boolean(hotel && hotel.name);
   const leadPassenger = passengers.find((p: any) => p.is_lead_passenger) || passengers[0];
   const leadPayerName = leadPassenger?.full_name || trip.client_name || "Passageiro Principal";
 
@@ -573,13 +574,13 @@ export default function TripPortalPage() {
         <div className="tab-list flex flex-nowrap items-center gap-2 overflow-x-auto no-scrollbar pb-2 border-b border-border">
           {[
             { id: "resumo", label: "Resumo & Documentos", icon: FileText },
-            { id: "pre_embarque", label: "Apresentação de Pré-Embarque", icon: Calendar },
+            { id: "pre_embarque", label: "Guia de Embarque", icon: Calendar },
             { id: "roteiro", label: `Roteiro Dia a Dia (${itineraryDays.length} Dias)`, icon: Compass },
             ...(pendingCents > 0
-              ? [{ id: "financeiro", label: "Financeiro & Boletos (OCR)", icon: CreditCard }]
+              ? [{ id: "financeiro", label: "Financeiro & Pagamentos", icon: CreditCard }]
               : []),
             { id: "grupo", label: "Grupo & Mural da Excursão", icon: MessageSquare },
-            { id: "copilot", label: "Assessor da Viagem (Copilot)", icon: MessageSquare },
+            { id: "copilot", label: "Assistente da Viagem", icon: MessageSquare },
             { id: "emergencia", label: "Plantão 24h & Emergência", icon: PhoneCall },
           ].map((tab) => {
             const Icon = tab.icon;
@@ -608,74 +609,122 @@ export default function TripPortalPage() {
           {activeTab === "resumo" && (
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Card 1: Voos, PNR e Franquia de Bagagem */}
-                <div className="p-5 rounded-lg border border-border bg-card space-y-4">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 text-primary font-bold text-sm">
-                      <Plane className="size-4 shrink-0" />
-                      <span>Voos Confirmados e Bagagem</span>
+                {/* Voos Confirmados (Renderizado estritamente quando há voos reais - Invariante B.33) */}
+                {tripContext.flights.length > 0 && tripContext.flights.some((f) => f.flightNumber || f.pnr) && (
+                  <div className="p-5 rounded-xl border border-border bg-card space-y-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 text-foreground font-bold text-sm">
+                        <Plane className="size-4 shrink-0 text-sky-500" />
+                        <span>Passagens Aéreas Confirmadas</span>
+                      </div>
+                      <Badge variant="secondary" className="text-xs font-mono font-bold">
+                        Código: {tripContext.flights[0]?.pnr || "EMITIDO"}
+                      </Badge>
                     </div>
-                    <Badge variant="secondary" className="text-xs font-mono">
-                      PNR: {tripContext.flights[0]?.pnr || "CONFIRMADO"}
-                    </Badge>
-                  </div>
 
-                  <div className="space-y-3">
-                    {tripContext.flights.length > 0 ? (
-                      tripContext.flights.map((fl, idx) => (
+                    <div className="space-y-3">
+                      {tripContext.flights.map((fl, idx) => (
                         <div
                           key={idx}
-                          className="p-3 rounded-lg bg-muted/40 border border-border/60 space-y-1 text-xs"
+                          className="p-4 rounded-lg bg-muted/30 border border-border/70 space-y-2 text-xs"
                         >
                           <div className="flex items-center justify-between font-bold text-foreground">
                             <span>
-                              {fl.direction === "ida" ? "Trecho de Ida" : "Trecho de Retorno"} ·{" "}
-                              {fl.airline} {fl.flightNumber}
+                              {fl.direction === "ida" ? "Voo de Ida" : "Voo de Volta"} · {fl.airline} {fl.flightNumber}
                             </span>
-                            <span className="font-mono text-primary">
+                            <span className="font-mono text-primary font-bold">
                               {fl.originIata} {fl.departureTime} → {fl.destinationIata} {fl.arrivalTime}
                             </span>
                           </div>
-                          <p className="text-muted-foreground break-words leading-relaxed">
-                            Bagagem inclusa: 1 item pessoal + 1 mala de mão ({fl.handBaggageKg}kg) +{" "}
-                            {fl.checkedBaggageCount} mala despachada (23kg).
-                          </p>
+                          <div className="flex items-center justify-between text-muted-foreground pt-1 border-t border-border/40">
+                            <span>Bagagem: Mala de mão ({fl.handBaggageKg}kg) + {fl.checkedBaggageCount} despachada (23kg)</span>
+                            <span className="text-emerald-600 font-semibold font-mono">No Horário</span>
+                          </div>
                         </div>
-                      ))
-                    ) : (
-                      <p className="text-xs text-muted-foreground">Nenhum trecho aéreo vinculado a esta viagem.</p>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Hospedagem Confirmada (Renderizado estritamente quando há hotel real no banco) */}
+                {hasHotel && (
+                  <div className="p-5 rounded-xl border border-border bg-card space-y-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 text-foreground font-bold text-sm">
+                        <Hotel className="size-4 shrink-0 text-rose-500" />
+                        <span>Hospedagem Reservada</span>
+                      </div>
+                      <Badge variant="outline" className="text-xs font-mono">
+                        Reserva: {tripContext.hotelConfirmationId}
+                      </Badge>
+                    </div>
+
+                    <div className="p-4 rounded-lg bg-muted/30 border border-border/70 space-y-2 text-xs">
+                      <p className="text-sm font-bold text-foreground break-words">
+                        {tripContext.hotelName}
+                      </p>
+                      <p className="text-muted-foreground break-words">{tripContext.hotelAddress}</p>
+                      <div className="pt-1 border-t border-border/40 flex flex-wrap gap-2">
+                        <Badge variant="secondary" className="text-xs">
+                          {tripContext.mealPlan}
+                        </Badge>
+                        <Badge variant="outline" className="text-xs">
+                          Entrada: {tripContext.travelStartDate} · Saída: {tripContext.travelEndDate}
+                        </Badge>
+                      </div>
+                      <p className="text-foreground/90 font-medium break-words pt-1">
+                        {tripContext.roomDescription}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Sugestões de Serviços Complementares da Viagem (VOLL Image 5) */}
+                <div className="md:col-span-2 p-4 rounded-xl border border-dashed border-border/80 bg-muted/10 flex flex-wrap items-center justify-between gap-3 text-xs">
+                  <span className="font-semibold text-foreground">
+                    Complete seu itinerário com serviços adicionais:
+                  </span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {!hasHotel && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          const msg = encodeURIComponent(`Olá! Gostaria de cotar opções de hotel para minha viagem a ${tripContext.destination}.`);
+                          window.open(`https://wa.me/5549999991372?text=${msg}`, "_blank", "noopener,noreferrer");
+                        }}
+                        className="h-11 min-h-11 px-4 text-xs font-semibold rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                      >
+                        <Hotel className="size-4 mr-2 text-rose-500" />
+                        <span>+ Adicionar Hotel</span>
+                      </Button>
                     )}
-                  </div>
-                </div>
-
-                {/* Card 2: Hospedagem e Acomodação */}
-                <div className="p-5 rounded-lg border border-border bg-card space-y-4">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 text-primary font-bold text-sm">
-                      <Hotel className="size-4 shrink-0" />
-                      <span>Hospedagem e Acomodação</span>
-                    </div>
-                    <Badge variant="outline" className="text-xs font-mono">
-                      ID: {tripContext.hotelConfirmationId}
-                    </Badge>
-                  </div>
-
-                  <div className="p-3 rounded-lg bg-muted/40 border border-border/60 space-y-2 text-xs">
-                    <p className="text-sm font-bold text-foreground break-words">
-                      {tripContext.hotelName}
-                    </p>
-                    <p className="text-muted-foreground break-words">{tripContext.hotelAddress}</p>
-                    <div className="pt-1 border-t border-border/50 flex flex-wrap gap-2">
-                      <Badge variant="secondary" className="text-xs">
-                        Regime: {tripContext.mealPlan}
-                      </Badge>
-                      <Badge variant="outline" className="text-xs">
-                        Check-in: {tripContext.travelStartDate} · Check-out: {tripContext.travelEndDate}
-                      </Badge>
-                    </div>
-                    <p className="text-foreground/90 font-medium break-words pt-1">
-                      {tripContext.roomDescription}
-                    </p>
+                    {tripContext.flights.length === 0 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          const msg = encodeURIComponent(`Olá! Gostaria de cotar passagens aéreas para minha viagem a ${tripContext.destination}.`);
+                          window.open(`https://wa.me/5549999991372?text=${msg}`, "_blank", "noopener,noreferrer");
+                        }}
+                        className="h-11 min-h-11 px-4 text-xs font-semibold rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                      >
+                        <Plane className="size-4 mr-2 text-sky-500" />
+                        <span>+ Adicionar Voo</span>
+                      </Button>
+                    )}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        const msg = encodeURIComponent(`Olá! Gostaria de cotar aluguel de carro ou transfer para minha viagem a ${tripContext.destination}.`);
+                        window.open(`https://wa.me/5549999991372?text=${msg}`, "_blank", "noopener,noreferrer");
+                      }}
+                      className="h-11 min-h-11 px-4 text-xs font-semibold rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                    >
+                      <Luggage className="size-4 mr-2 text-amber-500" />
+                      <span>+ Alugar Carro / Transfer</span>
+                    </Button>
                   </div>
                 </div>
               </div>

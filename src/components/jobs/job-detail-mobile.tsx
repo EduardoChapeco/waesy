@@ -23,7 +23,7 @@ export function JobDetailMobile({
   onShare,
 }: JobDetailMobileProps) {
   return (
-    <div className="w-full min-h-[100dvh] bg-background text-foreground pb-24 font-sans select-none antialiased">
+    <div className="w-full min-h-dvh bg-background text-foreground pb-24 font-sans select-none antialiased">
       {/* ── 1. Top Bar Mobile com Botão Voltar & Compartilhar ── */}
       <div className="flex items-center justify-between p-3 border-b border-border/40 bg-background/95 backdrop-blur-md sticky top-0 z-30">
         <Link
@@ -172,7 +172,7 @@ export function JobDetailMobile({
               </span>
               <span className="text-2xs font-mono text-muted-foreground">Guia de Mercado</span>
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <div className="p-2 rounded-lg bg-muted/30 border border-border/40 text-center">
                 <span className="text-3xs text-muted-foreground block font-medium">Júnior</span>
                 <span className="text-xs font-bold font-mono text-foreground">{formatMoney(matchedProfession.junior_salary_cents)}</span>
@@ -197,7 +197,7 @@ export function JobDetailMobile({
                 Perfil do Empregador
               </span>
               <span className="text-xs font-bold text-amber-500">
-                ★ {employerInsights.average_rating} ({employerInsights.total_reviews})
+                 {employerInsights.average_rating} ({employerInsights.total_reviews})
               </span>
             </div>
             <p className="text-xs text-foreground/80 leading-snug">

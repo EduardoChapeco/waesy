@@ -482,7 +482,7 @@ export const listStudioTemplates = createServerFn({ method: "GET" })
               visible: true,
               properties: {
                 content:
-                  "📐 145m² de Área Privativa\n🛏️ 3 Suítes com Varanda\n🚗 2 Vagas de Garagem Cobertas\n🏊‍♂️ Lazer Completo no Condomínio",
+                  " 145m² de Área Privativa\n️ 3 Suítes com Varanda\n 2 Vagas de Garagem Cobertas\n‍️ Lazer Completo no Condomínio",
                 fontFamily: "Inter",
                 fontSize: 16,
                 fontWeight: 600,
@@ -693,7 +693,7 @@ export const listStudioTemplates = createServerFn({ method: "GET" })
               visible: true,
               properties: {
                 content:
-                  "✈️ Voo Ida e Volta Incluso\n🏨 6 Noites em Hotel 4 Estrelas\n🚐 Traslados e Seguro Viagem\n❄️ Tour Circuito Chico e Cerro Catedral",
+                  "️ Voo Ida e Volta Incluso\n 6 Noites em Hotel 4 Estrelas\n Traslados e Seguro Viagem\n️ Tour Circuito Chico e Cerro Catedral",
                 fontFamily: "Inter",
                 fontSize: 16,
                 fontWeight: 600,
@@ -1233,7 +1233,7 @@ export const generateSocialStoryCard = createServerFn({ method: "POST" })
   });
 
 // ============================================================
-// STUDIO MACHINE ➔ ESCAMAS CAROUSEL GENERATOR (1-CLICK MINING)
+// STUDIO MACHINE  ESCAMAS CAROUSEL GENERATOR (1-CLICK MINING)
 // ============================================================
 
 export interface GeneratedCarouselResultDTO {

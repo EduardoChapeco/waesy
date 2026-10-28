@@ -128,6 +128,7 @@ export function checkHasCustomPageMobileHeader(pathname: string): boolean {
   if (exactCustomRoutes.has(clean)) return true;
 
   const prefixCustomRoutes = [
+    "/eventos",
     "/doacoes",
     "/ofertas",
     "/recuperar-senha",
@@ -164,6 +165,7 @@ export function checkHasCustomPageMobileHeader(pathname: string): boolean {
     "/conta/contratos",
     "/conta/notificacoes",
     "/conta/pedidos",
+    "/c",
   ];
 
   return prefixCustomRoutes.some((prefix) => clean === prefix || clean.startsWith(`${prefix}/`));
@@ -212,7 +214,7 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
 
   if (isStandalonePage) {
     return (
-      <div className="min-h-[100dvh] w-full bg-background text-foreground flex flex-col overflow-x-hidden">
+      <div className="min-h-dvh w-full bg-background text-foreground flex flex-col overflow-x-hidden">
         {children}
       </div>
     );
@@ -240,7 +242,7 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
  // Em páginas imersivas de mapa, o mapa ocupa 100dvh sem header/footer interferindo
  if (isFullBleedPage) {
  return (
- <div className="h-[100dvh] w-full max-w-full bg-background text-foreground font-sans antialiased relative overflow-hidden flex flex-col">
+ <div className="h-dvh w-full max-w-full bg-background text-foreground font-sans antialiased relative overflow-hidden flex flex-col">
  <main ref={mainRef} className="flex-1 size-full relative overflow-hidden p-0 m-0">
  {children}
  </main>
@@ -319,6 +321,8 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
     location.pathname.includes("/veiculos") ||
     location.pathname.includes("/vagas") ||
     location.pathname.includes("/entrega") ||
+    location.pathname.startsWith("/c/") ||
+    location.pathname.includes("/c/") ||
     location.pathname.includes("/contato");
 
   const isFeedPage = location.pathname.startsWith("/feed");
@@ -380,7 +384,9 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
           className={`main-container-query flex-1 flex flex-col min-w-0 h-full w-full max-w-full ${
             isCopilotPage
               ? "p-0 m-0 overflow-hidden min-h-0"
-              : isFeedPage || isCleanMobileAppPage
+              : isCleanMobileAppPage
+              ? "overflow-y-auto no-scrollbar overflow-x-hidden px-0 sm:px-6 md:px-8 pt-0 md:pt-3 pb-24 md:pb-8"
+              : isFeedPage
               ? "overflow-y-auto no-scrollbar overflow-x-hidden px-2 sm:px-6 md:px-8 pt-0 md:pt-3 pb-24 md:pb-8"
               : isFormPage
               ? "overflow-y-auto no-scrollbar overflow-x-hidden px-2 sm:px-6 md:px-8 pt-0 md:pt-4 pb-20 md:pb-8"

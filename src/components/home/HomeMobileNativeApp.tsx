@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import {
@@ -35,6 +35,7 @@ import { NewsCard } from "@/components/news/news-card";
 import { PlacesHighlightBadge } from "@/components/shell/places-highlight-badge";
 import { AdTelemetryBeacon } from "@/components/commerce/ad-telemetry-beacon";
 import { ProceduralInfiniteFeed } from "@/components/commerce/procedural-infinite-feed";
+import { MultiVitrineDock } from "@/components/commerce/ifood/MultiVitrineDock";
 import { IFoodHeader } from "@/components/commerce/ifood/IFoodHeader";
 import { IFoodFloatingCartBar } from "@/components/commerce/ifood/IFoodFloatingCartBar";
 import { IFoodRecentStoresRail, type RecentStoreItem } from "@/components/commerce/ifood/IFoodRecentStoresRail";
@@ -261,11 +262,14 @@ export function HomeMobileNativeApp({
       subtitle: it.subtitle || null,
       targetUrl: it.target_url || "/ofertas",
       badgeText: it.badge_text || null,
-      actionText: it.badge_text || "Conferir >",
+      actionText: it.badge_text || "Conferir",
       bgColor: it.bg_color || undefined,
       imageUrl: isHealthyImageUrl(it.image_mobile_url || it.image_url)
         ? (it.image_mobile_url || it.image_url)
         : null,
+      iconName: it.icon_name || null,
+      iconUrl: isHealthyImageUrl(it.icon_name) ? it.icon_name : null,
+      showText: it.show_text !== false,
     }));
   }, [homeSections]);
 
@@ -314,39 +318,87 @@ export function HomeMobileNativeApp({
     }));
   }, [liveStores]);
 
+  // ── Observador de Rolagem para Menu Sticky Sub-Header ──
+  const [showStickyCategoryDock, setShowStickyCategoryDock] = useState(false);
+  const categoriesSentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const sentinel = categoriesSentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        // Quando a sentinela no final do grid de categorias sair do topo visível, ativa o dock sticky
+        setShowStickyCategoryDock(!entry.isIntersecting);
+      },
+      { threshold: 0, rootMargin: "-80px 0px 0px 0px" },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, []);
+
+  // ── Condicional de Cupons Reais (Regra B.33 / Anti-Fake) ──
+  const hasActiveCoupons = useMemo(() => {
+    const customSection = getSection("promo_coupon_banner");
+    const hasCustomItems = (customSection?.items || []).some(
+      (it) => it.is_active !== false && (Boolean(it.title?.trim()) || Boolean(it.image_url)),
+    );
+    if (hasCustomItems) return true;
+    const hasStoreCoupons = liveStores.some((s) => Boolean(s.couponBadge));
+    const hasProductCoupons = (filteredMarketplaceProducts || []).some(
+      (p: any) => Boolean(p.has_flash_offer || (p.discount_percent && p.discount_percent > 0)),
+    );
+    return hasStoreCoupons || hasProductCoupons;
+  }, [homeSections, liveStores, filteredMarketplaceProducts]);
+
+  // ── Restaurantes com Cupom REAL (Estritamente com cupom cadastrado) ──
   const spotlightRestaurants = useMemo(() => {
     if (liveStores.length === 0) return [];
-    const gastro = liveStores.filter(
-      (s) =>
-        s.secondaryBadges?.some(
-          (b) => b.toLowerCase().includes("gastro") || b.toLowerCase().includes("restaurante"),
-        ) ||
-        s.name.toLowerCase().includes("lanche") ||
-        s.name.toLowerCase().includes("bistrô") ||
-        s.name.toLowerCase().includes("pizza") ||
-        s.name.toLowerCase().includes("burger") ||
-        s.name.toLowerCase().includes("sabor") ||
-        Boolean(s.couponBadge),
-    );
-    return (gastro.length > 0 ? gastro : liveStores).slice(0, 8);
+    return liveStores.filter((s) => Boolean(s.couponBadge)).slice(0, 8);
   }, [liveStores]);
 
+  // ── Farmácias & Saúde Reais ──
   const spotlightPharmacies = useMemo(() => {
     if (liveStores.length === 0) return [];
-    const others = liveStores.filter(
-      (s) =>
-        s.secondaryBadges?.some(
-          (b) =>
-            b.toLowerCase().includes("farma") ||
-            b.toLowerCase().includes("mercado") ||
-            b.toLowerCase().includes("varejo"),
-        ) ||
-        s.name.toLowerCase().includes("farma") ||
-        s.name.toLowerCase().includes("mercado") ||
-        s.name.toLowerCase().includes("super"),
-    );
-    return others.slice(0, 8);
+    return liveStores
+      .filter(
+        (s) =>
+          s.secondaryBadges?.some((b) => b.toLowerCase().includes("farma")) ||
+          s.name.toLowerCase().includes("farma") ||
+          s.name.toLowerCase().includes("drogaria"),
+      )
+      .slice(0, 8);
   }, [liveStores]);
+
+  // ── Mercados & Conveniência Reais ──
+  const spotlightMarkets = useMemo(() => {
+    if (liveStores.length === 0) return [];
+    return liveStores
+      .filter(
+        (s) =>
+          s.secondaryBadges?.some(
+            (b) =>
+              b.toLowerCase().includes("mercado") ||
+              b.toLowerCase().includes("conveniência") ||
+              b.toLowerCase().includes("super") ||
+              b.toLowerCase().includes("bebida") ||
+              b.toLowerCase().includes("açougue"),
+          ) ||
+          s.name.toLowerCase().includes("mercado") ||
+          s.name.toLowerCase().includes("super") ||
+          s.name.toLowerCase().includes("conveniência"),
+      )
+      .slice(0, 8);
+  }, [liveStores]);
+
+  // ── Produtos com Super Ofertas / Descontos Reais ──
+  const flashOfferProducts = useMemo(() => {
+    if (!filteredMarketplaceProducts || filteredMarketplaceProducts.length === 0) return [];
+    return filteredMarketplaceProducts
+      .filter((p: any) => Boolean(p.has_flash_offer || (p.discount_percent && p.discount_percent > 0)))
+      .slice(0, 8);
+  }, [filteredMarketplaceProducts]);
 
   return (
     <div className="w-full space-y-4 pb-32 pb-safe" data-testid="home-mobile-native-app">
@@ -359,12 +411,25 @@ export function HomeMobileNativeApp({
         hasClubBenefit={true}
       />
 
-      {/* ── 1. ALERTA / FAIXA ROXA DE CUPOM iFOOD (Ativa por padrão no CMS) ── */}
-      {isSectionActive("promo_coupon_banner", true) && (
-        <div className="px-1">
+      {/* ── SUB-HEADER STICKY: DOCK HORIZONTAL DE CATEGORIAS AO ROLAR (Paridade Image 3 iFood) ── */}
+      <div
+        className={cn(
+          "sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border/40 transition-opacity duration-300 w-full",
+          showStickyCategoryDock ? "block" : "hidden",
+        )}
+      >
+        <MultiVitrineDock />
+      </div>
+
+      {/* ── 1. ALERTA / FAIXA ROXA DE CUPOM iFOOD (Pílula Sem Borda - Apenas se existirem cupons reais) ── */}
+      {isSectionActive("promo_coupon_banner", true) && hasActiveCoupons && (
+        <div className="px-3 sm:px-4">
           <PromoCouponBanner
             title={getSection("promo_coupon_banner")?.title || undefined}
             subtitle={getSection("promo_coupon_banner")?.subtitle || undefined}
+            iconUrl={getSection("promo_coupon_banner")?.items?.[0]?.image_url || null}
+            bgColor={getSection("promo_coupon_banner")?.items?.[0]?.bg_color || null}
+            textColor={getSection("promo_coupon_banner")?.items?.[0]?.text_color || null}
           />
         </div>
       )}
@@ -400,7 +465,7 @@ export function HomeMobileNativeApp({
 
       {/* ── 2. GRADE 5x2 DE CATEGORIAS VISUAIS iFOOD (Alimentada pelo CMS — Ativa por padrão) ── */}
       {isSectionActive("quick_categories_ifood", true) && (
-        <section aria-label={quickCategoriesSection?.title || "Categorias Principais"} className="w-full px-1">
+        <section aria-label={quickCategoriesSection?.title || "Categorias Principais"} className="w-full px-3 sm:px-4">
           {quickCategoriesSection?.show_title && quickCategoriesSection.title && (
             <div className="mb-2">
               <h2 className="text-base font-bold text-foreground tracking-tight break-words text-wrap">
@@ -411,7 +476,7 @@ export function HomeMobileNativeApp({
               )}
             </div>
           )}
-          <div className="grid grid-cols-5 gap-y-3 gap-x-2">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-y-3 gap-x-2">
             {resolvedQuickCategories.map((cat: any) => {
               const Icon = cat.icon;
               if (cat.isAction) {
@@ -420,7 +485,7 @@ export function HomeMobileNativeApp({
                     key={cat.id}
                     type="button"
                     onClick={openSuperApp}
-                    className="flex flex-col items-center gap-1.5 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl select-none"
+                    className="flex flex-col items-center gap-2 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl select-none"
                   >
                     <div className="size-14 rounded-2xl bg-muted/60 hover:bg-muted border border-border/60 flex items-center justify-center transition-transform group-hover:scale-105">
                       <Icon size={24} weight="bold" className="text-foreground" />
@@ -435,16 +500,18 @@ export function HomeMobileNativeApp({
                 <Link
                   key={cat.id}
                   to={cat.to as any}
-                  className="flex flex-col items-center gap-1.5 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl select-none relative"
+                  className="flex flex-col items-center gap-2 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl select-none relative"
                 >
-                  <div className="size-14 rounded-2xl bg-muted/40 hover:bg-muted border border-border/60 flex items-center justify-center transition-transform group-hover:scale-105 relative overflow-hidden">
-                    {cat.imageUrl ? (
-                      <img src={cat.imageUrl} alt={cat.label} className="size-10 object-contain" loading="lazy" />
-                    ) : (
-                      <Icon size={26} weight="bold" className="text-primary" />
-                    )}
+                  <div className="relative">
+                    <div className="size-14 rounded-2xl bg-muted/40 hover:bg-muted border border-border/60 flex items-center justify-center transition-transform group-hover:scale-105 overflow-hidden">
+                      {cat.imageUrl ? (
+                        <img src={cat.imageUrl} alt={cat.label} className="size-10 object-contain" loading="lazy" />
+                      ) : (
+                        <Icon size={26} weight="bold" className="text-primary" />
+                      )}
+                    </div>
                     {cat.badge && (
-                      <span className="absolute -top-1.5 -right-1 px-1.5 py-0.5 rounded-full bg-destructive text-destructive-foreground text-3xs font-black uppercase tracking-wider leading-none">
+                      <span className="absolute -top-2 -right-1 z-10 px-2 py-1 rounded-full bg-destructive text-destructive-foreground text-3xs font-black uppercase tracking-wider leading-none shadow-xs pointer-events-none">
                         {cat.badge}
                       </span>
                     )}
@@ -456,6 +523,8 @@ export function HomeMobileNativeApp({
               );
             })}
           </div>
+          {/* Sentinela de Rolagem para fixar a régua horizontal no sub-header */}
+          <div ref={categoriesSentinelRef} className="w-full h-1 pointer-events-none" />
         </section>
       )}
 
@@ -491,7 +560,7 @@ export function HomeMobileNativeApp({
                 className="w-full h-44 rounded-3xl bg-primary p-5 text-primary-foreground flex flex-col justify-between relative overflow-hidden block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <div className="z-10 space-y-1 max-w-xs">
-                  <span className="inline-block px-2.5 py-0.5 rounded-full bg-background/20 text-3xs font-black tracking-wider uppercase">
+                  <span className="inline-block px-2 py-1 rounded-full bg-background/20 text-3xs font-black tracking-wider uppercase">
                     Clube Waesy
                   </span>
                   <h2 className="text-lg font-black tracking-tight leading-tight">
@@ -501,7 +570,7 @@ export function HomeMobileNativeApp({
                     Descontos exclusivos nos estabelecimentos parceiros da cidade.
                   </p>
                 </div>
-                <div className="z-10 flex items-center gap-1.5 pt-2">
+                <div className="z-10 flex items-center gap-2 pt-2">
                   <span className="h-1 w-6 rounded-full bg-primary-foreground" />
                   <span className="h-1 w-3 rounded-full bg-primary-foreground/40" />
                   <span className="h-1 w-3 rounded-full bg-primary-foreground/40" />
@@ -540,14 +609,60 @@ export function HomeMobileNativeApp({
         />
       )}
 
-      {/* ── 7. FARMÁCIAS & MERCADOS FAMOSOS (Cards Visuais Grandes Spotlight iFood — Ativa por padrão) ── */}
+      {/* ── 7. MERCADOS & CONVENIÊNCIA (Cards Visuais Grandes Spotlight iFood) ── */}
+      {spotlightMarkets.length > 0 && (
+        <IFoodVisualSpotlightRail
+          title="Mercados & Conveniência"
+          viewMoreTo="/mercado"
+          stores={spotlightMarkets}
+          onFavoriteToggle={handleFavoriteToggle}
+        />
+      )}
+
+      {/* ── 8. FARMÁCIAS FAMOSAS (Cards Visuais Grandes Spotlight iFood — Ativa por padrão) ── */}
       {isSectionActive("spotlight_pharmacies", true) && spotlightPharmacies.length > 0 && (
         <IFoodVisualSpotlightRail
-          title={getSection("spotlight_pharmacies")?.title || "Farmácias & Mercados Famosos"}
+          title={getSection("spotlight_pharmacies")?.title || "Farmácias Famosas"}
           viewMoreTo="/farmacia"
           stores={spotlightPharmacies}
           onFavoriteToggle={handleFavoriteToggle}
         />
+      )}
+
+      {/* ── 9. SUPER OFERTAS & DESCONTOS (Produtos com Desconto Real) ── */}
+      {flashOfferProducts.length > 0 && (
+        <section aria-label="Super Ofertas" className="space-y-2 py-1">
+          <div className="px-3 sm:px-4 flex items-center justify-between">
+            <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight leading-tight">
+              Super Ofertas
+            </h2>
+            <Link
+              to={"/ofertas" as any}
+              className="text-xs font-bold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xs"
+            >
+              Ver todas
+            </Link>
+          </div>
+          <div data-slot="carousel" className="flex items-center gap-3 overflow-x-auto no-scrollbar px-3 sm:px-4 snap-x snap-mandatory">
+            {flashOfferProducts.map((p: any) => (
+              <div key={p.id} className="w-52 shrink-0 snap-start">
+                <OfferCard
+                  id={p.id}
+                  title={p.title}
+                  slug={p.slug}
+                  store_name={p.store_name}
+                  price_cents={p.price_cents}
+                  original_price_cents={p.original_price_cents || p.price_cents}
+                  discount_percent={p.discount_percent || 0}
+                  mechanic_label={p.mechanic_label || "Oferta"}
+                  cover_image={p.cover_image}
+                  in_stock={p.in_stock}
+                  has_flash_offer={Boolean(p.has_flash_offer)}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
       )}
 
       {/* ── 8. PÍLULAS DE FILTRO RÁPIDO iFOOD (Ordenar, Turbo, Entrega grátis... — Ativa por padrão) ── */}
@@ -569,7 +684,7 @@ export function HomeMobileNativeApp({
               {liveStores.length} abertas
             </span>
           </div>
-          <div className="space-y-2.5">
+          <div className="space-y-2">
             {liveStores.map((st) => (
               <IFoodStoreFeedCard
                 key={st.id}
@@ -622,7 +737,7 @@ export function HomeMobileNativeApp({
                 className={cn(
                   sec.layout_variant === "cards_action_grid"
                     ? "grid grid-cols-2 gap-2"
-                    : "grid grid-cols-4 gap-2",
+                    : "grid grid-cols-2 sm:grid-cols-4 gap-2",
                 )}
               >
                 {activeSecItems.map((it) => (

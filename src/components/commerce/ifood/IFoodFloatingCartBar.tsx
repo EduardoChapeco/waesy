@@ -15,6 +15,8 @@ export interface IFoodFloatingCartBarProps {
   className?: string;
 }
 
+export type FloatingCartBarProps = IFoodFloatingCartBarProps;
+
 export function IFoodFloatingCartBar({
   storeLogoUrl,
   storeName,
@@ -78,10 +80,12 @@ export function IFoodFloatingCartBar({
         type="button"
         onClick={onOpenCart || (() => setIsCartOpen(true))}
         aria-label={`Ver sacola com ${realCount} itens`}
-        className="h-11 min-h-11 px-4 rounded-xl bg-primary hover:bg-primary/90 active:scale-95 text-primary-foreground font-extrabold text-xs flex items-center gap-2 transition-all cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="h-11 min-h-11 px-4 rounded-xl bg-primary hover:bg-primary/90 active:scale-95 text-primary-foreground font-extrabold text-xs flex items-center gap-2 transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <span>Ver sacola</span>
       </button>
     </aside>
   );
 }
+
+export const FloatingCartBar = IFoodFloatingCartBar;

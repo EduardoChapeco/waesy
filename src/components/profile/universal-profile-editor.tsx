@@ -23,7 +23,6 @@ export interface UniversalProfileData {
   handle: string; // @username ou @empresa
   bio?: string;
   avatarUrl?: string | null;
-  coverUrl?: string | null;
   category?: string;
   website?: string;
   whatsapp?: string;
@@ -38,7 +37,6 @@ export interface UniversalProfileEditorProps {
   initialData: UniversalProfileData;
   onSave: (data: UniversalProfileData) => Promise<boolean | void>;
   onUploadAvatar?: (file: File) => Promise<string>;
-  onUploadCover?: (file: File) => Promise<string>;
   className?: string;
 }
 
@@ -46,7 +44,6 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
   initialData,
   onSave,
   onUploadAvatar,
-  onUploadCover,
   className = "",
 }) => {
   const [formData, setFormData] = useState<UniversalProfileData>(initialData);
@@ -70,19 +67,6 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
     }
   };
 
-  const handleCoverFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !onUploadCover) return;
-    try {
-      toast.loading("Enviando capa panorâmica...", { id: "upload-cover" });
-      const url = await onUploadCover(file);
-      setFormData((prev) => ({ ...prev, coverUrl: url }));
-      toast.success("Capa atualizada!", { id: "upload-cover" });
-    } catch {
-      toast.error("Erro ao enviar capa.", { id: "upload-cover" });
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
@@ -101,6 +85,7 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
     company: { label: "Perfil Empresarial", icon: Building2, color: "bg-sky-500/10 text-sky-600 border-sky-500/20" },
     creator: { label: "Perfil de Criador", icon: Star, color: "bg-amber-500/10 text-amber-600 border-amber-500/20" },
   }[formData.personaType];
+  const PersonaIcon = personaBadge.icon;
 
   return (
     <div className={cn("w-full max-w-4xl mx-auto bg-card border border-border/80 rounded-lg overflow-hidden shadow-xs font-sans", className)}>
@@ -121,26 +106,8 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
             {/* Overlay de Câmera */}
             <label className="absolute inset-0 bg-foreground/40 text-foreground flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
               <Camera className="size-5" />
-              <span className="text-2xs font-bold mt-1">Alterar</span>
+              <span className="text-xs font-bold mt-1">Alterar</span>
               <input type="file" accept="image/*" onChange={handleAvatarFile} className="hidden" />
-            </label>
-          </div>
-
-          {/* Capa Panorâmica Canônica 21:9 ao lado */}
-          <div className="flex-1 min-w-0 aspect-[21/9] rounded-lg bg-muted/20 relative overflow-hidden flex items-center group border border-border/40">
-            {formData.coverUrl ? (
-              <img src={formData.coverUrl} alt="Capa" className="size-full object-cover select-none" />
-            ) : (
-              <div className="size-full bg-gradient-to-r from-muted to-muted/60 flex items-center justify-center text-muted-foreground p-3 text-center">
-                <span className="text-xs font-medium">Sem imagem de capa (Proporção 21:9)</span>
-              </div>
-            )}
-
-            {/* Trigger de Alteração da Capa */}
-            <label className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 bg-background/85 hover:bg-background backdrop-blur-md border border-border/80 text-foreground px-3 py-2 rounded-full text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-xs transition-transform active:scale-95">
-              <ImageIcon className="size-3.5" />
-              <span className="hidden sm:inline">Alterar Capa</span>
-              <input type="file" accept="image/*" onChange={handleCoverFile} className="hidden" />
             </label>
           </div>
         </div>
@@ -158,7 +125,7 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
 
           <div className="flex items-center gap-3 shrink-0">
             <div className={cn("inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold border", personaBadge.color)}>
-              <personaBadge.icon className="size-3.5" />
+              <PersonaIcon className="size-4" />
               <span>{personaBadge.label}</span>
             </div>
 
@@ -167,9 +134,9 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
               onClick={handleSubmit}
               disabled={isSaving}
               size="sm"
-              className="h-11 sm:h-9 px-4 sm:px-5 rounded-lg font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs active:scale-95 cursor-pointer"
+              className="h-11 min-h-11 px-4 sm:px-5 rounded-lg font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs active:scale-95 cursor-pointer"
             >
-              {isSaving ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : <Check className="size-3.5 mr-1" />}
+              {isSaving ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> : <Check className="size-4 mr-1" />}
               <span>Salvar</span>
             </Button>
           </div>
@@ -315,7 +282,7 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-xs font-bold text-foreground flex items-center gap-2">
-                <Phone className="size-3.5 text-muted-foreground" />
+                <Phone className="size-4 text-muted-foreground" />
                 <span>WhatsApp de Atendimento</span>
               </label>
               <Input
@@ -328,7 +295,7 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
 
             <div className="space-y-2">
               <label className="text-xs font-bold text-foreground flex items-center gap-2">
-                <Globe className="size-3.5 text-muted-foreground" />
+                <Globe className="size-4 text-muted-foreground" />
                 <span>Website / Link Externo</span>
               </label>
               <Input

@@ -336,7 +336,7 @@ export default function WorkspaceDashboardPage() {
       </div>
 
       {/* ── 2. Bento Grid Operacional de Alta Performance (12 Colunas) ── */}
-      <div className="grid grid-cols-12 gap-4 sm:gap-4 lg:gap-5 items-stretch">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-4 lg:gap-5 items-stretch">
         {/* Herói de Faturamento do Mês (7/8 cols no Desktop, 12 cols no Mobile) */}
         <div className="col-span-12 lg:col-span-7 xl:col-span-8 p-5 sm:p-6 rounded-xl bg-card border border-border/70 flex flex-col justify-between gap-5">
           <div className="space-y-3">
@@ -460,7 +460,7 @@ export default function WorkspaceDashboardPage() {
       />
 
       {/* ── 4. Matriz Bilateral: Atividades Reais & Vitrine / Canais Contextuais ── */}
-      <div className="grid grid-cols-12 gap-4 sm:gap-4 lg:gap-5 items-stretch">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-4 lg:gap-5 items-stretch">
         {/* Atividades Recentes do Banco de Dados (8 cols no Desktop, 12 cols no Mobile) */}
         <Card className="col-span-12 lg:col-span-8 p-5 border border-border/40 bg-card rounded-lg flex flex-col justify-between h-full space-y-4 shadow-none">
           <div className="space-y-4">

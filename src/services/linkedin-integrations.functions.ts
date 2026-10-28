@@ -761,7 +761,7 @@ export const syndicateJobToLinkedIn = createServerFn({ method: "POST" })
         specificContent: {
           "com.linkedin.ugc.ShareContent": {
             shareCommentary: {
-              text: `📢 Nova Oportunidade: ${job.title} na ${job.company_name}!\n\n📍 Local: ${job.location} (${job.workplace_type})\n📄 Contrato: ${job.contract_type}\n\nCandidate-se diretamente pelo ecossistema Waesy: ${trackingUrl}`,
+              text: ` Nova Oportunidade: ${job.title} na ${job.company_name}!\n\n Local: ${job.location} (${job.workplace_type})\n Contrato: ${job.contract_type}\n\nCandidate-se diretamente pelo ecossistema Waesy: ${trackingUrl}`,
             },
             shareMediaCategory: "ARTICLE",
             media: [

@@ -95,7 +95,7 @@ export function ImportCatalogModal({
 
  return (
  <Dialog open={open} onOpenChange={onOpenChange}>
- <DialogContent className="sm:max-w-2xl w-full p-0 gap-0 overflow-hidden rounded-lg bg-card border border-border max-h-[90vh] flex flex-col">
+ <DialogContent className="sm:max-w-2xl w-full p-0 gap-0 overflow-hidden rounded-lg bg-card border border-border max-h-(--spacing-screen-90,90vh) flex flex-col">
  <DialogHeader className="p-5 border-b border-border/80 bg-muted/20">
  <div className="flex items-center gap-3">
  <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">

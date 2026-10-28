@@ -63,7 +63,7 @@ export function EventHorizontalCard({
       params={{ id }}
       className={cn(
         "w-72 sm:w-80 h-24 rounded-2xl border border-border/60 bg-card p-2 flex items-center gap-3 shrink-0 snap-start select-none",
-        "hover:border-foreground/30 hover:bg-muted/20 transition-all duration-200 shadow-2xs group cursor-pointer",
+        "hover:border-foreground/30 hover:bg-muted/20 transition-colors duration-200 shadow-2xs group cursor-pointer",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
         className,
       )}
@@ -81,12 +81,12 @@ export function EventHorizontalCard({
       </div>
 
       {/* ── Conteúdo Textual Direito: Título, Data com Ícone, Local com Pin ── */}
-      <div className="flex-1 min-w-0 flex flex-col justify-between h-full py-0.5">
+      <div className="flex-1 min-w-0 flex flex-col justify-between h-full py-1">
         <h3 className="text-xs font-bold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">
           {title}
         </h3>
 
-        <div className="space-y-0.5">
+        <div className="space-y-1">
           <div className="flex items-center gap-1 text-2xs text-muted-foreground font-mono">
             <CalendarBlank size={12} weight="bold" className="shrink-0 text-primary" />
             <span className="truncate">{formattedDate}</span>

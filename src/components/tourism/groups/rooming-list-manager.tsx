@@ -122,7 +122,7 @@ export function RoomingListManager({ rooms, onRoomsChange, tourTitle }: RoomingL
  return;
  }
 
- let summary = `📋 ROOMING LIST OFICIAL — ${tourTitle || "Excursão Waesy"}\n`;
+ let summary = ` ROOMING LIST OFICIAL — ${tourTitle || "Excursão Waesy"}\n`;
  summary += `Total de Quartos: ${rooms.length} | Total de Hóspedes: ${totalPaxInRooms}\n\n`;
 
  rooms.forEach((r, idx) => {

@@ -423,11 +423,11 @@ export function TravelQuoteModal({
  <Label className="text-xs font-bold text-muted-foreground">Tipo de Pacote Desejado</Label>
  <div className="grid grid-cols-2 gap-2">
  {[
- { id: "air_package", label: "✈️ Voo + Hotel", desc: "Pacote Completo" },
- { id: "hotel_only", label: "🏨 Somente Hotel", desc: "Resorts & Pousadas" },
- { id: "cruise", label: "🚢 Cruzeiro", desc: "Marítimo com Pensão" },
- { id: "bus", label: "🚌 Rodoviário", desc: "Passeios Regionais" },
- { id: "visa_assistance", label: "🛂 Visto Americano", desc: "Assessoria Consular" },
+ { id: "air_package", label: "️ Voo + Hotel", desc: "Pacote Completo" },
+ { id: "hotel_only", label: " Somente Hotel", desc: "Resorts & Pousadas" },
+ { id: "cruise", label: " Cruzeiro", desc: "Marítimo com Pensão" },
+ { id: "bus", label: " Rodoviário", desc: "Passeios Regionais" },
+ { id: "visa_assistance", label: " Visto Americano", desc: "Assessoria Consular" },
  ].map((t) => (
  <button
  key={t.id}

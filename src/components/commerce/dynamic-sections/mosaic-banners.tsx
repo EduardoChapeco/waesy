@@ -30,7 +30,7 @@ export function MosaicBanners({ content }: { content: Record<string, unknown> })
                     src={bg_url}
                     alt={title || `Banner ${index + 1}`}
                     loading="lazy"
-                    className="relative size-full object-contain @md:object-cover transition-transform duration-700 group-hover:scale-105 select-none"
+                    className="relative size-full object-contain @md:object-cover transition-transform duration-200 group-hover:scale-105 select-none"
                   />
                 </>
               ) : (

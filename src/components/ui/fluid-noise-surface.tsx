@@ -49,7 +49,7 @@ export function FluidNoiseSurface({
  return (
  <div
  className={cn(
- "relative overflow-hidden rounded-lg bg-gradient-to-br transition-colors duration-200 duration-500",
+ "relative overflow-hidden rounded-lg bg-card transition-colors duration-200",
  getGradientClasses(),
  className
  )}

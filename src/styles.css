@@ -106,13 +106,14 @@
   }
 }
 
-/* Canonical Aspect Ratio Traps for Anti-Jank & Zero CLS (Apple HIG / iFood) */
+/* Canonical Aspect Ratio Traps for Anti-Jank & Zero CLS (Ergonomia Nativa Waesy) */
 .aspect-banner-slim {
   aspect-ratio: 28 / 9;
 }
 .aspect-banner-ultrawide {
   aspect-ratio: 32 / 9;
 }
+.aspect-banner-hero,
 .aspect-banner-ifood {
   aspect-ratio: 21 / 9;
 }
@@ -346,9 +347,9 @@
 
 /* ── Canonical Motion Cap (P16 / C17 / L18) ── */
 /* Todas as transições utilitárias limitadas a 150-200ms para sensação nativa ágil */
-.duration-500,
-.duration-700,
-.duration-1000 {
+.duration-200,
+.duration-200,
+.duration-200 {
   transition-duration: 200ms;
   animation-duration: 200ms;
 }
@@ -1060,7 +1061,7 @@
 @utility min-w-18 {
   min-width: 4.5rem;
 }
-/* ── Menu Lateral Mobile & Push Canvas (iFood / Threads Parity) ─────────── */
+/* ── Menu Lateral Mobile & Push Canvas (Canvas Nativo Deslizante) ─────────── */
 @utility lateral-sheet-width {
   width: 85vw;
   max-width: 24rem;

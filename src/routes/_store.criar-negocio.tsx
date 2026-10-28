@@ -529,9 +529,9 @@ function CriarNegocioPage() {
  <img
  src={segment.coverImage}
  alt={segment.title}
- className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-105"
+ className="absolute inset-0 size-full object-cover transition-transform duration-200 group-hover:scale-105"
  />
- <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/30" />
+ <div className="absolute inset-0 bg-black/60" />
 
  <div className="relative z-10 flex items-start justify-between gap-2">
  <div className="size-9 rounded-lg flex items-center justify-center backdrop-blur-md bg-foreground/40 border border-white/15 text-foreground">
@@ -765,7 +765,7 @@ function CriarNegocioPage() {
  {/* Banner de Logística — EXCLUSIVO para negócios de Delivery/Varejo */}
  {isDeliverySegment && (
  <div className="relative rounded-lg overflow-hidden border border-border/80 bg-card shadow-xs">
- <div className="relative h-44 sm:h-52 w-full overflow-hidden bg-gradient-to-br from-zinc-900 via-zinc-800 to-black">
+ <div className="relative h-44 sm:h-52 w-full overflow-hidden bg-muted">
  {logisticsInfo?.image_desktop_url && (
  <img
  src={logisticsInfo.image_desktop_url}
@@ -773,7 +773,7 @@ function CriarNegocioPage() {
  className="size-full object-cover"
  />
  )}
- <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+ <div className="absolute inset-0 bg-black/60" />
 
  <div className="absolute inset-x-0 bottom-0 p-5 text-foreground space-y-2">
  <div className="flex items-center gap-2">
@@ -1193,7 +1193,7 @@ function CriarNegocioPage() {
  className="size-full object-cover opacity-80 select-none"
  />
  )}
- <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+ <div className="absolute inset-0 bg-black/40" />
  <div className="absolute bottom-2 left-2">
  <Badge className="bg-foreground/60 backdrop-blur-md text-foreground border-white/20 text-3xs font-bold gap-1">
  <selectedSegment.icon className="size-2.5" />

@@ -5,6 +5,13 @@ describe("Adversarial Stress Test: checkHasCustomPageMobileHeader", () => {
   describe("1. Canonical Exact and Prefix Routes (Expected Positive)", () => {
     it("recognizes exact custom routes correctly", () => {
       const exactRoutes = [
+        "/",
+        "/gastronomia",
+        "/mercado",
+        "/farmacia",
+        "/bebidas",
+        "/acougue",
+        "/pet",
         "/conta",
         "/agenda",
         "/afiliados",
@@ -93,14 +100,13 @@ describe("Adversarial Stress Test: checkHasCustomPageMobileHeader", () => {
   });
 
   describe("4. Non-Existent and Boundary Routes (Expected Negative)", () => {
-    it("rejects root and empty paths", () => {
-      expect(checkHasCustomPageMobileHeader("/")).toBe(false);
-      expect(checkHasCustomPageMobileHeader("")).toBe(false);
-      expect(checkHasCustomPageMobileHeader("///")).toBe(false);
+    it("recognizes home root and rejects unrelated routes", () => {
+      expect(checkHasCustomPageMobileHeader("/")).toBe(true);
+      expect(checkHasCustomPageMobileHeader("")).toBe(true);
+      expect(checkHasCustomPageMobileHeader("///")).toBe(true);
     });
 
     it("rejects unrelated routes", () => {
-      expect(checkHasCustomPageMobileHeader("/mercado")).toBe(false);
       expect(checkHasCustomPageMobileHeader("/carrinho")).toBe(false);
       expect(checkHasCustomPageMobileHeader("/checkout")).toBe(false);
       expect(checkHasCustomPageMobileHeader("/noticias")).toBe(false);

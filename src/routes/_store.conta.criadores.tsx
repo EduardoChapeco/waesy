@@ -130,7 +130,7 @@ function CreatorProfilesManagementPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-background text-foreground pb-24">
+    <div className="min-h-dvh bg-background text-foreground pb-24">
       {/* ─── Top Bar Executiva Apple HIG ────────────────────────────── */}
       <div className="border-b border-border/40 bg-card/60 backdrop-blur-md px-4 sm:px-6 py-4 sticky top-0 z-20">
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
@@ -304,7 +304,7 @@ function CreatorProfilesManagementPage() {
                   </div>
 
                   {/* Telemetria Compacta */}
-                  <div className="grid grid-cols-3 gap-3 pt-1">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
                     <div className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-1">
                       <span className="text-2xs text-muted-foreground uppercase tracking-wider font-medium">
                         Cliques

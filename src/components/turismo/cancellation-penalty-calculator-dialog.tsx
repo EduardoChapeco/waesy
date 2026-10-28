@@ -96,7 +96,7 @@ export function CancellationPenaltyCalculatorDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl rounded-lg p-6 max-h-[90vh] overflow-y-auto no-scrollbar space-y-4">
+      <DialogContent className="max-w-2xl rounded-lg p-6 max-h-(--spacing-screen-90,90vh) overflow-y-auto no-scrollbar space-y-4">
         <DialogHeader className="space-y-1">
           <div className="flex items-center gap-2">
             <Calculator className="size-5 text-primary shrink-0" />

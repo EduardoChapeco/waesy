@@ -38,7 +38,7 @@ export function RealEstateLuxuryDarkGlass({ data, className = "" }: SocialTempla
   const resolvedSpecs = highlights && highlights.length > 0 ? highlights.slice(0, 4) : defaultSpecs;
 
   return (
-    <div className={`relative w-full h-full overflow-hidden bg-gradient-to-b from-[#050811] via-[#020408] to-[#010204] text-foreground select-none p-6 sm:p-8 flex flex-col justify-between ${className}`}>
+    <div className={`relative w-full h-full overflow-hidden bg-slate-950 text-foreground select-none p-6 sm:p-8 flex flex-col justify-between ${className}`}>
       {/* ── 1. Header Noturno com Identidade de Luxo ── */}
       <div className="pt-2 text-center space-y-2 shrink-0">
         <div className="inline-flex items-center gap-2 text-2xs font-mono uppercase tracking-[0.25em] text-amber-300 font-bold">
@@ -46,7 +46,7 @@ export function RealEstateLuxuryDarkGlass({ data, className = "" }: SocialTempla
           <span>{storeName || "Private Properties"}</span>
           <Star className="size-3.5 text-amber-400" />
         </div>
-        <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-amber-400/60 to-transparent mx-auto" />
+        <div className="w-16 h-0.5 bg-amber-400/40 mx-auto" />
       </div>
 
       {/* ── 2. Fotografia Central em Moldura Squircle Iluminada (62% da área) ── */}
@@ -58,7 +58,7 @@ export function RealEstateLuxuryDarkGlass({ data, className = "" }: SocialTempla
           className="w-full h-full object-cover object-center transform scale-103"
         />
         {/* Overlay com vinheta profunda */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40" />
+        <div className="absolute inset-0 bg-black/60" />
 
         {/* Selo Dourado de Oportunidade */}
         <div className="absolute top-4 left-4">
@@ -115,7 +115,7 @@ export function RealEstateLuxuryDarkGlass({ data, className = "" }: SocialTempla
             </div>
           </div>
 
-          <div className="w-full h-12 rounded-lg bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-amber-400/20 active:scale-95 transition-transform duration-200 cursor-pointer">
+          <div className="w-full h-12 rounded-lg bg-amber-400 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 active:scale-95 transition-transform duration-200 cursor-pointer">
             <span>{ctaLabel}</span>
             <ArrowRight className="size-4 stroke-[3]" />
           </div>

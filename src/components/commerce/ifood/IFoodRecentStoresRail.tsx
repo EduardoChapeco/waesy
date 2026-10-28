@@ -19,6 +19,8 @@ export interface IFoodRecentStoresRailProps {
   className?: string;
 }
 
+export type RecentStoresRailProps = IFoodRecentStoresRailProps;
+
 export function IFoodRecentStoresRail({
   title = "Últimas lojas",
   viewMoreTo = "/lojas",
@@ -54,7 +56,7 @@ export function IFoodRecentStoresRail({
           <Link
             key={store.id}
             to={`/loja/${store.slug}` as any}
-            className="w-28 sm:w-32 h-32 sm:h-36 rounded-2xl bg-muted/40 hover:bg-muted/70 border border-border/60 p-2.5 flex flex-col items-center justify-between shrink-0 snap-start transition-transform duration-200 active:scale-95 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-2xs group text-center"
+            className="w-28 sm:w-32 h-32 sm:h-36 rounded-2xl bg-muted/40 hover:bg-muted/70 border border-border/60 p-2 flex flex-col items-center justify-between shrink-0 snap-start transition-transform duration-200 active:scale-95 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-2xs group text-center"
           >
             {/* Logo Redondo Central com Sombra */}
             <div className="size-14 sm:size-16 rounded-full overflow-hidden border border-border/80 bg-background flex items-center justify-center shrink-0 shadow-xs relative group-hover:scale-105 transition-transform">
@@ -69,7 +71,7 @@ export function IFoodRecentStoresRail({
                   }}
                 />
               ) : (
-                <div className="size-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center text-primary font-black text-lg">
+                <div className="size-full bg-muted flex items-center justify-center text-primary font-black text-lg">
                   {(store.name || "L").trim().charAt(0).toUpperCase()}
                 </div>
               )}
@@ -77,7 +79,7 @@ export function IFoodRecentStoresRail({
 
             {/* Badge Verde ("R$ 5 off" ou "Grátis") */}
             {store.badge && (
-              <div className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded-sm bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-3xs font-black tracking-tight leading-none">
+              <div className="inline-flex items-center gap-1 px-2 py-0.2 rounded-sm bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-3xs font-black tracking-tight leading-none">
                 <Tag size={10} weight="bold" />
                 <span>{store.badge}</span>
               </div>
@@ -93,3 +95,5 @@ export function IFoodRecentStoresRail({
     </section>
   );
 }
+
+export const RecentStoresRail = IFoodRecentStoresRail;

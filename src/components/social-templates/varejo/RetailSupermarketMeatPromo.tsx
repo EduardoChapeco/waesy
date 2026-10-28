@@ -41,7 +41,7 @@ export function RetailSupermarketMeatPromo({ data, scale = 1, className = "" }: 
       </div>
 
       {/* ── 2. Centro: Polígono Amarelo Chanfrado (Estilo Encarte de Carnes El Zonda) ── */}
-      <div className="relative my-4 flex-1 flex flex-col items-center justify-between bg-[#FEE101] text-slate-950 rounded-[48px] border-8 border-slate-950 p-8 shadow-2xl overflow-hidden">
+      <div className="relative my-4 flex-1 flex flex-col items-center justify-between bg-[#FEE101] text-slate-950 rounded-3xl border-8 border-slate-950 p-8 shadow-2xl overflow-hidden">
         {/* Título Principal no Topo do Card Amarelo */}
         <div className="w-full text-center pb-4 border-b-4 border-slate-950">
           <h1 className="text-5xl sm:text-6xl font-black uppercase tracking-tight text-slate-950 leading-tight">

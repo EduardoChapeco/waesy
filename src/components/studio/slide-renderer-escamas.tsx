@@ -62,7 +62,7 @@ export const SlideRendererEscamas: React.FC<SlideRendererEscamasProps> = ({
         {slide.background_url ? (
           <img
             src={slide.background_url}
-            className="w-full h-full object-cover transition-opacity duration-700"
+            className="w-full h-full object-cover transition-opacity duration-200"
             style={{ opacity: bgOpacity }}
             alt="Fundo Editorial"
             crossOrigin="anonymous"
@@ -246,7 +246,7 @@ export const SlideRendererEscamas: React.FC<SlideRendererEscamasProps> = ({
 
       {/* OVERLAY DE PROCESSAMENTO / ESCULPINDO CAMADAS */}
       {slide.isLoading && (
-        <div className="absolute inset-0 z-[100] bg-foreground/75 backdrop-blur-md flex flex-col items-center justify-center text-foreground">
+        <div className="absolute inset-0 z-50 bg-foreground/75 backdrop-blur-md flex flex-col items-center justify-center text-foreground">
           <div
             className="w-20 h-20 border-4 border-t-transparent rounded-full animate-spin motion-reduce:animate-none mb-6"
             style={{ borderColor: brand.secondaryColor || "#38bdf8", borderTopColor: "transparent" }}

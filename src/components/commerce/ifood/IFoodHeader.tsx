@@ -20,6 +20,8 @@ export interface IFoodHeaderProps {
   className?: string;
 }
 
+export type VitrineAppHeaderProps = IFoodHeaderProps;
+
 export function IFoodHeader({
   userName,
   activeAddress,
@@ -58,7 +60,7 @@ export function IFoodHeader({
   return (
     <header
       className={cn(
-        "w-full bg-background/95 backdrop-blur-md py-2 px-3 sm:px-4 flex flex-col gap-1.5 sticky top-0 z-30 border-b border-border/40 md:hidden pt-safe",
+        "w-full bg-background/95 backdrop-blur-md py-2 px-3 sm:px-4 flex flex-col gap-2 sticky top-0 z-30 border-b border-border/40 md:hidden pt-safe",
         className,
       )}
       data-testid="ifood-canonical-header"
@@ -95,14 +97,14 @@ export function IFoodHeader({
         </div>
 
         {/* LADO DIREITO: Clube Fidelidade + Sino de Notificações */}
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
             onClick={onClubClick || (() => navigate({ to: "/conta/creditos" }))}
             aria-label="Clube de Benefícios e Cupons"
-            className="size-11 min-w-11 min-h-11 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-colors flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shrink-0 relative"
+            className="size-11 min-w-11 min-h-11 rounded-lg bg-transparent hover:bg-muted/40 text-purple-600 dark:text-purple-400 transition-colors flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shrink-0 relative"
           >
-            <Diamond size={20} weight="fill" />
+            <Diamond size={22} weight="fill" className="text-purple-600 dark:text-purple-400" />
             {hasClubBenefit && (
               <span className="absolute top-2 right-2 size-2 rounded-full bg-primary ring-2 ring-background" />
             )}
@@ -126,7 +128,7 @@ export function IFoodHeader({
 
       {/* ── SEGUNDA LINHA: Campo de Busca Integrado (44px Piso Apple HIG) ── */}
       {(showSearch || onSearchChange) && (
-        <div className="w-full pt-1 pb-0.5">
+        <div className="w-full pt-1 pb-1">
           <div className="relative flex items-center w-full">
             <MagnifyingGlass
               size={18}
@@ -157,3 +159,5 @@ export function IFoodHeader({
     </header>
   );
 }
+
+export const VitrineAppHeader = IFoodHeader;

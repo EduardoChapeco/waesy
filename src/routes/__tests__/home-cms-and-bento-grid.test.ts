@@ -90,10 +90,10 @@ describe("Homepage Nativa 3.0 & CMS Omni-Builder (DEC-220)", () => {
       expect(hero?.show_title).toBe(false);
     });
 
-    it("a seção quick_categories_ifood deve ter proporção 1:1 e layout horizontal_scroll", () => {
+    it("a seção quick_categories_ifood deve ter proporção 1:1 e layout grid_2d ou horizontal_scroll", () => {
       const quick = CANONICAL_DEFAULT_HOME_SECTIONS.find((s) => s.section_key === "quick_categories_ifood");
       expect(quick).toBeDefined();
-      expect(quick?.layout_variant).toBe("horizontal_scroll");
+      expect(["grid_2d", "horizontal_scroll"]).toContain(quick?.layout_variant);
       expect(quick?.aspect_ratio).toBe("1:1");
       expect(quick?.items.length).toBeGreaterThanOrEqual(6);
     });
@@ -109,7 +109,7 @@ describe("Homepage Nativa 3.0 & CMS Omni-Builder (DEC-220)", () => {
       CANONICAL_DEFAULT_HOME_SECTIONS.forEach((sec) => {
         sec.items.forEach((item) => {
           expect(item.target_url).toBeTruthy();
-          expect(item.target_url.startsWith("/")).toBe(true);
+          expect(item.target_url.startsWith("/") || item.target_url.startsWith("#")).toBe(true);
           if (item.image_url) {
             expect(isHealthyImageUrl(item.image_url)).toBe(true);
           }

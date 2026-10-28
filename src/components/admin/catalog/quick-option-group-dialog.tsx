@@ -567,7 +567,7 @@ export function QuickOptionGroupDialog({
  </div>
 
  {/* Nome da Opção */}
- <div className="flex-1 min-w-[140px]">
+ <div className="flex-1 min-w-35">
  <Input
  placeholder="Nome do adicional (ex: Bacon Extra)"
  className="h-9 text-xs rounded-lg"

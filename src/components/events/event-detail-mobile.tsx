@@ -72,7 +72,7 @@ export function EventDetailMobile({
         )}
 
         {/* Gradiente superior para contraste dos botões */}
-        <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/60 via-black/25 to-transparent pointer-events-none z-10" />
+        <div className="absolute inset-x-0 top-0 h-24 bg-black/40 pointer-events-none z-10" />
 
         {/* Botão Circular Flutuante "Voltar" (44px Apple HIG) */}
         <Link
@@ -262,7 +262,7 @@ export function EventDetailMobile({
             </span>
           </div>
 
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <button
               type="button"
               onClick={() => handleToggleRsvp("going")}

@@ -27,7 +27,7 @@ import { getPublicMemberProfile, toggleUserFollow, updateMemberResumeData, searc
 import { getPostMediaSignedUrl } from "@/services/storage.functions";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { ProfessionalLicenseEditSheet } from "@/components/profile/professional-resume-editor";
+import { ProfessionalLicenseEditSheet, ExperienceEditSheet } from "@/components/profile/professional-resume-editor";
 import { RichBioContent } from "@/components/profile/RichBioContent";
 import { ProfileInPageEditor } from "@/components/profile/ProfileInPageEditor";
 import { TetrisActionGrid } from "@/components/layout/tetris-action-grid";
@@ -428,77 +428,103 @@ export function MemberPublicProfileView({
         </div>
       ) : (
         <>
-          {/* ── Bloco 1: Header do Perfil (Capa Full-Bleed Twitter-Style + Avatar Sobreposto + Stats em Linha) ── */}
-      <div className="rounded-lg bg-card border border-border/40 overflow-hidden">
-        {/* Capa Panorâmica Superior 4:1 (sem scroll interno) */}
-        {/* design-lint-ignore DL-02 reason:"Aspect ratio canonico da capa panoramica de perfil" expiry:"2027-12-31" */}
-        <div className="w-full aspect-[3/1] sm:aspect-[4/1] bg-muted/30 relative overflow-hidden group">
-          {profile?.cover_url || profile?.coverUrl ? (
-            <img
-              src={profile.cover_url || profile.coverUrl}
-              alt="Capa do Perfil"
-              className="size-full object-cover select-none"
-            />
-          ) : (
-            <div className="size-full bg-muted/40 from-primary/10 via-muted/40 to-primary/15 flex items-center justify-center text-muted-foreground/60 gap-2 text-xs font-medium">
-              <Camera className="size-5 text-primary/30" />
-              <span>Espaço para foto de capa</span>
+          {/* ── CABEÇALHO DO PERFIL CANÔNICO (INSTAGRAM / THREADS / APPLE HIG — SEM CAPA) ── */}
+          <div className="rounded-2xl bg-card border border-border/40 p-4 sm:p-6 space-y-4 shadow-xs">
+            {/* Top Row: Avatar Squircle 1:1 e Stats em Linha Horizontal */}
+            <div className="flex items-center justify-between gap-4">
+              {/* Avatar 1:1 Squircle */}
+              <div className="relative group shrink-0">
+                <Avatar className="size-20 sm:size-24 rounded-2xl ring-2 ring-border/50 bg-muted shrink-0 overflow-hidden flex items-center justify-center">
+                  {avatarSrc ? (
+                    <AvatarImage
+                      src={avatarSrc}
+                      alt={profile.full_name || "Membro"}
+                      className="object-cover size-full"
+                    />
+                  ) : null}
+                  <AvatarFallback className="text-xl sm:text-2xl font-black bg-muted text-foreground rounded-2xl flex items-center justify-center select-none">
+                    {avatarInitials}
+                  </AvatarFallback>
+                </Avatar>
+                {isOwner && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditorInitialTab("identidade");
+                      setIsProfileInPageEditorOpen(true);
+                    }}
+                    className="absolute inset-0 bg-background/70 text-foreground rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-xs font-semibold gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    title="Alterar Foto"
+                  >
+                    <Camera className="size-4" />
+                    <span className="text-xs">Alterar</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Stats em Linha Horizontal Limpa (Padrão Threads / Instagram) */}
+              <div className="flex items-center gap-4 sm:gap-8 flex-1 justify-around max-w-sm">
+                <div className="text-center">
+                  <p className="text-base sm:text-lg font-black text-foreground font-mono tabular-nums leading-none">
+                    {posts?.length || stats.postsCount || 0}
+                  </p>
+                  <p className="text-xs text-muted-foreground font-medium mt-1">Posts</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-base sm:text-lg font-black text-foreground font-mono tabular-nums leading-none">
+                    {followersCount}
+                  </p>
+                  <p className="text-xs text-muted-foreground font-medium mt-1">Seguidores</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-base sm:text-lg font-black text-foreground font-mono tabular-nums leading-none">
+                    {stats.followingCount || 0}
+                  </p>
+                  <p className="text-xs text-muted-foreground font-medium mt-1">Seguindo</p>
+                </div>
+              </div>
             </div>
-          )}
 
-          {isOwner && (
-            <button
-              type="button"
-              onClick={() => {
-                setEditorInitialTab("identidade");
-                setIsProfileInPageEditorOpen(true);
-              }}
-              className="absolute top-3 right-3 bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-3 py-2 rounded-lg border border-border/60 text-xs font-semibold flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors z-20 h-11 min-h-11"
-              title="Alterar Capa"
-            >
-              <Camera className="size-3.5" />
-              <span>Alterar Capa</span>
-            </button>
-          )}
-        </div>
+            {/* Identidade, Título, Ocupação & Bio Completa */}
+            <div className="space-y-2 pt-2 border-t border-border/30">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
+                    {profile.full_name}
+                  </h1>
+                  {profile.is_verified && (
+                    <ShieldCheck className="size-4 text-primary fill-primary/20 shrink-0" />
+                  )}
+                  {profile.username && (
+                    <span className="text-xs sm:text-sm font-medium text-muted-foreground font-mono">
+                      @{profile.username}
+                    </span>
+                  )}
+                  {isCreator && (
+                    <Badge variant="outline" className="text-xs py-0 px-2 border-primary/30 text-primary">
+                      {isBrandPersonaView ? "Marca / Criador" : "Criador Oficial"}
+                    </Badge>
+                  )}
+                </div>
+                {profile.occupation && (
+                  <p className="text-xs font-semibold text-muted-foreground">
+                    {profile.occupation}
+                  </p>
+                )}
+              </div>
 
-        {/* Área de Dados: Avatar Sobreposto com margem negativa e Linha de Informações */}
-        <div className="p-4 sm:p-6 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-14 sm:-mt-18">
-            {/* Avatar 1:1 Squircle com Anel de Borda */}
-            <div className="relative group shrink-0">
-              <Avatar className="size-20 sm:size-24 md:size-28 rounded-lg ring-4 ring-card bg-muted shrink-0 overflow-hidden flex items-center justify-center">
-                {avatarSrc ? (
-                  <AvatarImage
-                    src={avatarSrc}
-                    alt={profile.full_name || "Membro"}
-                    className="object-cover size-full"
-                  />
-                ) : null}
-                <AvatarFallback className="text-xl sm:text-2xl md:text-3xl font-black bg-muted text-foreground rounded-lg flex items-center justify-center select-none">
-                  {avatarInitials}
-                </AvatarFallback>
-              </Avatar>
-              {isOwner && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditorInitialTab("identidade");
-                    setIsProfileInPageEditorOpen(true);
-                  }}
-                  className="absolute inset-0 bg-foreground/40 text-background rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-xs font-semibold gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  title="Alterar Foto"
-                >
-                  <Camera className="size-4 sm:size-5" />
-                  <span className="text-xs">Alterar</span>
-                </button>
+              {/* Bio Rica com parser integral sem truncamento */}
+              {(profile.bio || profile.headline) && (
+                <div className="max-w-2xl">
+                  <RichBioContent content={profile.bio || profile.headline} />
+                </div>
               )}
             </div>
 
-            {/* Ações do Topo Alinhadas com o Avatar (Ergonômico TetrisActionGrid) */}
-            <div className="w-full sm:w-auto">
-              <TetrisActionGrid className="pt-0">
-                {isOwner ? (
+            {/* Ações Primárias (TetrisActionGrid) Abaixo da Bio */}
+            <TetrisActionGrid className="pt-1">
+              {isOwner ? (
+                <>
                   <Button
                     type="button"
                     variant="outline"
@@ -508,120 +534,84 @@ export function MemberPublicProfileView({
                     }}
                     className="w-full h-11 min-h-11 px-4 rounded-lg text-xs font-bold border-border/70 hover:bg-muted/40 text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary inline-flex items-center justify-center gap-2"
                   >
-                    <Edit3 className="size-3.5 shrink-0" />
+                    <Edit3 className="size-4 shrink-0" />
                     <span>{isBrandPersonaView ? "Editar Marca" : "Editar Perfil"}</span>
                   </Button>
-                ) : (
-                  <>
+                  {stores && stores.length > 0 && (
                     <Button
-                      className={cn(
-                        "w-full h-11 min-h-11 px-4 rounded-lg font-bold text-xs gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors inline-flex items-center justify-center",
-                        isFollowing
-                          ? "bg-transparent border border-border/60 text-muted-foreground hover:bg-muted/40 hover:text-foreground"
-                          : "bg-primary text-primary-foreground"
-                      )}
-                      onClick={handleToggleFollow}
-                      disabled={isFollowLoading}
-                    >
-                      {isFollowing ? (
-                        <>
-                          <Check className="size-3.5 shrink-0" />
-                          <span>Seguindo</span>
-                        </>
-                      ) : (
-                        <>
-                          <Plus className="size-3.5 shrink-0" />
-                          <span>Seguir</span>
-                        </>
-                      )}
-                    </Button>
-                    {profile.phone && (
-                      <Button
-                        asChild
-                        variant="outline"
-                        className="w-full h-11 min-h-11 px-3 rounded-lg font-semibold text-xs gap-2 border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary inline-flex items-center justify-center"
-                      >
-                        <a
-                          href={`https://wa.me/${profile.phone.replace(/\D/g, "")}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <MessageCircle className="size-3.5 text-emerald-500 shrink-0" />
-                          <span>Mensagem</span>
-                        </a>
-                      </Button>
-                    )}
-                    <Button
+                      asChild
                       variant="outline"
-                      className="w-full h-11 min-h-11 px-3 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground border border-border/50 bg-transparent hover:bg-muted/40 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary inline-flex items-center justify-center gap-2"
-                      onClick={handleShare}
-                      aria-label="Compartilhar Perfil"
+                      className="w-full h-11 min-h-11 px-4 rounded-lg text-xs font-bold border-border/70 hover:bg-muted/40 text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary inline-flex items-center justify-center gap-2"
                     >
-                      <Share2 className="size-3.5 shrink-0" />
-                      <span>Compartilhar</span>
+                      <Link to="/workspace" search={{ storeId: stores[0].id }}>
+                        <Store className="size-4 shrink-0" />
+                        <span>Workspace</span>
+                      </Link>
                     </Button>
-                  </>
-                )}
-              </TetrisActionGrid>
-            </div>
-          </div>
-
-          {/* Nome, Handle e Bio Completa (280 Caracteres) */}
-          <div className="space-y-2 pt-1">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
-                  {profile.full_name}
-                </h1>
-                {profile.is_verified && (
-                  <ShieldCheck className="size-4 text-primary fill-primary/20 shrink-0" />
-                )}
-                {profile.username && (
-                  <span className="text-xs sm:text-sm font-medium text-muted-foreground">
-                    @{profile.username}
-                  </span>
-                )}
-                {isCreator && (
-                  <Badge variant="outline" className="text-xs py-0 px-2 border-primary/30 text-primary">
-                    {isBrandPersonaView ? "Marca / Criador" : "Criador Oficial"}
-                  </Badge>
-                )}
-              </div>
-              {profile.occupation && (
-                <p className="text-xs font-semibold text-muted-foreground">
-                  {profile.occupation}
-                </p>
+                  )}
+                  <Button
+                    variant="outline"
+                    className="w-full h-11 min-h-11 px-3 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground border border-border/50 bg-transparent hover:bg-muted/40 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary inline-flex items-center justify-center gap-2"
+                    onClick={handleShare}
+                    aria-label="Compartilhar Perfil"
+                  >
+                    <Share2 className="size-4 shrink-0" />
+                    <span>Compartilhar</span>
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    className={cn(
+                      "w-full h-11 min-h-11 px-4 rounded-lg font-bold text-xs gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors inline-flex items-center justify-center",
+                      isFollowing
+                        ? "bg-transparent border border-border/60 text-muted-foreground hover:bg-muted/40 hover:text-foreground"
+                        : "bg-primary text-primary-foreground"
+                    )}
+                    onClick={handleToggleFollow}
+                    disabled={isFollowLoading}
+                  >
+                    {isFollowing ? (
+                      <>
+                        <Check className="size-4 shrink-0" />
+                        <span>Seguindo</span>
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="size-4 shrink-0" />
+                        <span>Seguir</span>
+                      </>
+                    )}
+                  </Button>
+                  {profile.phone && (
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="w-full h-11 min-h-11 px-3 rounded-lg font-semibold text-xs gap-2 border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary inline-flex items-center justify-center"
+                    >
+                      <a
+                        href={`https://wa.me/${profile.phone.replace(/\D/g, "")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <MessageCircle className="size-4 text-emerald-500 shrink-0" />
+                        <span>Mensagem</span>
+                      </a>
+                    </Button>
+                  )}
+                  <Button
+                    variant="outline"
+                    className="w-full h-11 min-h-11 px-3 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground border border-border/50 bg-transparent hover:bg-muted/40 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary inline-flex items-center justify-center gap-2"
+                    onClick={handleShare}
+                    aria-label="Compartilhar Perfil"
+                  >
+                    <Share2 className="size-4 shrink-0" />
+                    <span>Compartilhar</span>
+                  </Button>
+                </>
               )}
-            </div>
-
-            {/* Bio Rica (280 Caracteres) com parser formatador integral */}
-            {(profile.bio || profile.headline) && (
-              <div className="max-w-xl">
-                <RichBioContent content={profile.bio || profile.headline} />
-              </div>
-            )}
-
-            {/* Estatísticas Nativas Twitter-Style em Linha Única */}
-            <div className="flex items-center gap-4 text-xs pt-1">
-              <span className="inline-flex items-center gap-1">
-                <strong className="font-bold text-foreground">{stats.followingCount || 0}</strong>
-                <span className="text-muted-foreground">Seguindo</span>
-              </span>
-              <span className="inline-flex items-center gap-1">
-                <strong className="font-bold text-foreground">{followersCount}</strong>
-                <span className="text-muted-foreground">Seguidores</span>
-              </span>
-              {(stats.totalLikes || stats.postsCount) ? (
-                <span className="inline-flex items-center gap-1">
-                  <strong className="font-bold text-foreground font-mono">{stats.totalLikes || stats.postsCount}</strong>
-                  <span className="text-muted-foreground">Curtidas</span>
-                </span>
-              ) : null}
-            </div>
+            </TetrisActionGrid>
           </div>
-        </div>
-      </div>
-
  {/* Links e Localização Minimalistas */}
  <div className="flex flex-wrap items-center gap-3 pt-1 text-xs">
  {profile.website && (
@@ -958,7 +948,34 @@ export function MemberPublicProfileView({
  )}
  </div>
 
- {/* Descrição */}
+ {/* Metadados de Carreira e Cultura (InfoJobs Style — Padrão Corporativo) */}
+                  {(isOwner || !exp.is_anonymous) && (exp.salary_cents || exp.exit_reason || exp.company_rating || exp.would_recommend === false) && (
+                    <div className="flex flex-wrap items-center gap-2 pl-15 text-xs">
+                      {isOwner && exp.salary_cents && (
+                        <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary">
+                          Remuneração: {formatMoney(exp.salary_cents)}
+                        </Badge>
+                      )}
+                      {exp.company_rating && exp.company_rating > 0 && (
+                        <Badge variant="outline" className="text-xs font-mono border-border/80 text-foreground flex items-center gap-1">
+                          <Star className="size-3 fill-foreground text-foreground" />
+                          <span>{exp.company_rating}.0 / 5.0</span>
+                        </Badge>
+                      )}
+                      {exp.exit_reason && (
+                        <Badge variant="secondary" className="text-xs">
+                          Transição: {exp.exit_reason}
+                        </Badge>
+                      )}
+                      {exp.would_recommend === true && (
+                        <Badge variant="secondary" className="text-xs">
+                          Recomenda a empresa
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Descrição */}
  {exp.description && (
  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed pl-15 whitespace-pre-line">
  {exp.description}
@@ -2156,7 +2173,7 @@ export function MemberPublicProfileView({
  onSave={(newAvail) => {
  saveResumeChanges({ ...resumeData, availability: newAvail });
  }}
- isSaving={isSavingResume}
+
  />
 
  {/* Modal Sobre */}
@@ -2168,11 +2185,11 @@ export function MemberPublicProfileView({
  onSave={({ headline, summary }) => {
  saveResumeChanges({ ...resumeData, headline, summary });
  }}
- isSaving={isSavingResume}
+
  />
 
  {/* Modal Experiência */}
- <ExperienceEditModal
+ <ExperienceEditSheet
  open={editingSection === "experience"}
  onOpenChange={(op) => {
  if (!op) {
@@ -2192,7 +2209,7 @@ export function MemberPublicProfileView({
  }
  saveResumeChanges({ ...resumeData, experiences: updatedExps });
  }}
- isSaving={isSavingResume}
+
  />
 
  {/* Modal Formação Acadêmica */}
@@ -2216,7 +2233,7 @@ export function MemberPublicProfileView({
  }
  saveResumeChanges({ ...resumeData, educations: updated });
  }}
- isSaving={isSavingResume}
+
  />
 
  {/* Modal Licenças e Certificados */}
@@ -2240,7 +2257,7 @@ export function MemberPublicProfileView({
  }
  saveResumeChanges({ ...resumeData, certifications: updated });
  }}
- isSaving={isSavingResume}
+
  />
 
  {/* Modal Registros Profissionais & Conselhos de Classe */}
@@ -2287,7 +2304,7 @@ export function MemberPublicProfileView({
  }
  saveResumeChanges({ ...resumeData, projects: updated });
  }}
- isSaving={isSavingResume}
+
  />
 
  {/* Modal Voluntariado */}
@@ -2311,7 +2328,7 @@ export function MemberPublicProfileView({
  }
  saveResumeChanges({ ...resumeData, volunteering: updated });
  }}
- isSaving={isSavingResume}
+
  />
 
  {/* Modal Causas Sociais */}
@@ -2322,7 +2339,7 @@ export function MemberPublicProfileView({
  onSave={(newCauses) => {
  saveResumeChanges({ ...resumeData, causes: newCauses });
  }}
- isSaving={isSavingResume}
+
  />
 
  {/* Modal Idiomas */}
@@ -2333,7 +2350,7 @@ export function MemberPublicProfileView({
  onSave={(newLanguages) => {
  saveResumeChanges({ ...resumeData, languages: newLanguages });
  }}
- isSaving={isSavingResume}
+
  />
 
   </>

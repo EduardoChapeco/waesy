@@ -171,7 +171,7 @@ function MasterInfluencersPage() {
                   )}
 
                   {/* Métricas */}
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     {[
                       { label: "Score", value: Number(creator.engagement_score || 0).toFixed(1) },
                       { label: "Seguidores", value: (creator as any).followers_count ?? "—" },

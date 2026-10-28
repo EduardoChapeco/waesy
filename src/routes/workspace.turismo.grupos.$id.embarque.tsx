@@ -266,7 +266,7 @@ function GroupTourBoardingPage() {
       </div>
 
       {/* ── 2. Cards de Métricas de Embarque ── */}
-      <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 sm:grid-cols-4 gap-3">
         <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
           <span className="text-xs font-semibold text-muted-foreground">Total de Vagas</span>
           <p className="text-xl font-extrabold text-foreground font-mono">

@@ -144,7 +144,7 @@ export function PortalContractsWidget({ content, design_tokens }: PortalContract
  {ct.signed_at && (
  <span>Assinado em: {new Date(ct.signed_at).toLocaleDateString("pt-BR")}</span>
  )}
- <span className="font-mono text-2xs text-muted-foreground/80 truncate max-w-[260px]" title={ct.sha256_hash}>
+ <span className="font-mono text-2xs text-muted-foreground/80 truncate max-w-65" title={ct.sha256_hash}>
  Hash: {ct.sha256_hash?.slice(0, 16)}...
  </span>
  </div>

@@ -218,13 +218,13 @@ const SINGLE_BLOCKS: Record<"viagem" | "negocios" | "basico" | "jornalismo", Sin
   { type: "floatingButtons", icon: MousePointer2, label: "Botões Flutuantes", template: { buttons: [{ id: "1", type: "whatsapp", label: "WhatsApp", value: "5511999999999", position: "bottom-right", backgroundColor: "var(--success)", textColor: "var(--success-foreground)" }] } },
  ],
  jornalismo: [
-  { type: "news_promethee_header", icon: LayoutTemplate, label: "Topo Editorial & GPS", template: { mastheadTitle: "Vale Agora News", showCityFilter: true, showSearch: true, showUrgentBell: true } },
+  { type: "news_promethee_header", icon: LayoutTemplate, label: "Topo Editorial & GPS", template: { mastheadTitle: "Waesy News", showCityFilter: true, showSearch: true, showUrgentBell: true } },
   { type: "news_promethee_nav", icon: Layers, label: "Menu de Editorias & +", template: { allowCitizenPosts: true, showSavedTab: true } },
   { type: "news_promethee_breaking", icon: Flame, label: "Carrossel Plantão", template: { sectionTitle: "Plantão Regional", badgeLabel: "BREAKING NEWS", maxItems: 6 } },
   { type: "news_promethee_feed", icon: FileText, label: "Feed de Notícias Reais", template: { sectionTitle: "Destaques", layoutMode: "feed_stream", readMoreLabel: "Ler mais" } },
   { type: "news_promethee_ad_slot", icon: Zap, label: "Espaço Publicitário ADS", template: { format: "banner", sponsorName: "Publicidade Regional", ctaLabel: "Anunciar" } },
   { type: "news_promethee_article_reader", icon: AlignLeft, label: "Leitor de Reportagem", template: { backLabel: "Voltar", showExecutiveSummary: true, showComments: true } },
-  { type: "news_promethee_footer", icon: Link2, label: "Rodapé Editorial", template: { brandName: "Vale Agora News", showWaesySignature: true } },
+  { type: "news_promethee_footer", icon: Link2, label: "Rodapé Editorial", template: { brandName: "Waesy News", showWaesySignature: true } },
  ],
 };
 

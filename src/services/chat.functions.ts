@@ -410,10 +410,12 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
 
  const db = getServerClient();
 
- const [profileRes, ordersRes, ticketsRes] = await Promise.all([
+ const [profileRes, ordersRes, ticketsRes, tripsRes, creditsRes] = await Promise.all([
  db.from("profiles").select("id, full_name, phone, avatar_url, created_at").eq("id", data.customerId).single(),
  db.from("orders").select("id, total_amount_cents, status, created_at, payment_method").eq("store_id", data.storeId).eq("customer_id", data.customerId).order("created_at", { ascending: false }).limit(10),
  db.from("store_support_tickets").select("*").eq("store_id", data.storeId).eq("customer_id", data.customerId).order("created_at", { ascending: false }),
+ db.from("tourism_trips").select("id, trip_number, title, destination_city, travel_start_date, travel_end_date, total_cents, status").eq("store_id", data.storeId).eq("customer_id", data.customerId).order("travel_start_date", { ascending: false }).limit(5),
+ db.from("air_ticket_credits").select("id, airline, original_pnr, remaining_amount_cents, expires_at, status").eq("agency_id", data.storeId).eq("status", "active").limit(5),
  ]);
 
  const orders = ordersRes.data || [];
@@ -429,7 +431,10 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
  active_tickets_count: (ticketsRes.data || []).filter((t) => t.status === "open" || t.status === "under_review").length,
  },
  orders,
+ trips: (tripsRes?.data as any[]) || [],
+ credits: (creditsRes?.data as any[]) || [],
  tickets: ticketsRes.data || [],
+
  };
  });
 
@@ -495,6 +500,7 @@ export const getCustomerChatThread = createServerFn({ method: "GET" })
  payload: m.payload || {},
  })),
  tickets: ticketsRes.data || [],
+
  };
  } catch (e: any) {
  console.error("[chat] getCustomerChatThread error:", e);

@@ -71,7 +71,7 @@ export const RmaTicketModal: React.FC<RmaTicketModalProps> = ({
 
  return (
  <Dialog open={open} onOpenChange={onOpenChange}>
- <DialogContent className="sm:max-w-lg sm:rounded-lg max-h-[90vh] overflow-y-auto no-scrollbar">
+ <DialogContent className="sm:max-w-lg sm:rounded-lg max-h-(--spacing-screen-90,90vh) overflow-y-auto no-scrollbar">
  <DialogHeader>
  <div className="flex items-center gap-2 text-destructive">
  <AlertCircle className="size-5" />

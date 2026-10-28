@@ -66,7 +66,7 @@ function KycAuditPage() {
  <div className="flex items-center gap-2">
  <Filter size={16} className="text-muted-foreground" />
  <Select value={statusFilter} onValueChange={setStatusFilter}>
- <SelectTrigger className="w-[180px]">
+ <SelectTrigger className="w-45">
  <SelectValue placeholder="Filtrar por Status" />
  </SelectTrigger>
  <SelectContent>

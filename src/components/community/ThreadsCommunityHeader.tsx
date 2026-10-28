@@ -29,6 +29,8 @@ export interface ThreadsCommunityHeaderProps {
   className?: string;
 }
 
+export type CommunityFeedHeaderProps = ThreadsCommunityHeaderProps;
+
 export function ThreadsCommunityHeader({
   community,
   isMember,
@@ -79,13 +81,13 @@ export function ThreadsCommunityHeader({
   const onlineCountFormatted = formatCount(community.online_count || 1);
 
   return (
-    <div className={`w-full max-w-2xl mx-auto px-4 pt-3 pb-2 ${className}`}>
-      {/* ─── Cartão Squircle Imersivo Estilo Threads ────────────────── */}
+    <div className={`w-full max-w-3xl mx-auto px-0 sm:px-4 pt-0 sm:pt-4 pb-2 ${className}`}>
+      {/* ─── Cartão Squircle Imersivo de Capa (Edge-to-Edge Mobile / Widescreen Desktop) ─── */}
       <div
-        className={`relative w-full rounded-3xl overflow-hidden shadow-sm transition-all duration-300 ${
+        className={`relative w-full rounded-none rounded-b-3xl sm:rounded-3xl overflow-hidden shadow-sm transition-colors duration-300 ${
           community.cover_mode === "image" && community.cover_image_url
             ? "bg-zinc-950"
-            : `bg-gradient-to-br ${presetConfig.gradientClass}`
+            : "bg-zinc-950"
         }`}
       >
         {/* Camada de Foto de Capa (se configurada) */}
@@ -93,21 +95,21 @@ export function ThreadsCommunityHeader({
           <img
             src={community.cover_image_url}
             alt={community.title}
-            className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-50"
+            className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-60"
           />
         )}
 
-        {/* Gradiente sutil escurecedor inferior para garantir contraste AA (>= 4.5:1) */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent pointer-events-none" />
+        {/* Gradiente escurecedor defensivo para garantir contraste AA (>= 4.5:1) em qualquer imagem ou gradiente */}
+        <div className="absolute inset-0 bg-black/50 pointer-events-none" />
 
-        {/* Conteúdo Interno da Capa */}
-        <div className="relative z-10 p-5 sm:p-6 flex flex-col justify-between min-h-60 sm:min-h-72">
-          {/* ── Linha Superior: Barra de Busca Pill & Ação Rápida ─────── */}
+        {/* Conteúdo Interno da Capa com Safe-Area no Mobile */}
+        <div className="relative z-10 pt-safe pt-4 sm:pt-6 px-4 sm:px-6 pb-6 flex flex-col justify-between min-h-64 sm:min-h-72">
+          {/* ── Linha Superior: Barra de Busca Pill & Ação Rápida (+) ─────── */}
           <div className="flex items-center justify-between gap-3">
             {/* Campo de Busca Interno com Frosted Glass */}
             <form onSubmit={handleSearchSubmit} className="grow min-w-0">
               <div className="relative flex items-center">
-                <Search className="absolute left-3.5 size-4 text-white/80 pointer-events-none" />
+                <Search className="absolute left-3.5 size-4 text-primary-foreground/80 pointer-events-none" />
                 <input
                   type="search"
                   value={searchValue}
@@ -117,8 +119,8 @@ export function ThreadsCommunityHeader({
                   }}
                   onFocus={() => setIsSearchActive(true)}
                   onBlur={() => setIsSearchActive(false)}
-                  placeholder="Pesquisar na comunidade..."
-                  className="w-full h-11 min-h-11 pl-10 pr-4 rounded-full bg-white/20 hover:bg-white/25 focus:bg-white/30 backdrop-blur-md text-white placeholder:text-white/70 text-xs sm:text-sm font-medium border border-white/25 transition-all outline-none focus-visible:ring-2 focus-visible:ring-white"
+                  placeholder="Search"
+                  className="w-full h-11 min-h-11 pl-10 pr-4 rounded-full bg-card/20 hover:bg-card/25 focus:bg-card/30 backdrop-blur-md text-primary-foreground placeholder:text-primary-foreground/80 text-xs sm:text-sm font-medium border border-white/25 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-white"
                   aria-label="Pesquisar nesta comunidade"
                 />
               </div>
@@ -128,7 +130,7 @@ export function ThreadsCommunityHeader({
             <button
               type="button"
               onClick={isMember ? onNewPostClick : onJoinToggle}
-              className="size-11 min-h-11 min-w-11 rounded-full bg-white/20 hover:bg-white/30 active:scale-95 backdrop-blur-md border border-white/30 text-white flex items-center justify-center shrink-0 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              className="size-11 min-h-11 min-w-11 rounded-full bg-card/20 hover:bg-card/30 active:scale-95 backdrop-blur-md border border-white/30 text-primary-foreground flex items-center justify-center shrink-0 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
               aria-label={isMember ? "Criar publicação" : "Participar da comunidade"}
               title={isMember ? "Criar publicação" : "Participar da comunidade"}
             >
@@ -140,7 +142,7 @@ export function ThreadsCommunityHeader({
               <button
                 type="button"
                 onClick={onSettingsClick}
-                className="size-11 min-h-11 min-w-11 rounded-full bg-white/20 hover:bg-white/30 active:scale-95 backdrop-blur-md border border-white/30 text-white flex items-center justify-center shrink-0 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                className="size-11 min-h-11 min-w-11 rounded-full bg-card/20 hover:bg-card/30 active:scale-95 backdrop-blur-md border border-white/30 text-primary-foreground flex items-center justify-center shrink-0 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                 aria-label="Gerenciar comunidade"
                 title="Gerenciar comunidade"
               >
@@ -152,7 +154,7 @@ export function ThreadsCommunityHeader({
             <button
               type="button"
               onClick={handleShare}
-              className="size-11 min-h-11 min-w-11 rounded-full bg-white/20 hover:bg-white/30 active:scale-95 backdrop-blur-md border border-white/30 text-white flex items-center justify-center shrink-0 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              className="size-11 min-h-11 min-w-11 rounded-full bg-card/20 hover:bg-card/30 active:scale-95 backdrop-blur-md border border-white/30 text-primary-foreground flex items-center justify-center shrink-0 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
               aria-label="Compartilhar comunidade"
               title="Compartilhar link"
             >
@@ -161,21 +163,21 @@ export function ThreadsCommunityHeader({
           </div>
 
           {/* ── Linha Central: Categoria & Título de Grande Impacto ───── */}
-          <div className="space-y-1.5 my-4">
+          <div className="space-y-2 my-4">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-white/80 tracking-wide uppercase">
+              <span className="text-xs font-semibold text-primary-foreground/80 tracking-wide uppercase">
                 {COMMUNITY_TYPE_LABELS[community.community_type] || "Comunidade"}
               </span>
-              <span className="text-white/60 text-xs">•</span>
-              <span className="text-xs font-mono text-white/80">/c/@{community.slug}</span>
+              <span className="text-primary-foreground/60 text-xs">•</span>
+              <span className="text-xs font-mono text-primary-foreground/80">/c/@{community.slug}</span>
             </div>
 
-            <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight drop-shadow-xs">
+            <h1 className="text-2xl sm:text-4xl font-extrabold text-primary-foreground tracking-tight leading-tight drop-shadow-xs">
               {community.title}
             </h1>
 
             {community.description && (
-              <p className="text-xs sm:text-sm text-white/90 line-clamp-2 max-w-xl font-normal leading-relaxed drop-shadow-xs">
+              <p className="text-xs sm:text-sm text-primary-foreground/90 line-clamp-2 max-w-xl font-normal leading-relaxed drop-shadow-xs">
                 {community.description}
               </p>
             )}
@@ -186,7 +188,7 @@ export function ThreadsCommunityHeader({
             <div className="flex items-center gap-3">
               {/* Cluster Facepile de Avatares Sobrepostos */}
               {recentMembers.length > 0 ? (
-                <div className="flex items-center -space-x-2.5 overflow-hidden py-1">
+                <div className="flex items-center -space-x-2 overflow-hidden py-1">
                   {recentMembers.slice(0, 6).map((member, idx) => (
                     <Avatar
                       key={member.id || idx}
@@ -195,22 +197,22 @@ export function ThreadsCommunityHeader({
                       {member.avatar_url && (
                         <AvatarImage src={member.avatar_url} alt={member.name} />
                       )}
-                      <AvatarFallback className="text-[10px] font-bold bg-white text-zinc-900">
+                      <AvatarFallback className="text-2xs font-bold bg-card text-zinc-900">
                         {member.name.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                   ))}
                 </div>
               ) : (
-                <div className="size-7 sm:size-8 rounded-full bg-white/20 border-2 border-white/90 flex items-center justify-center text-white text-xs">
+                <div className="size-7 sm:size-8 rounded-full bg-card/20 border-2 border-white/90 flex items-center justify-center text-primary-foreground text-xs">
                   <Users className="size-4" />
                 </div>
               )}
 
               {/* Contadores Textuais */}
-              <div className="text-xs sm:text-sm font-semibold text-white/95 drop-shadow-xs">
+              <div className="text-xs sm:text-sm font-semibold text-primary-foreground/95 drop-shadow-xs">
                 <span>{memberCountFormatted} participantes</span>
-                <span className="mx-1.5 text-white/60">•</span>
+                <span className="mx-2 text-primary-foreground/60">•</span>
                 <span className="text-emerald-300 font-bold">{onlineCountFormatted} online</span>
               </div>
             </div>
@@ -220,15 +222,15 @@ export function ThreadsCommunityHeader({
               type="button"
               onClick={onJoinToggle}
               variant={isMember ? "secondary" : "default"}
-              className={`h-11 min-h-11 px-5 rounded-full text-xs font-bold transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white shadow-sm ${
+              className={`h-11 min-h-11 px-5 rounded-full text-xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white shadow-sm ${
                 isMember
-                  ? "bg-white/25 hover:bg-white/35 text-white border border-white/40 backdrop-blur-md"
-                  : "bg-white hover:bg-white/90 text-zinc-950 font-extrabold"
+                  ? "bg-card/25 hover:bg-card/35 text-primary-foreground border border-white/40 backdrop-blur-md"
+                  : "bg-card hover:bg-card/90 text-zinc-950 font-extrabold"
               }`}
             >
               {isMember ? (
                 <>
-                  <Check className="size-4 mr-1.5" />
+                  <Check className="size-4 mr-2" />
                   <span>Participando</span>
                 </>
               ) : (
@@ -241,3 +243,5 @@ export function ThreadsCommunityHeader({
     </div>
   );
 }
+
+export const CommunityFeedHeader = ThreadsCommunityHeader;

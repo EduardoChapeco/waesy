@@ -40,8 +40,8 @@ const HOTPAGE_THEMES: Record<
  accentColor: "text-primary",
  badgeBg: "bg-card text-primary",
  icon: Lightning,
- defaultBadge: "⚡ #turbo",
- heroPills: ["⚡ apenas + R$ 3,99", "⏱️ em até 20 min", "💰 ou R$ 5 de volta"],
+ defaultBadge: " #turbo",
+ heroPills: [" apenas + R$ 3,99", "⏱️ em até 20 min", " ou R$ 5 de volta"],
  tagLine: "Lista de ofertas que chegam rapidinho na sua porta",
  featuredRailTitle: "Promos com Turbo",
  },
@@ -50,8 +50,8 @@ const HOTPAGE_THEMES: Record<
  accentColor: "text-amber-600",
  badgeBg: "bg-card text-warning",
  icon: Flame,
- defaultBadge: "🍔 hits",
- heroPills: ["🔥 os mais amados", "🛵 entrega grátis", "⭐ nota 4.8+"],
+ defaultBadge: " hits",
+ heroPills: [" os mais amados", " entrega grátis", "⭐ nota 4.8+"],
  tagLine: "Os pratos e lanches mais pedidos da cidade",
  featuredRailTitle: "Top 10 Mais Pedidos",
  },
@@ -60,8 +60,8 @@ const HOTPAGE_THEMES: Record<
  accentColor: "text-destructive",
  badgeBg: "bg-amber-400 text-foreground",
  icon: Flame,
- defaultBadge: "🏷️ Oferta Relâmpago",
- heroPills: ["🏷️ até 50% OFF", "⏳ por tempo limitado", "🚚 entrega expressa"],
+ defaultBadge: "️ Oferta Relâmpago",
+ heroPills: ["️ até 50% OFF", "⏳ por tempo limitado", " entrega expressa"],
  tagLine: "Descontos imperdíveis nos melhores estabelecimentos",
  featuredRailTitle: "Ofertas em Destaque",
  },
@@ -70,8 +70,8 @@ const HOTPAGE_THEMES: Record<
  accentColor: "text-emerald-600",
  badgeBg: "bg-card text-emerald-700",
  icon: Truck,
- defaultBadge: "🛵 Frete Grátis",
- heroPills: ["🛵 taxa R$ 0,00", "📍 raio de até 5km", "⚡ sem valor mínimo"],
+ defaultBadge: " Frete Grátis",
+ heroPills: [" taxa R$ 0,00", " raio de até 5km", " sem valor mínimo"],
  tagLine: "Taxa zero de entrega para economizar no seu pedido",
  featuredRailTitle: "Restaurantes com Entrega Grátis",
  },
@@ -80,8 +80,8 @@ const HOTPAGE_THEMES: Record<
  accentColor: "text-amber-600",
  badgeBg: "bg-card text-amber-700",
  icon: Flame,
- defaultBadge: "🍕 Sabor Local",
- heroPills: ["🍕 pizzas & burgers", "🥗 opções saudáveis", "🍰 doces & cafés"],
+ defaultBadge: " Sabor Local",
+ heroPills: [" pizzas & burgers", " opções saudáveis", " doces & cafés"],
  tagLine: "Pizzas, burgers, lanches e cafés especiais selecionados",
  featuredRailTitle: "Cardápios Recomendados",
  },
@@ -90,8 +90,8 @@ const HOTPAGE_THEMES: Record<
  accentColor: "text-emerald-700",
  badgeBg: "bg-card text-emerald-800",
  icon: Storefront,
- defaultBadge: "🥦 Feira & Hortifruti",
- heroPills: ["🥦 frescos do dia", "🥩 carnes nobres", "🥖 padaria colonial"],
+ defaultBadge: " Feira & Hortifruti",
+ heroPills: [" frescos do dia", " carnes nobres", " padaria colonial"],
  tagLine: "Alimentos frescos, mercearia e produtos da região",
  featuredRailTitle: "Supermercados & Empórios",
  },
@@ -288,7 +288,7 @@ function DedicatedHotpageView() {
  badgeBg: "bg-card/20 text-foreground",
  icon: Tag,
  defaultBadge: " Coleção Especial",
- heroPills: ["⭐ Seleção Waesy", "🚚 Entrega Rápida", "💳 Pagamento Online"],
+ heroPills: ["⭐ Seleção Waesy", " Entrega Rápida", " Pagamento Online"],
  tagLine: "Produtos e lojas selecionadas na curadoria Waesy",
  featuredRailTitle: "Destaques da Curadoria",
  };
@@ -551,7 +551,7 @@ function DedicatedHotpageView() {
 
  <HorizontalRail hideHeader={true} title="Lojas">
  {relatedStores.map((store: any) => (
- <div key={store.id} className="min-w-[220px] sm:min-w-[250px] max-w-[260px] shrink-0">
+ <div key={store.id} className="min-w-[220px] sm:min-w-[250px] max-w-65 shrink-0">
  <StoreCard
  id={store.id}
  name={store.name}

@@ -644,7 +644,7 @@ Retorne o JSON:
   return {
     positioning_statement: typeof parsed.positioning_statement === "string" ? parsed.positioning_statement : "",
     value_proposition: typeof parsed.value_proposition === "string" ? parsed.value_proposition : "",
-    reputation_summary: typeof parsed.reputation_summary === "string" ? parsed.reputation_summary : (evidence.googleBusiness?.rating != null ? `Avaliação média ${evidence.googleBusiness.rating}★ no Google.` : ""),
+    reputation_summary: typeof parsed.reputation_summary === "string" ? parsed.reputation_summary : (evidence.googleBusiness?.rating != null ? `Avaliação média ${evidence.googleBusiness.rating} no Google.` : ""),
     confidence: null,
     evidence: [],
   };

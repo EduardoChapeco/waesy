@@ -111,7 +111,7 @@ export function RmaRequestWizard({
 
  return (
  <Dialog open={isOpen} onOpenChange={onOpenChange}>
- <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto no-scrollbar">
+ <DialogContent className="sm:max-w-3xl max-h-(--spacing-screen-90,90vh) overflow-y-auto no-scrollbar">
  <DialogHeader>
  <DialogTitle className="flex items-center gap-2 text-2xl">
  <PackageMinus className="h-6 w-6 text-destructive" />

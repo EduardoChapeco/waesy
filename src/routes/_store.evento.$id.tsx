@@ -294,7 +294,7 @@ function EventDetailPage() {
                 Voltar
               </Link>
             </Button>
-            <span className="text-xs font-bold text-foreground truncate max-w-[200px] sm:max-w-md">
+            <span className="text-xs font-bold text-foreground truncate max-w-50 sm:max-w-md">
               {event.title}
             </span>
           </div>

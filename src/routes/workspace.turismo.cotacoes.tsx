@@ -76,9 +76,12 @@ const STATUS_FILTERS = [
 
 const TRIP_TYPE_OPTIONS = [
  { id: "air_package", label: "Pacote Completo (Voo + Hotel)" },
+ { id: "air_only", label: "Somente Aéreo (Wooba / GDS)" },
  { id: "hotel_only", label: "Somente Hospedagem / Resort" },
+ { id: "car_rental", label: "Locação de Veículos & Transfers" },
+ { id: "corporate_b2b", label: "Corporativo B2B (Faturado / Política)" },
  { id: "cruise", label: "Cruzeiro Marítimo" },
- { id: "bus", label: "Excursão Rodoviária" },
+ { id: "bus", label: "Excursão Rodoviária / Ônibus" },
  { id: "visa_assistance", label: "Assessoria de Visto / Passaporte" },
 ];
 

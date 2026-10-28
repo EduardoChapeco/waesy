@@ -26,7 +26,7 @@ vi.mock("@tanstack/react-router", () => ({
 // Mock do LocationMasterPill para isolamento do teste
 vi.mock("@/components/location/location-master-pill", () => ({
   LocationMasterPill: ({ className }: any) => (
-    <button type="button" data-testid="location-pill" className={className}>
+    <button type="button" data-testid="location-pill" className={`${className || ""} focus-visible:ring-2`}>
       São Miguel do Oeste
     </button>
   ),
@@ -64,7 +64,7 @@ describe("Nova Vitrine de Eventos iFood + Sympla", () => {
     expect(html).toContain("Família");
     expect(html).toContain("Festas e Shows");
     expect(html).toContain("Ver mais");
-    expect(html).toContain("grid-cols-4");
+    expect(html).toContain("grid-cols-2 sm:grid-cols-4");
   });
 
   it("renderiza EventHorizontalCard com formato compacto e metadados", () => {

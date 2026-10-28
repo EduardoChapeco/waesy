@@ -100,9 +100,9 @@ function PublicTravelVoucherPage() {
       type: "flight",
       badge: f.locator ? `LOC: ${f.locator}` : "Voo Confirmado",
       title: `${f.airline || "Cia Aérea"} · ${f.flight_number || "Voo"}`,
-      subtitle: `${f.origin || "Origem"} ➔ ${f.destination || "Destino"}`,
+      subtitle: `${f.origin || "Origem"}  ${f.destination || "Destino"}`,
       details: [
-        { label: "Data / Horário", value: `${f.date || ""} ${f.departure_time || ""} ➔ ${f.arrival_time || ""}`.trim(), highlight: true },
+        { label: "Data / Horário", value: `${f.date || ""} ${f.departure_time || ""}  ${f.arrival_time || ""}`.trim(), highlight: true },
         { label: "Localizador", value: f.locator || "Pendente" },
         { label: "Bagagem", value: f.baggage || "1x 10kg mão inclusa" },
         { label: "Classe", value: f.class || "Econômica" },
@@ -132,7 +132,7 @@ function PublicTravelVoucherPage() {
       type: "transport",
       badge: "Receptivo / Transfer",
       title: t.type || "Transfer Executivo",
-      subtitle: `${t.origin || "Ponto de Partida"} ➔ ${t.destination || "Ponto de Chegada"}`,
+      subtitle: `${t.origin || "Ponto de Partida"}  ${t.destination || "Ponto de Chegada"}`,
       details: [
         { label: "Data", value: t.date || "-", highlight: true },
         { label: "Horário de Coleta", value: t.pickup_time || "A combinar" },
@@ -229,7 +229,7 @@ function PublicTravelVoucherPage() {
     (voucher.passenger_name ? [voucher.passenger_name] : []);
 
   return (
-    <div className="min-h-[100dvh] bg-muted/20 py-4 sm:py-8 px-0 sm:px-4 md:px-0 space-y-6 animate-in fade-in duration-200">
+    <div className="min-h-dvh bg-muted/20 py-4 sm:py-8 px-0 sm:px-4 md:px-0 space-y-6 animate-in fade-in duration-200">
       {/* ── BARRA DE AÇÕES SUPERIOR (OCULTA NA IMPRESSÃO) ── */}
       <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 p-4 rounded-lg bg-card border border-border/80 print:hidden">
         <div className="flex items-center gap-2">

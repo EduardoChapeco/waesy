@@ -479,7 +479,7 @@ function CommissionsPage() {
                         </TableCell>
                         <TableCell>
                           {isEditing ? (
-                            <div className="flex items-center gap-2 max-w-[120px]">
+                            <div className="flex items-center gap-2 max-w-30">
                               <Input
                                 type="number"
                                 step="0.5"

@@ -197,8 +197,9 @@ export const listPublishedProducts = createServerFn({ method: "GET" })
  try {
  const db = getAnonServerClient();
       let storeId = await resolveTenantStoreId();
+      const isPublicNicheQuery = Boolean(params.niche && !storeId);
 
-      if (!storeId) {
+      if (!storeId && !isPublicNicheQuery) {
         const { data: rootStore } = await db
           .from("stores")
           .select("id")
@@ -208,7 +209,7 @@ export const listPublishedProducts = createServerFn({ method: "GET" })
         storeId = rootStore?.id || null;
       }
 
-      if (!storeId) {
+      if (!storeId && !isPublicNicheQuery) {
         return { status: "ok", data: [] };
       }
 
@@ -232,17 +233,20 @@ export const listPublishedProducts = createServerFn({ method: "GET" })
  let query = db
  .from("products")
  .select(selectQuery)
- .eq("store_id", storeId)
  .eq("status", "published")
  .order(dbOrderField, { ascending: dbOrderAsc })
  .limit(params.limit * 2); // fetch more to allow client-side re-sort after mapping
+
+ if (storeId) {
+ query = query.eq("store_id", storeId);
+ }
 
  // Para a lógica de variantes funcionarem com !inner, temos que garantir que estão ativas e com estoque
  query = query.eq("product_variants.status", "active");
 
  // Applica filtro de nicho via JSONB no nível do produto
  if (params.niche) {
- query = query.contains("attributes", { tipo: params.niche });
+ query = query.or(`attributes->>tipo.eq.${params.niche},attributes->>niche.eq.${params.niche}`);
  }
 
  // Applica filtro de atributos dinâmicos (variações), se houver

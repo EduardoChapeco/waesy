@@ -70,13 +70,13 @@ export function EventSpotlightCard({
       params={{ id }}
       className={cn(
         "w-60 sm:w-68 rounded-2xl border border-border/60 bg-card overflow-hidden flex flex-col justify-between shrink-0 snap-start select-none",
-        "hover:border-foreground/30 hover:shadow-xs transition-all duration-200 group cursor-pointer shadow-2xs",
+        "hover:border-foreground/30 hover:shadow-xs transition-colors duration-200 group cursor-pointer shadow-2xs",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
         className,
       )}
       aria-label={title}
     >
-      <div className="space-y-2.5">
+      <div className="space-y-2">
         {/* ── Banner Superior Panorâmico (Proporção 16:10) ── */}
         <div className="aspect-16/10 relative overflow-hidden bg-muted">
           <img
@@ -89,14 +89,14 @@ export function EventSpotlightCard({
 
           {/* Badge de Data Flutuante no Topo */}
           <div className="absolute top-2.5 left-2.5 z-10">
-            <span className="bg-black/65 text-white backdrop-blur-xs text-3xs sm:text-2xs font-mono font-bold px-2 py-0.5 rounded-md border border-white/20">
+            <span className="bg-background/65 text-primary-foreground backdrop-blur-xs text-3xs sm:text-2xs font-mono font-bold px-2 py-1 rounded-md border border-white/20">
               {formattedDate}
             </span>
           </div>
 
           {category && (
             <div className="absolute top-2.5 right-2.5 z-10">
-              <span className="bg-primary/90 text-primary-foreground text-3xs font-black uppercase tracking-wider px-2 py-0.5 rounded-md">
+              <span className="bg-primary/90 text-primary-foreground text-3xs font-black uppercase tracking-wider px-2 py-1 rounded-md">
                 {category}
               </span>
             </div>
@@ -109,13 +109,13 @@ export function EventSpotlightCard({
             {title}
           </h3>
 
-          <div className="space-y-0.5 pt-0.5">
-            <div className="flex items-center gap-1.5 text-2xs text-muted-foreground font-mono">
+          <div className="space-y-1 pt-1">
+            <div className="flex items-center gap-2 text-2xs text-muted-foreground font-mono">
               <CalendarBlank size={12} weight="bold" className="shrink-0 text-primary" />
               <span className="truncate">{formattedDate}</span>
             </div>
 
-            <div className="flex items-center gap-1.5 text-2xs text-muted-foreground">
+            <div className="flex items-center gap-2 text-2xs text-muted-foreground">
               <MapPin size={12} weight="bold" className="shrink-0" />
               <span className="truncate">{displayLocation}</span>
             </div>
@@ -134,7 +134,7 @@ export function EventSpotlightCard({
           </span>
         </div>
 
-        <span className="h-11 min-h-11 px-3.5 rounded-xl bg-primary text-primary-foreground font-bold text-xs inline-flex items-center justify-center gap-1.5 shrink-0 group-hover:bg-primary/90 transition-colors">
+        <span className="h-11 min-h-11 px-4 rounded-xl bg-primary text-primary-foreground font-bold text-xs inline-flex items-center justify-center gap-2 shrink-0 group-hover:bg-primary/90 transition-colors">
           <Ticket size={14} weight="bold" />
           <span>Garantir</span>
         </span>

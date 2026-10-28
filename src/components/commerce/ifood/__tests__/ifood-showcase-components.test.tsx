@@ -32,7 +32,7 @@ import { IFoodStoreFeedCard } from "../IFoodStoreFeedCard";
 import { IFoodSubcategoryPillRail } from "../IFoodSubcategoryPillRail";
 import { IFoodVisualSpotlightRail } from "../IFoodVisualSpotlightRail";
 
-describe("Suíte Canônica de Componentes iFood Showcase (Design System)", () => {
+describe("Suíte Canônica de Componentes de Vitrine Comercial (Design System)", () => {
   it("renderiza IFoodHeader com botão de menu, saudação e cluster de ações", () => {
     const html = renderToStaticMarkup(
       <IFoodHeader userName="Eduardo Ramos" activeAddress="R. La Salle, 1917" />

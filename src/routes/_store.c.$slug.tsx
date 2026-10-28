@@ -9,8 +9,8 @@ import {
   type CommunityFeedResponse,
 } from "@/services/community.functions";
 import { getUserSession, getProfile } from "@/services/auth.functions";
-import { ThreadsCommunityHeader } from "@/components/community/ThreadsCommunityHeader";
-import { ThreadsCommunityFeed } from "@/components/community/ThreadsCommunityFeed";
+import { CommunityFeedHeader } from "@/components/community/ThreadsCommunityHeader";
+import { CommunityFeedView } from "@/components/community/ThreadsCommunityFeed";
 import { CommunityPostComposer } from "@/components/community/CommunityPostComposer";
 import { CommunitySettingsModal } from "@/components/community/CommunitySettingsModal";
 import { CreateCommunityModal } from "@/components/community/CreateCommunityModal";
@@ -88,7 +88,10 @@ function CommunityPage() {
 
   const community = detail?.community;
   const isMember = Boolean(detail?.is_member);
-  const isOwnerOrMod = detail?.member_role === "owner" || detail?.member_role === "moderator";
+  const isOwnerOrMod =
+    detail?.member_role === "owner" ||
+    detail?.member_role === "moderator" ||
+    (profile as any)?.role === "platform_admin";
   const recentMembers = detail?.recent_members || [];
 
   // Query reativa para o feed da comunidade
@@ -140,7 +143,7 @@ function CommunityPage() {
             className="h-11 min-h-11 rounded-full px-5 text-xs font-bold"
           >
             <Link to="/mural" className="focus-visible:ring-2 focus-visible:ring-primary">
-              <ArrowLeft className="size-4 mr-1.5" />
+              <ArrowLeft className="size-4 mr-2" />
               <span>Ver Mural</span>
             </Link>
           </Button>
@@ -149,7 +152,7 @@ function CommunityPage() {
             onClick={() => setIsCreateOpen(true)}
             className="h-11 min-h-11 rounded-full px-5 text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
           >
-            <Plus className="size-4 mr-1.5" />
+            <Plus className="size-4 mr-2" />
             <span>Criar Esta Comunidade</span>
           </Button>
         </div>
@@ -173,9 +176,9 @@ function CommunityPage() {
     : allPosts;
 
   return (
-    <div className="min-h-[100dvh] bg-background text-foreground pb-24 transition-colors duration-200">
-      {/* ─── 1. Header Squircle Estilo Threads ───────────────────────── */}
-      <ThreadsCommunityHeader
+    <div className="min-h-dvh bg-background text-foreground pb-24 transition-colors duration-200">
+      {/* ─── 1. Header Squircle de Capa ───────────────────────── */}
+      <CommunityFeedHeader
         community={community}
         isMember={isMember}
         isOwnerOrMod={isOwnerOrMod}
@@ -186,9 +189,9 @@ function CommunityPage() {
         onSettingsClick={() => setIsSettingsOpen(true)}
       />
 
-      {/* ─── 2. Feed Cronológico Estilo Threads ─────────────────────── */}
+      {/* ─── 2. Feed Cronológico de Publicações ─────────────────────── */}
       <main className="pt-2">
-        <ThreadsCommunityFeed
+        <CommunityFeedView
           posts={filteredPosts}
           communityId={community.id}
           currentUserId={currentUserId}

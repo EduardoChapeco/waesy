@@ -17,7 +17,6 @@ import { Route as SitemapNewsDotxmlRouteImport } from './routes/sitemap-news[.]x
 import { Route as SitemapProductsDotxmlRouteImport } from './routes/sitemap-products[.]xml'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as StatusRouteImport } from './routes/status'
-import { Route as ValeagoranewsRouteImport } from './routes/valeagoranews'
 import { Route as WaesynewsRouteImport } from './routes/waesynews'
 import { Route as WorkspaceRouteImport } from './routes/workspace'
 import { Route as StoreIndexRouteImport } from './routes/_store.index'
@@ -254,6 +253,7 @@ import { Route as WorkspaceAfiliadosConciliacaoRouteImport } from './routes/work
 import { Route as WorkspaceAgendaIndexRouteImport } from './routes/workspace.agenda.index'
 import { Route as WorkspaceAgendaRecursosRouteImport } from './routes/workspace.agenda.recursos'
 import { Route as WorkspaceAtendimentoIndexRouteImport } from './routes/workspace.atendimento.index'
+import { Route as WorkspaceB2bIndexRouteImport } from './routes/workspace.b2b.index'
 import { Route as WorkspaceCaptacaoIndexRouteImport } from './routes/workspace.captacao.index'
 import { Route as WorkspaceCaptacaoNdasRouteImport } from './routes/workspace.captacao.ndas'
 import { Route as WorkspaceCatalogoIndexRouteImport } from './routes/workspace.catalogo.index'
@@ -474,11 +474,6 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const StatusRoute = StatusRouteImport.update({
   id: '/status',
   path: '/status',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ValeagoranewsRoute = ValeagoranewsRouteImport.update({
-  id: '/valeagoranews',
-  path: '/valeagoranews',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WaesynewsRoute = WaesynewsRouteImport.update({
@@ -1676,6 +1671,11 @@ const WorkspaceAtendimentoIndexRoute =
     path: '/atendimento/',
     getParentRoute: () => WorkspaceRoute,
   } as any)
+const WorkspaceB2bIndexRoute = WorkspaceB2bIndexRouteImport.update({
+  id: '/b2b/',
+  path: '/b2b/',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
 const WorkspaceCaptacaoIndexRoute = WorkspaceCaptacaoIndexRouteImport.update({
   id: '/captacao/',
   path: '/captacao/',
@@ -2717,7 +2717,6 @@ export interface FileRoutesByFullPath {
   '/sitemap-products.xml': typeof SitemapProductsDotxmlRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/status': typeof StatusRoute
-  '/valeagoranews': typeof ValeagoranewsRoute
   '/waesynews': typeof WaesynewsRoute
   '/workspace': typeof WorkspaceRouteWithChildren
   '/acougue': typeof StoreAcougueRoute
@@ -3056,6 +3055,7 @@ export interface FileRoutesByFullPath {
   '/workspace/advocacia/': typeof WorkspaceAdvocaciaIndexRoute
   '/workspace/agenda/': typeof WorkspaceAgendaIndexRoute
   '/workspace/atendimento/': typeof WorkspaceAtendimentoIndexRoute
+  '/workspace/b2b/': typeof WorkspaceB2bIndexRoute
   '/workspace/captacao/': typeof WorkspaceCaptacaoIndexRoute
   '/workspace/catalogo/': typeof WorkspaceCatalogoIndexRoute
   '/workspace/clientes/': typeof WorkspaceClientesIndexRoute
@@ -3143,7 +3143,6 @@ export interface FileRoutesByTo {
   '/sitemap-products.xml': typeof SitemapProductsDotxmlRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/status': typeof StatusRoute
-  '/valeagoranews': typeof ValeagoranewsRoute
   '/waesynews': typeof WaesynewsRoute
   '/acougue': typeof StoreAcougueRoute
   '/afiliados': typeof StoreAfiliadosRoute
@@ -3475,6 +3474,7 @@ export interface FileRoutesByTo {
   '/workspace/advocacia': typeof WorkspaceAdvocaciaIndexRoute
   '/workspace/agenda': typeof WorkspaceAgendaIndexRoute
   '/workspace/atendimento': typeof WorkspaceAtendimentoIndexRoute
+  '/workspace/b2b': typeof WorkspaceB2bIndexRoute
   '/workspace/captacao': typeof WorkspaceCaptacaoIndexRoute
   '/workspace/catalogo': typeof WorkspaceCatalogoIndexRoute
   '/workspace/clientes': typeof WorkspaceClientesIndexRoute
@@ -3565,7 +3565,6 @@ export interface FileRoutesById {
   '/sitemap-products.xml': typeof SitemapProductsDotxmlRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/status': typeof StatusRoute
-  '/valeagoranews': typeof ValeagoranewsRoute
   '/waesynews': typeof WaesynewsRoute
   '/workspace': typeof WorkspaceRouteWithChildren
   '/_store/acougue': typeof StoreAcougueRoute
@@ -3905,6 +3904,7 @@ export interface FileRoutesById {
   '/workspace/advocacia/': typeof WorkspaceAdvocaciaIndexRoute
   '/workspace/agenda/': typeof WorkspaceAgendaIndexRoute
   '/workspace/atendimento/': typeof WorkspaceAtendimentoIndexRoute
+  '/workspace/b2b/': typeof WorkspaceB2bIndexRoute
   '/workspace/captacao/': typeof WorkspaceCaptacaoIndexRoute
   '/workspace/catalogo/': typeof WorkspaceCatalogoIndexRoute
   '/workspace/clientes/': typeof WorkspaceClientesIndexRoute
@@ -3996,7 +3996,6 @@ export interface FileRouteTypes {
     | '/sitemap-products.xml'
     | '/sitemap.xml'
     | '/status'
-    | '/valeagoranews'
     | '/waesynews'
     | '/workspace'
     | '/acougue'
@@ -4335,6 +4334,7 @@ export interface FileRouteTypes {
     | '/workspace/advocacia/'
     | '/workspace/agenda/'
     | '/workspace/atendimento/'
+    | '/workspace/b2b/'
     | '/workspace/captacao/'
     | '/workspace/catalogo/'
     | '/workspace/clientes/'
@@ -4422,7 +4422,6 @@ export interface FileRouteTypes {
     | '/sitemap-products.xml'
     | '/sitemap.xml'
     | '/status'
-    | '/valeagoranews'
     | '/waesynews'
     | '/acougue'
     | '/afiliados'
@@ -4754,6 +4753,7 @@ export interface FileRouteTypes {
     | '/workspace/advocacia'
     | '/workspace/agenda'
     | '/workspace/atendimento'
+    | '/workspace/b2b'
     | '/workspace/captacao'
     | '/workspace/catalogo'
     | '/workspace/clientes'
@@ -4843,7 +4843,6 @@ export interface FileRouteTypes {
     | '/sitemap-products.xml'
     | '/sitemap.xml'
     | '/status'
-    | '/valeagoranews'
     | '/waesynews'
     | '/workspace'
     | '/_store/acougue'
@@ -5183,6 +5182,7 @@ export interface FileRouteTypes {
     | '/workspace/advocacia/'
     | '/workspace/agenda/'
     | '/workspace/atendimento/'
+    | '/workspace/b2b/'
     | '/workspace/captacao/'
     | '/workspace/catalogo/'
     | '/workspace/clientes/'
@@ -5273,7 +5273,6 @@ export interface RootRouteChildren {
   SitemapProductsDotxmlRoute: typeof SitemapProductsDotxmlRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StatusRoute: typeof StatusRoute
-  ValeagoranewsRoute: typeof ValeagoranewsRoute
   WaesynewsRoute: typeof WaesynewsRoute
   WorkspaceRoute: typeof WorkspaceRouteWithChildren
   ApiOpenapiDotjsonRoute: typeof ApiOpenapiDotjsonRoute
@@ -5372,13 +5371,6 @@ declare module '@tanstack/react-router' {
       path: '/status'
       fullPath: '/status'
       preLoaderRoute: typeof StatusRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/valeagoranews': {
-      id: '/valeagoranews'
-      path: '/valeagoranews'
-      fullPath: '/valeagoranews'
-      preLoaderRoute: typeof ValeagoranewsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/waesynews': {
@@ -7031,6 +7023,13 @@ declare module '@tanstack/react-router' {
       path: '/atendimento'
       fullPath: '/workspace/atendimento/'
       preLoaderRoute: typeof WorkspaceAtendimentoIndexRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/workspace/b2b/': {
+      id: '/workspace/b2b/'
+      path: '/b2b'
+      fullPath: '/workspace/b2b/'
+      preLoaderRoute: typeof WorkspaceB2bIndexRouteImport
       parentRoute: typeof WorkspaceRoute
     }
     '/workspace/captacao/': {
@@ -9015,6 +9014,7 @@ interface WorkspaceRouteChildren {
   WorkspaceAdvocaciaIndexRoute: typeof WorkspaceAdvocaciaIndexRoute
   WorkspaceAgendaIndexRoute: typeof WorkspaceAgendaIndexRoute
   WorkspaceAtendimentoIndexRoute: typeof WorkspaceAtendimentoIndexRoute
+  WorkspaceB2bIndexRoute: typeof WorkspaceB2bIndexRoute
   WorkspaceCaptacaoIndexRoute: typeof WorkspaceCaptacaoIndexRoute
   WorkspaceCatalogoIndexRoute: typeof WorkspaceCatalogoIndexRoute
   WorkspaceClientesIndexRoute: typeof WorkspaceClientesIndexRoute
@@ -9199,6 +9199,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceAdvocaciaIndexRoute: WorkspaceAdvocaciaIndexRoute,
   WorkspaceAgendaIndexRoute: WorkspaceAgendaIndexRoute,
   WorkspaceAtendimentoIndexRoute: WorkspaceAtendimentoIndexRoute,
+  WorkspaceB2bIndexRoute: WorkspaceB2bIndexRoute,
   WorkspaceCaptacaoIndexRoute: WorkspaceCaptacaoIndexRoute,
   WorkspaceCatalogoIndexRoute: WorkspaceCatalogoIndexRoute,
   WorkspaceClientesIndexRoute: WorkspaceClientesIndexRoute,
@@ -9282,7 +9283,6 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapProductsDotxmlRoute: SitemapProductsDotxmlRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StatusRoute: StatusRoute,
-  ValeagoranewsRoute: ValeagoranewsRoute,
   WaesynewsRoute: WaesynewsRoute,
   WorkspaceRoute: WorkspaceRouteWithChildren,
   ApiOpenapiDotjsonRoute: ApiOpenapiDotjsonRoute,

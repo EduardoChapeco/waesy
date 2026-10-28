@@ -223,7 +223,7 @@ function CmsStoriesPage() {
 
  <CardContent className="p-4 space-y-2">
  <div className="flex items-center justify-between text-xs text-muted-foreground">
- <span className="font-semibold text-foreground truncate max-w-[140px]">
+ <span className="font-semibold text-foreground truncate max-w-35">
  {story.niche || "Geral"}
  </span>
  <span>Ordem: {story.sort_order}</span>

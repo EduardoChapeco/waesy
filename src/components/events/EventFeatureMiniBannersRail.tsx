@@ -31,7 +31,7 @@ export function EventFeatureMiniBannersRail({
   return (
     <section
       aria-label={title}
-      className={cn("w-full space-y-2.5 py-2 select-none", className)}
+      className={cn("w-full space-y-2 py-2 select-none", className)}
       data-testid="event-feature-mini-banners-rail"
     >
       <div className="px-3 sm:px-4 flex items-center justify-between">
@@ -47,8 +47,8 @@ export function EventFeatureMiniBannersRail({
               key={item.id}
               to={item.targetUrl as any}
               className={cn(
-                "w-36 h-48 sm:w-40 sm:h-52 shrink-0 snap-start rounded-2xl p-3 flex flex-col justify-between text-white relative overflow-hidden select-none",
-                "shadow-xs hover:opacity-95 active:scale-95 transition-all duration-150 group cursor-pointer",
+                "w-36 h-48 sm:w-40 sm:h-52 shrink-0 snap-start rounded-2xl p-3 flex flex-col justify-between text-primary-foreground relative overflow-hidden select-none",
+                "shadow-xs hover:opacity-95 active:scale-95 transition-colors duration-150 group cursor-pointer",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
               )}
               style={{
@@ -65,12 +65,12 @@ export function EventFeatureMiniBannersRail({
                 />
               )}
 
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30 pointer-events-none" />
+              <div className="absolute inset-0 bg-black/50 pointer-events-none" />
 
               {/* Topo: Badge */}
               <div className="relative z-10">
                 {item.badgeText && (
-                  <span className="text-3xs font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-xs border border-white/30 text-white inline-block">
+                  <span className="text-3xs font-black uppercase tracking-wider px-2 py-1 rounded-full bg-card/20 backdrop-blur-xs border border-white/30 text-primary-foreground inline-block">
                     {item.badgeText}
                   </span>
                 )}
@@ -83,13 +83,13 @@ export function EventFeatureMiniBannersRail({
                     {item.title}
                   </h3>
                   {item.subtitle && (
-                    <p className="text-3xs text-white/80 line-clamp-1 mt-0.5 drop-shadow-xs">
+                    <p className="text-3xs text-primary-foreground/80 line-clamp-1 mt-1 drop-shadow-xs">
                       {item.subtitle}
                     </p>
                   )}
                 </div>
 
-                <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-md text-white text-3xs font-bold group-hover:bg-white/30 transition-colors">
+                <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-card/20 backdrop-blur-md text-primary-foreground text-3xs font-bold group-hover:bg-card/30 transition-colors">
                   <span>{item.actionText || "Conferir"}</span>
                   <CaretRight size={10} weight="bold" />
                 </div>

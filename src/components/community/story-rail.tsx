@@ -63,11 +63,11 @@ export function StoryRail({ stories = [], onCreateStory }: StoryRailProps) {
  className="absolute inset-0 size-full object-cover group-hover:scale-105 transition-transform duration-300"
  />
  ) : (
- <div className="absolute inset-0 bg-gradient-to-b from-primary/30 to-black/80" />
+ <div className="absolute inset-0 bg-muted" />
  )}
 
  {/* Gradient Overlay for Text Readability */}
- <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+ <div className="absolute inset-0 bg-black/60" />
 
  {/* Top Avatar / Badge */}
  <div className="relative z-10 flex items-center justify-between w-full">

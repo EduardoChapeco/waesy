@@ -71,19 +71,19 @@ const DEFAULT_HERO_MODULES = [
 
 // ── 2. Supercategorias de Continuação (Chips que NÃO repetem os módulos do topo) ──
 const DEFAULT_CONTINUATION_CHIPS = [
- { slug: "farmacia", to: "/farmacia", label: "Farmácia", emoji: "💊", icon: Heartbeat },
- { slug: "bebidas", to: "/bebidas", label: "Bebidas", emoji: "🍷", icon: Coffee },
- { slug: "acougue", to: "/acougue", label: "Açougue", emoji: "🥩", icon: Flame },
- { slug: "eletronicos", to: "/eletronicos", label: "Eletrônicos", emoji: "📱", icon: Storefront },
- { slug: "moda", to: "/moda", label: "Moda", emoji: "👗", icon: TShirt },
- { slug: "casa", to: "/casa", label: "Casa", emoji: "🛋️", icon: Storefront },
- { slug: "pet", to: "/pet", label: "Pet Shop", emoji: "🐾", icon: Heartbeat },
- { slug: "beleza", to: "/beleza", label: "Beleza", emoji: "✂️", icon: Scissors },
- { slug: "construcao", to: "/construcao", label: "Construção", emoji: "🧱", icon: Storefront },
- { slug: "servicos", to: "/servicos", label: "Serviços", emoji: "🛠️", icon: Briefcase },
- { slug: "imoveis", to: "/imoveis", label: "Imóveis", emoji: "🏡", icon: House },
- { slug: "doacoes", to: "/doacoes", label: "Doações", emoji: "❤️", icon: Heartbeat },
- { slug: "diretorio", to: "/diretorio", label: "Diretório", emoji: "🧭", icon: Compass },
+ { slug: "farmacia", to: "/farmacia", label: "Farmácia", emoji: "", icon: Heartbeat },
+ { slug: "bebidas", to: "/bebidas", label: "Bebidas", emoji: "", icon: Coffee },
+ { slug: "acougue", to: "/acougue", label: "Açougue", emoji: "", icon: Flame },
+ { slug: "eletronicos", to: "/eletronicos", label: "Eletrônicos", emoji: "", icon: Storefront },
+ { slug: "moda", to: "/moda", label: "Moda", emoji: "", icon: TShirt },
+ { slug: "casa", to: "/casa", label: "Casa", emoji: "️", icon: Storefront },
+ { slug: "pet", to: "/pet", label: "Pet Shop", emoji: "", icon: Heartbeat },
+ { slug: "beleza", to: "/beleza", label: "Beleza", emoji: "️", icon: Scissors },
+ { slug: "construcao", to: "/construcao", label: "Construção", emoji: "", icon: Storefront },
+ { slug: "servicos", to: "/servicos", label: "Serviços", emoji: "️", icon: Briefcase },
+ { slug: "imoveis", to: "/imoveis", label: "Imóveis", emoji: "", icon: House },
+ { slug: "doacoes", to: "/doacoes", label: "Doações", emoji: "️", icon: Heartbeat },
+ { slug: "diretorio", to: "/diretorio", label: "Diretório", emoji: "", icon: Compass },
 ];
 
 export function MasterHeroCards({
@@ -248,17 +248,17 @@ export function MasterHeroCards({
  loop
  muted
  playsInline
- className="absolute inset-0 size-full object-cover group-hover:scale-103 transition-transform duration-500"
+ className="absolute inset-0 size-full object-cover group-hover:scale-103 transition-transform duration-200"
  />
  ) : card.coverUrl ? (
  <img
  src={card.coverUrl}
  alt={card.title}
- className="absolute inset-0 size-full object-cover group-hover:scale-103 transition-transform duration-500"
+ className="absolute inset-0 size-full object-cover group-hover:scale-103 transition-transform duration-200"
  loading="eager"
  />
  ) : (
- <div className="absolute inset-0 size-full bg-gradient-to-br from-primary/15 via-muted/50 to-muted flex items-center justify-center">
+ <div className="absolute inset-0 size-full bg-muted flex items-center justify-center">
  <Compass size={36} className="text-primary/30" />
  </div>
  )}

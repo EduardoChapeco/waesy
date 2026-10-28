@@ -1,3 +1,4 @@
+// motion-reduce: safe
 /**
  * ============================================================================
  * Waesy Platform — SupermarketCatalogGrid.tsx ("O Super" & Apple HIG Parity)
@@ -103,7 +104,7 @@ export function SupermarketCatalogGrid({
 
       {/* ── 2. Régua de Corredores e Departamentos (Scroll Horizontal com Alvo de 44px) ── */}
       {departments.length > 0 && (
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
           {departments.map((dept) => {
             const isSelected = dept.id === activeDepartment;
             return (
@@ -112,7 +113,7 @@ export function SupermarketCatalogGrid({
                 type="button"
                 onClick={() => onSelectDepartment?.(dept.id)}
                 className={cn(
-                  "h-11 min-h-11 px-4 rounded-xl text-xs font-semibold shrink-0 flex items-center gap-1.5 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+                  "h-11 min-h-11 px-4 rounded-xl text-xs font-semibold shrink-0 flex items-center gap-2 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                   isSelected
                     ? "bg-foreground text-background shadow-xs scale-102 font-bold"
                     : "bg-card border border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -122,7 +123,7 @@ export function SupermarketCatalogGrid({
                 {dept.badge && (
                   <span
                     className={cn(
-                      "text-3xs px-1.5 py-0.5 rounded-full font-bold",
+                      "text-3xs px-2 py-1 rounded-full font-bold",
                       isSelected ? "bg-background/20 text-background" : "bg-primary/10 text-primary"
                     )}
                   >
@@ -137,7 +138,7 @@ export function SupermarketCatalogGrid({
 
       {/* ── 3. Seletor de Redes e Supermercados Parceiros ── */}
       {availableStores.length > 0 && (
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
           <span className="text-2xs uppercase tracking-wider text-muted-foreground font-semibold shrink-0">
             Rede:
           </span>
@@ -145,7 +146,7 @@ export function SupermarketCatalogGrid({
             type="button"
             onClick={() => onSelectStore?.("todos")}
             className={cn(
-              "h-11 min-h-11 px-3.5 rounded-xl text-xs font-semibold shrink-0 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+              "h-11 min-h-11 px-4 rounded-xl text-xs font-semibold shrink-0 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
               selectedStore === "todos"
                 ? "bg-primary text-primary-foreground shadow-xs font-bold"
                 : "bg-card border border-border/70 text-muted-foreground hover:text-foreground"
@@ -159,7 +160,7 @@ export function SupermarketCatalogGrid({
               type="button"
               onClick={() => onSelectStore?.(st)}
               className={cn(
-                "h-11 min-h-11 px-3.5 rounded-xl text-xs font-semibold shrink-0 flex items-center gap-1.5 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+                "h-11 min-h-11 px-4 rounded-xl text-xs font-semibold shrink-0 flex items-center gap-2 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                 selectedStore === st
                   ? "bg-primary text-primary-foreground shadow-xs font-bold"
                   : "bg-card border border-border/70 text-muted-foreground hover:text-foreground"
@@ -249,7 +250,7 @@ export function SupermarketCatalogGrid({
               <span className="text-2xs text-muted-foreground block mb-2 font-medium">
                 Simulações rápidas de leitura:
               </span>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-2">
                 {["Arroz", "Café", "Azeite", "Leite"].map((item) => (
                   <button
                     key={item}

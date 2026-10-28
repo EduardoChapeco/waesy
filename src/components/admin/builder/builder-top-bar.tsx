@@ -72,7 +72,7 @@ export function BuilderTopBar({
 
  <div className="flex flex-col min-w-0">
  <div className="flex items-center gap-2">
- <span className="text-sm font-bold text-foreground truncate max-w-[180px] sm:max-w-[260px]">
+ <span className="text-sm font-bold text-foreground truncate max-w-45 sm:max-w-65">
  {document?.title || (isStorefront ? "Vitrine Principal da Loja" : "Página sem Título")}
  </span>
  <Badge

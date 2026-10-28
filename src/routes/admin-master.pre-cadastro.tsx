@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { MediaUploader } from "@/components/ui/media-uploader";
 import { toast } from "sonner";
 import { listFounderLeads, updateFounderLeadStatus, getLaunchLandingSettings, updateLaunchLandingSettings, type FounderLeadDTO, type LaunchLandingSettingsDTO, type LaunchSlideDTO } from "@/services/launch.functions";
 
@@ -522,11 +523,11 @@ export default function AdminPreCadastroPage() {
                     </div>
 
                     <div className="space-y-1">
-                      <Label className="text-2xs font-bold">URL da Imagem</Label>
-                      <Input
-                        value={slide.image_url}
-                        onChange={(e) => {
-                          const val = e.target.value;
+                      <Label className="text-2xs font-bold">Mídia do Slide (Upload Direto)</Label>
+                      <MediaUploader
+                        value={slide.image_url ? [slide.image_url] : []}
+                        onChange={(urls) => {
+                          const val = urls[0] || "";
                           setCmsForm((prev) => ({
                             ...prev,
                             slides: prev.slides.map((s, i) =>
@@ -534,7 +535,12 @@ export default function AdminPreCadastroPage() {
                             ),
                           }));
                         }}
-                        className="h-9 rounded-lg text-xs bg-card font-mono"
+                        maxFiles={1}
+                        bucket="cms-media"
+                        folder="pre-cadastro"
+                        aspect={16 / 10}
+                        accept="image"
+                        label="Imagem do Slide"
                       />
                     </div>
 

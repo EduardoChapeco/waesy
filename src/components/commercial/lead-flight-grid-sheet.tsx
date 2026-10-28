@@ -176,7 +176,7 @@ export function LeadFlightGridSheet({
                   )}
                 </div>
 
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <div className="space-y-1">
                     <Label className="text-xs text-muted-foreground">Origem (IATA)</Label>
                     <Input

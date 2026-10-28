@@ -518,7 +518,7 @@ function CmsPagesPage() {
                   <div className="space-y-2 px-2 opacity-50 group-hover:opacity-75 transition-opacity">
                     <div className="h-2 w-3/4 bg-foreground/20 rounded-sm" />
                     <div className="h-2 w-1/2 bg-foreground/15 rounded-sm" />
-                    <div className="grid grid-cols-3 gap-1 pt-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 pt-1">
                       <div className="h-4 rounded bg-foreground/10" />
                       <div className="h-4 rounded bg-foreground/10" />
                       <div className="h-4 rounded bg-foreground/10" />

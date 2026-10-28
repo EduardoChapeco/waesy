@@ -31,6 +31,18 @@ import {
   ShoppingCart,
   X,
   Store,
+  Building,
+  Home,
+  Hotel,
+  Hammer,
+  Wrench,
+  Scissors,
+  Smartphone,
+  Gift,
+  Beef,
+  BookOpen,
+  Palette,
+  PartyPopper,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -114,6 +126,18 @@ const LATERAL_ICON_MAP: Record<string, LucideIcon> = {
   ShoppingBag,
   Store,
   SoccerBall: Trophy,
+  Building,
+  Home,
+  Hotel,
+  Hammer,
+  Wrench,
+  Scissors,
+  Smartphone,
+  Gift,
+  Beef,
+  BookOpen,
+  Palette,
+  PartyPopper,
 };
 
 export function VitrineLateralMenuSheet({

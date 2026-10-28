@@ -64,37 +64,6 @@ export interface RideBookingBottomSheetProps {
   className?: string;
 }
 
-const DEFAULT_OPTIONS: RideOptionItem[] = [
-  {
-    id: "moto-1",
-    name: "MotoLink Express",
-    category: "moto",
-    etaMinutes: 3,
-    priceCents: 990,
-    originalPriceCents: 1200,
-    description: "Rápido e econômico no trânsito urbano",
-    seats: 1,
-  },
-  {
-    id: "car-1",
-    name: "Waesy Go Econômico",
-    category: "car",
-    etaMinutes: 5,
-    priceCents: 1690,
-    description: "Carros 4 portas com ar-condicionado",
-    seats: 4,
-  },
-  {
-    id: "comfort-1",
-    name: "Waesy Comfort",
-    category: "comfort",
-    etaMinutes: 7,
-    priceCents: 2250,
-    description: "Veículos espaçosos e condutores 5 estrelas",
-    seats: 4,
-  },
-];
-
 export function RideBookingBottomSheet({
   snapPoint: controlledSnapPoint,
   onSnapPointChange,
@@ -102,7 +71,7 @@ export function RideBookingBottomSheet({
   destinationText = "",
   walkingDistanceMeters = 180,
   walkingMinutes = 2,
-  options = DEFAULT_OPTIONS,
+  options = [],
   selectedOptionId,
   onSelectOption,
   paymentMethod = "pix",
@@ -131,7 +100,7 @@ export function RideBookingBottomSheet({
   return (
     <div
       className={cn(
-        "absolute z-30 bottom-0 left-0 right-0 bg-card/95 backdrop-blur-2xl border-t border-border/80 shadow-2xl transition-all duration-300 rounded-t-3xl overflow-hidden flex flex-col",
+        "absolute z-30 bottom-0 left-0 right-0 bg-card/95 backdrop-blur-2xl border-t border-border/80 shadow-2xl transition-colors duration-300 rounded-t-3xl overflow-hidden flex flex-col",
         currentSnap === "compact" && "h-36 sm:h-40",
         currentSnap === "medium" && "h-[54vh] sm:h-[480px]",
         currentSnap === "expanded" && "h-[88vh] sm:h-[620px]",
@@ -150,34 +119,34 @@ export function RideBookingBottomSheet({
 
       {/* ── Ponto de Coleta e Raio a Pé (BlaBlaCar Parity) ── */}
       <div className="px-4 pb-2">
-        <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-between text-xs">
+        <div className="p-2 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-between text-xs">
           <div className="flex items-center gap-2 text-foreground font-medium min-w-0">
             <Footprints className="size-4 text-primary shrink-0" />
             <span className="truncate">
               Ponto de embarque: <strong>{walkingDistanceMeters}m</strong> ({walkingMinutes} min a pé)
             </span>
           </div>
-          <span className="text-3xs font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
+          <span className="text-3xs font-semibold px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
             Tarifa reduzida
           </span>
         </div>
       </div>
 
       {/* Conteúdo Conforme o Snap Point */}
-      <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-3.5 no-scrollbar">
+      <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-4 no-scrollbar">
         {/* Origem e Destino Resumidos */}
         <div className="p-3 rounded-2xl bg-muted/40 border border-border/40 space-y-2">
-          <div className="flex items-center gap-2.5 text-xs text-foreground">
+          <div className="flex items-center gap-3 text-xs text-foreground">
             <Navigation className="size-3.5 text-muted-foreground shrink-0" />
             <span className="truncate font-medium">{originText}</span>
           </div>
           {destinationText ? (
-            <div className="flex items-center gap-2.5 text-xs text-foreground border-t border-border/30 pt-2">
+            <div className="flex items-center gap-3 text-xs text-foreground border-t border-border/30 pt-2">
               <MapPin className="size-3.5 text-primary shrink-0" />
               <span className="truncate font-bold">{destinationText}</span>
             </div>
           ) : (
-            <div className="text-2xs text-muted-foreground border-t border-border/30 pt-1.5">
+            <div className="text-2xs text-muted-foreground border-t border-border/30 pt-2">
               Selecione o destino no mapa ou campo de busca
             </div>
           )}
@@ -195,7 +164,14 @@ export function RideBookingBottomSheet({
               </span>
 
               <div className="space-y-2">
-                {options.map((opt) => {
+                {options.length === 0 ? (
+                  <div className="py-8 text-center space-y-2 p-4 rounded-2xl bg-muted/20 border border-dashed border-border/60">
+                    <Navigation className="size-6 mx-auto text-muted-foreground/40" />
+                    <p className="text-xs font-bold text-foreground">Aguardando definição de destino</p>
+                    <p className="text-3xs text-muted-foreground">Informe o ponto de chegada no mapa para cotar tarifas e condutores em tempo real.</p>
+                  </div>
+                ) : (
+                  options.map((opt) => {
                   const isSelected = (selectedOptionId || options[0]?.id) === opt.id;
                   const Icon = opt.category === "moto" ? Bike : opt.category === "freight" ? Truck : Car;
 
@@ -205,9 +181,9 @@ export function RideBookingBottomSheet({
                       type="button"
                       onClick={() => onSelectOption?.(opt.id)}
                       className={cn(
-                        "w-full p-3.5 rounded-2xl border text-left flex items-center justify-between transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                        "w-full p-4 rounded-2xl border text-left flex items-center justify-between transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                         isSelected
-                          ? "bg-foreground text-background border-foreground shadow-sm scale-101"
+                          ? "bg-foreground text-background border-foreground shadow-xs scale-101"
                           : "bg-card border-border/60 hover:bg-muted/40 text-foreground"
                       )}
                     >
@@ -225,7 +201,7 @@ export function RideBookingBottomSheet({
                             <span className="text-xs sm:text-sm font-bold">{opt.name}</span>
                             <span
                               className={cn(
-                                "text-3xs px-1.5 py-0.5 rounded-full font-semibold",
+                                "text-3xs px-2 py-1 rounded-full font-semibold",
                                 isSelected ? "bg-background/20 text-background" : "bg-muted text-muted-foreground"
                               )}
                             >
@@ -235,7 +211,7 @@ export function RideBookingBottomSheet({
                           {opt.description && (
                             <span
                               className={cn(
-                                "text-2xs block truncate max-w-[200px] sm:max-w-xs",
+                                "text-2xs block truncate max-w-48 sm:max-w-xs",
                                 isSelected ? "text-background/80" : "text-muted-foreground"
                               )}
                             >
@@ -262,7 +238,8 @@ export function RideBookingBottomSheet({
                       </div>
                     </button>
                   );
-                })}
+                })
+                )}
               </div>
             </div>
 
@@ -273,12 +250,12 @@ export function RideBookingBottomSheet({
                   Forma de Pagamento
                 </span>
 
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <button
                     type="button"
                     onClick={() => onSelectPaymentMethod?.("pix")}
                     className={cn(
-                      "h-11 min-h-11 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 border transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+                      "h-11 min-h-11 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 border transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                       paymentMethod === "pix"
                         ? "bg-foreground text-background border-foreground shadow-xs"
                         : "bg-muted/40 text-muted-foreground border-border/60 hover:text-foreground"
@@ -292,7 +269,7 @@ export function RideBookingBottomSheet({
                     type="button"
                     onClick={() => onSelectPaymentMethod?.("card")}
                     className={cn(
-                      "h-11 min-h-11 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 border transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+                      "h-11 min-h-11 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 border transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                       paymentMethod === "card"
                         ? "bg-foreground text-background border-foreground shadow-xs"
                         : "bg-muted/40 text-muted-foreground border-border/60 hover:text-foreground"
@@ -306,7 +283,7 @@ export function RideBookingBottomSheet({
                     type="button"
                     onClick={() => onSelectPaymentMethod?.("cash")}
                     className={cn(
-                      "h-11 min-h-11 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 border transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+                      "h-11 min-h-11 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 border transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                       paymentMethod === "cash"
                         ? "bg-foreground text-background border-foreground shadow-xs"
                         : "bg-muted/40 text-muted-foreground border-border/60 hover:text-foreground"
@@ -325,7 +302,7 @@ export function RideBookingBottomSheet({
                 type="button"
                 onClick={onConfirmRide}
                 disabled={isConfirming}
-                className="w-full rounded-2xl h-11 min-h-11 text-xs font-bold gap-2 bg-foreground text-background hover:bg-foreground/90 shadow-md focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none cursor-pointer"
+                className="w-full rounded-2xl h-11 min-h-11 text-xs font-bold gap-2 bg-foreground text-background hover:bg-foreground/90 shadow-sm focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none cursor-pointer"
               >
                 <span>{isConfirming ? "Chamando condutor..." : `Confirmar ${selectedOption?.name || "Corrida"}`}</span>
                 <ArrowRight className="size-4" />

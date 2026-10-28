@@ -10,33 +10,33 @@ interface AdminContextualBarProps {
 }
 
 const ROUTE_NICHE_MAP: Record<string, { id: string; label: string; emoji: string }> = {
- "/": { id: "home", label: "Início (Home)", emoji: "🏠" },
- "/mercado": { id: "mercado", label: "Supermercado e Feira", emoji: "🛒" },
- "/gastronomia": { id: "gastronomia", label: "Gastronomia e Delivery", emoji: "🍽️" },
- "/farmacia": { id: "farmacia", label: "Farmácia e Saúde", emoji: "💊" },
- "/bebidas": { id: "bebidas", label: "Bebidas e Adega", emoji: "🍻" },
- "/acougue": { id: "acougue", label: "Açougue e Carnes", emoji: "🥩" },
- "/moda": { id: "moda", label: "Moda e Vestuário", emoji: "👗" },
- "/eletronicos": { id: "eletronicos", label: "Eletrônicos e Tech", emoji: "📱" },
- "/pet": { id: "pet", label: "Pet Shop", emoji: "🐾" },
- "/servicos": { id: "servicos", label: "Serviços e Profissionais", emoji: "💼" },
- "/imoveis": { id: "imoveis", label: "Imóveis e Locação", emoji: "🏢" },
- "/construcao": { id: "construcao", label: "Construção e Reforma", emoji: "🔨" },
- "/casa": { id: "casa", label: "Casa e Decoração", emoji: "🛋️" },
- "/beleza": { id: "beleza", label: "Beleza e Estética", emoji: "✂️" },
- "/limpeza": { id: "limpeza", label: "Limpeza e Utilidades", emoji: "🧹" },
- "/livros": { id: "livros", label: "Livros e Papelaria", emoji: "📚" },
- "/feed": { id: "feed", label: "Feed", emoji: "📡" },
- "/noticias": { id: "noticias", label: "Notícias", emoji: "📰" },
- "/eventos": { id: "eventos", label: "Eventos", emoji: "🎟️" },
- "/agenda": { id: "agenda", label: "Agenda", emoji: "📅" },
- "/afiliados": { id: "afiliados", label: "Afiliados", emoji: "🎯" },
- "/turismo": { id: "turismo", label: "Turismo e Hospedagem", emoji: "✈️" },
- "/empregos": { id: "empregos", label: "Empregos", emoji: "💼" },
- "/classificados": { id: "classificados", label: "Classificados", emoji: "🏷️" },
- "/diretorio": { id: "diretorio", label: "Places", emoji: "🧭" },
- "/mobilidade": { id: "mobilidade", label: "Mobilidade Urbana", emoji: "🚗" },
- "/ofertas": { id: "ofertas", label: "Ofertas Relâmpago", emoji: "⚡" },
+ "/": { id: "home", label: "Início (Home)", emoji: "" },
+ "/mercado": { id: "mercado", label: "Supermercado e Feira", emoji: "" },
+ "/gastronomia": { id: "gastronomia", label: "Gastronomia e Delivery", emoji: "️" },
+ "/farmacia": { id: "farmacia", label: "Farmácia e Saúde", emoji: "" },
+ "/bebidas": { id: "bebidas", label: "Bebidas e Adega", emoji: "" },
+ "/acougue": { id: "acougue", label: "Açougue e Carnes", emoji: "" },
+ "/moda": { id: "moda", label: "Moda e Vestuário", emoji: "" },
+ "/eletronicos": { id: "eletronicos", label: "Eletrônicos e Tech", emoji: "" },
+ "/pet": { id: "pet", label: "Pet Shop", emoji: "" },
+ "/servicos": { id: "servicos", label: "Serviços e Profissionais", emoji: "" },
+ "/imoveis": { id: "imoveis", label: "Imóveis e Locação", emoji: "" },
+ "/construcao": { id: "construcao", label: "Construção e Reforma", emoji: "" },
+ "/casa": { id: "casa", label: "Casa e Decoração", emoji: "️" },
+ "/beleza": { id: "beleza", label: "Beleza e Estética", emoji: "️" },
+ "/limpeza": { id: "limpeza", label: "Limpeza e Utilidades", emoji: "" },
+ "/livros": { id: "livros", label: "Livros e Papelaria", emoji: "" },
+ "/feed": { id: "feed", label: "Feed", emoji: "" },
+ "/noticias": { id: "noticias", label: "Notícias", emoji: "" },
+ "/eventos": { id: "eventos", label: "Eventos", emoji: "️" },
+ "/agenda": { id: "agenda", label: "Agenda", emoji: "" },
+ "/afiliados": { id: "afiliados", label: "Afiliados", emoji: "" },
+ "/turismo": { id: "turismo", label: "Turismo e Hospedagem", emoji: "️" },
+ "/empregos": { id: "empregos", label: "Empregos", emoji: "" },
+ "/classificados": { id: "classificados", label: "Classificados", emoji: "️" },
+ "/diretorio": { id: "diretorio", label: "Places", emoji: "" },
+ "/mobilidade": { id: "mobilidade", label: "Mobilidade Urbana", emoji: "" },
+ "/ofertas": { id: "ofertas", label: "Ofertas Relâmpago", emoji: "" },
 };
 
 export function AdminContextualBar({ userRole }: AdminContextualBarProps) {
@@ -53,7 +53,7 @@ export function AdminContextualBar({ userRole }: AdminContextualBarProps) {
  const activeNiche = ROUTE_NICHE_MAP[pathname] || {
  id: "all",
  label: "Vitrine Pública",
- emoji: "🌐",
+ emoji: "",
  };
 
   if (isMinimized) {
@@ -80,8 +80,8 @@ export function AdminContextualBar({ userRole }: AdminContextualBarProps) {
  </div>
  <div className="hidden sm:block text-left pr-1">
  <div className="flex items-center gap-1 font-bold text-foreground text-2xs">
- <span>{activeNiche.emoji}</span>
- <span className="truncate max-w-[120px]">{activeNiche.label}</span>
+ 
+ <span className="truncate max-w-30">{activeNiche.label}</span>
  </div>
  <p className="text-3xs text-muted-foreground font-mono uppercase tracking-wider">Admin Master</p>
  </div>
@@ -139,7 +139,7 @@ export function AdminContextualBar({ userRole }: AdminContextualBarProps) {
  className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer ml-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  title="Minimizar barra de atalho"
  >
- ✕
+ 
  </button>
  </div>
  </aside>

@@ -93,7 +93,7 @@ export function FounderSmartphoneMockup({
   const cleanWa = whatsapp.replace(/\D/g, "");
 
   return (
-    <div className="w-full max-w-lg sm:max-w-sm mx-auto animate-in zoom-in-95 duration-500">
+    <div className="w-full max-w-lg sm:max-w-sm mx-auto animate-in zoom-in-95 duration-200">
       {/* Moldura do Smartphone Adaptativa: Card fluido no Mobile, Bezel Apple no Desktop */}
       <div className="relative rounded-lg sm:rounded-lg border border-border/80 sm:border-4 sm:border-neutral-900 bg-card  overflow-hidden ring-0 sm:ring-1 sm:ring-border/80">
         {/* Dynamic Island / Notch — Apenas Desktop/Tablet */}
@@ -115,7 +115,7 @@ export function FounderSmartphoneMockup({
         <div className="p-4 sm:px-4 sm:pt-2 sm:pb-6 space-y-4 max-h-none sm:max-h-[580px] overflow-y-visible sm:overflow-y-auto scrollbar-none text-left">
           {/* Topo do Perfil com Avatar e Capa Compacta */}
           <div className="flex items-center gap-3">
-            <div className="size-16 rounded-lg bg-gradient-to-br from-primary/20 via-primary/5 to-muted border border-border flex items-center justify-center font-bold text-xl text-primary shrink-0 shadow-xs uppercase">
+            <div className="size-16 rounded-lg bg-muted border border-border flex items-center justify-center font-bold text-xl text-primary shrink-0 shadow-xs uppercase">
               {companyName.charAt(0) || "W"}
             </div>
             <div className="min-w-0 flex-1 space-y-1">
@@ -213,7 +213,7 @@ export function FounderSmartphoneMockup({
               <span className="text-2xs text-muted-foreground">3 itens ativos</span>
             </div>
 
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {cnaeCategoryCatalog.map((p, idx) => (
                 <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                   key={idx}

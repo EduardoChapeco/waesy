@@ -287,12 +287,12 @@ function CustomerOrderDetailPage() {
     ];
 
     let customWhatsAppText = `Olá! Segue o comprovante do pedido *#${publicToken}* realizado em *${storeName}*:\n\n`;
-    customWhatsAppText += `📦 *Status:* ${translateStatus(order.status)}\n`;
-    customWhatsAppText += `💰 *Valor Total:* ${formatMoney(order.total_cents || 0)}\n`;
-    customWhatsAppText += `📅 *Data:* ${formattedDate}\n\n`;
+    customWhatsAppText += ` *Status:* ${translateStatus(order.status)}\n`;
+    customWhatsAppText += ` *Valor Total:* ${formatMoney(order.total_cents || 0)}\n`;
+    customWhatsAppText += ` *Data:* ${formattedDate}\n\n`;
     customWhatsAppText += `Itens:\n` + items.map((i: any) => `- ${i.qty || 1}x ${i.product_title}`).join("\n") + `\n\n`;
     if (address?.street) {
-      customWhatsAppText += `📍 *Entrega:* ${address.street}, ${address.number || ""} - ${address.city || ""}\n\n`;
+      customWhatsAppText += ` *Entrega:* ${address.street}, ${address.number || ""} - ${address.city || ""}\n\n`;
     }
     customWhatsAppText += `Obrigado pela preferência!`;
 

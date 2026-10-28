@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { User, Phone, Mail, ShoppingBag, ShieldAlert, DollarSign, Calendar, FileText, CheckCircle2, AlertTriangle, ArrowUpRight } from "lucide-react";
+import { User, Phone, Mail, ShoppingBag, ShieldAlert, DollarSign, Calendar, FileText, CheckCircle2, AlertTriangle, ArrowUpRight, Plane, Compass, Ticket } from "lucide-react";
 import { formatBRL } from "@/lib/utils";
 import { formatDate } from "@/lib/datetime";
 import { Badge } from "@/components/ui/badge";
@@ -62,7 +62,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
 
  if (!data) return null;
 
- const { profile, metrics, orders, tickets } = data;
+ const { profile, metrics, orders, tickets, trips = [], credits = [] } = data;
 
  return (
  <div className="space-y-5 p-4 text-xs font-sans">
@@ -114,6 +114,60 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
  </p>
  </div>
  </div>
+
+  {/* Viagens & Reservas Ativas (Padrão Blis.ai / Voll) */}
+  {(trips.length > 0 || credits.length > 0) && (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-bold text-foreground flex items-center gap-2">
+          <Plane className="size-3.5 text-sky-500" />
+          Viagens & Reservas ({trips.length})
+        </span>
+        {credits.length > 0 && (
+          <Badge variant="outline" className="text-xs font-mono text-emerald-600 bg-emerald-500/10 border-emerald-500/20">
+            {credits.length} crédito(s)
+          </Badge>
+        )}
+      </div>
+
+      <div className="space-y-2 max-h-40 overflow-y-auto no-scrollbar pr-1">
+        {trips.map((tr: any) => (
+          <div key={tr.id} className="p-2 rounded-lg bg-card border border-border/80 text-xs space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-foreground truncate max-w-40">
+                {tr.title || tr.destination_city || `Viagem #${tr.trip_number || tr.id.slice(0, 6)}`}
+              </span>
+              <Badge variant="outline" className="text-xs px-2 py-0 h-4 uppercase">
+                {tr.status}
+              </Badge>
+            </div>
+            <div className="flex items-center justify-between text-muted-foreground text-xs">
+              <span>{tr.destination_city || "Destino"}</span>
+              <span className="font-semibold text-foreground">
+                {formatBRL((tr.total_cents || 0) / 100)}
+              </span>
+            </div>
+          </div>
+        ))}
+
+        {credits.map((cr: any) => (
+          <div key={cr.id} className="p-2 rounded-lg bg-emerald-500/5 border border-emerald-500/20 text-xs flex items-center justify-between">
+            <div className="space-y-1">
+              <span className="font-bold text-emerald-700 dark:text-emerald-400 block">
+                Crédito {cr.airline} · PNR {cr.original_pnr}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                Expira: {cr.expires_at}
+              </span>
+            </div>
+            <span className="font-extrabold text-emerald-600 text-xs">
+              {formatBRL((cr.remaining_amount_cents || 0) / 100)}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
 
  {/* Tickets / Chamados Abertos */}
  {tickets.length > 0 && (

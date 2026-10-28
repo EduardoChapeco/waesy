@@ -792,13 +792,13 @@ export function BrandKitPage() {
             <div className="bg-card border border-border/50 rounded-lg overflow-hidden">
               <div className="px-5 py-4 border-b border-border/30 flex items-center justify-between">
                 <div>
-                  <Label className="text-sm font-semibold">Capa do Card no Places</Label>
+                  <Label className="text-sm font-semibold">Capa Oficial da Empresa (Cards, Feeds e Vitrines)</Label>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Imagem exibida no cartão da sua empresa no Places e diretório local. Não altera a capa ou banners do cabeçalho da sua vitrine.
+                    Imagem oficial de capa da sua empresa utilizada nos cards de destaque, feeds do guia comercial, buscas e vitrines. Os perfis públicos seguem o padrão limpo sem capa (Apple HIG / Instagram / Threads).
                   </p>
                 </div>
                 <Badge variant="outline" className="text-xs font-mono">
-                  16:9 ou 3:1 (Places)
+                  16:9 ou 21:9
                 </Badge>
               </div>
               <div className="p-5">
@@ -808,7 +808,7 @@ export function BrandKitPage() {
                   onRemove={() => update({ cover_url: "" })}
                   bucket="store-assets"
                   aspectPreset="cover"
-                  helperText="Clique ou arraste para carregar a capa do card da sua empresa no Places. Sincronizada exclusivamente com o guia e diretório de empresas."
+                  helperText="Upload da capa oficial da sua empresa para os cards de feeds, buscas e vitrines."
                 />
               </div>
             </div>

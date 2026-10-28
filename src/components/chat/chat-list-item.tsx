@@ -136,7 +136,7 @@ export function ChatListItem({
       {/* Camada Traseira de Swipe-to-Action (Oculta até deslizar para a esquerda) */}
       <div
         className={cn(
-          "absolute inset-y-0 right-0 flex items-stretch w-[148px] z-0 transition-opacity duration-150 md:hidden",
+          "absolute inset-y-0 right-0 flex items-stretch w-36 z-0 transition-opacity duration-150 md:hidden",
           offsetX < 0 ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         )}
       >

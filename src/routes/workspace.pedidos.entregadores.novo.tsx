@@ -256,7 +256,7 @@ function NovoEntregadorPage() {
  <Button
  type="submit"
  disabled={isSubmitting || !form.name.trim()}
- className="rounded-lg min-w-[140px]"
+ className="rounded-lg min-w-35"
  >
  {isSubmitting ? (
  <>

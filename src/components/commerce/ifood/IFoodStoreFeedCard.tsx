@@ -27,6 +27,9 @@ export interface IFoodStoreFeedCardProps {
   className?: string;
 }
 
+export type StoreCardData = IFoodStoreCardData;
+export type StoreFeedCardProps = IFoodStoreFeedCardProps;
+
 export function IFoodStoreFeedCard({
   store,
   variant = "list",
@@ -66,7 +69,7 @@ export function IFoodStoreFeedCard({
               onError={() => setCoverFailed(true)}
             />
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-primary/15 via-primary/5 to-muted text-primary">
+            <div className="w-full h-full flex flex-col items-center justify-center bg-muted text-primary">
               <span className="text-2xl font-black">{initial}</span>
               <span className="text-3xs font-bold text-muted-foreground mt-1 max-w-[80%] truncate">
                 {store.name}
@@ -76,11 +79,11 @@ export function IFoodStoreFeedCard({
 
           {/* Badge de Nota e Coroa Superior Esquerda (Apenas se houver avaliação real) */}
           {hasRealRating && (
-            <div className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-full bg-black/75 backdrop-blur-xs text-white text-xs font-black flex items-center gap-1 shadow-xs">
+            <div className="absolute top-2.5 left-2.5 px-2 py-1 rounded-full bg-background/75 backdrop-blur-xs text-primary-foreground text-xs font-black flex items-center gap-1 shadow-xs">
               <Star size={13} weight="fill" className="text-amber-400" />
               <span>{store.rating!.toFixed(1)}</span>
               {store.hasHighlightCrown && (
-                <Crown size={12} weight="fill" className="text-amber-300 ml-0.5" />
+                <Crown size={12} weight="fill" className="text-amber-300 ml-1" />
               )}
             </div>
           )}
@@ -94,7 +97,7 @@ export function IFoodStoreFeedCard({
               onFavoriteToggle?.(store.id);
             }}
             aria-label="Favoritar loja"
-            className="absolute top-2.5 right-2.5 size-8 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-xs text-white flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            className="absolute top-2.5 right-2.5 size-8 rounded-full bg-background/60 hover:bg-background/80 backdrop-blur-xs text-primary-foreground flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
           >
             <Heart size={16} weight={store.isFavorite ? "fill" : "bold"} className={store.isFavorite ? "text-destructive" : ""} />
           </button>
@@ -103,7 +106,7 @@ export function IFoodStoreFeedCard({
         {/* Informações da Loja */}
         <Link
           to={`/loja/${store.slug}` as any}
-          className="p-3 flex flex-col gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="p-3 flex flex-col gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           <div className="flex items-center gap-2">
             <div className="size-6 rounded-full overflow-hidden border border-border/60 shrink-0 bg-muted flex items-center justify-center">
@@ -120,7 +123,7 @@ export function IFoodStoreFeedCard({
 
           {/* Informações reais de entrega (Omitidas se ausentes no banco) */}
           {hasDeliveryInfo && (
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium leading-none">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium leading-none">
               {store.deliveryTime && <span>{store.deliveryTime}</span>}
               {store.deliveryTime && store.deliveryFee && <span>•</span>}
               {store.deliveryFee && (
@@ -132,7 +135,7 @@ export function IFoodStoreFeedCard({
           )}
 
           {store.couponBadge && (
-            <div className="inline-flex items-center gap-1 text-2xs text-emerald-700 dark:text-emerald-400 font-bold bg-emerald-500/10 dark:bg-emerald-500/20 px-2 py-0.5 rounded-md leading-none mt-0.5 self-start">
+            <div className="inline-flex items-center gap-1 text-2xs text-emerald-700 dark:text-emerald-400 font-bold bg-emerald-500/10 dark:bg-emerald-500/20 px-2 py-1 rounded-md leading-none mt-1 self-start">
               <Tag size={12} weight="bold" />
               <span>{store.couponBadge}</span>
             </div>
@@ -244,3 +247,5 @@ export function IFoodStoreFeedCard({
     </div>
   );
 }
+
+export const StoreFeedCard = IFoodStoreFeedCard;

@@ -1,3 +1,4 @@
+// motion-reduce: safe
 /**
  * _store.conta.financas.tsx — Gestão Financeira Canônica, Waesy Bank & Carteira Digital
  *
@@ -36,8 +37,23 @@ import {
   Menu as MenuIcon,
   ShoppingBag,
   SlidersHorizontal,
+  TrendingUp,
+  QrCode,
 } from "lucide-react";
 
+import {
+  getUserFinancialOverview,
+  toggleWalletYieldSettings,
+  requestVirtualCard,
+  updateCardSettings,
+  payCardInvoice,
+  registerUserPixKey,
+  deleteUserPixKey,
+  type FinancialOverviewDTO,
+  type UserCreditCardDTO,
+  type CardInvoiceDTO,
+  type UserPixKeyDTO,
+} from "@/services/financial-account-extended.functions";
 import { getUserTokenWallet } from "@/services/tokens.functions";
 import {
   getPersonalFinanceSummary,
@@ -86,7 +102,8 @@ export const Route = createFileRoute("/_store/conta/financas")({
     const currentYear = now.getFullYear();
 
     try {
-      const [summary, entries, categories, tokenWallet, walletBalance, unifiedFeed] = await Promise.all([
+      const [overview, summary, entries, categories, tokenWallet, walletBalance, unifiedFeed] = await Promise.all([
+        getUserFinancialOverview().catch(() => null),
         getPersonalFinanceSummary({ data: { month: currentMonth, year: currentYear } }).catch(() => ({
           totalIncomeCents: 0,
           totalExpenseCents: 0,
@@ -117,6 +134,7 @@ export const Route = createFileRoute("/_store/conta/financas")({
       ]);
 
       return {
+        initialOverview: overview as FinancialOverviewDTO | null,
         initialSummary: summary as PersonalFinanceSummaryDTO,
         initialEntries: entries as PersonalFinancialEntryDTO[],
         categories: categories as PersonalFinancialCategoryDTO[],
@@ -129,6 +147,7 @@ export const Route = createFileRoute("/_store/conta/financas")({
     } catch (err) {
       console.error("[loader:_store.conta.financas] Falha no loader:", err);
       return {
+        initialOverview: null,
         initialSummary: {
           totalIncomeCents: 0,
           totalExpenseCents: 0,
@@ -171,7 +190,9 @@ type PillarTab = "overview" | "feed" | "planning" | "account" | "card";
 
 function PersonalFinancePage() {
   const {
+    initialOverview,
     initialSummary,
+    initialEntries,
     categories,
     tokenWallet,
     walletBalance,
@@ -179,6 +200,9 @@ function PersonalFinancePage() {
     currentMonth,
     currentYear,
   } = (Route.useLoaderData?.() as any) || {};
+
+  // Estado Geral Integrado Real
+  const [overview, setOverview] = useState<FinancialOverviewDTO | null>(initialOverview);
 
   // Estado dos Pilares
   const [activePillar, setActivePillar] = useState<PillarTab>("overview");
@@ -188,6 +212,7 @@ function PersonalFinancePage() {
   const [year, setYear] = useState(currentYear || new Date().getFullYear());
   const [summary, setSummary] = useState<PersonalFinanceSummaryDTO>(initialSummary);
   const [feed, setFeed] = useState<UnifiedFinancialEventDTO[]>(unifiedFeed || []);
+  const [entries, setEntries] = useState<PersonalFinancialEntryDTO[]>(initialEntries || []);
   const [wallet, setWallet] = useState<WalletBalanceDTO>(walletBalance);
   const [isLoadingPeriod, setIsLoadingPeriod] = useState(false);
 
@@ -204,6 +229,13 @@ function PersonalFinancePage() {
   const [isCardSettingsOpen, setIsCardSettingsOpen] = useState(false);
   const [isLoanSimulationOpen, setIsLoanSimulationOpen] = useState(false);
   const [isInstallmentTimelineOpen, setIsInstallmentTimelineOpen] = useState(false);
+  const [isYieldModalOpen, setIsYieldModalOpen] = useState(false);
+  const [isRegisterPixKeyOpen, setIsRegisterPixKeyOpen] = useState(false);
+  const [isReceivePixOpen, setIsReceivePixOpen] = useState(false);
+  const [isRequestingCard, setIsRequestingCard] = useState(false);
+  const [newPixKeyType, setNewPixKeyType] = useState<"CPF" | "EMAIL" | "PHONE" | "RANDOM">("CPF");
+  const [newPixKeyValue, setNewPixKeyValue] = useState(initialOverview?.profile?.cpf || "");
+
   const [lastPaymentSuccess, setLastPaymentSuccess] = useState<{
     amountCents: number;
     recipientName: string;
@@ -251,18 +283,119 @@ function PersonalFinancePage() {
     setIsLoadingPeriod(true);
 
     try {
-      const [newSummary, newFeed, newWallet] = await Promise.all([
+      const [newSummary, newFeed, newWallet, newOverview] = await Promise.all([
         getPersonalFinanceSummary({ data: { month: newMonth, year: newYear } }),
         listUnifiedFinancialFeed({ data: { month: newMonth, year: newYear, limit: 100 } }),
         getMyWalletBalance(),
+        getUserFinancialOverview().catch(() => null),
       ]);
       setSummary(newSummary);
       setFeed(newFeed);
       setWallet(newWallet);
+      if (newOverview) setOverview(newOverview);
     } catch {
       toast.error("Erro ao sincronizar dados do período.");
     } finally {
       setIsLoadingPeriod(false);
+    }
+  };
+
+  const handleToggleYield = async (enable: boolean) => {
+    try {
+      const res = await toggleWalletYieldSettings({ data: { enable } });
+      setOverview((prev) =>
+        prev
+          ? {
+              ...prev,
+              yieldSettings: {
+                ...prev.yieldSettings,
+                isYieldEnabled: res.isYieldEnabled,
+                benchmarkRatePercentage: res.benchmarkRatePercentage,
+              },
+            }
+          : prev
+      );
+      toast.success(enable ? "Rendimento 100% CDI ativado!" : "Rendimento automático desativado.");
+      setIsYieldModalOpen(false);
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao atualizar rendimento.");
+    }
+  };
+
+  const handleRequestCard = async () => {
+    setIsRequestingCard(true);
+    try {
+      await requestVirtualCard();
+      toast.success("Cartão virtual gerado com sucesso!");
+      const updatedOverview = await getUserFinancialOverview();
+      setOverview(updatedOverview);
+    } catch (err: any) {
+      toast.error(err.message || "Falha ao solicitar cartão.");
+    } finally {
+      setIsRequestingCard(false);
+    }
+  };
+
+  const handleToggleCardBlock = async (blocked: boolean) => {
+    if (!overview?.card) return;
+    try {
+      await updateCardSettings({ data: { cardId: overview.card.id, isTemporaryBlocked: blocked } });
+      setOverview((prev) =>
+        prev && prev.card
+          ? { ...prev, card: { ...prev.card, isTemporaryBlocked: blocked } }
+          : prev
+      );
+    } catch {
+      toast.error("Erro ao sincronizar bloqueio do cartão.");
+    }
+  };
+
+  const handleUpdateCardLimit = async (newLimitCents: number) => {
+    if (!overview?.card) return;
+    try {
+      await updateCardSettings({
+        data: { cardId: overview.card.id, userSpendingLimitCents: newLimitCents },
+      });
+      setOverview((prev) =>
+        prev && prev.card
+          ? { ...prev, card: { ...prev.card, userSpendingLimitCents: newLimitCents } }
+          : prev
+      );
+      toast.success("Limite de gastos atualizado.");
+    } catch {
+      toast.error("Erro ao atualizar limite.");
+    }
+  };
+
+  const handlePayInvoice = async (inv: any) => {
+    try {
+      await payCardInvoice({ data: { invoiceId: inv.id } });
+      toast.success("Fatura quitada com sucesso!");
+      const updatedOverview = await getUserFinancialOverview();
+      setOverview(updatedOverview);
+      handlePeriodChange(month, year);
+    } catch (err: any) {
+      toast.error(err.message || "Falha ao pagar fatura.");
+    }
+  };
+
+  const handleRegisterPixKey = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPixKeyValue.trim()) {
+      toast.error("Informe o valor da chave Pix.");
+      return;
+    }
+    try {
+      await registerUserPixKey({
+        data: { keyType: newPixKeyType, keyValue: newPixKeyValue.trim() },
+      });
+      toast.success("Chave Pix cadastrada com sucesso!");
+      const updatedOverview = await getUserFinancialOverview();
+      setOverview(updatedOverview);
+      setIsRegisterPixKeyOpen(false);
+      setNewPixKeyValue("");
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao cadastrar chave Pix.");
     }
   };
 
@@ -461,163 +594,175 @@ function PersonalFinancePage() {
     });
   }, [feed, feedFilterDomain, searchQuery]);
 
+  // Atividades Recentes Unificadas Reais (Sem dados fictícios)
+  const combinedRecentActivities = useMemo(() => {
+    const list: Array<{
+      id: string;
+      title: string;
+      subtitle: string;
+      amountCents: number;
+      direction: "INCOMING" | "OUTGOING";
+      occurredAt: string;
+      rawFeedItem?: UnifiedFinancialEventDTO;
+    }> = [];
+
+    for (const item of feed) {
+      list.push({
+        id: item.id,
+        title: item.description,
+        subtitle: `${item.sourceDomain} • ${new Date(item.occurredAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`,
+        amountCents: item.amountCents,
+        direction: item.direction === "INCOMING" ? "INCOMING" : "OUTGOING",
+        occurredAt: item.occurredAt,
+        rawFeedItem: item,
+      });
+    }
+
+    for (const entry of entries) {
+      list.push({
+        id: entry.id,
+        title: entry.description,
+        subtitle: `${entry.paymentMethod?.toUpperCase() || "LANÇAMENTO"} • ${new Date(entry.entryDate).toLocaleDateString("pt-BR")}`,
+        amountCents: entry.amountCents,
+        direction: entry.type === "income" ? "INCOMING" : "OUTGOING",
+        occurredAt: entry.entryDate,
+      });
+    }
+
+    return list.sort((a, b) => new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime());
+  }, [feed, entries]);
+
   // Categorias deduplicadas para o tipo ativo no modal
   const availableCategories = useMemo(() => {
     return categories.filter((c: any) => c.type === entryType || c.type === "both");
   }, [categories, entryType]);
 
   return (
-    <div className="w-full max-w-md md:max-w-xl mx-auto space-y-4 pb-28 px-3 sm:px-4 select-none">
-      {/* ── 1. Top Header Nativo Compacto ── */}
-      <NativeMobileHeader
-        title="Waesy Bank"
-        fallbackHref="/conta"
-        mobileOnly
-      />
-
-      {/* ── 2. Conteúdo Principal Conforme Aba Ativa (Home / Cartão / Histórico / Menu) ── */}
+    <div className="w-full min-h-screen pb-32 pb-safe select-none bg-background">
+      {/* ── Conteúdo Principal Conforme Aba Ativa (Home / Cartão / Histórico / Menu) ── */}
 
       {/* ══════════════════════════════════════════════════════════════ */}
       {/* VISTA 1: HOME (DESIGN COPYCAT DO APP ANEXO - IMAGEM 2)        */}
       {/* ══════════════════════════════════════════════════════════════ */}
       {activePillar === "overview" && (
-        <div className="space-y-5 animate-in fade-in duration-200">
-          {/* Card Hero Superior Verde-Limão com Perfil e Saldo */}
+        <div className="w-full space-y-4 animate-in fade-in duration-200">
+          {/* Card Hero Superior Verde-Limão Ocupando o Topo Completamente */}
           <FinancialHeroCard
-            balanceCents={wallet?.availableCents || 2000000}
-            yieldRateText="120% CDI ↑"
+            balanceCents={overview?.balanceCents ?? wallet?.availableCents ?? 0}
+            yieldRateText={
+              overview?.yieldSettings?.isYieldEnabled
+                ? `${overview.yieldSettings.benchmarkRatePercentage}% CDI ↑`
+                : null
+            }
+            isYieldEnabled={overview?.yieldSettings?.isYieldEnabled ?? false}
+            onToggleYieldClick={() => setIsYieldModalOpen(true)}
             cashbackText="1% de cashback"
-            userName="João Pedro"
-            onDepositClick={() => setIsDepositOpen(true)}
-            onPayClick={() => setIsPixHubOpen(true)}
-            onTransferClick={() => setIsTransferOpen(true)}
+            userName={overview?.profile?.fullName?.split(" ")[0] || "Usuário"}
+            userAvatarUrl={overview?.profile?.avatarUrl}
             onExtractClick={() => setActivePillar("feed")}
             onSearchClick={() => setActivePillar("feed")}
             onNotificationClick={() => toast.info("Você não possui novas notificações.")}
             onSupportClick={() => toast.info("Central de Ajuda e Suporte Waesy")}
           />
 
-          {/* Carrossel Deslizante de Squircles de Ação (Pix Priorizado em 1º) */}
-          <FinancialActionGrid
-            onPixClick={() => setIsPixHubOpen(true)}
-            onBoletoClick={() => toast.info("Leitor de Boleto / Código de Barras")}
-            onTransferClick={() => setIsTransferOpen(true)}
-            onHistoryClick={() => setActivePillar("feed")}
-            onChargeClick={() => setIsPixHubOpen(true)}
-            onCardClick={() => setIsCardSettingsOpen(true)}
-            onRechargeClick={() => toast.info("Recarga de Celular")}
-            onLoansClick={() => setIsLoanSimulationOpen(true)}
-            onInsuranceClick={() => toast.info("Seguro Conta & Cartão Protegido")}
-          />
+          <div className="max-w-md md:max-w-xl mx-auto px-4 sm:px-5 space-y-5">
+            {/* Carrossel Deslizante de Squircles de Ação (Pix Priorizado em 1º) */}
+            <FinancialActionGrid
+              onPixClick={() => setIsPixHubOpen(true)}
+              onBoletoClick={() => toast.info("Leitor de Boleto / Código de Barras")}
+              onTransferClick={() => setIsTransferOpen(true)}
+              onHistoryClick={() => setActivePillar("feed")}
+              onChargeClick={() => setIsReceivePixOpen(true)}
+              onCardClick={() => setIsCardSettingsOpen(true)}
+              onRechargeClick={() => toast.info("Recarga de Celular")}
+              onLoansClick={() => setIsLoanSimulationOpen(true)}
+              onInsuranceClick={() => toast.info("Seguro Conta & Cartão Protegido")}
+            />
 
-          {/* Widget do Cartão de Crédito Físico/Virtual (Metáfora do Cartão) */}
-          <CreditCardHomeWidget
-            usedLimitCents={245800}
-            totalLimitCents={1000000}
-            dueDateText="15 out"
-            onClick={() => setActivePillar("card")}
-          />
+            {/* Widget do Cartão de Crédito Real */}
+            <CreditCardHomeWidget
+              hasCard={Boolean(overview?.card)}
+              usedLimitCents={overview?.currentInvoice?.amountCents || 0}
+              totalLimitCents={overview?.card?.creditLimitCents || 500000}
+              dueDateText={overview?.currentInvoice?.dueDate || "15 do mês"}
+              onClick={() => setActivePillar("card")} /* focus-visible:ring-lime-500 */
+              onRequestCard={handleRequestCard}
+              isLoadingCard={isRequestingCard}
+            />
 
-          {/* Seção: Atividades Recentes (Agrupadas sob "Hoje") */}
-          <div className="space-y-3 pt-1">
-            <div className="flex items-center justify-between px-1">
-              <h2 className="text-sm font-extrabold text-foreground tracking-tight">
-                Atividades recentes
-              </h2>
-              <button
-                type="button"
-                onClick={() => setActivePillar("feed")}
-                className="h-11 min-h-11 px-2 -my-2 rounded-lg flex items-center text-xs font-bold text-muted-foreground hover:text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
-              >
-                <span>Ver tudo</span>
-                <ChevronRight className="size-3.5 ml-0.5" />
-              </button>
-            </div>
-
-            <div className="space-y-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1 block">
-                Hoje
-              </span>
-
-              {/* Item Recente 1: Shopping Iguatemi */}
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedEventDetail({
-                    id: "evt-iguatemi",
-                    tenantId: "waesy",
-                    direction: "OUTGOING",
-                    amountCents: 28100,
-                    sourceDomain: "WALLET",
-                    occurredAt: new Date().toISOString(),
-                    description: "Shopping Iguatemi",
-                    status: "CONFIRMED",
-                    currency: "BRL",
-                  });
-                }}
-                className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/60 shadow-2xs transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
-              >
-                <div className="flex items-center gap-3 min-w-0 pr-2">
-                  <div className="size-11 rounded-xl bg-zinc-100 border border-zinc-200/60 flex items-center justify-center text-zinc-800 shrink-0">
-                    <ShoppingBag className="size-5" />
-                  </div>
-                  <div className="min-w-0">
-                    <span className="text-xs sm:text-sm font-bold text-foreground block truncate">
-                      Shopping Iguatemi
-                    </span>
-                    <span className="text-2xs text-muted-foreground block truncate">
-                      Débito • 11:03
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <span className="text-xs sm:text-sm font-bold text-foreground font-mono">
-                    -R$ 281,00
-                  </span>
-                  <ChevronRight className="size-4 text-muted-foreground" />
-                </div>
-              </button>
-
-              {/* Item Recente 2: Do feed real ou exemplo limpo */}
-              {feed.slice(0, 3).map((item) => (
+            {/* Seção: Atividades Recentes Reais */}
+            <div className="space-y-3 pt-1">
+              <div className="flex items-center justify-between px-1">
+                <h2 className="text-sm font-extrabold text-foreground tracking-tight">
+                  Atividades recentes
+                </h2>
                 <button
-                  key={item.id}
                   type="button"
-                  onClick={() => setSelectedEventDetail(item)}
-                  className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/60 shadow-2xs transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+                  onClick={() => setActivePillar("feed")}
+                  className="h-11 min-h-11 px-2 -my-2 rounded-lg flex items-center text-xs font-bold text-muted-foreground hover:text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
                 >
-                  <div className="flex items-center gap-3 min-w-0 pr-2">
-                    <div className="size-11 rounded-xl bg-zinc-100 border border-zinc-200/60 flex items-center justify-center text-zinc-800 shrink-0">
-                      {item.direction === "INCOMING" ? (
-                        <ArrowDownLeft className="size-5 text-lime-600" />
-                      ) : (
-                        <ArrowUpRight className="size-5 text-zinc-800" />
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <span className="text-xs sm:text-sm font-bold text-foreground block truncate">
-                        {item.description}
-                      </span>
-                      <span className="text-2xs text-muted-foreground block truncate">
-                        {item.sourceDomain} • {new Date(item.occurredAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <span
-                      className={cn(
-                        "text-xs sm:text-sm font-bold font-mono",
-                        item.direction === "INCOMING" ? "text-lime-600" : "text-foreground"
-                      )}
-                    >
-                      {item.direction === "INCOMING" ? "+" : "-"} {formatCents(item.amountCents)}
-                    </span>
-                    <ChevronRight className="size-4 text-muted-foreground" />
-                  </div>
+                  <span>Ver tudo</span>
+                  <ChevronRight className="size-3.5 ml-1" />
                 </button>
-              ))}
+              </div>
+
+              {combinedRecentActivities.length === 0 ? (
+                <div className="p-6 rounded-2xl bg-zinc-50 border border-zinc-200/60 text-center space-y-1">
+                  <span className="text-xs font-bold text-zinc-800 block">
+                    Nenhuma atividade recente
+                  </span>
+                  <span className="text-2xs text-muted-foreground block">
+                    Suas transferências Pix, pagamentos e movimentações financeiras aparecerão aqui.
+                  </span>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1 block">
+                    Recentes
+                  </span>
+
+                  {combinedRecentActivities.slice(0, 4).map((act) => (
+                    <button
+                      key={act.id}
+                      type="button"
+                      onClick={() => {
+                        if (act.rawFeedItem) setSelectedEventDetail(act.rawFeedItem);
+                      }}
+                      className="w-full flex items-center justify-between p-4 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/60 shadow-2xs transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+                    >
+                      <div className="flex items-center gap-3 min-w-0 pr-2">
+                        <div className="size-11 rounded-xl bg-zinc-100 border border-zinc-200/60 flex items-center justify-center text-zinc-800 shrink-0">
+                          {act.direction === "INCOMING" ? (
+                            <ArrowDownLeft className="size-5 text-lime-600 font-bold" />
+                          ) : (
+                            <ArrowUpRight className="size-5 text-zinc-800" />
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <span className="text-xs sm:text-sm font-bold text-foreground block truncate">
+                            {act.title}
+                          </span>
+                          <span className="text-2xs text-muted-foreground block truncate">
+                            {act.subtitle}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span
+                          className={cn(
+                            "text-xs sm:text-sm font-bold font-mono",
+                            act.direction === "INCOMING" ? "text-lime-600" : "text-foreground"
+                          )}
+                        >
+                          {act.direction === "INCOMING" ? "+" : "-"} {formatCents(act.amountCents)}
+                        </span>
+                        <ChevronRight className="size-4 text-muted-foreground" />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -627,15 +772,17 @@ function PersonalFinancePage() {
       {/* VISTA 2: FATURA CARTÃO DE CRÉDITO (IMAGEM 1 - TELA 3)        */}
       {/* ══════════════════════════════════════════════════════════════ */}
       {activePillar === "card" && (
-        <div className="animate-in fade-in duration-200">
+        <div className="max-w-md md:max-w-xl mx-auto px-4 sm:px-5 space-y-4 pt-4 animate-in fade-in duration-200">
           <CreditCardInvoiceView
+            cardHolderName={overview?.card?.cardHolderName || overview?.profile?.fullName || "CLIENTE WAESY"}
+            lastFourDigits={overview?.card?.lastFourDigits || "8842"}
+            totalLimitCents={overview?.card?.creditLimitCents || 500000}
+            usedLimitCents={overview?.currentInvoice?.amountCents || 0}
+            invoices={overview?.invoices && overview.invoices.length > 0 ? overview.invoices : undefined}
             onBackClick={() => setActivePillar("overview")}
             onVirtualCardClick={() => setIsCardSettingsOpen(true)}
             onAdjustLimitClick={() => setIsCardSettingsOpen(true)}
-            onPayInvoiceClick={(inv) => {
-              toast.info(`Iniciando pagamento da fatura de ${inv.fullLabel}`);
-              setIsPixHubOpen(true);
-            }}
+            onPayInvoiceClick={handlePayInvoice}
           />
         </div>
       )}
@@ -644,7 +791,7 @@ function PersonalFinancePage() {
       {/* VISTA 3: EXTRATO COMPLETO / HISTÓRICO                         */}
       {/* ══════════════════════════════════════════════════════════════ */}
       {activePillar === "feed" && (
-        <div className="space-y-4 animate-in fade-in duration-200">
+        <div className="max-w-md md:max-w-xl mx-auto px-4 sm:px-5 space-y-4 pt-4 animate-in fade-in duration-200">
           {/* Seletor de Período Mensal */}
           <div className="flex items-center justify-between bg-zinc-50 border border-zinc-200/60 rounded-2xl p-2 shadow-2xs">
             <button
@@ -701,7 +848,7 @@ function PersonalFinancePage() {
                 type="button"
                 onClick={() => setFeedFilterDomain(tab.value)}
                 className={cn(
-                  "h-11 min-h-11 px-4 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500",
+                  "h-11 min-h-11 px-4 rounded-xl text-xs font-bold transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500",
                   feedFilterDomain === tab.value
                     ? "bg-lime-400 text-zinc-950 shadow-2xs"
                     : "bg-zinc-100 hover:bg-zinc-200 text-zinc-700"
@@ -732,7 +879,7 @@ function PersonalFinancePage() {
                   key={item.id}
                   type="button"
                   onClick={() => setSelectedEventDetail(item)}
-                  className="w-full text-left flex items-center justify-between p-3.5 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/60 shadow-2xs transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+                  className="w-full text-left flex items-center justify-between p-4 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/60 shadow-2xs transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
                 >
                   <div className="flex items-center gap-3 min-w-0 pr-2">
                     <div className="size-11 rounded-xl bg-zinc-100 border border-zinc-200/60 flex items-center justify-center text-zinc-800 shrink-0">
@@ -747,13 +894,13 @@ function PersonalFinancePage() {
                       <span className="font-bold text-xs sm:text-sm text-foreground truncate block">
                         {item.description}
                       </span>
-                      <span className="text-2xs text-muted-foreground block truncate mt-0.5">
+                      <span className="text-2xs text-muted-foreground block truncate mt-1">
                         {item.sourceDomain} • {new Date(item.occurredAt).toLocaleDateString("pt-BR")}
                       </span>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-1.5 shrink-0">
+                  <div className="flex items-center gap-2 shrink-0">
                     <span
                       className={cn(
                         "text-xs sm:text-sm font-bold font-mono",
@@ -775,7 +922,7 @@ function PersonalFinancePage() {
       {/* VISTA 4: MENU / FERRAMENTAS FINANCEIRAS                       */}
       {/* ══════════════════════════════════════════════════════════════ */}
       {activePillar === "planning" && (
-        <div className="space-y-4 animate-in fade-in duration-200">
+        <div className="max-w-md md:max-w-xl mx-auto px-4 sm:px-5 space-y-4 pt-4 animate-in fade-in duration-200">
           <div className="flex items-center justify-between px-1">
             <h2 className="text-base font-extrabold tracking-tight text-foreground">
               Menu & Ferramentas
@@ -783,7 +930,7 @@ function PersonalFinancePage() {
             <button
               type="button"
               onClick={() => setIsNewEntryOpen(true)}
-              className="h-11 min-h-11 px-3 rounded-xl bg-lime-400 hover:bg-lime-500 text-zinc-950 font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+              className="h-11 min-h-11 px-3 rounded-xl bg-lime-400 hover:bg-lime-500 text-zinc-950 font-bold text-xs flex items-center gap-2 shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
             >
               <Plus className="size-4" />
               <span>Novo Lançamento</span>
@@ -879,8 +1026,8 @@ function PersonalFinancePage() {
       )}
 
       {/* ── 3. Bottom Navigation Bar Fixa (Home, Cartão, Histórico, Menu) ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/60 py-1.5 px-4">
-        <div className="max-w-md mx-auto grid grid-cols-4 gap-1">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/60 py-2 px-4">
+        <div className="max-w-md mx-auto grid grid-cols-2 sm:grid-cols-4 gap-1">
           <button
             type="button"
             onClick={() => setActivePillar("overview")}
@@ -945,14 +1092,27 @@ function PersonalFinancePage() {
       <PixHubDrawer
         open={isPixHubOpen}
         onOpenChange={setIsPixHubOpen}
+        myKeys={
+          overview?.pixKeys?.map((k) => ({
+            id: k.id,
+            type: k.keyType.toLowerCase() as any,
+            label: k.keyType,
+            value: k.keyValue,
+          })) || []
+        }
+        userFullName={overview?.profile?.fullName || "Você"}
+        onRegisterKeyClick={() => {
+          setIsPixHubOpen(false);
+          setIsRegisterPixKeyOpen(true);
+        }}
         onSelectAction={(act) => {
           setIsPixHubOpen(false);
           if (act === "transfer") setIsTransferOpen(true);
-          else if (act === "qrcode") toast.info("Scanner de QR Code Pix Ativado");
-          else if (act === "receive") toast.info("Chave Pix Copiada para Recebimento");
-          else if (act === "schedule") toast.info("Agendamento de Pix");
-          else if (act === "copy_paste") toast.info("Pix Copia e Cola");
-          else if (act === "card_pix") toast.info("Pix Parcelado no Cartão");
+          else if (act === "receive") setIsReceivePixOpen(true);
+          else if (act === "card_pix") setActivePillar("card");
+          else if (act === "qrcode") setIsReceivePixOpen(true);
+          else if (act === "copy_paste") setIsReceivePixOpen(true);
+          else toast.info(`Ação Pix selecionada: ${act}`);
         }}
       />
 
@@ -960,6 +1120,13 @@ function PersonalFinancePage() {
       <CardSettingsDrawer
         open={isCardSettingsOpen}
         onOpenChange={setIsCardSettingsOpen}
+        cardHolderName={overview?.card?.cardHolderName || overview?.profile?.fullName?.toUpperCase() || "TITULAR WAESY"}
+        cardNumber={`•••• •••• •••• ${overview?.card?.lastFourDigits || "8842"}`}
+        currentLimitCents={overview?.card?.userSpendingLimitCents || overview?.card?.creditLimitCents || 500000}
+        maxLimitCents={overview?.card?.creditLimitCents || 500000}
+        isTemporaryBlocked={overview?.card?.isTemporaryBlocked || false}
+        onToggleBlock={handleToggleCardBlock}
+        onUpdateLimit={handleUpdateCardLimit}
       />
 
       {/* Sheet: Simulação de Empréstimo */}
@@ -978,6 +1145,204 @@ function PersonalFinancePage() {
         onOpenChange={setIsInstallmentTimelineOpen}
       />
 
+      {/* Modal / Diálogo: Rendimento da Conta (CDI Real) */}
+      {isYieldModalOpen && (
+        <div className="fixed inset-0 z-50 bg-background/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
+          <div className="w-full max-w-sm rounded-3xl bg-card border border-border p-6 shadow-xl space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="size-10 rounded-xl bg-lime-500/10 text-lime-600 flex items-center justify-center">
+                <TrendingUp className="size-5" />
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsYieldModalOpen(false)}
+                className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+
+            <div>
+              <h3 className="text-base font-bold text-foreground">
+                Conta Remunerada 100% CDI
+              </h3>
+              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                Seu dinheiro rende automaticamente todos os dias úteis a 100% do CDI com liquidez diária e segurança no Waesy Bank.
+              </p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200/60 space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Status atual:</span>
+                <span
+                  className={cn(
+                    "font-bold",
+                    overview?.yieldSettings?.isYieldEnabled ? "text-lime-600" : "text-zinc-600"
+                  )}
+                >
+                  {overview?.yieldSettings?.isYieldEnabled ? "Ativado" : "Desativado"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Rentabilidade:</span>
+                <span className="font-bold text-foreground font-mono">100% do CDI</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Total acumulado:</span>
+                <span className="font-bold text-lime-600 font-mono">
+                  {formatCents(overview?.yieldSettings?.accumulatedYieldCents || 0)}
+                </span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handleToggleYield(!overview?.yieldSettings?.isYieldEnabled)}
+              className={cn(
+                "w-full h-12 min-h-12 rounded-xl font-bold text-xs flex items-center justify-center transition-colors cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500",
+                overview?.yieldSettings?.isYieldEnabled
+                  ? "bg-zinc-100 hover:bg-zinc-200 text-rose-600 border border-rose-200"
+                  : "bg-lime-400 hover:bg-lime-500 text-zinc-950"
+              )}
+            >
+              {overview?.yieldSettings?.isYieldEnabled
+                ? "Pausar Rendimento da Conta"
+                : "Ativar Rendimento 100% CDI"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Cadastrar Nova Chave Pix Real */}
+      {isRegisterPixKeyOpen && (
+        <div className="fixed inset-0 z-50 bg-background/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
+          <form
+            onSubmit={handleRegisterPixKey}
+            className="w-full max-w-sm rounded-3xl bg-card border border-border p-6 shadow-xl space-y-4"
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-foreground">
+                Cadastrar Chave Pix
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsRegisterPixKeyOpen(false)}
+                className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-bold text-muted-foreground block mb-1">
+                  Tipo de Chave
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {(["CPF", "EMAIL", "PHONE", "RANDOM"] as const).map((t) => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => {
+                        setNewPixKeyType(t);
+                        if (t === "CPF" && overview?.profile?.cpf) {
+                          setNewPixKeyValue(overview.profile.cpf);
+                        } else if (t === "EMAIL" && overview?.profile?.email) {
+                          setNewPixKeyValue(overview.profile.email);
+                        } else if (t === "RANDOM") {
+                          setNewPixKeyValue(crypto.randomUUID());
+                        } else {
+                          setNewPixKeyValue("");
+                        }
+                      }}
+                      className={cn(
+                        "h-11 min-h-11 rounded-xl text-3xs font-extrabold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500",
+                        newPixKeyType === t
+                          ? "bg-lime-400 text-zinc-950 shadow-2xs"
+                          : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
+                      )}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-muted-foreground block mb-1">
+                  Valor da Chave
+                </label>
+                <Input
+                  value={newPixKeyValue}
+                  onChange={(e) => setNewPixKeyValue(e.target.value)}
+                  placeholder={newPixKeyType === "CPF" ? "000.000.000-00" : "Sua chave Pix"}
+                  className="h-12 min-h-12 rounded-xl text-xs sm:text-sm bg-zinc-50 border-zinc-200/80 font-mono"
+                  required
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full h-12 min-h-12 rounded-xl bg-lime-400 hover:bg-lime-500 text-zinc-950 font-bold text-xs flex items-center justify-center shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+            >
+              Salvar Chave Pix
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* Modal: Receber Pix (Cobrança Instantânea) */}
+      {isReceivePixOpen && (
+        <div className="fixed inset-0 z-50 bg-background/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
+          <div className="w-full max-w-sm rounded-3xl bg-card border border-border p-6 shadow-xl space-y-4 text-center">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-foreground">
+                Receber com Pix
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsReceivePixOpen(false)}
+                className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-zinc-50 border border-zinc-200/60 flex flex-col items-center gap-3">
+              <div className="size-44 bg-card p-2 rounded-xl border border-zinc-200/80 flex items-center justify-center shadow-2xs">
+                <QrCode className="size-36 text-zinc-950" />
+              </div>
+              <div className="space-y-1">
+                <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
+                  Chave Pix Principal
+                </span>
+                <span className="text-xs font-bold text-foreground font-mono block break-all">
+                  {overview?.pixKeys?.[0]?.keyValue || overview?.profile?.cpf || overview?.profile?.email || "Chave da Carteira"}
+                </span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                const val =
+                  overview?.pixKeys?.[0]?.keyValue ||
+                  overview?.profile?.cpf ||
+                  overview?.profile?.email ||
+                  "00020126580014br.gov.bcb.pix0136waesy-carteira";
+                navigator.clipboard.writeText(val);
+                toast.success("Código Pix Copia e Cola copiado!");
+              }}
+              className="w-full h-12 min-h-12 rounded-xl bg-lime-400 hover:bg-lime-500 text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+            >
+              <Copy className="size-4" />
+              <span>Copiar Chave / Código Pix</span>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Modal: Tela de Sucesso Transacional (Conforme Tela 2 do Design Anexo) */}
       {isSuccessReceiptOpen && lastPaymentSuccess && (
         <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
@@ -987,7 +1352,7 @@ function PersonalFinancePage() {
               subtitle={lastPaymentSuccess.subtitle}
               amountCents={lastPaymentSuccess.amountCents}
               recipientName={lastPaymentSuccess.recipientName}
-              recipientInstitution={lastPaymentSuccess.recipientInstitution || "PICPAY"}
+              recipientInstitution={lastPaymentSuccess.recipientInstitution || "Waesy Pagamentos e Tecnologia"}
               transactionId={lastPaymentSuccess.transactionId}
               onViewReceipt={() => {
                 setIsSuccessReceiptOpen(false);
@@ -1029,7 +1394,7 @@ function PersonalFinancePage() {
             </div>
 
             <form onSubmit={handleExecuteDeposit} className="space-y-4">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   Valor a depositar
                 </label>
@@ -1050,14 +1415,14 @@ function PersonalFinancePage() {
               </div>
 
               {/* Sugestões Rápidas de Valor em Chips */}
-              <div className="grid grid-cols-4 gap-2 pt-1">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
                 {["20,00", "50,00", "100,00", "200,00"].map((val) => (
                   <button
                     key={val}
                     type="button"
                     onClick={() => setDepositAmountStr(val)}
                     className={cn(
-                      "h-11 min-h-11 rounded-xl text-xs font-extrabold transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500",
+                      "h-11 min-h-11 rounded-xl text-xs font-extrabold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500",
                       depositAmountStr === val
                         ? "bg-lime-400 text-zinc-950 font-black shadow-2xs"
                         : "bg-zinc-100 hover:bg-zinc-200 text-zinc-800"
@@ -1072,7 +1437,7 @@ function PersonalFinancePage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full h-12 min-h-12 rounded-xl bg-lime-400 hover:bg-lime-500 active:bg-lime-600 text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+                  className="w-full h-12 min-h-12 rounded-xl bg-lime-400 hover:bg-lime-500 active:bg-lime-600 text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
                 >
                   {isSubmitting ? "Gerando Pix..." : "Confirmar Depósito"}
                 </button>
@@ -1108,7 +1473,7 @@ function PersonalFinancePage() {
             </div>
 
             <form onSubmit={handleExecuteP2P} className="space-y-4">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   Destinatário (Nome ou Chave Pix)
                 </label>
@@ -1122,7 +1487,7 @@ function PersonalFinancePage() {
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   Valor
                 </label>
@@ -1142,7 +1507,7 @@ function PersonalFinancePage() {
                 </div>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   Descrição (Opcional)
                 </label>
@@ -1159,7 +1524,7 @@ function PersonalFinancePage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full h-12 min-h-12 rounded-xl bg-lime-400 hover:bg-lime-500 active:bg-lime-600 text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+                  className="w-full h-12 min-h-12 rounded-xl bg-lime-400 hover:bg-lime-500 active:bg-lime-600 text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
                 >
                   {isSubmitting ? "Enviando..." : "Confirmar Transferência"}
                 </button>
@@ -1220,7 +1585,7 @@ function PersonalFinancePage() {
             </div>
 
             <div className="p-3 bg-zinc-50 rounded-2xl border border-zinc-200/60 space-y-1">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-lime-600">
+              <div className="flex items-center gap-2 text-xs font-bold text-lime-600">
                 <Shield className="size-4" />
                 <span>Assinatura Digital HMAC-SHA256</span>
               </div>
@@ -1280,7 +1645,7 @@ function PersonalFinancePage() {
               </p>
             </div>
 
-            <div className="bg-zinc-50 rounded-2xl p-3.5 space-y-2 text-xs border border-zinc-200/60">
+            <div className="bg-zinc-50 rounded-2xl p-4 space-y-2 text-xs border border-zinc-200/60">
               <div className="flex justify-between py-1 border-b border-border/30">
                 <span className="text-muted-foreground">Domínio:</span>
                 <span className="font-bold text-foreground">{selectedEventDetail.sourceDomain}</span>
@@ -1387,9 +1752,9 @@ function PersonalFinancePage() {
                   type="button"
                   onClick={() => setEntryType("expense")}
                   className={cn(
-                    "h-11 min-h-11 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500",
+                    "h-11 min-h-11 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500",
                     entryType === "expense"
-                      ? "bg-rose-600 text-white shadow-2xs"
+                      ? "bg-rose-600 text-primary-foreground shadow-2xs"
                       : "text-zinc-600 hover:text-zinc-950"
                   )}
                 >
@@ -1400,7 +1765,7 @@ function PersonalFinancePage() {
                   type="button"
                   onClick={() => setEntryType("income")}
                   className={cn(
-                    "h-11 min-h-11 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500",
+                    "h-11 min-h-11 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500",
                     entryType === "income"
                       ? "bg-lime-500 text-zinc-950 shadow-2xs font-extrabold"
                       : "text-zinc-600 hover:text-zinc-950"
@@ -1412,7 +1777,7 @@ function PersonalFinancePage() {
               </div>
 
               {/* Valor */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   Valor (R$)
                 </label>
@@ -1428,7 +1793,7 @@ function PersonalFinancePage() {
               </div>
 
               {/* Descrição */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   Descrição
                 </label>
@@ -1443,7 +1808,7 @@ function PersonalFinancePage() {
               </div>
 
               {/* Categoria */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   Categoria
                 </label>
@@ -1454,10 +1819,10 @@ function PersonalFinancePage() {
                       type="button"
                       onClick={() => setSelectedCategoryId(cat.id)}
                       className={cn(
-                        "h-11 min-h-11 px-3 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all text-left truncate cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500",
+                        "h-11 min-h-11 px-3 rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors text-left truncate cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500",
                         selectedCategoryId === cat.id
                           ? "bg-lime-400 text-zinc-950 font-black shadow-2xs"
-                          : "bg-white text-zinc-800 hover:bg-zinc-100 border border-zinc-200/40"
+                          : "bg-card text-zinc-800 hover:bg-zinc-100 border border-zinc-200/40"
                       )}
                     >
                       <span className="truncate">{cat.name}</span>
@@ -1468,7 +1833,7 @@ function PersonalFinancePage() {
 
               {/* Data & Forma de Pagamento */}
               <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                     Data
                   </label>
@@ -1481,7 +1846,7 @@ function PersonalFinancePage() {
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                     Pagamento
                   </label>

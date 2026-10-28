@@ -227,7 +227,7 @@ function AccountantPortalPage() {
                   <TableCell className="text-xs font-semibold">
                     NF-e #{inv.nfe_number || "---"} (Série {inv.nfe_serie || "1"})
                   </TableCell>
-                  <TableCell className="text-xs font-mono text-muted-foreground max-w-[180px] truncate">
+                  <TableCell className="text-xs font-mono text-muted-foreground max-w-45 truncate">
                     {inv.nfe_key || "---"}
                   </TableCell>
                   <TableCell className="text-xs">

@@ -301,7 +301,7 @@ export function ProfileBiolinkAnalytics({
 
                   <div className="h-1.5 w-full bg-muted/60 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-primary rounded-full transition-colors duration-200 duration-500"
+                      className="h-full bg-primary rounded-full transition-colors duration-200 duration-200"
                       style={{ width: `${Math.min(linkPercent, 100)}%` }}
                     />
                   </div>

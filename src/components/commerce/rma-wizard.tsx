@@ -209,7 +209,7 @@ export function RmaWizard({
  <p className="text-xs text-muted-foreground">SKU: {item.variant_sku}</p>
  </div>
 
- <div className="grid grid-cols-3 gap-4">
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
  <div className="col-span-1 space-y-2">
  <Label className="text-xs">Qtd</Label>
  <Input

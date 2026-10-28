@@ -88,7 +88,7 @@ export function HitsLeadCard({
 
       {/* Se houver coverImage e title, exibe gradiente de sobreposição com textos */}
       {coverImage && title && (
-        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-4 sm:p-4 flex flex-col justify-between text-foreground">
+        <div className="absolute inset-0 bg-black/60 p-4 sm:p-4 flex flex-col justify-between text-foreground">
           {badge && (
             <span className="self-start px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-card/20 backdrop-blur-md border border-white/25 text-foreground">
               {badge}

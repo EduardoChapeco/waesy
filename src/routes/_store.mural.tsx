@@ -55,7 +55,7 @@ function MuralPage() {
   const items = feed?.items || [];
 
   return (
-    <div className="min-h-[100dvh] bg-background text-foreground pb-24">
+    <div className="min-h-dvh bg-background text-foreground pb-24">
       {/* ─── Topo / Filtros Rápidos ────────────────────────────────── */}
       <div className="border-b border-border/40 bg-background sticky top-14 z-20">
         <div className="carousel max-w-2xl mx-auto px-4 py-2 flex items-center justify-between gap-2 overflow-x-auto scrollbar-none">

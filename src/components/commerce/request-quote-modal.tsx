@@ -111,7 +111,7 @@ export function RequestQuoteModal({
 
  return (
  <Dialog open={isOpen} onOpenChange={(open) => !open && handleResetAndClose()}>
- <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto no-scrollbar">
+ <DialogContent className="sm:max-w-lg max-h-(--spacing-screen-90,90vh) overflow-y-auto no-scrollbar">
  {isSuccess ? (
  <div className="py-6 flex flex-col items-center text-center space-y-4">
  <div className="size-16 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
@@ -240,7 +240,7 @@ export function RequestQuoteModal({
  <SelectItem value="baixa">Sem pressa / Planejamento</SelectItem>
  <SelectItem value="media">Normal (Esta semana)</SelectItem>
  <SelectItem value="alta">Prioritário (Próximos dias)</SelectItem>
- <SelectItem value="urgente">🚨 Emergência / Imediato</SelectItem>
+ <SelectItem value="urgente">[ALERTA] Emergência / Imediato</SelectItem>
  </SelectContent>
  </Select>
  </div>

@@ -658,7 +658,7 @@ function MasterFaturasPage() {
           if (!open) setSelectedCompanionInvoice(null);
         }}
       >
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-lg bg-background border border-border shadow-xs">
+        <DialogContent className="max-w-4xl max-h-(--spacing-screen-90,90vh) overflow-y-auto p-4 sm:p-6 rounded-lg bg-background border border-border shadow-xs">
           <DialogHeader className="sr-only">
             <DialogTitle>Fatura Digital 9:16 da Plataforma</DialogTitle>
           </DialogHeader>
@@ -682,7 +682,7 @@ function getInvoiceCompanionData(inv: any) {
     {
       id: "invoice-details",
       type: "custom" as const,
-      badge: inv.status === "paid" ? "PAGA ✓" : isOverdue ? "VENCIDA" : "A VENCER",
+      badge: inv.status === "paid" ? "PAGA " : isOverdue ? "VENCIDA" : "A VENCER",
       title: inv.description || "Assinatura / Mensalidade",
       subtitle: `Vencimento: ${dueDateStr}`,
       details: [

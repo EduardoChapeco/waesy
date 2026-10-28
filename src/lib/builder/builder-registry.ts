@@ -2080,7 +2080,7 @@ export const builderRegistry: Record<string, BlockManifest> = {
  content: [
  { name: "title", label: "Título da Promoção", type: "text" },
  { name: "subtitle", label: "Descrição da Oferta", type: "textarea" },
- { name: "badge", label: "Badge Superior", type: "text", placeholder: "🔥 Oferta por Tempo Limitado" },
+ { name: "badge", label: "Badge Superior", type: "text", placeholder: " Oferta por Tempo Limitado" },
  { name: "discountPercentage", label: "Desconto em Destaque (ex: 50% OFF)", type: "text" },
  { name: "couponCode", label: "Código do Cupom de Desconto", type: "text", placeholder: "RELAMPAGO50" },
  { name: "buttonText", label: "Texto do Botão", type: "text" },
@@ -2100,7 +2100,7 @@ export const builderRegistry: Record<string, BlockManifest> = {
  content: {
  title: "Queima de Estoque Exclusiva",
  subtitle: "Descontos especiais válidos apenas enquanto durarem os estoques promocionais.",
- badge: "🔥 Oferta por Tempo Limitado",
+ badge: " Oferta por Tempo Limitado",
  discountPercentage: "50% OFF",
  couponCode: "RELAMPAGO50",
  buttonText: "Garantir Ofertas com Desconto",

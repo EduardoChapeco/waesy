@@ -123,8 +123,8 @@ function FretesCotacoesPage() {
  <TableHead>Cliente</TableHead>
  <TableHead>Endereço de Entrega</TableHead>
  <TableHead>Subtotal</TableHead>
- <TableHead className="w-[180px]">Valor do Frete (R$)</TableHead>
- <TableHead className="w-[120px] text-right">Ação</TableHead>
+ <TableHead className="w-45">Valor do Frete (R$)</TableHead>
+ <TableHead className="w-30 text-right">Ação</TableHead>
  </TableRow>
  </TableHeader>
  <TableBody>

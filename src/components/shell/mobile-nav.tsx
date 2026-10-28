@@ -200,7 +200,7 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
                 type="button"
                 onClick={() => setIsCartOpen(true)}
                 aria-label={`Ver sacola com ${totalCartItems} itens`}
-                className="h-11 min-h-11 px-5 rounded-xl bg-primary hover:bg-primary/90 active:scale-95 text-primary-foreground text-xs font-extrabold flex items-center justify-center transition-all cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="h-11 min-h-11 px-5 rounded-xl bg-primary hover:bg-primary/90 active:scale-95 text-primary-foreground text-xs font-extrabold flex items-center justify-center transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 Ver sacola
               </button>
@@ -210,7 +210,7 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
           {/* ── 2. NAVEGAÇÃO 4 ABAS CANÔNICAS: INÍCIO | BUSCA | PEDIDOS | PERFIL ── */}
           <nav
             aria-label="Navegação principal móvel"
-            className="grid grid-cols-4 items-center px-2 py-1 bg-background"
+            className="grid grid-cols-2 sm:grid-cols-4 items-center px-2 py-1 bg-background"
           >
             {/* TAB 1: INÍCIO */}
             <Link

@@ -284,25 +284,25 @@ export const createQuickOrder = createServerFn({ method: "POST" })
 
       let humanMessage = "";
       const deliveryLine = input.deliveryMode !== "pickup"
-        ? [`🛵 *Taxa de Entrega:* ${resolvedDeliveryFeeCents === 0 ? "Grátis" : formatMoney(resolvedDeliveryFeeCents)}`]
+        ? [` *Taxa de Entrega:* ${resolvedDeliveryFeeCents === 0 ? "Grátis" : formatMoney(resolvedDeliveryFeeCents)}`]
         : [];
 
       if (input.items.length === 1) {
         const single = input.items[0];
         humanMessage = [
           `Olá! Gostaria de fazer o pedido ${systemicOrderNumber} que vi no Waesy.`,
-          `📦 ${single.quantity}x ${single.title} (${formatMoney(single.totalCents)})`,
+          ` ${single.quantity}x ${single.title} (${formatMoney(single.totalCents)})`,
           ...deliveryLine,
-          `💰 *Total: ${formatMoney(calculatedGrandTotalCents)}*`,
+          ` *Total: ${formatMoney(calculatedGrandTotalCents)}*`,
           ``,
-          `📍 *Recebimento:* ${deliveryDescription}`,
-          `💳 *Pagamento:* ${paymentDescription}`,
+          ` *Recebimento:* ${deliveryDescription}`,
+          ` *Pagamento:* ${paymentDescription}`,
           ``,
           `Podemos confirmar o envio?`,
         ].join("\n");
       } else {
         const itemsFormatted = input.items
-          .map((item) => `📦 ${item.quantity}x ${item.title} (${formatMoney(item.totalCents)})`)
+          .map((item) => ` ${item.quantity}x ${item.title} (${formatMoney(item.totalCents)})`)
           .join("\n");
 
         humanMessage = [
@@ -310,10 +310,10 @@ export const createQuickOrder = createServerFn({ method: "POST" })
           ``,
           itemsFormatted,
           ...deliveryLine,
-          `💰 *Total: ${formatMoney(calculatedGrandTotalCents)}*`,
+          ` *Total: ${formatMoney(calculatedGrandTotalCents)}*`,
           ``,
-          `📍 *Recebimento:* ${deliveryDescription}`,
-          `💳 *Pagamento:* ${paymentDescription}`,
+          ` *Recebimento:* ${deliveryDescription}`,
+          ` *Pagamento:* ${paymentDescription}`,
           ``,
           `Podemos confirmar o envio?`,
         ].join("\n");

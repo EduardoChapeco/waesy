@@ -468,7 +468,7 @@ export const submitPublicLeadForm = createServerFn({ method: "POST" })
     if (formRow.after_submit_action === "whatsapp_redirect" && targetPhone) {
       const cleanTarget = targetPhone.replace(/\D/g, "");
       let msg = formRow.whatsapp_message_template ||
-        `Olá! Enviei meus dados através do formulário *${formRow.title}* no Waesy.\n\n👤 *Nome:* ${data.contactName.trim()}\n📱 *Telefone:* ${data.contactPhone.trim()}`;
+        `Olá! Enviei meus dados através do formulário *${formRow.title}* no Waesy.\n\n *Nome:* ${data.contactName.trim()}\n *Telefone:* ${data.contactPhone.trim()}`;
 
       // Substituições semânticas de tags
       msg = msg.replace(/\{nome\}/gi, data.contactName.trim())
@@ -478,7 +478,7 @@ export const submitPublicLeadForm = createServerFn({ method: "POST" })
       // Adiciona resumo de respostas chave
       const answerEntries = Object.entries(data.answers || {});
       if (answerEntries.length > 0) {
-        msg += "\n\n📋 *Respostas:*";
+        msg += "\n\n *Respostas:*";
         for (const [key, val] of answerEntries) {
           if (val !== undefined && val !== null && val !== "") {
             msg += `\n• ${key}: ${typeof val === "object" ? JSON.stringify(val) : val}`;

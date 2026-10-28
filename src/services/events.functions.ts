@@ -33,7 +33,7 @@ async function _listAdminEvents() {
       .from("classifieds")
       .select("*")
       .eq("store_id", identity.store_id)
-      .eq("category", "event")
+      .in("category", ["event", "events", "evento", "eventos", "ingressos", "ingresso", "show", "shows", "entretenimento"])
       .neq("status", "deleted")
       .order("created_at", { ascending: false })
       .then((r) => r, () => ({ data: [] as any[] })),
@@ -1433,7 +1433,7 @@ async function _getEventWithLots(eventId: string) {
 
     if (
       classifiedRow &&
-      (classifiedRow.category === "event" ||
+      (["event", "events", "evento", "eventos", "ingressos", "ingresso", "show", "shows", "entretenimento"].includes(classifiedRow.category) ||
         (classifiedRow.attributes as any)?.niche === "evento")
     ) {
       const attrs = (classifiedRow.attributes || {}) as Record<string, any>;
@@ -1583,7 +1583,7 @@ async function _getPublicEvents(opts: {
       .select(
         "id, store_id, profile_id, title, content, price_cents, location_name, sub_category, images, attributes, status, visibility, created_at",
       )
-      .eq("category", "event")
+      .in("category", ["event", "events", "evento", "eventos", "ingressos", "ingresso", "show", "shows", "entretenimento"])
       .eq("status", "active")
       .eq("visibility", "public")
       .order("created_at", { ascending: false })

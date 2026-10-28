@@ -100,19 +100,19 @@ export function TravelItineraryTimeline({
  {isExp && (day.morning || day.afternoon || day.night) && (
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-border/40 text-xs">
  {day.morning && (
- <div className="p-2 rounded bg-muted/40 border border-border/40 space-y-0.5">
+ <div className="p-2 rounded bg-muted/40 border border-border/40 space-y-1">
  <span className="font-bold text-foreground block">Manhã</span>
  <p className="text-muted-foreground">{day.morning}</p>
  </div>
  )}
  {day.afternoon && (
- <div className="p-2 rounded bg-muted/40 border border-border/40 space-y-0.5">
+ <div className="p-2 rounded bg-muted/40 border border-border/40 space-y-1">
  <span className="font-bold text-foreground block">Tarde</span>
  <p className="text-muted-foreground">{day.afternoon}</p>
  </div>
  )}
  {day.night && (
- <div className="p-2 rounded bg-muted/40 border border-border/40 space-y-0.5">
+ <div className="p-2 rounded bg-muted/40 border border-border/40 space-y-1">
  <span className="font-bold text-foreground block">Noite</span>
  <p className="text-muted-foreground">{day.night}</p>
  </div>

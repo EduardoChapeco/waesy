@@ -14,15 +14,6 @@ export interface CategoryGridProps {
   onSelectCategory?: (categoryId: string) => void;
 }
 
-const DEFAULT_CATEGORIES: CategoryGridItem[] = [
-  { id: "1", name: "Alimentação & Bebidas", count: 24, iconName: "food" },
-  { id: "2", name: "Moda & Vestuário", count: 18, iconName: "fashion" },
-  { id: "3", name: "Eletrônicos & Tech", count: 12, iconName: "tech" },
-  { id: "4", name: "Saúde & Beleza", count: 15, iconName: "health" },
-  { id: "5", name: "Casa & Decoração", count: 9, iconName: "home" },
-  { id: "6", name: "Veículos & Acessórios", count: 7, iconName: "auto" },
-];
-
 function getCategoryIcon(name: string) {
   switch (name) {
     case "food":
@@ -43,10 +34,10 @@ function getCategoryIcon(name: string) {
 }
 
 export const CategoryGrid: React.FC<CategoryGridProps> = ({
-  categories = DEFAULT_CATEGORIES,
-  themeColor = "#0F172A",
-  onSelectCategory,
+  categories,
+    onSelectCategory,
 }) => {
+  if (!categories || categories.length === 0) return null;
   return (
     <div className="w-full space-y-2 select-none">
       <div className="flex items-center justify-between px-1">
@@ -65,8 +56,7 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({
               className="flex items-center gap-3 p-3 rounded-lg border border-border/70 bg-card hover:bg-muted/50 transition-colors text-left group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
             >
               <div
-                style={{ backgroundColor: `${themeColor}15`, color: themeColor }}
-                className="size-8 rounded-lg flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform"
+                className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform"
               >
                 <Icon className="size-4" />
               </div>

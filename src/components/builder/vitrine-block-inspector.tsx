@@ -299,7 +299,7 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
                 className={SELECT_CLASS}
               >
                 <option value="cinema">Cinema 16:9 (Padrão App)</option>
-                <option value="ifood">Panorâmico 21:9 (iFood)</option>
+                <option value="ifood">Panorâmico 21:9 (Hero)</option>
                 <option value="classic">Clássico 4:3</option>
                 <option value="square">Quadrado 1:1</option>
                 <option value="vertical">Retrato 4:5 (Feed)</option>
@@ -320,7 +320,7 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
               >
                 <option value="slim">Slim Widescreen 28:9 (Noor)</option>
                 <option value="ultrawide">Ultrawide 32:9 (Super Vitrine)</option>
-                <option value="ifood">Panorâmico 21:9 (iFood)</option>
+                <option value="ifood">Panorâmico 21:9 (Hero)</option>
                 <option value="duo">Duo Split (2 Banners 16:9 Lado a Lado)</option>
                 <option value="cinema">Cinema 16:9</option>
                 <option value="classic">Clássico 4:3</option>
@@ -430,7 +430,7 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
           <div className="flex items-center gap-2">
             <Layers className="size-4 text-primary shrink-0" />
             <span className="text-xs font-bold text-foreground">
-              Configurações do Menu Lateral (iFood & Threads Push)
+              Configurações do Menu Lateral Deslizante
             </span>
           </div>
 
@@ -468,7 +468,7 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
                 onChange={(e) => onUpdateConfig("defaultViewMode", e.target.value)}
                 className={SELECT_CLASS}
               >
-                <option value="grid">Grade (iFood)</option>
+                <option value="grid">Grade de Cards</option>
                 <option value="list">Lista Compacta</option>
               </select>
             </div>
@@ -508,8 +508,8 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
               onChange={(e) => onUpdateConfig("mobileLayout", e.target.value)}
               className={SELECT_CLASS}
             >
-              <option value="ifood_grid">Grade Compacta 4x2 (Estilo iFood)</option>
-              <option value="noor_dock">Carrossel Deslizante (Dock Noor)</option>
+              <option value="ifood_grid">Grade Compacta 4x2</option>
+              <option value="noor_dock">Carrossel Deslizante (Dock)</option>
               <option value="squircle_pills">Chips Horizontais (Pílulas)</option>
               <option value="dual_filter_pills">Pílulas Duplas de Destaque</option>
               <option value="action_cards">Cards de Ação Tátil 2x2</option>
@@ -1774,7 +1774,7 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
 
       
 
-            {/* 8.1 EDITOR DE SEÇÕES E BOTÕES DO MENU LATERAL IFOOD */}
+            {/* 8.1 EDITOR DE SEÇÕES E BOTÕES DO MENU LATERAL */}
       {type === "vitrine_lateral_drawer" ? (
         <div className="space-y-4">
           <div className="flex items-center justify-between">

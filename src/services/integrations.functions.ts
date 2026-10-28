@@ -393,7 +393,7 @@ export const testWhatsAppCloudConnection = createServerFn({ method: "POST" })
             to: cleanPhone,
             type: "text",
             text: {
-              body: "🔔 [Waesy Platform] Conexão com o WhatsApp Cloud API verificada com sucesso!",
+              body: " [Waesy Platform] Conexão com o WhatsApp Cloud API verificada com sucesso!",
             },
           }),
           signal: AbortSignal.timeout(10000),
@@ -674,9 +674,10 @@ export async function sendWhatsAppNotification(params: {
 export const testPaymentGatewayConnection = createServerFn({ method: "POST" })
   .validator(
     z.object({
-      provider: z.enum(["asaas", "mercadopago", "stripe", "pagar_me"]),
+      provider: z.enum(["asaas", "mercadopago", "stripe", "pagar_me", "paypal"]),
       apiKey: z.string().min(5, "Chave de API / Token do Gateway é obrigatório"),
-      environment: z.enum(["sandbox", "production"]).default("production"),
+      secretKey: z.string().optional(),
+      environment: z.enum(["sandbox", "production", "live"]).default("production"),
     })
   )
   .handler(async ({ data }) => {
@@ -807,6 +808,74 @@ export const testPaymentGatewayConnection = createServerFn({ method: "POST" })
             authenticated: true,
           },
         };
+      }
+
+      if (data.provider === "paypal") {
+        const isSandbox = data.environment === "sandbox";
+        const tokenUrl = isSandbox
+          ? "https://api-m.sandbox.paypal.com/v1/oauth2/token"
+          : "https://api-m.paypal.com/v1/oauth2/token";
+
+        const clientId = data.apiKey.trim();
+        const clientSecret = data.secretKey?.trim() || "";
+
+        // If clientSecret is provided, do client_credentials OAuth flow
+        if (clientSecret) {
+          const authHeader = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
+          const res = await fetch(tokenUrl, {
+            method: "POST",
+            headers: {
+              Authorization: `Basic ${authHeader}`,
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: "grant_type=client_credentials",
+            signal: AbortSignal.timeout(10000),
+          });
+
+          if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            return {
+              success: false,
+              message: `PayPal rejeitou as credenciais (${data.environment}): ${errData?.error_description || errData?.error || `HTTP ${res.status}`}`,
+            };
+          }
+
+          const tokenData = await res.json();
+          return {
+            success: true,
+            message: `Conexão PayPal validada com sucesso! Token OAuth2 ativo (${tokenData.token_type || "Bearer"}, expira em ${tokenData.expires_in}s).`,
+            details: {
+              environment: data.environment,
+              appId: tokenData.app_id,
+            },
+          };
+        } else {
+          // If only apiKey is provided, verify it as an existing bearer token
+          const userUrl = isSandbox
+            ? "https://api-m.sandbox.paypal.com/v1/identity/oauth2/userinfo?schema=paypalv1.1"
+            : "https://api-m.paypal.com/v1/identity/oauth2/userinfo?schema=paypalv1.1";
+
+          const res = await fetch(userUrl, {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${clientId}`,
+              "Content-Type": "application/json",
+            },
+            signal: AbortSignal.timeout(10000),
+          });
+
+          if (!res.ok) {
+            return {
+              success: false,
+              message: "PayPal: forneça Client ID e Secret Key para autenticação OAuth2 completa.",
+            };
+          }
+
+          return {
+            success: true,
+            message: "Conexão PayPal validada com sucesso via Bearer Token!",
+          };
+        }
       }
 
       return {

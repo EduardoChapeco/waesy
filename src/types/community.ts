@@ -366,31 +366,31 @@ export const COMMUNITY_GRADIENT_PRESETS: Record<
   "blue-lime": {
     id: "blue-lime",
     label: "Blue Lime (Threads Classic)",
-    gradientClass: "from-[#0284c7] via-[#06b6d4] to-[#84cc16]",
+    gradientClass: "from-sky-600 via-cyan-500 to-lime-500",
     badgeBg: "bg-emerald-950/40 text-emerald-300",
   },
   "pink-cyan": {
     id: "pink-cyan",
     label: "Pink Cyan (Vibrant)",
-    gradientClass: "from-[#ec4899] via-[#d946ef] to-[#06b6d4]",
+    gradientClass: "from-pink-500 via-fuchsia-500 to-cyan-500",
     badgeBg: "bg-fuchsia-950/40 text-fuchsia-300",
   },
   sunset: {
     id: "sunset",
     label: "Sunset Glow",
-    gradientClass: "from-[#f97316] via-[#ef4444] to-[#eab308]",
+    gradientClass: "from-orange-500 via-red-500 to-amber-500",
     badgeBg: "bg-amber-950/40 text-amber-300",
   },
   cyberpunk: {
     id: "cyberpunk",
     label: "Neon Cyberpunk",
-    gradientClass: "from-[#8b5cf6] via-[#ec4899] to-[#3b82f6]",
+    gradientClass: "from-purple-500 via-pink-500 to-blue-500",
     badgeBg: "bg-purple-950/40 text-purple-300",
   },
   obsidian: {
     id: "obsidian",
     label: "Dark Obsidian",
-    gradientClass: "from-[#09090b] via-[#18181b] to-[#27272a]",
+    gradientClass: "from-zinc-900 via-zinc-800 to-zinc-700",
     badgeBg: "bg-zinc-900/60 text-zinc-300",
   },
 };

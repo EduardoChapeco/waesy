@@ -125,6 +125,7 @@ function AdminMasterBannersPage() {
   >("hotpage");
   const [targetUrl, setTargetUrl] = useState("");
   const [placement, setPlacement] = useState<BannerPlacement>("home");
+  const [aspectRatioMode, setAspectRatioMode] = useState<"horizontal" | "square" | "vertical">("horizontal");
   const [cityFilter, setCityFilter] = useState("all");
   const [badgeText, setBadgeText] = useState("Destaque");
   const [ctaLabel, setCtaLabel] = useState("Conferir");
@@ -163,6 +164,7 @@ function AdminMasterBannersPage() {
     setMediaMobileUrl("");
     setTargetUrl("");
     setPlacement(targetPlacement);
+    setAspectRatioMode("horizontal");
     setCityFilter("all");
     setShowOverlay(false);
     setShowTitle(false);
@@ -186,6 +188,7 @@ function AdminMasterBannersPage() {
     setTargetType(banner.target_type || "hotpage");
     setTargetUrl(banner.target_url || "");
     setPlacement(banner.placement || "home");
+    setAspectRatioMode(((banner as any).aspect_ratio_mode as any) || "horizontal");
     setCityFilter(banner.city_filter || "all");
     setBadgeText(banner.badge_text || "Destaque");
     setCtaLabel(banner.cta_label || "Conferir");
@@ -242,6 +245,7 @@ function AdminMasterBannersPage() {
             target_type: targetType,
             target_url: targetUrl || null,
             placement,
+            aspect_ratio_mode: aspectRatioMode,
             city_filter: cityFilter === "all" ? null : cityFilter,
             badge_text: badgeText || null,
             cta_label: ctaLabel || null,
@@ -268,6 +272,7 @@ function AdminMasterBannersPage() {
             target_type: targetType,
             target_url: targetUrl || undefined,
             placement,
+            aspect_ratio_mode: aspectRatioMode,
             city_filter: cityFilter === "all" ? null : cityFilter,
             badge_text: badgeText || undefined,
             cta_label: ctaLabel || undefined,
@@ -478,6 +483,11 @@ function AdminMasterBannersPage() {
                   <span className="bg-foreground/75 text-foreground backdrop-blur-md text-xs font-mono px-2 py-1 rounded-md border border-white/10">
                     {banner.placement.toUpperCase()}
                   </span>
+                  {(banner as any).aspect_ratio_mode && (banner as any).aspect_ratio_mode !== "horizontal" && (
+                    <span className="bg-primary/80 text-primary-foreground backdrop-blur-md text-xs font-mono px-2 py-1 rounded-md">
+                      {(banner as any).aspect_ratio_mode === "square" ? "1:1 QUADRADO" : "4:5 VERTICAL"}
+                    </span>
+                  )}
                   {banner.city_filter ? (
                     <span className="bg-primary text-primary-foreground backdrop-blur-md text-xs font-semibold px-2 py-1 rounded-md flex items-center gap-1 shadow-xs">
                       <MapPin className="size-2.5" />
@@ -576,6 +586,26 @@ function AdminMasterBannersPage() {
                     {p.label}
                   </SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold">Formato / Proporção do Banner</Label>
+            <Select value={aspectRatioMode} onValueChange={(v) => setAspectRatioMode(v as any)}>
+              <SelectTrigger className="h-11 sm:h-9 rounded-lg bg-card text-xs">
+                <SelectValue placeholder="Selecione a proporção" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="horizontal" className="text-xs">
+                  Horizontal / Paisagem (Billboard / Hero)
+                </SelectItem>
+                <SelectItem value="square" className="text-xs">
+                  Quadrado (1:1 - Cards e Laterais)
+                </SelectItem>
+                <SelectItem value="vertical" className="text-xs">
+                  Vertical (4:5 / 9:16 - Stories e Colunas)
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>

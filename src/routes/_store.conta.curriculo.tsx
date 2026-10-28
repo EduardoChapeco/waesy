@@ -42,6 +42,9 @@ import {
   Check,
   Clock,
   Eye,
+  ShieldCheck,
+  Star,
+  Building2,
 } from "lucide-react";
 import type { ResumeDataDTO } from "@/types/resume";
 
@@ -995,6 +998,66 @@ export default function MeuCurriculoPage() {
                             rows={3}
                             className="rounded-lg text-xs"
                           />
+
+                          {/* ── PAINEL CONFIDENCIAL: INTELIGÊNCIA SALARIAL & AVALIAÇÃO DE EMPREGADOR (Glassdoor/InfoJobs) ── */}
+                          <div className="pt-3 border-t border-border/60 space-y-3 bg-muted/40 p-3 rounded-lg">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2 text-3xs font-bold text-muted-foreground uppercase tracking-wider">
+                                <ShieldCheck className="size-3.5 text-primary" />
+                                <span>Inteligência Confidencial (Nunca exibida no PDF do currículo)</span>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              <div>
+                                <label className="text-3xs font-semibold text-muted-foreground block mb-1">
+                                  Último Salário Bruto (Opcional - R$)
+                                </label>
+                                <Input
+                                  value={exp.last_salary ? String(exp.last_salary) : ""}
+                                  onChange={(e) => updateExperience(idx, "last_salary", Number(e.target.value) || undefined)}
+                                  placeholder="Ex: 4500"
+                                  type="number"
+                                  className="h-11 min-h-11 rounded-lg text-xs"
+                                />
+                              </div>
+
+                              <div>
+                                <label className="text-3xs font-semibold text-muted-foreground block mb-1">
+                                  Motivo de Saída / Transição
+                                </label>
+                                <Input
+                                  value={exp.exit_reason || ""}
+                                  onChange={(e) => updateExperience(idx, "exit_reason", e.target.value)}
+                                  placeholder="Ex: Busca de novos desafios / Reestruturação"
+                                  className="h-11 min-h-11 rounded-lg text-xs"
+                                />
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="text-3xs font-semibold text-muted-foreground block mb-1">
+                                Avaliação Geral da Empresa (Ambiente & Gestão: 1 a 5)
+                              </label>
+                              <div className="flex items-center gap-1">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <button
+                                    key={star}
+                                    type="button"
+                                    onClick={() => updateExperience(idx, "company_rating", star)}
+                                    aria-label={`${star} estrela${star > 1 ? "s" : ""}`}
+                                    className={`size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center font-bold text-xs transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                                      (exp.company_rating || 0) >= star
+                                        ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/40"
+                                        : "bg-muted text-muted-foreground border border-transparent hover:bg-muted/80"
+                                    }`}
+                                  >
+                                    {star}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       ))
                     )}

@@ -54,7 +54,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
           />
         )}
         {/* Degradê escuro sobreposto */}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-slate-950/60" />
+        <div className="absolute inset-0 bg-slate-950/70" />
 
         {/* Logo / Nome da Agência no Topo */}
         <div className="absolute top-10 left-10 z-10">
@@ -63,7 +63,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
               src={vm.agency.logo_url}
               crossOrigin="anonymous"
               alt="Logo"
-              className="h-12 w-auto max-w-[180px] aspect-[4/1] object-contain brightness-0 invert"
+              className="h-12 w-auto max-w-45 aspect-[4/1] object-contain brightness-0 invert"
               width={180}
               height={48}
             />
@@ -135,7 +135,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
 
               {/* Grid de Dias */}
               <div
-                className={`grid ${format === "presentation-169" ? "grid-cols-3" : "grid-cols-2"} gap-8`}
+                className={`grid ${format === "presentation-169" ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-2"} gap-8`}
               >
                 {slideDays.map((d: any, idx: number) => {
                   const absoluteDayNumber = slideIdx * daysPerSlide + idx + 1;
@@ -396,7 +396,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
             </span>
           </div>
 
-          <div className="grid grid-cols-5 gap-8 items-center">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-8 items-center">
             {/* Valor Esquerda */}
             <div className="col-span-2 space-y-2">
               <span className="ds-label-caps text-slate-400 block">Valor Total da Viagem</span>

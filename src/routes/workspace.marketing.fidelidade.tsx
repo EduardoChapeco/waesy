@@ -428,7 +428,7 @@ export default function LoyaltyDashboardPage() {
  </span>
  </div>
 
- <div className="grid grid-cols-5 sm:grid-cols-5 gap-2 justify-items-center">
+ <div className="grid grid-cols-2 sm:grid-cols-5 sm:grid-cols-5 gap-2 justify-items-center">
  {Array.from({ length: targetStamps }).map((_, i) => {
  const isStamped = i < 3;
  return (
@@ -538,7 +538,7 @@ export default function LoyaltyDashboardPage() {
  </Button>
  {canRedeem && (
  <Button
- variant="default"
+ variant="outline"
  size="sm"
  onClick={() => handleRedeem({ data: { card_id: c.id } })}
  disabled={isRedeeming}

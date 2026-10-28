@@ -107,7 +107,7 @@ export function IFoodSquareCategoryButton({
           <div className="absolute top-1.5 right-1.5 z-10 pointer-events-none">
             <Badge
               variant="default"
-              className="px-1.5 py-0.5 text-3xs font-black uppercase tracking-wider rounded-md shadow-none"
+              className="px-2 py-1 text-3xs font-black uppercase tracking-wider rounded-md shadow-none"
             >
               {badgeText}
             </Badge>
@@ -126,7 +126,7 @@ export function IFoodSquareCategoryButton({
           <div className="flex flex-col items-center justify-center text-center size-full gap-1">
             <IconComponent className="size-6 sm:size-7 text-primary shrink-0 transition-transform group-hover:scale-110 duration-200" />
             {title && (
-              <span className="text-3xs sm:text-2xs font-bold text-foreground line-clamp-2 px-0.5 leading-tight tracking-tight">
+              <span className="text-3xs sm:text-2xs font-bold text-foreground line-clamp-2 px-1 leading-tight tracking-tight">
                 {title}
               </span>
             )}

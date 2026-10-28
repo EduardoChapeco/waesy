@@ -763,7 +763,7 @@ export function SimLabResearchPanel({ storeId }: { storeId: string }) {
                         className="p-4 rounded-lg border border-border/70 bg-background space-y-3"
                       >
                         <div className="flex flex-wrap items-center justify-between gap-2">
-                          <div className="space-y-0.5">
+                          <div className="space-y-1">
                             <span className="text-xs font-bold text-foreground block">
                               {res.persona_name}
                             </span>

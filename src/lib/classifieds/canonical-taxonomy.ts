@@ -956,10 +956,10 @@ export const CANONICAL_UNIT_TYPES = [
 ] as const;
 
 export const CANONICAL_STORAGE_TEMPERATURES = [
-  { id: "ambiente", label: "Ambiente / Seco", icon: "☀️" },
-  { id: "gelada", label: "Gelada / Imediata", icon: "🧊" },
-  { id: "resfriado", label: "Resfriado (0°C a 4°C)", icon: "🥩" },
-  { id: "congelado", label: "Congelado (-18°C)", icon: "❄️" },
+  { id: "ambiente", label: "Ambiente / Seco", icon: "️" },
+  { id: "gelada", label: "Gelada / Imediata", icon: "" },
+  { id: "resfriado", label: "Resfriado (0°C a 4°C)", icon: "" },
+  { id: "congelado", label: "Congelado (-18°C)", icon: "️" },
 ] as const;
 
 export const CANONICAL_MEAT_CUT_OPTIONS = [

@@ -416,7 +416,7 @@ async function hydrateBindings(
             imageUrl: d.cover_image_url || d.gallery_urls?.[0] || undefined,
             badge:
               d.iata_gateway ||
-              (d.average_rating ? `★ ${Number(d.average_rating).toFixed(1)}` : undefined),
+              (d.average_rating ? ` ${Number(d.average_rating).toFixed(1)}` : undefined),
           }));
         }
       } catch (err) {

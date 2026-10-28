@@ -275,7 +275,7 @@ export function MediaMosaic({
               className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-200"
               loading="lazy"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-3">
+            <div className="absolute inset-0 bg-black/50 flex items-end p-3">
               <span className="text-xs font-semibold text-primary-foreground truncate">
                 {item.title}
               </span>

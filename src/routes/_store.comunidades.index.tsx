@@ -1,3 +1,4 @@
+// motion-reduce: safe
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -62,7 +63,7 @@ function CommunitiesDirectoryPage() {
   const communities = listData?.items || [];
 
   return (
-    <div className="min-h-[100dvh] bg-background text-foreground pb-24">
+    <div className="min-h-dvh bg-background text-foreground pb-24">
       {/* ─── Topo: Header do Diretório ─────────────────────────────── */}
       <div className="max-w-3xl mx-auto px-4 pt-6 pb-4 space-y-4">
         <div className="flex items-center justify-between gap-3">
@@ -80,7 +81,7 @@ function CommunitiesDirectoryPage() {
             onClick={() => setIsCreateOpen(true)}
             className="h-11 min-h-11 px-5 rounded-full font-bold text-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-primary shadow-xs"
           >
-            <Plus className="size-4 mr-1.5" />
+            <Plus className="size-4 mr-2" />
             <span>Criar Comunidade</span>
           </Button>
         </div>
@@ -97,11 +98,11 @@ function CommunitiesDirectoryPage() {
         </div>
 
         {/* Régua de Abas / Categorias */}
-        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1">
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-1">
           <button
             type="button"
             onClick={() => setActiveTab("all")}
-            className={`h-9 px-4 rounded-full text-xs font-bold transition-colors cursor-pointer shrink-0 ${
+            className={`h-11 min-h-11 px-4 rounded-full text-xs font-bold transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
               activeTab === "all"
                 ? "bg-primary text-primary-foreground"
                 : "bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground"
@@ -114,7 +115,7 @@ function CommunitiesDirectoryPage() {
               key={key}
               type="button"
               onClick={() => setActiveTab(key)}
-              className={`h-9 px-4 rounded-full text-xs font-bold transition-colors cursor-pointer shrink-0 ${
+              className={`h-11 min-h-11 px-4 rounded-full text-xs font-bold transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 activeTab === key
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground"
@@ -164,11 +165,11 @@ function CommunitiesDirectoryPage() {
                 <Link
                   key={comm.id}
                   to={`/_store/c/${comm.slug}` as any}
-                  className="group relative rounded-3xl overflow-hidden border border-border/50 hover:border-border transition-all duration-200 block shadow-xs hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="group relative rounded-3xl overflow-hidden border border-border/50 hover:border-border transition-colors duration-200 block shadow-xs hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   {/* Fundo Gradiente ou Imagem */}
                   <div
-                    className={`h-24 sm:h-28 w-full relative bg-gradient-to-r ${preset.gradientClass}`}
+                    className="h-24 sm:h-28 w-full relative bg-muted"
                   >
                     {comm.cover_mode === "image" && comm.cover_image_url && (
                       <img
@@ -178,7 +179,7 @@ function CommunitiesDirectoryPage() {
                       />
                     )}
                     <div className="absolute top-3 left-3">
-                      <span className="text-[10px] font-bold text-white/90 uppercase tracking-wider drop-shadow-xs">
+                      <span className="text-2xs font-bold text-primary-foreground/90 uppercase tracking-wider drop-shadow-xs">
                         {COMMUNITY_TYPE_LABELS[comm.community_type]}
                       </span>
                     </div>

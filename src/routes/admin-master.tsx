@@ -35,7 +35,7 @@ export const Route = createFileRoute("/admin-master")({
     }
   },
   errorComponent: ({ error, reset }: { error: any; reset: () => void }) => (
-    <div className="min-h-[100dvh] bg-background text-foreground flex flex-col items-center justify-center p-6 text-center">
+    <div className="min-h-dvh bg-background text-foreground flex flex-col items-center justify-center p-6 text-center">
       <div className="max-w-md w-full p-6 rounded-lg bg-card border border-border space-y-4 shadow-sm">
         <div className="size-12 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
           <ShieldAlert className="size-6" />
@@ -121,7 +121,7 @@ function AdminMasterLayout() {
  const [isMobileOpen, setIsMobileOpen] = useState(false);
 
  return (
- <div className="h-[100dvh] w-screen overflow-hidden bg-background text-foreground flex">
+ <div className="h-dvh w-screen overflow-hidden bg-background text-foreground flex">
  {/* Desktop Fixed Sidebar */}
  <aside className="w-64 border-r border-border/50 bg-card/40 backdrop-blur-sm flex-col hidden md:flex shrink-0 h-full">
  {/* Header */}

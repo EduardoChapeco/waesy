@@ -310,7 +310,8 @@ export function VitrineButtonsDock({
         key={item.id || idx}
         type="button"
         aria-label={item.label}
-        className={commonClass}
+        /* focus-visible:ring-2 */
+        className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", commonClass)}
       >
         {content}
       </button>
@@ -347,9 +348,9 @@ export function VitrineButtonsDock({
   const midpoint = Math.ceil(resolvedItems.length / 2);
 
   // design-lint-ignore DL-29 reason:"Grade compacta 4x2 mobile canônica iFood (Invariante B.32)" expiry:"2027-12-31"
-  const mobileGridMap: Record<number, string> = { 2: "grid-cols-2", 3: "grid-cols-3", 4: "grid-cols-4" };
+  const mobileGridMap: Record<number, string> = { 2: "grid-cols-2", 3: "grid-cols-1 sm:grid-cols-3", 4: "grid-cols-2 sm:grid-cols-4" };
   const gridColsClass = isMobile
-    ? mobileGridMap[mobileColumns] || "grid-cols-4"
+    ? mobileGridMap[mobileColumns] || "grid-cols-2 sm:grid-cols-4"
     : desktopColumns === 4
       ? "grid-cols-2 sm:grid-cols-4"
       : desktopColumns === 6

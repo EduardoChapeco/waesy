@@ -167,7 +167,7 @@ export function EventDetailDesktop({
       </div>
 
       {/* ── 3. Grid Principal Split: 8 Colunas Conteúdo / 4 Colunas Sticky Sidebar ── */}
-      <div className="grid grid-cols-12 gap-8 items-start pt-2">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start pt-2">
         {/* Coluna Principal (8 cols): Banner Panorâmico, Descrição & Seções */}
         <div className="col-span-8 space-y-6">
           {event.cover_image && (
@@ -340,7 +340,7 @@ export function EventDetailDesktop({
               </span>
             </div>
 
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={() => handleToggleRsvp("going")}

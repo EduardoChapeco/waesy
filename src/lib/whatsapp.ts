@@ -131,7 +131,7 @@ export async function trackAndOpenWhatsApp(
     });
 
     if (!check.authorized) {
-      toast.error("🔒 Contato Protegido", {
+      toast.error(" Contato Protegido", {
         description: check.message || "Faça login para contatar este anunciante pelo WhatsApp.",
         action: typeof window !== "undefined" ? {
           label: "Entrar",
@@ -222,11 +222,11 @@ export function buildStructuredOrderWhatsAppMessage(params: StructuredOrderWhats
  const lines: string[] = [];
 
  // Cabeçalho
- lines.push(`📦 *Novo Pedido #${params.orderToken.toUpperCase()}*`);
- if (params.storeName) lines.push(`🏪 ${params.storeName}`);
- if (params.customerName) lines.push(`👤 Cliente: ${params.customerName}`);
+ lines.push(` *Novo Pedido #${params.orderToken.toUpperCase()}*`);
+ if (params.storeName) lines.push(` ${params.storeName}`);
+ if (params.customerName) lines.push(` Cliente: ${params.customerName}`);
  if (params.tableNumber) lines.push(`🪑 Mesa / Comanda: ${params.tableNumber}`);
- if (params.deliveryMethodText) lines.push(`🚚 Tipo: ${params.deliveryMethodText}`);
+ if (params.deliveryMethodText) lines.push(` Tipo: ${params.deliveryMethodText}`);
  lines.push("");
 
  // Lista de Itens
@@ -251,12 +251,12 @@ export function buildStructuredOrderWhatsAppMessage(params: StructuredOrderWhats
  lines.push(`Desconto: -${formatMoney(params.discountCents)}`);
  }
 
- lines.push(`💳 *Método de Pagamento:* ${params.paymentMethodText}`);
- lines.push(`💰 *Total:* ${formatMoney(params.totalCents)}`);
+ lines.push(` *Método de Pagamento:* ${params.paymentMethodText}`);
+ lines.push(` *Total:* ${formatMoney(params.totalCents)}`);
 
  if (params.deliveryAddress) {
  lines.push("");
- lines.push(`📍 *Endereço de Entrega:* ${params.deliveryAddress}`);
+ lines.push(` *Endereço de Entrega:* ${params.deliveryAddress}`);
  }
 
  return lines.join("\n");
@@ -279,17 +279,17 @@ export function buildProposalWhatsAppMessage({
   optionsCount?: number;
 }): string {
   const lines: string[] = [
-    `✈️ *Proposta de Viagem Exclusiva · ${destinationCity}*`,
+    `️ *Proposta de Viagem Exclusiva · ${destinationCity}*`,
     `Olá, *${clientName}*! Preparamos seu roteiro personalizado com muito carinho pela *${agencyName}*.`,
     "",
     optionsCount > 1
-      ? `📋 Incluímos *${optionsCount} opções de cotação* comparativas com voos, hospedagem e valores para você escolher a melhor alternativa.`
-      : `📋 Seu roteiro detalhado com malha aérea, hotel selecionado e condições especiais já está pronto!`,
+      ? ` Incluímos *${optionsCount} opções de cotação* comparativas com voos, hospedagem e valores para você escolher a melhor alternativa.`
+      : ` Seu roteiro detalhado com malha aérea, hotel selecionado e condições especiais já está pronto!`,
     "",
-    `🔗 *Acesse sua proposta interativa:*`,
+    ` *Acesse sua proposta interativa:*`,
     proposalUrl,
     "",
-    `🤖 Dentro da proposta você conta com nosso *Consultor Inteligente* para tirar dúvidas instantâneas, além de poder confirmar sua reserva diretamente!`,
+    ` Dentro da proposta você conta com nosso *Consultor Inteligente* para tirar dúvidas instantâneas, além de poder confirmar sua reserva diretamente!`,
   ];
   return lines.join("\n");
 }
@@ -309,12 +309,12 @@ export function buildContractWhatsAppMessage({
   contractUrl: string;
 }): string {
   const lines: string[] = [
-    `📝 *Contrato de Prestação de Serviços Turísticos · ${destinationCity}*`,
+    ` *Contrato de Prestação de Serviços Turísticos · ${destinationCity}*`,
     `Olá, *${clientName}*! Seu contrato com a *${agencyName}* está pronto para assinatura digital.`,
     "",
-    `🔒 O processo é 100% eletrônico, seguro e com validade jurídica nacional (ICP-Brasil / MP 2.200-2).`,
+    ` O processo é 100% eletrônico, seguro e com validade jurídica nacional (ICP-Brasil / MP 2.200-2).`,
     "",
-    `✍️ *Assine agora em seu celular:*`,
+    `️ *Assine agora em seu celular:*`,
     contractUrl,
     "",
     `Após a assinatura, você receberá a via com certificado de autenticidade e hash criptográfico SHA-256.`,
@@ -345,23 +345,23 @@ export function buildBoletoCarnesWhatsAppMessage({
   carnesUrl?: string;
 }): string {
   const lines: string[] = [
-    `🎫 *Lembrete de Carnê de Viagem · ${destinationCity}*`,
+    ` *Lembrete de Carnê de Viagem · ${destinationCity}*`,
     `Olá, *${clientName}*! Seguem os dados para pagamento da sua parcela:`,
     "",
-    `📌 *Parcela:* ${installmentNumber} de ${totalInstallments}`,
-    `📅 *Vencimento:* ${dueDate}`,
-    `💰 *Valor:* ${amountFormatted}`,
+    ` *Parcela:* ${installmentNumber} de ${totalInstallments}`,
+    ` *Vencimento:* ${dueDate}`,
+    ` *Valor:* ${amountFormatted}`,
   ];
 
   if (digitableLine) {
     lines.push("");
-    lines.push(`🔢 *Linha Digitável (Copie e Cole no App do seu Banco):*`);
+    lines.push(` *Linha Digitável (Copie e Cole no App do seu Banco):*`);
     lines.push(`\`${digitableLine}\``);
   }
 
   if (carnesUrl) {
     lines.push("");
-    lines.push(`📱 *Acompanhe suas parcelas no app:* ${carnesUrl}`);
+    lines.push(` *Acompanhe suas parcelas no app:* ${carnesUrl}`);
   }
 
   return lines.join("\n");

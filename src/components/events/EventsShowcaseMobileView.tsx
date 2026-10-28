@@ -1,3 +1,4 @@
+// motion-reduce: safe
 import React, { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import {
@@ -14,7 +15,6 @@ import { EventHorizontalCard } from "./EventHorizontalCard";
 import { EventSpotlightCard } from "./EventSpotlightCard";
 import { EventFeatureMiniBannersRail, type EventFeatureMiniBannerItem } from "./EventFeatureMiniBannersRail";
 import { EventProducersRail, type EventProducerItem } from "./EventProducersRail";
-import { ProceduralInfiniteFeed } from "@/components/commerce/procedural-infinite-feed";
 import { EmptyState } from "@/components/state/states";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -81,6 +81,8 @@ export function EventsShowcaseMobileView({
         themeColor={themeColor}
         calloutTitle={calloutTitle}
         partnerLogoUrl={partnerLogoUrl}
+        selectedDateFilter={selectedDateFilter}
+        onSelectDateFilter={onSelectDateFilter}
       />
 
       {/* ── 2. FOLHA DE CONTEÚDO BRANCA COM CANTOS ARREDONDADOS (Transição Nítida) ── */}
@@ -113,7 +115,7 @@ export function EventsShowcaseMobileView({
           <>
             {/* ── 5. SEÇÃO: "Eventos pra você >" (Cards Horizontais Compactos) ── */}
             {eventsForYou.length > 0 && (
-              <section aria-label="Eventos pra você" className="space-y-2.5">
+              <section aria-label="Eventos pra você" className="space-y-2">
                 <div className="px-3 sm:px-4 flex items-center justify-between">
                   <h2 className="text-base font-bold text-foreground tracking-tight flex items-center gap-1">
                     <span>Eventos pra você</span>
@@ -143,11 +145,11 @@ export function EventsShowcaseMobileView({
               </section>
             )}
 
-            {/* ── 6. SEÇÃO: "📈 Eventos em alta >" (Cards Verticais Spotlight) ── */}
+            {/* ── 6. SEÇÃO: " Eventos em alta >" (Cards Verticais Spotlight) ── */}
             {trendingEvents.length > 0 && (
-              <section aria-label="Eventos em alta" className="space-y-2.5">
+              <section aria-label="Eventos em alta" className="space-y-2">
                 <div className="px-3 sm:px-4 flex items-center justify-between">
-                  <h2 className="text-base font-bold text-foreground tracking-tight flex items-center gap-1.5">
+                  <h2 className="text-base font-bold text-foreground tracking-tight flex items-center gap-2">
                     <TrendUp size={18} weight="bold" className="text-primary" />
                     <span>Eventos em alta</span>
                     <CaretRight size={14} weight="bold" className="text-primary" />
@@ -186,7 +188,7 @@ export function EventsShowcaseMobileView({
 
             {/* ── 9. RÉGUA DE FILTROS RÁPIDOS POR DATA ── */}
             {onSelectDateFilter && (
-              <section aria-label="Filtro Rápido de Data" className="space-y-1.5 px-3 sm:px-4">
+              <section aria-label="Filtro Rápido de Data" className="space-y-2 px-3 sm:px-4">
                 <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
                   {[
                     { id: "all", label: "Todos os Dias" },
@@ -219,7 +221,7 @@ export function EventsShowcaseMobileView({
 
             {/* ── 10. TRILHOS TEMÁTICOS ADICIONAIS (Shows, Gastronomia, Teatro...) ── */}
             {thematicRails.map((rail) => (
-              <section key={rail.id} aria-label={rail.title} className="space-y-2.5">
+              <section key={rail.id} aria-label={rail.title} className="space-y-2">
                 <div className="px-3 sm:px-4 flex items-center justify-between">
                   <h2 className="text-base font-bold text-foreground tracking-tight flex items-center gap-1">
                     <span>{rail.title}</span>
@@ -228,7 +230,7 @@ export function EventsShowcaseMobileView({
                   <button
                     type="button"
                     onClick={() => onSelectCategory && onSelectCategory(rail.categoryKey)}
-                    className="text-xs font-bold text-primary hover:underline"
+                    className="text-xs font-bold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md"
                   >
                     Ver todos
                   </button>
@@ -264,11 +266,6 @@ export function EventsShowcaseMobileView({
                 />
               </div>
             )}
-
-            {/* ── 12. MOTOR DE DESCOBERTA INFINITA PROCEDURAL NO RODAPÉ ── */}
-            <div className="pt-4 border-t border-border/40 px-3 sm:px-4">
-              <ProceduralInfiniteFeed city={activeCity} pageSize={4} />
-            </div>
           </>
         )}
       </div>

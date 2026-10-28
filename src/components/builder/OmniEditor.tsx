@@ -1946,7 +1946,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
               <Input
                 value={config.mastheadTitle || ""}
                 onChange={(e) => onUpdateConfig("mastheadTitle", e.target.value)}
-                placeholder="Ex: Vale Agora / Prométhée"
+                placeholder="Ex: Waesy News / Portal Editorial"
                 className="h-11 min-h-11 rounded-lg text-xs"
               />
             </div>
@@ -2098,7 +2098,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                   ];
                   onUpdateConfig("articles", next);
                 }}
-                className="h-8 px-2.5 text-xs rounded-lg"
+                className="h-8 px-2 text-xs rounded-lg"
               >
                 <Plus className="size-3.5 mr-1" />
                 Nova Matéria
@@ -2120,7 +2120,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                       const next = (config.articles || []).filter((_: any, i: number) => i !== idx);
                       onUpdateConfig("articles", next);
                     }}
-                    className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="p-2 rounded-lg text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     title="Remover matéria"
                   >
                     <Trash2 className="size-3.5" />
@@ -2195,7 +2195,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
             <Input
               value={config.mastheadTitle || ""}
               onChange={(e) => onUpdateConfig("mastheadTitle", e.target.value)}
-              placeholder="Ex: Vale Agora News"
+              placeholder="Ex: Waesy News"
               className="h-11 min-h-11 rounded-lg text-xs"
             />
           </div>

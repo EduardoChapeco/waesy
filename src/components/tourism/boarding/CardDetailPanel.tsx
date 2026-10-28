@@ -235,16 +235,16 @@ export function CardDetailPanel({
   const briefingText = useMemo(() => {
     if (!departure) return '';
     const lines = [
-      `✈️ *BRIEFING DE EMBARQUE — ${departure.client_name}*`,
-      `📍 Destino: ${departure.destination_city || 'Viagem'}`,
-      `📅 Embarque: ${departure.departure_date ? new Date(departure.departure_date).toLocaleDateString('pt-BR') : 'A definir'}`,
+      `️ *BRIEFING DE EMBARQUE — ${departure.client_name}*`,
+      ` Destino: ${departure.destination_city || 'Viagem'}`,
+      ` Embarque: ${departure.departure_date ? new Date(departure.departure_date).toLocaleDateString('pt-BR') : 'A definir'}`,
     ];
-    if (departure.flight_number) lines.push(`🛫 Voo: ${departure.flight_number}`);
-    if (departure.airline_locator) lines.push(`🎫 Localizador / PNR: ${departure.airline_locator}`);
-    if (departure.hotel_name) lines.push(`🏨 Hotel: ${departure.hotel_name}`);
-    lines.push('\n📋 *Checklist de Documentos:*');
+    if (departure.flight_number) lines.push(` Voo: ${departure.flight_number}`);
+    if (departure.airline_locator) lines.push(` Localizador / PNR: ${departure.airline_locator}`);
+    if (departure.hotel_name) lines.push(` Hotel: ${departure.hotel_name}`);
+    lines.push('\n *Checklist de Documentos:*');
     checklist.forEach((item) => {
-      lines.push(`${item.is_completed ? '✅' : '⏳'} ${item.label}`);
+      lines.push(`${item.is_completed ? '' : '⏳'} ${item.label}`);
     });
     lines.push('\nTenha uma excelente viagem! Qualquer dúvida, estamos à disposição.');
     return lines.join('\n');
@@ -503,7 +503,7 @@ export function CardDetailPanel({
                         <div className="flex items-center gap-2 shrink-0">
                           {doc.ocr_status === 'completed' && (
                             <Badge variant="outline" className="text-3xs text-emerald-600 border-emerald-500/30">
-                              OCR ✓
+                              OCR 
                             </Badge>
                           )}
                           <Button asChild size="icon" variant="ghost" className="size-7 rounded-lg text-muted-foreground">

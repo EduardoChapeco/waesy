@@ -14,6 +14,8 @@ import {
   Heart,
   Layers,
   LayoutTemplate,
+  LayoutGrid,
+  List,
   MapPin,
   Megaphone,
   MessageCircle,
@@ -29,6 +31,7 @@ import {
   X,
 } from "lucide-react";
 import type { NewsArticleDTO, SponsorDTO } from "@/services/news.functions";
+import type { BannerDTO } from "@/services/banner.functions";
 import { listArticleComments, submitArticleComment } from "@/services/news.functions";
 import {
   CANONICAL_PROMETHEE_TABS,
@@ -42,15 +45,16 @@ import { PrometheeExploreSearchModal } from "@/components/news/promethee-explore
 import { PrometheeTrendingMarkerStrip } from "@/components/news/promethee-trending-marker-strip";
 import { EditorialAdSlot } from "@/components/news/editorial-ad-slot";
 import { getStoredLocation } from "@/components/location/location-master-pill";
-import { CANONICAL_CITIES } from "@/lib/constants/cities";
+import { CANONICAL_CITIES, getRegionalNeighboringCities } from "@/lib/constants/cities";
 import { Logo } from "@/components/commerce/logo";
 
 export interface WaesyNewsPortalProps {
   initialArticles?: NewsArticleDTO[];
   initialSponsors?: SponsorDTO[];
+  initialBanners?: BannerDTO[];
+  initialActiveCity?: string;
 }
 
-export type ValeNewsPortalProps = WaesyNewsPortalProps;
 
 interface PortalComment {
   id: string;
@@ -63,24 +67,24 @@ const OFFLINE_TEST_FALLBACK_ARTICLES: NormalizedPrometheeArticle[] = [
   {
     id: "fallback-sjc-1",
     slug: "parque-tecnologico-sjc-expansao-aeroespacial",
-    title: "Parque Tecnológico de São José dos Campos amplia polo de engenharia aeroespacial",
-    lead: "Novos laboratórios compartilhados conectam indústria regional, universidades e fornecedores especializados no Vale do Paraíba.",
+    title: "Parque Tecnológico amplia polo de inovação regional",
+    lead: "Novos laboratórios compartilhados conectam indústria regional, universidades e fornecedores especializados.",
     body: [
-      "O complexo tecnológico de São José dos Campos oficializou a ampliação de sua área dedicada a sistemas embarcados e mobilidade limpa.",
-      "Empresas instaladas no corredor da Via Dutra destacam a abertura de frentes técnicas para engenheiros, analistas de dados e especialistas industriais.",
+      "O complexo tecnológico oficializou a ampliação de sua área dedicada a sistemas embarcados e mobilidade limpa.",
+      "Empresas instaladas destacam a abertura de frentes técnicas para engenheiros e analistas.",
     ],
     bulletSummary: [
-      "Ampliação de laboratórios integrados em São José dos Campos.",
-      "Conexão direta entre universidades e cadeia aeroespacial do Vale.",
+      "Ampliação de laboratórios integrados.",
+      "Conexão direta entre universidades e cadeia produtiva.",
     ],
-    quote: "A integração regional acelera projetos industriais de alto valor agregado no Vale do Paraíba.",
+    quote: "A integração regional acelera projetos industriais de alto valor agregado.",
     category: "Economia",
-    city: "São José dos Campos",
-    state: "SP",
+    city: "São Miguel do Oeste",
+    state: "SC",
     publishedAgo: "15min",
     publishedDateLabel: "Edição atual",
     readingTime: "4 min",
-    author: "Redação Vale Agora",
+    author: "Redação Waesy",
     role: "Apuração Regional",
     isBreaking: true,
     likesCount: 48,
@@ -89,8 +93,8 @@ const OFFLINE_TEST_FALLBACK_ARTICLES: NormalizedPrometheeArticle[] = [
   },
   {
     id: "fallback-taubate-2",
-    slug: "integracao-viaria-taubate-jacarei",
-    title: "Central integrada reduz tempo de atendimento viário entre Taubaté e Jacareí",
+    slug: "integracao-viaria-regional",
+    title: "Central integrada reduz tempo de atendimento viário regional",
     lead: "Monitoramento óptico em tempo real agiliza alertas operacionais nos acessos urbanos e rodoviários da região.",
     body: [
       "Equipes municipais de trânsito passaram a operar com compartilhamento instantâneo de ocorrências nos horários de maior fluxo.",
@@ -102,8 +106,8 @@ const OFFLINE_TEST_FALLBACK_ARTICLES: NormalizedPrometheeArticle[] = [
     ],
     quote: "Informação rápida salva tempo do trabalhador e evita retenções prolongadas.",
     category: "Segurança",
-    city: "Taubaté",
-    state: "SP",
+    city: "Chapecó",
+    state: "SC",
     publishedAgo: "34min",
     publishedDateLabel: "Edição atual",
     readingTime: "3 min",
@@ -116,108 +120,23 @@ const OFFLINE_TEST_FALLBACK_ARTICLES: NormalizedPrometheeArticle[] = [
   },
 ];
 
-const PROPOSAL_WORKFLOW_STEPS = [
-  {
-    step: "01",
-    title: "Radar Regional 24h",
-    description:
-      "O sistema monitora fontes oficiais, prefeituras, rodovias e pautas das cidades da região continuamente.",
-    icon: Radar,
-  },
-  {
-    step: "02",
-    title: "Squads de Jornalismo",
-    description:
-      "Células editoriais organizam o fato com título limpo, resumo direto, foto real da pauta e classificação por município.",
-    icon: Users,
-  },
-  {
-    step: "03",
-    title: "Aprovação em 1 Toque",
-    description:
-      "Nada entra no ar no escuro: o editor revisa no celular ou computador, ajusta se quiser e aprova com segurança.",
-    icon: ShieldCheck,
-  },
-  {
-    step: "04",
-    title: "Portal + Artes Sociais",
-    description:
-      "A notícia entra no portal na hora e já vira card PNG ou carrossel pronto para engajar no Instagram e WhatsApp.",
-    icon: Layers,
-  },
-] as const;
-
-const PROPOSAL_DELIVERABLES = [
-  {
-    icon: LayoutTemplate,
-    tag: "Construtor Omni",
-    title: "Portal Próprio Personalizável",
-    description:
-      "Site mobile-first inspirado na leveza do Threads e dos grandes portais modernos, com blocos individuais editáveis: topo, menu, plantão, feed, banners e rodapé.",
-  },
-  {
-    icon: Globe,
-    tag: "Workspace",
-    title: "Painel Completo de Gestão",
-    description:
-      "Ambiente administrativo exclusivo para comandar matérias, páginas especiais, pautas enviadas por moradores, contatos comerciais e equipe em um único painel.",
-  },
-  {
-    icon: MapPin,
-    tag: "Motor ADS",
-    title: "Publicidade por Localização",
-    description:
-      "Venda espaços publicitários segmentados por cidade. O leitor filtra sua cidade via GPS e visualiza os anunciantes locais, com relatório transparente de impressões e cliques.",
-  },
-  {
-    icon: Calendar,
-    tag: "Monetização Extra",
-    title: "Eventos e Especiais Patrocinados",
-    description:
-      "Publique agendas regionais, coberturas de eventos, guias gastronômicos e cadernos patrocinados para criar novas fontes recorrentes de receita comercial.",
-  },
-  {
-    icon: BarChart3,
-    tag: "Inteligência",
-    title: "Painel de Dados e Audiência",
-    description:
-      "Acompanhe leituras, matérias campeãs, cidades mais ativas e desempenho de cada patrocinador com números claros para apresentar em reuniões comerciais.",
-  },
-  {
-    icon: Radar,
-    tag: "Produtividade",
-    title: "Mineração e Squads Editoriais",
-    description:
-      "Mantenha o portal vivo o dia inteiro mesmo com equipe enxuta: captação automatizada de pautas regionais combinada à estruturação jornalística e revisão humana.",
-  },
-  {
-    icon: Layers,
-    tag: "Redes Sociais",
-    title: "Criador de Posts e Carrosséis",
-    description:
-      "Escolha qualquer reportagem publicada no portal e gere na hora imagens PNG em alta definição (Post Único 4:5, Stories 9:16 ou Carrossel de 4 lâminas).",
-    roadmapNote: "Evolução inclusa em até 6 meses: publicação automática direta no Instagram.",
-  },
-  {
-    icon: ShieldCheck,
-    tag: "Chave na Mão",
-    title: "Domínio, Hospedagem e Suporte",
-    description:
-      "Entrega configurada no seu domínio próprio, infraestrutura rápida de alta disponibilidade e acompanhamento próximo da nossa equipe para sua operação tracionar.",
-  },
-] as const;
-
 export function WaesyNewsPortal({
   initialArticles = [],
   initialSponsors = [],
+  initialBanners = [],
+  initialActiveCity = "",
 }: WaesyNewsPortalProps) {
-  const [selectedCity, setSelectedCity] = useState<string>("Todas as Cidades");
+  const [selectedCity, setSelectedCity] = useState<string>(
+    initialActiveCity && initialActiveCity !== "all" && initialActiveCity !== "Global"
+      ? initialActiveCity
+      : "Todas as Cidades"
+  );
   const [selectedTab, setSelectedTab] = useState<string>("Para você");
+  const [viewMode, setViewMode] = useState<"stream" | "grid">("stream");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [isLocationOpen, setIsLocationOpen] = useState<boolean>(false);
   const [isCitizenOpen, setIsCitizenOpen] = useState<boolean>(false);
-  const [isProposalOpen, setIsProposalOpen] = useState<boolean>(false);
   const [studioArticle, setStudioArticle] = useState<NormalizedPrometheeArticle | null>(null);
   const [activeArticle, setActiveArticle] = useState<NormalizedPrometheeArticle | null>(null);
   const [showReaderSummary, setShowReaderSummary] = useState<boolean>(false);
@@ -229,7 +148,9 @@ export function WaesyNewsPortal({
 
   // Campos envio de pauta (+)
   const [citAuthor, setCitAuthor] = useState("");
-  const [citCity, setCitCity] = useState("São José dos Campos");
+  const [citCity, setCitCity] = useState(
+    selectedCity !== "Todas as Cidades" ? selectedCity : "São Miguel do Oeste"
+  );
   const [citCategory, setCitCategory] = useState("Urgente");
   const [citTitle, setCitTitle] = useState("");
   const [citBody, setCitBody] = useState("");
@@ -262,9 +183,6 @@ export function WaesyNewsPortal({
       if (slug) {
         const found = normalizedArticles.find((a) => a.slug === slug || a.id === slug);
         if (found) setActiveArticle(found);
-      }
-      if (params.get("proposta") === "1") {
-        setIsProposalOpen(true);
       }
     }
   }, []);
@@ -445,7 +363,7 @@ export function WaesyNewsPortal({
     setComments((prev) => [
       {
         id: `local-${Date.now()}`,
-        authorName: "Leitor do Vale",
+        authorName: "Leitor Colaborador",
         contentText: clean,
         createdAtLabel: "Agora",
       },
@@ -467,16 +385,40 @@ export function WaesyNewsPortal({
     }
   };
 
-  const regionalCities = useMemo(
-    () =>
-      CANONICAL_CITIES.filter(
-        (c) =>
-          c.region.includes("Vale") ||
-          c.region.includes("Litoral") ||
-          c.region.includes("Mantiqueira"),
-      ),
-    [],
-  );
+  const neighboringCities = useMemo(() => {
+    const baseCity = selectedCity !== "Todas as Cidades" ? selectedCity : (initialActiveCity || "São Miguel do Oeste");
+    return getRegionalNeighboringCities(baseCity, 8);
+  }, [selectedCity, initialActiveCity]);
+
+  const activeBanners = useMemo(() => {
+    if (!initialBanners || initialBanners.length === 0) return [];
+    if (selectedCity === "Todas as Cidades") return initialBanners;
+    return initialBanners.filter(
+      (b) => !b.city_filter || b.city_filter.toLowerCase() === selectedCity.toLowerCase() || b.city_filter === "all",
+    );
+  }, [initialBanners, selectedCity]);
+
+  const squareBanners = useMemo(() => {
+    return activeBanners.filter((b) => b.aspect_ratio_mode === "square" || b.aspect_ratio_mode === "1:1");
+  }, [activeBanners]);
+
+  const verticalBanners = useMemo(() => {
+    return activeBanners.filter(
+      (b) =>
+        b.aspect_ratio_mode === "vertical" ||
+        b.aspect_ratio_mode === "4:5" ||
+        b.aspect_ratio_mode === "9:16",
+    );
+  }, [activeBanners]);
+
+  const billboardBanners = useMemo(() => {
+    return activeBanners.filter(
+      (b) =>
+        !b.aspect_ratio_mode ||
+        b.aspect_ratio_mode === "horizontal" ||
+        b.aspect_ratio_mode === "billboard",
+    );
+  }, [activeBanners]);
 
   return (
     <div className="light h-dvh w-full overflow-y-auto overflow-x-hidden bg-background text-foreground selection:bg-foreground selection:text-background">
@@ -529,21 +471,12 @@ export function WaesyNewsPortal({
             <button
               type="button"
               onClick={() => setStudioArticle(activeArticle || normalizedArticles[0] || null)}
-              className="size-11 md:w-auto md:px-4 min-h-11 rounded-full border border-border bg-muted/30 hover:bg-muted flex items-center justify-center gap-2 text-xs font-bold text-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="size-11 md:w-auto md:px-3 min-h-11 rounded-full border border-border bg-muted/30 hover:bg-muted flex items-center justify-center gap-2 text-xs font-semibold text-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label="Criar Posts (PNG)"
+              title="Gerar post PNG"
             >
               <Layers className="size-4 shrink-0" />
-              <span className="hidden md:inline">Criar Posts (PNG)</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setIsProposalOpen(true)}
-              className="size-11 md:w-auto md:px-4 min-h-11 rounded-full bg-foreground text-background hover:bg-foreground/90 flex items-center justify-center gap-2 text-xs font-bold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              aria-label="Ver Proposta Comercial"
-            >
-              <FileText className="size-4 shrink-0" />
-              <span className="hidden md:inline">Proposta</span>
+              <span className="hidden lg:inline">Estúdio PNG</span>
             </button>
           </div>
         </div>
@@ -757,7 +690,7 @@ export function WaesyNewsPortal({
             />
 
             {/* Comentários Reais */}
-            <section id="vale-reader-comments" className="pt-6 border-t border-border space-y-4">
+            <section id="news-reader-comments" className="pt-6 border-t border-border space-y-4">
               <h2 className="text-lg font-bold text-foreground">Comentários</h2>
 
               <form onSubmit={handleSendComment} className="flex items-center gap-2">
@@ -814,7 +747,7 @@ export function WaesyNewsPortal({
               </button>
 
               <a
-                href="#vale-reader-comments"
+                href="#news-reader-comments"
                 className="h-11 min-h-11 px-4 rounded-full inline-flex items-center gap-2 text-xs font-bold text-foreground hover:bg-muted transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <MessageCircle className="size-4" />
@@ -838,6 +771,78 @@ export function WaesyNewsPortal({
         </main>
       ) : (
         <main className="mx-auto max-w-6xl px-4 py-5 space-y-6">
+          {/* ── BILLBOARD HERO BANNERS DO ADMIN MASTER ── */}
+          {billboardBanners.length > 0 && selectedTab === "Para você" && !searchQuery && (
+            <section aria-label="Banners e Destaques" className="space-y-3">
+              <div className="overflow-hidden rounded-3xl border border-border bg-card">
+                <a
+                  href={billboardBanners[0].target_url || "#"}
+                  target={billboardBanners[0].target_url?.startsWith("http") ? "_blank" : undefined}
+                  rel={billboardBanners[0].target_url?.startsWith("http") ? "noopener noreferrer" : undefined}
+                  className="block relative aspect-video md:aspect-[21/9] w-full bg-muted overflow-hidden group"
+                >
+                  <img
+                    src={billboardBanners[0].media_url}
+                    alt={billboardBanners[0].title || "Destaque"}
+                    className="size-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                  />
+                  {billboardBanners[0].badge_text && (
+                    <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-background/90 text-foreground text-xs font-bold border border-border/40">
+                      {billboardBanners[0].badge_text}
+                    </span>
+                  )}
+                  {billboardBanners[0].show_title && billboardBanners[0].title && (
+                    <div className="absolute inset-x-0 bottom-0 p-4 sm:p-6 bg-background/90">
+                      <h3 className="text-base sm:text-2xl font-bold text-foreground">
+                        {billboardBanners[0].title}
+                      </h3>
+                      {billboardBanners[0].subtitle && (
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                          {billboardBanners[0].subtitle}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </a>
+              </div>
+            </section>
+          )}
+
+          {/* ── BARRA DE INTELIGÊNCIA REGIONAL (CIDADES VIZINHAS DA MICRO/MACRORREGIÃO) ── */}
+          <div className="flex items-center gap-2 overflow-x-auto waesy-tab-strip py-1 scroll-smooth">
+            <span className="text-xs font-bold text-muted-foreground shrink-0 uppercase tracking-wider pl-1">
+              Cidades da Região:
+            </span>
+            <button
+              type="button"
+              onClick={() => setSelectedCity("Todas as Cidades")}
+              className={`h-9 min-h-9 px-4 rounded-full text-xs font-semibold shrink-0 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                selectedCity === "Todas as Cidades"
+                  ? "bg-foreground text-background font-bold"
+                  : "border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Todas as Cidades
+            </button>
+            {neighboringCities.map((c) => {
+              const isCurrent = selectedCity.toLowerCase() === c.name.toLowerCase();
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => setSelectedCity(c.name)}
+                  className={`h-9 min-h-9 px-4 rounded-full text-xs font-semibold shrink-0 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                    isCurrent
+                      ? "bg-foreground text-background font-bold"
+                      : "border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {c.name}
+                </button>
+              );
+            })}
+          </div>
+
           {/* ── CARROSSEL BREAKING NEWS COM CAPAS REAIS ── */}
           {breakingArticles.length > 0 && selectedTab === "Para você" && !searchQuery && (
             <section aria-label="Plantão Regional" className="space-y-3">
@@ -906,19 +911,51 @@ export function WaesyNewsPortal({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {/* Stream Principal (Estilo Threads / Prométhée) */}
             <section aria-label="Notícias" className="lg:col-span-8 space-y-4">
-              <div className="flex items-center justify-between gap-2">
-                <h2 className="text-lg sm:text-xl font-black tracking-tight text-foreground">
-                  {selectedTab === "Para você" ? "Destaques" : selectedTab}
-                </h2>
-                {selectedCity !== "Todas as Cidades" && (
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg sm:text-xl font-black tracking-tight text-foreground">
+                    {selectedTab === "Para você" ? "Destaques" : selectedTab}
+                  </h2>
+                  {selectedCity !== "Todas as Cidades" && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedCity("Todas as Cidades")}
+                      className="h-8 px-3 rounded-full border border-border bg-muted/30 hover:bg-muted text-xs font-semibold text-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      {selectedCity} · Ver todas
+                    </button>
+                  )}
+                </div>
+
+                {/* Alternador de Modo de Visualização: Stream vs Grid */}
+                <div className="flex items-center rounded-full border border-border bg-muted/30 p-1">
                   <button
                     type="button"
-                    onClick={() => setSelectedCity("Todas as Cidades")}
-                    className="h-11 min-h-11 px-4 rounded-full border border-border bg-muted/30 hover:bg-muted text-xs font-semibold text-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    onClick={() => setViewMode("stream")}
+                    className={`size-8 rounded-full flex items-center justify-center transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                      viewMode === "stream"
+                        ? "bg-foreground text-background"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                    title="Visualização em Lista / Stream"
+                    aria-label="Visualização em Lista / Stream"
                   >
-                    {selectedCity} · Ver todas
+                    <List className="size-4" />
                   </button>
-                )}
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("grid")}
+                    className={`size-8 rounded-full flex items-center justify-center transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                      viewMode === "grid"
+                        ? "bg-foreground text-background"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                    title="Visualização em Grade"
+                    aria-label="Visualização em Grade"
+                  >
+                    <LayoutGrid className="size-4" />
+                  </button>
+                </div>
               </div>
 
               {feedArticles.length === 0 ? (
@@ -941,6 +978,75 @@ export function WaesyNewsPortal({
                   >
                     Mostrar todas as cidades
                   </button>
+                </div>
+              ) : viewMode === "grid" ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {feedArticles.map((art, index) => {
+                    return (
+                      <article
+                        key={art.id}
+                        className="rounded-3xl border border-border bg-card p-4 sm:p-5 flex flex-col justify-between gap-3 hover:border-foreground/30 transition-colors duration-200"
+                      >
+                        <div className="space-y-3">
+                          {art.coverImageUrl && (
+                            <button
+                              type="button"
+                              onClick={() => openArticleView(art)}
+                              className="relative aspect-video w-full overflow-hidden rounded-2xl bg-muted block text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            >
+                              <img
+                                src={art.coverImageUrl}
+                                alt={art.title}
+                                loading={index < 4 ? "eager" : "lazy"}
+                                className="size-full object-cover"
+                              />
+                              <span className="absolute bottom-2 left-2 px-2 py-1 rounded-full bg-background/90 text-foreground text-xs font-bold border border-border/40">
+                                {art.category}
+                              </span>
+                            </button>
+                          )}
+
+                          <div className="space-y-2">
+                            {!art.coverImageUrl && (
+                              <span className="inline-block px-2 py-1 rounded-full border border-border bg-muted/40 text-xs font-bold text-foreground">
+                                {art.category} · {art.city}
+                              </span>
+                            )}
+                            <h3
+                              onClick={() => openArticleView(art)}
+                              className="text-base sm:text-lg font-bold text-foreground leading-snug line-clamp-2 cursor-pointer hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md"
+                            >
+                              {art.title}
+                            </h3>
+                            <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                              {art.lead}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="pt-2 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
+                          <span className="font-semibold text-foreground truncate max-w-32">{art.city}</span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setStudioArticle(art)}
+                              className="size-8 rounded-full border border-border bg-muted/30 hover:bg-muted flex items-center justify-center text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              title="Gerar post PNG"
+                            >
+                              <Layers className="size-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => openArticleView(art)}
+                              className="h-8 px-3 rounded-full bg-foreground text-background hover:bg-foreground/90 font-bold text-xs inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            >
+                              Ler
+                            </button>
+                          </div>
+                        </div>
+                      </article>
+                    );
+                  })}
                 </div>
               ) : (
                 feedArticles.map((art, index) => {
@@ -1186,27 +1292,66 @@ export function WaesyNewsPortal({
                 viewerCity={selectedCity !== "Todas as Cidades" ? selectedCity : undefined}
               />
 
-              {/* Card Comercial da Plataforma */}
-              <div className="rounded-3xl border border-border bg-muted/20 p-5 space-y-3">
-                <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
-                  <Megaphone className="size-4 text-foreground" />
-                  <span>Modelo Comercial</span>
+              {/* Banners Verticais / Quadrados do Admin Master */}
+              {squareBanners.length > 0 && (
+                <div className="space-y-3">
+                  {squareBanners.slice(0, 2).map((banner) => (
+                    <a
+                      key={banner.id}
+                      href={banner.target_url || "#"}
+                      target={banner.target_url?.startsWith("http") ? "_blank" : undefined}
+                      rel={banner.target_url?.startsWith("http") ? "noopener noreferrer" : undefined}
+                      className="block overflow-hidden rounded-3xl border border-border bg-card hover:opacity-95 transition-opacity"
+                    >
+                      <div className="relative aspect-square w-full bg-muted">
+                        <img
+                          src={banner.media_url}
+                          alt={banner.title || "Anúncio"}
+                          loading="lazy"
+                          className="size-full object-cover"
+                        />
+                        <span className="absolute top-3 left-3 px-2 py-1 rounded-full bg-background/90 text-foreground text-xs font-bold border border-border/40">
+                          {banner.badge_text || "Destaque"}
+                        </span>
+                      </div>
+                      {banner.title && (
+                        <div className="p-3 space-y-1">
+                          <h4 className="text-xs font-bold text-foreground truncate">{banner.title}</h4>
+                          {banner.subtitle && (
+                            <p className="text-xs text-muted-foreground truncate">{banner.subtitle}</p>
+                          )}
+                        </div>
+                      )}
+                    </a>
+                  ))}
                 </div>
-                <h3 className="text-base font-bold text-foreground leading-snug">
-                  Tenha um portal completo como este na sua região
-                </h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Construtor visual, radar de pautas, painel de anunciantes por cidade e acompanhamento completo.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setIsProposalOpen(true)}
-                  className="h-11 min-h-11 w-full px-4 rounded-2xl bg-foreground text-background hover:bg-foreground/90 text-xs font-bold inline-flex items-center justify-center gap-2 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <FileText className="size-4" />
-                  <span>Ver Proposta Completa</span>
-                </button>
-              </div>
+              )}
+
+              {verticalBanners.length > 0 && (
+                <div className="space-y-3">
+                  {verticalBanners.slice(0, 1).map((banner) => (
+                    <a
+                      key={banner.id}
+                      href={banner.target_url || "#"}
+                      target={banner.target_url?.startsWith("http") ? "_blank" : undefined}
+                      rel={banner.target_url?.startsWith("http") ? "noopener noreferrer" : undefined}
+                      className="block overflow-hidden rounded-3xl border border-border bg-card hover:opacity-95 transition-opacity"
+                    >
+                      <div className="relative aspect-[4/5] w-full bg-muted">
+                        <img
+                          src={banner.media_url}
+                          alt={banner.title || "Anúncio"}
+                          loading="lazy"
+                          className="size-full object-cover"
+                        />
+                        <span className="absolute top-3 left-3 px-2 py-1 rounded-full bg-background/90 text-foreground text-xs font-bold border border-border/40">
+                          {banner.badge_text || "Publicidade"}
+                        </span>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              )}
             </aside>
           </div>
         </main>
@@ -1222,14 +1367,6 @@ export function WaesyNewsPortal({
           </div>
 
           <div className="flex items-center gap-4">
-            <button
-              type="button"
-              onClick={() => setIsProposalOpen(true)}
-              className="h-11 min-h-11 px-3 rounded-full hover:bg-muted/40 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              Proposta Comercial
-            </button>
-
             <a
               href="/"
               className="h-11 min-h-11 px-2 inline-flex items-center gap-2 rounded-full text-xs text-muted-foreground hover:text-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -1299,11 +1436,11 @@ export function WaesyNewsPortal({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label htmlFor="vale-cit-name" className="block text-xs font-bold text-muted-foreground">
+                  <label htmlFor="cit-name" className="block text-xs font-bold text-muted-foreground">
                     Seu nome
                   </label>
                   <input
-                    id="vale-cit-name"
+                    id="cit-name"
                     type="text"
                     value={citAuthor}
                     onChange={(e) => setCitAuthor(e.target.value)}
@@ -1313,16 +1450,16 @@ export function WaesyNewsPortal({
                 </div>
 
                 <div className="space-y-1">
-                  <label htmlFor="vale-cit-city" className="block text-xs font-bold text-muted-foreground">
+                  <label htmlFor="cit-city" className="block text-xs font-bold text-muted-foreground">
                     Cidade
                   </label>
                   <select
-                    id="vale-cit-city"
+                    id="cit-city"
                     value={citCity}
                     onChange={(e) => setCitCity(e.target.value)}
                     className="h-11 min-h-11 w-full rounded-2xl border border-border bg-card px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    {regionalCities.map((c) => (
+                    {CANONICAL_CITIES.map((c) => (
                       <option key={c.id} value={c.name}>
                         {c.name}
                       </option>
@@ -1332,11 +1469,11 @@ export function WaesyNewsPortal({
               </div>
 
               <div className="space-y-1">
-                <label htmlFor="vale-cit-cat" className="block text-xs font-bold text-muted-foreground">
+                <label htmlFor="cit-cat" className="block text-xs font-bold text-muted-foreground">
                   Editoria
                 </label>
                 <select
-                  id="vale-cit-cat"
+                  id="cit-cat"
                   value={citCategory}
                   onChange={(e) => setCitCategory(e.target.value)}
                   className="h-11 min-h-11 w-full rounded-2xl border border-border bg-card px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -1350,11 +1487,11 @@ export function WaesyNewsPortal({
               </div>
 
               <div className="space-y-1">
-                <label htmlFor="vale-cit-title" className="block text-xs font-bold text-muted-foreground">
+                <label htmlFor="cit-title" className="block text-xs font-bold text-muted-foreground">
                   Título curto
                 </label>
                 <input
-                  id="vale-cit-title"
+                  id="cit-title"
                   required
                   type="text"
                   value={citTitle}
@@ -1365,11 +1502,11 @@ export function WaesyNewsPortal({
               </div>
 
               <div className="space-y-1">
-                <label htmlFor="vale-cit-body" className="block text-xs font-bold text-muted-foreground">
+                <label htmlFor="cit-body" className="block text-xs font-bold text-muted-foreground">
                   Detalhes da ocorrência
                 </label>
                 <textarea
-                  id="vale-cit-body"
+                  id="cit-body"
                   required
                   rows={4}
                   value={citBody}
@@ -1391,290 +1528,6 @@ export function WaesyNewsPortal({
         </div>
       )}
 
-      {/* ── 8. PROPOSTA COMERCIAL FULLSCREEN 100% MOBILE COM BOTÃO X DISCRETO ── */}
-      {isProposalOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Proposta Comercial"
-          className="fixed inset-0 z-50 h-dvh w-screen bg-background text-foreground flex flex-col overflow-hidden safe-top safe-bottom"
-        >
-          {/* Barra Superior Limpa com Botão X Discreto */}
-          <div className="border-b border-border bg-background/95 backdrop-blur-md shrink-0">
-            <div className="mx-auto max-w-5xl px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3 min-w-0">
-                <PrometheeWireframeDomeLogo className="size-6 text-foreground shrink-0" />
-                <span className="text-sm sm:text-base font-bold text-foreground">
-                  Proposta Comercial · Waesynews
-                </span>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setIsProposalOpen(false)}
-                className="size-11 min-h-11 shrink-0 rounded-full border border-border bg-muted/30 hover:bg-muted flex items-center justify-center text-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                aria-label="Fechar proposta"
-              >
-                <X className="size-4" />
-              </button>
-            </div>
           </div>
-
-          {/* Conteúdo Comercial Legível em Página Inteira */}
-          <div className="flex-1 overflow-y-auto">
-            <div className="mx-auto max-w-5xl px-4 sm:px-6 py-8 sm:py-12 space-y-12">
-              {/* Bloco 1: Abertura Comercial Clara */}
-              <section className="space-y-4 max-w-3xl">
-                <span className="inline-block px-3 py-1 rounded-full border border-border bg-muted/40 text-xs font-bold uppercase tracking-wider text-foreground">
-                  Ecossistema Editorial & Comercial
-                </span>
-                <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-foreground leading-tight text-anti-truncate">
-                  Seu Portal Regional Pronto
-                </h2>
-                <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-                  Entregamos uma plataforma jornalística completa, rápida e pensada para celular e computador, pronta para atrair audiência diária, posicionar sua marca regional e faturar com patrocinadores locais, eventos e especiais patrocinados.
-                </p>
-              </section>
-
-              {/* Bloco 2: Diagrama Visual do Fluxo de Mineração + Squads Editoriais */}
-              <section className="space-y-5">
-                <div className="space-y-1">
-                  <h2 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
-                    Como Funciona a Operação
-                  </h2>
-                  <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                    Um fluxo diário enxuto que multiplica a capacidade da sua redação sem abrir mão do controle editorial humano.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {PROPOSAL_WORKFLOW_STEPS.map((item) => {
-                    const StepIcon = item.icon;
-                    return (
-                      <div
-                        key={item.step}
-                        className="rounded-3xl border border-border bg-card p-5 flex flex-col justify-between gap-4"
-                      >
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <span className="px-3 py-1 rounded-full bg-foreground text-background text-xs font-extrabold">
-                              Etapa {item.step}
-                            </span>
-                            <StepIcon className="size-5 text-foreground shrink-0" />
-                          </div>
-                          <h3 className="text-base font-bold text-foreground leading-snug">
-                            {item.title}
-                          </h3>
-                          <p className="text-sm text-muted-foreground leading-relaxed">
-                            {item.description}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </section>
-
-              {/* Bloco 3: As 8 Tecnologias Comerciais do Portal (Zero Badges Sobrepostos / Leitura Limpa) */}
-              <section className="space-y-5">
-                <div className="space-y-1">
-                  <h2 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
-                    Tecnologias Inclusas no Portal
-                  </h2>
-                  <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                    Toda a estrutura de gestão, personalização visual, dados e publicidade incluída na sua entrega.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {PROPOSAL_DELIVERABLES.map((card, idx) => {
-                    const CardIcon = card.icon;
-                    return (
-                      <div
-                        key={idx}
-                        className="rounded-3xl border border-border bg-card p-5 sm:p-6 flex flex-col justify-between gap-4"
-                      >
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="px-3 py-1 rounded-full border border-border bg-muted/40 text-xs font-bold text-foreground">
-                              {card.tag}
-                            </span>
-                            <div className="size-10 rounded-2xl border border-border bg-muted/30 flex items-center justify-center shrink-0">
-                              <CardIcon className="size-5 text-foreground" />
-                            </div>
-                          </div>
-
-                          <h3 className="text-lg font-extrabold text-foreground leading-snug text-anti-truncate">
-                            {card.title}
-                          </h3>
-
-                          <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                            {card.description}
-                          </p>
-                        </div>
-
-                        {"roadmapNote" in card && card.roadmapNote && (
-                          <div className="rounded-2xl border border-border bg-muted/30 px-4 py-3 text-xs font-semibold text-foreground leading-relaxed">
-                            {card.roadmapNote}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </section>
-
-              {/* Bloco 4: Fases de Implantação e Habilitação Técnica */}
-              <section className="space-y-5">
-                <div className="space-y-1">
-                  <h2 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
-                    Fases de Implantação e Habilitação
-                  </h2>
-                  <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                    Processo estruturado para colocar seu portal no ar com máxima velocidade, identidade própria e monetização regional pronta.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Fase 1 */}
-                  <div className="rounded-3xl border border-border bg-card p-6 flex flex-col justify-between gap-5">
-                    <div className="space-y-3">
-                      <span className="inline-block px-3 py-1 rounded-full border border-border bg-muted/40 text-xs font-bold text-foreground">
-                        Fase 01
-                      </span>
-                      <div className="space-y-1">
-                        <span className="text-xl sm:text-2xl font-black tracking-tight text-foreground block">
-                          Domínio & Identidade
-                        </span>
-                        <span className="text-xs font-semibold text-muted-foreground block">
-                          Configuração técnica e BrandKit
-                        </span>
-                      </div>
-                      <ul className="space-y-2 pt-2 text-sm text-muted-foreground">
-                        <li className="flex items-start gap-2">
-                          <Check className="size-4 text-foreground shrink-0 mt-1" />
-                          <span>Portal no seu domínio com certificado SSL</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <Check className="size-4 text-foreground shrink-0 mt-1" />
-                          <span>BrandKit personalizado (logo, fontes e paleta)</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <Check className="size-4 text-foreground shrink-0 mt-1" />
-                          <span>Mapeamento de editorias e cidades da região</span>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-
-                  {/* Fase 2 */}
-                  <div className="rounded-3xl border-2 border-foreground bg-card p-6 flex flex-col justify-between gap-5">
-                    <div className="space-y-3">
-                      <span className="inline-block px-3 py-1 rounded-full bg-foreground text-background text-xs font-extrabold">
-                        Fase 02
-                      </span>
-                      <div className="space-y-1">
-                        <span className="text-xl sm:text-2xl font-black tracking-tight text-foreground block">
-                          Display & Monetização
-                        </span>
-                        <span className="text-xs font-semibold text-muted-foreground block">
-                          Ad Server regional multi-zona
-                        </span>
-                      </div>
-                      <ul className="space-y-2 pt-2 text-sm text-muted-foreground">
-                        <li className="flex items-start gap-2">
-                          <Check className="size-4 text-foreground shrink-0 mt-1" />
-                          <span>Zonas IAB nativas no feed, leitor e topo</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <Check className="size-4 text-foreground shrink-0 mt-1" />
-                          <span>Cadastro de patrocinadores com cliques e views</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <Check className="size-4 text-foreground shrink-0 mt-1" />
-                          <span>Exclusividade por matéria e filtros por GPS</span>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-
-                  {/* Fase 3 */}
-                  <div className="rounded-3xl border border-border bg-muted/20 p-6 flex flex-col justify-between gap-5">
-                    <div className="space-y-3">
-                      <span className="inline-block px-3 py-1 rounded-full border border-border bg-card text-xs font-bold text-foreground">
-                        Fase 03
-                      </span>
-                      <div className="space-y-1">
-                        <span className="text-xl sm:text-2xl font-black tracking-tight text-foreground block">
-                          Redes & Operação
-                        </span>
-                        <span className="text-xs font-semibold text-muted-foreground block">
-                          Estúdio PNG e canais comunitários
-                        </span>
-                      </div>
-                      <ul className="space-y-2 pt-2 text-sm text-muted-foreground">
-                        <li className="flex items-start gap-2">
-                          <Check className="size-4 text-foreground shrink-0 mt-1" />
-                          <span>Estúdio de Posts PNG em HD (Feed e Stories)</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <Check className="size-4 text-foreground shrink-0 mt-1" />
-                          <span>Recepção de pautas e denúncias dos leitores</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <Check className="size-4 text-foreground shrink-0 mt-1" />
-                          <span>Acompanhamento contínuo e atualizações</span>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Rodapé de Ação da Proposta */}
-                <div className="rounded-3xl border border-border bg-card p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="space-y-1">
-                    <h3 className="text-base sm:text-lg font-bold text-foreground">
-                      Pronto para testar os recursos ao vivo?
-                    </h3>
-                    <p className="text-xs sm:text-sm text-muted-foreground">
-                      Navegue pelo portal real, filtre por cidade e gere um post PNG de qualquer notícia agora mesmo.
-                    </p>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsProposalOpen(false);
-                        setStudioArticle(normalizedArticles[0] || null);
-                      }}
-                      className="h-11 min-h-11 px-5 rounded-full border border-border bg-muted/40 hover:bg-muted text-xs sm:text-sm font-bold text-foreground inline-flex items-center justify-center gap-2 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      <Layers className="size-4" />
-                      <span>Testar Estúdio PNG</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setIsProposalOpen(false)}
-                      className="h-11 min-h-11 px-5 rounded-full bg-foreground text-background hover:bg-foreground/90 text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      <span>Explorar Portal</span>
-                    </button>
-                  </div>
-                </div>
-
-                <div className="pt-2 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                  <span>Tecnologia e acompanhamento por</span>
-                  <Logo src="/brand-logo.png" className="h-4 w-auto opacity-80" />
-                </div>
-              </section>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
   );
 }
-
-export const ValeNewsPortal = WaesyNewsPortal;

@@ -1,3 +1,4 @@
+// motion-reduce: safe
 import * as React from "react";
 import { useState, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -11,6 +12,13 @@ import {
   Briefcase,
   Video,
   Send,
+  Highlighter,
+  Bold,
+  Italic,
+  Strikethrough,
+  Code,
+  Palette,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -44,10 +52,34 @@ export function CommunityPostComposer({
 }: CommunityPostComposerProps) {
   const qc = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [contentText, setContentText] = useState("");
   const [mediaUrls, setMediaUrls] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
+  const [activeMarkerColor, setActiveMarkerColor] = useState("yellow");
+
+  const applyFormatting = (prefix: string, suffix: string, defaultPlaceholder = "texto") => {
+    const el = textareaRef.current;
+    if (!el) return;
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    const selectedText = contentText.substring(start, end) || defaultPlaceholder;
+    const replacement = `${prefix}${selectedText}${suffix}`;
+    const nextContent = contentText.substring(0, start) + replacement + contentText.substring(end);
+    setContentText(nextContent);
+    setTimeout(() => {
+      el.focus();
+      el.setSelectionRange(start + prefix.length, start + prefix.length + selectedText.length);
+    }, 10);
+  };
+
+  const applyHighlight = (color: string) => {
+    setActiveMarkerColor(color);
+    applyFormatting(`==${color}:`, `==`, "destaque");
+    setIsColorPickerOpen(false);
+  };
 
   // Campos específicos por template
   const [saleTitle, setSaleTitle] = useState("");
@@ -177,7 +209,7 @@ export function CommunityPostComposer({
         <div className="space-y-4 py-2">
           {/* ─── Campos Específicos por Tipo de Comunidade ────────────── */}
           {resolvedPostType === "sale" && (
-            <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/60 space-y-3">
+            <div className="p-4 rounded-2xl bg-muted/40 border border-border/60 space-y-3">
               <div className="flex items-center gap-2 text-xs font-bold text-primary">
                 <Tag className="size-4" />
                 <span>Dados do Item à Venda</span>
@@ -215,7 +247,7 @@ export function CommunityPostComposer({
           )}
 
           {resolvedPostType === "news" && (
-            <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/60 space-y-3">
+            <div className="p-4 rounded-2xl bg-muted/40 border border-border/60 space-y-3">
               <div className="flex items-center gap-2 text-xs font-bold text-primary">
                 <Newspaper className="size-4" />
                 <span>Dados da Matéria / Notícia</span>
@@ -236,7 +268,7 @@ export function CommunityPostComposer({
           )}
 
           {resolvedPostType === "event" && (
-            <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/60 space-y-3">
+            <div className="p-4 rounded-2xl bg-muted/40 border border-border/60 space-y-3">
               <div className="flex items-center gap-2 text-xs font-bold text-primary">
                 <Calendar className="size-4" />
                 <span>Dados do Encontro / Evento</span>
@@ -263,7 +295,7 @@ export function CommunityPostComposer({
           )}
 
           {resolvedPostType === "job" && (
-            <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/60 space-y-3">
+            <div className="p-4 rounded-2xl bg-muted/40 border border-border/60 space-y-3">
               <div className="flex items-center gap-2 text-xs font-bold text-primary">
                 <Briefcase className="size-4" />
                 <span>Dados da Oportunidade</span>
@@ -294,25 +326,129 @@ export function CommunityPostComposer({
             </div>
           )}
 
+          {/* ─── Barra de Formatação Minimalista com Marca-Texto & Markdown (Piso 44px) ─── */}
+          <div className="flex items-center justify-between gap-2 p-1 rounded-xl bg-muted/30 border border-border/50 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1 flex-wrap">
+              {/* Botão Marca-Texto com Paleta Flutuante */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsColorPickerOpen(!isColorPickerOpen)}
+                  className="h-11 min-h-11 min-w-11 px-2 rounded-lg flex items-center justify-center hover:bg-muted/60 text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  title="Marca-texto com cor selecionável"
+                  aria-label="Marca-texto colorido"
+                >
+                  <Highlighter className="size-4 text-amber-500" />
+                </button>
+
+                {isColorPickerOpen && (
+                  <div className="absolute left-0 top-12 z-50 p-2 rounded-xl bg-popover text-popover-foreground border border-border shadow-md flex items-center gap-1 animate-in fade-in-50 zoom-in-95">
+                    {[
+                      { id: "yellow", name: "Amarelo", bg: "bg-amber-300" },
+                      { id: "cyan", name: "Ciano", bg: "bg-cyan-300" },
+                      { id: "pink", name: "Rosa", bg: "bg-pink-300" },
+                      { id: "green", name: "Verde", bg: "bg-emerald-300" },
+                      { id: "purple", name: "Roxo", bg: "bg-purple-300" },
+                      { id: "orange", name: "Laranja", bg: "bg-orange-300" },
+                    ].map((c) => (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => applyHighlight(c.id)}
+                        className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center hover:scale-105 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        title={`Destacar em ${c.name}`}
+                        aria-label={`Destacar em ${c.name}`}
+                      >
+                        <span className={`size-6 rounded-full ${c.bg} border border-black/20`} />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Negrito (*texto*) */}
+              <button
+                type="button"
+                onClick={() => applyFormatting("*", "*", "negrito")}
+                className="h-11 min-h-11 min-w-11 px-2 rounded-lg flex items-center justify-center hover:bg-muted/60 text-foreground transition-colors cursor-pointer font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                title="Negrito (*texto*)"
+                aria-label="Negrito"
+              >
+                <Bold className="size-4" />
+              </button>
+
+              {/* Itálico (_texto_) */}
+              <button
+                type="button"
+                onClick={() => applyFormatting("_", "_", "itálico")}
+                className="h-11 min-h-11 min-w-11 px-2 rounded-lg flex items-center justify-center hover:bg-muted/60 text-foreground transition-colors cursor-pointer italic focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                title="Itálico (_texto_)"
+                aria-label="Itálico"
+              >
+                <Italic className="size-4" />
+              </button>
+
+              {/* Tachado (~texto~) */}
+              <button
+                type="button"
+                onClick={() => applyFormatting("~", "~", "tachado")}
+                className="h-11 min-h-11 min-w-11 px-2 rounded-lg flex items-center justify-center hover:bg-muted/60 text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                title="Tachado (~texto~)"
+                aria-label="Tachado"
+              >
+                <Strikethrough className="size-4" />
+              </button>
+
+              {/* Código (`código`) */}
+              <button
+                type="button"
+                onClick={() => applyFormatting("`", "`", "código")}
+                className="h-11 min-h-11 min-w-11 px-2 rounded-lg flex items-center justify-center hover:bg-muted/60 text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                title="Código (`mono`)"
+                aria-label="Código monoespaçado"
+              >
+                <Code className="size-4" />
+              </button>
+            </div>
+
+            {/* Badge Dinâmico de Tipo de Post */}
+            <div className="shrink-0 pr-1">
+              {mediaUrls.length === 0 ? (
+                <span className="text-2xs font-semibold px-2 py-1 rounded-full bg-primary/10 text-primary">
+                  Tópico
+                </span>
+              ) : mediaUrls.length === 1 ? (
+                <span className="text-2xs font-semibold px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                  1 Imagem
+                </span>
+              ) : (
+                <span className="text-2xs font-semibold px-2 py-1 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                  {mediaUrls.length} Imagens (Carrossel)
+                </span>
+              )}
+            </div>
+          </div>
+
           {/* Área de Texto Principal */}
           <Textarea
+            ref={textareaRef}
             value={contentText}
             onChange={(e) => setContentText(e.target.value)}
-            placeholder="No que você está pensando? Use ==destaque== para marcar texto..."
+            placeholder="No que você está pensando? Selecione palavras e use os botões acima ou digite ==amarelo:texto==, *negrito*, _itálico_..."
             rows={4}
-            className="w-full resize-none rounded-2xl text-xs sm:text-sm p-3.5"
+            className="w-full resize-none rounded-2xl text-xs sm:text-sm p-4 focus-visible:ring-2 focus-visible:ring-primary"
           />
 
           {/* Pré-visualização de Mídias Anexadas */}
           {mediaUrls.length > 0 && (
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-1">
+            <div className="grid grid-cols-1 sm:grid-cols-3 sm:grid-cols-4 gap-2 pt-1">
               {mediaUrls.map((url, idx) => (
                 <div key={idx} className="relative rounded-xl overflow-hidden aspect-square border border-border/60">
                   <img src={url} alt="Mídia anexada" className="w-full h-full object-cover" />
                   <button
                     type="button"
                     onClick={() => removeMedia(idx)}
-                    className="absolute top-1 right-1 size-6 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-black"
+                    className="absolute top-1 right-1 size-6 rounded-full bg-background/70 text-primary-foreground flex items-center justify-center hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     <X className="size-3.5" />
                   </button>
@@ -336,7 +472,7 @@ export function CommunityPostComposer({
                 type="button"
                 disabled={isUploading || mediaUrls.length >= 10}
                 onClick={() => fileInputRef.current?.click()}
-                className="h-11 min-h-11 px-4 rounded-xl border border-border/60 hover:bg-muted/50 flex items-center gap-2 text-xs font-semibold cursor-pointer disabled:opacity-50"
+                className="h-11 min-h-11 px-4 rounded-xl border border-border/60 hover:bg-muted/50 flex items-center gap-2 text-xs font-semibold cursor-pointer disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 {isUploading ? (
                   <Loader2 className="size-4 animate-spin text-primary" />
@@ -354,9 +490,9 @@ export function CommunityPostComposer({
               className="h-11 min-h-11 px-6 rounded-xl font-bold text-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
             >
               {postMutation.isPending ? (
-                <Loader2 className="size-4 animate-spin mr-1.5" />
+                <Loader2 className="size-4 animate-spin mr-2" />
               ) : (
-                <Send className="size-4 mr-1.5" />
+                <Send className="size-4 mr-2" />
               )}
               <span>Publicar</span>
             </Button>

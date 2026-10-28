@@ -318,7 +318,7 @@ function SecretVaultCard({
                 <CardTitle className="text-base flex items-center gap-2">
                   {title}
                   {existingSecret ? (
-                    <Badge variant="default" className="text-xs bg-primary hover:bg-primary">
+                    <Badge variant="outline" className="text-xs bg-primary hover:bg-primary">
                       BYOK Ativo
                     </Badge>
                   ) : (
@@ -770,6 +770,21 @@ function UnifiedIntegrationsHubPage() {
     });
   };
 
+  const handleTestPayPal = async (data: Record<string, string>) => {
+    const clientId = data.client_id;
+    if (!clientId) {
+      return { success: false, message: "Preencha o Client ID do PayPal para testar." };
+    }
+    return await testPaymentGatewayConnection({
+      data: {
+        provider: "paypal",
+        apiKey: clientId,
+        secretKey: data.client_secret,
+        environment: (data.environment as any) || "production",
+      },
+    });
+  };
+
   return (
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -979,6 +994,35 @@ function UnifiedIntegrationsHubPage() {
             />
 
             <IntegrationCard
+              provider="paypal"
+              title="PayPal"
+              description="Checkout internacional aceito em mais de 200 países, proteção ao comprador e liquidação multimoeda."
+              icon={CreditCard}
+              existingSetting={settings.find((s: any) => s.provider === "paypal")}
+              onSave={handleSaveIntegration}
+              onDelete={handleDeleteIntegration}
+              onTestConnection={handleTestPayPal}
+              fields={[
+                {
+                  key: "client_id",
+                  label: "Client ID",
+                  placeholder: "Insira seu Client ID do PayPal Developer",
+                },
+                {
+                  key: "client_secret",
+                  label: "Client Secret",
+                  type: "password",
+                  placeholder: "Insira sua Secret Key do PayPal",
+                },
+                {
+                  key: "environment",
+                  label: "Ambiente (production | sandbox)",
+                  placeholder: "production",
+                },
+              ]}
+            />
+
+            <IntegrationCard
               provider="pix_direto"
               title="Chave PIX Direta"
               description="Recebimento direto na conta bancária do lojista sem intermediários. Requer conferência manual do comprovante."
@@ -1146,7 +1190,7 @@ function UnifiedIntegrationsHubPage() {
                     <div className="flex items-center justify-between">
                       <h5 className="font-bold text-sm text-foreground">{mkt.name}</h5>
                       {isConnected ? (
-                        <Badge variant="default" className="text-xs bg-emerald-600 hover:bg-emerald-600">
+                        <Badge variant="outline" className="text-xs bg-emerald-600 hover:bg-emerald-600">
                           Conectado
                         </Badge>
                       ) : (
@@ -1531,7 +1575,7 @@ function UnifiedIntegrationsHubPage() {
                         <CardTitle className="text-base flex items-center gap-2">
                           LinkedIn Company Page
                           {linkedInStatus?.isConnected ? (
-                            <Badge variant="default" className="text-xs bg-emerald-600 hover:bg-emerald-600">
+                            <Badge variant="outline" className="text-xs bg-emerald-600 hover:bg-emerald-600">
                               Conectado Ativo
                             </Badge>
                           ) : (

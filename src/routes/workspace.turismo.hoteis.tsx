@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
 import { ImageUpload } from "@/components/ui/image-upload";
+import { MediaUploader } from "@/components/ui/media-uploader";
 import { toast } from "sonner";
 import { listHotelsBank, createHotel, updateHotel, deleteHotel, duplicateHotel, listDestinations, checkHotelPreflightMatch, type HotelBankDTO, type DestinationDTO, type HotelRoomCategory, type HotelPolicies, type HotelStructure, type HotelRestaurant, type HotelPreflightMatchDTO } from "@/services/travel-catalog.functions";
 import { getStoreSettings } from "@/services/store.functions";
@@ -874,7 +875,7 @@ function WorkspaceHotelsPage() {
  <img
  src={hotel.cover_photo_url}
  alt={hotel.name}
- className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
+ className="size-full object-cover group-hover:scale-105 transition-transform duration-200"
  />
  ) : (
  <div className="size-full flex flex-col items-center justify-center text-muted-foreground/40 gap-2">
@@ -882,7 +883,7 @@ function WorkspaceHotelsPage() {
  <span className="text-xs">Sem foto de capa</span>
  </div>
  )}
- <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent pointer-events-none" />
+ <div className="absolute inset-0 bg-black/60 pointer-events-none" />
 
  {/* Top Badges */}
  <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
@@ -1189,7 +1190,7 @@ function WorkspaceHotelsPage() {
                       <span className="text-xs font-medium">Sem foto de capa cadastrada</span>
                     </div>
                   )}
- <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+ <div className="absolute inset-0 bg-black/60" />
  <div className="absolute bottom-4 left-5 right-5 text-foreground">
  <div className="flex items-center gap-2 text-xs font-bold mb-1">
  <span className="px-2 py-1 rounded-full bg-card/20 backdrop-blur-md text-foreground font-mono text-xs">
@@ -1704,17 +1705,17 @@ function WorkspaceHotelsPage() {
  <span className="text-muted-foreground text-xs text-muted-foreground/75">{formData.photos.length} fotos salvas</span>
  </Label>
 
- <div className="flex items-center gap-2">
- <Input
- value={newPhotoUrl}
- onChange={(e) => setNewPhotoUrl(e.target.value)}
- onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddPhoto())}
- placeholder="Cole a URL direta da imagem (HTTPS) ou envie abaixo..."
- className="h-9 rounded-lg text-xs bg-background flex-1"
+ <div className="space-y-2">
+ <MediaUploader
+ value={formData.photos}
+ onChange={(urls) => setFormData((prev) => ({ ...prev, photos: urls }))}
+ maxFiles={20}
+ bucket="cms-media"
+ folder="hotels/gallery"
+ aspect={16 / 9}
+ accept="image"
+ label="Upload de Fotos para a Galeria do Hotel"
  />
- <Button type="button"  variant="outline" onClick={handleAddPhoto} className="rounded-lg h-11 min-h-11 px-3 text-xs">
- + Adicionar URL
- </Button>
  </div>
 
  {formData.photos.length > 0 && (

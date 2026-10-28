@@ -89,7 +89,7 @@ export function TopGreetingSearchBar({
             aria-label="Limpar pesquisa"
             className="absolute right-0 top-0 size-11 min-w-11 min-h-11 text-muted-foreground hover:text-foreground flex items-center justify-center text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           >
-            ✕
+            
           </button>
         )}
       </div>

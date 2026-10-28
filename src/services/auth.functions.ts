@@ -998,6 +998,45 @@ export async function _updateProfile(data: UpdateProfileInput) {
  if (fallbackErr) throw new Error(dbError.message || fallbackErr.message);
  }
 
+ // Sincroniza avaliações de empregadores para inteligência corporativa comunitária
+ if (data.resumeData && Array.isArray((data.resumeData as any).experiences)) {
+ for (const exp of (data.resumeData as any).experiences) {
+ if (exp.company && (exp.company_rating || exp.salary_cents || exp.exit_reason || exp.review_text)) {
+ try {
+ await adminDb.from("employer_reviews").delete().eq("user_id", user.id).eq("company_name", exp.company);
+ const { error: revErr } = await adminDb.from("employer_reviews").insert({
+ user_id: user.id,
+ company_name: exp.company,
+ store_id: exp.store_id || null,
+ job_title: exp.title || "Colaborador",
+ employment_type: exp.employment_type || null,
+ start_date: exp.start_date || null,
+ end_date: exp.end_date || null,
+ is_current: exp.is_current ?? false,
+ salary_cents: exp.salary_cents ? Number(exp.salary_cents) : null,
+ exit_reason: exp.exit_reason || null,
+ company_rating: exp.company_rating ? Number(exp.company_rating) : null,
+ would_recommend: exp.would_recommend ?? true,
+ pros: exp.review_text || null,
+ is_anonymous: exp.is_anonymous ?? true,
+ status: "published",
+ });
+ if (revErr) {
+ console.error("[auth] Erro ao sincronizar employer_reviews:", {
+ error: revErr,
+ userId: user.id,
+ company: exp.company,
+ schema: "public",
+ table: "employer_reviews",
+ });
+ }
+ } catch (revErr) {
+ console.error("[auth] Falha inesperada ao sincronizar review de empregador:", revErr);
+ }
+ }
+ }
+ }
+
  return { status: "success" as const };
 }
 

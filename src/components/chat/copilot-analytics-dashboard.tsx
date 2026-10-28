@@ -255,7 +255,7 @@ export function CopilotAnalyticsDashboard({ className }: CopilotAnalyticsDashboa
               </div>
               <div className="h-2 w-full bg-muted/50 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-primary rounded-full transition-colors duration-200 duration-500"
+                  className="h-full bg-primary rounded-full transition-colors duration-200 duration-200"
                   style={{ width: `${s.percent}%` }}
                 />
               </div>

@@ -155,7 +155,7 @@ function CalendarioEditorialPage() {
  Agendar Publicação
  </Button>
  </DialogTrigger>
- <DialogContent className="sm:max-w-md sm:rounded-lg max-h-[100dvh] sm:max-h-[90vh] overflow-y-auto no-scrollbar">
+ <DialogContent className="sm:max-w-md sm:rounded-lg max-h-dvh sm:max-h-(--spacing-screen-90,90vh) overflow-y-auto no-scrollbar">
  <DialogHeader>
  <DialogTitle className="text-lg font-bold flex items-center gap-2">
  <CalendarIcon className="size-5 text-primary" />

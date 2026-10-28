@@ -127,7 +127,7 @@ export function LeadCommissionCalculatorSheet({
         {/* ── Forma de Pagamento & Taxa Gateway ── */}
         <div className="space-y-2">
           <Label className="text-xs font-semibold text-foreground">Meio de Pagamento Previsto</Label>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {(["pix", "credit_1x", "credit_12x"] as const).map((m) => (
               <button
                 key={m}

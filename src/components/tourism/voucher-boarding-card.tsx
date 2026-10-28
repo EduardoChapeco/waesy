@@ -197,7 +197,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  <div>
  <span className="text-2xs text-neutral-400 block uppercase">Horários</span>
  <span className="font-bold text-neutral-900 text-sm">
- {flight.departure_time || "--:--"} ➔ {flight.arrival_time || "--:--"}
+ {flight.departure_time || "--:--"} &rarr; {flight.arrival_time || "--:--"}
  </span>
  </div>
  )}
@@ -307,7 +307,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
   <div className="space-y-1">
   <span className="font-bold text-neutral-900 block">{t.type || "Transfer"}</span>
   <span className="text-neutral-500 text-xs">
-  {t.origin} ➔ {t.destination}
+  {t.origin} &rarr; {t.destination}
   </span>
   </div>
   {t.date && (

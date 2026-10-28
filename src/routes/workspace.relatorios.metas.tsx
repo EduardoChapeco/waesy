@@ -269,7 +269,7 @@ function RevenueGoalsPage() {
 
           <div className="h-4 w-full bg-muted/60 rounded-full overflow-hidden p-1 border border-border/60">
             <div
-              className={`h-full rounded-full transition-colors duration-200 duration-500 ${
+              className={`h-full rounded-full transition-colors duration-200 duration-200 ${
                 data.percent_achieved >= 100
                   ? "bg-emerald-600"
                   : data.percent_achieved >= 70

@@ -257,6 +257,10 @@ function AdminMasterIntegracoesPage() {
  google_maps_api_key: formData.google_maps_api_key,
  openai_api_key: formData.openai_api_key,
  webhook_secret: formData.webhook_secret,
+ abacatepay_api_key: formData.abacatepay_api_key,
+ mercadopago_access_token: formData.mercadopago_access_token,
+ paypal_client_id: formData.paypal_client_id,
+ paypal_client_secret: formData.paypal_client_secret,
  },
  });
 
@@ -1166,7 +1170,7 @@ function AdminMasterIntegracoesPage() {
                       </div>
                       {cepResult.latitude && cepResult.longitude && (
                         <div className="text-primary text-2xs pt-1">
-                          📍 Coordenadas: {cepResult.latitude}, {cepResult.longitude}
+                           Coordenadas: {cepResult.latitude}, {cepResult.longitude}
                         </div>
                       )}
                     </div>
@@ -1236,9 +1240,9 @@ function AdminMasterIntegracoesPage() {
                       CNAE: {cnpjResult.mainCnae.code} — {cnpjResult.mainCnae.description}
                     </div>
                     <div className="text-2xs text-foreground pt-1 border-t border-border/40">
-                      🏢 {cnpjResult.address.street}, {cnpjResult.address.number} - {cnpjResult.address.neighborhood}, {cnpjResult.address.city} - {cnpjResult.address.state}
+                       {cnpjResult.address.street}, {cnpjResult.address.number} - {cnpjResult.address.neighborhood}, {cnpjResult.address.city} - {cnpjResult.address.state}
                     </div>
-                    {cnpjResult.phone && <div className="text-2xs text-muted-foreground">📞 {cnpjResult.phone}</div>}
+                    {cnpjResult.phone && <div className="text-2xs text-muted-foreground"> {cnpjResult.phone}</div>}
                   </div>
                 )}
               </div>
@@ -1339,7 +1343,7 @@ function AdminMasterIntegracoesPage() {
        <Badge variant="outline" className="text-3xs font-bold uppercase tracking-wider border-green-500/40 text-green-700 dark:text-green-400 bg-green-500/10 px-2">PIX</Badge>
      </Label>
      {formData.abacatepay_api_key ? (
-       <Badge variant="outline" className="text-3xs font-bold border-green-500/40 text-green-600 bg-green-500/10">✓ Ativo</Badge>
+       <Badge variant="outline" className="text-3xs font-bold border-green-500/40 text-green-600 bg-green-500/10"> Ativo</Badge>
      ) : (
        <Badge variant="outline" className="text-3xs font-bold border-muted-foreground/30 text-muted-foreground">Não Configurado</Badge>
      )}
@@ -1372,7 +1376,7 @@ function AdminMasterIntegracoesPage() {
        <Badge variant="outline" className="text-3xs font-bold uppercase tracking-wider border-blue-500/40 text-blue-700 dark:text-blue-400 bg-blue-500/10 px-2">PIX+Cartão</Badge>
      </Label>
      {formData.mercadopago_access_token ? (
-       <Badge variant="outline" className="text-3xs font-bold border-green-500/40 text-green-600 bg-green-500/10">✓ Ativo</Badge>
+       <Badge variant="outline" className="text-3xs font-bold border-green-500/40 text-green-600 bg-green-500/10"> Ativo</Badge>
      ) : (
        <Badge variant="outline" className="text-3xs font-bold border-muted-foreground/30 text-muted-foreground">Não Configurado</Badge>
      )}
@@ -1395,6 +1399,50 @@ function AdminMasterIntegracoesPage() {
      </button>
    </div>
    <p className="text-2xs text-muted-foreground">Access token de produção em <span className="font-mono">mercadopago.com.br</span> → Suas integrações → Credenciais.</p>
+ </div>
+
+ {/* PayPal */}
+ <div className="space-y-2">
+   <div className="flex items-center justify-between">
+     <Label htmlFor="paypal_client_id" className="text-xs font-bold flex items-center gap-2">
+       <span>PayPal Client ID</span>
+       <Badge variant="outline" className="text-3xs font-bold uppercase tracking-wider border-sky-500/40 text-sky-700 dark:text-sky-400 bg-sky-500/10 px-2">Global</Badge>
+     </Label>
+     {formData.paypal_client_id ? (
+       <Badge variant="outline" className="text-3xs font-bold border-green-500/40 text-green-600 bg-green-500/10"> Ativo</Badge>
+     ) : (
+       <Badge variant="outline" className="text-3xs font-bold border-muted-foreground/30 text-muted-foreground">Não Configurado</Badge>
+     )}
+   </div>
+   <Input
+     id="paypal_client_id"
+     value={formData.paypal_client_id || ""}
+     onChange={(e) => handleInputChange("paypal_client_id", e.target.value)}
+     placeholder="Client ID do PayPal Developer"
+     className="h-10 text-xs font-mono rounded-lg"
+   />
+   <p className="text-2xs text-muted-foreground">Obtenha em <span className="font-mono">developer.paypal.com</span> → Apps & Credentials.</p>
+ </div>
+
+ <div className="space-y-2">
+   <Label htmlFor="paypal_client_secret" className="text-xs font-bold">PayPal Client Secret</Label>
+   <div className="relative">
+     <Input
+       id="paypal_client_secret"
+       type={visibleKeys["paypal"] ? "text" : "password"}
+       value={formData.paypal_client_secret || ""}
+       onChange={(e) => handleInputChange("paypal_client_secret", e.target.value)}
+       placeholder="Secret Key do PayPal"
+       className="h-10 text-xs font-mono rounded-lg pr-10"
+     />
+     <button
+       type="button"
+       onClick={() => setVisibleKeys(v => ({ ...v, paypal: !v.paypal }))}
+       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+     >
+       {visibleKeys["paypal"] ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+     </button>
+   </div>
  </div>
  </div>
 

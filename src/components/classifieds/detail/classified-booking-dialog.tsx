@@ -326,7 +326,7 @@ export function ClassifiedBookingDialog({
                     </Button>
                   )}
                   {cleanPhone && (
-                    <p className="text-center text-xs text-muted-foreground pt-0.5">
+                    <p className="text-center text-xs text-muted-foreground pt-1">
                       Possui cadastro?{" "}
                       <Link
                         to="/entrar"
@@ -422,7 +422,7 @@ export function ClassifiedBookingDialog({
                 <label className="text-xs font-semibold text-foreground">
                   Horário Preferencial *
                 </label>
-                <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 sm:grid-cols-5 gap-2">
                   {["08:00", "09:00", "10:00", "11:00", "13:30", "14:30", "15:30", "16:30", "17:30"].map((slot) => (
                     <button
                       key={slot}

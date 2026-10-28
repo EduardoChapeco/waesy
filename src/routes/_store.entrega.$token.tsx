@@ -141,7 +141,7 @@ function DeliveryCourierPage() {
 
   if (!delivery) {
     return (
-      <div className="min-h-[100dvh] bg-background text-foreground flex flex-col items-center justify-center p-4">
+      <div className="min-h-dvh bg-background text-foreground flex flex-col items-center justify-center p-4">
         <div className="max-w-md w-full border border-border/80 bg-card rounded-lg p-6 text-center space-y-4 shadow-sm">
           <div className="size-12 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
             <Truck className="size-6" />
@@ -252,7 +252,7 @@ function DeliveryCourierPage() {
  };
 
  return (
- <div className="min-h-[100dvh] bg-muted/20 flex flex-col justify-between p-4 max-w-lg mx-auto">
+ <div className="min-h-dvh bg-muted/20 flex flex-col justify-between p-4 max-w-lg mx-auto">
  <div className="space-y-4">
  {/* Header da Corrida */}
  <div className="bg-card rounded-lg p-4 flex items-center justify-between border border-border/60 shadow-2xs">
@@ -327,7 +327,7 @@ function DeliveryCourierPage() {
                 ) : (
                   <>
                     <MapPin className="size-4" />
-                    <span>📍 Cheguei no Endereço (Notificar)</span>
+                    <span> Cheguei no Endereço (Notificar)</span>
                   </>
                 )}
               </Button>
@@ -479,7 +479,7 @@ function DeliveryCourierPage() {
  onClick={handleStartPickup}
  className="rounded-lg text-xs font-bold h-9"
  >
- {pickupStarted ? "✓ Coletado" : isStartingPickup ? "Registrando..." : "Confirmar Coleta"}
+ {pickupStarted ? " Coletado" : isStartingPickup ? "Registrando..." : "Confirmar Coleta"}
  </Button>
  </div>
  </div>

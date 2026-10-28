@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { ValeNewsPortal } from "../vale-news-portal";
+import { WaesyNewsPortal } from "../waesy-news-portal";
 import { PrometheeNewsPortalBlock } from "@/components/builder/blocks/PrometheeNewsPortalBlock";
 import { OmniPageRenderer } from "@/components/builder/OmniPageRenderer";
 import { getStudioTemplate, materializeStudioTemplate } from "@/lib/builder/studio-catalog";
@@ -15,15 +15,17 @@ import {
   normalizePrometheeArticle,
 } from "@/lib/news/news-studio-templates";
 
-describe("ValeNewsPortal, Modular Prométhée Omni Blocks & Real News Pipeline", () => {
-  it("renders the minimalist Prométhée portal with Waesynews brand, fixed + icon button, and Feito com Waesy signature", () => {
-    const html = renderToStaticMarkup(<ValeNewsPortal />);
+describe("WaesyNewsPortal, Modular Prométhée Omni Blocks & Real News Pipeline", () => {
+  it("renders the minimalist Prométhée portal with Waesynews brand, fixed + icon button, and Feito com Waesy signature without any proposal elements", () => {
+    const html = renderToStaticMarkup(<WaesyNewsPortal />);
     expect(html).toContain("h-dvh");
     expect(html).toContain("overflow-y-auto");
     expect(html).toContain("light");
     expect(html).toContain("Waesynews");
-    expect(html).toContain("Proposta");
-    expect(html).toContain("Criar Posts (PNG)");
+    expect(html).not.toContain("Proposta");
+    expect(html).toContain("Estúdio PNG");
+    expect(html).toContain("Cidades da Região:");
+    expect(html).toContain("Visualização em Grade");
     expect(html).toContain("Ler mais");
     expect(html).toContain("BREAKING NEWS");
     expect(html).toContain("ADS");
@@ -78,7 +80,7 @@ describe("ValeNewsPortal, Modular Prométhée Omni Blocks & Real News Pipeline",
       },
     ];
 
-    const html = renderToStaticMarkup(<ValeNewsPortal initialArticles={realArticles} />);
+    const html = renderToStaticMarkup(<WaesyNewsPortal initialArticles={realArticles} />);
     expect(html).toContain("https://s2-g1.glbimg.com/real-editorial-photo-sjc.jpg");
     expect(html).toContain("São José Basketball vence fora de casa pelo NBB");
     expect(html).toContain("Comunicado oficial sobre manutenção viária em Taubaté");
@@ -125,7 +127,7 @@ describe("ValeNewsPortal, Modular Prométhée Omni Blocks & Real News Pipeline",
     const blockHtml = renderToStaticMarkup(
       <PrometheeNewsPortalBlock id="test-promethee" data={portalDef.defaultProps} />,
     );
-    expect(blockHtml).toContain("Vale Agora");
+    expect(blockHtml).toContain("Waesy News");
     expect(blockHtml).toContain("Ler mais");
 
     // Wix-style multi-page News App Suite composed of modular blocks

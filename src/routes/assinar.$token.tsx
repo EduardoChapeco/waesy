@@ -154,7 +154,7 @@ function SignContractPage() {
 
   if (error || !envelope) {
     return (
-      <div className="min-h-[100dvh] bg-background text-foreground flex flex-col items-center justify-center p-4">
+      <div className="min-h-dvh bg-background text-foreground flex flex-col items-center justify-center p-4">
         <div className="max-w-md w-full border border-destructive/30 bg-destructive/5 rounded-lg p-6 text-center space-y-4">
           <div className="size-12 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
             <AlertCircle className="size-6" />
@@ -201,7 +201,7 @@ function SignContractPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-background text-foreground py-6 px-0 sm:px-4 md:px-0 flex justify-center animate-in fade-in duration-200">
+    <div className="min-h-dvh bg-background text-foreground py-6 px-0 sm:px-4 md:px-0 flex justify-center animate-in fade-in duration-200">
       <div className="max-w-4xl w-full space-y-6">
         {/* Header da Sessão de Assinatura (Apple HIG) */}
         <div className="bg-card border border-border/80 rounded-lg p-5 sm:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-2xs">
@@ -441,7 +441,7 @@ function SignContractPage() {
                     <img
                       src={savedSig.savedSignature}
                       alt="Assinatura Salva"
-                      className="h-9 max-w-[120px] object-contain bg-background rounded-lg border border-border p-1"
+                      className="h-9 max-w-30 object-contain bg-background rounded-lg border border-border p-1"
                     />
                     <Button
                       type="button"

@@ -47,7 +47,7 @@ export function BookingDetailDesktop({
       </div>
 
       {/* ── 2. Grid 2 Colunas Split-Screen (7 cols / 5 cols) ── */}
-      <div className="grid grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
         {/* Coluna Esquerda (7 cols): Imagem, Título, Detalhes, Especificações */}
         <div className="col-span-7 space-y-6">
           {/* Banner Principal */}

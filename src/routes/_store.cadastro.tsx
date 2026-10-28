@@ -96,7 +96,7 @@ function RegisterPage() {
  };
 
  return (
- <div className="min-h-[100dvh] w-full flex flex-col lg:flex-row bg-background pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))] p-4 sm:p-6 lg:p-0">
+ <div className="min-h-dvh w-full flex flex-col lg:flex-row bg-background pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))] p-4 sm:p-6 lg:p-0">
  {/* ── Left Side: Minimal Brand Screen (Desktop) ────────── */}
  <div className="relative hidden lg:flex lg:w-[45%] bg-zinc-950 text-foreground flex-col justify-between p-12 overflow-hidden">
  <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(120,50,255,0.10),transparent_60%)]" />

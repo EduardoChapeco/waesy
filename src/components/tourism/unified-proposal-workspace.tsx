@@ -582,7 +582,7 @@ export function UnifiedProposalWorkspace({
               .join("\n")
           : "";
 
-      const inclusionsText = `\nItens Inclusos:\n${selectedInclusions.map((inc) => `✓ ${inc}`).join("\n")}`;
+      const inclusionsText = `\nItens Inclusos:\n${selectedInclusions.map((inc) => ` ${inc}`).join("\n")}`;
 
       const fullSummary =
         `Proposta de Viagem (${activeCampaign.operatorDisplayName}).\n` +
@@ -1236,7 +1236,7 @@ export function UnifiedProposalWorkspace({
                           onChange={(e) =>
                             handleUpdateRoom(room.roomNumber, { roomLabel: e.target.value })
                           }
-                          className="h-9 text-xs font-semibold max-w-[200px]"
+                          className="h-9 text-xs font-semibold max-w-50"
                         />
                       </div>
 
@@ -1425,7 +1425,7 @@ export function UnifiedProposalWorkspace({
                           className="w-full h-11 min-h-11 px-3 text-xs text-left hover:bg-muted/60 flex items-center justify-between border-b border-border/20 last:border-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           <span className="font-semibold text-foreground truncate">{h.name}</span>
-                          <span className="text-2xs text-muted-foreground">{h.city} · {h.stars}★</span>
+                          <span className="text-2xs text-muted-foreground">{h.city} · {h.stars}</span>
                         </button>
                       ))}
                     </div>

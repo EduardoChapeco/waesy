@@ -35,6 +35,7 @@ export interface BrandKitProfileLogosDTO {
   dark_url: string | null;
   icon_url: string | null;
   light_url: string | null;
+  cover_url?: string | null;
 }
 
 export interface BrandKitProfileVoiceDTO {
@@ -103,6 +104,7 @@ const DEFAULT_BRAND_KIT_LOGOS: BrandKitLogosDTO = {
   dark_url: null,
   icon_url: null,
   light_url: null,
+  cover_url: null,
 };
 
 const ObservedColorSchema = z.union([z.string().regex(/^#[0-9a-fA-F]{6}$/), z.literal("")]);
@@ -304,6 +306,7 @@ export const saveStoreBrandKit = createServerFn({ method: "POST" })
           dark_url: z.string().nullable().optional(),
           icon_url: z.string().nullable().optional(),
           light_url: z.string().nullable().optional(),
+          cover_url: z.string().nullable().optional(),
         }),
         voice: z.object({
           tone_of_voice: z.string(),
@@ -356,8 +359,23 @@ export const saveStoreBrandKit = createServerFn({ method: "POST" })
         { onConflict: "store_id" }
       );
 
-    if (error) {
+        if (error) {
       throw new Error(`Erro ao salvar Brand Kit: ${error.message}`);
+    }
+
+    // Sincronização automática com a tabela stores (capa e logo para feeds e vitrines)
+    try {
+      const storeUpdates: Record<string, any> = {};
+      if (data.logos?.main_url) storeUpdates.logo_url = data.logos.main_url;
+      if (data.logos?.cover_url) {
+        storeUpdates.cover_url = data.logos.cover_url;
+        storeUpdates.banner_url = data.logos.cover_url;
+      }
+      if (Object.keys(storeUpdates).length > 0) {
+        await supabase.from("stores").update(storeUpdates).eq("id", storeId);
+      }
+    } catch (syncErr) {
+      console.warn("[saveStoreBrandKit] Aviso ao sincronizar com stores:", syncErr);
     }
 
     return { success: true, updated_at: now };

@@ -146,7 +146,7 @@ function OfertasPage() {
       <div className="relative w-full overflow-hidden">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-background via-background/70 to-transparent z-10"
+          className="pointer-events-none absolute inset-y-0 right-0 w-12 z-10"
         />
         <nav
           aria-label="Filtrar ofertas por categoria"
@@ -218,7 +218,7 @@ function OfertasPage() {
               {/* Rail de Ofertas */}
               <div className="flex items-start gap-3 overflow-x-auto no-scrollbar pb-2">
                 {section.items.map((offer) => (
-                  <div key={offer.id} className="min-w-40 sm:min-w-[180px] shrink-0">
+                  <div key={offer.id} className="min-w-40 sm:min-w-45 shrink-0">
                     <OfferCard
                       id={offer.id}
                       title={offer.title}

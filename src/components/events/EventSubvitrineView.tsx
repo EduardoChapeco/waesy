@@ -191,7 +191,7 @@ export function EventSubvitrineView({
           <button
             type="button"
             onClick={onBackToAll}
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xs"
+            className="inline-flex items-center gap-2 text-xs font-bold text-primary hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xs"
           >
             <CaretLeft size={16} weight="bold" />
             <span>Voltar para Todos os Eventos</span>
@@ -267,7 +267,7 @@ export function EventSubvitrineView({
 
       {/* ── 3. TRILHO DE DESTAQUES DO SUBNICHO (Se houver 3 ou mais eventos) ── */}
       {filteredSubEvents.length >= 3 && (
-        <section aria-label="Destaques do Subnicho" className="space-y-2.5">
+        <section aria-label="Destaques do Subnicho" className="space-y-2">
           <h2 className="text-sm sm:text-base font-bold text-foreground tracking-tight">
             Destaques em {manifest.label}
           </h2>

@@ -67,7 +67,7 @@ function resolveSpecIcon(label: string, customIcon?: any) {
   if (l.includes("área") || l.includes("tamanho") || l.includes("dimens")) return Ruler;
   if (l.includes("quarto") || l.includes("suíte") || l.includes("banheiro") || l.includes("andar") || l.includes("imóvel")) return HomeIcon;
   if (l.includes("capacidade") || l.includes("hóspede") || l.includes("passageiro") || l.includes("funcionário") || l.includes("rendimento")) return Users;
-  if (l.includes("condomínio") || l.includes("iptu") || l.includes("caução") || l.includes("salário") || l.includes("remuneração") || l.includes("faturamento") || l.includes("lucro") || l.includes("taxa")) return DollarSign;
+  if (l.includes("condomínio") || l.includes("iptu") || l.includes("fipe") || l.includes("caução") || l.includes("salário") || l.includes("remuneração") || l.includes("faturamento") || l.includes("lucro") || l.includes("taxa")) return DollarSign;
   if (l.includes("duração") || l.includes("horário") || l.includes("preparo") || l.includes("check-in") || l.includes("check-out") || l.includes("tempo")) return Clock;
   if (l.includes("modalidade") || l.includes("atendimento") || l.includes("operador")) return Wrench;
   if (l.includes("cargo") || l.includes("regime") || l.includes("modelo") || l.includes("segmento") || l.includes("negócio")) return Briefcase;
@@ -176,6 +176,20 @@ export function NicheSpecificationsDisplay({
     if (attributes.condo_cents || attributes.condominio) {
       const c = attributes.condo_cents ? `R$ ${(attributes.condo_cents / 100).toFixed(2).replace(".", ",")}` : String(attributes.condominio);
       resolvedList.push({ label: "Condomínio", value: c });
+    }
+    if (attributes.iptu_cents || attributes.iptu) {
+      const i = attributes.iptu_cents ? `R$ ${(attributes.iptu_cents / 100).toFixed(2).replace(".", ",")}` : String(attributes.iptu);
+      resolvedList.push({ label: "IPTU", value: i });
+    }
+    if (attributes.fipe_price_cents || attributes.fipe_price) {
+      const f = attributes.fipe_price_cents ? `R$ ${(attributes.fipe_price_cents / 100).toFixed(2).replace(".", ",")}` : String(attributes.fipe_price);
+      resolvedList.push({ label: "Tabela FIPE", value: f, highlight: true });
+    }
+    if (attributes.bathrooms || attributes.banheiros) {
+      resolvedList.push({ label: "Banheiros", value: String(attributes.bathrooms || attributes.banheiros), highlight: true });
+    }
+    if (attributes.plate_end || attributes.final_placa) {
+      resolvedList.push({ label: "Final da Placa", value: String(attributes.plate_end || attributes.final_placa) });
     }
     if (attributes.storage) {
       resolvedList.push({ label: "Armazenamento", value: String(attributes.storage), highlight: true });

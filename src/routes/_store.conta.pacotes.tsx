@@ -387,7 +387,7 @@ function CustomerPassesPage() {
 
                     <Progress value={progressPercent} className="h-2 rounded-full" />
 
-                    <div className="grid grid-cols-3 gap-2 pt-1 text-center font-mono text-xs">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 text-center font-mono text-xs">
                       <div className="p-2 rounded-md bg-card/60 border border-border/40">
                         <span className="text-muted-foreground block text-2xs uppercase font-bold">Livres</span>
                         <span className="font-black text-emerald-600 dark:text-emerald-400 text-xs">

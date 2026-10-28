@@ -81,7 +81,7 @@ export function ContactForm({ storeId, content }: ContactFormProps) {
  {isSuccess ? (
  <div className="text-center py-6 space-y-3 bg-primary/5 border border-primary/10">
  <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-lg">
- ✓
+ 
  </span>
  <h3 className="text-sm font-bold text-foreground">Sua mensagem foi enviada!</h3>
  <p className="text-xs text-muted-foreground px-4">

@@ -700,7 +700,7 @@ export function EditorialShowcaseView({
           <ArrowLeft className="size-5" />
         </button>
 
-        <div className="flex items-center gap-2 max-w-[200px] sm:max-w-md min-w-0">
+        <div className="flex items-center gap-2 max-w-50 sm:max-w-md min-w-0">
           <span className="font-extrabold text-xs tracking-tight text-foreground line-clamp-1 break-words">
             {classified.title || "Vitrine Imersiva"}
           </span>
@@ -931,7 +931,7 @@ export function EditorialShowcaseView({
                   <span className="font-bold text-foreground">{departureCity}</span>
                   {destinationCity && destinationCity.toLowerCase() !== departureCity.toLowerCase() && (
                     <>
-                      <span className="text-muted-foreground/60 mx-1">➔</span>
+                      <span className="text-muted-foreground/60 mx-1">&rarr;</span>
                       <span className="inline-flex items-center gap-1 text-primary">
                         <span>Destino:</span>
                       </span>
@@ -1029,7 +1029,7 @@ export function EditorialShowcaseView({
                 onClick={() => setActiveStoryModal(hl)}
                 className="flex flex-col items-center gap-2 shrink-0 group active:scale-95 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <div className="size-16 rounded-lg p-1 bg-border hover:bg-gradient-to-tr hover:from-amber-500 hover:via-rose-500 hover:to-purple-600 transition-colors">
+                <div className="size-16 rounded-lg p-1 bg-border hover:bg-primary transition-colors">
                   <img
                     src={hl.image || images[0]}
                     alt={hl.title}
@@ -1074,7 +1074,7 @@ export function EditorialShowcaseView({
           {activeTab === "grid" && (
             <div className="pt-3">
               {feedImages.length > 0 ? (
-                <div className="grid grid-cols-3 gap-2 rounded-lg overflow-hidden">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 rounded-lg overflow-hidden">
                   {feedImages.slice(0, 12).map((item, i) => {
                     const rawUrl = typeof item === "string" ? item : (item?.url || item?.src || "");
                     const isVideo = /\.(mp4|webm|mov|m4v|ogg)(\?.*)?$/i.test(rawUrl) || item?.type === "video";
@@ -1101,7 +1101,7 @@ export function EditorialShowcaseView({
                               playsInline
                               preload="metadata"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 flex items-center justify-center">
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                               <div className="size-9 rounded-lg bg-card/20 backdrop-blur-md border border-white/40 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                                 <Play className="size-4 fill-white text-foreground ml-1" />
                               </div>
@@ -2289,7 +2289,7 @@ export function EditorialShowcaseView({
                   <span className="font-bold text-foreground">{departureCity}</span>
                   {destinationCity && destinationCity.toLowerCase() !== departureCity.toLowerCase() && (
                     <>
-                      <span className="text-muted-foreground/60 mx-1">➔</span>
+                      <span className="text-muted-foreground/60 mx-1">&rarr;</span>
                       <span className="inline-flex items-center gap-1 text-primary">
                         <span>Destino:</span>
                       </span>
@@ -2755,7 +2755,7 @@ export function EditorialShowcaseView({
 
       {/* ── Modal de Opções de Pagamento, Atendimento & Negociação (Apple HIG List Format) ── */}
       <Dialog open={isContactModalOpen} onOpenChange={setIsContactModalOpen}>
-        <DialogContent className="max-w-md p-5 rounded-lg bg-background/98 backdrop-blur-xl border border-border/60 max-h-[90vh] overflow-y-auto no-scrollbar">
+        <DialogContent className="max-w-md p-5 rounded-lg bg-background/98 backdrop-blur-xl border border-border/60 max-h-(--spacing-screen-90,90vh) overflow-y-auto no-scrollbar">
           <DialogHeader className="pb-1">
             <DialogTitle className="text-base font-bold text-foreground">
               {classified.title || "Opções & Atendimento"}

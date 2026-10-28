@@ -41,7 +41,7 @@ import {
   Plus,
   ShieldCheck,
   Building2,
-  Sparkles,
+  Sparkles, ArrowRight,
   ArrowUp,
   ArrowDown,
   Store,
@@ -672,7 +672,7 @@ export function ProfileInPageEditor({
                 ABA 1: IDENTIDADE (Visual + Documentos e Dados)
             ══════════════════════════════════════════════════════════════ */}
             <TabsContent value="identidade" className="space-y-5">
-              {/* Card 1: Identidade Visual Canônica (1:1 Squircle + 21:9 Panorâmica) */}
+              {/* Card 1: Identidade Visual Canônica (1:1 Squircle) */}
               <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
                 <div className="flex items-center justify-between pb-3 border-b border-border/40">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
@@ -680,109 +680,88 @@ export function ProfileInPageEditor({
                     <span>Identidade Visual</span>
                   </div>
                   <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary">
-                    1:1 Squircle + 21:9 Panorâmica
+                    1:1 Squircle Canônico
                   </Badge>
                 </div>
 
-                {/* Linha Canônica: Avatar Squircle 1:1 ao lado da Capa 21:9 */}
-                <div className="flex items-center gap-3 sm:gap-5 w-full">
+                {/* Linha Canônica: Avatar Squircle 1:1 e Guia BrandKit */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center w-full">
                   {/* Avatar Squircle 1:1 */}
-                  <div className="relative group shrink-0">
-                    <div className="size-20 sm:size-28 md:size-32 rounded-lg bg-card border-2 border-border/60 overflow-hidden flex items-center justify-center shadow-xs">
-                      {avatarUrl ? (
-                        <img
-                          src={avatarUrl}
-                          alt="Foto de Perfil"
-                          className="size-full object-cover select-none"
-                        />
-                      ) : (
-                        <div className="size-full bg-muted flex items-center justify-center text-xl sm:text-3xl font-black text-primary">
-                          {fullName ? fullName.charAt(0).toUpperCase() : "U"}
-                        </div>
-                      )}
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => avatarInputRef.current?.click()}
-                      disabled={isUploadingMedia}
-                      className="absolute inset-0 bg-background/80 text-foreground rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-xs font-semibold gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      title="Alterar Foto de Perfil (1:1)"
-                    >
-                      <Camera className="size-4 sm:size-5" />
-                      <span className="text-xs">Alterar</span>
-                    </button>
-                    <input
-                      ref={avatarInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleFileSelected(e, "avatar")}
-                      className="hidden"
-                    />
-                  </div>
-
-                  {/* Capa Panorâmica Canônica 21:9 ao lado */}
-                  <div className="flex-1 min-w-0 aspect-[21/9] rounded-lg bg-muted/20 relative overflow-hidden flex items-center group border border-border/40 shadow-xs">
-                    {coverUrl ? (
-                      <img
-                        src={coverUrl}
-                        alt="Capa do Perfil"
-                        className="size-full object-cover select-none"
-                      />
-                    ) : (
-                      <div className="size-full bg-muted/40 flex items-center justify-center text-muted-foreground p-3 text-center">
-                        <span className="text-xs font-medium">Sem imagem de capa (Proporção 21:9)</span>
+                  <div className="flex items-center gap-4">
+                    <div className="relative group shrink-0">
+                      <div className="size-20 sm:size-24 rounded-2xl bg-card border-2 border-border/60 overflow-hidden flex items-center justify-center shadow-xs">
+                        {avatarUrl ? (
+                          <img
+                            src={avatarUrl}
+                            alt="Foto de Perfil"
+                            className="size-full object-cover select-none"
+                          />
+                        ) : (
+                          <div className="size-full bg-muted flex items-center justify-center text-xl sm:text-2xl font-black text-primary">
+                            {fullName ? fullName.charAt(0).toUpperCase() : "U"}
+                          </div>
+                        )}
                       </div>
-                    )}
 
-                    <div className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => avatarInputRef.current?.click()}
+                        disabled={isUploadingMedia}
+                        className="absolute inset-0 bg-background/80 text-foreground rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-xs font-semibold gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        title="Alterar Foto de Perfil (1:1)"
+                      >
+                        <Camera className="size-4" />
+                        <span className="text-xs">Alterar</span>
+                      </button>
+                      <input
+                        ref={avatarInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleFileSelected(e, "avatar")}
+                        className="hidden"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-bold text-foreground">Foto de Perfil (1:1)</p>
+                      <p className="text-xs text-muted-foreground">
+                        Exibida em todos os perfis públicos, comentários e mensagens.
+                      </p>
                       <Button
                         type="button"
+                        variant="outline"
                         size="sm"
-                        variant="secondary"
-                        onClick={() => coverInputRef.current?.click()}
+                        onClick={() => avatarInputRef.current?.click()}
                         disabled={isUploadingMedia}
-                        className="bg-background/85 hover:bg-background text-foreground backdrop-blur-md border border-border/80 px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-xs h-11 min-h-11"
+                        className="h-11 min-h-11 px-3 rounded-lg text-xs font-medium cursor-pointer"
                       >
-                        <Camera className="size-3.5" />
-                        <span className="hidden sm:inline">Alterar Capa (21:9)</span>
-                        <span className="sm:hidden">Alterar</span>
+                        <Camera className="size-4 mr-2" />
+                        <span>Carregar Foto</span>
                       </Button>
-                      {coverUrl && (
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => setCoverUrl("")}
-                          disabled={isUploadingMedia}
-                          className="bg-destructive/85 hover:bg-destructive text-destructive-foreground px-3 py-2 rounded-lg text-xs font-semibold flex items-center cursor-pointer h-11 min-h-11 min-w-11"
-                          title="Remover Capa"
-                        >
-                          <Trash2 className="size-3.5" />
-                        </Button>
-                      )}
                     </div>
-                    <input
-                      ref={coverInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleFileSelected(e, "cover")}
-                      className="hidden"
-                    />
+                  </div>
+
+                  {/* Informação BrandKit para Empresas / Marcas */}
+                  <div className="rounded-xl bg-muted/20 border border-border/40 p-4 space-y-2 text-xs">
+                    <div className="flex items-center gap-2 font-semibold text-foreground">
+                      <Sparkles className="size-4 text-primary shrink-0" />
+                      <span>Capa dos Feeds & Vitrines</span>
+                    </div>
+                    <p className="text-muted-foreground leading-relaxed">
+                      A capa das empresas e criadores é exibida exclusivamente nos cards de busca, feeds do guia e vitrines. Ela é gerenciada e padronizada diretamente no Brand Kit.
+                    </p>
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold gap-2"
+                    >
+                      <Link to="/workspace/marketing/brand-kit">
+                        <span>Acessar Brand Kit</span>
+                        <ArrowRight className="size-4" />
+                      </Link>
+                    </Button>
                   </div>
                 </div>
-
-                {coverUrl && (
-                  <div className="flex justify-end pt-1">
-                    <button
-                      type="button"
-                      onClick={() => setCoverUrl("")}
-                      className="text-xs text-muted-foreground hover:text-destructive cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      Remover Imagem de Capa
-                    </button>
-                  </div>
-                )}
               </div>
 
               {/* Card 2: Documentos & Dados Cadastrais */}

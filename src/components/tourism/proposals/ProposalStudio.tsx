@@ -135,16 +135,16 @@ export function ProposalStudio({ draft, save, agency }: ProposalStudioProps) {
                       titleText = "Cotação editada";
                       descText = entry.details?.agent_name ? `Por ${entry.details.agent_name}` : "";
                     } else if (entry.action === "viewed") {
-                      titleText = "👀 Visualizada pelo cliente";
+                      titleText = " Visualizada pelo cliente";
                       descText = "Acessada via link público";
                     } else if (entry.action === "accepted") {
-                      titleText = "✅ Aceita pelo cliente";
+                      titleText = " Aceita pelo cliente";
                       descText = "Aprovada via link público";
                     } else if (entry.action === "rejected") {
-                      titleText = "❌ Recusada pelo cliente";
+                      titleText = " Recusada pelo cliente";
                       descText = "Recusada via link público";
                     } else if (entry.action === "pdf_exported") {
-                      titleText = "📄 PDF exportado";
+                      titleText = " PDF exportado";
                       descText = entry.details?.agent_name ? `Por ${entry.details.agent_name}` : "";
                     }
 

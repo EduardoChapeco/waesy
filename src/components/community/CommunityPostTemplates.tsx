@@ -53,7 +53,7 @@ export function SalePostTemplate({ post, onActionClick }: CommunityPostTemplateP
   return (
     <div className="space-y-3">
       {/* Banner de Preço e Condição */}
-      <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/60 flex items-center justify-between gap-3">
+      <div className="p-4 rounded-2xl bg-muted/40 border border-border/60 flex items-center justify-between gap-3">
         <div className="space-y-1">
           {itemTitle && (
             <h4 className="text-sm font-bold text-foreground leading-tight">
@@ -66,7 +66,7 @@ export function SalePostTemplate({ post, onActionClick }: CommunityPostTemplateP
                 {formatMoney(priceCents)}
               </span>
             )}
-            <Badge variant="outline" className="text-[11px] font-semibold rounded-md border-border/80">
+            <Badge variant="outline" className="text-2xs font-semibold rounded-md border-border/80">
               <Tag className="size-3 mr-1 text-primary" />
               <span>{conditionLabels[condition] || "Item à Venda"}</span>
             </Badge>
@@ -77,9 +77,9 @@ export function SalePostTemplate({ post, onActionClick }: CommunityPostTemplateP
           <Button
             type="button"
             onClick={handleWhatsApp}
-            className="h-11 min-h-11 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-emerald-500"
+            className="h-11 min-h-11 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-primary-foreground font-bold text-xs shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-emerald-500"
           >
-            <MessageCircle className="size-4 mr-1.5" />
+            <MessageCircle className="size-4 mr-2" />
             <span>Negociar</span>
           </Button>
         )}
@@ -105,9 +105,9 @@ export function NewsPostTemplate({ post }: CommunityPostTemplateProps) {
   const category = attrs.category || "Geral";
 
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-2">
       <div className="flex items-center gap-2">
-        <Badge variant="secondary" className="text-[10px] font-bold uppercase rounded-md tracking-wider">
+        <Badge variant="secondary" className="text-2xs font-bold uppercase rounded-md tracking-wider">
           <Newspaper className="size-3 mr-1 text-primary" />
           <span>{category}</span>
         </Badge>
@@ -145,7 +145,7 @@ export function VideoPostTemplate({ post }: CommunityPostTemplateProps) {
       )}
 
       {mediaUrl && (
-        <div className="relative w-full rounded-2xl overflow-hidden bg-black aspect-video flex items-center justify-center">
+        <div className="relative w-full rounded-2xl overflow-hidden bg-background aspect-video flex items-center justify-center">
           {isDirectVideo ? (
             <video
               src={mediaUrl}
@@ -180,14 +180,14 @@ export function EventPostTemplate({ post }: CommunityPostTemplateProps) {
     <div className="p-4 rounded-2xl bg-muted/40 border border-border/60 space-y-3">
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1">
-          <div className="flex items-center gap-1.5 text-xs text-primary font-bold">
+          <div className="flex items-center gap-2 text-xs text-primary font-bold">
             <Calendar className="size-4" />
             <span>{dateStr}</span>
           </div>
           <h4 className="text-sm sm:text-base font-bold text-foreground">
             {title}
           </h4>
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <MapPin className="size-3.5 shrink-0" />
             <span className="truncate">{location}</span>
           </div>
@@ -221,7 +221,7 @@ export function JobPostTemplate({ post }: CommunityPostTemplateProps) {
     <div className="p-4 rounded-2xl bg-muted/40 border border-border/60 space-y-3">
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1">
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-semibold">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground font-semibold">
             <Briefcase className="size-3.5 text-primary" />
             <span>{company}</span>
             <span>•</span>

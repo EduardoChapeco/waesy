@@ -50,6 +50,8 @@ export interface CardSettingsDrawerProps {
   expiryDate?: string;
   currentLimitCents?: number;
   maxLimitCents?: number;
+  isTemporaryBlocked?: boolean;
+  onToggleBlock?: (blocked: boolean) => void;
   onUpdateLimit?: (newLimitCents: number) => void;
   className?: string;
 }
@@ -57,17 +59,19 @@ export interface CardSettingsDrawerProps {
 export function CardSettingsDrawer({
   open,
   onOpenChange,
-  cardHolderName = "JOÃO DA SILVA",
-  cardNumber = "4892 5601 2348 8842",
-  cvv = "884",
+  cardHolderName = "TITULAR WAESY",
+  cardNumber = "•••• •••• •••• 8842",
+  cvv = "•••",
   expiryDate = "10/31",
-  currentLimitCents = 754920,
-  maxLimitCents = 1000000,
+  currentLimitCents = 500000,
+  maxLimitCents = 500000,
+  isTemporaryBlocked = false,
+  onToggleBlock,
   onUpdateLimit,
   className,
 }: CardSettingsDrawerProps) {
   const [showSensitiveData, setShowSensitiveData] = useState(false);
-  const [isLocked, setIsLocked] = useState(false);
+  const [isLocked, setIsLocked] = useState(isTemporaryBlocked);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [showLimitSlider, setShowLimitSlider] = useState(false);
 
@@ -88,15 +92,14 @@ export function CardSettingsDrawer({
   };
 
   const handleToggleLock = () => {
-    setIsLocked((prev) => {
-      const next = !prev;
-      if (next) {
-        toast.warning("Cartão bloqueado temporariamente.");
-      } else {
-        toast.success("Cartão desbloqueado para compras.");
-      }
-      return next;
-    });
+    const next = !isLocked;
+    setIsLocked(next);
+    onToggleBlock?.(next);
+    if (next) {
+      toast.warning("Cartão bloqueado temporariamente.");
+    } else {
+      toast.success("Cartão desbloqueado para compras.");
+    }
   };
 
   const lastFour = cardNumber.replace(/\s/g, "").slice(-4) || "8842";
@@ -148,15 +151,15 @@ export function CardSettingsDrawer({
           {/* ── 1. Preview Visual do Cartão Verde-Limão (Tela 4 Anexa) ── */}
           <div
             className={cn(
-              "relative w-full aspect-[1.586/1] rounded-3xl p-5 flex flex-col justify-between overflow-hidden shadow-sm transition-all duration-300",
+              "relative w-full aspect-[1.586/1] rounded-3xl p-5 flex flex-col justify-between overflow-hidden shadow-sm transition-colors duration-300",
               isLocked
                 ? "bg-zinc-800 text-zinc-400 grayscale border border-zinc-700/60"
-                : "bg-gradient-to-tr from-lime-400 via-lime-400 to-lime-300 text-zinc-950 border border-lime-300/80 shadow-md"
+                : "bg-lime-400 text-zinc-950 border border-lime-300/80"
             )}
           >
             {/* Top Row: Logo do Banco + Ondas Contactless */}
             <div className="flex items-center justify-between relative z-10">
-              <div className="flex items-center gap-1.5 font-black tracking-tight text-base sm:text-lg">
+              <div className="flex items-center gap-2 font-black tracking-tight text-base sm:text-lg">
                 <span className="font-mono font-black">nevo</span>
                 <span className="text-3xs font-bold text-zinc-800 tracking-wider">/ WAESY BANK</span>
               </div>
@@ -170,7 +173,7 @@ export function CardSettingsDrawer({
                 <button
                   type="button"
                   onClick={() => handleCopy(cardNumber.replace(/\s/g, ""), "Número")}
-                  className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg hover:bg-black/10 text-zinc-900 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950"
+                  className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg hover:bg-background/10 text-zinc-900 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950"
                   aria-label="Copiar número do cartão"
                 >
                   {copiedField === "Número" ? (
@@ -197,7 +200,7 @@ export function CardSettingsDrawer({
                 <button
                   type="button"
                   onClick={() => setShowSensitiveData((prev) => !prev)}
-                  className="size-8 min-h-8 min-w-8 inline-flex items-center justify-center rounded-full bg-black/10 hover:bg-black/15 text-zinc-950 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950"
+                  className="size-8 min-h-8 min-w-8 inline-flex items-center justify-center rounded-full bg-background/10 hover:bg-background/15 text-zinc-950 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950"
                   aria-label={showSensitiveData ? "Ocultar dados" : "Exibir dados do cartão"}
                 >
                   {showSensitiveData ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
@@ -214,7 +217,7 @@ export function CardSettingsDrawer({
 
             <div className="space-y-2">
               {/* Item 1: Bloqueio Temporário com Switch */}
-              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200/60 shadow-2xs">
+              <div className="flex items-center justify-between p-4 rounded-2xl bg-zinc-50 border border-zinc-200/60 shadow-2xs">
                 <div className="flex items-center gap-3 min-w-0 pr-2">
                   <div className="size-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-800 shrink-0">
                     <Lock className="size-5" />
@@ -242,7 +245,7 @@ export function CardSettingsDrawer({
               <button
                 type="button"
                 onClick={() => toast.info("Detalhes do Cartão Virtual Ativo")}
-                className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/60 shadow-2xs transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+                className="w-full flex items-center justify-between p-4 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/60 shadow-2xs transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
               >
                 <div className="flex items-center gap-3 min-w-0 pr-2">
                   <div className="size-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-800 shrink-0">
@@ -265,7 +268,7 @@ export function CardSettingsDrawer({
                 <button
                   type="button"
                   onClick={() => setShowLimitSlider((prev) => !prev)}
-                  className="w-full flex items-center justify-between p-3.5 hover:bg-zinc-100 transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+                  className="w-full flex items-center justify-between p-4 hover:bg-zinc-100 transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
                 >
                   <div className="flex items-center gap-3 min-w-0 pr-2">
                     <div className="size-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-800 shrink-0">
@@ -331,7 +334,7 @@ export function CardSettingsDrawer({
               <button
                 type="button"
                 onClick={() => toast.info("Solicitação de 2ª via do cartão físico enviada!")}
-                className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/60 shadow-2xs transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+                className="w-full flex items-center justify-between p-4 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/60 shadow-2xs transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
               >
                 <div className="flex items-center gap-3 min-w-0 pr-2">
                   <div className="size-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-800 shrink-0">

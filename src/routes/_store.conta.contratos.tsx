@@ -167,7 +167,7 @@ function MyContractsPage() {
                   <div className="flex items-center gap-2 shrink-0 flex-wrap">
                     {contract.isSettled && (
                       <Badge variant="outline" className="text-xs border-emerald-500/40 text-emerald-600 bg-emerald-500/5">
-                        Quitado ✓
+                        Quitado 
                       </Badge>
                     )}
                     {contract.govBrVerified && (

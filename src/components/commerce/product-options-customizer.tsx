@@ -107,7 +107,7 @@ export function ProductOptionsCustomizer({
  >
  {isComplete
  ? group.isRequired
- ? "Obrigatório ✓"
+ ? "Obrigatório "
  : "Opcional"
  : "Pendente"}
  </Badge>

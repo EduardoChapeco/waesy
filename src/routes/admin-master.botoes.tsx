@@ -607,7 +607,7 @@ function AdminMasterHotpagesPage() {
  <img
  src={item.cover_image_url}
  alt={item.title}
- className="absolute inset-0 size-full object-cover group-hover:scale-102 transition-transform duration-500"
+ className="absolute inset-0 size-full object-cover group-hover:scale-102 transition-transform duration-200"
  loading="lazy"
  />
  ) : (
@@ -675,7 +675,7 @@ function AdminMasterHotpagesPage() {
  className="size-6 object-contain"
  />
  ) : (
- <span className="text-lg font-emoji">{(item as any).emoji || "🏷️"}</span>
+ <span className="text-lg font-emoji">{(item as any).emoji || "️"}</span>
  )}
  </div>
  <div className="min-w-0">
@@ -811,7 +811,7 @@ function AdminMasterHotpagesPage() {
  <img
  src={item.cover_image_url}
  alt={item.title}
- className="absolute inset-0 size-full object-cover group-hover:scale-105 transition-transform duration-500"
+ className="absolute inset-0 size-full object-cover group-hover:scale-105 transition-transform duration-200"
  loading="lazy"
  />
  ) : (
@@ -917,7 +917,7 @@ function AdminMasterHotpagesPage() {
  {customIconUrl ? (
  <img src={customIconUrl} alt="Preview" className="size-7 object-contain" />
  ) : (
- <span className="text-xl font-emoji">{emoji || "🏷️"}</span>
+ <span className="text-xl font-emoji">{emoji || "️"}</span>
  )}
  </div>
  <div>
@@ -1022,7 +1022,7 @@ function AdminMasterHotpagesPage() {
  </div>
 
         {templateType === "drawer_module" && (
-          <div className="p-3.5 rounded-xl border border-primary/20 bg-primary/5 space-y-3">
+          <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 space-y-3">
             <span className="text-xs font-bold text-primary block">
               Parâmetros do Menu Lateral iFood
             </span>
@@ -1164,7 +1164,7 @@ function AdminMasterHotpagesPage() {
  <Input
  value={emoji}
  onChange={(e) => setEmoji(e.target.value)}
- placeholder="Ex: 💊, 🍕, 🥦, 📱"
+ placeholder="Ex: , , , "
  className="h-10 rounded-lg bg-card text-xs"
  />
  </div>

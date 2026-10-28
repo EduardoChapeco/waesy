@@ -255,3 +255,51 @@ export function findClosestCanonicalCity(
  return closest;
 }
 
+export function getRegionalNeighboringCities(cityName?: string, maxResults = 8): CityRecord[] {
+  if (!cityName || cityName === "Todas" || cityName === "Todas as Cidades" || cityName === "Global" || cityName === "all") {
+    const defaults = ["sao-miguel-do-oeste-sc", "chapeco-sc", "xanxere-sc", "concordia-sc", "florianopolis-sc", "sao-jose-dos-campos-sp"];
+    return CANONICAL_CITIES.filter((c) => defaults.includes(c.id)).slice(0, maxResults);
+  }
+
+  const normalize = (str: string) =>
+    str
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim();
+
+  const targetNorm = normalize(cityName);
+  const currentCity = CANONICAL_CITIES.find(
+    (c) =>
+      normalize(c.name) === targetNorm ||
+      normalize(c.label) === targetNorm ||
+      normalize(c.id) === targetNorm
+  );
+
+  if (!currentCity) {
+    const partial = CANONICAL_CITIES.filter((c) => normalize(c.name).includes(targetNorm));
+    if (partial.length > 0) {
+      return CANONICAL_CITIES.filter((c) => c.region === partial[0].region && c.id !== partial[0].id).slice(0, maxResults);
+    }
+    return CANONICAL_CITIES.slice(0, maxResults);
+  }
+
+  if (typeof currentCity.lat === "number" && typeof currentCity.lng === "number") {
+    const scored = CANONICAL_CITIES.filter((c) => c.id !== currentCity.id && typeof c.lat === "number" && typeof c.lng === "number")
+      .map((c) => {
+        const distanceKm = calculateHaversineDistanceKm(currentCity.lat!, currentCity.lng!, c.lat!, c.lng!);
+        const sameRegion = c.region === currentCity.region;
+        return { city: c, distanceKm, sameRegion };
+      })
+      .sort((a, b) => {
+        if (a.sameRegion && !b.sameRegion) return -1;
+        if (!a.sameRegion && b.sameRegion) return 1;
+        return a.distanceKm - b.distanceKm;
+      });
+
+    return scored.slice(0, maxResults).map((s) => s.city);
+  }
+
+  return CANONICAL_CITIES.filter((c) => c.region === currentCity.region && c.id !== currentCity.id).slice(0, maxResults);
+}
+

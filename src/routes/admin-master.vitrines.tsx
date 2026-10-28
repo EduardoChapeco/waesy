@@ -626,14 +626,14 @@ function AdminMasterVitrinesPage() {
                     <Label className="text-xs font-bold text-foreground">Botões & Atalhos do Menu</Label>
                     <p className="text-3xs text-muted-foreground">Personalize os canais de navegação da vitrine.</p>
                   </div>
-                  <span className="text-3xs font-mono font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                  <span className="text-3xs font-mono font-bold px-2 py-1 rounded-full bg-primary/10 text-primary">
                     {customButtons.length} botões ativos
                   </span>
                 </div>
 
                 {/* Lista de Botões Atuais */}
                 {customButtons.length > 0 && (
-                  <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                     {customButtons.map((btn, idx) => (
                       <div key={idx} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-card border border-border/70 text-xs">
                         <div className="flex items-center gap-2 min-w-0">
@@ -641,7 +641,7 @@ function AdminMasterVitrinesPage() {
                           <span className="font-bold text-foreground truncate">{btn.label}</span>
                           <span className="text-3xs font-mono text-muted-foreground">({btn.iconName})</span>
                           {btn.badge && (
-                            <span className="text-3xs bg-primary/20 text-primary px-1.5 py-0.5 rounded-full font-bold">
+                            <span className="text-3xs bg-primary/20 text-primary px-2 py-1 rounded-full font-bold">
                               {btn.badge}
                             </span>
                           )}

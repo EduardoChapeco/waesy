@@ -160,7 +160,7 @@ function CommunityAndPortalWhitelabelPage() {
   const eventsList = (eventsData as any[]) || [];
 
   return (
-    <div className="min-h-[100dvh] bg-background text-foreground flex flex-col selection:bg-primary/20 pb-24">
+    <div className="min-h-dvh bg-background text-foreground flex flex-col selection:bg-primary/20 pb-24">
       {/* ─── Top Header Whitelabel Discreto ─────────────────────────────── */}
       <header className="sticky top-0 z-40 w-full border-b border-border/50 bg-background/85 backdrop-blur-md px-4 py-2 sm:px-6">
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
@@ -206,7 +206,7 @@ function CommunityAndPortalWhitelabelPage() {
 
       {/* ─── Capa Curva Imersiva da Comunidade (Fase 46 - Threads Style) ─ */}
       <div className="max-w-4xl w-full mx-auto px-0 sm:px-4 pt-0 sm:pt-4">
-        <div className="relative w-full h-44 sm:h-56 rounded-none sm:rounded-3xl overflow-hidden bg-gradient-to-r from-primary/25 via-muted/60 to-primary/10 border-b sm:border border-border/40">
+        <div className="relative w-full h-44 sm:h-56 rounded-none sm:rounded-3xl overflow-hidden bg-muted border-b sm:border border-border/40">
           {storeCover ? (
             <img
               src={storeCover}

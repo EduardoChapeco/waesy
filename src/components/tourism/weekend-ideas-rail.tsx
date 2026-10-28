@@ -49,7 +49,7 @@ export function WeekendIdeasRail({
           return (
             <div
               key={item.id}
-              className="group relative flex flex-col justify-between rounded-2xl border border-border/70 bg-card overflow-hidden hover:border-foreground/30 transition-all shadow-xs shrink-0 w-68 sm:w-80 snap-start"
+              className="group relative flex flex-col justify-between rounded-2xl border border-border/70 bg-card overflow-hidden hover:border-foreground/30 transition-colors shadow-xs shrink-0 w-68 sm:w-80 snap-start"
             >
               {/* Contêiner de Imagem com Aspect Ratio Fixo (Anti-CLS) */}
               <div className="relative aspect-4/3 w-full overflow-hidden bg-muted">
@@ -67,7 +67,7 @@ export function WeekendIdeasRail({
                 )}
 
                 {/* Badge "a partir de R$ ..." Estilo iFood / Decolar */}
-                <div className="absolute bottom-2 left-2 z-10 px-3 py-1.5 rounded-lg bg-indigo-950/90 backdrop-blur-md text-white border border-white/10 shadow-sm">
+                <div className="absolute bottom-2 left-2 z-10 px-3 py-2 rounded-lg bg-indigo-950/90 backdrop-blur-md text-primary-foreground border border-white/10 shadow-sm">
                   <span className="text-3xs block opacity-80 leading-tight">a partir de</span>
                   <span className="text-xs sm:text-sm font-black font-mono leading-tight">
                     {displayPrice}
@@ -84,7 +84,7 @@ export function WeekendIdeasRail({
               </div>
 
               {/* Informações da Hospedagem / Pacote */}
-              <div className="p-3.5 space-y-2 flex-1 flex flex-col justify-between">
+              <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
                 <div className="space-y-1">
                   <div className="flex items-center gap-1 text-3xs font-bold text-muted-foreground uppercase tracking-wider">
                     <MapPin size={12} className="text-primary" />
@@ -103,7 +103,7 @@ export function WeekendIdeasRail({
                 </div>
 
                 <div className="space-y-2 pt-2 border-t border-border/40">
-                  <div className="flex items-center gap-1.5 text-3xs text-muted-foreground">
+                  <div className="flex items-center gap-2 text-3xs text-muted-foreground">
                     <Bed size={14} className="text-muted-foreground" />
                     <span>Hospedagem · 1 noite, 2 pessoas</span>
                   </div>

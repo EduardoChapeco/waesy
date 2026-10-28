@@ -21,6 +21,8 @@ export interface IFoodVisualSpotlightRailProps {
  * Exibe carrossel horizontal de fotos apetitosas com nota/coroa, botão de favorito,
  * avatar do estabelecimento, tempo de entrega e badge de cupom ("Restaurantes com Cupom", "Farmácias Famosas").
  */
+export type VisualSpotlightRailProps = IFoodVisualSpotlightRailProps;
+
 export function IFoodVisualSpotlightRail({
   title,
   subtitle,
@@ -41,7 +43,7 @@ export function IFoodVisualSpotlightRail({
     >
       {/* Cabeçalho da Seção idêntico ao iFood */}
       <div className="px-3 sm:px-4 flex items-start justify-between gap-2">
-        <div className="space-y-0.5">
+        <div className="space-y-1">
           <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight leading-tight">
             {title}
           </h2>
@@ -57,7 +59,7 @@ export function IFoodVisualSpotlightRail({
         {viewMoreTo && (
           <Link
             to={viewMoreTo as any}
-            className="text-xs font-bold text-primary hover:underline flex items-center gap-0.5 pt-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xs"
+            className="text-xs font-bold text-primary hover:underline flex items-center gap-1 pt-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xs"
           >
             <span>{viewMoreLabel}</span>
             <CaretRight size={12} weight="bold" />
@@ -79,3 +81,5 @@ export function IFoodVisualSpotlightRail({
     </section>
   );
 }
+
+export const VisualSpotlightRail = IFoodVisualSpotlightRail;

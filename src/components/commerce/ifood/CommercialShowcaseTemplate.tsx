@@ -138,7 +138,7 @@ export function CommercialShowcaseTemplate({
       className={cn("w-full max-w-5xl mx-auto space-y-4 pb-28 min-h-screen bg-background", className)}
       data-testid={`commercial-showcase-${nicheId}`}
     >
-      {/* ── 1. CABEÇALHO CANÔNICO iFOOD ── */}
+      {/* ── 1. CABEÇALHO NATIVO DA VITRINE ── */}
       <IFoodHeader />
 
       {/* ── 2. DOCK DE MULTIVITRINES (Troca instantânea entre nichos comerciais) ── */}
@@ -164,7 +164,7 @@ export function CommercialShowcaseTemplate({
         </section>
       )}
 
-      {/* ── 5. MINI-BANNERS VERTICAIS ("No iFood também tem" / Cupons e Ofertas) ── */}
+      {/* ── 5. MINI-BANNERS VERTICAIS (Destaques e Ofertas da Vitrine) ── */}
       {featureMiniBanners.length > 0 && (
         <IFoodFeatureMiniBannersRail
           title={`No Waesy ${nicheTitle} também tem`}
@@ -242,7 +242,7 @@ export function CommercialShowcaseTemplate({
         </h2>
 
         {stores.length > 0 ? (
-          <div className="space-y-2.5">
+          <div className="space-y-2">
             {stores.map((s) => (
               <IFoodStoreFeedCard
                 key={s.id}
@@ -264,7 +264,7 @@ export function CommercialShowcaseTemplate({
       {/* ── 10. CONTEÚDO ADICIONAL OU SLOTS CUSTOMIZADOS ── */}
       {children}
 
-      {/* ── 11. BARRA FLUTUANTE DA SACOLA (iFood Thumb Zone) ── */}
+      {/* ── 11. BARRA FLUTUANTE DA SACOLA (Thumb Zone) ── */}
       <IFoodFloatingCartBar />
     </div>
   );

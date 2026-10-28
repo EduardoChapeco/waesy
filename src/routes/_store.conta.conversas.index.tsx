@@ -364,7 +364,7 @@ function CustomerConversationsIndexPage() {
 
   return (
     <div className="relative w-full max-w-5xl mx-auto min-h-[calc(100dvh-7rem)] flex flex-col space-y-3 pb-28 px-0 sm:px-4 md:px-0">
-      {/* ── FASE 1: Header Nativo Silencioso (Apenas "Mensagens" + Ícone de Lupa 🔍 à Direita) ── */}
+      {/* ── FASE 1: Header Nativo Silencioso (Apenas "Mensagens" + Ícone de Lupa  à Direita) ── */}
       <header className="flex items-center justify-between gap-4 border-b border-border/40 px-4 sm:px-0 pb-3 pt-2">
         <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
           Mensagens

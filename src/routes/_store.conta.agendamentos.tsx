@@ -370,7 +370,7 @@ function CustomerAgendaPage() {
         if (!open) setSelectedCompanionAppt(null);
       }}
     >
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-lg bg-background border border-border shadow-xs">
+      <DialogContent className="max-w-4xl max-h-(--spacing-screen-90,90vh) overflow-y-auto p-4 sm:p-6 rounded-lg bg-background border border-border shadow-xs">
         <DialogHeader className="sr-only">
           <DialogTitle>Guia Digital do Atendimento</DialogTitle>
         </DialogHeader>

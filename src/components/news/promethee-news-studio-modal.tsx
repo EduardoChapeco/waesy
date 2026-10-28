@@ -280,7 +280,7 @@ export function PrometheeNewsStudioModal({
           >
             <div
               style={previewRatioStyle}
-              className={`${previewWidthClass} rounded-3xl border p-4 sm:p-5 flex flex-col justify-between gap-3 overflow-hidden shadow-xs transition-all duration-200 ${activeTheme.previewBgClass}`}
+              className={`${previewWidthClass} rounded-3xl border p-4 sm:p-5 flex flex-col justify-between gap-3 overflow-hidden shadow-xs transition-colors duration-200 ${activeTheme.previewBgClass}`}
             >
               {/* Cabeçalho da Arte */}
               <div className="flex items-center justify-between gap-2 shrink-0">
@@ -489,7 +489,7 @@ export function PrometheeNewsStudioModal({
               <span className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Proporção Instagram
               </span>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 {(
                   [
                     { id: "4:5", label: "Feed 4:5" },

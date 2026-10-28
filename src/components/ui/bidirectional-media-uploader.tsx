@@ -78,14 +78,14 @@ export function BidirectionalMediaUploader({
             className="text-2xs px-2 py-1 gap-1 font-semibold"
           >
             <Smartphone className="size-3" />
-            Mobile {mobileUrl ? "✓" : "Pendente"}
+            Mobile {mobileUrl ? "" : "Pendente"}
           </Badge>
           <Badge
             variant={desktopUrl ? "default" : "outline"}
             className="text-2xs px-2 py-1 gap-1 font-semibold"
           >
             <Monitor className="size-3" />
-            Desktop {desktopUrl ? "✓" : "Pendente"}
+            Desktop {desktopUrl ? "" : "Pendente"}
           </Badge>
         </div>
       </div>

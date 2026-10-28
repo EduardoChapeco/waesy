@@ -718,7 +718,7 @@ export function ClassifiedDetailMobile({
             {/* Negociação e Agendamento Específico por Nicho */}
             {templateStyle === "automotivo" && (attrs.accepts_trade || attrs.accepts_financing || attrs.negotiable) && (
               <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 flex items-center justify-between gap-3">
-                <div className="space-y-0.5 min-w-0">
+                <div className="space-y-1 min-w-0">
                   <span className="text-xs font-bold text-foreground block break-words text-wrap">Negociação & Troca</span>
                   <p className="text-xs text-muted-foreground break-words text-wrap">
                     {attrs.accepts_trade ? "Aceita veículo na troca como parte do pagamento." : "Propostas comerciais e financiamento sob consulta."}
@@ -740,7 +740,7 @@ export function ClassifiedDetailMobile({
 
             {templateStyle === "imobiliario" && (
               <div className="rounded-lg border border-border/60 bg-muted/20 p-4 flex items-center justify-between gap-3">
-                <div className="space-y-0.5 min-w-0">
+                <div className="space-y-1 min-w-0">
                   <span className="text-xs font-bold text-foreground block break-words text-wrap">Agendar Visita</span>
                   <p className="text-xs text-muted-foreground break-words text-wrap">Conheça o imóvel presencialmente com o anunciante.</p>
                 </div>
@@ -888,7 +888,7 @@ export function ClassifiedDetailMobile({
                       <div className="size-8 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
                         <Utensils className="size-4" />
                       </div>
-                      <div className="min-w-0 text-xs leading-snug space-y-0.5">
+                      <div className="min-w-0 text-xs leading-snug space-y-1">
                         <span className="font-bold text-foreground block">Alimentação & Refeições</span>
                         <span className="text-muted-foreground">{travelDetails.packageMealPlan}</span>
                       </div>
@@ -899,7 +899,7 @@ export function ClassifiedDetailMobile({
                       <div className="size-8 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
                         <Truck className="size-4" />
                       </div>
-                      <div className="min-w-0 text-xs leading-snug space-y-0.5">
+                      <div className="min-w-0 text-xs leading-snug space-y-1">
                         <span className="font-bold text-foreground block">Traslados & Transporte</span>
                         <span className="text-muted-foreground">{travelDetails.packageTransfer}</span>
                       </div>
@@ -910,7 +910,7 @@ export function ClassifiedDetailMobile({
                       <div className="size-8 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
                         <Compass className="size-4" />
                       </div>
-                      <div className="min-w-0 text-xs leading-snug space-y-0.5">
+                      <div className="min-w-0 text-xs leading-snug space-y-1">
                         <span className="font-bold text-foreground block">Passeios & Experiências</span>
                         <span className="text-muted-foreground">{travelDetails.packageTours}</span>
                       </div>
@@ -921,7 +921,7 @@ export function ClassifiedDetailMobile({
                       <div className="size-8 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-1">
                         <ShieldCheck className="size-4" />
                       </div>
-                      <div className="min-w-0 text-xs leading-snug space-y-0.5">
+                      <div className="min-w-0 text-xs leading-snug space-y-1">
                         <span className="font-bold text-foreground block">Seguro & Suporte</span>
                         <span className="text-muted-foreground">Assistência especializada e seguro viagem durante todo o período do pacote.</span>
                       </div>
@@ -1117,7 +1117,7 @@ export function ClassifiedDetailMobile({
                     <div>
                       <span className="text-muted-foreground block text-xs font-medium">Avaliação</span>
                       <span className="font-semibold text-foreground">
-                        {Number(classified.rating).toFixed(1)} ★ {classified.review_count ? `(${classified.review_count})` : ""}
+                        {Number(classified.rating).toFixed(1)}  {classified.review_count ? `(${classified.review_count})` : ""}
                       </span>
                     </div>
                   </div>

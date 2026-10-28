@@ -314,7 +314,7 @@ export function VitrineLateralDrawerBlock({
             </button>
             <div>
               <p className="text-xs font-bold text-foreground">
-                {data?.greetingTitle || "Menu Lateral Mobile (iFood / Threads Push)"}
+                {data?.greetingTitle || "Menu Lateral Mobile Deslizante"}
               </p>
               <p className="text-2xs text-muted-foreground">
                 {sections.length} seções • {itemsCount} atalhos configurados
@@ -562,7 +562,7 @@ export function VitrineStoresFeedListBlock({
           <h2 className="text-base font-bold text-foreground tracking-tight">
             {data?.title || "Lojas"}
           </h2>
-          <div className="divide-y divide-border/50">
+          <div className="space-y-3">
             {mappedStores.map((st) => (
               <IFoodStoreFeedCard
                 key={st.id}

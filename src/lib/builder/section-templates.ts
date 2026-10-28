@@ -1364,7 +1364,7 @@ export const sectionTemplates: Record<string, SectionTemplate> = {
  content: {
  title: "Semana do Consumidor — Até 50% OFF",
  subtitle: "Ofertas exclusivas com frete grátis por tempo limitado.",
- badge: "🔥 Oferta por Tempo Limitado",
+ badge: " Oferta por Tempo Limitado",
  discountPercentage: "50% OFF",
  couponCode: "RELAMPAGO50",
  buttonText: "Garantir Ofertas com Desconto",

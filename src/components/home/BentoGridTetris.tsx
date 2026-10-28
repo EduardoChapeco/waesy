@@ -13,6 +13,8 @@ export interface BentoGridTetrisProps {
   className?: string;
 }
 
+export type TetrisFeatureGridProps = BentoGridTetrisProps;
+
 export function BentoGridTetris({ items, aspectRatio, className }: BentoGridTetrisProps) {
   // Invariante de Omissão Estrita: Cards sem imagem NÃO DEVEM aparecer
   const activeItems = (items || []).filter(
@@ -31,7 +33,7 @@ export function BentoGridTetris({ items, aspectRatio, className }: BentoGridTetr
         className,
       )}
       role="region"
-      aria-label="Grade Modular Bento Tetris"
+      aria-label="Grade Modular Tetris"
     >
       {activeItems.map((item, idx) => {
         const spanX = item.grid_span_x || 1;
@@ -132,3 +134,5 @@ function BentoTileItem({ item, colClass, rowClass, isHero }: BentoTileItemProps)
     </div>
   );
 }
+
+export const TetrisFeatureGrid = BentoGridTetris;

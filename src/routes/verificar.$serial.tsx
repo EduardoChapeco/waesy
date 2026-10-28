@@ -47,7 +47,7 @@ export default function VerifySerialPage() {
  }, [serial]);
 
  return (
- <div className="min-h-[100dvh] bg-slate-50 dark:bg-zinc-950 flex flex-col items-center justify-center p-4">
+ <div className="min-h-dvh bg-slate-50 dark:bg-zinc-950 flex flex-col items-center justify-center p-4">
  <div className="max-w-md w-full bg-card dark:bg-zinc-900 rounded-lg shadow-xs border border-border p-6 sm:p-8 flex flex-col gap-6">
  {/* Header Badge */}
  <div className="flex flex-col items-center text-center gap-3">

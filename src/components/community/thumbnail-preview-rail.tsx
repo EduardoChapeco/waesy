@@ -28,7 +28,7 @@ export function ThumbnailPreviewRail({ items = [], onSelectPost }: ThumbnailPrev
  className="absolute inset-0 size-full object-cover group-hover:scale-105 transition-transform duration-300"
  loading="lazy"
  />
- <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+ <div className="absolute inset-0 bg-black/50" />
 
  <div className="relative z-10 p-2 w-full">
  <p className="text-2xs font-bold text-foreground truncate leading-tight">

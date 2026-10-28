@@ -17,6 +17,12 @@ import {
   Tag,
   Flame,
   Confetti,
+  SpeakerHigh,
+  Television,
+  Balloon,
+  Cake,
+  Heart,
+  Crown,
 } from "@phosphor-icons/react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
@@ -48,10 +54,10 @@ const DEFAULT_EVENT_8_BUTTONS: EventCategoryButtonItem[] = [
     icon: Smiley,
   },
   {
-    id: "halloween",
-    label: "Halloween",
-    categoryFilter: "festas",
-    icon: Ghost,
+    id: "gastronomia",
+    label: "Gastronomia",
+    categoryFilter: "gastronomico",
+    icon: ForkKnife,
   },
   {
     id: "teatro",
@@ -95,6 +101,14 @@ export const ALL_EXPANDED_EVENT_CATEGORIES = [
   { id: "feiras", label: "Feiras e Bazares", icon: ShoppingBag },
   { id: "workshops", label: "Cursos e Workshops", icon: GraduationCap },
   { id: "infantil", label: "Infantil e Família", icon: Smiley },
+  { id: "estrutura", label: "Estrutura & Palcos", icon: Tent },
+  { id: "led_som", label: "Painel de LED & Som", icon: Television },
+  { id: "brinquedos", label: "Aluguel de Brinquedos", icon: Balloon },
+  { id: "buffet", label: "Buffet & Bartender", icon: ForkKnife },
+  { id: "decoracao", label: "Decoração de Festas", icon: Confetti },
+  { id: "casamento", label: "Casamentos", icon: Heart },
+  { id: "quinze_anos", label: "15 Anos / Debutante", icon: Crown },
+  { id: "cha_revelacao", label: "Chá Revelação / Bebê", icon: Cake },
   { id: "gratis", label: "Entrada Gratuita", icon: Tag },
 ];
 
@@ -132,7 +146,7 @@ export function EventCategoryButtonsGrid({
       data-testid="event-category-buttons-grid"
     >
       {/* ── Grade 2x4 Canônica de Botões Squircles (Sympla/iFood Padrão) ── */}
-      <div className="grid grid-cols-4 gap-2.5 sm:gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
         {buttons.map((btn) => {
           const IconComp = btn.icon || SquaresFour;
           const isSelected = btn.categoryFilter && btn.categoryFilter === activeCategory;
@@ -140,8 +154,8 @@ export function EventCategoryButtonsGrid({
           const content = (
             <div
               className={cn(
-                "w-full aspect-[1/1.05] min-h-18 sm:min-h-20 rounded-2xl border transition-all duration-200 select-none",
-                "flex flex-col items-center justify-center p-1.5 text-center cursor-pointer relative",
+                "w-full aspect-[1/1.05] min-h-18 sm:min-h-20 rounded-2xl border transition-colors duration-200 select-none",
+                "flex flex-col items-center justify-center p-2 text-center cursor-pointer relative",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-95",
                 isSelected
                   ? "bg-primary text-primary-foreground border-primary shadow-xs"
@@ -179,7 +193,7 @@ export function EventCategoryButtonsGrid({
 
               <span
                 className={cn(
-                  "text-3xs sm:text-2xs font-bold line-clamp-1 px-0.5 leading-tight tracking-tight",
+                  "text-3xs sm:text-2xs font-bold line-clamp-1 px-1 leading-tight tracking-tight",
                   isSelected ? "text-primary-foreground font-black" : "text-foreground",
                 )}
               >
@@ -224,7 +238,7 @@ export function EventCategoryButtonsGrid({
             </SheetTitle>
           </SheetHeader>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-4">
             {ALL_EXPANDED_EVENT_CATEGORIES.map((cat) => {
               const CatIcon = cat.icon;
               const isSelected = activeCategory === cat.id;
@@ -246,14 +260,14 @@ export function EventCategoryButtonsGrid({
                       : "bg-card border-border/60 hover:bg-muted/40 text-foreground",
                   )}
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="flex items-center gap-2 min-w-0">
                     <CatIcon size={20} weight="bold" className={isSelected ? "text-background" : "text-primary"} />
                     <span className="text-xs font-semibold truncate">{cat.label}</span>
                   </div>
                   {typeof count === "number" && count > 0 && (
                     <span
                       className={cn(
-                        "text-3xs font-mono font-bold px-1.5 py-0.5 rounded-full shrink-0",
+                        "text-3xs font-mono font-bold px-2 py-1 rounded-full shrink-0",
                         isSelected ? "bg-background/20 text-background" : "bg-muted text-muted-foreground",
                       )}
                     >

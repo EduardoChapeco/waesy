@@ -258,7 +258,7 @@ export const HostingDomainConnectModal: React.FC<HostingDomainConnectModalProps>
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto p-6 bg-card border border-border/80 shadow-2xl rounded-2xl z-50">
+      <DialogContent className="sm:max-w-xl max-h-(--spacing-screen-90,90vh) overflow-y-auto p-6 bg-card border border-border/80 shadow-2xl rounded-2xl z-50">
         <HostingDomainConnectContent {...contentProps} />
       </DialogContent>
     </Dialog>

@@ -191,3 +191,15 @@ Este catálogo estabelece as regras determinísticas de detecção de defeitos v
 - **Fundamentação:** Piso de Integridade / Eliminação de Dead Code.
 - **Regra:** Toda variável declarada em `tokens.json` e `styles.css` deve possuir ao menos um consumidor no código fonte.
 - **Detecção:** Cruzamento da lista de variáveis CSS com o conteúdo de todos os componentes em `src/`.
+
+### DL-31: Aninhamento redundante de superfícies / Card dentro de Card (Containeritis)
+- **Severidade:** P0
+- **Fundamentação:** Princípio de Ergonomia Visual Apple HIG / Linear / Material 3 / Single Surface Rule.
+- **Regra:** Proibido aninhar um contêiner com borda e background (`rounded-* border bg-card`) diretamente como wrapper de outro componente de card já delimitado (`IFoodStoreFeedCard`, `OfferCard`, `StoreCard`, `ClassifiedItemCard`, `DirectoryBusinessCard`). Cada entidade visual deve possuir exatamente UMA única casca estrutural.
+- **Detecção:** Detecção de elementos filhos que renderizam card components dentro de wrappers contendo `border bg-card` / `rounded-* border`.
+
+### DL-32: Grade dentro de Grade / Mais de 2 Colunas para Cards Horizontais
+- **Severidade:** P1
+- **Fundamentação:** Apple HIG / Material 3 Window Size Classes / Anti-Jank / Legibilidade Ergonômica.
+- **Regra:** Proibido colocar `grid` dentro de célula de outra `grid` sem `col-span-full`, e proibido forçar 3 ou mais colunas para cartões horizontais densos (logo + texto + metadados em linha) no desktop; cartões horizontais devem operar em `grid-cols-1 lg:grid-cols-2`, preservando largura mínima de 400px por cartão.
+- **Detecção:** Detecção de `grid` filho dentro de `grid` sem `col-span-full` ou uso de `grid-cols-3` / `grid-cols-4` em cartões de lista horizontal.

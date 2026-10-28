@@ -28,7 +28,7 @@ export const Route = createFileRoute("/admin-master/seguranca/certificados/$id")
 });
 
 function countryFlag(code: string | null): string {
- if (!code || code.length !== 2) return "🌐";
+ if (!code || code.length !== 2) return "";
  return code.toUpperCase().replace(/./g, c =>
  String.fromCodePoint(127397 + c.charCodeAt(0))
  );
@@ -79,7 +79,7 @@ function CertificateDetailPage() {
 
  if (!loaderData?.success || !loaderData?.certificate) {
  return (
- <div className="min-h-[100dvh] bg-background flex items-center justify-center">
+ <div className="min-h-dvh bg-background flex items-center justify-center">
  <div className="text-center">
  <XCircle className="size-10 mx-auto text-destructive mb-3" />
  <h2 className="text-base font-semibold">Certificado não encontrado</h2>
@@ -94,7 +94,7 @@ function CertificateDetailPage() {
  const { user, telemetry, cryptography, timestamps, status } = cert;
 
  return (
- <div className="min-h-[100dvh] bg-background">
+ <div className="min-h-dvh bg-background">
  {/* Header */}
  <div className="border-b border-border/50 bg-card/30 backdrop-blur-sm sticky top-0 z-10">
  <div className="max-w-5xl mx-auto px-6 py-4 flex items-center gap-4">
@@ -131,13 +131,13 @@ function CertificateDetailPage() {
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
  <div className="text-center">
  <div className={cn("text-base font-bold", status.is_valid ? "text-emerald-600 dark:text-emerald-400" : "text-destructive")}>
- {status.is_valid ? "✓ Válido" : "✗ Inválido"}
+ {status.is_valid ? " Válido" : " Inválido"}
  </div>
  <div className="text-2xs text-muted-foreground">Status</div>
  </div>
  <div className="text-center">
  <div className={cn("text-base font-bold", cryptography.chain_valid ? "text-emerald-600 dark:text-emerald-400" : "text-destructive")}>
- {cryptography.chain_valid ? "⛓ Íntegra" : "⚠ Quebrada"}
+ {cryptography.chain_valid ? " Íntegra" : " Quebrada"}
  </div>
  <div className="text-2xs text-muted-foreground">Cadeia</div>
  </div>
@@ -216,7 +216,7 @@ function CertificateDetailPage() {
  (timestamps.clock_drift_ms || 0) > 30000 ? "text-amber-500" : "text-emerald-600 dark:text-emerald-400"
  )}>
  {timestamps.clock_drift_ms != null ? `${timestamps.clock_drift_ms.toLocaleString()}ms` : "—"}
- {(timestamps.clock_drift_ms || 0) > 300000 ? " ⚠ Suspeito" : ""}
+ {(timestamps.clock_drift_ms || 0) > 300000 ? "  Suspeito" : ""}
  </span>
  }
  />

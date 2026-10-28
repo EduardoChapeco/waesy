@@ -279,7 +279,7 @@ function RecipeDetailPage() {
               <span className="text-xs font-mono">Gastronomia Autêntica Local</span>
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-black/40 pointer-events-none" />
 
           {/* Badges Flutuantes sobre a Imagem */}
           <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 flex flex-wrap items-center gap-2">

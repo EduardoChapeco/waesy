@@ -1266,20 +1266,26 @@ export const updateMemberResumeData = createServerFn({ method: "POST" })
  for (const exp of resumeData.experiences) {
  if (exp.company && (exp.company_rating || exp.salary_cents || exp.exit_reason || exp.review_text)) {
  try {
- await db.from("employer_reviews").insert({
- profile_id: userId,
+ await db.from("employer_reviews").delete().eq("user_id", userId).eq("company_name", exp.company);
+ const { error: revErr } = await db.from("employer_reviews").insert({
+ user_id: userId,
  company_name: exp.company,
  store_id: exp.store_id || null,
- role_title: exp.title || "Colaborador",
+ job_title: exp.title || "Colaborador",
+ employment_type: exp.employment_type || null,
+ start_date: exp.start_date || null,
+ end_date: exp.end_date || null,
+ is_current: exp.is_current ?? false,
  salary_cents: exp.salary_cents || null,
  exit_reason: exp.exit_reason || null,
  company_rating: exp.company_rating || null,
  would_recommend: exp.would_recommend ?? true,
- review_text: exp.review_text || null,
+ pros: exp.review_text || null,
+ status: "published",
  is_anonymous: exp.is_anonymous ?? false,
  });
  } catch {
- // fallback silencioso caso já exista
+ console.error("[social.functions] Erro ao sincronizar review de empregador:", { userId, company: exp.company, table: "employer_reviews" });
  }
  }
  }
@@ -1295,7 +1301,7 @@ export const getCompanyEmployerStats = createServerFn({ method: "GET" })
  .validator(z.object({ companyName: z.string().optional(), storeId: z.string().optional() }))
  .handler(async ({ data: { companyName, storeId } }) => {
  const db = getServerClient();
- let query = db.from("employer_reviews").select("company_rating, salary_cents, would_recommend, exit_reason, review_text, created_at");
+ let query = db.from("employer_reviews").select("company_rating, salary_cents, would_recommend, exit_reason, pros, created_at");
  if (storeId) {
  query = query.eq("store_id", storeId);
  } else if (companyName) {
@@ -1305,7 +1311,11 @@ export const getCompanyEmployerStats = createServerFn({ method: "GET" })
  }
 
  const { data: rows, error } = await query;
- if (error || !rows || rows.length === 0) return null;
+ if (error) {
+ console.error("[social.functions] getCompanyEmployerStats query error:", { error, companyName, storeId, schema: "public", table: "employer_reviews" });
+ return null;
+ }
+ if (!rows || rows.length === 0) return null;
 
  const total = rows.length;
  const ratings = rows.filter((r) => r.company_rating).map((r) => r.company_rating!);
@@ -1320,7 +1330,7 @@ export const getCompanyEmployerStats = createServerFn({ method: "GET" })
  avgRating: avgRating ? Number(avgRating.toFixed(1)) : null,
  recommendRate,
  avgSalaryCents,
- recentReviews: rows.filter((r) => r.review_text).slice(0, 5),
+ recentReviews: rows.filter((r) => r.pros).slice(0, 5).map((r) => ({ ...r, review_text: r.pros })),
  };
  });
 
@@ -1445,8 +1455,8 @@ export const getPublicMemberProfile = createServerFn({ method: "GET" })
  }
  }
 
- // Busca 3: se ainda não encontrou e usuário está autenticado
- if (!rawProfile && currentUserId) {
+  // Busca 3: se a busca for explicitamente pelo próprio usuário ("eu", "me", "minha-conta") e usuário está autenticado
+  if (!rawProfile && (decodedId === "eu" || decodedId === "me" || decodedId === "minha-conta") && currentUserId) {
  const resCurrent = await db
  .from("profiles")
  .select(
@@ -1676,6 +1686,27 @@ export const getPublicMemberProfile = createServerFn({ method: "GET" })
     }
   }
 
+  let safeResumeData = rawProfile?.resume_data ? JSON.parse(JSON.stringify(rawProfile.resume_data)) : null;
+  if (safeResumeData && !isOwner) {
+    if (safeResumeData.availability) {
+      delete safeResumeData.availability.salaryExpectationCents;
+    }
+    if (Array.isArray(safeResumeData.experiences)) {
+      safeResumeData.experiences = safeResumeData.experiences.map((exp: any) => {
+        const {
+          salary_cents,
+          exit_reason,
+          company_rating,
+          would_recommend,
+          review_text,
+          is_anonymous,
+          ...publicExp
+        } = exp;
+        return publicExp;
+      });
+    }
+  }
+
   const profileData = {
     id: targetUserId,
     full_name: rawProfile?.full_name || null,
@@ -1694,7 +1725,7 @@ export const getPublicMemberProfile = createServerFn({ method: "GET" })
     profile_type: rawProfile?.profile_type || "personal",
     badges: rawProfile?.badges || [],
     biolinks: (rawProfile?.biolinks as any) || [],
-    resume_data: (rawProfile?.resume_data as any) || null,
+    resume_data: safeResumeData,
     featured_banner_url: rawProfile?.featured_banner_url || null,
     featured_banner_link: rawProfile?.featured_banner_link || null,
     created_at: rawProfile?.created_at || new Date().toISOString(),

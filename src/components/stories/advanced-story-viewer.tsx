@@ -290,7 +290,7 @@ export function AdvancedStoryViewer({
  </span>
 
  {currentGroup.isOfficialAmbassador && (
- <Badge className="bg-gradient-to-r from-purple-500 to-indigo-600 text-foreground text-2xs font-black px-2 py-1 rounded-md border-0">
+ <Badge className="bg-purple-600 text-foreground text-2xs font-black px-2 py-1 rounded-md border-0">
  <SealCheck size={11} weight="fill" className="mr-1" />
  {currentGroup.ambassadorBadgeLabel || "Embaixador"}
  </Badge>
@@ -351,7 +351,7 @@ export function AdvancedStoryViewer({
  )}
 
  {/* Gradiente Escuro Superior e Inferior para Legibilidade */}
- <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80 pointer-events-none" />
+ <div className="absolute inset-0 bg-black/50 pointer-events-none" />
  </div>
 
  {/* ── 4. Prompt Interativo de Vídeo Longo (>60s com Countdown de 5s) ── */}

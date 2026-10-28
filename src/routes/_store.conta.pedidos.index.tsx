@@ -496,7 +496,7 @@ function CustomerOrdersPage() {
           </div>
 
           {/* KPI Dashboard Cards (Apple HIG Squircles) */}
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="p-4 rounded-xl bg-card border border-border/60 shadow-xs space-y-1">
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Total de Pedidos

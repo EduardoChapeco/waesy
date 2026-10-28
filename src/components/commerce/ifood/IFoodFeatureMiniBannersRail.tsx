@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "@tanstack/react-router";
-import { CaretRight, Sparkle } from "@phosphor-icons/react";
+import { CaretRight, Sparkle, CookingPot, Car, Hamburger, Tag, Ticket, Storefront } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 
 export interface FeatureMiniBannerItem {
@@ -13,6 +13,9 @@ export interface FeatureMiniBannerItem {
   actionText?: string | null;
   bgColor?: string | null;
   textColor?: string | null;
+  iconName?: string | null;
+  iconUrl?: string | null;
+  showText?: boolean;
 }
 
 export interface IFoodFeatureMiniBannersRailProps {
@@ -57,13 +60,33 @@ const DEFAULT_MINI_BANNERS: FeatureMiniBannerItem[] = [
   },
 ];
 
-const DEFAULT_GRADIENTS = [
-  "from-purple-600 to-indigo-700",
-  "from-amber-600 to-orange-700",
-  "from-rose-600 to-red-800",
-  "from-emerald-600 to-teal-800",
-  "from-neutral-800 to-neutral-950",
+const DEFAULT_COLORS = [
+  "bg-purple-700",
+  "bg-amber-700",
+  "bg-rose-700",
+  "bg-emerald-700",
+  "bg-neutral-800",
 ];
+
+function resolveMiniBannerIcon(iconName?: string | null, fallbackId?: string) {
+  const map: Record<string, any> = {
+    Ticket,
+    Sparkle,
+    CookingPot,
+    Car,
+    Hamburger,
+    Tag,
+    Storefront,
+  };
+  if (iconName && map[iconName]) return map[iconName];
+  if (fallbackId?.includes("clube")) return Ticket;
+  if (fallbackId?.includes("gourmet")) return CookingPot;
+  if (fallbackId?.includes("corrida") || fallbackId?.includes("go")) return Car;
+  if (fallbackId?.includes("turbo") || fallbackId?.includes("burg")) return Hamburger;
+  return Sparkle;
+}
+
+export type FeatureMiniBannersRailProps = IFoodFeatureMiniBannersRailProps;
 
 export function IFoodFeatureMiniBannersRail({
   title = "No Waesy também tem",
@@ -76,7 +99,7 @@ export function IFoodFeatureMiniBannersRail({
   return (
     <section
       aria-label={title || "Destaques Especiais"}
-      className={cn("w-full space-y-2.5 py-1", className)}
+      className={cn("w-full space-y-2 py-1", className)}
       data-testid="ifood-feature-mini-banners-rail"
     >
       {title && (
@@ -95,8 +118,10 @@ export function IFoodFeatureMiniBannersRail({
       {/* Trilho Snap-Scroll de Mini Banners Verticais */}
       <div className="flex items-center gap-3 overflow-x-auto no-scrollbar px-3 sm:px-4 snap-x snap-mandatory [mask-image:linear-gradient(to_right,black_92%,transparent_100%)]">
         {items.map((item, index) => {
-          const fallbackGradient = DEFAULT_GRADIENTS[index % DEFAULT_GRADIENTS.length];
+          const fallbackColor = DEFAULT_COLORS[index % DEFAULT_COLORS.length];
           const hasCustomBg = Boolean(item.bgColor && item.bgColor.trim());
+          const IconComponent = resolveMiniBannerIcon(item.iconName, item.id);
+          const cleanAction = (item.actionText || item.title || "Conferir").replace(/\s*>\s*$/, "");
 
           return (
             <Link
@@ -104,22 +129,26 @@ export function IFoodFeatureMiniBannersRail({
               to={item.targetUrl as any}
               className={cn(
                 "w-36 sm:w-40 h-48 sm:h-52 rounded-2xl p-3 flex flex-col justify-between shrink-0 snap-start overflow-hidden relative group transition-transform duration-200 active:scale-95 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-xs",
-                !hasCustomBg && `bg-gradient-to-br ${fallbackGradient}`,
+                !hasCustomBg && fallbackColor,
               )}
               style={hasCustomBg ? { backgroundColor: item.bgColor! } : undefined}
             >
               {/* Topo do Card: Badge + Título */}
               <div className="z-10 space-y-1">
                 {item.badgeText && (
-                  <span className="inline-block px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-xs text-white text-3xs font-extrabold uppercase tracking-wider">
+                  <span className="inline-block px-2 py-1 rounded-full bg-card/20 backdrop-blur-xs text-primary-foreground text-3xs font-extrabold uppercase tracking-wider">
                     {item.badgeText}
                   </span>
                 )}
-                <h3 className="text-sm font-extrabold text-white leading-snug line-clamp-2 drop-shadow-xs">
-                  {item.title}
-                </h3>
-                {item.subtitle && (
-                  <p className="text-2xs text-white/80 line-clamp-1">{item.subtitle}</p>
+                {item.showText !== false && (
+                  <>
+                    <h3 className="text-sm font-extrabold text-primary-foreground leading-snug line-clamp-2 drop-shadow-xs">
+                      {item.title}
+                    </h3>
+                    {item.subtitle && (
+                      <p className="text-xs text-primary-foreground/80 line-clamp-1">{item.subtitle}</p>
+                    )}
+                  </>
                 )}
               </div>
 
@@ -138,15 +167,25 @@ export function IFoodFeatureMiniBannersRail({
                 </div>
               )}
 
-              {/* Botão Pílula Inferior ("Clube >", "Gourmet >", etc.) */}
-              {item.actionText && (
-                <div className="z-10 mt-auto pt-2">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/25 backdrop-blur-xs text-white text-2xs font-bold leading-none shadow-xs group-hover:bg-white/35 transition-colors">
-                    <span>{item.actionText}</span>
-                    <CaretRight size={12} weight="bold" />
-                  </span>
-                </div>
-              )}
+              {/* Minifaixa Inferior Canônica (Ícone/Mídia + Rótulo + Chevron) */}
+              <div className="z-10 mt-auto pt-2 flex items-center">
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-neutral-950/75 backdrop-blur-md text-neutral-50 text-xs font-bold leading-none shadow-xs group-hover:bg-neutral-950/85 transition-colors max-w-full">
+                  {item.iconUrl ? (
+                    <img
+                      src={item.iconUrl}
+                      alt=""
+                      className="size-4 object-contain rounded-xs shrink-0"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLElement).style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    <IconComponent size={14} weight="fill" className="shrink-0 text-neutral-100" />
+                  )}
+                  <span className="truncate">{cleanAction}</span>
+                  <CaretRight size={12} weight="bold" className="shrink-0 text-neutral-300" />
+                </span>
+              </div>
             </Link>
           );
         })}
@@ -154,3 +193,5 @@ export function IFoodFeatureMiniBannersRail({
     </section>
   );
 }
+
+export const FeatureMiniBannersRail = IFoodFeatureMiniBannersRail;

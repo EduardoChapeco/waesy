@@ -9,6 +9,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "
 import { useWindowSizeClass } from "@/hooks/use-mobile";
 import { findClosestCanonicalCity } from "@/lib/constants/cities";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export interface LocationState {
  city: string;
@@ -387,11 +388,13 @@ export function LocationMasterPill({ className = "" }: { className?: string }) {
  aria-busy={isLocating || undefined}
  aria-label="Alterar Localização"
  title="Alterar Localização"
- className={`inline-flex items-center gap-2 px-3 h-11 min-h-11 min-w-11 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none border select-none cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
- isHolding
- ? "scale-95 bg-primary/20 border-primary text-primary"
- : "bg-muted/60 hover:bg-muted text-foreground border-border/80 hover:border-primary/40"
- } ${className}`}
+ className={cn(
+   "inline-flex items-center gap-2 px-3 h-11 min-h-11 min-w-11 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none border select-none cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+   isHolding
+     ? "scale-95 bg-primary/20 border-primary text-primary"
+     : "bg-muted/60 hover:bg-muted text-foreground border-border/80 hover:border-primary/40",
+   className,
+ )}
  >
  {isLocating ? (
  <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-primary shrink-0" />

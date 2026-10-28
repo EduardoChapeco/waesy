@@ -61,10 +61,10 @@ export function PostEmbedRenderer({ embed }: { embed?: PostEmbedData | null }) {
  <div className="space-y-1">
  <div className="flex items-center gap-2">
  <Badge variant="outline" className="text-2xs px-2 py-0 h-4 font-semibold uppercase tracking-wider bg-background/80">
- {embed.type === "event" && "📅 Evento"}
- {embed.type === "product" && "🛍️ Produto"}
- {embed.type === "classified" && "🏷️ Classificado"}
- {embed.type === "news" && "📰 Notícia"}
+ {embed.type === "event" && " Evento"}
+ {embed.type === "product" && "️ Produto"}
+ {embed.type === "classified" && "️ Classificado"}
+ {embed.type === "news" && " Notícia"}
  </Badge>
  {embed.price_cents !== undefined && (
  <span className="text-xs font-black text-primary">
@@ -96,7 +96,7 @@ export function PostEmbedRenderer({ embed }: { embed?: PostEmbedData | null }) {
  {embed.location && (
  <div className="flex items-center gap-1 font-medium">
  <MapPin className="size-3 text-primary" />
- <span className="truncate max-w-[180px]">{embed.location}</span>
+ <span className="truncate max-w-45">{embed.location}</span>
  </div>
  )}
  </div>

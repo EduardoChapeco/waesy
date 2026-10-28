@@ -192,7 +192,7 @@ export function ContractAuditManifest({
                     <img
                       src={signer.signatureImageUrl}
                       alt={`Assinatura de ${signer.name}`}
-                      className="h-9 max-w-[140px] object-contain"
+                      className="h-9 max-w-35 object-contain"
                     />
                   </div>
                 )}

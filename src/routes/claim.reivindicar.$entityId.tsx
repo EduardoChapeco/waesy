@@ -79,7 +79,7 @@ function ClaimReivindicarPage() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-[100dvh] bg-background flex items-center justify-center p-4">
+      <div className="min-h-dvh bg-background flex items-center justify-center p-4">
         <div className="max-w-md w-full p-6 sm:p-8 rounded-lg border border-border/80 bg-card shadow-xs text-center flex flex-col items-center">
           <div className="size-14 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-4">
             <CheckCircle2 className="size-7" />
@@ -104,7 +104,7 @@ function ClaimReivindicarPage() {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-background text-foreground py-8 sm:py-12 px-3 sm:px-6">
+    <div className="min-h-dvh bg-background text-foreground py-8 sm:py-12 px-3 sm:px-6">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-8">
           <Badge variant="outline" className="px-3 py-1 mb-3 rounded-full text-xs font-semibold gap-2 border-primary/30 text-primary">

@@ -8,7 +8,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { NICHE_STORE_KEYWORDS } from "@/services/marketplace.functions";
+import { logSystemError } from "@/lib/logger";
+import { NICHE_STORE_KEYWORDS, isMatchNicheKeyword } from "@/services/marketplace.functions";
 import type { FlashOfferDTO, StoreCardDTO } from "@/services/marketplace.functions";
 import { formatStoreCategory } from "@/lib/niches/niche-manifest";
 
@@ -353,13 +354,28 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
  };
  });
 
- // Filtra lojas do nicho
+ // Filtra lojas do nicho com isolamento semântico estrito (Invariantes B.33 e B.37)
  let filteredStores = allDbStores;
  if (!isGlobal && !storeId) {
  filteredStores = allDbStores.filter((st) => {
  const cat = (st.category || "").toLowerCase();
  const name = (st.name || "").toLowerCase();
- return nicheKeywords.some((kw) => cat.includes(kw) || name.includes(kw));
+
+ // 1. Prioridade absoluta ao segmento cadastrado da loja
+ const rawStore = storesRes.data?.find((s: any) => s.id === st.id);
+ const settings = (rawStore?.settings as Record<string, any>) || {};
+ const declaredSegment = (settings.segment || settings.niche || settings.type || "").toLowerCase().trim();
+
+ if (declaredSegment) {
+ const isFoodStore = ["gastronomia", "restaurante", "food", "lanchonete", "pizzaria", "hamburgueria", "doceria"].includes(declaredSegment);
+ const isFoodSurface = ["gastronomia", "restaurantes", "food"].includes(normalizedNiche);
+ if (isFoodStore && !isFoodSurface) return false;
+
+ if (declaredSegment === normalizedNiche) return true;
+ }
+
+ // 2. Validação por palavras-chave com word boundary (DL-37)
+ return nicheKeywords.some((kw) => isMatchNicheKeyword(cat, kw) || isMatchNicheKeyword(name, kw));
  });
  }
 
@@ -398,13 +414,21 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
  };
  });
 
- // Filtra produtos do nicho se aplicável
+ // Filtra produtos do nicho (Erradicação de Vazamento Cruzado B.37)
  if (!isGlobal && !storeId) {
  const matchingStoreIds = new Set(filteredStores.map((s) => s.id));
  allProducts = allProducts.filter((p) => {
+ // 1. Se pertence a uma loja aprovada do nicho, é aprovado
  if (matchingStoreIds.has(p.store_id)) return true;
- const titleLower = p.title.toLowerCase();
- return nicheKeywords.some((kw) => titleLower.includes(kw));
+
+ // 2. Se o produto declara explicitamente o nicho nos atributos
+ const rawProd = productsRes.data?.find((item: any) => item.id === p.id);
+ const prodAttrs = (rawProd?.attributes as Record<string, any>) || {};
+ const prodNiche = (prodAttrs.tipo || prodAttrs.niche || prodAttrs.segment || "").toLowerCase().trim();
+ if (prodNiche && prodNiche === normalizedNiche) return true;
+
+ // NUNCA incluir itens de outras lojas por simples coincidência de substring no título
+ return false;
  });
  }
 
@@ -458,7 +482,17 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
  const { getUnifiedShowcasePosts } = await import("@/services/admin-home-cms.functions");
  sectionItems = await getUnifiedShowcasePosts({
  data: { city: cleanCity || undefined, limit: sec.item_limit || 10 },
- }).catch(() => []);
+ }).catch((err) => {
+ logSystemError({
+ route: "surface-cms.getSurfaceFeedPayload",
+ contract_name: "getUnifiedShowcasePosts",
+ table_name: "feed_posts",
+ schema_name: "public",
+ operation: "SELECT",
+ error: err,
+ });
+ return [];
+ });
  } else if (sec.type === "store_rail" || sec.data_source === "stores") {
  let storePool = [...filteredStores];
  if (sec.ranking_strategy === "random_shuffle") {
@@ -467,7 +501,6 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
  sectionItems = storePool.slice(0, sec.item_limit || 10);
  } else if (sec.type === "flash_deal_rail" || sec.data_source === "flash_deals") {
  let flashPool = allProducts.filter((p) => p.discount_percent > 0);
- if (flashPool.length === 0) flashPool = allProducts;
  flashPool.sort((a, b) => b.discount_percent - a.discount_percent);
  sectionItems = flashPool.slice(0, sec.item_limit || 8);
  } else {

@@ -194,7 +194,7 @@ export function AiLiveExtractionDisplay({
           </div>
           <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
             <div
-              className="h-full bg-primary transition-colors duration-200 duration-500 rounded-full"
+              className="h-full bg-primary transition-colors duration-200 duration-200 rounded-full"
               style={{ width: `${result ? 100 : Math.max(progressPercent, (activeSquadIdx + 1) * 20)}%` }}
             />
           </div>

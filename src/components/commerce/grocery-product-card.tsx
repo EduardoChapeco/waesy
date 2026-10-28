@@ -121,7 +121,7 @@ export function GroceryProductCard({
               alt={product.coverAlt || product.title}
               loading="lazy"
               onError={() => setImgError(true)}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground">
@@ -261,7 +261,7 @@ export function GroceryProductCard({
  alt={product.coverAlt || product.title}
  loading="lazy"
  onError={() => setImgError(true)}
- className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
+ className="size-full object-cover group-hover:scale-105 transition-transform duration-200"
  />
  ) : (
  <div className="size-full flex items-center justify-center text-muted-foreground">

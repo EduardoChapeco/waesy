@@ -64,119 +64,24 @@ export interface CreditCardInvoiceViewProps {
   className?: string;
 }
 
-const DEFAULT_INVOICES: InvoiceMonth[] = [
-  {
-    id: "inv-jul",
-    monthLabel: "JUL",
-    fullLabel: "Julho 2026",
-    status: "paid",
-    totalCents: 182000,
-    dueDate: "15 JUL",
-    items: [
-      {
-        id: "item-j1",
-        description: "Supermercado Silva",
-        category: "food",
-        date: "Hoje",
-        time: "11:03",
-        amountCents: 28100,
-        paymentType: "Crédito",
-      },
-    ],
-  },
-  {
-    id: "inv-ago",
-    monthLabel: "AGO",
-    fullLabel: "Agosto 2026",
-    status: "paid",
-    totalCents: 195000,
-    dueDate: "15 AGO",
-    items: [
-      {
-        id: "item-a1",
-        description: "Posto Ipiranga",
-        category: "transport",
-        date: "Hoje",
-        time: "14:20",
-        amountCents: 15000,
-        paymentType: "Crédito",
-      },
-    ],
-  },
-  {
-    id: "inv-set",
-    monthLabel: "SET",
-    fullLabel: "Setembro 2026",
-    status: "closed",
-    totalCents: 218900,
-    dueDate: "15 SET",
-    items: [
-      {
-        id: "item-s1",
-        description: "Shopping Iguatemi",
-        category: "shopping",
-        date: "Hoje",
-        time: "17:45",
-        amountCents: 34000,
-        paymentType: "Crédito",
-      },
-    ],
-  },
-  {
-    id: "inv-out",
-    monthLabel: "OUT",
-    fullLabel: "Outubro 2026",
-    status: "open",
-    totalCents: 245800,
-    dueDate: "15 OUT",
-    items: [
-      {
-        id: "item-1",
-        description: "Supermercado Silva",
-        category: "food",
-        date: "Hoje",
-        time: "11:03",
-        amountCents: 28100,
-        paymentType: "Crédito",
-      },
-      {
-        id: "item-2",
-        description: "Posto Ipiranga",
-        category: "transport",
-        date: "Hoje",
-        time: "14:20",
-        amountCents: 15000,
-        paymentType: "Crédito",
-      },
-      {
-        id: "item-3",
-        description: "Shopping Iguatemi",
-        category: "shopping",
-        date: "Ontem",
-        time: "18:12",
-        amountCents: 42000,
-        paymentType: "Crédito",
-      },
-    ],
-  },
-];
-
 export function CreditCardInvoiceView({
-  cardHolderName = "EDUARDO RAMOS",
-  lastFourDigits = "4892",
-  totalLimitCents = 1000000, // R$ 10.000,00
-  usedLimitCents = 245800, // R$ 2.458,00
-  invoices = DEFAULT_INVOICES,
+  cardHolderName = "TITULAR DO CARTÃO",
+  lastFourDigits = "••••",
+  totalLimitCents = 0,
+  usedLimitCents = 0,
+  invoices = [],
   onPayInvoiceClick,
   onVirtualCardClick,
   onAdjustLimitClick,
   onBackClick,
   className,
 }: CreditCardInvoiceViewProps) {
-  const [selectedMonthId, setSelectedMonthId] = useState<string>("inv-out");
+  const [selectedMonthId, setSelectedMonthId] = useState<string>(
+    invoices[invoices.length - 1]?.id || ""
+  );
 
   const currentInvoice =
-    invoices.find((inv) => inv.id === selectedMonthId) || invoices[invoices.length - 1];
+    invoices.find((inv) => inv.id === selectedMonthId) || invoices[invoices.length - 1] || null;
 
   const availableLimitCents = Math.max(0, totalLimitCents - usedLimitCents);
 
@@ -226,7 +131,17 @@ export function CreditCardInvoiceView({
         </button>
       </div>
 
-      {/* ── Régua Seletora de Faturas Mensais (JUL, AGO, SET, OUT) ── */}
+      {!currentInvoice ? (
+        <div className="py-16 text-center space-y-3 p-6 rounded-2xl bg-muted/20 border border-dashed border-border/60">
+          <CreditCard className="size-10 mx-auto text-muted-foreground/40" />
+          <p className="text-sm font-bold text-foreground">Nenhuma fatura em aberto</p>
+          <p className="text-xs text-muted-foreground max-w-xs mx-auto">
+            Quando você realizar compras com o cartão de crédito físico ou virtual, os lançamentos e faturas serão exibidos aqui em tempo real.
+          </p>
+        </div>
+      ) : (
+        <>
+      {/* ── Régua Seletora de Faturas Mensais ── */}
       <div className="flex items-center justify-between border-b border-border/60 px-2">
         <span className="sr-only">Faturas Mensais</span>
         {invoices.map((inv) => {
@@ -237,7 +152,7 @@ export function CreditCardInvoiceView({
               type="button"
               onClick={() => setSelectedMonthId(inv.id)}
               className={cn(
-                "h-11 min-h-11 px-3 flex items-center justify-center font-extrabold text-xs tracking-wider transition-all relative cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500",
+                "h-11 min-h-11 px-3 flex items-center justify-center font-extrabold text-xs tracking-wider transition-transform transition-colors relative cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500",
                 isSelected
                   ? "text-lime-600 font-black border-b-2 border-lime-500"
                   : "text-muted-foreground hover:text-foreground"
@@ -294,7 +209,7 @@ export function CreditCardInvoiceView({
                 toast.success(`Iniciando pagamento da fatura de ${currentInvoice.fullLabel}`);
               }
             }}
-            className="w-full h-12 min-h-12 rounded-xl bg-lime-400 hover:bg-lime-500 active:bg-lime-600 text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+            className="w-full h-12 min-h-12 rounded-xl bg-lime-400 hover:bg-lime-500 active:bg-lime-600 text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-transform transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
           >
             <CreditCard className="size-4" />
             <span>Pagar Fatura</span>
@@ -303,11 +218,11 @@ export function CreditCardInvoiceView({
       </div>
 
       {/* ── Carrossel Squircle de Ações Imediatas ── */}
-      <div className="grid grid-cols-4 gap-2 pt-2">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
         <button
           type="button"
           onClick={() => toast.info("Lista de Meus Cartões")}
-          className="h-20 min-h-20 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 active:bg-zinc-200 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-1.5 transition-all text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+          className="h-20 min-h-20 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 active:bg-zinc-200 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-2 transition-transform transition-colors text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
         >
           <div className="size-8 rounded-lg bg-zinc-200/60 flex items-center justify-center text-zinc-900">
             <CreditCard className="size-4" />
@@ -320,7 +235,7 @@ export function CreditCardInvoiceView({
         <button
           type="button"
           onClick={onAdjustLimitClick || (() => toast.info("Limite Extra Pré-aprovado"))}
-          className="h-20 min-h-20 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 active:bg-zinc-200 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-1.5 transition-all text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+          className="h-20 min-h-20 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 active:bg-zinc-200 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-2 transition-transform transition-colors text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
         >
           <div className="size-8 rounded-lg bg-zinc-200/60 flex items-center justify-center text-zinc-900">
             <SlidersHorizontal className="size-4" />
@@ -333,7 +248,7 @@ export function CreditCardInvoiceView({
         <button
           type="button"
           onClick={onVirtualCardClick || (() => toast.info("Abrir Cartão Virtual"))}
-          className="h-20 min-h-20 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 active:bg-zinc-200 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-1.5 transition-all text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+          className="h-20 min-h-20 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 active:bg-zinc-200 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-2 transition-transform transition-colors text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
         >
           <div className="size-8 rounded-lg bg-zinc-200/60 flex items-center justify-center text-zinc-900">
             <Sparkles className="size-4" />
@@ -346,7 +261,7 @@ export function CreditCardInvoiceView({
         <button
           type="button"
           onClick={() => toast.info("Investir em CDB do Waesy Bank")}
-          className="h-20 min-h-20 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 active:bg-zinc-200 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-1.5 transition-all text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+          className="h-20 min-h-20 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 active:bg-zinc-200 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-2 transition-transform transition-colors text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
         >
           <div className="size-8 rounded-lg bg-zinc-200/60 flex items-center justify-center text-zinc-900">
             <TrendingUp className="size-4" />
@@ -360,50 +275,63 @@ export function CreditCardInvoiceView({
       {/* ── Lançamentos da Fatura Agrupados por Data ("Hoje") ── */}
       <div className="space-y-3 pt-3">
         <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1 block">
-          Hoje
+          Lançamentos
         </span>
 
-        <div className="space-y-2">
-          {currentInvoice.items.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center justify-between p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200/60 shadow-2xs hover:bg-zinc-100 transition-colors cursor-pointer"
-            >
-              <div className="flex items-center gap-3 min-w-0 pr-2">
-                <div className="size-11 rounded-xl bg-zinc-100 border border-zinc-200/60 flex items-center justify-center text-zinc-800 shrink-0">
-                  {item.category === "transport" ? (
-                    <Fuel className="size-5" />
-                  ) : (
-                    <ShoppingBag className="size-5" />
-                  )}
-                </div>
-
-                <div className="min-w-0">
-                  <span className="text-xs sm:text-sm font-bold text-foreground block truncate">
-                    {item.description}
-                  </span>
-                  <div className="flex items-center gap-1.5 text-2xs text-muted-foreground mt-0.5">
-                    <span>{item.paymentType || "Crédito"}</span>
-                    {item.time && (
-                      <>
-                        <span>•</span>
-                        <span>{item.time}</span>
-                      </>
+        {currentInvoice.items.length === 0 ? (
+          <div className="p-6 rounded-2xl bg-zinc-50 border border-zinc-200/60 text-center space-y-1">
+            <span className="text-xs font-bold text-zinc-800 block">
+              Nenhuma compra nesta fatura
+            </span>
+            <span className="text-2xs text-muted-foreground block">
+              Suas compras realizadas com o cartão Waesy aparecerão aqui.
+            </span>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {currentInvoice.items.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center justify-between p-4 rounded-2xl bg-zinc-50 border border-zinc-200/60 shadow-2xs hover:bg-zinc-100 transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-3 min-w-0 pr-2">
+                  <div className="size-11 rounded-xl bg-zinc-100 border border-zinc-200/60 flex items-center justify-center text-zinc-800 shrink-0">
+                    {item.category === "transport" ? (
+                      <Fuel className="size-5" />
+                    ) : (
+                      <ShoppingBag className="size-5" />
                     )}
                   </div>
+
+                  <div className="min-w-0">
+                    <span className="text-xs sm:text-sm font-bold text-foreground block truncate">
+                      {item.description}
+                    </span>
+                    <div className="flex items-center gap-2 text-2xs text-muted-foreground mt-1">
+                      <span>{item.paymentType || "Crédito"}</span>
+                      {item.time && (
+                        <>
+                          <span>•</span>
+                          <span>{item.time}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-xs sm:text-sm font-bold text-foreground font-mono">
+                    -{formatCents(item.amountCents)}
+                  </span>
+                  <ChevronRight className="size-4 text-muted-foreground" />
                 </div>
               </div>
-
-              <div className="flex items-center gap-1.5 shrink-0">
-                <span className="text-xs sm:text-sm font-bold text-foreground font-mono">
-                  -{formatCents(item.amountCents)}
-                </span>
-                <ChevronRight className="size-4 text-muted-foreground" />
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
+      </>
+      )}
     </div>
   );
 }

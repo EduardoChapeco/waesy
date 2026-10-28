@@ -141,6 +141,14 @@
     "DL-30": {
       "severity": "P3",
       "enabled": true
+    },
+    "DL-31": {
+      "severity": "P0",
+      "enabled": true
+    },
+    "DL-32": {
+      "severity": "P1",
+      "enabled": true
     }
   },
   "allowlist": [

@@ -34,7 +34,7 @@ export function SocialStudioModal({
   const [aspectRatio, setAspectRatio] = useState<"9:16" | "1:1" | "16:9">("9:16");
   const [copiedCaption, setCopiedCaption] = useState(false);
 
-  const captionText = `${product.title}\n\nPor apenas ${formatMoney(product.priceCents)}!\n\n📍 ${storeName}\n💬 Peça agora no WhatsApp ou compre pelo link da bio!\n\n#usewaesy #${storeName.toLowerCase().replace(/\s+/g, "")} #oferta`;
+  const captionText = `${product.title}\n\nPor apenas ${formatMoney(product.priceCents)}!\n\n ${storeName}\n Peça agora no WhatsApp ou compre pelo link da bio!\n\n#usewaesy #${storeName.toLowerCase().replace(/\s+/g, "")} #oferta`;
 
   const handleCopyCaption = () => {
     navigator.clipboard.writeText(captionText);
@@ -75,7 +75,7 @@ export function SocialStudioModal({
           {/* Visual Canvas Preview */}
           <div className="md:col-span-7 p-6 bg-muted/30 flex flex-col items-center justify-center min-h-96">
             <Tabs value={aspectRatio} onValueChange={(v) => setAspectRatio(v as any)} className="w-full mb-4">
-              <TabsList className="grid grid-cols-3 w-full max-w-xs mx-auto h-11">
+              <TabsList className="grid grid-cols-1 sm:grid-cols-3 w-full max-w-xs mx-auto h-11">
                 <TabsTrigger value="9:16" className="text-xs h-9">Story (9:16)</TabsTrigger>
                 <TabsTrigger value="1:1" className="text-xs h-9">Feed (1:1)</TabsTrigger>
                 <TabsTrigger value="16:9" className="text-xs h-9">Banner (16:9)</TabsTrigger>
@@ -115,7 +115,7 @@ export function SocialStudioModal({
               </div>
 
               {/* Bottom Details Overlay */}
-              <div className="z-10 bg-gradient-to-t from-black/90 via-black/60 to-transparent -mx-5 -mb-5 p-5 space-y-2 pt-8">
+              <div className="z-10 bg-black/70 -mx-5 -mb-5 p-5 space-y-2 pt-8">
                 <h4 className="font-bold text-sm sm:text-base leading-tight drop-shadow-sm line-clamp-2">
                   {product.title}
                 </h4>

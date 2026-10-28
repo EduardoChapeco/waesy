@@ -19,6 +19,8 @@ interface BentoGridProps {
   };
 }
 
+export type MosaicFeatureGridProps = BentoGridProps;
+
 export function BentoGrid({ content, node_id, block_type }: BentoGridProps) {
   const items = content.items || [];
   const trackClick = useBuilderClickTracking(node_id || "", block_type || "");
@@ -28,10 +30,10 @@ export function BentoGrid({ content, node_id, block_type }: BentoGridProps) {
       case "wide":
         return "@md:col-span-2 @md:row-span-1 aspect-video @md:aspect-auto @md:h-64";
       case "tall":
-        /* design-lint-ignore DL-02 reason:"Proporção canônica 3/4 e altura de 512px para card alto do Bento Grid" expiry:"2027-12-31" */
+        /* design-lint-ignore DL-02 reason:"Proporção canônica 3/4 e altura de 512px para card alto da grade modular" expiry:"2027-12-31" */
         return "@md:col-span-1 @md:row-span-2 aspect-[3/4] @md:aspect-auto @md:h-[512px]";
       case "large":
-        /* design-lint-ignore DL-02 reason:"Altura canônica de 512px para card grande do Bento Grid" expiry:"2027-12-31" */
+        /* design-lint-ignore DL-02 reason:"Altura canônica de 512px para card grande da grade modular" expiry:"2027-12-31" */
         return "@md:col-span-2 @md:row-span-2 aspect-square @md:aspect-auto @md:h-[512px]";
       case "small":
       default:
@@ -112,3 +114,5 @@ export function BentoGrid({ content, node_id, block_type }: BentoGridProps) {
     </section>
   );
 }
+
+export const MosaicFeatureGrid = BentoGrid;

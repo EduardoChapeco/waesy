@@ -13,16 +13,16 @@ export interface StatusPreset {
 }
 
 export const STATUS_PRESETS: StatusPreset[] = [
- { emoji: "🍕", label: "Almoçando" },
- { emoji: "☕", label: "Café" },
- { emoji: "💼", label: "Trabalhando" },
- { emoji: "🏖️", label: "Viajando" },
- { emoji: "⚡", label: "Livre" },
- { emoji: "🚫", label: "Ocupado" },
- { emoji: "🎮", label: "Jogando" },
- { emoji: "📚", label: "Estudando" },
- { emoji: "🎧", label: "Ouvindo música" },
- { emoji: "🏃", label: "Treinando" },
+ { emoji: "", label: "Almoçando" },
+ { emoji: "", label: "Café" },
+ { emoji: "", label: "Trabalhando" },
+ { emoji: "️", label: "Viajando" },
+ { emoji: "", label: "Livre" },
+ { emoji: "", label: "Ocupado" },
+ { emoji: "", label: "Jogando" },
+ { emoji: "", label: "Estudando" },
+ { emoji: "", label: "Ouvindo música" },
+ { emoji: "", label: "Treinando" },
 ];
 
 export function MomentsStatusPicker({
@@ -36,7 +36,7 @@ export function MomentsStatusPicker({
  currentStatus?: { emoji: string; text?: string; audience?: string } | null;
  onSave?: (status: { emoji: string; text: string; durationHours: number; audience: string }) => void;
 }) {
- const [selectedEmoji, setSelectedEmoji] = useState(currentStatus?.emoji || "⚡");
+ const [selectedEmoji, setSelectedEmoji] = useState(currentStatus?.emoji || "");
  const [customText, setCustomText] = useState(currentStatus?.text || "");
  const [durationHours, setDurationHours] = useState(8);
  const [audience, setAudience] = useState<"public" | "close_friends" | "private">(
@@ -94,7 +94,7 @@ export function MomentsStatusPicker({
  <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
  Escolha um Humor ou Atividade
  </Label>
- <div className="grid grid-cols-5 gap-2">
+ <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
  {STATUS_PRESETS.map((preset) => (
  <button
  key={preset.emoji}
@@ -133,7 +133,7 @@ export function MomentsStatusPicker({
  <Clock className="size-3.5 text-muted-foreground" />
  <span>Duração do Status</span>
  </Label>
- <div className="grid grid-cols-3 gap-2">
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
  {[2, 8, 24].map((hours) => (
  <Button
  key={hours}
@@ -152,7 +152,7 @@ export function MomentsStatusPicker({
  {/* ── Quem Pode Ver (Audiência) ── */}
  <div className="space-y-2">
  <Label className="text-xs font-semibold">Quem pode ver seu momento?</Label>
- <div className="grid grid-cols-3 gap-2">
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
  <button
  type="button"
  onClick={() => setAudience("public")}

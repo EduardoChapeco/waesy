@@ -3,7 +3,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { CommunitySpacesView } from "./CommunitySpacesView";
 
-describe("Community — CommunitySpacesView (Wix Spaces & Threads Parity)", () => {
+describe("Community — CommunitySpacesView (Espaços de Comunidade & Publicações)", () => {
   it("renderiza o cabeçalho do espaço, bio íntegra e abas de conteúdo", () => {
     const community = {
       id: "comm-1",

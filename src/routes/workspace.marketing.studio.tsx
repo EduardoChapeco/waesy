@@ -26,6 +26,7 @@ import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/commerce/page-header";
 import { ErrorState, EmptyState } from "@/components/state/states";
 import { LoadingState } from "@/components/state/loading";
+import { MediaUploader } from "@/components/ui/media-uploader";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { listAdminProducts } from "@/services/admin-catalog.functions";
@@ -680,11 +681,16 @@ export default function WorkspaceSocialStudioPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-xs font-medium">URL da Imagem</Label>
-                  <Input
-                    value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
-                    className="h-11 rounded-lg text-xs font-mono"
+                  <Label className="text-xs font-medium">Mídia do Card (Upload Direto)</Label>
+                  <MediaUploader
+                    value={imageUrl ? [imageUrl] : []}
+                    onChange={(urls) => setImageUrl(urls[0] || "")}
+                    maxFiles={1}
+                    bucket="post-media"
+                    folder="marketing/studio"
+                    aspect={orientation === "portrait" ? 9 / 16 : 1}
+                    accept="image"
+                    label="Imagem do Card"
                   />
                 </div>
               </div>

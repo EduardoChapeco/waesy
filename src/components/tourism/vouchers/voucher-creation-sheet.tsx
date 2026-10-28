@@ -79,9 +79,9 @@ export function VoucherCreationSheet({
 
       let defaultTitle = title.trim();
       if (!defaultTitle) {
-        if (voucherType === "flight") defaultTitle = `Cartão de Embarque: ${airline} (${originAirport} ➔ ${destinationAirport})`;
+        if (voucherType === "flight") defaultTitle = `Cartão de Embarque: ${airline} (${originAirport}  ${destinationAirport})`;
         else if (voucherType === "hotel") defaultTitle = `Voucher de Hospedagem: ${hotelName || "Hotel & Resort"}`;
-        else if (voucherType === "transfer") defaultTitle = `Voucher de Transfer: ${pickupLocation} ➔ ${dropoffLocation}`;
+        else if (voucherType === "transfer") defaultTitle = `Voucher de Transfer: ${pickupLocation}  ${dropoffLocation}`;
         else defaultTitle = `Voucher Oficial de Serviço`;
       }
 
@@ -167,7 +167,7 @@ export function VoucherCreationSheet({
           {/* 1. SELETOR DE MODALIDADE DE VOUCHER */}
           <div className="space-y-2">
             <Label className="text-xs font-semibold">Tipo de Documento / Serviço</Label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={() => setVoucherType("flight")}
@@ -242,7 +242,7 @@ export function VoucherCreationSheet({
               <div className="space-y-2">
                 <Label className="text-xs font-semibold">Título Personalizado (Opcional)</Label>
                 <Input
-                  placeholder="Ex: Voo São Paulo ➔ Florianópolis"
+                  placeholder="Ex: Voo São Paulo  Florianópolis"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   className="h-10 rounded-lg"
@@ -322,7 +322,7 @@ export function VoucherCreationSheet({
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="space-y-2">
                   <Label className="text-xs font-semibold">Poltrona / Assento</Label>
                   <Input

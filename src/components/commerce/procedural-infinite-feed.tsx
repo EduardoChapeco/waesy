@@ -183,7 +183,7 @@ export function ProceduralInfiniteFeed({
                         <img
                           src={item.cover_image}
                           alt={item.title}
-                          className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-200"
                           loading="lazy"
                         />
                       ) : (

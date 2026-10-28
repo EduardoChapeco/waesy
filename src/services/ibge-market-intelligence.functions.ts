@@ -6,6 +6,7 @@
 
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { logSystemError } from "@/lib/logger";
 
 export interface IbgeMarketIntelligenceDTO {
   city: string;
@@ -142,33 +143,46 @@ export const getIbgeMarketIntelligence = createServerFn({ method: "POST" })
       IBGE_CACHE.set(normalizedKey, { data: result, expiresAt: Date.now() + CACHE_TTL_MS });
       return result;
     } catch (err: any) {
-      console.warn(`[ibge-market-intelligence] Falha na API do IBGE para ${rawName}, acionando fallback:`, err.message);
+      logSystemError({
+        route: "ibge-market-intelligence.getIbgeMarketIntelligence",
+        contract_name: "ibge_market_data",
+        operation: "FETCH_EXTERNAL_IBGE",
+        payload: { cityName: rawName },
+        error: err,
+      });
 
-      // Usar fallback de cidade se cadastrado
-      const fallback = FALLBACK_CITIES[normalizedKey] || {
-        id: 4204202,
-        pop: 254785,
-        gdp: 13950000,
-        state: "SC",
-      };
+      // Se existir referencial censitário verificado para o município, usa de contingência
+      const fallback = FALLBACK_CITIES[normalizedKey];
+      if (fallback) {
+        const perCapita = (fallback.gdp * 1000) / fallback.pop;
+        return {
+          city: rawName,
+          state: fallback.state,
+          municipioId: fallback.id,
+          population: fallback.pop,
+          populationFormatted: fallback.pop.toLocaleString("pt-BR"),
+          gdpThousandBrl: fallback.gdp,
+          gdpFormatted: `R$ ${(fallback.gdp / 1000).toFixed(1)} milhões`,
+          perCapitaGdpEstimatedBrl: Number(perCapita.toFixed(2)),
+          source: "IBGE Censo 2022 (Referencial de Contingência)",
+          insight: `Estimativa oficial consolidada para ${rawName} (${fallback.state}) com população de ${fallback.pop.toLocaleString(
+            "pt-BR"
+          )} habitantes e PIB de R$ ${(fallback.gdp / 1000).toFixed(1)} milhões.`,
+        };
+      }
 
-      const perCapita = (fallback.gdp * 1000) / fallback.pop;
-
-      const fallbackResult: IbgeMarketIntelligenceDTO = {
+      // Retorno honesto sem inventar dados
+      return {
         city: rawName,
-        state: fallback.state,
-        municipioId: fallback.id,
-        population: fallback.pop,
-        populationFormatted: fallback.pop.toLocaleString("pt-BR"),
-        gdpThousandBrl: fallback.gdp,
-        gdpFormatted: `R$ ${(fallback.gdp / 1000).toFixed(1)} milhões`,
-        perCapitaGdpEstimatedBrl: Number(perCapita.toFixed(2)),
-        source: "IBGE Referencial Consolidado",
-        insight: `Estimativa oficial consolidada para ${rawName} (${fallback.state}) com população de ${fallback.pop.toLocaleString(
-          "pt-BR"
-        )} habitantes e PIB de R$ ${(fallback.gdp / 1000).toFixed(1)} milhões.`,
+        state: "BR",
+        municipioId: 0,
+        population: 0,
+        populationFormatted: "Indisponível",
+        gdpThousandBrl: 0,
+        gdpFormatted: "Indisponível",
+        perCapitaGdpEstimatedBrl: 0,
+        source: "IBGE (Indisponível)",
+        insight: `Indicadores estatísticos do IBGE para ${rawName} estão temporariamente inacessíveis.`,
       };
-
-      return fallbackResult;
     }
   });

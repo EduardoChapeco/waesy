@@ -198,7 +198,7 @@ function RelatoriosPage() {
                   </div>
                   <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                     <div
-                      className={`h-full ${item.color} rounded-full transition-colors duration-200 duration-500`}
+                      className={`h-full ${item.color} rounded-full transition-colors duration-200 duration-200`}
                       style={{ width: `${pct}%` }}
                     />
                   </div>

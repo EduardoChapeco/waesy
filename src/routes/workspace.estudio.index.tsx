@@ -229,7 +229,7 @@ function StudioWorkspacePage() {
  };
 
  return (
- <div className="fixed inset-0 w-screen h-[100dvh] z-50 flex flex-col bg-background text-foreground overflow-hidden font-sans select-none">
+ <div className="fixed inset-0 w-screen h-dvh z-50 flex flex-col bg-background text-foreground overflow-hidden font-sans select-none">
  {/* ── 1. HEADER DO ESTÚDIO FULLPAGE: Título + Modos + Salvar/Exportar ── */}
  <header className="h-14 border-b border-border/80 bg-card/95 backdrop-blur-md px-4 flex items-center justify-between shrink-0 z-20">
  <div className="flex items-center gap-2 sm:gap-3">
@@ -239,7 +239,7 @@ function StudioWorkspacePage() {
  <Input
  value={projectTitle}
  onChange={(e) => setProjectTitle(e.target.value)}
- className="h-8 px-2 text-xs font-black bg-transparent border-transparent hover:border-border/60 focus:border-border rounded-lg max-w-[180px] sm:max-w-[260px]"
+ className="h-8 px-2 text-xs font-black bg-transparent border-transparent hover:border-border/60 focus:border-border rounded-lg max-w-45 sm:max-w-65"
  />
  <Badge variant="outline" className="text-xs font-mono uppercase font-bold">
  {studioMode === "graphic" ? "Design Gráfico" : "Vídeo 4K"}
@@ -337,7 +337,7 @@ function StudioWorkspacePage() {
  {/* Seletor de Aspect Ratio */}
  <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Formato do Canvas</Label>
- <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+ <div className="grid grid-cols-1 sm:grid-cols-3 sm:grid-cols-5 gap-2">
  {(["1:1", "4:5", "9:16", "16:9", "1.91:1"] as StudioAspectRatio[]).map((ar) => (
  <button
  key={ar}

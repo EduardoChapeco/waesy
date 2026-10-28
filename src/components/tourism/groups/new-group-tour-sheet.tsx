@@ -361,7 +361,7 @@ export function NewGroupTourSheet({
  className="flex-1 flex flex-col overflow-hidden"
  >
  <div className="px-5 pt-3 pb-2 border-b border-border/60 bg-card">
- <TabsList className="grid grid-cols-4 w-full h-9 rounded-lg p-1 bg-muted/50">
+ <TabsList className="grid grid-cols-2 sm:grid-cols-4 w-full h-9 rounded-lg p-1 bg-muted/50">
  <TabsTrigger value="roteiro" className="text-xs font-bold rounded-lg gap-2 py-1">
  <Compass className="size-3.5" />
  <span>1. Roteiro</span>

@@ -367,7 +367,7 @@ function AdminPaymentsPage() {
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground font-mono">{date}</TableCell>
                     <TableCell className="text-xs font-medium text-foreground">
-                      <div className="truncate max-w-[180px]" title={customerName}>
+                      <div className="truncate max-w-45" title={customerName}>
                         {customerName}
                       </div>
                     </TableCell>

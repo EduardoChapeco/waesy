@@ -74,7 +74,7 @@ export function WelcomeOnboardingModal({ initialSteps }: { initialSteps: SystemO
               <p className="text-xs font-semibold text-muted-foreground">Apresentação Interativa</p>
             </>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent md:hidden" />
+          <div className="absolute inset-0 bg-black/40 md:hidden" />
         </div>
 
         {/* Lado Direito: Conteúdo e Controles */}

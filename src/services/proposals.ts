@@ -174,7 +174,7 @@ export async function suggestIncludesExcludesViaAI(
       "Bagagem despachada de 23kg por passageiro",
       "Hospedagem selecionada com café da manhã incluso",
       isIntl ? "Seguro viagem internacional com cobertura médica de USD 60.000" : "Seguro viagem nacional completo",
-      "Traslados aeroporto ➔ hotel ➔ aeroporto privativos",
+      "Traslados aeroporto -> hotel -> aeroporto privativos",
       "Atendimento e suporte VIP 24h da agência durante a viagem",
     ],
     excludes: [

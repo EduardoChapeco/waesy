@@ -28,13 +28,38 @@ import { LoanSimulationSheet } from "./LoanSimulationSheet";
 import { InstallmentTimelineDrawer } from "./InstallmentTimelineDrawer";
 
 describe("Waesy Bank — CreditCardInvoiceView", () => {
-  it("renderiza o resumo da fatura com barra de limite e CTAs táteis", () => {
+  it("renderiza o estado honesto quando não há faturas no banco", () => {
+    const html = renderToStaticMarkup(
+      <CreditCardInvoiceView
+        cardHolderName="EDUARDO RAMOS"
+        lastFourDigits="4892"
+        invoices={[]}
+      />
+    );
+
+    expect(html).toContain("EDUARDO RAMOS");
+    expect(html).toContain("•••• 4892");
+    expect(html).toContain("Nenhuma fatura em aberto");
+  });
+
+  it("renderiza o resumo da fatura com barra de limite e CTAs táteis quando há dados reais", () => {
     const html = renderToStaticMarkup(
       <CreditCardInvoiceView
         cardHolderName="EDUARDO RAMOS"
         lastFourDigits="4892"
         totalLimitCents={500000}
         usedLimitCents={148290}
+        invoices={[
+          {
+            id: "inv-out",
+            monthLabel: "OUT",
+            fullLabel: "Outubro 2026",
+            status: "open",
+            totalCents: 148290,
+            dueDate: "15 OUT",
+            items: [],
+          },
+        ]}
       />
     );
 
@@ -88,13 +113,32 @@ describe("Waesy Bank — LoanSimulationSheet", () => {
 });
 
 describe("Waesy Bank — InstallmentTimelineDrawer", () => {
-  it("renderiza o cronograma de parcelas e progresso do contrato", () => {
+  it("renderiza o estado honesto vazio quando não há parcelas cadastradas", () => {
+    const html = renderToStaticMarkup(
+      <InstallmentTimelineDrawer
+        open={true}
+        onOpenChange={() => {}}
+        contractTitle="Empréstimo Pessoal Waesy #9482"
+        installments={[]}
+      />
+    );
+
+    expect(html).toContain("Cronograma de Parcelas");
+    expect(html).toContain("Empréstimo Pessoal Waesy #9482");
+    expect(html).toContain("Nenhuma parcela ativa encontrada");
+  });
+
+  it("renderiza o cronograma de parcelas e progresso do contrato quando há parcelas ativas", () => {
     const html = renderToStaticMarkup(
       <InstallmentTimelineDrawer
         open={true}
         onOpenChange={() => {}}
         contractTitle="Empréstimo Pessoal Waesy #9482"
         totalInstallments={6}
+        installments={[
+          { number: 1, dueDate: "15/08/2026", amountCents: 18742, status: "paid" },
+          { number: 2, dueDate: "15/09/2026", amountCents: 18742, status: "due" },
+        ]}
       />
     );
 

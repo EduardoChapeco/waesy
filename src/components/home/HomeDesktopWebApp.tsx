@@ -52,12 +52,12 @@ export function HomeDesktopWebApp({
   heroSection,
   quickCategoriesSection,
   socialPostsSection,
-  customSections,
-  editorialHotpages,
-  banners,
-  middleBanners,
-  footerBanners,
-  showcasePosts,
+  customSections = [],
+  editorialHotpages = [],
+  banners = [],
+  middleBanners = [],
+  footerBanners = [],
+  showcasePosts = [],
   engineMode,
   onEngineModeChange,
   search,
@@ -67,13 +67,13 @@ export function HomeDesktopWebApp({
   onSelectCategory,
   viewMode,
   onViewModeChange,
-  filteredPlaces,
-  filteredMarketplaceProducts,
-  filteredClassifieds,
-  filteredNews,
-  filteredJobs,
-  filteredEvents,
-  unifiedItems,
+  filteredPlaces = [],
+  filteredMarketplaceProducts = [],
+  filteredClassifieds = [],
+  filteredNews = [],
+  filteredJobs = [],
+  filteredEvents = [],
+  unifiedItems = [],
   formatMoney,
 }: HomeDiscoveryViewProps) {
   const navigate = useNavigate();
@@ -182,11 +182,24 @@ export function HomeDesktopWebApp({
     return "md:grid-cols-4 lg:grid-cols-8";
   };
 
+  const hasActiveCoupons = React.useMemo(() => {
+    const sec = sectionMap.get("promo_coupon_banner");
+    const hasCustomItems = (sec?.items || []).some(
+      (it) => it.is_active !== false && (Boolean(it.title?.trim()) || Boolean(it.image_url)),
+    );
+    if (hasCustomItems) return true;
+    const hasStoreCoupons = (filteredPlaces || []).some((p: any) => Boolean(p.coupon_badge || p.couponBadge));
+    const hasProductCoupons = (filteredMarketplaceProducts || []).some(
+      (p: any) => Boolean(p.has_flash_offer || (p.discount_percent && p.discount_percent > 0)),
+    );
+    return hasStoreCoupons || hasProductCoupons;
+  }, [sectionMap, filteredPlaces, filteredMarketplaceProducts]);
+
   return (
     <div className="w-full space-y-6 pb-16" data-testid="home-desktop-web-app">
-      {isSectionActive("promo_coupon_banner", true) && (
+      {isSectionActive("promo_coupon_banner", true) && hasActiveCoupons && (
         <PromoCouponBanner
-          title={getSectionMeta("promo_coupon_banner", "Você tem 5 cupons! Aproveite seus descontos").title}
+          title={getSectionMeta("promo_coupon_banner", "Você ganhou 2 meses grátis em cupons!").title}
           actionUrl="/ofertas"
         />
       )}
@@ -321,15 +334,14 @@ export function HomeDesktopWebApp({
             </span>
           </div>
           {storeFeedItems.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {storeFeedItems.map((store) => (
-                <div key={store.id} className="rounded-xl border border-border/60 bg-card px-2">
-                  <IFoodStoreFeedCard
-                    store={store}
-                    variant="list"
-                    onFavoriteToggle={handleToggleFavorite}
-                  />
-                </div>
+                <IFoodStoreFeedCard
+                  key={store.id}
+                  store={store}
+                  variant="list"
+                  onFavoriteToggle={handleToggleFavorite}
+                />
               ))}
             </div>
           ) : (
@@ -353,7 +365,7 @@ export function HomeDesktopWebApp({
       )}
 
       {/* ── 3. SEÇÕES MODULARES DO CMS NO DESKTOP (Omissão Estrita de Seções Sem Imagem Válida) ── */}
-      {customSections.map((sec: HomePageSectionDTO) => {
+      {(customSections || []).map((sec: HomePageSectionDTO) => {
         const activeSecItems = (sec.items || []).filter(
           (it) =>
             it.is_active !== false &&

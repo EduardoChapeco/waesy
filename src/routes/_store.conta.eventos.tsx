@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { MediaUploader } from "@/components/ui/media-uploader";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { NativeMobileHeader } from "@/components/navigation";
@@ -355,7 +356,7 @@ function CivilianEventsPage() {
         </div>
 
         {/* ── Metrics Summary Bar ── */}
-        <div className="grid grid-cols-3 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           <div className="bg-card border border-border/60 rounded-2xl p-4 flex flex-col justify-center">
             <span className="text-xs text-muted-foreground font-medium">Eventos Cadastrados</span>
             <span className="text-xl sm:text-2xl font-bold text-foreground mt-1">{totalEvents}</span>
@@ -610,7 +611,7 @@ function CivilianEventsPage() {
 
       {/* ── Editor Modal (Create / Edit Event) ── */}
       <Dialog open={isEditorOpen} onOpenChange={setIsEditorOpen}>
-        <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto rounded-3xl p-6 bg-card border border-border">
+        <DialogContent className="sm:max-w-xl max-h-(--spacing-screen-90,90vh) overflow-y-auto rounded-3xl p-6 bg-card border border-border">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold text-foreground">
               {editingEvent ? "Editar Evento" : "Criar Novo Evento"}
@@ -787,18 +788,39 @@ function CivilianEventsPage() {
               </p>
             </div>
 
+            {/* Capa do Evento (Upload Direto no Bucket) */}
+            <div className="space-y-2 p-3 bg-muted/40 rounded-2xl">
+              <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
+                <ImageIcon className="size-3.5 text-primary" />
+                Imagem de Capa do Evento (16:9)
+              </Label>
+              <MediaUploader
+                value={formCoverImage ? [formCoverImage] : []}
+                onChange={(urls) => setFormCoverImage(urls[0] || "")}
+                maxFiles={1}
+                bucket="post-media"
+                folder="events/covers"
+                aspect={16 / 9}
+                accept="image"
+                label="Capa do Evento"
+              />
+            </div>
+
             {/* Story 9:16 (GAP-04) */}
             <div className="space-y-2 p-3 bg-muted/40 rounded-2xl">
               <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
                 <Sparkles className="size-3.5 text-purple-600" />
                 Story Imersivo 9:16 (Auto-Abertura)
               </Label>
-              <Input
-                type="url"
-                placeholder="URL da foto ou vídeo 9:16 (ex: https://...)"
-                value={formStoryUrl}
-                onChange={(e) => setFormStoryUrl(e.target.value)}
-                className="h-11 min-h-11 rounded-xl text-xs bg-background border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              <MediaUploader
+                value={formStoryUrl ? [formStoryUrl] : []}
+                onChange={(urls) => setFormStoryUrl(urls[0] || "")}
+                maxFiles={1}
+                bucket="post-media"
+                folder="events/stories"
+                aspect={9 / 16}
+                accept="all"
+                label="Mídia do Story"
               />
               {formStoryUrl && (
                 <div className="flex items-center justify-between pt-1">

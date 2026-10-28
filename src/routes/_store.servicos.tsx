@@ -236,7 +236,7 @@ function ServicosVerticalPage() {
  desc.includes("manutenção");
 
  if (activeCategory === "todos") {
- if (!searchTerm) return isServiceBusiness || stores.length <= 15;
+ if (!searchTerm) return isServiceBusiness;
  return (
  name.includes(searchTerm.toLowerCase()) ||
  desc.includes(searchTerm.toLowerCase()) ||
@@ -387,7 +387,7 @@ function ServicosVerticalPage() {
                     className="absolute inset-y-0 left-0 w-32 sm:w-40 rounded-l-lg bg-muted overflow-hidden flex items-center justify-center font-bold text-primary text-2xl"
                   >
                     {store.banner_url || store.logo_url ? (
-                      <img src={store.banner_url || store.logo_url} alt={store.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <img src={store.banner_url || store.logo_url} alt={store.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" />
                     ) : (
                       store.name.charAt(0)
                     )}

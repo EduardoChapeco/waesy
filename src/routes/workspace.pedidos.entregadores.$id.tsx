@@ -352,7 +352,7 @@ function EntregadorDetailPage() {
  <Button
  onClick={handleSave}
  disabled={isSubmitting || !form.name.trim()}
- className="rounded-lg min-w-[140px]"
+ className="rounded-lg min-w-35"
  >
  {isSubmitting ? (
  <>

@@ -1,3 +1,4 @@
+// motion-reduce: safe
 import * as React from "react";
 import { useState, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -120,14 +121,14 @@ export function CreateCommunityModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-xl rounded-3xl p-5 sm:p-6 bg-card text-foreground border border-border/60 max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-xl rounded-3xl p-5 sm:p-6 bg-card text-foreground border border-border/60 max-h-(--spacing-screen-90,90vh) overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold flex items-center gap-2">
             <Sparkles className="size-5 text-primary" />
             <span>Criar Nova Comunidade</span>
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            Crie seu espaço estilo Threads com capa editável, feed nativo e ferramentas por nicho.
+            Crie seu espaço na comunidade com capa editável, feed nativo e ferramentas por nicho.
           </DialogDescription>
         </DialogHeader>
 
@@ -139,7 +140,7 @@ export function CreateCommunityModal({
               <Input
                 value={title}
                 onChange={(e) => handleTitleChange(e.target.value)}
-                placeholder="Ex: Design Threads, Classificados da Cidade..."
+                placeholder="Ex: Clube de Tecnologia, Classificados Locais..."
                 className="h-11 min-h-11 rounded-xl mt-1 text-sm font-medium"
               />
             </div>
@@ -155,7 +156,7 @@ export function CreateCommunityModal({
                   onChange={(e) =>
                     setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))
                   }
-                  placeholder="design-threads"
+                  placeholder="clube-tecnologia"
                   className="h-11 min-h-11 pl-12 rounded-xl text-xs font-mono font-medium"
                 />
               </div>
@@ -184,7 +185,7 @@ export function CreateCommunityModal({
                     key={typeKey}
                     type="button"
                     onClick={() => setCommunityType(typeKey)}
-                    className={`h-11 min-h-11 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center text-center transition-all cursor-pointer ${
+                    className={`h-11 min-h-11 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center text-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                       isSelected
                         ? "border-primary bg-primary/10 text-primary font-bold ring-1 ring-primary"
                         : "border-border/60 hover:bg-muted/50 text-muted-foreground"
@@ -200,15 +201,15 @@ export function CreateCommunityModal({
           {/* Estilo da Capa: Gradiente ou Imagem */}
           <div className="space-y-3 p-4 rounded-2xl bg-muted/30 border border-border/60">
             <div className="flex items-center justify-between">
-              <Label className="text-xs font-bold flex items-center gap-1.5">
+              <Label className="text-xs font-bold flex items-center gap-2">
                 <Palette className="size-4 text-primary" />
-                <span>Estilo da Capa Threads</span>
+                <span>Capa Panorâmica Integrada</span>
               </Label>
-              <div className="flex items-center gap-1 bg-background p-0.5 rounded-lg border border-border/60">
+              <div className="flex items-center gap-1 bg-background p-1 rounded-lg border border-border/60">
                 <button
                   type="button"
                   onClick={() => setCoverMode("gradient")}
-                  className={`h-7 px-2.5 rounded-md text-[11px] font-bold cursor-pointer transition-colors ${
+                  className={`h-7 px-2 rounded-md text-2xs font-bold cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                     coverMode === "gradient"
                       ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground hover:text-foreground"
@@ -219,7 +220,7 @@ export function CreateCommunityModal({
                 <button
                   type="button"
                   onClick={() => setCoverMode("image")}
-                  className={`h-7 px-2.5 rounded-md text-[11px] font-bold cursor-pointer transition-colors ${
+                  className={`h-7 px-2 rounded-md text-2xs font-bold cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                     coverMode === "image"
                       ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground hover:text-foreground"
@@ -240,15 +241,15 @@ export function CreateCommunityModal({
                       key={preset.id}
                       type="button"
                       onClick={() => setGradientPreset(preset.id)}
-                      className={`h-12 rounded-xl p-2 bg-gradient-to-r ${preset.gradientClass} relative flex items-center justify-center shadow-xs transition-transform hover:scale-[1.02] cursor-pointer ${
-                        isSelected ? "ring-2 ring-foreground scale-[1.02]" : "opacity-85"
+                      className={`h-12 rounded-xl p-2 bg-muted relative flex items-center justify-center shadow-xs transition-transform hover:scale-102 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                        isSelected ? "ring-2 ring-foreground scale-102" : "opacity-85"
                       }`}
                     >
-                      <span className="text-[11px] font-bold text-white drop-shadow-xs">
+                      <span className="text-2xs font-bold text-primary-foreground drop-shadow-xs">
                         {preset.label.split(" ")[0]}
                       </span>
                       {isSelected && (
-                        <Check className="absolute right-2 size-4 text-white drop-shadow-xs" />
+                        <Check className="absolute right-2 size-4 text-primary-foreground drop-shadow-xs" />
                       )}
                     </button>
                   );
@@ -267,7 +268,7 @@ export function CreateCommunityModal({
                   type="button"
                   disabled={isUploading}
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full h-14 rounded-xl border border-dashed border-border/80 hover:bg-muted/40 flex items-center justify-center gap-2 text-xs font-semibold cursor-pointer"
+                  className="w-full h-14 rounded-xl border border-dashed border-border/80 hover:bg-muted/40 flex items-center justify-center gap-2 text-xs font-semibold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   {isUploading ? (
                     <Loader2 className="size-4 animate-spin text-primary" />
@@ -300,9 +301,9 @@ export function CreateCommunityModal({
               className="w-full h-11 min-h-11 rounded-xl font-bold text-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
             >
               {createMutation.isPending ? (
-                <Loader2 className="size-4 animate-spin mr-1.5" />
+                <Loader2 className="size-4 animate-spin mr-2" />
               ) : (
-                <Sparkles className="size-4 mr-1.5" />
+                <Sparkles className="size-4 mr-2" />
               )}
               <span>Criar Comunidade</span>
             </Button>

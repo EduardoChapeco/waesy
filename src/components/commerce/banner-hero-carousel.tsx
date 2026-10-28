@@ -159,7 +159,7 @@ export function BannerHeroCarousel({
             currentBanner.subtitle ||
             currentBanner.badge_text ||
             currentBanner.cta_label) && (
-            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent sm:bg-gradient-to-r sm:from-black/90 sm:via-black/50 sm:to-transparent flex flex-col justify-end sm:justify-center p-4 sm:p-8 lg:p-12 text-foreground pointer-events-none z-10">
+            <div className="absolute inset-0 bg-black/60 flex flex-col justify-end sm:justify-center p-4 sm:p-8 lg:p-12 text-foreground pointer-events-none z-10">
               <div className="max-w-xl space-y-2 sm:space-y-3 z-10 pointer-events-auto">
                 {currentBanner.show_badge === true && currentBanner.badge_text && (
                   <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3 sm:py-1 rounded-full bg-card/20 backdrop-blur-md text-xs font-bold uppercase tracking-wider text-foreground border border-white/30">

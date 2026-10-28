@@ -158,7 +158,7 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
     capabilities: ["responsive", "cms", "media"],
     component: PrometheeNewsPortalBlock as any,
     defaultProps: {
-      mastheadTitle: "Vale Agora",
+      mastheadTitle: "Waesy News",
       mastheadSubtitle: "Jornalismo Regional & Curadoria Editorial",
       logoStyle: "promethee_dome",
       logoUrl: "",
@@ -244,7 +244,7 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
     capabilities: ["responsive", "cms"],
     component: PrometheeNewsHeaderBlock as any,
     defaultProps: {
-      mastheadTitle: "Vale Agora News",
+      mastheadTitle: "Waesy News",
       logoStyle: "promethee_dome",
       logoUrl: "",
       showCityFilter: true,
@@ -361,7 +361,7 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
     capabilities: ["responsive", "cms"],
     component: PrometheeNewsFooterBlock as any,
     defaultProps: {
-      brandName: "Vale Agora News",
+      brandName: "Waesy News",
       tagline: "Jornalismo regional independente",
       links: [
         { id: "f1", label: "Início", href: "/paginas/noticias" },
@@ -1690,7 +1690,7 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
     name: "Carrossel & Grade de Botões Editáveis",
     category: "vitrine_app",
     description:
-      "Menu de botões e categorias 100% personalizáveis com modos independentes no celular e computador: Dock deslizante Noor, Grade 4x2 estilo iFood, Pílulas Duplas e Cartões de Ação.",
+      "Menu de botões e categorias 100% personalizáveis com modos independentes no celular e computador: Dock deslizante, Grade Compacta 4x2, Pílulas Duplas e Cartões de Ação.",
     capabilities: ["responsive", "cms", "commerce"],
     component: VitrineButtonsDockBlock as any,
     defaultProps: {
@@ -1719,7 +1719,7 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
     name: "Faixa de Cupom & Aviso Rápido",
     category: "vitrine_app",
     description:
-      "Faixa promocional estilo iFood e App Waesy com código de cupom copiável em 1 clique, selo de campanha e botão de destino.",
+      "Faixa promocional Waesy com código de cupom copiável em 1 clique, selo de campanha e botão de destino.",
     capabilities: ["responsive", "commerce"],
     component: VitrineCouponStripBlock as any,
     defaultProps: {
@@ -1901,10 +1901,10 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
   },
   {
     id: "vitrine_lateral_drawer",
-    name: "Menu Lateral Deslizante (iFood Sheet / Threads Push)",
+    name: "Menu Lateral Deslizante (Canvas Nativo)",
     category: "vitrine_app",
     description:
-      "Menu lateral de navegação estilo iFood com empurrão de tela (Threads), alternador Grade/Lista, seções temáticas, cards amplos e squircles com badges.",
+      "Menu lateral de navegação com empurrão de tela suave, alternador Grade/Lista, seções temáticas, cards amplos e squircles com badges.",
     capabilities: ["responsive", "cms", "commerce"],
     component: VitrineLateralDrawerBlock as any,
     defaultProps: {
@@ -1936,7 +1936,7 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
   },
     {
     id: "vitrine_visual_spotlight_rail",
-    name: "Trilho Visual Spotlight (Cards Grandes iFood)",
+    name: "Trilho Visual Spotlight (Cards Amplos)",
     category: "vitrine_app",
     description:
       "Carrossel horizontal de cards visuais amplos com fotos de comida/capa, nota com coroa, botão de favorito, dados de entrega e cupom (Restaurantes com Cupom).",
@@ -1976,7 +1976,7 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
     name: "Cabeçalho SuperApp (Endereço + Notificações)",
     category: "vitrine_app",
     description:
-      "Cabeçalho nativo padrão iFood/SuperApp com seletor de endereço centralizado, sino de notificações com badge e busca integrada opcional.",
+      "Cabeçalho nativo padrão SuperApp com seletor de endereço centralizado, sino de notificações com badge e busca integrada opcional.",
     capabilities: ["responsive", "cms"],
     component: VitrineIFoodHeaderBlock as any,
     defaultProps: {

@@ -57,7 +57,7 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
               <img
                 src={brandSettings.logo_url}
                 alt={platformDisplayName}
-                className="h-6 sm:h-7 max-w-[100px] object-contain"
+                className="h-6 sm:h-7 max-w-25 object-contain"
               />
             ) : null}
             {(brandSettings?.show_name !== false || !brandSettings?.logo_url) && (

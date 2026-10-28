@@ -25,7 +25,7 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
             src={vm.agency.logo_url}
             crossOrigin="anonymous"
             alt="Logo"
-            className="h-12 w-auto max-w-[180px] aspect-[4/1] object-contain"
+            className="h-12 w-auto max-w-45 aspect-[4/1] object-contain"
             width={180}
             height={48}
           />
@@ -326,7 +326,7 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
             src={vm.agency.logo_url}
             crossOrigin="anonymous"
             alt="Logo Agência"
-            className="h-8 w-auto max-w-[120px] aspect-[4/1] object-contain grayscale opacity-60"
+            className="h-8 w-auto max-w-30 aspect-[4/1] object-contain grayscale opacity-60"
             width={120}
             height={32}
           />
