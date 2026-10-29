@@ -259,12 +259,12 @@ export function PrometheeExploreSearchModal({
                 <div className="flex flex-wrap gap-2">
                   {CANONICAL_CITIES.slice(0, 8).map((city) => (
                     <button
-                      key={city}
+                      key={city.name}
                       type="button"
-                      onClick={() => handleCityClick(city)}
+                      onClick={() => handleCityClick(city.name)}
                       className="h-11 min-h-11 px-4 rounded-full border border-border bg-card hover:bg-muted text-xs font-semibold text-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
-                      {city}
+                      {city.name}
                     </button>
                   ))}
                 </div>

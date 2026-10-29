@@ -313,59 +313,15 @@ export function MediaUploader({
  </div>
  )}
 
- {/* ── 3. ENTRADA MANUAL DE URL / PRESETS ── */}
- <div className="space-y-2 pt-1">
- <div className="flex gap-2">
- <div className="relative flex-1">
- <Input
- className="h-11 min-h-11 pl-7 pr-2 text-xs bg-background rounded-lg border-border/70 font-sans focus-visible:ring-2 focus-visible:ring-ring"
- placeholder="Cole a URL da imagem (https://...)"
- value={value || ""}
- onChange={(e) => handleManualValueChange(e.target.value)}
- />
- <LinkIcon className="size-3.5 absolute left-2 top-2.5 text-muted-foreground pointer-events-none" />
- </div>
+ {/* ── 3. UPLOAD DIRETO OBRIGATÓRIO PARA BUCKET SUPABASE (Regra Anti-URL Manual) ── */}
+        <div className="pt-2">
+          <p className="text-3xs text-muted-foreground flex items-center gap-1.5">
+            <ShieldCheck className="size-3.5 text-primary shrink-0" />
+            <span>Upload direto para o bucket Supabase Storage com enquadramento e corte proporcional.</span>
+          </p>
+        </div>
 
- <Button
- type="button"
- variant="outline"
- size="sm"
- onClick={() => setShowPresets(!showPresets)}
- className="h-11 min-h-11 px-2 text-xs rounded-lg gap-1 border-border/70 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
- title="Escolher uma imagem de amostra"
- >
- <Layers className="size-3 text-amber-500" />
- <span>Exemplos</span>
- </Button>
- </div>
-
- {/* Menu rápido de Presets de Imagens */}
- {showPresets && (
- <div className="p-2 rounded-lg bg-muted/40 border border-border/60 space-y-2 animate-in fade-in duration-150 motion-reduce:animate-none">
- <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider px-1">
- Imagens de Exemplo em Alta Definição:
- </div>
- <div className="grid grid-cols-2 gap-2">
- {PRESET_DEMO_IMAGES.map((preset) => (
- <button
- key={preset.label}
- type="button"
- onClick={() => {
- onChange(preset.url);
- setShowPresets(false);
- toast.success(`Exemplo "${preset.label}" aplicado!`);
- }}
- className="text-left text-xs min-h-11 p-2 rounded-lg bg-background hover:bg-primary/10 hover:text-primary border border-border/50 truncate cursor-pointer transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
- >
- {preset.label}
- </button>
- ))}
- </div>
- </div>
- )}
- </div>
-
- {allowUnsplash && (
+        {allowUnsplash && (
    <UnsplashAssetPicker
      usageSlot={unsplashUsageSlot}
      defaultQuery={unsplashDefaultQuery}

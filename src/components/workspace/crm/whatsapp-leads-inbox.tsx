@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { MessageCircle, MessageSquare, UserCheck, Search, Clock, ExternalLink, RefreshCw, Phone } from "lucide-react";
+import { MessageCircle, MessageSquare, UserCheck, Search, Clock, ExternalLink, RefreshCw, Phone, CheckCircle2, Kanban } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/state/states";
-import { listWhatsAppLeads, claimWhatsAppLead } from "@/services/crm.functions";
+import { listWhatsAppLeads, claimWhatsAppLead, updateLeadStatus } from "@/services/crm.functions";
 import { formatDateTime } from "@/lib/datetime";
 import { toast } from "sonner";
 
@@ -29,6 +29,18 @@ export function WhatsAppLeadsInbox() {
     },
     onError: (err: any) => {
       toast.error(err?.message || "Erro ao assumir lead.");
+    },
+  });
+
+  const qualifyMutation = useMutation({
+    mutationFn: (leadId: string) => updateLeadStatus({ data: { leadId, status: "qualified" } }),
+    onSuccess: () => {
+      toast.success("Lead qualificado com sucesso. Evento enviado para Meta CAPI e Google Ads.");
+      queryClient.invalidateQueries({ queryKey: ["workspace-whatsapp-leads"] });
+      queryClient.invalidateQueries({ queryKey: ["leads"] });
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || "Erro ao qualificar lead.");
     },
   });
 
@@ -124,23 +136,35 @@ export function WhatsAppLeadsInbox() {
                 )}
               </div>
 
-              <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/40">
+              <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/40 flex-wrap sm:flex-nowrap">
                 {lead.status === "new" && (
-                  <Button type="button" variant="outline" size="sm" onClick={() => claimMutation.mutate(lead.id)} disabled={claimMutation.isPending} className="min-h-11 px-4 rounded-md text-xs font-semibold gap-2 flex-1 sm:flex-none cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-hidden">
+                  <Button type="button" variant="outline" size="sm" onClick={() => claimMutation.mutate(lead.id)} disabled={claimMutation.isPending} className="min-h-11 px-3 rounded-md text-xs font-semibold gap-2 flex-1 sm:flex-none cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-hidden">
                     <UserCheck className="size-3.5 text-primary" />
                     <span>Assumir</span>
                   </Button>
                 )}
 
+                <Button type="button" variant="outline" size="sm" onClick={() => qualifyMutation.mutate(lead.id)} disabled={qualifyMutation.isPending} className="min-h-11 px-3 rounded-md text-xs font-semibold gap-2 flex-1 sm:flex-none cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-hidden" title="Qualificar e disparar retroalimentação Meta CAPI e Google Ads">
+                  <CheckCircle2 className="size-3.5 text-primary" />
+                  <span>Qualificar</span>
+                </Button>
+
+                <Button asChild variant="outline" size="sm" className="min-h-11 px-3 rounded-md text-xs font-semibold gap-2 flex-1 sm:flex-none cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-hidden" title="Abrir Central de Leads e CRM 360°">
+                  <Link to="/workspace/crm" search={{ search: lead.phone || lead.name || undefined }}>
+                    <Kanban className="size-3.5 text-muted-foreground" />
+                    <span className="hidden md:inline">CRM</span>
+                  </Link>
+                </Button>
+
                 <Button asChild variant="default" size="sm" className="min-h-11 px-4 rounded-md text-xs font-semibold gap-2 flex-1 sm:flex-none cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-hidden">
                   <Link to="/workspace/atendimento" search={{ search: lead.phone || undefined, threadId: undefined }}>
                     <MessageSquare className="size-3.5" />
-                    <span>Atender no SAC</span>
+                    <span>SAC</span>
                   </Link>
                 </Button>
                 <Button type="button" variant="outline" size="sm" onClick={() => handleOpenWhatsApp(lead.phone, lead.name)} className="min-h-11 px-3 rounded-md text-xs font-semibold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-hidden" title="Abrir no WhatsApp Web externo">
                   <ExternalLink className="size-3.5" />
-                  <span className="hidden sm:inline">WhatsApp Web</span>
+                  <span className="hidden lg:inline">WhatsApp Web</span>
                 </Button>
               </div>
             </Card>

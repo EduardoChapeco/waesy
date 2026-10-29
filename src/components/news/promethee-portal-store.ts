@@ -2,6 +2,7 @@ import React, { createContext, useContext, useMemo, useState, useSyncExternalSto
 import type { NormalizedPrometheeArticle } from "@/lib/news/news-studio-templates";
 
 export interface PrometheePortalSharedState {
+  storeId?: string;
   selectedCity: string;
   selectedTab: string;
   searchQuery: string;

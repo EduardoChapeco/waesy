@@ -20,7 +20,7 @@ import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_store/c/$slug")({
-  head: ({ loaderData }) => {
+  head: ({ loaderData }: any) => {
     const title = loaderData?.initialData?.community?.title || "Comunidade";
     const desc = loaderData?.initialData?.community?.description || "Participe da comunidade no Waesy!";
     return {
@@ -68,7 +68,7 @@ export const Route = createFileRoute("/_store/c/$slug")({
 });
 
 function CommunityPage() {
-  const { slug, initialData, initialFeed, session, profile } = Route.useLoaderData();
+  const { slug, initialData, initialFeed, session, profile } = (Route.useLoaderData?.() as any) || {};
   const qc = useQueryClient();
 
   const [isComposerOpen, setIsComposerOpen] = useState(false);
@@ -169,7 +169,7 @@ function CommunityPage() {
   const allPosts = feedData?.items || [];
   const filteredPosts = searchTerm.trim()
     ? allPosts.filter(
-        (p) =>
+        (p: any) =>
           p.content_text?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           p.author.name.toLowerCase().includes(searchTerm.toLowerCase())
       )

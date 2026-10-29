@@ -10,7 +10,32 @@ import { useWindowSizeClass } from "@/hooks/use-mobile";
 import { listCustomerOrders } from "@/services/order.functions";
 import { subscribeToTableChanges } from "@/services/realtime-channel";
 import { formatDate } from "@/lib/datetime";
-import { ShoppingBag, ChevronRight, Search, Package, Truck, CheckCircle2, Clock, XCircle, AlertCircle, RotateCcw, MapPin, QrCode, CreditCard, Filter, ArrowRight, Store } from "lucide-react";
+import { useCartContext } from "@/lib/cart-context";
+import { cn } from "@/lib/utils";
+import {
+  ShoppingBag,
+  ShoppingCart,
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  Search,
+  Package,
+  Truck,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  AlertCircle,
+  RotateCcw,
+  MapPin,
+  CreditCard,
+  Filter,
+  ArrowRight,
+  Store,
+  Plus,
+  Minus,
+  Trash2,
+  Calendar,
+} from "lucide-react";
 
 // ─── Tipos e Constantes ───────────────────────────────────────────────────────
 
@@ -70,7 +95,7 @@ const FILTER_CHIPS = [
 // ─── Route ────────────────────────────────────────────────────────────────────
 
 export const Route = createFileRoute("/_store/conta/pedidos/")({
-  head: () => ({ meta: [{ title: "Pedidos | Waesy" }] }),
+  head: () => ({ meta: [{ title: "Compras | Waesy" }] }),
   loader: async () => {
     try {
       return (await listCustomerOrders().catch(() => [])) || [];
@@ -158,7 +183,7 @@ function OrderRow({ order }: { order: any }) {
         )}
         {/* Bolinha de status sobreposta */}
         <span
-          className={`absolute -bottom-0.5 -right-0.5 size-3.5 rounded-full border-2 border-background ${
+          className={`absolute -bottom-1 -right-1 size-4 rounded-full border-2 border-background ${
             ["delivered", "completed"].includes(order.status)
               ? "bg-emerald-500"
               : ["cancelled", "returned"].includes(order.status)
@@ -211,7 +236,7 @@ function OrderRow({ order }: { order: any }) {
               {formatDate(order.created_at)}
             </span>
             <ChevronRight
-              className="size-3.5 text-muted-foreground/60 group-hover:text-foreground group-hover:translate-x-0.5 transition-transform duration-200"
+              className="size-4 text-muted-foreground/60 group-hover:text-foreground transition-transform duration-200"
               strokeWidth={2}
             />
           </div>
@@ -265,7 +290,7 @@ function DesktopOrderCard({ order }: { order: any }) {
             </span>
           )}
           <Badge variant={statusVariant} className="text-xs font-semibold px-3 py-1 rounded-lg">
-            <StatusIcon className="size-3.5 mr-1" />
+            <StatusIcon className="size-4 mr-1" />
             {statusLabel}
           </Badge>
         </div>
@@ -275,12 +300,12 @@ function DesktopOrderCard({ order }: { order: any }) {
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 flex-wrap flex-1 min-w-0">
           {items.slice(0, 3).map((item: any, idx: number) => (
-            <div key={idx} className="flex items-center gap-2 bg-muted/20 border border-border/50 rounded-lg p-2 max-w-xs">
+            <div key={idx} className="flex items-center gap-2 bg-muted/20 rounded-lg p-2 max-w-xs">
               {item.image_url ? (
                 <img
                   src={item.image_url}
                   alt={item.product_title}
-                  className="size-10 rounded-lg object-cover border border-border/40 shrink-0"
+                  className="size-10 rounded-lg object-cover shrink-0"
                 />
               ) : (
                 <div className="size-10 rounded-lg bg-muted/60 flex items-center justify-center shrink-0">
@@ -298,7 +323,7 @@ function DesktopOrderCard({ order }: { order: any }) {
             </div>
           ))}
           {items.length > 3 && (
-            <span className="text-xs text-muted-foreground font-semibold px-2 py-1 rounded-md bg-muted/30 border border-border/40">
+            <span className="text-xs text-muted-foreground font-semibold px-2 py-1 rounded-md bg-muted/30">
               +{items.length - 3} item(s) adicional(is)
             </span>
           )}
@@ -320,7 +345,7 @@ function DesktopOrderCard({ order }: { order: any }) {
           >
             <Link to="/conta/pedidos/$id" params={{ id: order.id }}>
               <span>Ver Detalhes</span>
-              <ArrowRight className="size-3.5" />
+              <ArrowRight className="size-4" />
             </Link>
           </Button>
         </div>
@@ -330,7 +355,7 @@ function DesktopOrderCard({ order }: { order: any }) {
       {isShipped && order.tracking_code && (
         <div className="pt-2 border-t border-border/30 flex items-center justify-between text-xs text-muted-foreground font-mono">
           <span className="flex items-center gap-2">
-            <Truck className="size-3.5 text-primary" /> Código de Rastreio: <strong className="text-foreground">{order.tracking_code}</strong>
+            <Truck className="size-4 text-primary" /> Código de Rastreio: <strong className="text-foreground">{order.tracking_code}</strong>
           </span>
           <span className="text-xs text-muted-foreground">Acompanhe pelo detalhe do pedido</span>
         </div>
@@ -346,10 +371,49 @@ function CustomerOrdersPage() {
   const router = useRouter();
   const { isCompact } = useWindowSizeClass();
   const [orders, setOrders] = useState<any[]>(initialOrders);
+  const {
+    cart,
+    globalCarts,
+    updateQty,
+    removeItem,
+    setIsCartOpen,
+    isCartUpdating,
+  } = useCartContext();
+
+  const [hubMode, setHubMode] = useState<"pedidos" | "carrinhos" | "agendamentos">("pedidos");
+  const [expandedCarts, setExpandedCarts] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     setOrders(initialOrders);
   }, [initialOrders]);
+
+  // Consolida carrinhos ativos de todas as lojas
+  const activeStoreCarts = useMemo(() => {
+    const list = [...(globalCarts || [])].filter((c) => (c.itemCount || 0) > 0);
+    if (cart && (cart.itemCount || 0) > 0 && !list.some((c) => c.id === cart.id)) {
+      list.unshift(cart);
+    }
+    return list;
+  }, [globalCarts, cart]);
+
+  // Filtra agendamentos (serviços, reservas de turismo ou pedidos com data programada)
+  const scheduledOrders = useMemo(() => {
+    return orders.filter(
+      (o: any) =>
+        o.shipping_method === "scheduled" ||
+        Boolean(o.custom_fields?.scheduled_at) ||
+        Boolean(o.custom_fields?.booking_date) ||
+        o.order_type === "service" ||
+        o.order_type === "booking",
+    );
+  }, [orders]);
+
+  const toggleCartExpanded = (cartId: string) => {
+    setExpandedCarts((prev) => ({
+      ...prev,
+      [cartId]: prev[cartId] === undefined ? false : !prev[cartId],
+    }));
+  };
 
   // Realtime subscription + adaptive polling for live order updates (DEC-276)
   useEffect(() => {
@@ -447,7 +511,7 @@ function CustomerOrdersPage() {
       {/* ── 1. Canonical Navigation Header (Mobile App Style) ── */}
       {isCompact && (
         <NativeMobileHeader
-          title="Pedidos"
+          title="Compras"
           fallbackHref="/conta"
           badge={
             orders.length > 0 ? (
@@ -478,7 +542,7 @@ function CustomerOrdersPage() {
           <div className="flex items-center justify-between pb-4 border-b border-border/40">
             <div className="flex items-center gap-3">
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-                Histórico de Pedidos
+                Compras
               </h1>
               {orders.length > 0 && (
                 <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-1 rounded-full">
@@ -491,7 +555,7 @@ function CustomerOrdersPage() {
               variant="outline"
               className="rounded-lg text-xs font-semibold h-11 px-4 cursor-pointer"
             >
-              <Link to="/mercado">Explorar Lojas</Link>
+              <Link to="/mercado">Explorar</Link>
             </Button>
           </div>
 
@@ -499,7 +563,7 @@ function CustomerOrdersPage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="p-4 rounded-xl bg-card border border-border/60 shadow-xs space-y-1">
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Total de Pedidos
+                Pedidos
               </span>
               <div className="text-xl font-bold text-foreground">
                 {orders.length}
@@ -509,7 +573,7 @@ function CustomerOrdersPage() {
 
             <div className="p-4 rounded-xl bg-card border border-border/60 shadow-xs space-y-1">
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Em Andamento
+                Ativos
               </span>
               <div className="text-xl font-bold text-sky-600 dark:text-sky-400">
                 {activeOrdersCount}
@@ -519,12 +583,12 @@ function CustomerOrdersPage() {
 
             <div className="p-4 rounded-xl bg-card border border-border/60 shadow-xs space-y-1">
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Retirada Disponível
+                Carrinhos
               </span>
               <div className="text-xl font-bold text-amber-600 dark:text-amber-400">
-                {pickupOrdersCount}
+                {activeStoreCarts.length}
               </div>
-              <div className="text-xs text-muted-foreground">Prontos no balcão</div>
+              <div className="text-xs text-muted-foreground">Abertos por loja</div>
             </div>
 
             <div className="p-4 rounded-xl bg-card border border-border/60 shadow-xs space-y-1">
@@ -540,18 +604,292 @@ function CustomerOrdersPage() {
         </div>
       )}
 
-      {orders.length === 0 ? (
+      {/* ── SELETOR DE MODO DO HUB DE COMPRAS: Pedidos | Carrinhos | Agendamentos ── */}
+      <div className={isCompact ? "px-3 pt-3" : ""}>
+        <div
+          role="tablist"
+          aria-label="Seções de Compras"
+          className="flex items-center gap-1 bg-muted/40 p-1 rounded-xl border border-border/50"
+        >
+          {(
+            [
+              { id: "pedidos", label: "Pedidos", count: orders.length },
+              { id: "carrinhos", label: "Carrinhos", count: activeStoreCarts.length },
+              { id: "agendamentos", label: "Agendamentos", count: scheduledOrders.length },
+            ] as const
+          ).map((tab) => {
+            const active = hubMode === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => setHubMode(tab.id)}
+                className={cn(
+                  "h-11 min-h-11 px-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  active
+                    ? "bg-background text-foreground shadow-2xs border border-border/60"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <span className="truncate">{tab.label}</span>
+                {tab.count > 0 && (
+                  <span
+                    className={cn(
+                      "px-2 py-0 rounded-full text-2xs font-mono",
+                      active
+                        ? "bg-primary/15 text-primary font-bold"
+                        : "bg-muted text-muted-foreground",
+                    )}
+                  >
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── MODO 2: CARRINHOS MULTI-LOJA COLAPSÁVEIS ── */}
+      {hubMode === "carrinhos" && (
+        <div className={isCompact ? "px-3 pt-3 space-y-3" : "space-y-4"}>
+          {activeStoreCarts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 px-6 text-center gap-3">
+              <ShoppingCart className="size-10 text-muted-foreground/40 mb-1" strokeWidth={1.5} />
+              <div>
+                <h2 className="text-base font-bold text-foreground">Nenhum carrinho aberto</h2>
+                <p className="text-xs text-muted-foreground mt-1 max-w-xs mx-auto leading-relaxed">
+                  Adicione produtos ou serviços de diferentes lojas para gerenciar e finalizar cada sacola.
+                </p>
+              </div>
+              <Link
+                to="/mercado"
+                className="h-11 min-h-11 px-6 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-bold inline-flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                Explorar
+              </Link>
+            </div>
+          ) : (
+            activeStoreCarts.map((storeCart) => {
+              const isExpanded = expandedCarts[storeCart.id] !== false;
+              const storeName = storeCart.storeName || "Loja Parceira";
+              const storeLogo = storeCart.storeLogoUrl || null;
+              const storeSlug = (storeCart as any).storeSlug || storeCart.storeId || "";
+              const shippingDisplay =
+                storeCart.shippingCents > 0
+                  ? `Entrega: ${formatMoney(storeCart.shippingCents)}`
+                  : "Entrega calculada no checkout";
+
+              return (
+                <div
+                  key={storeCart.id}
+                  className="rounded-xl border border-border/60 bg-card overflow-hidden shadow-2xs"
+                >
+                  {/* Cabeçalho Resumo do Carrinho da Loja */}
+                  <div className="p-4 space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="size-11 min-h-11 min-w-11 rounded-full bg-muted border border-border/50 overflow-hidden flex items-center justify-center shrink-0">
+                          {storeLogo ? (
+                            <img
+                              src={storeLogo}
+                              alt={storeName}
+                              className="size-full object-cover"
+                            />
+                          ) : (
+                            <Store className="size-5 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="text-sm font-bold text-foreground truncate">
+                            {storeName}
+                          </h3>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {storeCart.itemCount} {storeCart.itemCount === 1 ? "item" : "itens"} · {shippingDisplay}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="text-right shrink-0">
+                        <span className="text-2xs text-muted-foreground block">Subtotal</span>
+                        <span className="text-sm sm:text-base font-black font-mono text-foreground">
+                          {formatMoney(storeCart.subtotalCents)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Barra de Ações do Carrinho: Perfil da Loja | Expandir | Finalizar */}
+                    <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/40 flex-wrap">
+                      <div className="flex items-center gap-2">
+                        <Link
+                          to={storeSlug ? ("/loja/$slug" as any) : ("/mercado" as any)}
+                          params={storeSlug ? ({ slug: storeSlug } as any) : undefined}
+                          className="h-11 min-h-11 px-3 rounded-xl border border-border/60 bg-background hover:bg-muted/50 text-xs font-semibold text-foreground inline-flex items-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        >
+                          <Store className="size-4 text-muted-foreground" />
+                          <span>Perfil da Loja</span>
+                        </Link>
+
+                        <button
+                          type="button"
+                          onClick={() => toggleCartExpanded(storeCart.id)}
+                          aria-expanded={isExpanded}
+                          className="h-11 min-h-11 px-3 rounded-xl border border-border/60 bg-background hover:bg-muted/50 text-xs font-semibold text-muted-foreground hover:text-foreground inline-flex items-center gap-1 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        >
+                          <span>{isExpanded ? "Recolher" : "Expandir"}</span>
+                          {isExpanded ? (
+                            <ChevronUp className="size-4" />
+                          ) : (
+                            <ChevronDown className="size-4" />
+                          )}
+                        </button>
+                      </div>
+
+                      <Link
+                        to="/checkout"
+                        className="h-11 min-h-11 px-4 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-bold inline-flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <span>Finalizar</span>
+                        <ArrowRight className="size-4" />
+                      </Link>
+                    </div>
+                  </div>
+
+                  {/* Lista Colapsável de Itens com Steppers +/-, Editar e Remover */}
+                  {isExpanded && storeCart.items && storeCart.items.length > 0 && (
+                    <div className="border-t border-border/40 divide-y divide-border/30 bg-muted/10 px-4">
+                      {storeCart.items.map((item) => (
+                        <div
+                          key={item.id || item.variantId}
+                          className="py-3 flex items-center justify-between gap-3"
+                        >
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
+                            <div className="size-12 rounded-lg bg-muted overflow-hidden shrink-0 flex items-center justify-center">
+                              {item.coverUrl ? (
+                                <img
+                                  src={item.coverUrl}
+                                  alt={item.productTitle}
+                                  className="size-full object-cover"
+                                />
+                              ) : (
+                                <Package className="size-5 text-muted-foreground" />
+                              )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs sm:text-sm font-bold text-foreground truncate">
+                                {item.productTitle}
+                              </p>
+                              <p className="text-xs font-mono text-muted-foreground">
+                                {formatMoney(item.priceCents)} cada · Total {formatMoney(item.lineTotalCents)}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              type="button"
+                              disabled={isCartUpdating}
+                              onClick={() => updateQty(item.variantId, -1, item.id)}
+                              aria-label="Diminuir quantidade"
+                              className="size-11 min-h-11 min-w-11 rounded-lg border border-border/50 bg-background hover:bg-muted/60 flex items-center justify-center text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            >
+                              <Minus className="size-4" />
+                            </button>
+                            <span className="w-8 text-center text-xs font-mono font-bold text-foreground">
+                              {item.qty}
+                            </span>
+                            <button
+                              type="button"
+                              disabled={isCartUpdating}
+                              onClick={() => updateQty(item.variantId, 1, item.id)}
+                              aria-label="Aumentar quantidade"
+                              className="size-11 min-h-11 min-w-11 rounded-lg border border-border/50 bg-background hover:bg-muted/60 flex items-center justify-center text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            >
+                              <Plus className="size-4" />
+                            </button>
+                            <button
+                              type="button"
+                              disabled={isCartUpdating}
+                              onClick={() => setIsCartOpen(true)}
+                              aria-label="Editar opções do item"
+                              className="h-11 min-h-11 px-2 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            >
+                              Editar
+                            </button>
+                            <button
+                              type="button"
+                              disabled={isCartUpdating}
+                              onClick={() => removeItem(item.id)}
+                              aria-label="Remover item"
+                              className="size-11 min-h-11 min-w-11 rounded-lg text-destructive hover:bg-destructive/10 flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            >
+                              <Trash2 className="size-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
+
+      {/* ── MODO 3: AGENDAMENTOS (Reservas de Serviços, Turismo e Entregas Programadas) ── */}
+      {hubMode === "agendamentos" && (
+        <div className={isCompact ? "px-3 pt-3 space-y-3" : "space-y-4"}>
+          {scheduledOrders.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 px-6 text-center gap-3">
+              <Calendar className="size-10 text-muted-foreground/40 mb-1" strokeWidth={1.5} />
+              <div>
+                <h2 className="text-base font-bold text-foreground">Nenhum agendamento ativo</h2>
+                <p className="text-xs text-muted-foreground mt-1 max-w-xs mx-auto leading-relaxed">
+                  Suas reservas de serviços, roteiros de turismo e entregas com horário marcado aparecerão aqui.
+                </p>
+              </div>
+              <Link
+                to="/classificados"
+                className="h-11 min-h-11 px-6 rounded-xl border border-border/60 bg-background hover:bg-muted/50 text-xs font-bold text-foreground inline-flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                Explorar
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {scheduledOrders.map((order: any) =>
+                isCompact ? (
+                  <div
+                    key={order.id}
+                    className="w-full bg-card border border-border/50 rounded-xl overflow-hidden shadow-2xs"
+                  >
+                    <OrderRow order={order} />
+                  </div>
+                ) : (
+                  <DesktopOrderCard key={order.id} order={order} />
+                ),
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── MODO 1: PEDIDOS ── */}
+      {hubMode === "pedidos" && (orders.length === 0 ? (
         /* ── Empty State Honesto ── */
         <div className="flex flex-col items-center justify-center py-20 px-6 text-center gap-3">
-          <ShoppingBag className="size-10 stroke-[1.5] text-muted-foreground/40 mb-1" />
+          <ShoppingBag className="size-10 text-muted-foreground/40 mb-1" strokeWidth={1.5} />
           <div>
             <h2 className="text-base font-bold text-foreground">Nenhum pedido realizado</h2>
             <p className="text-xs text-muted-foreground mt-1 max-w-xs mx-auto leading-relaxed">
               Suas compras em lojas e restaurantes parceiros aparecerão aqui com rastreamento em tempo real.
             </p>
           </div>
-          <Button asChild className="rounded-lg h-11 px-6 text-xs font-bold mt-2">
-            <Link to="/mercado">Explorar Lojas</Link>
+          <Button asChild variant="outline" className="rounded-lg h-11 px-6 text-xs font-bold mt-2">
+            <Link to="/mercado">Explorar</Link>
           </Button>
         </div>
       ) : (
@@ -646,7 +984,7 @@ function CustomerOrdersPage() {
             </div>
           )}
         </>
-      )}
+      ))}
     </div>
   );
 }

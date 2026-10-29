@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import { Megaphone, Plus, Trash2, TrendingUp, Eye, DollarSign, Play, Pause, MapPin, Percent, Zap, ExternalLink, MessageCircle, ShoppingBag, Target, Image as ImageIcon, Loader2, Sliders, Globe, Share2, Copy, Check } from "lucide-react";
+import { Megaphone, Plus, Trash2, TrendingUp, Eye, DollarSign, Play, Pause, MapPin, Percent, Zap, ExternalLink, MessageCircle, ShoppingBag, Target, Image as ImageIcon, Loader2, Sliders, Globe, Share2, Copy, Check, Table, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { CurrencyField } from "@/components/ui/currency-field";
 import { MediaUploader } from "@/components/ui/media-uploader";
 import { formatMoney } from "@/lib/money";
+import { cn } from "@/lib/utils";
 import { listAdCampaigns, toggleAdCampaignStatus, deleteAdCampaign, createAdCampaign, getStoreAdTargets, getStoreAdChannelsSettings, saveStoreAdChannelsSettings, generateUtmTrackingLink, getStoreMarketingTierStatus, upgradeStoreToWaesyMax, connectExternalAdAccountOAuth, dispatchExternalMetaOrGoogleCampaign, generateAiAdCreativeFromCatalog, getMarketingRoiClosedLoopMetrics, getExternalAdsOAuthUrl, discoverAccessibleAdAccountsFn, syncExternalAdCampaignMetricsFn, diagnoseAdAccountsHealthMcpFn, type AdCampaign, type StoreAdChannelsDTO } from "@/services/ads.functions";
 import { Lock, ShieldCheck, ArrowUpRight, Layers, RefreshCw, Activity } from "lucide-react";
 import { boostAdCampaignAtomic } from "@/services/deep-core.functions";
@@ -108,6 +109,7 @@ function AnunciosWorkspacePage() {
     Array.isArray(initialCampaigns) ? initialCampaigns : []
   );
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"table" | "cards">("table");
 
   // Estados do Assistente MCP de Anúncios Dinâmicos & Diagnóstico Oficial Google/Meta Ads
   const [mcpPrompt, setMcpPrompt] = useState("");
@@ -1468,17 +1470,29 @@ function AnunciosWorkspacePage() {
               </h2>
             </div>
             <div className="flex flex-wrap items-center gap-2 pb-1 sm:pb-0">
-              <Button asChild variant="outline" size="sm" className="h-8 px-3 text-xs font-medium shrink-0">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isSyncingLiveMetrics}
+                onClick={handleSyncLiveMetrics}
+                className="h-11 px-3 text-xs font-medium gap-2 shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-hidden cursor-pointer"
+                title="Sincronizar métricas de visualizações, cliques e gastos com Meta Graph API e Google Ads"
+              >
+                <RefreshCw className={cn("size-3.5", isSyncingLiveMetrics && "animate-spin motion-reduce:animate-none")} />
+                <span>{isSyncingLiveMetrics ? "Sincronizando..." : "Sincronizar"}</span>
+              </Button>
+              <Button asChild variant="outline" size="sm" className="h-11 px-3 text-xs font-medium shrink-0">
                 <Link to="/workspace/marketing/pixels">
                   Pixels CAPI
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="sm" className="h-8 px-3 text-xs font-medium shrink-0">
+              <Button asChild variant="outline" size="sm" className="h-11 px-3 text-xs font-medium shrink-0">
                 <Link to="/workspace/integracoes/marketplaces">
                   Marketplaces
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="sm" className="h-8 px-3 text-xs font-medium shrink-0">
+              <Button asChild variant="outline" size="sm" className="h-11 px-3 text-xs font-medium shrink-0">
                 <Link to="/workspace/marketing/afiliados">
                   Afiliados
                 </Link>
@@ -1487,13 +1501,44 @@ function AnunciosWorkspacePage() {
                 asChild
                 variant="ghost"
                 size="sm"
-                className="h-8 text-xs font-semibold text-muted-foreground hover:text-foreground shrink-0"
+                className="h-11 text-xs font-semibold text-muted-foreground hover:text-foreground shrink-0"
               >
                 <Link to="/workspace/marketing/anuncios/novo">
                   <Sliders className="size-3.5 mr-1" />
                   <span>Editor Completo</span>
                 </Link>
               </Button>
+
+              <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg border border-border/40">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setViewMode("table")}
+                  className={cn(
+                    "h-11 px-3 text-xs font-semibold rounded-md gap-2 cursor-pointer",
+                    viewMode === "table" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
+                  )}
+                  title="Visão Tabela Ads Manager"
+                >
+                  <Table className="size-3.5" />
+                  <span className="hidden sm:inline">Tabela</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setViewMode("cards")}
+                  className={cn(
+                    "h-11 px-3 text-xs font-semibold rounded-md gap-2 cursor-pointer",
+                    viewMode === "cards" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
+                  )}
+                  title="Visão Cards"
+                >
+                  <LayoutGrid className="size-3.5" />
+                  <span className="hidden sm:inline">Cards</span>
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -1515,6 +1560,146 @@ function AnunciosWorkspacePage() {
                 <Plus className="size-4 mr-2" />
                 Criar Anúncio Rápido
               </Button>
+            </div>
+          ) : viewMode === "table" ? (
+            <div className="overflow-x-auto scroll-area">
+              <table className="w-full text-xs text-left">
+                <thead className="bg-muted/40 text-muted-foreground font-semibold border-b border-border/40">
+                  <tr>
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4">Campanha</th>
+                    <th className="py-3 px-4">Formato</th>
+                    <th className="py-3 px-4 text-right">Orçamento Diário</th>
+                    <th className="py-3 px-4 text-right">Gasto Real</th>
+                    <th className="py-3 px-4 text-right">Impressões</th>
+                    <th className="py-3 px-4 text-right">Cliques (CTR)</th>
+                    <th className="py-3 px-4 text-right">CPC Médio</th>
+                    <th className="py-3 px-4 text-right">Leads (CPL)</th>
+                    <th className="py-3 px-4 text-right">Ações</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/30">
+                  {filteredCampaigns.map((c) => {
+                    const impressions = Math.max(c.impressions_count || 0, 0);
+                    const clicks = Math.max(c.clicks_count || 0, 0);
+                    const spent = (c.spent_cents || 0) / 100;
+                    const ctr = impressions > 0 ? ((clicks / impressions) * 100).toFixed(2) : "0.00";
+                    const cpc = clicks > 0 ? (spent / clicks).toFixed(2) : "0.00";
+                    const leads = c.leads_count || 0;
+                    const cpl = leads > 0 ? (spent / leads).toFixed(2) : "—";
+
+                    return (
+                      <tr key={c.id} className="hover:bg-muted/20 transition-colors">
+                        <td className="py-3 px-4">
+                          <button
+                            type="button"
+                            onClick={() => handleToggle(c)}
+                            disabled={updatingId === c.id}
+                            className={cn(
+                              "inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-hidden",
+                              c.status === "active"
+                                ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
+                                : "bg-muted text-muted-foreground border border-border/40"
+                            )}
+                            title={c.status === "active" ? "Clique para pausar" : "Clique para ativar"}
+                          >
+                            <span className={cn("size-2 rounded-full", c.status === "active" ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground")} />
+                            {c.status === "active" ? "Ativo" : "Pausado"}
+                          </button>
+                        </td>
+                        <td className="py-3 px-4 max-w-xs">
+                          <div className="font-bold text-foreground truncate">{c.title}</div>
+                          {c.headline && <div className="text-muted-foreground truncate text-xs">{c.headline}</div>}
+                          {c.target_location && (
+                            <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                              <MapPin className="size-3 text-primary" />
+                              <span>{c.target_location}</span>
+                            </div>
+                          )}
+                        </td>
+                        <td className="py-3 px-4">
+                          <Badge variant="outline" className="text-xs font-mono">
+                            {FORMAT_LABELS[c.format] || c.format}
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-4 text-right font-tabular-nums font-semibold text-foreground">
+                          {c.daily_budget_cents == null ? "—" : formatMoney(c.daily_budget_cents)}
+                        </td>
+                        <td className="py-3 px-4 text-right font-tabular-nums text-foreground">
+                          {c.spent_cents == null ? "—" : formatMoney(c.spent_cents)}
+                        </td>
+                        <td className="py-3 px-4 text-right font-tabular-nums text-foreground">
+                          {impressions.toLocaleString("pt-BR")}
+                        </td>
+                        <td className="py-3 px-4 text-right font-tabular-nums">
+                          <span className="font-semibold text-foreground">{clicks}</span>
+                          <span className="text-muted-foreground ml-1">({ctr}%)</span>
+                        </td>
+                        <td className="py-3 px-4 text-right font-tabular-nums text-muted-foreground">
+                          R$ {cpc}
+                        </td>
+                        <td className="py-3 px-4 text-right font-tabular-nums">
+                          <span className="font-bold text-foreground">{leads}</span>
+                          {leads > 0 && <span className="text-muted-foreground ml-1">(R$ {cpl})</span>}
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={async () => {
+                                setUpdatingId(c.id);
+                                try {
+                                  await boostAdCampaignAtomic({
+                                    data: {
+                                      campaignId: c.id,
+                                      amountCents: 5000,
+                                      priorityDelta: 50,
+                                    },
+                                  });
+                                  toast.success("Boost ACID (+R$ 50,00) debitado no Ledger!");
+                                  router.invalidate();
+                                } catch (err: any) {
+                                  toast.error(err?.message || "Erro ao impulsionar.");
+                                } finally {
+                                  setUpdatingId(null);
+                                }
+                              }}
+                              disabled={updatingId === c.id}
+                              className="h-11 px-3 text-xs font-semibold rounded-md gap-1 cursor-pointer"
+                              title="Impulsionar anúncio com prioridade alta"
+                            >
+                              <Zap className="size-3 text-amber-500" />
+                              <span>Boost</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="size-11 p-0 rounded-md text-destructive hover:text-destructive cursor-pointer"
+                              title="Excluir campanha"
+                              onClick={async () => {
+                                if (!confirm("Deseja realmente excluir esta campanha?")) return;
+                                setUpdatingId(c.id);
+                                try {
+                                  await deleteAdCampaign({ data: { campaignId: c.id } });
+                                  toast.success("Campanha excluída com sucesso.");
+                                  router.invalidate();
+                                } catch (err: any) {
+                                  toast.error(err?.message || "Erro ao excluir campanha.");
+                                } finally {
+                                  setUpdatingId(null);
+                                }
+                              }}
+                            >
+                              <Trash2 className="size-3.5" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           ) : (
             <div className="divide-y divide-border/60">

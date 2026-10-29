@@ -572,7 +572,7 @@ function PersonalFinancePage() {
 
   const handleOpenReceiptById = async (receiptId: string) => {
     try {
-      const receipt = await getReceiptDetails({ data: { receiptId } });
+      const receipt = await getReceiptDetails({ data: { idOrCode: receiptId } });
       if (receipt) setActiveReceipt(receipt);
     } catch {
       toast.error("Comprovante não disponível no momento.");
@@ -778,7 +778,7 @@ function PersonalFinancePage() {
             lastFourDigits={overview?.card?.lastFourDigits || "8842"}
             totalLimitCents={overview?.card?.creditLimitCents || 500000}
             usedLimitCents={overview?.currentInvoice?.amountCents || 0}
-            invoices={overview?.invoices && overview.invoices.length > 0 ? overview.invoices : undefined}
+            invoices={overview?.invoices && overview.invoices.length > 0 ? (overview.invoices as any) : undefined}
             onBackClick={() => setActivePillar("overview")}
             onVirtualCardClick={() => setIsCardSettingsOpen(true)}
             onAdjustLimitClick={() => setIsCardSettingsOpen(true)}

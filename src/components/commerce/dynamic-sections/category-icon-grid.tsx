@@ -59,7 +59,7 @@ export const CategoryIconGrid: React.FC<CategoryIconGridProps> = ({
     }
   };
 
-  const items = categories && categories.length > 0 ? categories : DEFAULT_CATEGORIES;
+  const items: CategoryIconItem[] = categories;
 
   return (
     <section className="w-full py-6 sm:py-10 bg-background">

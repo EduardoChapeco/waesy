@@ -40,6 +40,7 @@ import {
   Copy,
   ChevronDown,
   Check,
+  X,
   Clock,
   Eye,
   ShieldCheck,
@@ -228,7 +229,13 @@ export default function MeuCurriculoPage() {
         },
       });
 
-      // Sincroniza identidade civil em profiles
+      // Sincroniza identidade civil em profiles e avaliações de empregadores (InfoJobs / Glassdoor)
+      const mappedExperiences = experiences.map((exp) => ({
+        ...exp,
+        salary_cents: exp.last_salary ? Math.round(Number(exp.last_salary) * 100) : (exp.salary_cents || null),
+        would_recommend: exp.would_recommend !== false,
+      }));
+
       await updateProfile({
         data: {
           fullName: fullName.trim() || profile?.fullName || profile?.full_name || "Usuário",
@@ -238,7 +245,10 @@ export default function MeuCurriculoPage() {
           state: state.trim(),
           website: website.trim(),
           bio: summary.trim(),
-          resumeData: currentResumeData,
+          resumeData: {
+            ...currentResumeData,
+            experiences: mappedExperiences,
+          },
         },
       }).catch(() => null);
 
@@ -1055,6 +1065,38 @@ export default function MeuCurriculoPage() {
                                     {star}
                                   </button>
                                 ))}
+                              </div>
+                            </div>
+
+                            <div className="pt-1">
+                              <label className="text-3xs font-semibold text-muted-foreground block mb-1">
+                                Recomendaria esta empresa a amigos? (Gostava de trabalhar lá?)
+                              </label>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => updateExperience(idx, "would_recommend", true)}
+                                  className={`h-11 min-h-11 px-4 rounded-lg flex items-center gap-2 text-xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                                    exp.would_recommend !== false
+                                      ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/40"
+                                      : "bg-muted text-muted-foreground border border-transparent hover:bg-muted/80"
+                                  }`}
+                                >
+                                  <Check className="size-4" />
+                                  <span>Sim, recomendo</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => updateExperience(idx, "would_recommend", false)}
+                                  className={`h-11 min-h-11 px-4 rounded-lg flex items-center gap-2 text-xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                                    exp.would_recommend === false
+                                      ? "bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/40"
+                                      : "bg-muted text-muted-foreground border border-transparent hover:bg-muted/80"
+                                  }`}
+                                >
+                                  <X className="size-4" />
+                                  <span>Não recomendo</span>
+                                </button>
                               </div>
                             </div>
                           </div>

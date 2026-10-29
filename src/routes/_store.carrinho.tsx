@@ -239,7 +239,6 @@ function StoreCartPage() {
           {/* Coluna Direita: Resumo Fixo Desktop (Apenas da loja selecionada) */}
           <div className="lg:col-span-1">
             <Surface
-              variant="outline"
               elevation="sm"
               className="p-5 sm:p-6 rounded-lg border border-border/80 bg-card sticky top-24"
             >

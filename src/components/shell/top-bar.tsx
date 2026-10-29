@@ -3,9 +3,11 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { DEFAULT_BRAND_NAME } from "@/lib/brand";
 import { LocationMasterPill } from "@/components/location/location-master-pill";
 import { UtilityCluster } from "@/components/shell/utility-cluster";
-import { MagnifyingGlass, List } from "@phosphor-icons/react";
+import { MagnifyingGlass, List, Plus } from "@phosphor-icons/react";
 import { drawerStore } from "@/lib/drawer-store";
 import { BetaExplanationModal } from "@/components/shell/beta-explanation-modal";
+import { openQuickCreateModal } from "@/components/shell/GlobalQuickCreateModal";
+import { openWhatsAppUnifiedSearch } from "@/components/shell/WhatsAppUnifiedSearchModal";
 
 export interface TopBarProps {
   session?: any;
@@ -26,6 +28,7 @@ export interface TopBarProps {
  */
 export function TopBar({ session, brandSettings }: TopBarProps) {
   const [betaModalOpen, setBetaModalOpen] = React.useState(false);
+  const location = useLocation();
 
   const platformDisplayName =
     brandSettings?.platform_name &&
@@ -34,7 +37,7 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
       : DEFAULT_BRAND_NAME;
 
   return (
-    <header className="sticky top-0 z-30 w-full bg-background select-none border-b border-border/40 pt-[env(safe-area-inset-top,0px)]">
+    <header className="sticky top-0 z-30 w-full bg-background select-none border-b border-border/40 pt-safe">
       <div className="px-3 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 h-14 sm:h-16 w-full">
         {/* Lado Esquerdo: Logo + Selo Beta Silencioso + Localização */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0">
@@ -47,6 +50,17 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
             className="md:hidden size-11 min-h-11 min-w-11 -ml-1 rounded-lg flex items-center justify-center text-foreground hover:bg-muted/50 active:bg-muted/80 active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <List className="size-6" weight="bold" />
+          </button>
+
+          {/* Botão + Contextual de Criação Rápida (WeChat / WhatsApp SuperApp) */}
+          <button
+            type="button"
+            onClick={() => openQuickCreateModal(location.pathname)}
+            aria-label="Criar"
+            title="Criar"
+            className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-foreground hover:bg-muted/50 active:bg-muted/80 active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <Plus className="size-5" weight="bold" />
           </button>
           <Link
             to="/"
@@ -103,15 +117,16 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
 
         {/* Lado Direito: Ação de Busca Rápida Mobile + UtilityCluster */}
         <div className="flex items-center gap-1 sm:gap-2 shrink-0 ml-auto">
-          {/* Ação de Busca Rápida Mobile (Touch Target 44px ergonômico) */}
-          <Link
-            to="/buscar"
-            className="md:hidden flex items-center justify-center size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            aria-label="Abrir busca"
+          {/* Ação de Busca Rápida Mobile (Abre WhatsAppUnifiedSearchModal) */}
+          <button
+            type="button"
+            onClick={() => openWhatsAppUnifiedSearch()}
+            className="md:hidden flex items-center justify-center size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            aria-label="Buscar"
             title="Buscar"
           >
             <MagnifyingGlass size={20} weight="bold" />
-          </Link>
+          </button>
 
           <UtilityCluster session={session} embedded={true} />
         </div>

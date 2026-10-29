@@ -27,7 +27,11 @@ export type SurfaceSectionType =
  | "custom_buttons_rail"
  | "single_store_spotlight"
  | "classifieds_spotlight"
- | "social_posts_rail";
+ | "social_posts_rail"
+ | "vitrine_vertical_carousel"
+ | "media_gallery_mosaic"
+ | "video_section"
+ | "tourism_car_rental_rail";
 
 export type SurfaceDataSource =
  | "all_products"
@@ -38,7 +42,9 @@ export type SurfaceDataSource =
  | "top_sellers"
  | "banners"
  | "custom_buttons"
- | "social_posts";
+ | "social_posts"
+ | "car_rentals"
+ | "videos";
 
 export type SurfaceRankingStrategy =
  | "discount"
@@ -620,6 +626,10 @@ export const upsertSurfaceSection = createServerFn({ method: "POST" })
       "single_store_spotlight",
       "classifieds_spotlight",
       "social_posts_rail",
+      "vitrine_vertical_carousel",
+      "media_gallery_mosaic",
+      "video_section",
+      "tourism_car_rental_rail",
     ]),
  title: z.string().min(1, "Título obrigatório"),
  subtitle: z.string().optional().nullable(),
@@ -634,6 +644,8 @@ export const upsertSurfaceSection = createServerFn({ method: "POST" })
  "banners",
  "custom_buttons",
  "social_posts",
+ "car_rentals",
+ "videos",
  ]),
  taxonomy_slug: z.string().optional().nullable(),
  ranking_strategy: z.enum([

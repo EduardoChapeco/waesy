@@ -81,7 +81,7 @@ export function CreatorProfileSheetEditor({
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [cropperOpen, setCropperOpen] = useState(false);
   const [cropperSrc, setCropperSrc] = useState<string | null>(null);
-  const [cropperType, setCropperType] = useState<"avatar">("avatar");
+  const [cropperType, setCropperType] = useState<"avatar" | "cover">("avatar");
   const [isUploadingMedia, setIsUploadingMedia] = useState(false);
 
   useEffect(() => {

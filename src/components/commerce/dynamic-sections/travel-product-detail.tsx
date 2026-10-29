@@ -107,7 +107,7 @@ export const TravelProductDetail: React.FC<TravelProductDetailProps> = ({
               </span>
               <h3 className="text-xs font-bold text-foreground truncate">{hotelName}</h3>
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <span className="font-bold text-foreground">{reviewScore.toFixed(1)}</span>
+                <span className="font-bold text-foreground">{(reviewScore ?? 5).toFixed(1)}</span>
                 <span>/ 5</span>
                 <span>• {nightsCount} noites</span>
               </div>

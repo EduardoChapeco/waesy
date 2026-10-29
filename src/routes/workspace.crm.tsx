@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Users, Headphones, Search, Plus, Phone, Mail, ArrowUpRight, TrendingUp, MessageCircle, ExternalLink, ChevronRight, Filter, DollarSign, Kanban, CheckCircle2, Clock, UserCheck, Building2, Tag, ShieldCheck, MoreHorizontal, SlidersHorizontal, X, ChevronDown, ChevronUp, Globe, Share2, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,6 +51,7 @@ export const Route = createFileRoute("/workspace/crm")({
 export default function WorkspaceCrmPage() {
   const { initialCustomers, dashboardMetrics } = Route.useLoaderData();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
@@ -99,8 +100,21 @@ export default function WorkspaceCrmPage() {
   }, [selectedEntity, leads]);
 
   const handleTransitionLead = async (leadId: string, nextStatus: string) => {
-    await updateLeadStatus({ data: { leadId, status: nextStatus as any } });
-    await refetchLeads();
+    // Atualização otimista imediata no cache do React Query (0ms)
+    const prevLeads = queryClient.getQueryData<any[]>(["workspace-crm-leads"]) || [];
+    queryClient.setQueryData<any[]>(["workspace-crm-leads"], (old) => {
+      if (!Array.isArray(old)) return old;
+      return old.map((l) => (l.id === leadId ? { ...l, status: nextStatus } : l));
+    });
+
+    try {
+      await updateLeadStatus({ data: { leadId, status: nextStatus as any } });
+    } catch (err: any) {
+      queryClient.setQueryData(["workspace-crm-leads"], prevLeads);
+      toast.error(err?.message || "Não foi possível mover o card no funil.");
+    } finally {
+      queryClient.invalidateQueries({ queryKey: ["workspace-crm-leads"] });
+    }
   };
 
   const filteredCustomers = useMemo(() => {

@@ -318,8 +318,32 @@ export function HomeMobileNativeApp({
     }));
   }, [liveStores]);
 
-  // ── Observador de Rolagem para Menu Sticky Sub-Header ──
+  // ── Filtro Triplo Canônico: Explorar | Marketplace | Classificados ──
+  const [discoveryPillar, setDiscoveryPillar] = useState<"explorar" | "marketplace" | "classificados">(
+    activeCategory === "marketplace"
+      ? "marketplace"
+      : activeCategory === "classificados"
+        ? "classificados"
+        : "explorar",
+  );
+
+  useEffect(() => {
+    if (activeCategory === "marketplace") setDiscoveryPillar("marketplace");
+    else if (activeCategory === "classificados") setDiscoveryPillar("classificados");
+    else if (activeCategory === "todos") setDiscoveryPillar("explorar");
+  }, [activeCategory]);
+
+  const handleSelectPillar = (pillar: "explorar" | "marketplace" | "classificados") => {
+    setDiscoveryPillar(pillar);
+    if (pillar === "explorar") onSelectCategory("todos");
+    else if (pillar === "marketplace") onSelectCategory("marketplace");
+    else if (pillar === "classificados") onSelectCategory("classificados");
+  };
+
+  // ── Observador de Rolagem para Menu Sticky Sub-Header + Auto-Hide ──
   const [showStickyCategoryDock, setShowStickyCategoryDock] = useState(false);
+  const [isDockHiddenByScroll, setIsDockHiddenByScroll] = useState(false);
+  const lastScrollYRef = useRef(0);
   const categoriesSentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -336,6 +360,26 @@ export function HomeMobileNativeApp({
 
     observer.observe(sentinel);
     return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    lastScrollYRef.current = window.scrollY;
+
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      const deltaY = currentY - lastScrollYRef.current;
+
+      if (currentY <= 80 || deltaY < -6) {
+        setIsDockHiddenByScroll(false);
+      } else if (deltaY > 10 && currentY > 120) {
+        setIsDockHiddenByScroll(true);
+      }
+      lastScrollYRef.current = currentY;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // ── Condicional de Cupons Reais (Regra B.33 / Anti-Fake) ──
@@ -412,14 +456,53 @@ export function HomeMobileNativeApp({
         hasClubBenefit={true}
       />
 
-      {/* ── SUB-HEADER STICKY: DOCK HORIZONTAL DE CATEGORIAS AO ROLAR (Paridade Image 3 iFood) ── */}
+      {/* ── SUB-HEADER STICKY: DOCK HORIZONTAL DE CATEGORIAS AO ROLAR (Auto-hide ao rolar p/ baixo, revela ao subir) ── */}
       <div
         className={cn(
-          "sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border/40 transition-opacity duration-300 w-full",
+          "sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border/40 transition-transform duration-300 w-full",
           showStickyCategoryDock ? "block" : "hidden",
+          isDockHiddenByScroll
+            ? "-translate-y-full opacity-0 pointer-events-none"
+            : "translate-y-0 opacity-100",
         )}
       >
         <MultiVitrineDock />
+      </div>
+
+      {/* ── SELETOR DE MODO DE DESCOBERTA (Explorar | Marketplace | Classificados) ── */}
+      <div className="px-3 sm:px-4">
+        <div
+          role="tablist"
+          aria-label="Modo de descoberta"
+          className="flex items-center gap-1 bg-muted/40 p-1 rounded-xl border border-border/50"
+        >
+          {(
+            [
+              { id: "explorar", label: "Explorar" },
+              { id: "marketplace", label: "Marketplace" },
+              { id: "classificados", label: "Classificados" },
+            ] as const
+          ).map((tab) => {
+            const active = discoveryPillar === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => handleSelectPillar(tab.id)}
+                className={cn(
+                  "h-11 min-h-11 px-3 rounded-lg text-xs font-bold transition-colors truncate cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  active
+                    ? "bg-background text-foreground shadow-2xs border border-border/60"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* ── 1. ALERTA / FAIXA ROXA DE CUPOM iFOOD (Pílula Sem Borda - Apenas se existirem cupons reais) ── */}
@@ -477,54 +560,59 @@ export function HomeMobileNativeApp({
               )}
             </div>
           )}
-          /* design-lint-ignore DL-29 reason:"Dock canônico 5x2 de categorias iFood" expiry:"2027-12-31" */
-          <div className="grid grid-cols-5 gap-y-2 gap-x-2">
-            {resolvedQuickCategories.map((cat: any) => {
-              const Icon = cat.icon;
-              if (cat.isAction) {
+          {quickCategoriesSection?.layout_variant === "horizontal_scroll" ||
+          (quickCategoriesSection?.layout_variant as string) === "native_dock" ? (
+            <NoorNativeCategoryDock items={quickCategoriesSection?.items || []} />
+          ) : (
+            /* design-lint-ignore DL-29 reason:"Dock canônico 5x2 de categorias iFood" expiry:"2027-12-31" */
+            <div className="grid grid-cols-5 gap-y-2 gap-x-2">
+              {resolvedQuickCategories.map((cat: any) => {
+                const Icon = cat.icon;
+                if (cat.isAction) {
+                  return (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={openSuperApp}
+                      className="flex flex-col items-center gap-2 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl select-none"
+                    >
+                      <div className="size-12 sm:size-14 rounded-2xl bg-card hover:bg-muted/60 border border-border/50 flex items-center justify-center transition-transform group-hover:scale-105">
+                        <Icon size={24} weight="bold" className="text-foreground" />
+                      </div>
+                      <span className="text-2xs font-semibold text-foreground text-center leading-tight break-words text-wrap">
+                        {cat.label}
+                      </span>
+                    </button>
+                  );
+                }
                 return (
-                  <button
+                  <Link
                     key={cat.id}
-                    type="button"
-                    onClick={openSuperApp}
-                    className="flex flex-col items-center gap-2 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl select-none"
+                    to={cat.to as any}
+                    className="flex flex-col items-center gap-2 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl select-none relative"
                   >
-                    <div className="size-12 sm:size-14 rounded-2xl bg-card hover:bg-muted/60 border border-border/50 flex items-center justify-center transition-transform group-hover:scale-105">
-                      <Icon size={24} weight="bold" className="text-foreground" />
+                    <div className="relative">
+                      <div className="size-12 sm:size-14 rounded-2xl bg-card hover:bg-muted/60 border border-border/50 flex items-center justify-center transition-transform group-hover:scale-105 overflow-hidden">
+                        {cat.imageUrl ? (
+                          <img src={cat.imageUrl} alt={cat.label} className="size-10 object-contain" loading="lazy" />
+                        ) : (
+                          <Icon size={26} weight="bold" className="text-primary" />
+                        )}
+                      </div>
+                      {cat.badge && (
+                        <span className="absolute -top-2 -right-1 z-10 px-2 py-1 rounded-full bg-destructive text-destructive-foreground text-3xs font-black uppercase tracking-wider leading-none shadow-xs pointer-events-none">
+                          {cat.badge}
+                        </span>
+                      )}
                     </div>
                     <span className="text-2xs font-semibold text-foreground text-center leading-tight break-words text-wrap">
                       {cat.label}
                     </span>
-                  </button>
+                  </Link>
                 );
-              }
-              return (
-                <Link
-                  key={cat.id}
-                  to={cat.to as any}
-                  className="flex flex-col items-center gap-2 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl select-none relative"
-                >
-                  <div className="relative">
-                    <div className="size-12 sm:size-14 rounded-2xl bg-card hover:bg-muted/60 border border-border/50 flex items-center justify-center transition-transform group-hover:scale-105 overflow-hidden">
-                      {cat.imageUrl ? (
-                        <img src={cat.imageUrl} alt={cat.label} className="size-10 object-contain" loading="lazy" />
-                      ) : (
-                        <Icon size={26} weight="bold" className="text-primary" />
-                      )}
-                    </div>
-                    {cat.badge && (
-                      <span className="absolute -top-2 -right-1 z-10 px-2 py-1 rounded-full bg-destructive text-destructive-foreground text-3xs font-black uppercase tracking-wider leading-none shadow-xs pointer-events-none">
-                        {cat.badge}
-                      </span>
-                    )}
-                  </div>
-                  <span className="text-2xs font-semibold text-foreground text-center leading-tight break-words text-wrap">
-                    {cat.label}
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
+              })}
+            </div>
+          )}
           {/* Sentinela de Rolagem para fixar a régua horizontal no sub-header */}
           <div ref={categoriesSentinelRef} className="w-full h-1 pointer-events-none" />
         </section>
@@ -584,7 +672,7 @@ export function HomeMobileNativeApp({
         })()}
 
       {/* ── 4. ÚLTIMAS LOJAS COM LOGO E BADGES VERDES (Ativa por padrão no CMS) ── */}
-      {isSectionActive("recent_stores_rail", true) && recentStores.length > 0 && (
+      {discoveryPillar !== "classificados" && isSectionActive("recent_stores_rail", true) && recentStores.length > 0 && (
         <IFoodRecentStoresRail
           title={getSection("recent_stores_rail")?.title || "Últimas lojas"}
           viewMoreTo="/gastronomia"
@@ -593,7 +681,7 @@ export function HomeMobileNativeApp({
       )}
 
       {/* ── 5. MINI-BANNERS VERTICAIS ("No Waesy também tem" — Alimentado pelo CMS) ── */}
-      {isSectionActive("feature_mini_banners", true) && (
+      {discoveryPillar !== "classificados" && isSectionActive("feature_mini_banners", true) && (
         <IFoodFeatureMiniBannersRail
           title={getSection("feature_mini_banners")?.title || "No Waesy também tem"}
           items={resolvedFeatureMiniBanners}
@@ -601,7 +689,7 @@ export function HomeMobileNativeApp({
       )}
 
       {/* ── 6. RESTAURANTES COM CUPOM (Cards Visuais Grandes Spotlight iFood — Ativa por padrão) ── */}
-      {isSectionActive("spotlight_restaurants", true) && spotlightRestaurants.length > 0 && (
+      {discoveryPillar !== "classificados" && isSectionActive("spotlight_restaurants", true) && spotlightRestaurants.length > 0 && (
         <IFoodVisualSpotlightRail
           title={getSection("spotlight_restaurants")?.title || "Restaurantes com Cupom"}
           isAd={true}
@@ -612,7 +700,7 @@ export function HomeMobileNativeApp({
       )}
 
       {/* ── 7. MERCADOS & CONVENIÊNCIA (Cards Visuais Grandes Spotlight iFood) ── */}
-      {spotlightMarkets.length > 0 && (
+      {discoveryPillar !== "classificados" && spotlightMarkets.length > 0 && (
         <IFoodVisualSpotlightRail
           title="Mercados & Conveniência"
           viewMoreTo="/mercado"
@@ -622,7 +710,7 @@ export function HomeMobileNativeApp({
       )}
 
       {/* ── 8. FARMÁCIAS FAMOSAS (Cards Visuais Grandes Spotlight iFood — Ativa por padrão) ── */}
-      {isSectionActive("spotlight_pharmacies", true) && spotlightPharmacies.length > 0 && (
+      {discoveryPillar !== "classificados" && isSectionActive("spotlight_pharmacies", true) && spotlightPharmacies.length > 0 && (
         <IFoodVisualSpotlightRail
           title={getSection("spotlight_pharmacies")?.title || "Farmácias Famosas"}
           viewMoreTo="/farmacia"
@@ -632,7 +720,7 @@ export function HomeMobileNativeApp({
       )}
 
       {/* ── 9. SUPER OFERTAS & DESCONTOS (Produtos com Desconto Real) ── */}
-      {flashOfferProducts.length > 0 && (
+      {discoveryPillar !== "classificados" && flashOfferProducts.length > 0 && (
         <section aria-label="Super Ofertas" className="space-y-2 py-1">
           <div className="px-3 sm:px-4 flex items-center justify-between">
             <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight leading-tight">
@@ -668,7 +756,7 @@ export function HomeMobileNativeApp({
       )}
 
       {/* ── 8. PÍLULAS DE FILTRO RÁPIDO iFOOD (Ordenar, Turbo, Entrega grátis... — Ativa por padrão) ── */}
-      {isSectionActive("filter_chips_bar", true) && (
+      {discoveryPillar !== "classificados" && isSectionActive("filter_chips_bar", true) && (
         <IFoodFilterChipsBar
           activeFilters={activeFilters}
           onToggleFilter={handleToggleFilter}
@@ -676,7 +764,7 @@ export function HomeMobileNativeApp({
       )}
 
       {/* ── 9. FEED VERTICAL DE LOJAS ("Lojas" estilo iFood — Ativa por padrão no CMS) ── */}
-      {isSectionActive("stores_feed_list", true) && liveStores.length > 0 && (
+      {discoveryPillar !== "classificados" && isSectionActive("stores_feed_list", true) && liveStores.length > 0 && (
         <section aria-label="Lojas e Restaurantes" className="px-1 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-bold text-foreground tracking-tight leading-tight">
@@ -768,8 +856,9 @@ export function HomeMobileNativeApp({
       {viewMode === "feed" && (
         <div className="space-y-4 pt-1">
           {/* PLACES / GUIA COMERCIAL */}
-          {isSectionActive("places_directory_rail", true) &&
-            (activeCategory === "todos" || activeCategory === "places") &&
+          {discoveryPillar !== "classificados" &&
+            isSectionActive("places_directory_rail", true) &&
+            (activeCategory === "todos" || activeCategory === "places" || discoveryPillar === "marketplace") &&
             filteredPlaces.length > 0 && (
             <HorizontalRail
               title="Lugares e Empresas"
@@ -870,14 +959,15 @@ export function HomeMobileNativeApp({
           )}
 
           {/* MARKETPLACE DE EMPRESAS */}
-          {isSectionActive("marketplace_products_rail", true) &&
-            (activeCategory === "todos" || activeCategory === "marketplace") && (
+          {discoveryPillar !== "classificados" &&
+            isSectionActive("marketplace_products_rail", true) &&
+            (activeCategory === "todos" || activeCategory === "marketplace" || discoveryPillar === "marketplace") && (
             filteredMarketplaceProducts.length > 0 ? (
-              activeCategory === "marketplace" ? (
-                <section aria-label="Produtos de Empresas" className="space-y-3">
+              activeCategory === "marketplace" || discoveryPillar === "marketplace" ? (
+                <section aria-label="Marketplace" className="space-y-3 px-1">
                   <div className="flex items-center justify-between">
                     <h2 className="text-base font-bold text-foreground tracking-tight">
-                      Marketplace de Empresas
+                      Marketplace
                     </h2>
                     <span className="text-xs font-mono text-muted-foreground">
                       {filteredMarketplaceProducts.length} itens
@@ -891,7 +981,7 @@ export function HomeMobileNativeApp({
                 </section>
               ) : (
                 <HorizontalRail
-                  title="Marketplace de Empresas"
+                  title="Marketplace"
                   actionLabel="Ver mais"
                   actionTo="/marketplace"
                 >
@@ -902,7 +992,7 @@ export function HomeMobileNativeApp({
                   ))}
                 </HorizontalRail>
               )
-            ) : activeCategory === "marketplace" ? (
+            ) : activeCategory === "marketplace" || discoveryPillar === "marketplace" ? (
               <div className="py-12 text-center space-y-2 bg-card rounded-lg border border-border/60 p-6">
                 <Storefront className="size-8 text-muted-foreground/40 mx-auto" />
                 <h2 className="text-sm font-bold text-foreground">
@@ -913,8 +1003,9 @@ export function HomeMobileNativeApp({
           )}
 
           {/* CLASSIFICADOS */}
-          {isSectionActive("classifieds_rail", true) &&
-            (activeCategory === "todos" || activeCategory === "classificados") &&
+          {discoveryPillar !== "marketplace" &&
+            isSectionActive("classifieds_rail", true) &&
+            (activeCategory === "todos" || activeCategory === "classificados" || discoveryPillar === "classificados") &&
             filteredClassifieds.length > 0 && (
             <HorizontalRail
               title="Classificados"

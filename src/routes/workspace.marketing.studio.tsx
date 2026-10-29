@@ -688,7 +688,7 @@ export default function WorkspaceSocialStudioPage() {
                     maxFiles={1}
                     bucket="post-media"
                     folder="marketing/studio"
-                    aspect={orientation === "portrait" ? 9 / 16 : 1}
+                    aspect={ratio === "9:16" ? 9 / 16 : 1}
                     accept="image"
                     label="Imagem do Card"
                   />

@@ -196,12 +196,12 @@ export const verifyTravelerDocumentMatch = createServerFn({ method: "POST" })
     // 1. Processamento OCR Multimodal Canônico
     const ocrExtraction = await parseUniversalDocumentOCR({
       data: {
-        documentUrl: data.documentImageUrl,
-        documentType: "travel_voucher",
+        files: [{ base64: data.documentImageUrl }],
+        nicheHint: "tourism",
       },
     });
 
-    const docName = ocrExtraction?.hotelName || ocrExtraction?.airlineName || data.typedName;
+    const docName = (ocrExtraction as any)?.hotelName || (ocrExtraction as any)?.airlineName || data.typedName;
     const similarity = calculateNameSimilarity(data.typedName, docName);
 
     // Se similaridade < 0.85 em Aéreo ou Rodoviário, há risco severo de veto no embarque

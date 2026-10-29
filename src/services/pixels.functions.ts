@@ -171,8 +171,12 @@ export const dispatchMetaCapiEvent = createServerFn({ method: "POST" })
         "InitiateCheckout",
         "Purchase",
         "ViewContent",
+        "QualifiedLead",
+        "Schedule",
+        "SubmitApplication",
       ]),
       eventSourceUrl: z.string().optional(),
+      testEventCode: z.string().optional(),
       customData: z.record(z.any()).optional(),
       userData: z
         .object({
@@ -180,6 +184,9 @@ export const dispatchMetaCapiEvent = createServerFn({ method: "POST" })
           phone: z.string().optional(),
           clientIpAddress: z.string().optional(),
           clientUserAgent: z.string().optional(),
+          fbp: z.string().optional(),
+          fbc: z.string().optional(),
+          externalId: z.string().optional(),
         })
         .optional(),
     })
@@ -214,6 +221,15 @@ export const dispatchMetaCapiEvent = createServerFn({ method: "POST" })
       const normalizedPhone = data.userData.phone.replace(/\D/g, "");
       hashedUserData.ph = [crypto.createHash("sha256").update(normalizedPhone).digest("hex")];
     }
+    if (data.userData?.externalId) {
+      hashedUserData.external_id = [crypto.createHash("sha256").update(data.userData.externalId.trim()).digest("hex")];
+    }
+    if (data.userData?.fbp) {
+      hashedUserData.fbp = data.userData.fbp.trim();
+    }
+    if (data.userData?.fbc) {
+      hashedUserData.fbc = data.userData.fbc.trim();
+    }
     let req: Request | null = null;
     try {
       const { getRequest } = await import("@tanstack/start-server-core");
@@ -229,18 +245,25 @@ export const dispatchMetaCapiEvent = createServerFn({ method: "POST" })
       hashedUserData.client_user_agent = resolvedUa;
     }
 
-    const payload = {
-      data: [
-        {
-          event_name: data.eventName,
-          event_time: Math.floor(Date.now() / 1000),
-          action_source: "website",
-          event_source_url: data.eventSourceUrl || undefined,
-          user_data: hashedUserData,
-          custom_data: data.customData || {},
-        },
-      ],
+    const eventPayload: Record<string, any> = {
+      event_name: data.eventName === "QualifiedLead" ? "Lead" : data.eventName,
+      event_time: Math.floor(Date.now() / 1000),
+      action_source: "website",
+      event_source_url: data.eventSourceUrl || undefined,
+      user_data: hashedUserData,
+      custom_data: {
+        ...(data.customData || {}),
+        lead_event_source: data.eventName === "QualifiedLead" ? "crm_qualification" : (data.customData?.lead_event_source || "waesy_hub"),
+      },
     };
+
+    const payload: Record<string, any> = {
+      data: [eventPayload],
+    };
+
+    if (data.testEventCode?.trim()) {
+      payload.test_event_code = data.testEventCode.trim();
+    }
 
     try {
       const res = await fetch(
@@ -429,4 +452,89 @@ export const dispatchLeadConversionWithAudit = createServerFn({ method: "POST" }
       telemetryId: telemetryRow?.id || null,
     };
   });
+
+/**
+ * Disparo Unificado Closed-Loop de Qualificação de Lead para Meta CAPI e Google Ads
+ * Executado quando um lead avança para estágios de qualificação ou conversão no CRM.
+ */
+export const dispatchClosedLoopLeadQualification = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      storeId: z.string().min(1),
+      leadId: z.string().min(1),
+      stage: z.string(),
+      email: z.string().optional().nullable(),
+      phone: z.string().optional().nullable(),
+      conversionValue: z.number().optional().default(0),
+      clientIpAddress: z.string().optional().nullable(),
+      clientUserAgent: z.string().optional().nullable(),
+      fbp: z.string().optional().nullable(),
+      fbc: z.string().optional().nullable(),
+      profileId: z.string().optional().nullable(),
+      sourceUrl: z.string().optional().nullable(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const isWon = ["won", "converted"].includes(data.stage.toLowerCase());
+    const isQualified = ["qualified", "proposal", "negotiation"].includes(data.stage.toLowerCase());
+
+    const metaEventName = isWon ? "Purchase" : (isQualified ? "QualifiedLead" : "Lead");
+    const gaEventName = isWon ? "purchase" : "generate_lead";
+
+    const results: { meta?: any; google?: any } = {};
+
+    // 1. Disparo Meta CAPI
+    try {
+      results.meta = await dispatchMetaCapiEvent({
+        data: {
+          storeId: data.storeId,
+          eventName: metaEventName,
+          eventSourceUrl: data.sourceUrl || undefined,
+          userData: {
+            email: data.email || undefined,
+            phone: data.phone || undefined,
+            clientIpAddress: data.clientIpAddress || undefined,
+            clientUserAgent: data.clientUserAgent || undefined,
+            fbp: data.fbp || undefined,
+            fbc: data.fbc || undefined,
+            externalId: data.profileId || undefined,
+          },
+          customData: {
+            crm_stage: data.stage,
+            lead_id: data.leadId,
+            value: data.conversionValue || 0,
+            currency: "BRL",
+            lead_event_source: "crm_pipeline",
+          },
+        },
+      });
+    } catch (err: any) {
+      results.meta = { sent: false, error: err?.message };
+    }
+
+    // 2. Disparo Google Ads Enhanced Conversions / GA4 Measurement Protocol
+    try {
+      const supabase = getServerClient();
+      results.google = await dispatchGoogleAdsConversion({
+        storeId: data.storeId,
+        eventName: gaEventName,
+        conversionValue: data.conversionValue || 0,
+        currency: "BRL",
+        clientId: data.fbp || `synthetic_${data.leadId}`,
+        userId: data.profileId || undefined,
+        supabase,
+      });
+    } catch (err: any) {
+      results.google = { sent: false, error: err?.message };
+    }
+
+    return {
+      success: true,
+      stage: data.stage,
+      metaEvent: metaEventName,
+      gaEvent: gaEventName,
+      results,
+    };
+  });
+
 

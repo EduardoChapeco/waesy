@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { User, Save, MapPin, ShieldCheck, FileText, Mail, Phone, AlertTriangle, Gift, HeartPulse, Calendar, CreditCard, History, Tag, TrendingUp, Plane, Users2, Smartphone, ExternalLink, Copy, Award, Luggage, QrCode, CheckCircle2, ChevronRight, Share2, Compass, Armchair, Utensils, Receipt } from "lucide-react";
+import { User, Save, MapPin, ShieldCheck, FileText, Mail, Phone, AlertTriangle, Gift, HeartPulse, Calendar, CreditCard, History, Tag, TrendingUp, Plane, Users2, Smartphone, ExternalLink, Copy, Award, Luggage, QrCode, CheckCircle2, ChevronRight, Share2, Compass, Armchair, Utensils, Receipt, Megaphone } from "lucide-react";
 import { CommercialBudgetPadSheet } from "@/components/documents/CommercialBudgetPadSheet";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
@@ -623,6 +623,8 @@ function CustomerDetailPage() {
                         <Plane className="size-5 text-amber-500" />
                       ) : event.type === "commercial_lead" ? (
                         <TrendingUp className="size-5 text-emerald-500" />
+                      ) : event.type === "ad_touchpoint" ? (
+                        <Megaphone className="size-5 text-primary" />
                       ) : (
                         <Calendar className="size-5 text-violet-500" />
                       )}

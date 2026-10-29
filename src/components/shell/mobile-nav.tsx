@@ -12,11 +12,13 @@
  *  - Resiliência a teclado virtual e safe areas do iOS/Android (paddingBottom clearance in AppShell pb-24).
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "@tanstack/react-router";
-import { Home, Search, FileText, ShoppingBag, User } from "lucide-react";
+import { MessageCircle, Sparkles, Users, ShoppingBag, User } from "lucide-react";
 import { useAccountSwitcherDrawer } from "@/lib/drawer-store";
 import { AccountSwitcherDrawer } from "@/components/shell/AccountSwitcherDrawer";
+import { GlobalQuickCreateModal, openQuickCreateModal } from "@/components/shell/GlobalQuickCreateModal";
+import { WhatsAppUnifiedSearchModal } from "@/components/shell/WhatsAppUnifiedSearchModal";
 import { useCartContext } from "@/lib/cart-context";
 import { listCustomerOrders } from "@/services/order.functions";
 import { formatCents } from "@/lib/utils";
@@ -94,16 +96,74 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
     };
   }, [isAuthenticated, pathname]);
 
-  // ── Active States das 4 Tabs Canônicas (Padrão iFood SuperApp) ────────────
-  const isHomeActive = pathname === "/" || pathname === "/home";
-  const isSearchActive =
-    pathname.startsWith("/buscar") ||
-    pathname.startsWith("/explorar") ||
-    pathname.startsWith("/diretorio");
-  const isOrdersActive = pathname.startsWith("/conta/pedidos");
+  // ── Active States das 5 Tabs Canônicas (Padrão SuperApp WeChat) ──────────
+  const isChatActive =
+    pathname.startsWith("/conta/conversas") || pathname.startsWith("/chat");
+  const isFeedActive =
+    pathname.startsWith("/feed") || pathname.startsWith("/mural");
+  const isCommunitiesActive =
+    pathname.startsWith("/comunidades") || pathname.startsWith("/c/");
+  const isPurchasesActive =
+    pathname.startsWith("/conta/pedidos") ||
+    pathname.startsWith("/carrinho") ||
+    pathname.startsWith("/checkout");
   const isProfileActive =
     isAccountSwitcherOpen ||
-    (pathname.startsWith("/conta") && !pathname.startsWith("/conta/pedidos"));
+    pathname.startsWith("/conta/perfil") ||
+    pathname.startsWith("/conta/financas");
+
+  const purchasesBadgeCount = totalCartItems > 0 ? totalCartItems : activeOrdersCount;
+
+  // ── Scroll-Aware Auto-Hide / Reveal ──────────────────────────────────────
+  const [isNavHiddenByScroll, setIsNavHiddenByScroll] = useState(false);
+  const lastScrollYRef = useRef(0);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    lastScrollYRef.current = window.scrollY;
+
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      const deltaY = currentY - lastScrollYRef.current;
+
+      if (currentY <= 64 || deltaY < -6) {
+        setIsNavHiddenByScroll(false);
+      } else if (deltaY > 10 && currentY > 64) {
+        setIsNavHiddenByScroll(true);
+      }
+      lastScrollYRef.current = currentY;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    setIsNavHiddenByScroll(false);
+  }, [pathname]);
+
+  // ── Long-Press (500ms) para abrir GlobalQuickCreateModal ─────────────────
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearLongPressTimer = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  };
+
+  const handlePointerDown = () => {
+    clearLongPressTimer();
+    longPressTimerRef.current = setTimeout(() => {
+      openQuickCreateModal(pathname);
+    }, 500);
+  };
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    clearLongPressTimer();
+    openQuickCreateModal(pathname);
+  };
 
   // ── Keyboard Resilience (Esconde nav quando teclado virtual abre) ─────────
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
@@ -161,137 +221,163 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
     };
   }, []);
 
-  if (isFormPage || isKeyboardVisible) {
-    return null;
-  }
-
   return (
     <>
-      {/* ── BOTTOM NAVIGATION DOCK (PADRÃO IFOOD 4 TABS + FLOATING SACOLA) ── */}
-      <div className="md:hidden fixed bottom-0 inset-x-0 z-30 pb-safe select-none pointer-events-none mobile-nav-hide-on-keyboard bg-background border-t border-border/80">
-        <div className="pointer-events-auto max-w-lg mx-auto">
-          {/* ── 1. BARRA FLUTUANTE DE SACOLA (Acima das 4 Tabs quando há itens) ── */}
-          {hasCartItems && (
-            <div className="px-4 py-2 border-b border-border/60 bg-card flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3 min-w-0 flex-1">
-                <div className="size-10 rounded-full overflow-hidden border border-border/80 bg-muted flex items-center justify-center shrink-0">
-                  {activeCartStoreLogo ? (
-                    <img src={activeCartStoreLogo} alt="" className="size-full object-cover" />
-                  ) : (
-                    <ShoppingBag className="size-5 text-primary" />
-                  )}
-                </div>
-                <div className="flex flex-col min-w-0">
-                  <span className="text-2xs text-muted-foreground font-medium leading-tight">
-                    Total sem a entrega
-                  </span>
-                  <div className="flex items-center gap-1 leading-tight">
-                    <span className="text-sm font-black text-foreground">
-                      {formatCents(cartSubtotal)}
+      {!isFormPage && !isKeyboardVisible && (
+        /* ── BOTTOM NAVIGATION DOCK (PADRÃO SUPERAPP WECHAT 5 TABS + AUTO-HIDE) ── */
+        <div
+          onPointerDown={handlePointerDown}
+          onPointerUp={clearLongPressTimer}
+          onPointerLeave={clearLongPressTimer}
+          onPointerCancel={clearLongPressTimer}
+          onContextMenu={handleContextMenu}
+          className={cn(
+            "md:hidden fixed bottom-0 inset-x-0 z-30 pb-safe select-none mobile-nav-hide-on-keyboard bg-background border-t border-border/80 transition-transform duration-300",
+            isNavHiddenByScroll
+              ? "translate-y-full opacity-0 pointer-events-none"
+              : "translate-y-0 opacity-100 pointer-events-auto",
+          )}
+        >
+          <div className="max-w-lg mx-auto">
+            {/* ── 1. BARRA FLUTUANTE DE SACOLA (Acima das 5 Tabs quando há itens) ── */}
+            {hasCartItems && (
+              <div className="px-4 py-2 border-b border-border/60 bg-card flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <div className="size-10 rounded-full overflow-hidden border border-border/80 bg-muted flex items-center justify-center shrink-0">
+                    {activeCartStoreLogo ? (
+                      <img src={activeCartStoreLogo} alt="" className="size-full object-cover" />
+                    ) : (
+                      <ShoppingBag className="size-5 text-primary" />
+                    )}
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-2xs text-muted-foreground font-medium leading-tight">
+                      Total sem a entrega
                     </span>
-                    <span className="text-xs text-muted-foreground font-medium">
-                      / {totalCartItems} {totalCartItems === 1 ? "item" : "itens"}
-                    </span>
+                    <div className="flex items-center gap-1 leading-tight">
+                      <span className="text-sm font-black text-foreground">
+                        {formatCents(cartSubtotal)}
+                      </span>
+                      <span className="text-xs text-muted-foreground font-medium">
+                        / {totalCartItems} {totalCartItems === 1 ? "item" : "itens"}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
+                <button
+                  type="button"
+                  onClick={() => setIsCartOpen(true)}
+                  aria-label={`Ver sacola com ${totalCartItems} itens`}
+                  className="h-11 min-h-11 px-5 rounded-xl bg-primary hover:bg-primary/90 active:scale-95 text-primary-foreground text-xs font-extrabold flex items-center justify-center transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  Ver sacola
+                </button>
+              </div>
+            )}
+
+            {/* ── 2. NAVEGAÇÃO 5 ABAS CANÔNICAS: CHAT | FEED | COMUNIDADES | COMPRAS | PERFIL ── */}
+            <nav
+              aria-label="Navegação principal móvel"
+              className="flex items-stretch justify-around px-1 py-1 bg-background"
+            >
+              {/* TAB 1: CHAT */}
+              <Link
+                to="/conta/conversas"
+                aria-label="Chat"
+                className={cn(
+                  "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  isChatActive
+                    ? "text-foreground font-bold"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <MessageCircle className="size-5" strokeWidth={isChatActive ? 2.5 : 1.75} />
+                <span className="text-2xs font-semibold tracking-tight leading-none">Chat</span>
+              </Link>
+
+              {/* TAB 2: FEED */}
+              <Link
+                to="/feed"
+                aria-label="Feed"
+                className={cn(
+                  "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  isFeedActive
+                    ? "text-foreground font-bold"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Sparkles className="size-5" strokeWidth={isFeedActive ? 2.5 : 1.75} />
+                <span className="text-2xs font-semibold tracking-tight leading-none">Feed</span>
+              </Link>
+
+              {/* TAB 3: COMUNIDADES */}
+              <Link
+                to="/comunidades"
+                aria-label="Comunidades"
+                className={cn(
+                  "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  isCommunitiesActive
+                    ? "text-foreground font-bold"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Users className="size-5" strokeWidth={isCommunitiesActive ? 2.5 : 1.75} />
+                <span className="text-2xs font-semibold tracking-tight leading-none">Comunidades</span>
+              </Link>
+
+              {/* TAB 4: COMPRAS */}
+              <Link
+                to={isAuthenticated ? "/conta/pedidos" : "/entrar"}
+                aria-label="Compras"
+                className={cn(
+                  "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  isPurchasesActive
+                    ? "text-foreground font-bold"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <div className="relative">
+                  <ShoppingBag className="size-5" strokeWidth={isPurchasesActive ? 2.5 : 1.75} />
+                  {purchasesBadgeCount > 0 && (
+                    <span className="absolute -top-1 -right-2 min-w-4 h-4 px-1 rounded-full bg-primary text-primary-foreground text-3xs font-black flex items-center justify-center">
+                      {purchasesBadgeCount}
+                    </span>
+                  )}
+                </div>
+                <span className="text-2xs font-semibold tracking-tight leading-none">Compras</span>
+              </Link>
+
+              {/* TAB 5: PERFIL */}
               <button
                 type="button"
-                onClick={() => setIsCartOpen(true)}
-                aria-label={`Ver sacola com ${totalCartItems} itens`}
-                className="h-11 min-h-11 px-5 rounded-xl bg-primary hover:bg-primary/90 active:scale-95 text-primary-foreground text-xs font-extrabold flex items-center justify-center transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                Ver sacola
-              </button>
-            </div>
-          )}
-
-          {/* ── 2. NAVEGAÇÃO 4 ABAS CANÔNICAS: INÍCIO | BUSCA | PEDIDOS | PERFIL ── */}
-          /* design-lint-ignore DL-29 reason:"Navegação canônica móvel em 4 abas" expiry:"2027-12-31" */
-          <nav
-            aria-label="Navegação principal móvel"
-            className="grid grid-cols-4 items-center px-1 py-1 bg-background"
-          >
-            {/* TAB 1: INÍCIO */}
-            <Link
-              to="/"
-              aria-label="Início"
-              className={cn(
-                "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                isHomeActive
-                  ? "text-foreground font-bold"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <Home className="size-5" strokeWidth={isHomeActive ? 2.5 : 1.75} />
-              <span className="text-2xs font-semibold tracking-tight leading-none">Início</span>
-            </Link>
-
-            {/* TAB 2: BUSCA */}
-            <Link
-              to="/buscar"
-              aria-label="Busca"
-              className={cn(
-                "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                isSearchActive
-                  ? "text-foreground font-bold"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <Search className="size-5" strokeWidth={isSearchActive ? 2.5 : 1.75} />
-              <span className="text-2xs font-semibold tracking-tight leading-none">Busca</span>
-            </Link>
-
-            {/* TAB 3: PEDIDOS */}
-            <Link
-              to={isAuthenticated ? "/conta/pedidos" : "/entrar"}
-              aria-label="Pedidos"
-              className={cn(
-                "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                isOrdersActive
-                  ? "text-foreground font-bold"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <div className="relative">
-                <FileText className="size-5" strokeWidth={isOrdersActive ? 2.5 : 1.75} />
-                {activeOrdersCount > 0 && (
-                  <span className="absolute -top-1 -right-2 min-w-4 h-4 px-1 rounded-full bg-primary text-primary-foreground text-3xs font-black flex items-center justify-center">
-                    {activeOrdersCount}
-                  </span>
+                onClick={toggleAccountSwitcher}
+                aria-label="Perfil"
+                className={cn(
+                  "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  isProfileActive
+                    ? "text-foreground font-bold"
+                    : "text-muted-foreground hover:text-foreground"
                 )}
-              </div>
-              <span className="text-2xs font-semibold tracking-tight leading-none">Pedidos</span>
-            </Link>
-
-            {/* TAB 4: PERFIL */}
-            <button
-              type="button"
-              onClick={toggleAccountSwitcher}
-              aria-label="Perfil e conta"
-              className={cn(
-                "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                isProfileActive
-                  ? "text-foreground font-bold"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <div className="relative">
-                <User className="size-5" strokeWidth={isProfileActive ? 2.5 : 1.75} />
-                <span className="absolute -top-0.5 -right-0.5 size-2 rounded-full bg-primary" />
-              </div>
-              <span className="text-2xs font-semibold tracking-tight leading-none">Perfil</span>
-            </button>
-          </nav>
+              >
+                <div className="relative">
+                  <User className="size-5" strokeWidth={isProfileActive ? 2.5 : 1.75} />
+                  <span className="absolute -top-1 -right-1 size-2 rounded-full bg-primary" />
+                </div>
+                <span className="text-2xs font-semibold tracking-tight leading-none">Perfil</span>
+              </button>
+            </nav>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* ── 3. MODAL / BOTTOM SHEET DE CONTA ── */}
+      {/* ── 3. MODAIS GLOBAIS DO SUPERAPP (CONTA, CRIAÇÃO RÁPIDA E BUSCA WHATSAPP) ── */}
       <AccountSwitcherDrawer
         session={session}
         userRole={userRole}
       />
+      <GlobalQuickCreateModal />
+      <WhatsAppUnifiedSearchModal />
     </>
   );
 }

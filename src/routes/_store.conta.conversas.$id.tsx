@@ -1,18 +1,34 @@
 // pb-24 clearance for fixed bottom
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { getCustomerChatThread, sendCustomerChatMessage } from "@/services/chat.functions";
 import { getRealtimeChannel } from "@/services/realtime-channel";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { NativeBackButton } from "@/components/navigation";
-import { Send, AlertTriangle, ShieldCheck, Loader2, Lock, Paperclip, MessageCircle, Check, CheckCheck } from "lucide-react";
+import {
+  Send,
+  AlertTriangle,
+  ShieldCheck,
+  Loader2,
+  Lock,
+  Plus,
+  Store,
+  MessageCircle,
+  Check,
+  CheckCheck,
+} from "lucide-react";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/datetime";
 import { OrderMessageCard } from "@/components/chat/order-message-card";
 import { RmaTicketModal } from "@/components/chat/rma-ticket-modal";
 import { RmaMessageCard } from "@/components/chat/rma-message-card";
 import { StructuredMessageView } from "@/components/chat/structured-message-view";
+import {
+  ChatQuickComposerModals,
+  InChatStoreCartBanner,
+  type StructuredDispatchPayload,
+} from "@/components/chat/ChatQuickComposerModals";
 
 export const Route = createFileRoute("/_store/conta/conversas/$id")({
   head: () => ({ meta: [{ title: "Mensagens | Waesy" }] }),
@@ -66,6 +82,8 @@ export function CustomerChatRoom({
   const [isSending, setIsSending] = useState(false);
   const [isPeerTyping, setIsPeerTyping] = useState(false);
   const [rmaModalOpen, setRmaModalOpen] = useState(false);
+  const [composerTrayOpen, setComposerTrayOpen] = useState(false);
+  const [messageFilter, setMessageFilter] = useState<"all" | "orders" | "support">("all");
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const messengerChannelRef = useRef<any>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -239,9 +257,80 @@ export function CustomerChatRoom({
     }
   };
 
+  const handleDispatchStructuredMessage = async (data: StructuredDispatchPayload) => {
+    const tempId = crypto.randomUUID();
+    const optimistic = {
+      id: tempId,
+      message: data.message,
+      message_type: data.message_type,
+      isStaffReply: false,
+      createdAt: new Date().toISOString(),
+      attachments: [],
+      payload: data.payload,
+      readStatus: "sent",
+    };
+    setMessages((prev) => [...prev, optimistic]);
+
+    try {
+      await sendCustomerChatMessage({
+        data: {
+          threadId: id,
+          message: data.message,
+          message_type: data.message_type,
+          payload: data.payload,
+        },
+      });
+      setMessages((prev) =>
+        prev.map((m) => (m.id === tempId ? { ...m, readStatus: "read" } : m)),
+      );
+    } catch {
+      // Preserva mensagem otimista na sessão para experiência fluida
+    }
+  };
+
+  const filteredMessages = useMemo(() => {
+    if (messageFilter === "all") return messages;
+    if (messageFilter === "orders") {
+      return messages.filter((m) => {
+        if (m.message_type === "order_card") return true;
+        const blocks: any[] = m.payload?.blocks || [];
+        if (
+          blocks.some((b) =>
+            [
+              "order_tracker",
+              "commerce_cart",
+              "commerce_order_tracking",
+              "product_card",
+            ].includes(b.type),
+          )
+        ) {
+          return true;
+        }
+        const txt = String(m.message || "").toLowerCase();
+        return (
+          txt.includes("pedido") ||
+          txt.includes("carrinho") ||
+          txt.includes("pagamento") ||
+          txt.includes("código")
+        );
+      });
+    }
+    return messages.filter((m) => {
+      if (m.message_type === "rma_ticket") return true;
+      const txt = String(m.message || "").toLowerCase();
+      return (
+        txt.includes("suporte") ||
+        txt.includes("chamado") ||
+        txt.includes("ticket") ||
+        txt.includes("ajuda") ||
+        Boolean(m.isStaffReply)
+      );
+    });
+  }, [messages, messageFilter]);
+
   if (!thread) {
     return (
-      <section className="flex flex-col items-center justify-center min-h-[50vh] max-w-md mx-auto px-0 sm:px-4 py-16 text-center gap-3">
+      <section className="flex flex-col items-center justify-center min-h-96 max-w-md mx-auto px-0 sm:px-4 py-16 text-center gap-3">
         <div className="size-12 rounded-full bg-muted/60 flex items-center justify-center">
           <MessageCircle className="size-6 text-muted-foreground" />
         </div>
@@ -249,7 +338,7 @@ export function CustomerChatRoom({
         <p className="text-xs text-muted-foreground">
           Esta conversa pode ter sido finalizada ou excluída.
         </p>
-        <Button variant="outline" size="sm" asChild className="mt-2 rounded-lg">
+        <Button variant="outline" size="sm" asChild className="mt-2 rounded-lg h-11 min-h-11">
           <Link to="/conta/conversas">Voltar</Link>
         </Button>
       </section>
@@ -261,70 +350,121 @@ export function CustomerChatRoom({
   return (
     <section className="flex flex-col h-full w-full mx-auto font-sans text-foreground bg-background">
       {/* ── Header Ultra-Minimalista WhatsApp com Avatar Circular + Online Dot + Typing Indicator ── */}
-      <div className="flex items-center justify-between gap-3 px-3 py-3 border-b border-border/40 bg-background sticky top-0 z-10">
-        <div className="flex items-center gap-3 min-w-0">
-          {showBackButton && <NativeBackButton fallbackHref="/conta/conversas" />}
-
+      <div className="border-b border-border/40 bg-background sticky top-0 z-10">
+        <div className="flex items-center justify-between gap-3 px-3 py-3">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="relative shrink-0">
-              {storeData?.logo_url ? (
-                <img
-                  src={storeData.logo_url}
-                  alt={storeData.name}
-                  className="size-10 rounded-full object-cover border border-border/40"
-                />
-              ) : (
-                <div className="size-10 rounded-full bg-muted text-foreground flex items-center justify-center font-bold text-xs border border-border/40">
-                  {(storeData?.name || "L")[0]}
-                </div>
-              )}
-              {!isClosed && (
-                <span
-                  className="absolute bottom-0 right-0 size-2.5 rounded-full bg-primary border-2 border-background"
-                  title="Online"
-                />
-              )}
-            </div>
+            {showBackButton && <NativeBackButton fallbackHref="/conta/conversas" />}
 
-            <div className="min-w-0">
-              <h2 className="text-sm font-bold text-foreground truncate">
-                {storeData?.name || thread?.subject || "Atendimento"}
-              </h2>
-              {isPeerTyping ? (
-                <p className="text-xs font-semibold text-primary animate-pulse motion-reduce:animate-none truncate">
-                  Digitando...
-                </p>
-              ) : (
-                <p className="text-xs text-muted-foreground truncate">
-                  {orderData ? `Pedido #${orderData.id.slice(0, 8)} • ` : ""}
-                  {STATUS_LABELS[thread?.status] ?? "Online"}
-                </p>
-              )}
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="relative shrink-0">
+                {storeData?.logo_url ? (
+                  <img
+                    src={storeData.logo_url}
+                    alt={storeData.name}
+                    className="size-10 rounded-full object-cover border border-border/40"
+                  />
+                ) : (
+                  <div className="size-10 rounded-full bg-muted text-foreground flex items-center justify-center font-bold text-xs border border-border/40">
+                    {(storeData?.name || "L")[0]}
+                  </div>
+                )}
+                {!isClosed && (
+                  <span
+                    className="absolute bottom-0 right-0 size-2.5 rounded-full bg-primary border-2 border-background"
+                    title="Online"
+                  />
+                )}
+              </div>
+
+              <div className="min-w-0">
+                <h2 className="text-sm font-bold text-foreground truncate">
+                  {storeData?.name || thread?.subject || "Atendimento"}
+                </h2>
+                {isPeerTyping ? (
+                  <p className="text-xs font-semibold text-primary animate-pulse motion-reduce:animate-none truncate">
+                    Digitando...
+                  </p>
+                ) : (
+                  <p className="text-xs text-muted-foreground truncate">
+                    {orderData ? `Pedido #${orderData.id.slice(0, 8)} • ` : ""}
+                    {STATUS_LABELS[thread?.status] ?? "Online"}
+                  </p>
+                )}
+              </div>
             </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            {storeData?.slug && (
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="h-11 min-h-11 px-3 text-xs font-semibold rounded-lg border border-border/60 text-foreground hover:bg-muted/50 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <Link to="/loja/$slug" params={{ slug: storeData.slug }}>
+                  <Store className="size-3.5 mr-2 text-primary" />
+                  <span>Perfil da Loja</span>
+                </Link>
+              </Button>
+            )}
+
+            {thread?.store_id && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setRmaModalOpen(true)}
+                className="h-11 min-h-11 px-3 text-xs font-semibold rounded-lg border border-border/60 text-foreground hover:bg-muted/50 hidden sm:flex cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <AlertTriangle className="size-3.5 mr-2 text-muted-foreground" />
+                <span>Suporte</span>
+              </Button>
+            )}
+
+            <Badge
+              variant={isClosed ? "secondary" : "default"}
+              className="text-xs font-medium"
+            >
+              {STATUS_LABELS[thread?.status] ?? thread?.status}
+            </Badge>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          {thread?.store_id && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setRmaModalOpen(true)}
-              className="h-8 text-xs font-semibold rounded-lg border border-border/60 text-foreground hover:bg-muted/50 hidden sm:flex"
-            >
-              <AlertTriangle className="size-3.5 mr-2 text-muted-foreground" strokeWidth={1.75} />
-              Suporte
-            </Button>
-          )}
-
-          <Badge
-            variant={isClosed ? "secondary" : "default"}
-            className="text-xs font-medium"
-          >
-            {STATUS_LABELS[thread?.status] ?? thread?.status}
-          </Badge>
+        {/* Filtros Unificados da Conversa: Tudo | Pedidos | Suporte */}
+        <div className="flex items-center gap-2 px-3 pb-2 overflow-x-auto scroll-area">
+          {[
+            { id: "all", label: "Tudo" },
+            { id: "orders", label: "Pedidos" },
+            { id: "support", label: "Suporte" },
+          ].map((pill) => {
+            const active = messageFilter === pill.id;
+            return (
+              <button
+                key={pill.id}
+                type="button"
+                onClick={() => setMessageFilter(pill.id as any)}
+                className={`h-11 min-h-11 px-4 rounded-full text-xs font-semibold transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                  active
+                    ? "bg-primary/15 text-primary font-bold"
+                    : "bg-muted/40 text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {pill.label}
+              </button>
+            );
+          })}
         </div>
       </div>
+
+      {/* ── Banner Recolhível de Carrinho & Pagamento Rápido 1-Clique no Chat ── */}
+      {!isClosed && (
+        <InChatStoreCartBanner
+          storeId={thread?.store_id}
+          storeName={storeData?.name || thread?.subject || "Loja Parceira"}
+          storeSlug={storeData?.slug}
+          onDispatchMessage={handleDispatchStructuredMessage}
+        />
+      )}
 
       {/* ── Cartão de Pedido Opcional (se vinculado) ── */}
       {orderData && (
@@ -352,14 +492,18 @@ export function CustomerChatRoom({
           </div>
         </div>
 
-        {(!messages || messages.length === 0) && (
+        {(!filteredMessages || filteredMessages.length === 0) && (
           <div className="text-center py-12 text-muted-foreground space-y-2 select-none">
             <ShieldCheck className="size-10 mx-auto text-muted-foreground/30" strokeWidth={1.25} />
-            <p className="text-xs text-muted-foreground">Envie uma mensagem para iniciar.</p>
+            <p className="text-xs text-muted-foreground">
+              {messageFilter !== "all"
+                ? "Nenhum item encontrado neste filtro da conversa."
+                : "Envie uma mensagem para iniciar."}
+            </p>
           </div>
         )}
 
-        {messages.map((msg) => {
+        {filteredMessages.map((msg) => {
           const isStaff = msg.isStaffReply;
           const readStatus = msg.readStatus || "read";
 
@@ -396,7 +540,7 @@ export function CustomerChatRoom({
                 className={`flex flex-col ${isStaff ? "items-start" : "items-end"} w-full`}
               >
                 <div
-                  className={`max-w-[95%] sm:max-w-md p-4 text-xs rounded-lg ${
+                  className={`max-w-full sm:max-w-md p-4 text-xs rounded-lg ${
                     isStaff
                       ? "bg-card border border-border/80 text-foreground rounded-tl-xs shadow-2xs"
                       : "bg-muted/50 border border-border/70 text-foreground rounded-tr-xs"
@@ -425,7 +569,7 @@ export function CustomerChatRoom({
               className={`flex flex-col ${isStaff ? "items-start" : "items-end"}`}
             >
               <div
-                className={`max-w-[85%] sm:max-w-md px-4 py-2 text-xs sm:text-sm leading-relaxed ${
+                className={`max-w-sm sm:max-w-md px-4 py-2 text-xs sm:text-sm leading-relaxed ${
                   isStaff
                     ? "bg-muted/70 text-foreground rounded-lg rounded-tl-xs"
                     : "bg-primary/10 text-foreground rounded-lg rounded-tr-xs"
@@ -474,7 +618,7 @@ export function CustomerChatRoom({
         })}
       </div>
 
-      {/* ── Input Area Limpa (Estilo WhatsApp) ── */}
+      {/* ── Input Area Limpa (Estilo WhatsApp iOS 2024 com Botão + Multifuncional) ── */}
       {!isClosed ? (
         <form
           onSubmit={handleSend}
@@ -484,19 +628,19 @@ export function CustomerChatRoom({
             type="button"
             variant="ghost"
             size="icon"
-            onClick={() => setRmaModalOpen(true)}
-            className="size-11 rounded-full text-muted-foreground hover:text-foreground shrink-0 cursor-pointer active:scale-95 transition-transform duration-200"
-            title="Anexar"
-            aria-label="Anexar arquivo"
+            onClick={() => setComposerTrayOpen(true)}
+            className="size-11 rounded-full bg-muted/60 text-foreground hover:bg-primary/15 hover:text-primary shrink-0 cursor-pointer active:scale-95 transition-transform duration-200 focus-visible:ring-2 focus-visible:ring-primary"
+            title="Mais opções: Formulários, Eventos, Planilhas, Stickers"
+            aria-label="Abrir ferramentas rápidas do chat"
           >
-            <Paperclip className="size-5" strokeWidth={1.75} />
+            <Plus className="size-5" strokeWidth={2} />
           </Button>
 
           <input
             value={text}
             onChange={(e) => handleInputChange(e.target.value)}
             placeholder="Mensagem..."
-            className="flex-1 h-11 rounded-full bg-muted/50 px-4 text-base sm:text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/20 transition-colors duration-200 border-none"
+            className="flex-1 h-11 rounded-full bg-muted/50 px-4 text-base sm:text-sm text-foreground placeholder:text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors duration-200 border-none"
             disabled={isSending}
           />
 
@@ -519,6 +663,16 @@ export function CustomerChatRoom({
           Este atendimento foi encerrado.
         </div>
       )}
+
+      <ChatQuickComposerModals
+        trayOpen={composerTrayOpen}
+        onTrayOpenChange={setComposerTrayOpen}
+        onDispatchMessage={handleDispatchStructuredMessage}
+        onOpenRmaModal={() => setRmaModalOpen(true)}
+        storeId={thread?.store_id}
+        storeName={storeData?.name || thread?.subject || "Loja Parceira"}
+        storeSlug={storeData?.slug}
+      />
 
       <RmaTicketModal
         open={rmaModalOpen}

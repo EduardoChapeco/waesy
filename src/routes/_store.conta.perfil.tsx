@@ -87,7 +87,7 @@ function ProfileCivilPage() {
   // Estados de Recorte de Imagem (1:1 Avatar, 21:9 Capa)
   const [cropperOpen, setCropperOpen] = useState(false);
   const [cropperSrc, setCropperSrc] = useState<string | null>(null);
-  const [cropperType, setCropperType] = useState<"avatar">("avatar");
+  const [cropperType, setCropperType] = useState<"avatar" | "cover">("avatar");
   const [isUploadingMedia, setIsUploadingMedia] = useState(false);
 
   const initialResume = profile?.resume_data || {};

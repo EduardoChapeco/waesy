@@ -1,18 +1,28 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import {
   Archive,
+  Bell,
   BellOff,
+  Briefcase,
+  Calendar,
+  Car,
   CheckCircle2,
+  Compass,
   Eraser,
   MailOpen,
   MessageCircle,
   MessageSquarePlus,
   Pin,
+  Plus,
   Search,
+  ShoppingBag,
   Store,
+  Tag,
   Trash2,
   User,
+  Wallet,
+  Wrench,
   X,
 } from "lucide-react";
 import {
@@ -80,11 +90,23 @@ function CustomerConversationsErrorComponent({ error, reset }: { error: any; res
 }
 
 const FILTER_TABS = [
-  { id: "all", label: "Todas" },
+  { id: "all", label: "Tudo" },
   { id: "unread", label: "Não lidas" },
-  { id: "stores", label: "Lojas" },
-  { id: "people", label: "Pessoas" },
+  { id: "stores", label: "Empresas" },
+  { id: "orders", label: "Pedidos" },
+  { id: "support", label: "Suporte" },
   { id: "archived", label: "Arquivadas" },
+];
+
+const NOOR_DOCK_ITEMS = [
+  { id: "explorar", label: "Explorar", to: "/", icon: Compass },
+  { id: "marketplace", label: "Marketplace", to: "/marketplace", icon: ShoppingBag },
+  { id: "classificados", label: "Classificados", to: "/classificados", icon: Tag },
+  { id: "mobilidade", label: "Mobilidade", to: "/mobilidade", icon: Car },
+  { id: "bank", label: "Bank", to: "/conta/financas", icon: Wallet },
+  { id: "servicos", label: "Serviços", to: "/servicos", icon: Wrench },
+  { id: "eventos", label: "Eventos", to: "/eventos", icon: Calendar },
+  { id: "empregos", label: "Empregos", to: "/empregos", icon: Briefcase },
 ];
 
 function CustomerConversationsIndexPage() {
@@ -95,6 +117,22 @@ function CustomerConversationsIndexPage() {
   const [activeFilter, setActiveFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
+  const [isDockCollapsed, setIsDockCollapsed] = useState(false);
+  const lastScrollYRef = useRef(0);
+
+  useEffect(() => {
+    const handleWindowScroll = () => {
+      const currentY = window.scrollY || 0;
+      if (currentY > lastScrollYRef.current + 12 && currentY > 36) {
+        setIsDockCollapsed(true);
+      } else if (currentY < lastScrollYRef.current - 8 || currentY <= 20) {
+        setIsDockCollapsed(false);
+      }
+      lastScrollYRef.current = currentY;
+    };
+    window.addEventListener("scroll", handleWindowScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleWindowScroll);
+  }, []);
 
   // Estado local reativo para CRUD via Gestos (Swipe & Long-Press)
   const [pinnedIds, setPinnedIds] = useState<Record<string, boolean>>({});
@@ -252,6 +290,22 @@ function CustomerConversationsIndexPage() {
         list = list.filter((i) => (i.unreadCount || 0) > 0);
       } else if (activeFilter === "stores") {
         list = list.filter((i) => !i.isP2P);
+      } else if (activeFilter === "orders") {
+        list = list.filter(
+          (i) =>
+            !i.isP2P ||
+            (i.lastMessage || "").toLowerCase().includes("pedido") ||
+            (i.lastMessage || "").toLowerCase().includes("carrinho") ||
+            (i.lastMessage || "").toLowerCase().includes("entrega"),
+        );
+      } else if (activeFilter === "support") {
+        list = list.filter(
+          (i) =>
+            (i.lastMessage || "").toLowerCase().includes("suporte") ||
+            (i.lastMessage || "").toLowerCase().includes("chamado") ||
+            (i.lastMessage || "").toLowerCase().includes("atendimento") ||
+            !i.isP2P,
+        );
       } else if (activeFilter === "people") {
         list = list.filter((i) => i.isP2P);
       }
@@ -363,51 +417,112 @@ function CustomerConversationsIndexPage() {
   };
 
   return (
-    <div className="relative w-full max-w-5xl mx-auto min-h-[calc(100dvh-7rem)] flex flex-col space-y-3 pb-28 px-0 sm:px-4 md:px-0">
-      {/* ── FASE 1: Header Nativo Silencioso (Apenas "Mensagens" + Ícone de Lupa  à Direita) ── */}
-      <header className="flex items-center justify-between gap-4 border-b border-border/40 px-4 sm:px-0 pb-3 pt-2">
+    <div className="relative w-full max-w-5xl mx-auto min-h-screen flex flex-col space-y-3 pb-32 px-0 sm:px-4 md:px-0">
+      {/* ── FASE 1: Header Nativo WhatsApp iOS 2024 ("Conversas" + Ações Contextuais) ── */}
+      <header className="flex items-center justify-between gap-3 border-b border-border/40 px-4 sm:px-0 pb-3 pt-2 sticky top-0 z-20 bg-background/95 backdrop-blur-md">
         <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-          Mensagens
+          Conversas
         </h1>
 
-        <button
-          type="button"
-          onClick={() => setShowSearch((s) => !s)}
-          className="size-10 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          aria-label="Buscar conversa"
-        >
-          <Search className="size-5" />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowSearch((s) => !s)}
+            className="size-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            aria-label="Buscar conversa"
+          >
+            <Search className="size-5" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => toast.info("Notificações de mensagens sincronizadas.")}
+            className="size-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            aria-label="Notificações"
+          >
+            <Bell className="size-5" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setNewChatOpen(true)}
+            className="size-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:opacity-90 transition-opacity cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            aria-label="Nova conversa ou ação rápida"
+          >
+            <Plus className="size-5" />
+          </button>
+        </div>
       </header>
+
+      {/* ── Scroll-Aware Top Noor Squircle Dock (Recolhe ao rolar para baixo, expande ao subir) ── */}
+      <nav
+        aria-label="Atalhos do Ecossistema"
+        className={`transition-opacity duration-300 ease-out px-4 sm:px-0 ${
+          isDockCollapsed
+            ? "max-h-0 opacity-0 overflow-hidden py-0 pointer-events-none"
+            : "max-h-28 opacity-100 py-1"
+        }`}
+      >
+        <div className="flex items-center gap-3 overflow-x-auto scroll-area snap-x snap-mandatory py-1">
+          {NOOR_DOCK_ITEMS.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.id}
+                to={item.to as any}
+                className="snap-start shrink-0 flex flex-col items-center gap-2 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl p-1"
+              >
+                <div className="size-12 rounded-2xl bg-muted/60 group-hover:bg-primary/15 border border-border/60 group-hover:border-primary/30 flex items-center justify-center text-foreground group-hover:text-primary transition-colors">
+                  <Icon className="size-5" />
+                </div>
+                <span className="text-2xs font-semibold text-muted-foreground group-hover:text-foreground">
+                  {item.label}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
 
       {/* Barra de busca expansível sob demanda */}
       {showSearch && (
-        <div className="px-4 sm:px-0 animate-in fade-in slide-in-from-top-1 duration-150">
-          <div className="relative">
+        <div className="px-4 sm:px-0 animate-in fade-in slide-in-from-top-1 duration-150 flex flex-col sm:flex-row gap-2">
+          <div className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <input
               autoFocus
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Pesquisar conversas..."
-              className="w-full h-10 pl-9 pr-8 rounded-lg text-sm bg-muted/60 border border-border/50 outline-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-muted-foreground"
+              placeholder="Pesquisar conversas, pedidos ou lojas..."
+              className="w-full h-11 pl-10 pr-10 rounded-lg text-sm bg-muted/60 border border-border/50 outline-none focus-visible:ring-2 focus-visible:ring-primary text-foreground placeholder:text-muted-foreground"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="absolute right-2 top-1/2 -translate-y-1/2 size-9 flex items-center justify-center text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md"
               >
-                <X className="size-3.5" />
+                <X className="size-4" />
               </button>
             )}
           </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent("waesy:open-whatsapp-search"));
+              setNewChatOpen(true);
+            }}
+            className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            Buscar Lojas e Contatos
+          </Button>
         </div>
       )}
 
       {/* Chips de Filtro Rápido estilo WhatsApp */}
-      <div className="flex gap-2 overflow-x-auto no-scrollbar px-4 sm:px-0 py-1">
+      <div className="flex gap-2 overflow-x-auto scroll-area px-4 sm:px-0 py-1">
         {FILTER_TABS.map((tab) => {
           const isSelected = activeFilter === tab.id;
           return (
@@ -415,11 +530,11 @@ function CustomerConversationsIndexPage() {
               key={tab.id}
               type="button"
               onClick={() => setActiveFilter(tab.id)}
-              className={`shrink-0 h-8 px-4 rounded-full text-xs font-semibold transition-colors duration-200 cursor-pointer select-none ${
+              className={`shrink-0 h-11 min-h-11 px-4 rounded-full text-xs font-semibold transition-colors duration-200 cursor-pointer select-none ${
                 isSelected
                   ? "bg-primary/15 text-primary font-bold"
                   : "bg-muted/40 hover:bg-muted/70 text-muted-foreground hover:text-foreground"
-              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary`}
             >
               {tab.label}
             </button>
@@ -430,15 +545,22 @@ function CustomerConversationsIndexPage() {
       {/* ── FASE 1 & 2: Empty State Silencioso (Marca d'Água) ou Lista Nativa <ChatListItem> ── */}
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center flex-1 py-24 px-4 text-center select-none">
-          <MessageCircle className="size-14 stroke-[1.15] text-muted-foreground/25 mb-3" />
-          <p className="text-xs text-gray-400 dark:text-zinc-500 max-w-[220px] leading-relaxed">
+          <MessageCircle className="size-14 text-muted-foreground/25 mb-3" />
+          <p className="text-xs text-muted-foreground max-w-xs leading-relaxed">
             {activeFilter !== "all" || searchQuery
               ? "Nenhuma conversa encontrada para este filtro."
               : "Nenhuma mensagem por aqui ainda."}
           </p>
         </div>
       ) : (
-        <div className="w-full divide-y divide-border/30 rounded-none sm:rounded-lg border-y sm:border border-border/50 bg-card overflow-hidden">
+        <div
+          onScroll={(e) => {
+            const top = e.currentTarget.scrollTop;
+            if (top > 24) setIsDockCollapsed(true);
+            else setIsDockCollapsed(false);
+          }}
+          className="w-full divide-y divide-border/30 rounded-none sm:rounded-lg border-y sm:border border-border/50 bg-card overflow-hidden"
+        >
           {filtered.map((item) => (
             <ChatListItem
               key={item.id}
@@ -462,9 +584,9 @@ function CustomerConversationsIndexPage() {
         type="button"
         onClick={() => setNewChatOpen(true)}
         aria-label="Nova Conversa"
-        className="fixed bottom-20 md:bottom-8 right-4 md:right-8 z-40 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-xs hover:opacity-95 active:scale-95 transition-transform duration-200 flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="fixed bottom-20 md:bottom-8 right-4 md:right-8 z-30 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-xs hover:opacity-95 active:scale-95 transition-transform duration-200 flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        <MessageSquarePlus className="size-6 stroke-[2.2]" />
+        <MessageSquarePlus className="size-6 stroke-2" />
       </button>
 
       {/* ── FASE 3: Bottom Sheet / Haptic Context Menu (Long-Press CRUD Controls) ── */}

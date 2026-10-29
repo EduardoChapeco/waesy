@@ -61,8 +61,8 @@ export const Route = createFileRoute("/workspace/noticias/")({
         listWorkspaceArticles().catch(() => []),
         listCommunityNewsTips().catch(() => []),
         listMinedArticles({ data: { limit: 20, status: "pending_review" } }).catch(() => ({ items: [], total: 0 })),
-        listEditorialSocialSchedulesFn({}).catch(() => []),
-        getEditorialSocialSettingsFn({}).catch(() => null),
+        listEditorialSocialSchedulesFn({ data: {} }).catch(() => []),
+        getEditorialSocialSettingsFn({ data: {} }).catch(() => null),
       ]);
       return {
         articles: Array.isArray(articles) ? articles : [],
@@ -125,7 +125,7 @@ function WorkspaceNoticiasIndexPage() {
   };
 
   const refreshSchedules = async () => {
-    const updated = await listEditorialSocialSchedulesFn({}).catch(() => []);
+    const updated = await listEditorialSocialSchedulesFn({ data: {} }).catch(() => []);
     setSchedules(updated);
   };
 
@@ -739,8 +739,9 @@ function WorkspaceNoticiasIndexPage() {
                   value={settings.fixed_ending_slide_url || ""}
                   onChange={(url) => setSettings({ ...settings, fixed_ending_slide_url: url })}
                   onRemove={() => setSettings({ ...settings, fixed_ending_slide_url: "" })}
+
+
                   bucket="post-media"
-                  folder="editorial-stories"
                   aspectPreset="portrait"
                   helperText="Envie a arte final dos stories (9:16) com sua marca e assinatura"
                   showExternalUrlOption={false}

@@ -157,20 +157,32 @@ export async function trackAndOpenWhatsApp(
 
       // Dispara telemetria server-side (Meta CAPI) se vinculado a uma loja
       if (params.storeId) {
-        import("@/services/pixels.functions")
-          .then(({ dispatchMetaCapiEvent }) => {
-            dispatchMetaCapiEvent({
-              data: {
-                storeId: params.storeId!,
-                eventName: "Contact",
-                eventSourceUrl: originUrl || undefined,
-                customData: {
-                  entity_type: params.entityType,
-                  entity_title: params.entityTitle || undefined,
-                  lead_code: check.leadCode,
+        import("@/lib/attribution-collector")
+          .then(({ collectClientAttribution }) => {
+            const attr = collectClientAttribution();
+            return import("@/services/pixels.functions").then(({ dispatchMetaCapiEvent }) => {
+              dispatchMetaCapiEvent({
+                data: {
+                  storeId: params.storeId!,
+                  eventName: "Contact",
+                  eventSourceUrl: originUrl || attr.landingUrl || undefined,
+                  userData: {
+                    fbp: attr.fbp,
+                    fbc: attr.fbc,
+                    clientUserAgent: attr.userAgent,
+                  },
+                  customData: {
+                    entity_type: params.entityType,
+                    entity_title: params.entityTitle || undefined,
+                    lead_code: check.leadCode,
+                    device_id: attr.deviceId,
+                    gclid: attr.gclid,
+                    utm_source: attr.utmSource,
+                    utm_campaign: attr.utmCampaign,
+                  },
                 },
-              },
-            }).catch(() => {});
+              }).catch(() => {});
+            });
           })
           .catch(() => {});
       }

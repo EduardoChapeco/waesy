@@ -41,6 +41,16 @@ const SECTION_TYPE_OPTIONS: Array<{ id: SurfaceSectionType; label: string; icon:
   { id: "banner_single_21_9", label: "Banner Único Panorâmico (21:9)", icon: Layout },
   { id: "banner_duo_16_9", label: "Banners Duplos Lado a Lado (16:9)", icon: Grid },
   { id: "custom_buttons_rail", label: "Trilho de Botões / Atalhos Customizados", icon: Sliders },
+  { id: "category_grid", label: "Grade de Categorias", icon: Grid },
+  { id: "curated_collection", label: "Coleção Curada", icon: Layers },
+  { id: "banner_trio_bento", label: "Banners Triplos Bento", icon: Layout },
+  { id: "single_store_spotlight", label: "Destaque de Loja Única", icon: Store },
+  { id: "classifieds_spotlight", label: "Trilho de Classificados", icon: Tag },
+  { id: "social_posts_rail", label: "Trilho de Publicações Sociais", icon: Layers },
+  { id: "vitrine_vertical_carousel", label: "Cards Verticais Carrossel (Reels / Stories)", icon: Layout },
+  { id: "media_gallery_mosaic", label: "Galeria Mosaico Editorial", icon: Grid },
+  { id: "video_section", label: "Player de Vídeo Canônico", icon: Eye },
+  { id: "tourism_car_rental_rail", label: "Aluguel de Carros (3 Diárias)", icon: Tag },
 ];
 
 const DATA_SOURCE_OPTIONS: Array<{ id: SurfaceDataSource; label: string }> = [
@@ -50,6 +60,11 @@ const DATA_SOURCE_OPTIONS: Array<{ id: SurfaceDataSource; label: string }> = [
   { id: "top_sellers", label: "Mais Vendidos e Populares" },
   { id: "banners", label: "Banners da Plataforma" },
   { id: "custom_buttons", label: "Botões e Atalhos Rápidos" },
+  { id: "social_posts", label: "Publicações Sociais e Comunidade" },
+  { id: "category", label: "Categoria Específica" },
+  { id: "hotpage", label: "Hotpage / Campanha" },
+  { id: "car_rentals", label: "Locação de Veículos (3 Diárias)" },
+  { id: "videos", label: "Vídeos Canônicos" },
 ];
 
 const RANKING_OPTIONS: Array<{ id: SurfaceRankingStrategy; label: string; desc: string }> = [

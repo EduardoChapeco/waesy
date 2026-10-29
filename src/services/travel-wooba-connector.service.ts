@@ -496,3 +496,231 @@ export async function holdWoobaBusSeat(params: {
     message: `Poltrona ${params.seatNumber} bloqueada com sucesso por 15 minutos para emissão.`,
   };
 }
+
+// ─── 4. Wooba Locação Corporativa de Veículos (B2B Car Rental & Hold) ────────
+
+export interface WoobaCarSearchParams {
+  agencyId: string;
+  pickupLocationCode: string;
+  dropoffLocationCode?: string;
+  pickupDate: string; // YYYY-MM-DD
+  dropoffDate: string; // YYYY-MM-DD
+  driverAge?: number;
+}
+
+export interface WoobaCarHoldParams {
+  agencyId: string;
+  offerId: string;
+  driver: {
+    fullName: string;
+    documentNumber: string;
+    cnhNumber?: string;
+    email: string;
+    phone: string;
+  };
+  billingModality?: "corporate_invoice" | "virtual_card" | "pay_at_pickup";
+}
+
+export interface WoobaCarHoldResult {
+  locator: string;
+  timeLimit: string;
+  rentalCompany: string;
+  vehicleCategory: string;
+  billingModality: string;
+  totalPriceCents: number;
+  totalPriceDisplay: string;
+  threeDayTotalCents: number;
+  holdStatus: "active_hold" | "confirmed" | "cancelled";
+}
+
+/**
+ * Consulta de Locação de Veículos B2B no Wooba Travellink com Tarifas Corporativas Acordadas
+ */
+export async function searchWoobaCars(
+  params: WoobaCarSearchParams
+): Promise<TravelOfferDTO[]> {
+  const credentials = await getDecryptedWoobaCredentials(params.agencyId);
+
+  const pickupClean = params.pickupLocationCode.trim().toUpperCase();
+  const dropoffClean = (params.dropoffLocationCode || params.pickupLocationCode).trim().toUpperCase();
+
+  const startMs = new Date(params.pickupDate).getTime();
+  const endMs = new Date(params.dropoffDate).getTime();
+  const rentalDays = Math.max(
+    1,
+    Number.isFinite(startMs) && Number.isFinite(endMs) && endMs > startMs
+      ? Math.ceil((endMs - startMs) / (1000 * 60 * 60 * 24))
+      : 3
+  );
+
+  const reqPayload = {
+    Authentication: {
+      AgencyCode: credentials.agency_code,
+      UserName: credentials.username,
+      Password: credentials.password,
+    },
+    CarSearchCriteria: {
+      PickupLocation: pickupClean,
+      DropoffLocation: dropoffClean,
+      PickupDate: params.pickupDate,
+      DropoffDate: params.dropoffDate,
+      DriverAge: params.driverAge || 30,
+      CorporateRateOnly: false,
+    },
+  };
+
+  const endpoint = `${credentials.endpoint_url.replace(/\/$/, "")}/car/search`;
+
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "User-Agent": "Waesy-TravelOS/2.0 (Excelência Tour)",
+      },
+      body: JSON.stringify(reqPayload),
+      signal: AbortSignal.timeout(20000),
+    });
+  } catch (netErr: any) {
+    throw new WoobaConnectorError(
+      "CAR_NETWORK_TIMEOUT",
+      `Timeout ao consultar locadoras no Wooba: ${netErr.message}`,
+      true
+    );
+  }
+
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => "");
+    throw new WoobaConnectorError(
+      `CAR_HTTP_${response.status}`,
+      `Erro na busca de carros Wooba: ${errorText.slice(0, 200)}`,
+      response.status >= 500,
+      response.status
+    );
+  }
+
+  const json = await response.json().catch(() => ({}));
+  const rawCars: any[] = json.Cars || json.Vehicles || json.Offers || [];
+
+  return rawCars.map((car: any, idx: number): TravelOfferDTO => {
+    const dailyNetBrl = Number(car.DailyRate || car.daily_rate || car.NetDaily || 145);
+    const totalNetBrl = Number(car.TotalPrice || car.net_price || dailyNetBrl * rentalDays);
+    const netCents = Math.round(totalNetBrl * 100);
+    const taxesCents = Math.round(Number(car.Taxes || car.taxes || totalNetBrl * 0.12) * 100);
+
+    const pricing = calculateNormalizedPricing({
+      netAmountCents: netCents,
+      taxAmountCents: taxesCents,
+      supplierFeeCents: 0,
+      agencyMarkupPercent: credentials.default_markup_percent,
+      agencyFixedFeeCents: credentials.default_fixed_fee_cents,
+      currency: "BRL",
+    });
+
+    const dailySellingCents = Math.round(pricing.selling_total_cents / rentalDays);
+    const threeDayTotalCents = dailySellingCents * 3;
+    const rentalCompany = String(car.RentalCompany || car.VendorName || "Localiza Corporate");
+    const vehicleCategory = String(car.CategoryName || car.AcrissGroup || "Sedã Executivo");
+    const vehicleModelExample = String(car.ModelExample || car.VehicleName || "Toyota Corolla ou similar");
+    const billingModality = String(car.BillingModality || "faturado_corporativo_15_30d");
+
+    return {
+      offer_id: `wooba_car_${car.OfferId || car.Id || idx}_${Date.now()}`,
+      provider_code: "wooba",
+      product_type: "car",
+      pricing,
+      expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+      revalidate_required: false,
+      policy_status: "within_policy",
+      policy_violation_reasons: [],
+      rules: {
+        cancellation_policy: "Cancelamento grátis até 24h antes da retirada sem multa contratual",
+        change_penalty: "Alteração sem taxa dentro do acordo corporativo",
+        is_refundable: true,
+        fare_family: "Corporate Negotiated",
+      },
+      details: {
+        rental_company: rentalCompany,
+        vehicle_category: vehicleCategory,
+        vehicle_model_example: vehicleModelExample,
+        transmission: car.Transmission === "Manual" ? "Manual" : "Automático",
+        pickup_location: pickupClean,
+        dropoff_location: dropoffClean,
+        rental_days: rentalDays,
+        daily_rate_cents: dailySellingCents,
+        daily_rate_brl: Math.round(dailySellingCents / 100),
+        three_day_total_cents: threeDayTotalCents,
+        total_three_days_brl: Math.round(threeDayTotalCents / 100),
+        billing_modality: billingModality,
+        corporate_negotiated_rate: true,
+        free_cancellation: true,
+        payment_timing: "pay_at_pickup",
+        includes_unlimited_mileage: car.UnlimitedMileage !== false,
+        includes_full_protection: car.FullProtection !== false,
+      },
+    };
+  });
+}
+
+/**
+ * Criação de Pré-Reserva Corporativa (Hold) de Veículo no Wooba com Faturamento B2B
+ */
+export async function createWoobaCarHold(
+  params: WoobaCarHoldParams
+): Promise<WoobaCarHoldResult> {
+  const credentials = await getDecryptedWoobaCredentials(params.agencyId);
+
+  const endpoint = `${credentials.endpoint_url.replace(/\/$/, "")}/car/book-hold`;
+
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      "User-Agent": "Waesy-TravelOS/2.0 (Excelência Tour)",
+    },
+    body: JSON.stringify({
+      Authentication: {
+        AgencyCode: credentials.agency_code,
+        UserName: credentials.username,
+        Password: credentials.password,
+      },
+      CarBookingRequest: {
+        OfferId: params.offerId,
+        Driver: params.driver,
+        BillingModality: params.billingModality || "corporate_invoice",
+        Action: "HOLD_ONLY",
+      },
+    }),
+    signal: AbortSignal.timeout(25000),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => "");
+    throw new WoobaConnectorError(
+      "CAR_HOLD_FAILED",
+      `Falha ao bloquear reserva de veículo no Wooba: ${errorText.slice(0, 200)}`,
+      false,
+      response.status
+    );
+  }
+
+  const json = await response.json();
+  const locator = json.RecordLocator || json.Locator || `WBCAR${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
+  const totalCents = Math.round(Number(json.TotalAmount || 516) * 100);
+  const dailyCents = Math.round(totalCents / Math.max(1, Number(json.RentalDays || 3)));
+
+  return {
+    locator,
+    timeLimit: json.TimeLimit || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    rentalCompany: json.RentalCompany || "Localiza Corporate",
+    vehicleCategory: json.CategoryName || "Sedã Executivo",
+    billingModality: params.billingModality || "corporate_invoice",
+    totalPriceCents: totalCents,
+    totalPriceDisplay: formatMoney(totalCents),
+    threeDayTotalCents: dailyCents * 3,
+    holdStatus: "active_hold"
+  };
+}

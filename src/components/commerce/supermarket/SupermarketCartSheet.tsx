@@ -130,7 +130,7 @@ export function SupermarketCartSheet({
 
         {/* ── Stepper do Checkout (Quando em fluxo de compra) ── */}
         {checkoutStep !== "cart" ? (
-          <div className="flex items-center justify-between px-6 py-2.5 bg-muted/30 border-b border-border/40 text-2xs font-bold text-muted-foreground">
+          <div className="flex items-center justify-between px-6 py-3 bg-muted/30 border-b border-border/40 text-2xs font-bold text-muted-foreground">
             <span className={cn(checkoutStep === "shipping" && "text-primary font-extrabold")}>
               1. Envio
             </span>
@@ -149,9 +149,9 @@ export function SupermarketCartSheet({
         {checkoutStep === "cart" ? (
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {/* Barra de Progresso de Frete Grátis */}
-            <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/40 space-y-2">
+            <div className="p-4 rounded-2xl bg-muted/40 border border-border/40 space-y-2">
               <div className="flex items-center justify-between text-xs font-bold">
-                <span className="flex items-center gap-1.5 text-foreground">
+                <span className="flex items-center gap-2 text-foreground">
                   <Gift size={16} weight="duotone" className="text-emerald-600" />
                   {isFreeShipping ? "Você ganhou Frete Grátis!" : `Faltam R$ ${(remainingCents / 100).toFixed(2).replace(".", ",")} para frete grátis`}
                 </span>
@@ -161,7 +161,7 @@ export function SupermarketCartSheet({
               </div>
               <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
                 <div
-                  className="h-full bg-emerald-600 transition-all duration-300"
+                  className="h-full bg-emerald-600 transition-colors duration-300"
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
@@ -181,13 +181,13 @@ export function SupermarketCartSheet({
                   return (
                     <div
                       key={item.id}
-                      className="p-3 rounded-2xl bg-card border border-border/60 space-y-2.5"
+                      className="p-3 rounded-2xl bg-card border border-border/60 space-y-3"
                     >
                       <div className="flex items-center gap-3">
                         {/* Imagem do Item */}
                         <div className="size-16 rounded-xl bg-muted/40 overflow-hidden shrink-0 flex items-center justify-center border border-border/40">
-                          {item.imageUrl ? (
-                            <img src={item.imageUrl} alt="" className="w-full h-full object-contain p-1" />
+                          {item.imageUrl ?? (item as any).image_url ? (
+                            <img src={item.imageUrl ?? (item as any).image_url} alt="" className="w-full h-full object-contain p-1" />
                           ) : (
                             <ShoppingBag size={24} weight="duotone" className="text-muted-foreground" />
                           )}
@@ -196,7 +196,7 @@ export function SupermarketCartSheet({
                         {/* Título & Preço */}
                         <div className="flex-1 min-w-0">
                           <h4 className="text-xs font-semibold text-foreground line-clamp-2">
-                            {item.title}
+                            {item.productTitle ?? (item as any).title ?? (item as any).product_name ?? (item as any).name}
                           </h4>
                           <span className="text-sm font-extrabold text-foreground">
                             R$ {itemTotal}
@@ -242,7 +242,7 @@ export function SupermarketCartSheet({
                           onClick={() =>
                             setActiveCommentItemId(activeCommentItemId === item.id ? null : item.id)
                           }
-                          className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground font-medium focus-visible:outline-none"
+                          className="flex items-center gap-2 text-muted-foreground hover:text-foreground font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
                         >
                           <PencilSimple size={13} weight="bold" className="text-primary" />
                           <span>{hasComment ? "Editar instrução" : "Comentários para o separador"}</span>
@@ -251,7 +251,7 @@ export function SupermarketCartSheet({
                         <button
                           type="button"
                           onClick={() => removeItem(item.id)}
-                          className="text-destructive hover:underline font-semibold"
+                          className="text-destructive hover:underline font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
                         >
                           Remover
                         </button>
@@ -284,13 +284,13 @@ export function SupermarketCartSheet({
 
             {/* Card de Order Bump (Oferta Relâmpago em Linha) */}
             {orderBumpProduct && allItems.length > 0 ? (
-              <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-2">
-                <div className="flex items-center gap-1.5 text-amber-800 dark:text-amber-300 font-bold text-xs">
+              <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-2">
+                <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300 font-bold text-xs">
                   <Lightning size={16} weight="fill" className="text-amber-500" />
                   <span>Oferta Relâmpago Imperdível</span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="flex items-center gap-3 min-w-0">
                     {orderBumpProduct.imageUrl ? (
                       <img src={orderBumpProduct.imageUrl} alt="" className="size-10 rounded-lg object-contain bg-background p-1 shrink-0" />
                     ) : null}
@@ -327,19 +327,19 @@ export function SupermarketCartSheet({
             <div
               onClick={() => setShippingMode("delivery")}
               className={cn(
-                "p-4 rounded-2xl border cursor-pointer transition-all space-y-2",
+                "p-4 rounded-2xl border cursor-pointer transition-colors space-y-2 focus-visible:ring-2 focus-visible:ring-primary",
                 shippingMode === "delivery"
-                  ? "border-primary bg-primary/5 shadow-sm"
+                  ? "border-primary bg-primary/5"
                   : "border-border/60 hover:border-border",
               )}
             >
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-3">
                   <Truck size={20} weight="bold" className="text-primary" />
                   <span className="text-sm font-bold text-foreground">Receber em meu endereço</span>
                 </div>
                 <div className={cn("size-4 rounded-full border-2 flex items-center justify-center", shippingMode === "delivery" ? "border-primary bg-primary" : "border-muted-foreground")}>
-                  {shippingMode === "delivery" ? <div className="size-1.5 rounded-full bg-white" /> : null}
+                  {shippingMode === "delivery" ? <div className="size-1.5 rounded-full bg-primary-foreground" /> : null}
                 </div>
               </div>
               <p className="text-xs text-muted-foreground pl-7">
@@ -351,19 +351,19 @@ export function SupermarketCartSheet({
             <div
               onClick={() => setShippingMode("pickup")}
               className={cn(
-                "p-4 rounded-2xl border cursor-pointer transition-all space-y-2",
+                "p-4 rounded-2xl border cursor-pointer transition-colors space-y-2 focus-visible:ring-2 focus-visible:ring-primary",
                 shippingMode === "pickup"
-                  ? "border-primary bg-primary/5 shadow-sm"
+                  ? "border-primary bg-primary/5"
                   : "border-border/60 hover:border-border",
               )}
             >
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-3">
                   <Storefront size={20} weight="bold" className="text-primary" />
                   <span className="text-sm font-bold text-foreground">Irei retirar na loja</span>
                 </div>
                 <div className={cn("size-4 rounded-full border-2 flex items-center justify-center", shippingMode === "pickup" ? "border-primary bg-primary" : "border-muted-foreground")}>
-                  {shippingMode === "pickup" ? <div className="size-1.5 rounded-full bg-white" /> : null}
+                  {shippingMode === "pickup" ? <div className="size-1.5 rounded-full bg-primary-foreground" /> : null}
                 </div>
               </div>
               <p className="text-xs text-muted-foreground pl-7">
@@ -389,15 +389,15 @@ export function SupermarketCartSheet({
               <div
                 onClick={() => setPaymentMethod("pix")}
                 className={cn(
-                  "p-3.5 rounded-2xl border cursor-pointer flex items-center justify-between",
+                  "p-4 rounded-2xl border cursor-pointer flex items-center justify-between focus-visible:ring-2 focus-visible:ring-primary",
                   paymentMethod === "pix" ? "border-primary bg-primary/5" : "border-border/60 hover:border-border",
                 )}
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-3">
                   <QrCode size={20} weight="bold" className="text-emerald-600" />
                   <span className="text-xs font-bold text-foreground">Pix Instantâneo</span>
                 </div>
-                <span className="text-3xs font-bold px-2 py-0.5 rounded-full bg-emerald-600/10 text-emerald-600">
+                <span className="text-3xs font-bold px-2 py-1 rounded-full bg-emerald-600/10 text-emerald-600">
                   Aprovação Imediata
                 </span>
               </div>
@@ -405,11 +405,11 @@ export function SupermarketCartSheet({
               <div
                 onClick={() => setPaymentMethod("card_online")}
                 className={cn(
-                  "p-3.5 rounded-2xl border cursor-pointer flex items-center justify-between",
+                  "p-4 rounded-2xl border cursor-pointer flex items-center justify-between focus-visible:ring-2 focus-visible:ring-primary",
                   paymentMethod === "card_online" ? "border-primary bg-primary/5" : "border-border/60 hover:border-border",
                 )}
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-3">
                   <CreditCard size={20} weight="bold" className="text-primary" />
                   <span className="text-xs font-bold text-foreground">Cartão de Crédito Online</span>
                 </div>
@@ -425,11 +425,11 @@ export function SupermarketCartSheet({
               <div
                 onClick={() => setPaymentMethod("card_delivery")}
                 className={cn(
-                  "p-3.5 rounded-2xl border cursor-pointer flex items-center justify-between",
+                  "p-4 rounded-2xl border cursor-pointer flex items-center justify-between focus-visible:ring-2 focus-visible:ring-primary",
                   paymentMethod === "card_delivery" ? "border-primary bg-primary/5" : "border-border/60 hover:border-border",
                 )}
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-3">
                   <CreditCard size={20} weight="bold" className="text-foreground" />
                   <span className="text-xs font-bold text-foreground">Cartão na Maquininha</span>
                 </div>
@@ -438,11 +438,11 @@ export function SupermarketCartSheet({
               <div
                 onClick={() => setPaymentMethod("cash")}
                 className={cn(
-                  "p-3.5 rounded-2xl border cursor-pointer flex items-center justify-between",
+                  "p-4 rounded-2xl border cursor-pointer flex items-center justify-between focus-visible:ring-2 focus-visible:ring-primary",
                   paymentMethod === "cash" ? "border-primary bg-primary/5" : "border-border/60 hover:border-border",
                 )}
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-3">
                   <Money size={20} weight="bold" className="text-emerald-600" />
                   <span className="text-xs font-bold text-foreground">Dinheiro</span>
                 </div>
@@ -477,8 +477,8 @@ export function SupermarketCartSheet({
             </div>
 
             {/* Aviso Legal Obrigatório de Pesagem (Invariante Canônico) */}
-            <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-2xs text-amber-900 dark:text-amber-200">
-              <Info size={18} weight="bold" className="text-amber-600 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-3 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-2xs text-amber-900 dark:text-amber-200">
+              <Info size={18} weight="bold" className="text-amber-600 shrink-0 mt-1" />
               <p>
                 <strong>Importante:</strong> O valor total de sua compra poderá sofrer pequenas variações para mais ou para menos caso ocorra alguma alteração ou diferença de pesagem durante o processo de separação física na loja.
               </p>

@@ -88,7 +88,31 @@ import { TransferTicketDialog } from "@/components/chat/TransferTicketDialog";
 import { QuickRepliesMenu, type QuickReplyItem } from "@/components/chat/QuickRepliesMenu";
 import { ThreadTagsPicker } from "@/components/chat/ThreadTagsPicker";
 import { listChatQuickReplies } from "@/services/chat.functions";
-import { Tag } from "lucide-react";
+import {
+  Tag,
+  Hash,
+  Users,
+  Share2,
+  GitBranch,
+  FileSpreadsheet,
+  ClipboardList,
+  Calendar,
+  Sparkles,
+  Check,
+  ChevronDown,
+  ChevronRight,
+} from "lucide-react";
+import { ArtifactInteractiveTable } from "@/components/chat/artifacts/ArtifactInteractiveTable";
+import {
+  ChatQuickComposerModals,
+  type StructuredDispatchPayload,
+} from "@/components/chat/ChatQuickComposerModals";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/workspace/atendimento/")({
   head: () => ({ meta: [{ title: "Atendimento Omnichannel & WhatsApp" }] }),
@@ -176,8 +200,219 @@ function WorkspaceAtendimentoPage() {
     queryFn: () => listTeamMembers().catch(() => []),
   });
 
-  // Tabs do Hub: Conversas estilo WhatsApp, SDR, Telemetria & Filas, Conexão WhatsApp e Horários
-  const [activeHubTab, setActiveHubTab] = useState<"live" | "sdr" | "metrics" | "whatsapp" | "hours">("live");
+  // Tabs do Hub: Conversas estilo WhatsApp, Intranet Corporativa, SDR, Telemetria & Filas, Conexão WhatsApp e Horários
+  const [activeHubTab, setActiveHubTab] = useState<
+    "live" | "intranet" | "sdr" | "metrics" | "whatsapp" | "hours"
+  >("live");
+  const [showLiveTimeline, setShowLiveTimeline] = useState(false);
+  const [liveComposerTrayOpen, setLiveComposerTrayOpen] = useState(false);
+  const [liveModalOverride, setLiveModalOverride] = useState<
+    "form" | "event" | "sticker" | "spreadsheet" | null
+  >(null);
+
+  // Estados da Intranet Corporativa (Canais estilo Slack + Linha do Tempo + Planilhas)
+  const [intranetScopeFilter, setIntranetScopeFilter] = useState<"all" | "public" | "private">("all");
+  const [intranetCreatorFilter, setIntranetCreatorFilter] = useState<string>("all");
+  const [intranetSearch, setIntranetSearch] = useState("");
+  const [newChannelModalOpen, setNewChannelModalOpen] = useState(false);
+  const [newChannelTitle, setNewChannelTitle] = useState("");
+  const [newChannelDept, setNewChannelDept] = useState("Executivo");
+  const [newChannelScope, setNewChannelScope] = useState<"public" | "private">("private");
+  const [collapsedDepts, setCollapsedDepts] = useState<Record<string, boolean>>({});
+  const [intranetComposerText, setIntranetComposerText] = useState("");
+  const [intranetTrayOpen, setIntranetTrayOpen] = useState(false);
+  const [intranetModalOverride, setIntranetModalOverride] = useState<
+    "form" | "event" | "sticker" | "spreadsheet" | null
+  >(null);
+
+  const [intranetChannels, setIntranetChannels] = useState<
+    Array<{
+      id: string;
+      title: string;
+      department: "Executivo" | "Comercial" | "Marketing" | "Operações" | "Financeiro" | "Suporte";
+      scope: "public" | "private";
+      creator: string;
+      updatedAt: string;
+      membersCount: number;
+      milestones: Array<{ id: string; label: string; time: string; done: boolean; detail: string }>;
+      spreadsheet?: {
+        title: string;
+        rowsCount: number;
+        colsCount: number;
+        headers: string[];
+        colTypes: string[];
+        rows: (string | number)[][];
+      };
+      messages: Array<{
+        id: string;
+        author: string;
+        role: string;
+        time: string;
+        text: string;
+        payload?: any;
+      }>;
+    }>
+  >([
+    {
+      id: "ch-exec-q3",
+      title: "Análise de Pedidos & Desempenho Regional",
+      department: "Executivo",
+      scope: "private",
+      creator: "Diretoria",
+      updatedAt: "14:20",
+      membersCount: 6,
+      milestones: [
+        {
+          id: "ms-1",
+          label: "Consolidação das tabelas de pedidos, itens e avaliações da operação",
+          time: "14:12",
+          done: true,
+          detail: "3 tabelas cruzadas • 100% reconciliado",
+        },
+        {
+          id: "ms-2",
+          label: "Cálculo da participação de receita por linha de produtos e entregas",
+          time: "14:15",
+          done: true,
+          detail: "Margem líquida auditada por centro de custo",
+        },
+        {
+          id: "ms-3",
+          label: "Publicação da planilha interativa para revisão dos gestores",
+          time: "14:18",
+          done: true,
+          detail: "Arquivo CSV liberado para download e filtro",
+        },
+      ],
+      spreadsheet: {
+        title: "Desempenho_Categorias_Regional.csv",
+        rowsCount: 6,
+        colsCount: 5,
+        headers: ["Categoria", "Pedidos", "Receita (R$)", "Ticket Médio", "Participação (%)"],
+        colTypes: ["abc", "123", "123", "123", "123"],
+        rows: [
+          ["Cama, Mesa & Banho", 142, 28400, 200, "24.5%"],
+          ["Beleza & Saúde", 198, 23760, 120, "20.5%"],
+          ["Esporte & Lazer", 115, 19550, 170, "16.9%"],
+          ["Informática & Acessórios", 84, 18480, 220, "15.9%"],
+          ["Utilidades Domésticas", 160, 14400, 90, "12.4%"],
+          ["Alimentos & Bebidas", 210, 11340, 54, "9.8%"],
+        ],
+      },
+      messages: [
+        {
+          id: "im-1",
+          author: "Carlos Mendes",
+          role: "Diretor de Operações",
+          time: "14:10",
+          text: "Equipe, precisamos consolidar os indicadores das categorias campeãs de venda e logística da semana para o fechamento mensal.",
+        },
+        {
+          id: "im-2",
+          author: "Helena Costa",
+          role: "Líder Comercial",
+          time: "14:20",
+          text: "Planilha consolidada anexada na Linha do Tempo acima! Já separei também o formulário secreto de votação de metas para os coordenadores.",
+        },
+      ],
+    },
+    {
+      id: "ch-com-metas",
+      title: "Campanha Relâmpago & Vitrines da Semana",
+      department: "Comercial",
+      scope: "public",
+      creator: "Helena Costa",
+      updatedAt: "11:45",
+      membersCount: 12,
+      milestones: [
+        {
+          id: "ms-c1",
+          label: "Seleção de ofertas âncora com estoque validado",
+          time: "10:30",
+          done: true,
+          detail: "18 SKUs aprovados",
+        },
+        {
+          id: "ms-c2",
+          label: "Ativação de disparo segmentado e cupons no chat",
+          time: "11:40",
+          done: true,
+          detail: "Conversão inicial de 14.2%",
+        },
+      ],
+      messages: [
+        {
+          id: "im-c1",
+          author: "Helena Costa",
+          role: "Líder Comercial",
+          time: "11:45",
+          text: "Lembrem de utilizar o envio de carrinho direto no chat para fechar pedidos em 1 clique com código de retirada.",
+        },
+      ],
+    },
+    {
+      id: "ch-ops-frota",
+      title: "Torre de Controle Logística & MotoLink",
+      department: "Operações",
+      scope: "public",
+      creator: "Roberto Alves",
+      updatedAt: "09:30",
+      membersCount: 9,
+      milestones: [
+        {
+          id: "ms-o1",
+          label: "Conferência de códigos de entrega (Pickup Code) no balcão",
+          time: "09:00",
+          done: true,
+          detail: "Zero divergências no turno da manhã",
+        },
+      ],
+      messages: [
+        {
+          id: "im-o1",
+          author: "Roberto Alves",
+          role: "Coord. Logística",
+          time: "09:30",
+          text: "Todos os pedidos despachados já exibem o mini-mapa ao vivo e código de 4 dígitos para o cliente.",
+        },
+      ],
+    },
+    {
+      id: "ch-fin-dre",
+      title: "Conciliação PIX & Repasses Semanais",
+      department: "Financeiro",
+      scope: "private",
+      creator: "Fernanda Lima",
+      updatedAt: "Ontem",
+      membersCount: 4,
+      milestones: [
+        {
+          id: "ms-f1",
+          label: "Fechamento de liquidação instantânea PIX no chat",
+          time: "Ontem",
+          done: true,
+          detail: "100% conciliado com extrato bancário",
+        },
+      ],
+      messages: [
+        {
+          id: "im-f1",
+          author: "Fernanda Lima",
+          role: "Controller",
+          time: "Ontem",
+          text: "Relatório de conciliação validado sem pendências.",
+        },
+      ],
+    },
+  ]);
+
+  const [activeIntranetChannelId, setActiveIntranetChannelId] = useState<string>("ch-exec-q3");
+  const activeIntranetChannel = useMemo(
+    () =>
+      intranetChannels.find((c) => c.id === activeIntranetChannelId) ||
+      intranetChannels[0],
+    [intranetChannels, activeIntranetChannelId],
+  );
 
   // Status de presença do atendente
   const [agentPresence, setAgentPresence] = useState<"online" | "busy" | "away">("online");
@@ -617,6 +852,24 @@ function WorkspaceAtendimentoPage() {
             )}
           </button>
 
+          {/* Aba 2: Intranet Corporativa (Canais estilo Slack + Linha do Tempo + Planilhas) */}
+          <button
+            type="button"
+            onClick={() => setActiveHubTab("intranet")}
+            className={cn(
+              "px-4 h-11 min-h-11 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors duration-150 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+              activeHubTab === "intranet"
+                ? "bg-primary text-primary-foreground shadow-xs font-bold"
+                : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/50",
+            )}
+          >
+            <Hash className="size-4" />
+            <span>Intranet</span>
+            <Badge variant="secondary" className="text-xs h-4 px-2 font-mono">
+              {intranetChannels.length}
+            </Badge>
+          </button>
+
           {/* Aba 2: Leads SDR / IA */}
           <button
             type="button"
@@ -1014,6 +1267,22 @@ function WorkspaceAtendimentoPage() {
                     )}
                   </Button>
 
+                  {/* Toggle Linha do Tempo na Conversa */}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowLiveTimeline((prev) => !prev)}
+                    className={cn(
+                      "h-11 min-h-11 text-xs font-semibold rounded-lg px-3 gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring",
+                      showLiveTimeline ? "bg-primary/15 text-primary border-primary/40 font-bold" : "",
+                    )}
+                    title="Exibir Linha do Tempo de eventos, pedidos e planilhas do cliente"
+                  >
+                    <GitBranch className="size-4 text-primary" />
+                    <span className="hidden sm:inline">Linha do Tempo</span>
+                  </Button>
+
                   {/* Toggle Perfil 360 */}
                   <Button
                     variant="outline"
@@ -1029,6 +1298,86 @@ function WorkspaceAtendimentoPage() {
                   </Button>
                 </div>
               </div>
+
+              {/* Painel Recolhível: Linha do Tempo Cronológica (Pedidos, Chamados e Planilhas) */}
+              {showLiveTimeline && (
+                <div className="bg-card/95 border-b border-border/80 p-4 space-y-3 animate-in fade-in duration-150">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
+                      <GitBranch className="size-4 text-primary" />
+                      <span>Linha do Tempo do Atendimento</span>
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setLiveModalOverride("form")}
+                        className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 cursor-pointer"
+                      >
+                        <ClipboardList className="size-3.5 text-primary" />
+                        <span>Formulário</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setLiveModalOverride("event")}
+                        className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 cursor-pointer"
+                      >
+                        <Calendar className="size-3.5 text-emerald-600" />
+                        <span>Evento</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setLiveModalOverride("spreadsheet")}
+                        className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 cursor-pointer"
+                      >
+                        <FileSpreadsheet className="size-3.5 text-sky-600" />
+                        <span>Planilha</span>
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="relative pl-6 space-y-3 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-primary/30">
+                    <div className="relative flex items-start justify-between gap-2 text-xs">
+                      <span className=" -left-6 top-0.5 size-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0">
+                        <Check className="size-3" />
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-foreground">
+                          Início do atendimento omnichannel ({activeThread.channel === "whatsapp" ? "WhatsApp Oficial" : "Chat Web"})
+                        </p>
+                        <p className="text-muted-foreground">
+                          Setor: {departmentLabels[activeThread.department] || activeThread.department}
+                        </p>
+                      </div>
+                      <span className="font-mono text-muted-foreground shrink-0">
+                        {formatRelativeTime(activeThread.created_at)}
+                      </span>
+                    </div>
+
+                    <div className="relative flex items-start justify-between gap-2 text-xs">
+                      <span className=" -left-6 top-0.5 size-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0">
+                        <Check className="size-3" />
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-foreground">
+                          {messages.length} mensagens sincronizadas e auditadas na conversa
+                        </p>
+                        <p className="text-muted-foreground">
+                          Janela 24h: {isWhatsAppWindowOpen ? "Ativa para resposta livre" : "Exige template"}
+                        </p>
+                      </div>
+                      <span className="font-mono text-muted-foreground shrink-0">
+                        {formatRelativeTime(activeThread.updated_at)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Timeline de Mensagens */}
               <div
@@ -1242,6 +1591,19 @@ function WorkspaceAtendimentoPage() {
 
                 <form onSubmit={handleSend} className="space-y-2">
                   <div className="flex items-end gap-2">
+                    {/* Botão + Multifuncional (Formulários, Eventos, Planilhas, Stickers) */}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setLiveComposerTrayOpen(true)}
+                      className="size-11 rounded-lg shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                      title="Abrir ferramentas rápidas: Formulário, Evento, Planilha, Sticker"
+                      aria-label="Abrir ferramentas rápidas"
+                    >
+                      <Plus className="size-4" />
+                    </Button>
+
                     <div className="flex-1 relative">
                       <Textarea
                         value={text}
@@ -1357,6 +1719,449 @@ function WorkspaceAtendimentoPage() {
               </div>
             </SheetContent>
           </Sheet>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* ABA 2: INTRANET CORPORATIVA (SLACK CHANNELS + TIMELINE + PLANILHAS) */}
+      {/* ======================================================== */}
+      {activeHubTab === "intranet" && (
+        <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-background">
+          {/* COLUNA ESQUERDA: Sidebar Segmentada por Departamento (Estilo Slack / Corporativo) */}
+          <aside className="w-full md:w-80 lg:w-96 border-b md:border-b-0 md:border-r border-border/80 bg-card/40 flex flex-col shrink-0">
+            <div className="p-3 border-b border-border/80 space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+                  <Hash className="size-4 text-primary" />
+                  <span>Canais</span>
+                </h2>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => setNewChannelModalOpen(true)}
+                  className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <Plus className="size-3.5" />
+                  <span>Criar Canal</span>
+                </Button>
+              </div>
+
+              <div className="relative">
+                <Search className="size-4 absolute left-3 top-3.5 text-muted-foreground" />
+                <Input
+                  value={intranetSearch}
+                  onChange={(e) => setIntranetSearch(e.target.value)}
+                  placeholder="Filtrar canais, criador ou departamento..."
+                  className="pl-9 h-11 text-xs rounded-lg bg-muted/40"
+                />
+              </div>
+
+              {/* Filtros de Escopo (Todos | Público | Privado) e Criador */}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1">
+                  {[
+                    { id: "all", label: "Todos" },
+                    { id: "public", label: "Público" },
+                    { id: "private", label: "Privado" },
+                  ].map((sc) => (
+                    <button
+                      key={sc.id}
+                      type="button"
+                      onClick={() => setIntranetScopeFilter(sc.id as any)}
+                      className={cn(
+                        "h-11 min-h-11 px-3 rounded-md text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                        intranetScopeFilter === sc.id
+                          ? "bg-foreground text-background font-bold"
+                          : "bg-muted/60 text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      {sc.label}
+                    </button>
+                  ))}
+                </div>
+
+                <select
+                  value={intranetCreatorFilter}
+                  onChange={(e) => setIntranetCreatorFilter(e.target.value)}
+                  aria-label="Filtrar por criador"
+                  className="h-11 px-3 rounded-md bg-muted/50 border border-border/60 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <option value="all">Criador: Todos</option>
+                  <option value="Diretoria">Diretoria</option>
+                  <option value="Helena Costa">Helena Costa</option>
+                  <option value="Roberto Alves">Roberto Alves</option>
+                  <option value="Fernanda Lima">Fernanda Lima</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Grupos Colapsáveis por Departamento */}
+            <div className="flex-1 overflow-y-auto no-scrollbar p-2 space-y-2">
+              {(
+                [
+                  "Executivo",
+                  "Comercial",
+                  "Marketing",
+                  "Operações",
+                  "Financeiro",
+                  "Suporte",
+                ] as const
+              ).map((dept) => {
+                const deptChannels = intranetChannels.filter((c) => {
+                  if (c.department !== dept) return false;
+                  if (intranetScopeFilter !== "all" && c.scope !== intranetScopeFilter) return false;
+                  if (intranetCreatorFilter !== "all" && c.creator !== intranetCreatorFilter)
+                    return false;
+                  if (
+                    intranetSearch.trim() &&
+                    !c.title.toLowerCase().includes(intranetSearch.toLowerCase()) &&
+                    !c.creator.toLowerCase().includes(intranetSearch.toLowerCase())
+                  ) {
+                    return false;
+                  }
+                  return true;
+                });
+
+                const isCollapsed = Boolean(collapsedDepts[dept]);
+
+                return (
+                  <div key={dept} className="space-y-1">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCollapsedDepts((prev) => ({ ...prev, [dept]: !prev[dept] }))
+                      }
+                      className="w-full h-11 min-h-11 px-2 rounded-md flex items-center justify-between text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      <span className="flex items-center gap-2">
+                        {isCollapsed ? (
+                          <ChevronRight className="size-3.5" />
+                        ) : (
+                          <ChevronDown className="size-3.5" />
+                        )}
+                        <span>{dept}</span>
+                      </span>
+                      <Badge variant="outline" className="text-2xs font-mono">
+                        {deptChannels.length}
+                      </Badge>
+                    </button>
+
+                    {!isCollapsed &&
+                      deptChannels.map((ch) => {
+                        const isSelected = ch.id === activeIntranetChannel?.id;
+                        return (
+                          <button
+                            key={ch.id}
+                            type="button"
+                            onClick={() => setActiveIntranetChannelId(ch.id)}
+                            className={cn(
+                              "w-full p-3 rounded-lg text-left transition-colors cursor-pointer border space-y-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                              isSelected
+                                ? "bg-primary/10 border-primary/40 text-foreground"
+                                : "bg-card/60 border-border/50 hover:bg-muted/40 text-foreground",
+                            )}
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <span className="text-xs font-bold leading-snug line-clamp-1">
+                                {ch.title}
+                              </span>
+                              <span className="text-2xs font-mono text-muted-foreground shrink-0">
+                                {ch.updatedAt}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center flex-wrap gap-2 text-2xs">
+                              <Badge
+                                variant="outline"
+                                className={cn(
+                                  "text-2xs gap-1",
+                                  ch.scope === "private"
+                                    ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                                    : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
+                                )}
+                              >
+                                {ch.scope === "private" ? (
+                                  <Lock className="size-2.5" />
+                                ) : (
+                                  <Hash className="size-2.5" />
+                                )}
+                                <span>{ch.scope === "private" ? "Privado" : "Público"}</span>
+                              </Badge>
+
+                              <Badge variant="secondary" className="text-2xs">
+                                {ch.department}
+                              </Badge>
+
+                              <span className="text-muted-foreground ml-auto truncate">
+                                por {ch.creator}
+                              </span>
+                            </div>
+                          </button>
+                        );
+                      })}
+                  </div>
+                );
+              })}
+            </div>
+          </aside>
+
+          {/* COLUNA PRINCIPAL: Canal da Intranet + Linha do Tempo + Preview de Planilha */}
+          {activeIntranetChannel && (
+            <div className="flex-1 flex flex-col min-w-0 bg-muted/10 overflow-hidden">
+              {/* Cabeçalho do Canal Corporativo */}
+              <div className="p-4 bg-card border-b border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
+                <div className="space-y-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-sm sm:text-base font-bold text-foreground truncate">
+                      {activeIntranetChannel.title}
+                    </h3>
+                    <Badge variant="outline" className="text-xs font-semibold">
+                      {activeIntranetChannel.department}
+                    </Badge>
+                    <Badge variant="secondary" className="text-xs">
+                      Criador: {activeIntranetChannel.creator}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Canal corporativo interno • {activeIntranetChannel.membersCount} colaboradores conectados
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      toast.info(
+                        `${activeIntranetChannel.membersCount} colaboradores com acesso a este canal.`,
+                      )
+                    }
+                    className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <Users className="size-4 text-primary" />
+                    <span>Membros ({activeIntranetChannel.membersCount})</span>
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      navigator.clipboard?.writeText(window.location.href);
+                      toast.success("Link do canal interno copiado!");
+                    }}
+                    className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <Share2 className="size-4 text-primary" />
+                    <span>Compartilhar</span>
+                  </Button>
+                </div>
+              </div>
+
+              {/* Stream do Canal: Linha do Tempo + Preview de Planilha + Mensagens */}
+              <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-5">
+                {/* Bloco Linha do Tempo (Milestones Conectados) */}
+                <div className="rounded-xl border border-border/80 bg-card p-4 space-y-4">
+                  <div className="flex items-center justify-between border-b border-border/50 pb-3">
+                    <div className="flex items-center gap-2">
+                      <GitBranch className="size-4 text-primary" />
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
+                        Linha do Tempo
+                      </h4>
+                    </div>
+                    <Badge variant="outline" className="text-2xs font-mono">
+                      {activeIntranetChannel.milestones.length} etapas concluídas
+                    </Badge>
+                  </div>
+
+                  <div className="relative pl-7 space-y-4 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-emerald-500/40">
+                    {activeIntranetChannel.milestones.map((ms) => (
+                      <div key={ms.id} className="relative flex items-start justify-between gap-3 text-xs">
+                        <span className=" -left-7 top-0.5 size-5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/40 flex items-center justify-center shrink-0">
+                          <Check className="size-3" />
+                        </span>
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <p className="font-semibold text-foreground">{ms.label}</p>
+                          <p className="text-muted-foreground">{ms.detail}</p>
+                        </div>
+                        <span className="font-mono text-2xs text-muted-foreground shrink-0">
+                          {ms.time}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Preview Interativo de Planilha Anexada (ArtifactInteractiveTable) */}
+                  {activeIntranetChannel.spreadsheet && (
+                    <div className="pt-3 border-t border-border/50 space-y-2">
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                        <div className="flex items-center gap-2">
+                          <FileSpreadsheet className="size-4 text-primary" />
+                          <span className="font-bold text-foreground">
+                            {activeIntranetChannel.spreadsheet.title}
+                          </span>
+                          <Badge variant="secondary" className="text-2xs font-mono">
+                            {activeIntranetChannel.spreadsheet.rowsCount} linhas ×{" "}
+                            {activeIntranetChannel.spreadsheet.colsCount} colunas
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {activeIntranetChannel.spreadsheet.headers.map((h, idx) => (
+                            <Badge key={h} variant="outline" className="text-2xs font-mono">
+                              {activeIntranetChannel.spreadsheet?.colTypes[idx] || "abc"} • {h}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+
+                      <ArtifactInteractiveTable
+                        title={activeIntranetChannel.spreadsheet.title}
+                        headers={activeIntranetChannel.spreadsheet.headers}
+                        rows={activeIntranetChannel.spreadsheet.rows}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Mensagens e Cards Estruturados dos Colaboradores */}
+                <div className="space-y-3">
+                  {activeIntranetChannel.messages.map((m) => (
+                    <div
+                      key={m.id}
+                      className="rounded-xl border border-border/70 bg-card p-4 space-y-2"
+                    >
+                      <div className="flex items-center justify-between gap-2 text-xs">
+                        <div className="flex items-center gap-2">
+                          <div className="size-7 rounded-full bg-primary/15 text-primary font-bold flex items-center justify-center text-xs">
+                            {m.author[0]}
+                          </div>
+                          <span className="font-bold text-foreground">{m.author}</span>
+                          <Badge variant="outline" className="text-2xs">
+                            {m.role}
+                          </Badge>
+                        </div>
+                        <span className="font-mono text-2xs text-muted-foreground">{m.time}</span>
+                      </div>
+
+                      <p className="text-xs text-foreground leading-relaxed whitespace-pre-wrap">
+                        {m.text}
+                      </p>
+
+                      {m.payload && (
+                        <div className="pt-2">
+                          <StructuredMessageView payload={m.payload} isStaff={true} />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Barra Inferior de Ações Rápidas da Intranet (Formulários, Eventos, Planilhas, Mensagem) */}
+              <div className="p-3 bg-card border-t border-border/80 space-y-2 shrink-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIntranetModalOverride("form")}
+                    className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <ClipboardList className="size-3.5 text-primary" />
+                    <span>Formulário Rápido / Secreto</span>
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIntranetModalOverride("event")}
+                    className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <Calendar className="size-3.5 text-emerald-600" />
+                    <span>Novo Evento</span>
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIntranetModalOverride("spreadsheet")}
+                    className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <FileSpreadsheet className="size-3.5 text-sky-600" />
+                    <span>Anexar Planilha</span>
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIntranetModalOverride("sticker")}
+                    className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <Sparkles className="size-3.5 text-amber-500" />
+                    <span>Stickers</span>
+                  </Button>
+                </div>
+
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (!intranetComposerText.trim()) return;
+                    const txt = intranetComposerText.trim();
+                    setIntranetComposerText("");
+                    setIntranetChannels((prev) =>
+                      prev.map((ch) =>
+                        ch.id === activeIntranetChannel.id
+                          ? {
+                              ...ch,
+                              updatedAt: "Agora",
+                              messages: [
+                                ...ch.messages,
+                                {
+                                  id: `im-${Date.now()}`,
+                                  author: "Você (Equipe)",
+                                  role: "Colaborador",
+                                  time: "Agora",
+                                  text: txt,
+                                },
+                              ],
+                            }
+                          : ch,
+                      ),
+                    );
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setIntranetTrayOpen(true)}
+                    className="size-11 rounded-lg shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                    aria-label="Abrir ferramentas da Intranet"
+                  >
+                    <Plus className="size-4" />
+                  </Button>
+                  <Input
+                    value={intranetComposerText}
+                    onChange={(e) => setIntranetComposerText(e.target.value)}
+                    placeholder={`Enviar atualização em #${activeIntranetChannel.title}...`}
+                    className="h-11 text-xs rounded-lg bg-muted/40"
+                  />
+                  <Button
+                    type="submit"
+                    className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 shrink-0 cursor-pointer"
+                  >
+                    <span>Publicar</span>
+                    <Send className="size-3.5" />
+                  </Button>
+                </form>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -2021,6 +2826,178 @@ function WorkspaceAtendimentoPage() {
           recipientName={activeThread.customer?.full_name || "Cliente"}
         />
       )}
+
+      {/* Modais Rápidos no Atendimento ao Cliente (Live) */}
+      <ChatQuickComposerModals
+        trayOpen={liveComposerTrayOpen}
+        onTrayOpenChange={setLiveComposerTrayOpen}
+        activeModalOverride={liveModalOverride}
+        onClearModalOverride={() => setLiveModalOverride(null)}
+        storeName={store?.name || "Loja"}
+        storeSlug={store?.slug}
+        onDispatchMessage={async (data: StructuredDispatchPayload) => {
+          if (!activeThreadId) return;
+          try {
+            const sent = await sendChatMessage({
+              data: {
+                threadId: activeThreadId,
+                message: data.message,
+                message_type: data.message_type,
+                payload: data.payload,
+                attachments: [],
+              },
+            });
+            setMessages((prev) => [...prev, sent]);
+          } catch {
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: `local-${Date.now()}`,
+                message: data.message,
+                message_type: data.message_type,
+                payload: data.payload,
+                is_staff_reply: true,
+                created_at: new Date().toISOString(),
+              },
+            ]);
+          }
+        }}
+      />
+
+      {/* Modais Rápidos na Intranet Corporativa */}
+      <ChatQuickComposerModals
+        trayOpen={intranetTrayOpen}
+        onTrayOpenChange={setIntranetTrayOpen}
+        activeModalOverride={intranetModalOverride}
+        onClearModalOverride={() => setIntranetModalOverride(null)}
+        storeName={store?.name || "Intranet"}
+        onDispatchMessage={(data: StructuredDispatchPayload) => {
+          if (!activeIntranetChannel) return;
+          setIntranetChannels((prev) =>
+            prev.map((ch) =>
+              ch.id === activeIntranetChannel.id
+                ? {
+                    ...ch,
+                    updatedAt: "Agora",
+                    messages: [
+                      ...ch.messages,
+                      {
+                        id: `im-${Date.now()}`,
+                        author: "Você (Equipe)",
+                        role: "Gestão",
+                        time: "Agora",
+                        text: data.message,
+                        payload: data.payload,
+                      },
+                    ],
+                  }
+                : ch,
+            ),
+          );
+        }}
+      />
+
+      {/* Modal Criar Novo Canal da Intranet */}
+      <Dialog open={newChannelModalOpen} onOpenChange={setNewChannelModalOpen}>
+        <DialogContent className="sm:max-w-md p-0 overflow-hidden border-border/80 rounded-xl">
+          <DialogHeader className="p-4 border-b border-border/50">
+            <DialogTitle className="text-base font-bold text-foreground">
+              Canais
+            </DialogTitle>
+          </DialogHeader>
+          <div className="p-4 space-y-3">
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold">Nome do Canal ou Tópico</Label>
+              <Input
+                value={newChannelTitle}
+                onChange={(e) => setNewChannelTitle(e.target.value)}
+                placeholder="Ex: Planejamento Black Friday & Estoque"
+                className="h-11 text-xs"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Departamento</Label>
+                <select
+                  value={newChannelDept}
+                  onChange={(e) => setNewChannelDept(e.target.value)}
+                  className="w-full h-11 px-3 rounded-lg bg-muted/40 border border-border/60 text-xs font-semibold text-foreground"
+                >
+                  <option value="Executivo">Executivo</option>
+                  <option value="Comercial">Comercial</option>
+                  <option value="Marketing">Marketing</option>
+                  <option value="Operações">Operações</option>
+                  <option value="Financeiro">Financeiro</option>
+                  <option value="Suporte">Suporte</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Privacidade</Label>
+                <select
+                  value={newChannelScope}
+                  onChange={(e) => setNewChannelScope(e.target.value as any)}
+                  className="w-full h-11 px-3 rounded-lg bg-muted/40 border border-border/60 text-xs font-semibold text-foreground"
+                >
+                  <option value="private">Privado</option>
+                  <option value="public">Público</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 border-t border-border/50 flex items-center justify-end gap-2 bg-muted/20">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setNewChannelModalOpen(false)}
+              className="h-11 min-h-11 px-4 text-xs font-semibold cursor-pointer"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                if (!newChannelTitle.trim()) {
+                  toast.error("Informe o título do canal.");
+                  return;
+                }
+                const newId = `ch-${Date.now()}`;
+                setIntranetChannels((prev) => [
+                  {
+                    id: newId,
+                    title: newChannelTitle.trim(),
+                    department: newChannelDept as any,
+                    scope: newChannelScope,
+                    creator: "Você",
+                    updatedAt: "Agora",
+                    membersCount: 1,
+                    milestones: [
+                      {
+                        id: `ms-${Date.now()}`,
+                        label: "Canal corporativo estruturado criado",
+                        time: "Agora",
+                        done: true,
+                        detail: `Escopo ${newChannelScope === "private" ? "Privado" : "Público"} • Setor ${newChannelDept}`,
+                      },
+                    ],
+                    messages: [],
+                  },
+                  ...prev,
+                ]);
+                setActiveIntranetChannelId(newId);
+                setNewChannelTitle("");
+                setNewChannelModalOpen(false);
+                toast.success("Canal criado na Intranet!");
+              }}
+              className="h-11 min-h-11 px-5 text-xs font-bold cursor-pointer"
+            >
+              Criar Canal
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

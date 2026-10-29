@@ -23,7 +23,9 @@ interface CategoryDefinition {
  subcategories: {
  id: string;
  label: string;
- templateIds: string[];
+ icon?: any;
+ templateIds?: string[];
+ subcategories?: { id: string; label: string; icon?: any; templateIds: string[] }[];
  }[];
 }
 
@@ -282,7 +284,7 @@ export function BuilderAddPanel3Col({
  currentCategory.subcategories[0];
 
  const activeTemplates: SectionTemplate[] = currentSubcategory
- ? currentSubcategory.templateIds
+ ? (currentSubcategory.templateIds || [])
  .map((id) => sectionTemplates[id])
  .filter(Boolean)
  : [];

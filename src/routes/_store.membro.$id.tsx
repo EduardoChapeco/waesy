@@ -2415,7 +2415,7 @@ function AvailabilityEditModal({
  onOpenChange: (op: boolean) => void;
  initialData: any;
  onSave: (data: any) => void;
- isSaving: boolean;
+ isSaving?: boolean;
 }) {
  const [openToWork, setOpenToWork] = useState(Boolean(initialData?.open_to_work?.active));
  const [rolesStr, setRolesStr] = useState(initialData?.open_to_work?.roles?.join(", ") || "");
@@ -2590,7 +2590,7 @@ function AboutEditModal({
  initialHeadline: string;
  initialSummary: string;
  onSave: (data: { headline: string; summary: string }) => void;
- isSaving: boolean;
+ isSaving?: boolean;
 }) {
  const [headline, setHeadline] = useState(initialHeadline);
  const [summary, setSummary] = useState(initialSummary);
@@ -2656,7 +2656,7 @@ function ExperienceEditModal({
  onOpenChange: (op: boolean) => void;
  item: any;
  onSave: (item: any, isDelete?: boolean) => void;
- isSaving: boolean;
+ isSaving?: boolean;
 }) {
  const [title, setTitle] = useState(item?.title || "");
  const [company, setCompany] = useState(item?.company || "");
@@ -2967,7 +2967,7 @@ function EducationEditModal({
  onOpenChange: (op: boolean) => void;
  item: any;
  onSave: (item: any, isDelete?: boolean) => void;
- isSaving: boolean;
+ isSaving?: boolean;
 }) {
  const [school, setSchool] = useState(item?.school || "");
  const [degree, setDegree] = useState(item?.degree || "");
@@ -3106,7 +3106,7 @@ function CertificationEditModal({
  onOpenChange: (op: boolean) => void;
  item: any;
  onSave: (item: any, isDelete?: boolean) => void;
- isSaving: boolean;
+ isSaving?: boolean;
 }) {
  const [name, setName] = useState(item?.name || "");
  const [issuer, setIssuer] = useState(item?.issuer || "");
@@ -3220,7 +3220,7 @@ function ProjectEditModal({
  onOpenChange: (op: boolean) => void;
  item: any;
  onSave: (item: any, isDelete?: boolean) => void;
- isSaving: boolean;
+ isSaving?: boolean;
 }) {
  const [title, setTitle] = useState(item?.title || "");
  const [associatedWith, setAssociatedWith] = useState(item?.associated_with || "");
@@ -3363,7 +3363,7 @@ function VolunteeringEditModal({
  onOpenChange: (op: boolean) => void;
  item: any;
  onSave: (item: any, isDelete?: boolean) => void;
- isSaving: boolean;
+ isSaving?: boolean;
 }) {
  const [role, setRole] = useState(item?.role || "");
  const [organization, setOrganization] = useState(item?.organization || "");
@@ -3513,7 +3513,7 @@ function CausesEditModal({
  onOpenChange: (op: boolean) => void;
  selectedCauses: string[];
  onSave: (causes: string[]) => void;
- isSaving: boolean;
+ isSaving?: boolean;
 }) {
  const [causes, setCauses] = useState<string[]>(selectedCauses || []);
 
@@ -3587,7 +3587,7 @@ function LanguagesEditModal({
  onOpenChange: (op: boolean) => void;
  initialLanguages: any[];
  onSave: (languages: any[]) => void;
- isSaving: boolean;
+ isSaving?: boolean;
 }) {
  const [list, setList] = useState<any[]>(
  initialLanguages.length > 0

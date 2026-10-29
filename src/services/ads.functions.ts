@@ -19,6 +19,9 @@ export type AdCampaign = {
   impressions_count: number;
   clicks_count: number;
   spent_cents: number | null;
+  leads_count?: number;
+  converted_leads_count?: number;
+  revenue_cents?: number;
   created_at: string;
 };
 
@@ -63,8 +66,30 @@ export const listAdCampaigns = createServerFn({ method: "GET" }).handler(async (
  eventsCount.set(e.campaign_id, curr);
  });
 
+ // Busca leads associados a anúncios desta loja para cálculo de CPL e Receita Real
+ const { data: campaignLeads } = await supabase
+   .from("leads_crm")
+   .select("id, custom_fields, estimated_value_cents, status")
+   .eq("store_id", identity.store_id);
+
+ const leadsMap = new Map<string, { count: number; convertedCount: number; revenueCents: number }>();
+ (campaignLeads || []).forEach((l: any) => {
+   const cf = (l.custom_fields as Record<string, any>) || {};
+   const adId = cf.meta_ad_id || cf.campaign_id;
+   if (adId) {
+     const curr = leadsMap.get(adId) || { count: 0, convertedCount: 0, revenueCents: 0 };
+     curr.count++;
+     if (l.status === "converted" || l.status === "won") {
+       curr.convertedCount++;
+       curr.revenueCents += l.estimated_value_cents || 0;
+     }
+     leadsMap.set(adId, curr);
+   }
+ });
+
  return (campaigns || []).map((c: any) => {
     const stats = eventsCount.get(c.id) || { views: 0, clicks: 0 };
+    const lData = leadsMap.get(c.id) || leadsMap.get(c.external_campaign_id) || { count: 0, convertedCount: 0, revenueCents: 0 };
     const placements = c.placements || ["feed"];
     const s = (c.settings as Record<string, any>) || {};
     const format = (s.format as any) || (
@@ -92,6 +117,9 @@ export const listAdCampaigns = createServerFn({ method: "GET" }).handler(async (
       impressions_count: stats.views,
       clicks_count: stats.clicks,
       spent_cents: s.real_spent_cents != null && s.real_spent_cents !== "" && Number.isFinite(Number(s.real_spent_cents)) ? Number(s.real_spent_cents) : null,
+      leads_count: lData.count,
+      converted_leads_count: lData.convertedCount,
+      revenue_cents: lData.revenueCents,
       created_at: c.created_at,
     } as AdCampaign;
   });

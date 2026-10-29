@@ -140,7 +140,7 @@ function MercadoVerticalPage() {
   const { banners, marketplaceFeed, catalogProducts, deliveryWindows, clubMemberData } = loaderData;
   const search = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
-  const { globalCarts, addToCart, setIsCartOpen } = useCartContext();
+  const { globalCarts, addToCart, setIsCartOpen } = useCartContext() as any;
 
   const [activeDepartment, setActiveDepartment] = useState(search.categoria || "todos");
   const [activeBottomTab, setActiveBottomTab] = useState<"inicio" | "ofertas" | "clube" | "compras" | "menu">("inicio");
@@ -238,9 +238,9 @@ function MercadoVerticalPage() {
   }, [supermarketProducts]);
 
   // Contagem de itens no carrinho
-  const allCartItems = globalCarts.flatMap((c) => c.items);
-  const cartItemCount = allCartItems.reduce((acc, it) => acc + (it.qty || 1), 0);
-  const cartSubtotalCents = allCartItems.reduce((acc, it) => acc + (it.priceCents * it.qty), 0);
+  const allCartItems = globalCarts.flatMap((c: any) => c.items);
+  const cartItemCount = allCartItems.reduce((acc: number, it: any) => acc + (it.qty || 1), 0);
+  const cartSubtotalCents = allCartItems.reduce((acc: number, it: any) => acc + (it.priceCents * it.qty), 0);
 
   const handleAddToCart = (product: SupermarketProductCardDTO) => {
     addToCart({

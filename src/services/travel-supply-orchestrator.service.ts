@@ -5,7 +5,16 @@
  */
 
 import { getServerClient } from "@/lib/supabase";
-import { searchWoobaFlights } from "@/services/travel-wooba-connector.service";
+import {
+  searchWoobaFlights,
+  searchWoobaCars,
+  searchWoobaBusRoutes,
+} from "@/services/travel-wooba-connector.service";
+import {
+  infotravelSearchCarRentals,
+  infotravelSearchFlights,
+  infotravelSearchHotels,
+} from "@/services/infotravel";
 import type {
   TravelOfferDTO,
   TravelOfferPricing,
@@ -102,6 +111,119 @@ export async function executeMultiProviderSearch(
 
       if (provider.provider_code === "infotravel" || provider.engine_type === "infotravel_v1") {
         // Chamada ao conector InfoTravel REST/JSON
+        const markupPct = Number(provider.default_markup_percent ?? 10);
+        if (query.productType === "car") {
+          const pickupLoc = query.destinationIata || query.originIata || query.destinationTerminalId || "XAP";
+          const dropoffDate =
+            query.returnDate ||
+            new Date(new Date(query.departureDate).getTime() + 3 * 86400000).toISOString().slice(0, 10);
+          const carQuotes = await infotravelSearchCarRentals({
+            data: {
+              pickupAirportOrCity: pickupLoc,
+              pickupDate: query.departureDate,
+              dropoffDate,
+            },
+          });
+          for (const car of carQuotes) {
+            const dailyCents = Math.round(Number(car.dailyRateBrl || 129) * 100);
+            const totalCents = Math.round(Number(car.totalRateBrl || car.dailyRateBrl * 3) * 100);
+            const pricing = calculateNormalizedPricing({
+              netAmountCents: totalCents,
+              agencyMarkupPercent: markupPct,
+            });
+            offers.push({
+              offer_id: `infotravel_car_${car.id}`,
+              provider_code: "infotravel",
+              product_type: "car",
+              pricing,
+              expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+              revalidate_required: false,
+              policy_status: "within_policy",
+              policy_violation_reasons: [],
+              rules: {
+                cancellation_policy: "Cancelamento grátis até 24h antes da retirada",
+                is_refundable: true,
+              },
+              details: {
+                rental_company: car.rentalCompany,
+                vehicle_category: car.vehicleCategory,
+                vehicle_model_example: car.vehicleModelExample,
+                transmission: car.transmission,
+                pickup_location: car.pickupLocation,
+                dropoff_location: car.dropoffLocation,
+                daily_rate_cents: dailyCents,
+                daily_rate_brl: car.dailyRateBrl,
+                total_three_days_brl: car.dailyRateBrl * 3,
+                free_cancellation: true,
+                payment_timing: "pay_at_pickup",
+              },
+            });
+          }
+        } else if (query.productType === "flight" && query.originIata && query.destinationIata) {
+          const gdsFlights = await infotravelSearchFlights(query.agencyId, {
+            origin: query.originIata,
+            destination: query.destinationIata,
+            date: query.departureDate,
+          });
+          for (const f of gdsFlights) {
+            const netCents = Math.round(Number(f.price || 0) * 100);
+            const pricing = calculateNormalizedPricing({
+              netAmountCents: netCents,
+              agencyMarkupPercent: markupPct,
+            });
+            offers.push({
+              offer_id: `infotravel_flt_${f.flight_number || Date.now()}`,
+              provider_code: "infotravel",
+              product_type: "flight",
+              pricing,
+              expires_at: new Date(Date.now() + 20 * 60 * 1000).toISOString(),
+              revalidate_required: true,
+              policy_status: "within_policy",
+              policy_violation_reasons: [],
+              rules: {
+                is_refundable: true,
+              },
+              details: {
+                flight_number: f.flight_number,
+                origin: f.origin,
+                destination: f.destination,
+              },
+            });
+          }
+        } else if (query.productType === "hotel" && query.destinationIata) {
+          const checkout =
+            query.returnDate ||
+            new Date(new Date(query.departureDate).getTime() + 2 * 86400000).toISOString().slice(0, 10);
+          const gdsHotels = await infotravelSearchHotels(query.agencyId, {
+            city: query.destinationIata,
+            checkin: query.departureDate,
+            checkout,
+          });
+          for (const h of gdsHotels) {
+            const netCents = Math.round(Number((h as any).price_per_night || (h as any).price || 0) * 100);
+            const pricing = calculateNormalizedPricing({
+              netAmountCents: netCents,
+              agencyMarkupPercent: markupPct,
+            });
+            offers.push({
+              offer_id: `infotravel_htl_${h.name || Date.now()}`,
+              provider_code: "infotravel",
+              product_type: "hotel",
+              pricing,
+              expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+              revalidate_required: false,
+              policy_status: "within_policy",
+              policy_violation_reasons: [],
+              rules: {
+                is_refundable: true,
+              },
+              details: {
+                hotel_name: h.name,
+                city: query.destinationIata,
+              },
+            });
+          }
+        }
         providersResponded.push("infotravel");
       } else if (provider.provider_code === "wooba") {
         // Chamada ao conector Wooba Travellink
@@ -116,6 +238,59 @@ export async function executeMultiProviderSearch(
             cabinClass: query.cabinClass as any,
           });
           offers.push(...woobaOffers);
+        }
+        if (query.productType === "car") {
+          const pickupLoc = query.destinationIata || query.originIata || query.destinationTerminalId || "CGH";
+          const dropoffDate =
+            query.returnDate ||
+            new Date(new Date(query.departureDate).getTime() + 3 * 86400000).toISOString().slice(0, 10);
+          const woobaCarOffers = await searchWoobaCars({
+            agencyId: query.agencyId,
+            pickupLocationCode: pickupLoc,
+            dropoffLocationCode: pickupLoc,
+            pickupDate: query.departureDate,
+            dropoffDate,
+          });
+          offers.push(...woobaCarOffers);
+        } else if (query.productType === "bus" && query.originTerminalId && query.destinationTerminalId) {
+          const busRoutes = await searchWoobaBusRoutes({
+            agencyId: query.agencyId,
+            originTerminalCityId: query.originTerminalId,
+            destinationTerminalCityId: query.destinationTerminalId,
+            departureDate: query.departureDate,
+          });
+          for (const route of busRoutes) {
+            const pricing = calculateNormalizedPricing({
+              netAmountCents: route.netPriceCents,
+              agencyMarkupPercent: Number(provider.default_markup_percent ?? 10),
+            });
+            offers.push({
+              offer_id: `wooba_bus_${route.tripScheduleId}`,
+              provider_code: "wooba",
+              product_type: "bus",
+              pricing,
+              expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+              revalidate_required: false,
+              policy_status: "within_policy",
+              policy_violation_reasons: [],
+              rules: {
+                cancellation_policy: "Reembolso e remarcação conforme resolução ANTT",
+                is_refundable: true,
+                fare_family: route.serviceClass,
+              },
+              details: {
+                trip_schedule_id: route.tripScheduleId,
+                company_name: route.companyName,
+                service_class: route.serviceClass,
+                departure_time: route.departureTime,
+                arrival_time: route.arrivalTime,
+                departure_terminal_name: route.departureTerminalName,
+                arrival_terminal_name: route.arrivalTerminalName,
+                duration_minutes: route.durationMinutes,
+                available_seats_count: route.availableSeatsCount,
+              },
+            });
+          }
         }
         providersResponded.push("wooba");
       } else if (provider.provider_code === "rexturadvance") {

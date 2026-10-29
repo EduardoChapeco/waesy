@@ -4,7 +4,7 @@ import { getServerIdentity } from "@/lib/server-access";
 import { z } from "zod";
 import crypto from "node:crypto";
 import { DEFAULT_BRAND_NAME } from "@/lib/brand";
-import { encryptSecret } from "@/lib/crypto-vault.server";
+import { encryptSecret, decryptSecret } from "@/lib/crypto-vault.server";
 
 /**
  * Validates that the current user is a Platform Admin (Master).
