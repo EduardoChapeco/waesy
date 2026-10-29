@@ -623,6 +623,7 @@ function AdminAppointmentsPage() {
  </div>
  )}
  </>
+ )}
 
  {/* ── Dossiê Completo do Agendamento (DEC-275) ── */}
       <BookingDossierModal

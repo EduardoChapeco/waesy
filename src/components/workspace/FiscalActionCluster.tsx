@@ -10,7 +10,13 @@ import { emitRowFiscalInvoice } from "@/services/services-erp.functions";
 
 export interface FiscalActionClusterProps {
   orderId: string;
-  orderTotalCents: number;
+  orderTotalCents?: number;
+  totalCents?: number;
+  storeId?: string;
+  customerName?: string;
+  customerDoc?: string;
+  hasServices?: boolean;
+  hasProducts?: boolean;
   existingInvoices?: {
     invoice_type: "NFSe" | "NFe" | "NFCe";
     status: "authorized" | "pending" | "rejected";
@@ -22,9 +28,13 @@ export interface FiscalActionClusterProps {
 export function FiscalActionCluster({
   orderId,
   orderTotalCents,
+  totalCents,
+  hasServices = true,
+  hasProducts = true,
   existingInvoices = [],
   isContracted = true,
 }: FiscalActionClusterProps) {
+  const effectiveTotalCents = totalCents ?? orderTotalCents ?? 0;
   const [selectedType, setSelectedType] = useState<"NFSe" | "NFe" | "NFCe" | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lc116Code, setLc116Code] = useState("06.01");
@@ -42,7 +52,7 @@ export function FiscalActionCluster({
         data: {
           orderId,
           invoiceType: selectedType,
-          grossAmountCents: orderTotalCents,
+          grossAmountCents: effectiveTotalCents,
           lc116Code,
           cnaeCode,
         },
@@ -61,6 +71,30 @@ export function FiscalActionCluster({
     type: "NFSe" | "NFe" | "NFCe",
     invoice?: { status: string; danfe_pdf_url?: string | null },
   ) => {
+    const isServiceType = type === "NFSe";
+    const isApplicable = isServiceType ? hasServices : hasProducts;
+
+    if (!isApplicable) {
+      return (
+        <TooltipProvider key={type}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                disabled
+                className="inline-flex items-center justify-center size-11 min-h-11 min-w-11 rounded-lg border border-border/40 bg-muted/20 text-muted-foreground/40 opacity-40 cursor-not-allowed font-semibold text-xs"
+                aria-label={`Sem ${isServiceType ? "serviços" : "produtos"} neste pedido`}
+              >
+                {label}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              <p className="text-xs">Pedido não contém ${isServiceType ? "serviços" : "produtos"}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
     if (!isContracted) {
       return (
         <TooltipProvider key={type}>

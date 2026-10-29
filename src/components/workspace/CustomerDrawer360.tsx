@@ -137,8 +137,8 @@ export function CustomerDrawer360(props: CustomerDrawer360Props) {
             type="button"
             variant="ghost"
             size="icon"
-            onClick={onClose}
-            className="h-11 w-11 rounded-xl text-muted-foreground hover:text-foreground"
+            onClick={handleClose}
+            className="size-11 min-h-11 min-w-11 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <X className="h-5 w-5" />
           </Button>
@@ -151,7 +151,7 @@ export function CustomerDrawer360(props: CustomerDrawer360Props) {
               key={tab.key}
               type="button"
               onClick={() => setActiveTab(tab.key)}
-              className={`h-10 px-3.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+              className={`h-11 min-h-11 px-4 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 activeTab === tab.key
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:bg-muted/80 hover:text-foreground"

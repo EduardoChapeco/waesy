@@ -292,7 +292,23 @@ function ServicesIndexPage() {
  title={form.id ? "Editar Serviço" : "Novo Serviço"}
  description="Configure os parâmetros de agendamento, duração e valor do serviço."
  >
+ <TooltipProvider delayDuration={200}>
  <div className="space-y-4 p-1 pb-16">
+ <Tabs defaultValue="cadastro" className="w-full">
+ <TabsList className="grid grid-cols-3 max-w-md h-11 p-1 bg-muted/60 rounded-lg mb-4">
+ <TabsTrigger value="cadastro" className="rounded-lg font-bold text-xs">
+ Cadastro
+ </TabsTrigger>
+ <TabsTrigger value="regras" className="rounded-lg font-bold text-xs">
+ Preço & Comissões
+ </TabsTrigger>
+ <TabsTrigger value="cuidados" className="rounded-lg font-bold text-xs">
+ Cuidados & CRM
+ </TabsTrigger>
+ </TabsList>
+
+ {/* ABA 1: CADASTRO BÁSICO */}
+ <TabsContent value="cadastro" className="space-y-4 pt-1">
  <div className="space-y-2">
  <Label htmlFor="service-title" className="text-xs font-bold text-foreground">
  Título do Serviço *
@@ -343,21 +359,6 @@ function ServicesIndexPage() {
  </div>
 
  <div className="space-y-2">
- <Label htmlFor="service-price" className="text-xs font-bold text-foreground">
- Preço (R$) *
- </Label>
- <Input
- id="service-price"
- placeholder="0,00"
- value={form.price_reais}
- onChange={(e) => setForm({ ...form, price_reais: e.target.value })}
- className="rounded-lg h-10 text-xs font-mono"
- />
- </div>
- </div>
-
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">Público / Alvo</Label>
  <Select
  value={form.gender_target}
@@ -373,6 +374,7 @@ function ServicesIndexPage() {
  <SelectItem value="infantil" className="text-xs">Infantil</SelectItem>
  </SelectContent>
  </Select>
+ </div>
  </div>
 
  <div className="space-y-2">
@@ -390,7 +392,6 @@ function ServicesIndexPage() {
  </SelectContent>
  </Select>
  </div>
- </div>
 
  <div className="space-y-2 pt-1">
  <Label className="text-xs font-bold text-foreground">Foto Ilustrativa do Serviço</Label>
@@ -402,6 +403,168 @@ function ServicesIndexPage() {
  helperText="Upload com recorte panorâmico 16:10 para exibição na página de agendamento"
  />
  </div>
+ </TabsContent>
+
+ {/* ABA 2: PREÇO & COMISSÕES */}
+ <TabsContent value="regras" className="space-y-4 pt-1">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+ <div className="space-y-2">
+ <div className="flex items-center gap-1.5">
+ <Label className="text-xs font-bold text-foreground">Modelo de Preço</Label>
+ <Tooltip>
+ <TooltipTrigger asChild>
+ <HelpCircle className="size-3.5 text-muted-foreground cursor-help" />
+ </TooltipTrigger>
+ <TooltipContent className="max-w-xs text-xs">
+ Define como o valor do serviço será exibido para o cliente no agendamento online.
+ </TooltipContent>
+ </Tooltip>
+ </div>
+ <Select
+ value={form.price_type}
+ onValueChange={(val: any) => setForm({ ...form, price_type: val })}
+ >
+ <SelectTrigger className="rounded-lg h-10 text-xs">
+ <SelectValue />
+ </SelectTrigger>
+ <SelectContent className="rounded-lg">
+ <SelectItem value="fixed" className="text-xs">Preço Fixo</SelectItem>
+ <SelectItem value="starting_at" className="text-xs">A partir de</SelectItem>
+ <SelectItem value="on_request" className="text-xs">Sob Consulta / Avaliação</SelectItem>
+ </SelectContent>
+ </Select>
+ </div>
+
+ <div className="space-y-2">
+ <Label htmlFor="service-price" className="text-xs font-bold text-foreground">
+ Preço de Venda (R$) *
+ </Label>
+ <Input
+ id="service-price"
+ placeholder="0,00"
+ value={form.price_reais}
+ onChange={(e) => setForm({ ...form, price_reais: e.target.value })}
+ className="rounded-lg h-10 text-xs font-mono"
+ />
+ </div>
+ </div>
+
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+ <div className="space-y-2">
+ <div className="flex items-center gap-1.5">
+ <Label htmlFor="service-cost" className="text-xs font-bold text-foreground">
+ Custo Adicional (R$)
+ </Label>
+ <Tooltip>
+ <TooltipTrigger asChild>
+ <HelpCircle className="size-3.5 text-muted-foreground cursor-help" />
+ </TooltipTrigger>
+ <TooltipContent className="max-w-xs text-xs">
+ Valor desembolsado a mais para executar esse serviço. Este valor será descontado do valor total do serviço no relatório de Resultado Líquido.
+ </TooltipContent>
+ </Tooltip>
+ </div>
+ <Input
+ id="service-cost"
+ placeholder="0,00"
+ value={form.additional_cost_reais}
+ onChange={(e) => setForm({ ...form, additional_cost_reais: e.target.value })}
+ className="rounded-lg h-10 text-xs font-mono"
+ />
+ </div>
+
+ <div className="space-y-2">
+ <div className="flex items-center gap-1.5">
+ <Label className="text-xs font-bold text-foreground">Comissão Padrão</Label>
+ <Tooltip>
+ <TooltipTrigger asChild>
+ <HelpCircle className="size-3.5 text-muted-foreground cursor-help" />
+ </TooltipTrigger>
+ <TooltipContent className="max-w-xs text-xs">
+ Caso não seja definida comissão individual para o profissional parceiro, este valor padrão será aplicado.
+ </TooltipContent>
+ </Tooltip>
+ </div>
+ <div className="flex items-center gap-2">
+ <Select
+ value={form.default_commission_type}
+ onValueChange={(val: any) => setForm({ ...form, default_commission_type: val })}
+ >
+ <SelectTrigger className="w-24 rounded-lg h-10 text-xs">
+ <SelectValue />
+ </SelectTrigger>
+ <SelectContent className="rounded-lg">
+ <SelectItem value="percentage" className="text-xs">%</SelectItem>
+ <SelectItem value="fixed" className="text-xs">R$</SelectItem>
+ </SelectContent>
+ </Select>
+ <Input
+ value={form.default_commission_value}
+ onChange={(e) => setForm({ ...form, default_commission_value: e.target.value })}
+ className="rounded-lg h-10 text-xs font-mono flex-1"
+ placeholder={form.default_commission_type === "percentage" ? "30" : "25,00"}
+ />
+ </div>
+ </div>
+ </div>
+ </TabsContent>
+
+ {/* ABA 3: CUIDADOS & CRM RETORNO */}
+ <TabsContent value="cuidados" className="space-y-4 pt-1">
+ <div className="space-y-2">
+ <div className="flex items-center gap-1.5">
+ <Label htmlFor="return-days" className="text-xs font-bold text-foreground">
+ Tempo de Retorno (Dias para CRM)
+ </Label>
+ <Tooltip>
+ <TooltipTrigger asChild>
+ <HelpCircle className="size-3.5 text-muted-foreground cursor-help" />
+ </TooltipTrigger>
+ <TooltipContent className="max-w-xs text-xs">
+ Defina em quantos dias seu cliente deve retornar para manutenção ou parte 2. O CRM disparará um lembrete automático via WhatsApp.
+ </TooltipContent>
+ </Tooltip>
+ </div>
+ <Input
+ id="return-days"
+ type="number"
+ min="1"
+ max="365"
+ value={form.return_days}
+ onChange={(e) => setForm({ ...form, return_days: Number(e.target.value) })}
+ className="rounded-lg h-10 text-xs font-mono max-w-xs"
+ />
+ </div>
+
+ <div className="space-y-2">
+ <Label htmlFor="pre-care" className="text-xs font-bold text-foreground">
+ Orientações Pré-Atendimento (WhatsApp / Cartão)
+ </Label>
+ <Textarea
+ id="pre-care"
+ placeholder="Ex: Chegar sem maquiagem. Suspender uso de ácidos 48h antes..."
+ rows={2}
+ value={form.pre_care_notes}
+ onChange={(e) => setForm({ ...form, pre_care_notes: e.target.value })}
+ className="rounded-lg text-xs resize-none"
+ />
+ </div>
+
+ <div className="space-y-2">
+ <Label htmlFor="post-care" className="text-xs font-bold text-foreground">
+ Cuidados Pós-Atendimento (WhatsApp / Cartão)
+ </Label>
+ <Textarea
+ id="post-care"
+ placeholder="Ex: Não molhar a região por 24 horas. Evitar exposição solar direta..."
+ rows={2}
+ value={form.post_care_notes}
+ onChange={(e) => setForm({ ...form, post_care_notes: e.target.value })}
+ className="rounded-lg text-xs resize-none"
+ />
+ </div>
+ </TabsContent>
+ </Tabs>
 
  <div className="flex justify-end gap-3 pt-4 border-t border-border/40">
  <Button
@@ -416,7 +579,7 @@ function ServicesIndexPage() {
  size="sm"
  onClick={() => saveMutation.mutate()}
  disabled={saveMutation.isPending || !form.title.trim()}
- className="rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground min-w-28"
+ className="rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground min-w-28 cursor-pointer"
  >
  {saveMutation.isPending ? (
  <>
@@ -432,6 +595,7 @@ function ServicesIndexPage() {
  </Button>
  </div>
  </div>
+ </TooltipProvider>
  </SheetPage>
  </div>
  );

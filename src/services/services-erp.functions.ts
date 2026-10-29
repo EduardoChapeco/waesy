@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { logSystemError } from "@/lib/logger";
 
 // ============================================================
 // 1. ACORDOS DE SALÃO PARCEIRO / PROFISSIONAL
@@ -354,7 +355,7 @@ export const emitRowFiscalInvoice = createServerFn({ method: "POST" })
     z.object({
       orderId: z.string().uuid(),
       invoiceType: z.enum(["NFSe", "NFe", "NFCe"]),
-      grossAmountCents: z.number().int().positive(),
+      grossAmountCents: z.number().int().min(0),
       lc116Code: z.string().optional(),
       cnaeCode: z.string().optional(),
       municipalServiceCode: z.string().optional(),
@@ -389,8 +390,15 @@ export const emitRowFiscalInvoice = createServerFn({ method: "POST" })
       .single();
 
     if (error) {
+      logSystemError({
+        route: "services-erp.functions.emitRowFiscalInvoice",
+        tableName: "order_fiscal_invoices",
+        contractName: "emitRowFiscalInvoice",
+        error,
+        payload: invoicePayload,
+      });
       console.error("[emitRowFiscalInvoice] error:", error);
-      throw new Error(`Erro ao emitir ${data.invoiceType}`);
+      throw new Error(`Erro ao emitir ${data.invoiceType}: ${error.message}`);
     }
 
     return result;

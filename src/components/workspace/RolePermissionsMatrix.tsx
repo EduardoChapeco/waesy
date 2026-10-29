@@ -248,6 +248,7 @@ export function RolePermissionsMatrix({ roleKey: initialRoleKey, roleName: initi
           )}
         </Button>
       </div>
+      </div>
 
       <div className="space-y-4">
         {MODULE_PERMISSIONS_CATALOG.map((mod) => {

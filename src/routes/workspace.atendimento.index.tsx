@@ -631,6 +631,59 @@ function WorkspaceAtendimentoPage() {
           }
         },
       )
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "intranet_messages" },
+        (payload: any) => {
+          const newMsg = payload.new as any;
+          if (newMsg && newMsg.store_id === store.id) {
+            setIntranetChannels((prev) =>
+              prev.map((c) => {
+                if (c.id === newMsg.channel_id) {
+                  const exists = c.messages.some((m) => m.id === newMsg.id);
+                  if (exists) return c;
+                  return {
+                    ...c,
+                    messages: [
+                      ...c.messages,
+                      {
+                        id: newMsg.id,
+                        author: newMsg.author_name || "Colega",
+                        role: newMsg.author_role || "Equipe",
+                        time: new Date(newMsg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                        text: newMsg.content,
+                      },
+                    ],
+                  };
+                }
+                return c;
+              })
+            );
+          }
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "intranet_milestones" },
+        (payload: any) => {
+          const updated = payload.new as any;
+          if (updated && updated.store_id === store.id) {
+            setIntranetChannels((prev) =>
+              prev.map((c) => {
+                if (c.id === updated.channel_id) {
+                  return {
+                    ...c,
+                    milestones: c.milestones.map((m) =>
+                      m.id === updated.id ? { ...m, done: updated.done, label: updated.label, detail: updated.detail } : m
+                    ),
+                  };
+                }
+                return c;
+              })
+            );
+          }
+        },
+      )
       .subscribe();
 
     return () => {
