@@ -1,5 +1,18 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-372: Segregação Rigorosa de Credenciais Globais (Admin Master) vs. Tenants (Workspace) e Desacoplamento de Variáveis .env
+- **Data:** 2026-10-29
+- **Contexto:**
+  1. Necessidade de erradicar o débito técnico de credenciais de plataforma atreladas exclusivamente a arquivos locais `.env`.
+  2. Cada empresa/loja precisa ter autonomia plena para cadastrar seus próprios identificadores de rastreio e telemetria (Meta Pixel ID, Meta CAPI Access Token, Google Ads Tag, GA4 API Secret, TikTok Pixel ID) em `/workspace/marketing/pixels` com RLS isolado por `store_id`.
+  3. O segredo global da aplicação/plataforma (`meta_app_id`, `meta_app_secret`, `meta_webhook_verify_token`, `google_client_id`, `google_client_secret`) deve ser cadastrado e gerido centralmente pelo Admin Master no Hub de Integrações (`/admin-master/integracoes`), com armazenamento criptografado AES-256-GCM no tenant raiz (`waesy-matriz`).
+- **Decisão:**
+  1. Implementada a função de servidor `getPlatformMetaSecretsServerInternal()` em `src/services/master.functions.ts` que busca dinamicamente as credenciais globais no banco e as descriptografa, com fallback defensivo para `process.env`.
+  2. Atualizado o endpoint de webhooks `src/routes/api.webhooks.meta-ads.ts` para validar o handshake (`hub.verify_token`) e a assinatura criptográfica HMAC-SHA256 (`x-hub-signature-256`) utilizando as credenciais salvas no Admin Master.
+  3. Expandida a interface de `/admin-master/integracoes` (Aba Webhooks & Plataforma) com formulário modular contendo campos com máscara e alternância de visibilidade (`Eye`/`EyeOff`) para `meta_app_id`, `meta_app_secret`, `webhook_secret`, `google_client_id` e `google_client_secret`.
+- **Fundamentação:** AGENTS.md Regras B.1, B.2, B.4, B.7, B.8, B.20, B.22, B.26 e B.31.
+- **Consequências:** Independência total de deploys para rotação de segredos do aplicativo Meta/Google, isolamento estrito entre escopo global e local de cada empresa, e segurança criptográfica AES-256-GCM.
+
 ## DEC-371: Remediação Forense Multidisciplinar, Erradicação de Fallbacks Falsos, Inteligência Salarial InfoJobs E2E, Intranet Slack Realtime e Roteamento Canônico de Locação 3 Dias
 - **Data:** 2026-10-29
 - **Contexto:**

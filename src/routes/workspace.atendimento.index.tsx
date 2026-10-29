@@ -17,6 +17,12 @@ import {
   saveStoreSupportSettings,
 } from "@/services/chat.functions";
 import { getStoreSettings } from "@/services/store.functions";
+import {
+  listIntranetChannels,
+  createIntranetChannel,
+  sendIntranetMessage,
+  toggleIntranetMilestone,
+} from "@/services/intranet.functions";
 import { getNicheSemantics } from "@/lib/niche-semantics";
 import { getRealtimeChannel } from "@/services/realtime-channel";
 import { Button } from "@/components/ui/button";
@@ -2112,6 +2118,15 @@ function WorkspaceAtendimentoPage() {
                     if (!intranetComposerText.trim()) return;
                     const txt = intranetComposerText.trim();
                     setIntranetComposerText("");
+                    if (activeIntranetChannel?.id && !activeIntranetChannel.id.startsWith("ch-")) {
+                      sendIntranetMessage({
+                        data: {
+                          channelId: activeIntranetChannel.id,
+                          content: txt,
+                          authorRole: "Colaborador",
+                        },
+                      }).catch((err) => console.warn("[intranet] Erro ao persistir mensagem:", err));
+                    }
                     setIntranetChannels((prev) =>
                       prev.map((ch) =>
                         ch.id === activeIntranetChannel.id
@@ -2873,6 +2888,17 @@ function WorkspaceAtendimentoPage() {
         storeName={store?.name || "Intranet"}
         onDispatchMessage={(data: StructuredDispatchPayload) => {
           if (!activeIntranetChannel) return;
+          if (activeIntranetChannel.id && !activeIntranetChannel.id.startsWith("ch-")) {
+            sendIntranetMessage({
+              data: {
+                channelId: activeIntranetChannel.id,
+                content: data.message,
+                authorRole: "Gestão",
+                artifactType: data.type,
+                artifactPayload: data.payload,
+              },
+            }).catch((err) => console.warn("[intranet] Erro ao persistir mensagem estruturada:", err));
+          }
           setIntranetChannels((prev) =>
             prev.map((ch) =>
               ch.id === activeIntranetChannel.id
@@ -2964,6 +2990,20 @@ function WorkspaceAtendimentoPage() {
                   return;
                 }
                 const newId = `ch-${Date.now()}`;
+                if (store?.id) {
+                  createIntranetChannel({
+                    data: {
+                      storeId: store.id,
+                      title: newChannelTitle.trim(),
+                      department: newChannelDept,
+                      scope: newChannelScope,
+                    },
+                  }).then((created) => {
+                    if (created?.id) {
+                      setActiveIntranetChannelId(created.id);
+                    }
+                  }).catch((err) => console.warn("[intranet] Erro ao criar canal:", err));
+                }
                 setIntranetChannels((prev) => [
                   {
                     id: newId,
